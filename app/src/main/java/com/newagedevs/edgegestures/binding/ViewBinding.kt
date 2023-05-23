@@ -154,10 +154,10 @@ object ViewBinding {
     fun setLayoutWidth(view: View, value: String) {
 
         val width: Int = when (value) {
-            "Slim" -> 20
-            "Regular" -> 30
-            "Bold" -> 40
-            else -> 20
+            "Slim" -> 30
+            "Regular" -> 40
+            "Bold" -> 50
+            else -> 30
         }
 
         view.layoutParams = view.layoutParams.apply {

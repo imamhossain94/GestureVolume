@@ -44,10 +44,10 @@ class MainViewModel constructor(
     var size: String? by bindingProperty("Medium")
 
     @get:Bindable
-    var sizeIcon: Int? by bindingProperty(R.drawable.ic_small)
+    var sizeIcon: Int? by bindingProperty(R.drawable.ic_medium)
 
     @get:Bindable
-    var width: String? by bindingProperty("Regular")
+    var width: String? by bindingProperty("Slim")
 
     @get:Bindable
     var widthIcon: Int? by bindingProperty(R.drawable.ic_small)

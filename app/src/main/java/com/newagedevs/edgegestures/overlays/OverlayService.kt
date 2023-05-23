@@ -4,11 +4,7 @@ import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
-import android.graphics.Color
-import android.graphics.PixelFormat
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
+import android.graphics.*
 import android.media.AudioManager
 import android.os.Build
 import android.os.Handler
@@ -21,7 +17,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
 import com.newagedevs.edgegestures.R
-import com.newagedevs.edgegestures.extensions.toast
 import com.newagedevs.edgegestures.model.AppHandler
 import com.newagedevs.edgegestures.persistence.AppDatabase
 import kotlinx.coroutines.*
@@ -36,7 +31,8 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
         private const val CHANNEL_NAME = "Overlay notification"
         private const val TITLE = "Overlay notification"
         private const val CONTENT = "Overlay notification"
-        private const val MIN_DISTANCE = 2
+        private const val TOUCH_MOVE_FACTOR = 5
+        private const val TOUCH_TIME_FACTOR = 200
         var running = false
     }
 
@@ -51,6 +47,12 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
 
     private var eventX1: Float = 0f
     private var eventX2: Float = 0f
+
+
+
+    private var actionDownPoint = PointF(0f, 0f)
+    private var previousPoint = PointF(0f, 0f)
+    private var touchDownTime = 0L
 
     override fun onCreate() {
         super.onCreate()
@@ -90,11 +92,8 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
             startForeground(1, notification)
         }
 
-
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-
 
         CoroutineScope(Dispatchers.IO).launch {
             appHandler = getAppHandler()
@@ -109,10 +108,10 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
                     }
 
                     val width: Int = when (appHandler!!.width) {
-                        "Slim" -> 20
-                        "Regular" -> 30
-                        "Bold" -> 40
-                        else -> 20
+                        "Slim" -> 30
+                        "Regular" -> 40
+                        "Bold" -> 50
+                        else -> 30
                     }
 
                     val type =
@@ -164,36 +163,50 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
         return START_NOT_STICKY
     }
 
-    override fun onTouch(v: View, event: MotionEvent): Boolean {
-        when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                eventX1 = event.x
-            }
-            MotionEvent.ACTION_MOVE -> {}
-            MotionEvent.ACTION_UP -> {
-                eventX2 = event.x
-                val deltaX: Float = eventX2 - eventX1
-                val deltaY: Float = event.y - event.y
+    override fun onTouch(view: View, event: MotionEvent) = when (event.action) {
 
-                val minDistance = MIN_DISTANCE
+        MotionEvent.ACTION_DOWN -> {
+            actionDownPoint = PointF(event.x, event.y)
+            previousPoint = PointF(event.x, event.y)
+            touchDownTime = now()
+            eventX1 = event.x
 
-                if (abs(deltaX) < minDistance && abs(deltaY) < minDistance) {
-                    v.performClick()
-                } else {
-                    if (eventX1 != eventX2) {
-                        val halfHeight = v.height / 2f
-                        if (event.y < halfHeight) {
-                            increaseVolume()
-                        } else {
-                            decreaseVolume()
-                        }
-                    }
-                }
-            }
+            true
         }
 
-        return true
+        MotionEvent.ACTION_UP ->  {
+
+            val isTouchDuration = now() - touchDownTime < TOUCH_TIME_FACTOR
+            val isTouchLength = abs(event.x - actionDownPoint.x) + abs(event.y - actionDownPoint.y) < TOUCH_MOVE_FACTOR
+            val shouldClick = isTouchLength && isTouchDuration
+
+            if (shouldClick) view.performClick()
+
+            /* Do other stuff related to ACTION_UP you may whant here */
+
+            true
+        }
+
+        MotionEvent.ACTION_MOVE -> {
+
+            eventX2 = event.x
+
+            val halfHeight = view.height / 2f
+            if (event.y in 0f..halfHeight ) {
+                increaseVolume()
+            } else if (event.y in halfHeight..view.height.toFloat()) {
+                decreaseVolume()
+            }
+
+            previousPoint = PointF(event.x, event.y)
+            true
+        }
+
+        else -> false
     }
+
+    private fun now() = System.currentTimeMillis()
+
     private fun increaseVolume() {
         val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
