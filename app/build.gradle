@@ -1,0 +1,105 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.parcelize'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+}
+
+android {
+    apply from: '../dependencies.gradle'
+    namespace 'com.newagedevs.edgegestures'
+    compileSdk versions.compileSdk
+
+    defaultConfig {
+        applicationId "com.newagedevs.edgegestures"
+        minSdk versions.minSdk
+        targetSdk versions.targetSdk
+        versionCode versions.versionCode
+        versionName versions.versionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        dataBinding true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+
+    // android supports
+    implementation "com.google.android.material:material:$versions.materialVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$versions.constraintVersion"
+
+    // architecture components
+    implementation "androidx.lifecycle:lifecycle-extensions:$versions.lifecycleVersion"
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
+    implementation "androidx.room:room-runtime:$versions.roomVersion"
+    implementation "androidx.room:room-ktx:$versions.roomVersion"
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    kapt "androidx.room:room-compiler:$versions.roomVersion"
+    testImplementation "androidx.arch.core:core-testing:$versions.archCompomentVersion"
+    implementation "androidx.preference:preference-ktx:1.2.0"
+
+    // binding
+    implementation "com.github.skydoves:bindables:$versions.bindablesVersion"
+
+    // koin
+    implementation "org.koin:koin-android:$versions.koinVersion"
+    implementation "org.koin:koin-android-scope:$versions.koinVersion"
+    implementation "org.koin:koin-android-viewmodel:$versions.koinVersion"
+
+    // coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutinesVersion"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutinesVersion"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$versions.coroutinesVersion"
+
+    // glide
+    implementation "com.github.bumptech.glide:glide:$versions.glideVersion"
+    kapt "com.github.bumptech.glide:compiler:$versions.glideVersion"
+
+    // whatIf
+    implementation "com.github.skydoves:whatif:$versions.whatIfVersion"
+
+    // bundler
+    implementation "com.github.skydoves:bundler:$versions.bundlerVersion"
+
+    // debugging
+    implementation "com.jakewharton.timber:timber:$versions.timberVersion"
+
+    // sheets
+    implementation "com.maxkeppeler.sheets:color:$versions.color"
+    implementation "com.maxkeppeler.sheets:calendar:$versions.calendar"
+    implementation "com.maxkeppeler.sheets:option:$versions.option"
+
+    // image picker
+    implementation "com.github.dhaval2404:imagepicker:$versions.imagepicker"
+
+    // gson
+    implementation "com.google.code.gson:gson:$versions.gson"
+
+    // svg path kotlin
+    implementation "com.github.slaviboy:SVGPathKotlin:$versions.svgPathKotlin"
+
+    // joda-time
+    implementation "joda-time:joda-time:$versions.jodaTime"
+
+    // lottie
+    implementation "com.airbnb.android:lottie:$versions.lottie"
+
+}

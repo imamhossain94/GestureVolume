@@ -1,0 +1,26 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.EdgeGestures" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">#5a5aa7</item>
+        <item name="colorPrimaryVariant">#343541</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">#444654</item>
+        <item name="colorSecondaryVariant">@color/black</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">#343541</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <!-- Customize your theme here. -->
+        <item name="backgroundColor">#444654</item>
+        <item name="bg_rounded">@drawable/bg_rounded_dark</item>
+        <item name="bg_rounded_icon">@drawable/bg_rounded_icon_dark</item>
+        <item name="bg_bottom_curve">@drawable/bg_bottom_curve_dark</item>
+        <item name="icon_color">@color/white</item>
+        <item name="bg_card">#3C3E49</item>
+        <item name="seekbar_fill_color">#202123</item>
+
+
+    </style>
+</resources>
