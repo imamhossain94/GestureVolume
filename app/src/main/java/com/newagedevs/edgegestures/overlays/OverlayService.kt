@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.PorterDuff
@@ -20,6 +21,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
 import com.newagedevs.edgegestures.R
+import com.newagedevs.edgegestures.extensions.toast
 import com.newagedevs.edgegestures.model.AppHandler
 import com.newagedevs.edgegestures.persistence.AppDatabase
 import kotlinx.coroutines.*
@@ -34,7 +36,7 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
         private const val CHANNEL_NAME = "Overlay notification"
         private const val TITLE = "Overlay notification"
         private const val CONTENT = "Overlay notification"
-        private const val MIN_DISTANCE = 5
+        private const val MIN_DISTANCE = 2
         var running = false
     }
 
@@ -49,8 +51,6 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
 
     private var eventX1: Float = 0f
     private var eventX2: Float = 0f
-
-
 
     override fun onCreate() {
         super.onCreate()
@@ -93,6 +93,7 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
 
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
 
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -151,7 +152,7 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
                         Color.BLACK
                     }, PorterDuff.Mode.MULTIPLY)
 
-
+                    //params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                     params.x = 0
                     params.y = appHandler!!.topMargin!!.toInt()
                     windowManager!!.addView(handleView!!, params)
@@ -164,40 +165,42 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
     }
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
-
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 eventX1 = event.x
             }
-            MotionEvent.ACTION_MOVE -> { }
+            MotionEvent.ACTION_MOVE -> {}
             MotionEvent.ACTION_UP -> {
                 eventX2 = event.x
                 val deltaX: Float = eventX2 - eventX1
-                if (abs(deltaX) > MIN_DISTANCE) {
+                val deltaY: Float = event.y - event.y
+
+                val minDistance = MIN_DISTANCE
+
+                if (abs(deltaX) < minDistance && abs(deltaY) < minDistance) {
+                    v.performClick()
+                } else {
                     if (eventX1 != eventX2) {
                         val halfHeight = v.height / 2f
-                        if (event.y in 0f..halfHeight) {
+                        if (event.y < halfHeight) {
                             increaseVolume()
-                        } else if (event.y in halfHeight..v.height.toFloat()) {
+                        } else {
                             decreaseVolume()
                         }
-                        audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
                     }
-                } else {
-                    v.performClick()
                 }
             }
         }
 
         return true
     }
-
     private fun increaseVolume() {
         val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
         val increasedVolume = currentVolume + 1
         val volumeToSet = if (increasedVolume <= maxVolume) increasedVolume else maxVolume
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeToSet, 0)
+        //toast("(+)Volume: $volumeToSet")
     }
 
     private fun decreaseVolume() {
@@ -205,6 +208,7 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
         val decreasedVolume = currentVolume - 1
         val volumeToSet = if (decreasedVolume >= 0) decreasedVolume else 0
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeToSet, 0)
+        //toast("(-)Volume: $volumeToSet")
     }
 
     override fun onClick(v: View) {

@@ -15,6 +15,9 @@ fun getApplicationVersion(): String {
     return BuildConfig.VERSION_NAME
 }
 
+fun Context.toast(message:String){
+    Toast.makeText(this, message , Toast.LENGTH_SHORT).show()
+}
 
 fun shareTheApp(context: Context) {
     ShareCompat.IntentBuilder.from((context as Activity)).setType("text/plain")

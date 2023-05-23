@@ -1,4 +1,4 @@
-<h1 align="center">Edge Gesture Volume Control</h1>
+<h1 align="center">Edge Gesture Volume</h1>
 
 <p align="center">
   <img src="https://visitor-badge.laobi.icu/badge?page_id=imamhossain94.EdgeGestureVolumeControl" alt="Visitor">
@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">  
-Edge Gesture Volume Control is a feature-rich Android application that provides intuitive gesture-based volume control for your device. Enhance the longevity of the physical volume button by utilizing an intuitive edge gesture.
+Edge Gesture Volume is a feature-rich Android application that provides intuitive gesture-based volume control for your device. Enhance the longevity of the physical volume button by utilizing an intuitive edge gesture.
 </p>
 
 <br>
