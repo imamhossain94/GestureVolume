@@ -14,6 +14,9 @@ data class AppHandler(
     val color: Int?,
     val size: String?,
     val width: String?,
+    val clickAction: String?,
+    val upperSwipe: String?,
+    val bottomSwipe: String?,
 ) : Parcelable {
     @IgnoredOnParcel
     @PrimaryKey(autoGenerate = true)

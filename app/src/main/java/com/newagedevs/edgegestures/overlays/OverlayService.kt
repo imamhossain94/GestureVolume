@@ -12,7 +12,10 @@ import android.os.IBinder
 import android.os.Looper
 import android.view.*
 import android.view.View.OnTouchListener
+import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
@@ -25,14 +28,13 @@ import kotlin.math.abs
 
 class OverlayService : Service(), OnTouchListener, View.OnClickListener {
 
-
     companion object {
         private const val CHANNEL_ID = "channel1"
         private const val CHANNEL_NAME = "Overlay notification"
         private const val TITLE = "Overlay notification"
         private const val CONTENT = "Overlay notification"
-        private const val TOUCH_MOVE_FACTOR = 5
-        private const val TOUCH_TIME_FACTOR = 200
+        private const val TOUCH_MOVE_FACTOR = 20
+        private const val TOUCH_TIME_FACTOR = 300
         var running = false
     }
 
@@ -43,7 +45,7 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
     private var windowManager: WindowManager? = null
     private val looper = Handler(Looper.getMainLooper())
 
-    private var handleView: ImageView? = null
+    private var handleView: FrameLayout? = null
 
     private var eventX1: Float = 0f
     private var eventX2: Float = 0f
@@ -124,7 +126,9 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
                         else WindowManager.LayoutParams.TYPE_PHONE
 
                     val params = WindowManager.LayoutParams(
-                        width, height, type,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        type,
                         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                         PixelFormat.TRANSLUCENT
                     )
@@ -144,16 +148,43 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
                         }
                     }
 
-                    handleView = ImageView(this@OverlayService)
-                    handleView!!.background = drawable
-                    handleView!!.setOnClickListener(this@OverlayService)
-                    handleView!!.setOnTouchListener(this@OverlayService)
+                    val imageView = ImageView(this@OverlayService)
+                    val button = Button(this@OverlayService)
 
-                    handleView!!.background.colorFilter = PorterDuffColorFilter(appHandler!!.color ?: try {
+
+                    imageView.background = drawable
+                    imageView.background.colorFilter = PorterDuffColorFilter(appHandler!!.color ?: try {
                         Color.parseColor("#47000000")
                     } catch (e: IllegalArgumentException) {
                         Color.BLACK
                     }, PorterDuff.Mode.MULTIPLY)
+
+                    handleView = FrameLayout(this@OverlayService)
+
+                    handleView!!.addView(imageView, FrameLayout.LayoutParams(
+                        width,
+                        height
+                    ).apply {
+                        gravity = when(appHandler!!.gravity) {
+                            "Left" -> {
+                                Gravity.START or Gravity.TOP
+                            }
+                            "Right" -> {
+                                Gravity.END or Gravity.TOP
+                            }
+                            else -> {
+                                Gravity.END or Gravity.TOP
+                            }
+                        }
+                    })
+
+                    button.setBackgroundColor(Color.TRANSPARENT)
+
+                    val buttonLayoutParams = FrameLayout.LayoutParams(width * 3, height)
+
+                    button.setOnClickListener(this@OverlayService)
+                    button.setOnTouchListener(this@OverlayService)
+                    handleView!!.addView(button, buttonLayoutParams)
 
                     //params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                     params.x = 0
@@ -216,20 +247,45 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
         val increasedVolume = currentVolume + 1
         val volumeToSet = if (increasedVolume <= maxVolume) increasedVolume else maxVolume
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeToSet, 0)
-        //toast("(+)Volume: $volumeToSet")
+
+        when (appHandler!!.upperSwipe) {
+            "None" -> {}
+            "Increase volume" -> audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeToSet, 0)
+            "Increase volume then show UI" -> {
+                audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeToSet, 0)
+            }
+            else -> audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeToSet, 0)
+        }
+
     }
 
     private fun decreaseVolume() {
         val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
         val decreasedVolume = currentVolume - 1
         val volumeToSet = if (decreasedVolume >= 0) decreasedVolume else 0
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeToSet, 0)
-        //toast("(-)Volume: $volumeToSet")
+
+        when (appHandler!!.bottomSwipe) {
+            "None" -> {}
+            "Decrease volume" -> audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeToSet, 0)
+            "Decrease volume then show UI" -> {
+                audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeToSet, 0)
+            }
+            else -> audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeToSet, 0)
+        }
+
     }
 
     override fun onClick(v: View) {
-        audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+
+        when (appHandler!!.clickAction) {
+            "None" -> {}
+            "Mute" -> audioManager.adjustVolume(AudioManager.ADJUST_MUTE, 0)
+            "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+            else -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+        }
+
     }
 
     override fun onDestroy() {

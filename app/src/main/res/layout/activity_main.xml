@@ -120,6 +120,12 @@
                         android:layout_height="wrap_content"
                         app:viewModel="@{vm}"/>
 
+                    <include
+                        layout="@layout/item_gesture_settings"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:viewModel="@{vm}"/>
+
                 </LinearLayout>
 
             </ScrollView>
