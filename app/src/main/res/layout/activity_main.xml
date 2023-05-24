@@ -95,7 +95,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             app:lottie_autoPlay="true"
-                            app:lottie_fileName="swipe_left.json"
+                            app:lottie_fileName="mobile_setting.json"
                             app:lottie_loop="true"
                             app:lottie_speed="1" />
 

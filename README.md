@@ -19,14 +19,10 @@ Edge Gesture Volume is a feature-rich Android application that provides intuitiv
 
 ## Screenshots
 
-|          Home          |          Menu          |          Gravity          |          Size          |
-|:----------------------:|:----------------------:|:-------------------------:|:----------------------:|
-| ![](previews/home.jpg) | ![](previews/menu.jpg) | ![](previews/gravity.jpg) | ![](previews/size.jpg) |
+|          Home          |          Menu          |         Colors          |          Volume          |
+|:----------------------:|:----------------------:|:-----------------------:|:------------------------:|
+| ![](previews/home.jpg) | ![](previews/menu.jpg) | ![](previews/color.jpg) | ![](previews/volume.jpg) |
 
-
-|          Width          |          color          |            Home Preview            |            Home Preview            |
-|:-----------------------:|:-----------------------:|:----------------------------------:|:----------------------------------:|
-| ![](previews/width.jpg) | ![](previews/color.jpg) | ![](previews/home_preview_one.jpg) | ![](previews/home_preview_one.jpg) |
 
 ## 💻 Installation steps
 
