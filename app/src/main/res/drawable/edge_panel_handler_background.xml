@@ -1,7 +1,0 @@
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <solid android:color="#80FF85" /> <!-- Background color of the handler -->
-    <size
-        android:width="64dp"
-        android:height="100dp" />
-</shape>

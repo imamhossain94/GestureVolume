@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="handler_size_small">200dp</dimen>
-    <dimen name="handler_size_medium">345dp</dimen>
-    <dimen name="handler_size_large">490dp</dimen>
 
-    <dimen name="handler_width_slim">10dp</dimen>
-    <dimen name="handler_width_regular">20dp</dimen>
-    <dimen name="handler_width_bold">30dp</dimen>
 </resources>

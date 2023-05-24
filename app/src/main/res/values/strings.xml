@@ -1,33 +1,11 @@
 <resources>
-    <string name="app_name">Edge Gestures</string>
+    <string name="app_name">Gesture Volume</string>
     <string name="database">EdgeGestures.db</string>
 
     <string name="menu">menu</string>
     <string name="edge_gestures">EDGE GESTURES</string>
 
     <string name="system_wallpaper">system_wallpaper</string>
-    <string name="frame">frame</string>
-    <string name="_1997_12_07">1997/12/07</string>
-    <string name="heart_symbol">Heart symbol</string>
-    <string name="image_frame_shape">Image frame shape</string>
-    <string name="heart_symbol_color">Heart symbol color</string>
-    <string name="white_color">#FFFFFF</string>
-    <string name="couple_name_color">Couple name color</string>
-    <string name="counter_clock_text_color">Counter clock text color</string>
-    <string name="image_shape_border_color">Image shape border color</string>
     <string name="appearance_settings">APPEARANCE SETTINGS</string>
-    <string name="choose_image">Choose image</string>
-    <string name="partner_image">Partner image</string>
-    <string name="your_image">Your image</string>
-    <string name="couple_details">COUPLE DETAILS</string>
-    <string name="your_name">Your name</string>
-    <string name="partner_name">Partner name</string>
-    <string name="single">Single</string>
-    <string name="imam">Imam</string>
-    <string name="relationship_start_date">Relationship start date</string>
-    <string name="your_birthday">Your birthday</string>
-    <string name="date_and_time">DATE AND TIME</string>
-    <string name="nickname">nickname</string>
-    <string name="dimension_attributes">Dimension Attributes</string>
     <string name="handler">handler</string>
 </resources>
