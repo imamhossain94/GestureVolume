@@ -19,12 +19,12 @@ Edge Gesture Volume is a feature-rich Android application that provides intuitiv
 
 ## Screenshots
 
-|               Home                |               Menu                |              Colors              |
+|               Home                |         Gesture Settings          |       Samsung Volume Panel       |
 |:---------------------------------:|:---------------------------------:|:--------------------------------:|
 |      ![](previews/home.jpg)       | ![](previews/gesture_setting.jpg) |     ![](previews/volume.jpg)     |
-|               Home                |               Menu                |              Colors              |
+|         Application Menu          |            Color Sheet            |          Handler Action          |
 |      ![](previews/menu.jpg)       |      ![](previews/color.jpg)      | ![](previews/handler_action.jpg) |
-|               Home                |               Menu                |              Colors              |
+|          Handler Gravity          |           Swipe Action            |          Handler Height          |
 | ![](previews/handler_gravity.jpg) |  ![](previews/gesture_swipe.jpg)  | ![](previews/handler_height.jpg) |
 
 
