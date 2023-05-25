@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.PowerManager
 
 class BootCompleteReceiver  : BroadcastReceiver() {
@@ -17,7 +18,15 @@ class BootCompleteReceiver  : BroadcastReceiver() {
             wakeLock.acquire(10 * 60 * 1000L)
 
             // Start service
-            OverlayService.start(context as Activity)
+            val serviceIntent = Intent(context, OverlayService::class.java).apply {
+                action = "START_FOREGROUND_ACTION"
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(serviceIntent)
+            } else {
+                context.startService(serviceIntent)
+            }
 
             wakeLock.release()
         }

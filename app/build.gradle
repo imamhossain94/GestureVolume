@@ -87,17 +87,8 @@ dependencies {
     implementation "com.maxkeppeler.sheets:calendar:$versions.calendar"
     implementation "com.maxkeppeler.sheets:option:$versions.option"
 
-    // image picker
-    implementation "com.github.dhaval2404:imagepicker:$versions.imagepicker"
-
     // gson
     implementation "com.google.code.gson:gson:$versions.gson"
-
-    // svg path kotlin
-    implementation "com.github.slaviboy:SVGPathKotlin:$versions.svgPathKotlin"
-
-    // joda-time
-    implementation "joda-time:joda-time:$versions.jodaTime"
 
     // lottie
     implementation "com.airbnb.android:lottie:$versions.lottie"

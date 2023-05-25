@@ -49,8 +49,8 @@ Edge Gesture Volume is a feature-rich Android application that provides intuitiv
 
 ## 💕 Credit
 
-Icons by [svgrepo.com](https://www.svgrepo.com/)
-Lottie by [S M Rony](https://lottiefiles.com/110200-mobile-setting)
+* Icons by [svgrepo.com](https://www.svgrepo.com/)
+* Lottie by [S M Rony](https://lottiefiles.com/110200-mobile-setting)
 
 ## 💻 Installation steps
 

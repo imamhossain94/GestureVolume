@@ -48,21 +48,10 @@ ext.versions = [
     calendar            : '2.3.1',
     option              : '2.3.1',
 
-    // imagepicker
-    imagepicker         : '2.1',
-
     // gson
     gson                : '2.9.0',
-
-    // svg path kotlin
-    svgPathKotlin       : '0.3.0',
-
-    // joda-time
-    jodaTime            : '2.9.1',
 
     // lottie
     lottie              : '3.4.0',
 
-    // range seek bar
-    RangeSeekBar        : '1.0.6',
 ]
