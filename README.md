@@ -28,6 +28,29 @@ Edge Gesture Volume is a feature-rich Android application that provides intuitiv
 | ![](previews/handler_gravity.jpg) |  ![](previews/gesture_swipe.jpg)  | ![](previews/handler_height.jpg) |
 
 
+## 🔑 Key Features:
+✓ Enhance the lifespan of your Volume button.
+✓ Revitalize devices with faulty volume keys.
+✓ Customize and style the volume gesture handler.
+✓ Add click action to the volume gesture handler.
+✓ Screen lock on the volume gesture handler click.
+✓ Choose upper half swipe action in the volume gesture handler.
+✓ Choose bottom half swipe action in the volume gesture handler.
+
+## 🔏 App Permissions
+
+✓ READ_EXTERNAL_STORAGE
+✓ SYSTEM_ALERT_WINDOW
+✓ FOREGROUND_SERVICE
+✓ WAKE_LOCK
+✓ RECEIVE_BOOT_COMPLETED
+
+
+## 💕 Credit
+
+Icons by [svgrepo.com](https://www.svgrepo.com/)
+Lottie by [S M Rony](https://lottiefiles.com/110200-mobile-setting)
+
 ## 💻 Installation steps
 
 Clone or download this project in your working directory, Open using android studio, Sync the
