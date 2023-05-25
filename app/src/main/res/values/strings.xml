@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">Gesture Volume</string>
-    <string name="database">EdgeGestures.db</string>
+    <string name="database">GestureVolume.db</string>
 
     <string name="menu">menu</string>
-    <string name="edge_gestures">EDGE GESTURES</string>
+    <string name="gesture_volume">GESTURE VOLUME</string>
 
     <string name="system_wallpaper">system_wallpaper</string>
     <string name="appearance_settings">APPEARANCE SETTINGS</string>

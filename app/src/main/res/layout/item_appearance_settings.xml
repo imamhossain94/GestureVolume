@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="com.newagedevs.edgegestures.view.ui.main.MainViewModel" />
+            type="com.newagedevs.gesturevolume.view.ui.main.MainViewModel" />
 
     </data>
 

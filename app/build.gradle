@@ -8,11 +8,11 @@ plugins {
 
 android {
     apply from: '../dependencies.gradle'
-    namespace 'com.newagedevs.edgegestures'
+    namespace 'com.newagedevs.gesturevolume'
     compileSdk versions.compileSdk
 
     defaultConfig {
-        applicationId "com.newagedevs.edgegestures"
+        applicationId "com.newagedevs.gesturevolume"
         minSdk versions.minSdk
         targetSdk versions.targetSdk
         versionCode versions.versionCode

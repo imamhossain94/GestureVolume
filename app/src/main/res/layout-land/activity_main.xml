@@ -9,7 +9,7 @@
 
         <variable
             name="vm"
-            type="com.newagedevs.edgegestures.view.ui.main.MainViewModel" />
+            type="com.newagedevs.gesturevolume.view.ui.main.MainViewModel" />
     </data>
 
 
@@ -59,7 +59,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:gravity="center"
-                            android:text="@string/edge_gestures"
+                            android:text="@string/gesture_volume"
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
