@@ -1,9 +1,9 @@
-package com.newagedevs.gesturevolume.overlays
+package com.newagedevs.gesturevolume.service
 
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.PowerManager
 
 class BootCompleteReceiver  : BroadcastReceiver() {
@@ -17,16 +17,7 @@ class BootCompleteReceiver  : BroadcastReceiver() {
             wakeLock.acquire(10 * 60 * 1000L)
 
             // Start service
-            try{
-                val serviceIntent = Intent(context, OverlayService::class.java)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    context.startForegroundService(serviceIntent)
-                } else {
-                    context.startService(serviceIntent)
-                }
-            } catch (_:Exception) {
-
-            }
+            OverlayService.start(context as Activity)
 
             wakeLock.release()
         }

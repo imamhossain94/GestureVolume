@@ -35,7 +35,7 @@
         </activity>
 
         <receiver
-            android:name=".overlays.BootCompleteReceiver"
+            android:name=".service.BootCompleteReceiver"
             android:enabled="true"
             android:exported="false"
             android:process=":remote">
@@ -45,9 +45,24 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".service.DeviceAdmin"
+            android:description="@string/device_description"
+            android:label="@string/device_admin_label"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
         <service
-            android:name=".overlays.OverlayService"
-            android:exported="false"/>
+            android:name=".service.OverlayService"
+            android:exported="false" />
 
     </application>
 

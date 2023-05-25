@@ -1,11 +1,8 @@
 package com.newagedevs.gesturevolume.view.ui.main
 
 import android.app.Activity
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
-import android.provider.Settings
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
@@ -17,8 +14,9 @@ import com.maxkeppeler.sheets.option.OptionSheet
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.extensions.*
 import com.newagedevs.gesturevolume.model.AppHandler
-import com.newagedevs.gesturevolume.overlays.OverlayService
+import com.newagedevs.gesturevolume.service.OverlayService
 import com.newagedevs.gesturevolume.repository.MainRepository
+import com.newagedevs.gesturevolume.service.LockScreenUtil
 import com.newagedevs.gesturevolume.utils.Constants
 import com.skydoves.bindables.BindingViewModel
 import com.skydoves.bindables.bindingProperty
@@ -172,8 +170,9 @@ class MainViewModel constructor(
     }
 
     fun clickActionPicker(view: View) {
-        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_mute, R.drawable.ic_music_ui)
-        val titles = listOf("None", "Mute", "Open volume UI")
+        val lockScreenUtil =LockScreenUtil(view.context)
+        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_mute, R.drawable.ic_lock, R.drawable.ic_music_ui)
+        val titles = listOf("None", "Mute", "Lock", "Open volume UI")
 
         OptionSheet().show(view.context) {
             title("What should happen when you tap on the handler?")
@@ -182,19 +181,26 @@ class MainViewModel constructor(
                 Option(drawables[0], titles[0]),
                 Option(drawables[1], titles[1]),
                 Option(drawables[2], titles[2]),
+                Option(drawables[3], titles[3]),
             )
             onPositive { index: Int, _: Option ->
 
-                val textView = view as TextView
+                if(index == 2 && !lockScreenUtil.active()) {
+                    lockScreenUtil.enableAdmin()
+                    return@onPositive
+                }else{
+                    val textView = view as TextView
 
-                val image = ResourcesCompat.getDrawable(resources, drawables[index], null)
-                image?.setBounds(0, 0, 24.px, 24.px)
+                    val image = ResourcesCompat.getDrawable(resources, drawables[index], null)
+                    image?.setBounds(0, 0, 24.px, 24.px)
 
-                textView.text = titles[index]
-                textView.setCompoundDrawables(image, null, null, null)
+                    textView.text = titles[index]
+                    textView.setCompoundDrawables(image, null, null, null)
 
-                clickActionIcon = drawables[index]
-                clickAction = titles[index]
+                    clickActionIcon = drawables[index]
+                    clickAction = titles[index]
+                }
+
             }
         }
     }
@@ -307,9 +313,7 @@ class MainViewModel constructor(
                         toast = "Version: $appVersion"
                     }
                     10 -> {
-//                        if (OverlayService.running) {
-//                            requireActivity().stopService(Intent(requireActivity(), OverlayService::class.java))
-//                        }
+                        OverlayService.stop(requireActivity())
                         requireActivity().finish()
                     }
                 }
@@ -332,9 +336,10 @@ class MainViewModel constructor(
         )
 
         toast=""
-        if (checkDrawOverlayPermission(view.context)) {
+        if (OverlayService.hasPermission(activity)) {
             mainRepository.setHandler(handler)
-            startOverlayService(context = view.context)
+//            OverlayService.stop(activity)
+            OverlayService.start(activity)
             toast="Configuration Saved!!"
             activity.finish()
         }else {
@@ -397,30 +402,7 @@ class MainViewModel constructor(
     }
 
     // Overlay Settings
-    private fun checkDrawOverlayPermission(context: Context): Boolean {
-        if (!Settings.canDrawOverlays(context)) {
-            val intent = Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:${context.packageName}")
-            )
-            (context as Activity).startActivityForResult(intent, MainActivity.OVERLAY_REQUEST_CODE)
-            return false
-        }
-        return true
-    }
 
-    fun startOverlayService(context: Context) {
-        try{
-            val serviceIntent = Intent(context, OverlayService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(serviceIntent)
-            } else {
-                context.startService(serviceIntent)
-            }
-        } catch (_:Exception) {
-
-        }
-    }
 
     init {
         Timber.d("injection DashboardViewModel")

@@ -1,4 +1,4 @@
-package com.newagedevs.gesturevolume.overlays
+package com.newagedevs.gesturevolume.service
 
 import android.annotation.SuppressLint
 import android.app.*
@@ -6,7 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.*
 import android.media.AudioManager
+import android.net.Uri
 import android.os.*
+import android.provider.Settings
 import android.view.*
 import android.view.View.OnTouchListener
 import android.widget.Button
@@ -18,6 +20,7 @@ import androidx.room.Room
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.model.AppHandler
 import com.newagedevs.gesturevolume.persistence.AppDatabase
+import com.newagedevs.gesturevolume.view.ui.main.MainActivity
 import kotlinx.coroutines.*
 import kotlin.math.abs
 
@@ -25,20 +28,67 @@ import kotlin.math.abs
 class OverlayService : Service(), OnTouchListener, View.OnClickListener {
 
     companion object {
-        private const val CHANNEL_ID = "channel1"
+        private const val CHANNEL_ID = "overlay_channel_id"
         private const val CHANNEL_NAME = "Overlay notification"
-        private const val TITLE = "Overlay notification"
-        private const val CONTENT = "Overlay notification"
+        private const val TITLE = "Gesture Volume: Easy Control"
+        private const val CONTENT = "Control your device volume through gesture-based interactions"
         private const val TOUCH_MOVE_FACTOR = 20
         private const val TOUCH_TIME_FACTOR = 300
-        
-        //var running = false
-        var isOverlayVisible = true
 
+        private const val START_FOREGROUND_ACTION = "START_FOREGROUND_ACTION"
+        private const val STOP_FOREGROUND_ACTION = "STOP_FOREGROUND_ACTION"
+
+
+        fun start(activity: Activity) {
+            try{
+
+                val serviceIntent = Intent(activity, OverlayService::class.java).apply {
+                    action = START_FOREGROUND_ACTION
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    activity.startForegroundService(serviceIntent)
+                } else {
+                    activity.startService(serviceIntent)
+                }
+
+            } catch (_:Exception) { }
+        }
+
+        fun stop(activity: Activity) {
+            try{
+                activity.startService(Intent(activity, OverlayService::class.java).apply {
+                    action = STOP_FOREGROUND_ACTION
+                })
+            } catch (_:Exception) { }
+        }
+
+        fun isRunning(activity: Activity): Boolean {
+            val manager = activity.getSystemService(ACTIVITY_SERVICE) as ActivityManager
+            for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+                if ((OverlayService::class.java).name == service.service.className) {
+                    return true
+                }
+            }
+            return false
+        }
+
+        fun hasPermission(activity: Activity): Boolean {
+            if (!Settings.canDrawOverlays(activity)) {
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:${activity.packageName}")
+                )
+                activity.startActivityForResult(intent, MainActivity.OVERLAY_REQUEST_CODE)
+                return false
+            }
+            return true
+        }
     }
 
     var windowManager: WindowManager? = null
-    var handleView: FrameLayout? = null
+    private var handleView: FrameLayout? = null
+    var lockScreenUtil: LockScreenUtil? = null
 
     private lateinit var audioManager: AudioManager
     private lateinit var appDatabase: AppDatabase
@@ -60,7 +110,8 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
             AppDatabase::class.java,
             getString(R.string.database)
         ).build()
-        //running = true
+
+        lockScreenUtil = LockScreenUtil(this)
     }
 
     private suspend fun getAppHandler(): AppHandler? {
@@ -69,15 +120,38 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
         }
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        //super.onStartCommand(intent, flags, startId)
+
+        if (intent != null) {
+            when (intent.action) {
+                START_FOREGROUND_ACTION -> {
+                    createHandleView()
+                }
+                STOP_FOREGROUND_ACTION -> {
+                    if (handleView != null) {
+                        windowManager!!.removeView(handleView)
+                        handleView = null
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        stopForeground(STOP_FOREGROUND_DETACH)
+                    }
+                    stopSelfResult(startId)
+                    stopSelf()
+                    return START_NOT_STICKY
+                }
+            }
+        }
+
+        return START_STICKY
+    }
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        super.onStartCommand(intent, flags, startId)
-
+    private fun createHandleView() {
         if (Build.VERSION.SDK_INT >= 26) {
             val channel = NotificationChannel(
                 CHANNEL_ID, CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_MIN
             )
             (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
                 .createNotificationChannel(channel)
@@ -85,7 +159,7 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
             val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(TITLE)
                 .setContentText(CONTENT)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.ic_gesture)
                 .build()
 
             startForeground(1, notification)
@@ -107,10 +181,6 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
                     }
 
                     val width: Int = when (appHandler!!.width) {
-//                        "Slim" -> 25
-//                        "Regular" -> 35
-//                        "Bold" -> 45
-//                        else -> 25
                         "Slim" -> 10
                         "Regular" -> 25
                         "Bold" -> 35
@@ -186,20 +256,11 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
                     //params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                     layoutParams.x = 0
                     layoutParams.y = appHandler!!.topMargin!!.toInt()
-
-
-                    if (isOverlayVisible) {
-                        windowManager!!.addView(handleView!!, layoutParams)
-                    } else {
-                        windowManager!!.removeView(handleView)
-                        handleView = null
-                    }
+                    windowManager!!.addView(handleView!!, layoutParams)
                 }
 
             }
         }
-
-        return START_NOT_STICKY
     }
 
     override fun onTouch(view: View, event: MotionEvent) = when (event.action) {
@@ -289,6 +350,9 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
                 audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
                 audioManager.adjustVolume(AudioManager.ADJUST_MUTE, 0)
             }
+            "Lock" -> {
+                lockScreenUtil?.lockScreen()
+            }
             "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
             else -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
         }
@@ -301,7 +365,6 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
             windowManager!!.removeView(handleView)
             handleView = null
         }
-        //running = false
     }
 
     override fun onBind(intent: Intent): IBinder? {

@@ -1,18 +1,19 @@
 package com.newagedevs.gesturevolume.view.ui.main
 
 import android.Manifest
+import android.app.ActivityManager
 import android.app.WallpaperManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.ImageView
 import androidx.core.app.ActivityCompat
-import com.maxkeppeler.sheets.core.SheetStyle
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.databinding.ActivityMainBinding
-import com.newagedevs.gesturevolume.overlays.OverlayService
-import com.newagedevs.gesturevolume.view.ui.CustomSheet
+import com.newagedevs.gesturevolume.service.LockScreenUtil
+import com.newagedevs.gesturevolume.service.OverlayService
 import com.skydoves.bindables.BindingActivity
 import org.koin.android.viewmodel.ext.android.viewModel
 
@@ -29,9 +30,8 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
         setupPreviewFrame()
 
-//        if (OverlayService.running) {
-//            this.stopService(Intent(this, OverlayService::class.java))
-//        }
+        OverlayService.stop(this)
+        //this.stopService(Intent(this, OverlayService::class.java))
 
     }
 
@@ -65,29 +65,36 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
         if (requestCode == OVERLAY_REQUEST_CODE) {
             if (Settings.canDrawOverlays(this)) {
-                viewModel.startOverlayService(this)
+                OverlayService.start(this)
             }
         } else if (requestCode == WALLPAPER_REQUEST_CODE) {
             setupPreviewFrame()
+        } else if (requestCode == DEVICE_ADMIN_REQUEST_CODE) {
+
+            if (LockScreenUtil(this).active()) {
+                viewModel.clickActionIcon = R.drawable.ic_lock
+                viewModel.clickAction = "Lock"
+            }
         }
 
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        CustomSheet().show(this@MainActivity) {
-            style(SheetStyle.BOTTOM_SHEET)
-            title("Confirm Exit")
-            content("Are you sure you want to exit? Hope you will come back again.")
-            onPositive("Exit") {
-                finish()
-            }
+    override fun onPause() {
+        super.onPause()
+        if(!OverlayService.isRunning(this)){
+            OverlayService.start(this)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        OverlayService.stop(this)
     }
 
     companion object {
         const val OVERLAY_REQUEST_CODE = 1
         const val WALLPAPER_REQUEST_CODE = 2
+        const val DEVICE_ADMIN_REQUEST_CODE = 2
     }
 
 }

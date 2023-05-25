@@ -154,8 +154,8 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="15dp"
-                app:drawableStartCompat="@drawable/ic_aiming"
+                android:padding="5dp"
+                app:drawableStartCompat="@drawable/ic_move"
                 app:drawableTint="?attr/icon_color" />
 
         </LinearLayout>
@@ -173,8 +173,8 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="15dp"
-                app:drawableStartCompat="@drawable/ic_aiming"
+                android:padding="5dp"
+                app:drawableStartCompat="@drawable/ic_move"
                 app:drawableTint="?attr/icon_color" />
 
             <ImageView
