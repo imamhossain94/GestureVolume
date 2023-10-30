@@ -4,6 +4,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.parcelize'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -92,5 +93,10 @@ dependencies {
 
     // lottie
     implementation "com.airbnb.android:lottie:$versions.lottie"
+
+    // Applovin
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
+    implementation 'com.applovin:applovin-sdk:11.10.1'
+    implementation "androidx.lifecycle:lifecycle-process:2.5.1"
 
 }

@@ -62,16 +62,16 @@ class MainViewModel constructor(
     var clickActionIcon: Int? by bindingProperty(R.drawable.ic_music_ui)
 
     @get:Bindable
-    var upperSwipe: String? by bindingProperty("Increase volume")
+    var upperSwipe: String? by bindingProperty("Increase volume and show UI")
 
     @get:Bindable
-    var upperSwipeIcon: Int? by bindingProperty(R.drawable.ic_vol_plus)
+    var upperSwipeIcon: Int? by bindingProperty(R.drawable.ic_vol_increase)
 
     @get:Bindable
-    var bottomSwipe: String? by bindingProperty("Decrease volume")
+    var bottomSwipe: String? by bindingProperty("Decrease volume and show UI")
 
     @get:Bindable
-    var bottomSwipeIcon: Int? by bindingProperty(R.drawable.ic_vol_minus)
+    var bottomSwipeIcon: Int? by bindingProperty(R.drawable.ic_vol_increase)
 
     // Handler settings
     fun gravityPicker(view: View) {

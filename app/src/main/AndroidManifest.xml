@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -18,7 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.EdgeGestures"
-        tools:targetApi="31">
+        tools:targetApi="33">
 
         <activity
             android:name=".view.ui.main.MainActivity"
@@ -63,6 +64,9 @@
         <service
             android:name=".service.OverlayService"
             android:exported="false" />
+
+        <meta-data android:name="applovin.sdk.key"
+            android:value="${applovinSdkKey}"/>
 
     </application>
 
