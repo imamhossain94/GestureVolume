@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.Bindable
+import com.applovin.mediation.ads.MaxInterstitialAd
 import com.maxkeppeler.sheets.color.ColorSheet
 import com.maxkeppeler.sheets.option.DisplayMode
 import com.maxkeppeler.sheets.option.Option
@@ -72,6 +73,8 @@ class MainViewModel constructor(
 
     @get:Bindable
     var bottomSwipeIcon: Int? by bindingProperty(R.drawable.ic_vol_increase)
+
+    lateinit var interstitialAd: MaxInterstitialAd
 
     // Handler settings
     fun gravityPicker(view: View) {
@@ -341,7 +344,12 @@ class MainViewModel constructor(
 //            OverlayService.stop(activity)
             OverlayService.start(activity)
             toast="Configuration Saved!!"
-            activity.finish()
+
+            if( interstitialAd.isReady ) {
+                interstitialAd.showAd()
+            } else {
+                activity.finish()
+            }
         }else {
             toast="Please enable draw overlay permission!!"
         }
