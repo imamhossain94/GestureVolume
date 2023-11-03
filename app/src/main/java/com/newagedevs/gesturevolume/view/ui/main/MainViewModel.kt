@@ -1,8 +1,6 @@
 package com.newagedevs.gesturevolume.view.ui.main
 
 import android.app.Activity
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
@@ -15,10 +13,10 @@ import com.maxkeppeler.sheets.option.OptionSheet
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.extensions.*
 import com.newagedevs.gesturevolume.model.AppHandler
-import com.newagedevs.gesturevolume.service.OverlayService
 import com.newagedevs.gesturevolume.repository.MainRepository
 import com.newagedevs.gesturevolume.repository.SharedPrefRepository
 import com.newagedevs.gesturevolume.service.LockScreenUtil
+import com.newagedevs.gesturevolume.service.OverlayService
 import com.newagedevs.gesturevolume.utils.Constants
 import com.skydoves.bindables.BindingViewModel
 import com.skydoves.bindables.bindingProperty
@@ -348,19 +346,24 @@ class MainViewModel constructor(
             toast="Configuration Saved!!"
 
             val clickCount = prefRepository.getClickCount()
-            if (clickCount < 2) { // Assuming the initial count is 0
-                prefRepository.incrementClickCount()
-                activity.finish()
-            } else {
-                if( interstitialAd.isReady ) {
+            if (clickCount == 0) {
+                if (interstitialAd.isReady) {
                     interstitialAd.showAd()
                 } else {
                     activity.finish()
                 }
-                // Reset the click count
+                prefRepository.incrementClickCount()
+            } else if (clickCount < 2) {
+                prefRepository.incrementClickCount()
+                activity.finish()
+            } else {
+                if (interstitialAd.isReady) {
+                    interstitialAd.showAd()
+                } else {
+                    activity.finish()
+                }
                 prefRepository.resetClickCount()
             }
-
         }else {
             toast="Please enable draw overlay permission!!"
         }
