@@ -20,6 +20,7 @@ import androidx.room.Room
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.model.AppHandler
 import com.newagedevs.gesturevolume.persistence.AppDatabase
+import com.newagedevs.gesturevolume.utils.SharedData
 import com.newagedevs.gesturevolume.view.ui.main.MainActivity
 import kotlinx.coroutines.*
 import kotlin.math.abs
@@ -75,6 +76,7 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
 
         fun hasPermission(activity: Activity): Boolean {
             if (!Settings.canDrawOverlays(activity)) {
+                SharedData.shouldShowAppOpenAds = false
                 val intent = Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:${activity.packageName}")

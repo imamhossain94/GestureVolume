@@ -16,6 +16,7 @@ import com.applovin.sdk.AppLovinSdk
 import com.newagedevs.gesturevolume.di.persistenceModule
 import com.newagedevs.gesturevolume.di.repositoryModule
 import com.newagedevs.gesturevolume.di.viewModelModule
+import com.newagedevs.gesturevolume.utils.SharedData
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import timber.log.Timber
@@ -79,7 +80,7 @@ class AppOpenManager(context: Context) : LifecycleObserver,
   private fun showAdIfReady() {
     if (appOpenAd == null || !AppLovinSdk.getInstance(context).isInitialized) return
 
-    if (appOpenAd.isReady) {
+    if (appOpenAd.isReady && SharedData.shouldShowAppOpenAds) {
       appOpenAd.showAd(ADS_UNIT)
     } else {
       appOpenAd.loadAd()

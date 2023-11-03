@@ -3,6 +3,7 @@ package com.newagedevs.gesturevolume.di
 import androidx.room.Room
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.persistence.AppDatabase
+import com.newagedevs.gesturevolume.repository.SharedPrefRepository
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
@@ -21,5 +22,7 @@ val persistenceModule = module {
   }
 
   single { get<AppDatabase>().handlerDao() }
+
+  single { SharedPrefRepository(get()) }
 
 }

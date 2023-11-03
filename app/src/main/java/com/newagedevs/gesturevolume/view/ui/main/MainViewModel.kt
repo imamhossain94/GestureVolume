@@ -17,6 +17,7 @@ import com.newagedevs.gesturevolume.extensions.*
 import com.newagedevs.gesturevolume.model.AppHandler
 import com.newagedevs.gesturevolume.service.OverlayService
 import com.newagedevs.gesturevolume.repository.MainRepository
+import com.newagedevs.gesturevolume.repository.SharedPrefRepository
 import com.newagedevs.gesturevolume.service.LockScreenUtil
 import com.newagedevs.gesturevolume.utils.Constants
 import com.skydoves.bindables.BindingViewModel
@@ -25,7 +26,8 @@ import timber.log.Timber
 
 
 class MainViewModel constructor(
-    private val mainRepository: MainRepository
+    private val mainRepository: MainRepository,
+    private val prefRepository: SharedPrefRepository
 ) : BindingViewModel() {
 
     @get:Bindable
@@ -345,11 +347,20 @@ class MainViewModel constructor(
             OverlayService.start(activity)
             toast="Configuration Saved!!"
 
-            if( interstitialAd.isReady ) {
-                interstitialAd.showAd()
-            } else {
+            val clickCount = prefRepository.getClickCount()
+            if (clickCount < 2) { // Assuming the initial count is 0
+                prefRepository.incrementClickCount()
                 activity.finish()
+            } else {
+                if( interstitialAd.isReady ) {
+                    interstitialAd.showAd()
+                } else {
+                    activity.finish()
+                }
+                // Reset the click count
+                prefRepository.resetClickCount()
             }
+
         }else {
             toast="Please enable draw overlay permission!!"
         }
@@ -410,8 +421,6 @@ class MainViewModel constructor(
     }
 
     // Overlay Settings
-
-
     init {
         Timber.d("injection DashboardViewModel")
         initializeData()
