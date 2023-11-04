@@ -117,6 +117,37 @@ object ViewBinding {
     }
 
     @JvmStatic
+    @BindingAdapter("landscapeTouchListener", requireAll = false)
+    fun setLandscapeTouchListener(self: View, vm: com.newagedevs.gesturevolume.view.ui.main.MainViewModel) {
+        var initialX = 0f
+        var initialTopMargin = 0
+
+        self.setOnTouchListener { view, event ->
+            val layoutParams = view.layoutParams as? ViewGroup.MarginLayoutParams
+
+            layoutParams?.let {
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        initialX = event.rawX
+                        initialTopMargin = it.leftMargin
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        val deltaX = (event.rawX - initialX).toInt()
+                        it.leftMargin = initialTopMargin + deltaX
+                        view.layoutParams = it
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        vm.leftMargin = it.leftMargin.toFloat()
+                    }
+                }
+            }
+
+            view.performClick()
+            true
+        }
+    }
+
+    @JvmStatic
     @BindingAdapter("setTopMargin")
     fun setMargin(view: LinearLayout, float: Float) {
         if (view.layoutParams is MarginLayoutParams) {
@@ -155,6 +186,48 @@ object ViewBinding {
 
         view.layoutParams = view.layoutParams.apply {
             this.width = width
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter("setLeftMarginLand")
+    fun setMarginLand(view: LinearLayout, float: Float) {
+        if (view.layoutParams is MarginLayoutParams) {
+            val p = view.layoutParams as MarginLayoutParams
+            p.leftMargin = float.toInt()
+            view.requestLayout()
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter("layoutHeightLand")
+    fun setLayoutHeightLand(view: View, value: String) {
+
+        val height: Int = when (value) {
+            "Small" -> 200
+            "Medium" -> 345
+            "Large" -> 490
+            else -> 200
+        }
+
+        view.layoutParams = view.layoutParams.apply {
+            this.width = height
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter("layoutWidthLand")
+    fun setLayoutWidthLand(view: View, value: String) {
+
+        val width: Int = when (value) {
+            "Slim" -> 10
+            "Regular" -> 25
+            "Bold" -> 35
+            else -> 25
+        }
+
+        view.layoutParams = view.layoutParams.apply {
+            this.height = width
         }
     }
 

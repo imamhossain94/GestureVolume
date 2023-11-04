@@ -1,14 +1,10 @@
 package com.newagedevs.gesturevolume.view.ui.main
 
 import android.Manifest
-import android.app.ActivityManager
-import android.app.AlertDialog
 import android.app.WallpaperManager
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
+import android.graphics.Color
+import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -16,11 +12,10 @@ import android.os.Looper
 import android.provider.Settings
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.applovin.mediation.MaxAd
 import com.applovin.mediation.MaxAdListener
 import com.applovin.mediation.MaxAdViewAdListener
@@ -37,10 +32,10 @@ import org.koin.android.viewmodel.ext.android.viewModel
 import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 
+
 class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main) {
 
     private val viewModel: MainViewModel by viewModel()
-
 
     private var retryAttempt = 0.0
 
@@ -199,7 +194,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     override fun onPause() {
         super.onPause()
         if(!OverlayService.isRunning(this)){
-            OverlayService.start(this)
+            //OverlayService.start(this)
         }
     }
 

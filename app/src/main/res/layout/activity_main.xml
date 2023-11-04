@@ -116,6 +116,71 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="15dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_marginTop="15dp"
+                            android:layout_marginEnd="10dp"
+                            android:layout_marginBottom="0dp"
+                            android:text="@string/landscape_appearance_settings"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="10dp"
+                            app:cardCornerRadius="15dp"
+                            app:cardElevation="0dp"
+                            app:cardBackgroundColor="?attr/bg_card">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:padding="15dp">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:layout_marginTop="0dp"
+                                        android:layout_marginBottom="5dp"
+                                        android:maxLines="2"
+                                        android:text="@string/click_here_to_configure_the_landscape_screen_gravity_size_and_thickness_of_the_handler" />
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:background="?attr/bg_rounded"
+                                        android:drawablePadding="15dp"
+                                        android:gravity="center|start"
+                                        android:onClick="@{vm.gotoConfigureLandscapeActivity}"
+                                        android:padding="15dp"
+                                        android:text="@string/configure"
+                                        android:scaleX="1"
+                                        android:scaleY="1"
+                                        app:drawableTint="?attr/icon_color"/>
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                        </androidx.cardview.widget.CardView>
+
+                    </LinearLayout>
+
                     <include
                         layout="@layout/item_appearance_settings"
                         android:layout_width="match_parent"
@@ -152,8 +217,8 @@
             android:visibility="@{vm.gravity==`Right`? View.GONE : View.VISIBLE}">
 
             <ImageView
-                android:layout_width="10dp"
-                android:layout_height="100dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:background="@drawable/item_handler_left"
                 app:imageColorFilter="@{vm.color}"
                 app:layoutHeight="@{vm.size}"

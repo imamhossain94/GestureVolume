@@ -17,6 +17,7 @@
         <item name="bg_rounded">@drawable/bg_rounded_dark</item>
         <item name="bg_rounded_icon">@drawable/bg_rounded_icon_dark</item>
         <item name="bg_bottom_curve">@drawable/bg_bottom_curve_dark</item>
+        <item name="bg_right_curve">@drawable/bg_right_curve_dark</item>
         <item name="icon_color">@color/white</item>
         <item name="bg_card">#3C3E49</item>
         <item name="seekbar_fill_color">#202123</item>

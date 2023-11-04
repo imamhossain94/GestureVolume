@@ -23,13 +23,26 @@
 
         <activity
             android:name=".view.ui.main.MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:configChanges="screenLayout|orientation|screenSize"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+
+        <activity
+            android:name=".view.ui.main.LandConfigActivity"
+            android:exported="true"
+            android:configChanges="screenLayout|orientation|screenSize"
+            android:screenOrientation="landscape"
+            tools:ignore="LockedOrientationActivity">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />

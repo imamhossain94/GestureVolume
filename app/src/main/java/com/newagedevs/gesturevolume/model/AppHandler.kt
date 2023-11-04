@@ -10,10 +10,15 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class AppHandler(
     var gravity: String?,
+    var gravityLand: String?,
     val topMargin: Float?,
+    val leftMargin: Float?,
     val color: Int?,
+    val colorLand: Int?,
     val size: String?,
+    val sizeLand: String?,
     val width: String?,
+    val widthLand: String?,
     val clickAction: String?,
     val upperSwipe: String?,
     val bottomSwipe: String?,

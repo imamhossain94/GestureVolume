@@ -11,4 +11,7 @@
 
     <string name="device_description">Lock screen on click with Device Policy Manager API</string>
     <string name="device_admin_label">Gesture Volume Device Admin</string>
+    <string name="landscape_appearance_settings">LANDSCAPE APPEARANCE SETTINGS</string>
+    <string name="click_here_to_configure_the_landscape_screen_gravity_size_and_thickness_of_the_handler">Click here to configure the landscape screen gravity, size and thickness of the handler</string>
+    <string name="configure">Configure</string>
 </resources>

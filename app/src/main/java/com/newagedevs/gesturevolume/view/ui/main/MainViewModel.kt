@@ -18,6 +18,7 @@ import com.newagedevs.gesturevolume.repository.SharedPrefRepository
 import com.newagedevs.gesturevolume.service.LockScreenUtil
 import com.newagedevs.gesturevolume.service.OverlayService
 import com.newagedevs.gesturevolume.utils.Constants
+import com.newagedevs.gesturevolume.utils.SharedData
 import com.skydoves.bindables.BindingViewModel
 import com.skydoves.bindables.bindingProperty
 import timber.log.Timber
@@ -35,25 +36,49 @@ class MainViewModel constructor(
     var gravity: String? by bindingProperty("Right")
 
     @get:Bindable
+    var gravityLand: String? by bindingProperty("Top")
+
+    @get:Bindable
     var gravityIcon: Int? by bindingProperty(R.drawable.ic_align_right)
+
+    @get:Bindable
+    var gravityIconLand: Int? by bindingProperty(R.drawable.ic_align_top)
 
     @get:Bindable
     var size: String? by bindingProperty("Medium")
 
     @get:Bindable
+    var sizeLand: String? by bindingProperty("Medium")
+
+    @get:Bindable
     var sizeIcon: Int? by bindingProperty(R.drawable.ic_medium)
+
+    @get:Bindable
+    var sizeIconLand: Int? by bindingProperty(R.drawable.ic_medium)
 
     @get:Bindable
     var width: String? by bindingProperty("Slim")
 
     @get:Bindable
+    var widthLand: String? by bindingProperty("Slim")
+
+    @get:Bindable
     var widthIcon: Int? by bindingProperty(R.drawable.ic_small)
+
+    @get:Bindable
+    var widthIconLand: Int? by bindingProperty(R.drawable.ic_small)
 
     @get:Bindable
     var color: Int? by bindingProperty(null)
 
     @get:Bindable
+    var colorLand: Int? by bindingProperty(null)
+
+    @get:Bindable
     var topMargin: Float? by bindingProperty(260f)
+
+    @get:Bindable
+    var leftMargin: Float? by bindingProperty(260f)
 
     // Gesture action
     @get:Bindable
@@ -75,6 +100,17 @@ class MainViewModel constructor(
     var bottomSwipeIcon: Int? by bindingProperty(R.drawable.ic_vol_increase)
 
     lateinit var interstitialAd: MaxInterstitialAd
+
+    fun toast(message: String) {
+        toast = ""
+        toast = message
+    }
+
+    // Landscape Handler settings
+    fun gotoConfigureLandscapeActivity(view: View) {
+//        toast("Coming soon...")
+        LandConfigActivity.startActivity(view.context)
+    }
 
     // Handler settings
     fun gravityPicker(view: View) {
@@ -100,6 +136,33 @@ class MainViewModel constructor(
 
                 gravityIcon = drawables[index]
                 gravity = titles[index]
+            }
+        }
+    }
+
+    fun gravityPickerLand(view: View) {
+        val drawables = listOf(R.drawable.ic_align_top, R.drawable.ic_align_bottom)
+        val titles = listOf("Top", "Bottom")
+
+        OptionSheet().show(view.context) {
+            title("Select your handedness or the gravity of the handler")
+            columns(2)
+            with(
+                Option(drawables[0], titles[0]),
+                Option(drawables[1], titles[1]),
+            )
+            onPositive { index: Int, _: Option ->
+
+                val textView = view as TextView
+
+                val image = ResourcesCompat.getDrawable(resources, drawables[index], null)
+                image?.setBounds(0, 0, 24.px, 24.px)
+
+                textView.text = titles[index]
+                textView.setCompoundDrawables(image, null, null, null)
+
+                gravityIconLand = drawables[index]
+                gravityLand = titles[index]
             }
         }
     }
@@ -132,6 +195,34 @@ class MainViewModel constructor(
         }
     }
 
+    fun sizePickerLand(view: View) {
+        val drawables = listOf(R.drawable.ic_small, R.drawable.ic_medium, R.drawable.ic_large)
+        val titles = listOf("Small", "Medium", "Large")
+
+        OptionSheet().show(view.context) {
+            title("Select the height or size of the handler")
+            columns(3)
+            with(
+                Option(drawables[0], titles[0]),
+                Option(drawables[1], titles[1]),
+                Option(drawables[2], titles[2]),
+            )
+            onPositive { index: Int, _: Option ->
+
+                val textView = view as TextView
+
+                val image = ResourcesCompat.getDrawable(resources, drawables[index], null)
+                image?.setBounds(0, 0, 24.px, 24.px)
+
+                textView.text = titles[index]
+                textView.setCompoundDrawables(image, null, null, null)
+
+                sizeIconLand = drawables[index]
+                sizeLand = titles[index]
+            }
+        }
+    }
+
     fun widthPicker(view: View) {
         val drawables = listOf(R.drawable.ic_small, R.drawable.ic_regular, R.drawable.ic_bold)
         val titles = listOf("Slim", "Regular", "Bold")
@@ -158,18 +249,52 @@ class MainViewModel constructor(
                 width = titles[index]
             }
         }
+    }
 
+    fun widthPickerLand(view: View) {
+        val drawables = listOf(R.drawable.ic_small, R.drawable.ic_regular, R.drawable.ic_bold)
+        val titles = listOf("Slim", "Regular", "Bold")
+
+        OptionSheet().show(view.context) {
+            title("Select the width or thickness of the handler")
+            columns(3)
+            with(
+                Option(drawables[0], titles[0]),
+                Option(drawables[1], titles[1]),
+                Option(drawables[2], titles[2]),
+            )
+            onPositive { index: Int, _: Option ->
+
+                val textView = view as TextView
+
+                val image = ResourcesCompat.getDrawable(resources, drawables[index], null)
+                image?.setBounds(0, 0, 24.px, 24.px)
+
+                textView.text = titles[index]
+                textView.setCompoundDrawables(image, null, null, null)
+
+                widthIconLand = drawables[index]
+                widthLand = titles[index]
+            }
+        }
     }
 
     fun colorPicker(view: View) {
-
         ColorSheet().show(view.context) {
             title("Select the color and transparency of the handler")
             onPositive {
                 color = it
             }
         }
+    }
 
+    fun colorPickerLand(view: View) {
+        ColorSheet().show(view.context) {
+            title("Select the color and transparency of the handler")
+            onPositive {
+                colorLand = it
+            }
+        }
     }
 
     fun clickActionPicker(view: View) {
@@ -329,45 +454,77 @@ class MainViewModel constructor(
         val activity = view.context as Activity
         val handler = AppHandler(
             gravity = gravity,
+            gravityLand = gravityLand,
             topMargin = topMargin,
+            leftMargin = leftMargin,
             color = color,
+            colorLand = colorLand,
             size = size,
+            sizeLand = sizeLand,
             width = width,
+            widthLand = widthLand,
             clickAction = clickAction,
             upperSwipe = upperSwipe,
             bottomSwipe = bottomSwipe,
         )
 
-        toast=""
         if (OverlayService.hasPermission(activity)) {
             mainRepository.setHandler(handler)
 //            OverlayService.stop(activity)
-            OverlayService.start(activity)
-            toast="Configuration Saved!!"
+            //OverlayService.start(activity)
+            toast("Configuration Saved!!")
 
-            val clickCount = prefRepository.getClickCount()
-            if (clickCount == 0) {
-                if (interstitialAd.isReady) {
-                    interstitialAd.showAd()
-                } else {
-                    activity.finish()
-                }
-                prefRepository.incrementClickCount()
-            } else if (clickCount < 2) {
-                prefRepository.incrementClickCount()
-                activity.finish()
-            } else {
-                if (interstitialAd.isReady) {
-                    interstitialAd.showAd()
-                } else {
-                    activity.finish()
-                }
-                prefRepository.resetClickCount()
-            }
+            SharedData.shouldShowAppOpenAds = true
+
+//            val clickCount = prefRepository.getClickCount()
+//            if (clickCount == 0) {
+//                if (interstitialAd.isReady) {
+//                    interstitialAd.showAd()
+//                } else {
+//                    activity.finish()
+//                }
+//                prefRepository.incrementClickCount()
+//            } else if (clickCount < 2) {
+//                prefRepository.incrementClickCount()
+//                activity.finish()
+//            } else {
+//                if (interstitialAd.isReady) {
+//                    interstitialAd.showAd()
+//                } else {
+//                    activity.finish()
+//                }
+//                prefRepository.resetClickCount()
+//            }
         }else {
-            toast="Please enable draw overlay permission!!"
+            toast("Please enable draw overlay permission!!")
         }
 
+    }
+
+    fun submitDataLand(view: View) {
+
+        val activity = view.context as Activity
+        val handler = AppHandler(
+            gravity = gravity,
+            gravityLand = gravityLand,
+            topMargin = topMargin,
+            leftMargin = leftMargin,
+            color = color,
+            colorLand = colorLand,
+            size = size,
+            sizeLand = sizeLand,
+            width = width,
+            widthLand = widthLand,
+            clickAction = clickAction,
+            upperSwipe = upperSwipe,
+            bottomSwipe = bottomSwipe,
+        )
+
+        mainRepository.setHandler(handler)
+
+        activity.finish()
+
+        toast("Landscape Configuration Saved!!")
     }
 
     private fun initializeData() {
