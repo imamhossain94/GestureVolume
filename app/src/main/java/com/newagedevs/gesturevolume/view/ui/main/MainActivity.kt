@@ -194,7 +194,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     override fun onPause() {
         super.onPause()
         if(!OverlayService.isRunning(this)){
-            //OverlayService.start(this)
+            OverlayService.start(this)
         }
     }
 

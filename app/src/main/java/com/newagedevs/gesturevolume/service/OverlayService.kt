@@ -7,28 +7,30 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.*
 import android.graphics.drawable.Drawable
+import android.hardware.display.DisplayManager
 import android.media.AudioManager
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
 import android.view.*
 import android.view.View.OnTouchListener
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.room.Room
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.model.AppHandler
 import com.newagedevs.gesturevolume.persistence.AppDatabase
+import com.newagedevs.gesturevolume.utils.Constants
 import com.newagedevs.gesturevolume.utils.SharedData
 import com.newagedevs.gesturevolume.view.ui.main.MainActivity
 import kotlinx.coroutines.*
-import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 
 
 class OverlayService : Service(), OnTouchListener, View.OnClickListener {
@@ -135,7 +137,7 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
         }
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            createOrUpdateHandleView(true)
+            createOrUpdateHandleView(false)
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             createOrUpdateHandleView(true)
         }
@@ -150,7 +152,7 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
                         windowManager!!.removeView(handleView)
                         handleView = null
                     }
-                    createOrUpdateHandleView(resources.configuration.orientation  == Configuration.ORIENTATION_PORTRAIT)
+                    createOrUpdateHandleView(resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
                 }
                 STOP_FOREGROUND_ACTION -> {
                     if (handleView != null) {
@@ -171,322 +173,6 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
 
         return START_NOT_STICKY
     }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private fun createHandleView() {
-        if (Build.VERSION.SDK_INT >= 26) {
-            val channel = NotificationChannel(
-                CHANNEL_ID, CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_MIN
-            )
-            (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
-                .createNotificationChannel(channel)
-
-            val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle(TITLE)
-                .setContentText(CONTENT)
-                .setSmallIcon(R.drawable.ic_gesture)
-                .build()
-
-            startForeground(1, notification)
-        }
-
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-
-        CoroutineScope(Dispatchers.IO).launch {
-            appHandler = getAppHandler()
-            looper.post {
-
-                if(appHandler != null){
-                    val height: Int = when (appHandler!!.size) {
-                        "Small" -> 200
-                        "Medium" -> 345
-                        "Large" -> 490
-                        else -> 200
-                    }
-
-                    val width: Int = when (appHandler!!.width) {
-                        "Slim" -> 10
-                        "Regular" -> 25
-                        "Bold" -> 35
-                        else -> 25
-                    }
-
-                    val layoutParams = WindowManager.LayoutParams(
-                        WindowManager.LayoutParams.WRAP_CONTENT,
-                        WindowManager.LayoutParams.WRAP_CONTENT,
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                        else
-                            WindowManager.LayoutParams.TYPE_PHONE,
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-                        PixelFormat.TRANSLUCENT
-                    )
-
-                    val drawable = when(appHandler!!.gravity) {
-                        "Left" -> {
-                            layoutParams.gravity = Gravity.START or Gravity.TOP
-                            ContextCompat.getDrawable(this@OverlayService, R.drawable.item_handler_left)
-                        }
-                        "Right" -> {
-                            layoutParams.gravity = Gravity.END or Gravity.TOP
-                            ContextCompat.getDrawable(this@OverlayService, R.drawable.item_handler_right)
-                        }
-                        else -> {
-                            layoutParams.gravity = Gravity.END or Gravity.TOP
-                            ContextCompat.getDrawable(this@OverlayService, R.drawable.item_handler_right)
-                        }
-                    }
-
-                    val imageView = ImageView(this@OverlayService)
-                    val button = Button(this@OverlayService)
-
-
-                    imageView.background = drawable
-                    imageView.background.colorFilter = PorterDuffColorFilter(appHandler!!.color ?: try {
-                        Color.parseColor("#47000000")
-                    } catch (e: IllegalArgumentException) {
-                        Color.BLACK
-                    }, PorterDuff.Mode.MULTIPLY)
-
-                    handleView = FrameLayout(this@OverlayService)
-
-                    handleView!!.addView(imageView, FrameLayout.LayoutParams(
-                        width,
-                        height
-                    ).apply {
-                        gravity = when(appHandler!!.gravity) {
-                            "Left" -> {
-                                Gravity.START or Gravity.TOP
-                            }
-                            "Right" -> {
-                                Gravity.END or Gravity.TOP
-                            }
-                            else -> {
-                                Gravity.END or Gravity.TOP
-                            }
-                        }
-                    })
-
-                    button.setBackgroundColor(Color.TRANSPARENT)
-
-                    val buttonLayoutParams = FrameLayout.LayoutParams(width * 3, height)
-
-                    button.setOnClickListener(this@OverlayService)
-                    button.setOnTouchListener(this@OverlayService)
-                    handleView!!.addView(button, buttonLayoutParams)
-
-                    //params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                    layoutParams.x = 0
-                    layoutParams.y = appHandler!!.topMargin!!.toInt()
-                    windowManager!!.addView(handleView!!, layoutParams)
-                }
-
-            }
-        }
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private fun createLandscapeHandleView() {
-        if (Build.VERSION.SDK_INT >= 26) {
-            val channel = NotificationChannel(
-                CHANNEL_ID, CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_MIN
-            )
-            (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
-                .createNotificationChannel(channel)
-
-            val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle(TITLE)
-                .setContentText(CONTENT)
-                .setSmallIcon(R.drawable.ic_gesture)
-                .build()
-
-            startForeground(1, notification)
-        }
-
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-
-        CoroutineScope(Dispatchers.IO).launch {
-            appHandler = getAppHandler()
-            looper.post {
-
-                if(appHandler != null){
-                    val width: Int = when (appHandler!!.size) {
-                        "Small" -> 200
-                        "Medium" -> 345
-                        "Large" -> 490
-                        else -> 200
-                    }
-
-                    val height: Int = when (appHandler!!.width) {
-                        "Slim" -> 10
-                        "Regular" -> 25
-                        "Bold" -> 35
-                        else -> 25
-                    }
-
-                    val layoutParams = WindowManager.LayoutParams(
-                        width,
-                        height * 1,
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                        else
-                            WindowManager.LayoutParams.TYPE_PHONE,
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-                        PixelFormat.TRANSLUCENT
-                    )
-
-                    val drawable = when(appHandler!!.gravity) {
-                        "Left" -> {
-                            layoutParams.gravity = Gravity.START or Gravity.TOP
-                            ContextCompat.getDrawable(this@OverlayService, R.drawable.item_handler_top)
-                        }
-                        "Right" -> {
-                            layoutParams.gravity = Gravity.END or Gravity.TOP
-                            ContextCompat.getDrawable(this@OverlayService, R.drawable.item_handler_bottom)
-                        }
-                        else -> {
-                            layoutParams.gravity = Gravity.END or Gravity.TOP
-                            ContextCompat.getDrawable(this@OverlayService, R.drawable.item_handler_bottom)
-                        }
-                    }
-
-                    val button = Button(this@OverlayService)
-//                    button.setBackgroundColor(Color.YELLOW)
-//                    button.setOnClickListener(this@OverlayService)
-                    button.setOnClickListener {
-                        Timber.d("Lal Vai MBBS Button")
-                        audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-                    }
-//                    button.setOnTouchListener(this@OverlayService)
-
-                    val imageView = ImageView(this@OverlayService)
-                    imageView.background = drawable
-                    imageView.background.colorFilter = PorterDuffColorFilter(appHandler!!.color ?: try {
-                        Color.parseColor("#47000000")
-                    } catch (e: IllegalArgumentException) {
-                        Color.BLACK
-                    }, PorterDuff.Mode.MULTIPLY)
-
-                    handleView = FrameLayout(this@OverlayService)
-//                    handleView!!.addView(button, FrameLayout.LayoutParams(
-//                        WindowManager.LayoutParams.MATCH_PARENT,
-//                        WindowManager.LayoutParams.MATCH_PARENT,
-//                    ).apply {
-//                        setMargins(0, 0, 0, 0)
-//                        gravity = when(appHandler!!.gravity) {
-//                            "Left" -> {
-//                                Gravity.START or Gravity.TOP
-//                            }
-//                            "Right" -> {
-//                                Gravity.END or Gravity.TOP
-//                            }
-//                            else -> {
-//                                Gravity.END or Gravity.TOP
-//                            }
-//                        }
-//                    })
-
-//                    imageView.setOnClickListener {
-//                        Timber.d("Lal Vai MBBS Image")
-//                        audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-//                    }
-
-                    val gestureDetector = GestureDetector(this@OverlayService, object : GestureDetector.SimpleOnGestureListener() {
-                        override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                            // Action when a single tap is detected
-                            audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-                            return true
-                        }
-                    })
-
-                    imageView.setOnTouchListener { view, event ->
-                        gestureDetector.onTouchEvent(event)
-                        when (event.action) {
-                            MotionEvent.ACTION_DOWN -> {
-                                actionDownPoint = PointF(event.x, event.y)
-                                previousPoint = PointF(event.x, event.y)
-                                touchDownTime = now()
-                                eventX1 = event.x
-
-                                true
-                            }
-
-                            MotionEvent.ACTION_UP ->  {
-
-                                val isTouchDuration = now() - touchDownTime < TOUCH_TIME_FACTOR
-                                val isTouchLength = abs(event.x - actionDownPoint.x) + abs(event.y - actionDownPoint.y) < TOUCH_MOVE_FACTOR
-                                val shouldClick = isTouchLength && isTouchDuration
-
-                                if (shouldClick) view.performClick()
-
-                                /* Do other stuff related to ACTION_UP you may whant here */
-
-                                true
-                            }
-
-                            MotionEvent.ACTION_MOVE -> {
-
-                                eventX2 = event.x
-
-                                // Left swipe
-                                val halfHeight = view.height / 2f
-                                if (event.y in 0f..halfHeight ) {
-                                    increaseVolume()
-                                } else if (event.y in halfHeight..view.height.toFloat()) {
-                                    decreaseVolume()
-                                }
-
-                                previousPoint = PointF(event.x, event.y)
-                                true
-                            }
-
-                            else -> false
-                        }
-                    }
-
-
-
-
-
-
-                    handleView!!.addView(imageView, FrameLayout.LayoutParams(
-                        WindowManager.LayoutParams.MATCH_PARENT,
-                        WindowManager.LayoutParams.MATCH_PARENT,
-                    ).apply {
-                        gravity = when(appHandler!!.gravity) {
-                            "Left" -> {
-                                Gravity.START or Gravity.TOP
-                            }
-                            "Right" -> {
-                                Gravity.END or Gravity.TOP
-                            }
-                            else -> {
-                                Gravity.END or Gravity.TOP
-                            }
-                        }
-                    })
-
-//                    handleView?.setBackgroundColor(Color.BLACK)
-                    //params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                    val displayMetrics = resources.displayMetrics
-
-                    layoutParams.x = max(displayMetrics.widthPixels, displayMetrics.heightPixels) - width - appHandler!!.topMargin!!.toInt()
-                    layoutParams.y = 0
-
-                    windowManager!!.addView(handleView!!, layoutParams)
-                }
-            }
-        }
-    }
-
 
     private fun createOrUpdateHandleView(isPortrait: Boolean) {
         if (Build.VERSION.SDK_INT >= 26) {
@@ -531,55 +217,65 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
         val height: Int
         if (isPortrait) {
             height = when (appHandler!!.size) {
-                "Small" -> 200
-                "Medium" -> 345
-                "Large" -> 490
-                else -> 200
+                "Small" -> Constants.Small
+                "Medium" -> Constants.Medium
+                "Large" -> Constants.Large
+                else -> Constants.Small
             }
             width = when (appHandler!!.width) {
-                "Slim" -> 10
-                "Regular" -> 25
-                "Bold" -> 35
-                else -> 25
+                "Slim" -> Constants.Slim
+                "Regular" -> Constants.Regular
+                "Bold" -> Constants.Bold
+                else -> Constants.Slim
             }
         } else {
             width = when (appHandler!!.size) {
-                "Small" -> 200
-                "Medium" -> 345
-                "Large" -> 490
-                else -> 200
+                "Small" -> Constants.Small
+                "Medium" -> Constants.Medium
+                "Large" -> Constants.Large
+                else -> Constants.Small
             }
             height = when (appHandler!!.width) {
-                "Slim" -> 10
-                "Regular" -> 25
-                "Bold" -> 35
-                else -> 25
+                "Slim" -> Constants.Slim
+                "Regular" -> Constants.Regular
+                "Bold" -> Constants.Bold
+                else -> Constants.Slim
             }
         }
 
-        //var x = when (appHandler?.gravity) {
-        //            "Left" -> {
-        //                appHandler!!.topMargin!!.toInt()
-        //            }
-        //            "Right" -> {
-        //                max(displayMetrics.widthPixels, displayMetrics.heightPixels) - width - appHandler!!.topMargin!!.toInt()
-        //            }
-        //            else -> {
-        //                appHandler!!.topMargin!!.toInt()
-        //            }
-        //        }
-        //
-        //        var y = when (appHandler?.gravity) {
-        //            "Left" -> {
-        //                max(displayMetrics.widthPixels, displayMetrics.heightPixels)
-        //            }
-        //            "Right" -> {
-        //                appHandler!!.topMargin!!.toInt()
-        //            }
-        //            else -> {
-        //                max(displayMetrics.widthPixels, displayMetrics.heightPixels)
-        //            }
-        //        }
+        val defaultDisplay = getSystemService<DisplayManager>()?.getDisplay(Display.DEFAULT_DISPLAY)
+
+        val xLand = when (defaultDisplay?.rotation) {
+            Surface.ROTATION_0 -> { //0 Portrait
+                appHandler!!.leftMargin!!.toInt()
+            }
+            Surface.ROTATION_90 -> { //90 Landscape Left
+                (max(displayMetrics.widthPixels, displayMetrics.heightPixels) - width - appHandler!!.leftMargin!!.toInt())
+            }
+            Surface.ROTATION_180 -> { //180 Portrait up side down
+                0
+            }
+            Surface.ROTATION_270 -> { //270 Landscape Right
+                appHandler!!.leftMargin!!.toInt()
+            }
+            else -> 0
+        }
+
+        val yLand = when (defaultDisplay?.rotation) {
+            Surface.ROTATION_0 -> { //0 Portrait
+                appHandler!!.leftMargin!!.toInt()
+            }
+            Surface.ROTATION_90 -> { //90 Landscape Right
+                0
+            }
+            Surface.ROTATION_180 -> { //180 Portrait up side down
+                appHandler!!.leftMargin!!.toInt()
+            }
+            Surface.ROTATION_270 -> { //270 Landscape Left
+                min(displayMetrics.widthPixels, displayMetrics.heightPixels)
+            }
+            else -> 0
+        }
 
         return WindowManager.LayoutParams(
             width, height, if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -589,8 +285,8 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
-            x = if (isPortrait) 0 else max(displayMetrics.widthPixels, displayMetrics.heightPixels) - width - appHandler!!.topMargin!!.toInt()
-            y = if (isPortrait) appHandler!!.topMargin!!.toInt() else 0
+            x = if (isPortrait) 0 else xLand
+            y = if (isPortrait) appHandler!!.topMargin!!.toInt() else yLand
         }
     }
 

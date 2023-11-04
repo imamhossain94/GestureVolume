@@ -57,10 +57,10 @@ class MainViewModel constructor(
     var sizeIconLand: Int? by bindingProperty(R.drawable.ic_medium)
 
     @get:Bindable
-    var width: String? by bindingProperty("Slim")
+    var width: String? by bindingProperty("Regular")
 
     @get:Bindable
-    var widthLand: String? by bindingProperty("Slim")
+    var widthLand: String? by bindingProperty("Regular")
 
     @get:Bindable
     var widthIcon: Int? by bindingProperty(R.drawable.ic_small)
@@ -471,7 +471,7 @@ class MainViewModel constructor(
         if (OverlayService.hasPermission(activity)) {
             mainRepository.setHandler(handler)
 //            OverlayService.stop(activity)
-            //OverlayService.start(activity)
+            OverlayService.start(activity)
             toast("Configuration Saved!!")
 
             SharedData.shouldShowAppOpenAds = true

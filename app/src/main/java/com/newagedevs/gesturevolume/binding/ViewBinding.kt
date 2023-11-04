@@ -12,6 +12,7 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.newagedevs.gesturevolume.extensions.px
+import com.newagedevs.gesturevolume.utils.Constants
 import com.skydoves.whatif.whatIfNotNullOrEmpty
 
 
@@ -162,10 +163,10 @@ object ViewBinding {
     fun setLayoutHeight(view: View, value: String) {
 
         val height: Int = when (value) {
-            "Small" -> 200
-            "Medium" -> 345
-            "Large" -> 490
-            else -> 200
+            "Small" -> Constants.Small
+            "Medium" -> Constants.Medium
+            "Large" -> Constants.Large
+            else -> Constants.Small
         }
 
         view.layoutParams = view.layoutParams.apply {
@@ -178,10 +179,10 @@ object ViewBinding {
     fun setLayoutWidth(view: View, value: String) {
 
         val width: Int = when (value) {
-            "Slim" -> 10
-            "Regular" -> 25
-            "Bold" -> 35
-            else -> 25
+            "Slim" -> Constants.Slim
+            "Regular" -> Constants.Regular
+            "Bold" -> Constants.Bold
+            else -> Constants.Slim
         }
 
         view.layoutParams = view.layoutParams.apply {
@@ -204,10 +205,10 @@ object ViewBinding {
     fun setLayoutHeightLand(view: View, value: String) {
 
         val height: Int = when (value) {
-            "Small" -> 200
-            "Medium" -> 345
-            "Large" -> 490
-            else -> 200
+            "Small" -> Constants.Small
+            "Medium" -> Constants.Medium
+            "Large" -> Constants.Large
+            else -> Constants.Small
         }
 
         view.layoutParams = view.layoutParams.apply {
@@ -220,10 +221,10 @@ object ViewBinding {
     fun setLayoutWidthLand(view: View, value: String) {
 
         val width: Int = when (value) {
-            "Slim" -> 10
-            "Regular" -> 25
-            "Bold" -> 35
-            else -> 25
+            "Slim" -> Constants.Slim
+            "Regular" -> Constants.Regular
+            "Bold" -> Constants.Bold
+            else -> Constants.Slim
         }
 
         view.layoutParams = view.layoutParams.apply {
