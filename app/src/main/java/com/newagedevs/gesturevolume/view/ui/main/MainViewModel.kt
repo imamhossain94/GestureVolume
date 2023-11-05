@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.view.ui.main
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.view.View
 import android.widget.TextView
@@ -113,13 +114,15 @@ class MainViewModel constructor(
     }
 
     // Handler settings
+    @SuppressLint("Range")
     fun gravityPicker(view: View) {
         val drawables = listOf(R.drawable.ic_align_left, R.drawable.ic_align_right)
         val titles = listOf("Left", "Right")
 
         OptionSheet().show(view.context) {
             title("Select your handedness or the gravity of the handler")
-            columns(2)
+            columns(1)
+            displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
                 Option(drawables[1], titles[1]),
@@ -140,13 +143,15 @@ class MainViewModel constructor(
         }
     }
 
+    @SuppressLint("Range")
     fun gravityPickerLand(view: View) {
         val drawables = listOf(R.drawable.ic_align_top, R.drawable.ic_align_bottom)
         val titles = listOf("Top", "Bottom")
 
         OptionSheet().show(view.context) {
             title("Select your handedness or the gravity of the handler")
-            columns(2)
+            columns(1)
+            displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
                 Option(drawables[1], titles[1]),
@@ -167,13 +172,15 @@ class MainViewModel constructor(
         }
     }
 
+    @SuppressLint("Range")
     fun sizePicker(view: View) {
         val drawables = listOf(R.drawable.ic_small, R.drawable.ic_medium, R.drawable.ic_large)
         val titles = listOf("Small", "Medium", "Large")
 
         OptionSheet().show(view.context) {
             title("Select the height or size of the handler")
-            columns(3)
+            columns(1)
+            displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
                 Option(drawables[1], titles[1]),
@@ -195,13 +202,15 @@ class MainViewModel constructor(
         }
     }
 
+    @SuppressLint("Range")
     fun sizePickerLand(view: View) {
         val drawables = listOf(R.drawable.ic_small, R.drawable.ic_medium, R.drawable.ic_large)
         val titles = listOf("Small", "Medium", "Large")
 
         OptionSheet().show(view.context) {
             title("Select the height or size of the handler")
-            columns(3)
+            columns(1)
+            displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
                 Option(drawables[1], titles[1]),
@@ -223,13 +232,15 @@ class MainViewModel constructor(
         }
     }
 
+    @SuppressLint("Range")
     fun widthPicker(view: View) {
         val drawables = listOf(R.drawable.ic_small, R.drawable.ic_regular, R.drawable.ic_bold)
         val titles = listOf("Slim", "Regular", "Bold")
 
         OptionSheet().show(view.context) {
             title("Select the width or thickness of the handler")
-            columns(3)
+            columns(1)
+            displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
                 Option(drawables[1], titles[1]),
@@ -251,13 +262,15 @@ class MainViewModel constructor(
         }
     }
 
+    @SuppressLint("Range")
     fun widthPickerLand(view: View) {
         val drawables = listOf(R.drawable.ic_small, R.drawable.ic_regular, R.drawable.ic_bold)
         val titles = listOf("Slim", "Regular", "Bold")
 
         OptionSheet().show(view.context) {
             title("Select the width or thickness of the handler")
-            columns(3)
+            columns(1)
+            displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
                 Option(drawables[1], titles[1]),
@@ -297,14 +310,16 @@ class MainViewModel constructor(
         }
     }
 
+    @SuppressLint("Range")
     fun clickActionPicker(view: View) {
         val lockScreenUtil =LockScreenUtil(view.context)
         val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_mute, R.drawable.ic_lock, R.drawable.ic_music_ui)
-        val titles = listOf("None", "Mute", "Lock", "Open volume UI")
+        val titles = listOf("None", "Open volume UI", "Mute", "Lock")
 
         OptionSheet().show(view.context) {
             title("What should happen when you tap on the handler?")
-            columns(2)
+            columns(1)
+            displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
                 Option(drawables[1], titles[1]),
@@ -333,13 +348,15 @@ class MainViewModel constructor(
         }
     }
 
+    @SuppressLint("Range")
     fun upperSwipeActionPicker(view: View) {
         val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_plus, R.drawable.ic_vol_increase)
-        val titles = listOf("None", "Increase volume", "Increase volume and show UI")
+        val titles = listOf("None", "Increase volume and show UI", "Increase volume")
 
         OptionSheet().show(view.context) {
             title("What should happen when you swipe the upper half of the handler?")
-            columns(2)
+            columns(1)
+            displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
                 Option(drawables[1], titles[1]),
@@ -361,13 +378,15 @@ class MainViewModel constructor(
         }
     }
 
+    @SuppressLint("Range")
     fun bottomSwipeActionPicker(view: View) {
         val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_plus, R.drawable.ic_vol_increase)
-        val titles = listOf("None", "Decrease volume", "Decrease volume and show UI")
+        val titles = listOf("None", "Decrease volume and show UI", "Decrease volume",)
 
         OptionSheet().show(view.context) {
             title("What should happen when you swipe the bottom half of the handler?")
-            columns(2)
+            columns(1)
+            displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
                 Option(drawables[1], titles[1]),
@@ -447,6 +466,11 @@ class MainViewModel constructor(
                 }
             }
         }
+    }
+
+    fun finishLandActivity(view: View) {
+        val activity = view.context as Activity
+        activity.finish()
     }
 
     fun submitData(view: View) {
@@ -532,10 +556,15 @@ class MainViewModel constructor(
 
         if (handler != null) {
             gravity = handler.gravity
+            gravityLand = handler.gravityLand
             topMargin = handler.topMargin
+            leftMargin = handler.leftMargin
             color = handler.color
+            colorLand = handler.colorLand
             size = handler.size
+            sizeLand = handler.sizeLand
             width = handler.width
+            widthLand = handler.widthLand
             clickAction = handler.clickAction
             upperSwipe = handler.upperSwipe
             bottomSwipe = handler.bottomSwipe
@@ -546,13 +575,30 @@ class MainViewModel constructor(
                 "Right" -> R.drawable.ic_align_right
                 else -> R.drawable.ic_align_right
             }
+            gravityIconLand = when (gravityLand) {
+                "Top" -> R.drawable.ic_align_top
+                "Bottom" -> R.drawable.ic_align_bottom
+                else -> R.drawable.ic_align_top
+            }
             sizeIcon = when (size) {
                 "Small" -> R.drawable.ic_small
                 "Medium" -> R.drawable.ic_medium
                 "Large" -> R.drawable.ic_large
                 else -> R.drawable.ic_small
             }
+            sizeIconLand = when (size) {
+                "Small" -> R.drawable.ic_small
+                "Medium" -> R.drawable.ic_medium
+                "Large" -> R.drawable.ic_large
+                else -> R.drawable.ic_small
+            }
             widthIcon = when (width) {
+                "Slim" -> R.drawable.ic_small
+                "Regular" -> R.drawable.ic_regular
+                "Bold" -> R.drawable.ic_bold
+                else -> R.drawable.ic_small
+            }
+            widthIconLand = when (width) {
                 "Slim" -> R.drawable.ic_small
                 "Regular" -> R.drawable.ic_regular
                 "Bold" -> R.drawable.ic_bold

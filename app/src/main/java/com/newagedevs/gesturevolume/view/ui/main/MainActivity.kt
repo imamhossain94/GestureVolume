@@ -2,7 +2,9 @@ package com.newagedevs.gesturevolume.view.ui.main
 
 import android.Manifest
 import android.app.WallpaperManager
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Build
@@ -53,7 +55,6 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
         createBannerAd()
         createInterstitialAd()
-
     }
 
     // ----------------------------------------------------------------
@@ -66,31 +67,31 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
                 resources.getDimensionPixelSize(R.dimen.banner_height)
             )
         }
-        binding.adsContainer?.addView(adView)
+        binding.adsContainer.addView(adView)
         adView.loadAd()
     }
 
     private val bannerAdsListener = object : MaxAdViewAdListener {
         override fun onAdLoaded(p0: MaxAd?) {
-            binding.adsContainer?.visibility = View.VISIBLE
+            binding.adsContainer.visibility = View.VISIBLE
         }
 
         override fun onAdDisplayed(p0: MaxAd?) {
-            binding.adsContainer?.visibility = View.VISIBLE
+            binding.adsContainer.visibility = View.VISIBLE
         }
 
         override fun onAdHidden(p0: MaxAd?) {
-            binding.adsContainer?.visibility = View.GONE
+            binding.adsContainer.visibility = View.GONE
         }
 
         override fun onAdClicked(p0: MaxAd?) { }
 
         override fun onAdLoadFailed(p0: String?, p1: MaxError?) {
-            binding.adsContainer?.visibility = View.GONE
+            binding.adsContainer.visibility = View.GONE
         }
 
         override fun onAdDisplayFailed(p0: MaxAd?, p1: MaxError?) {
-            binding.adsContainer?.visibility = View.GONE
+            binding.adsContainer.visibility = View.GONE
         }
 
         override fun onAdExpanded(p0: MaxAd?) { }
@@ -157,15 +158,6 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             val wallpaperDrawable = wallpaperManager.drawable
             preview.setImageDrawable(wallpaperDrawable)
         }
-
-//        val preview = findViewById<ImageView>(R.id.bg)
-//        if (checkAndRequestPermissions()) {
-//            val wallpaperManager = WallpaperManager.getInstance(this)
-//            val wallpaperDrawable = wallpaperManager.drawable
-//            preview.setImageDrawable(wallpaperDrawable)
-//        } else {
-//            checkAndRequestPermissions();
-//        }
     }
 
     override fun onRequestPermissionsResult(
@@ -194,7 +186,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     override fun onPause() {
         super.onPause()
         if(!OverlayService.isRunning(this)){
-            OverlayService.start(this)
+            //OverlayService.start(this)
         }
     }
 
@@ -207,150 +199,6 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         const val OVERLAY_REQUEST_CODE = 1
         const val WALLPAPER_REQUEST_CODE = 2
         const val DEVICE_ADMIN_REQUEST_CODE = 3
-//        const val REQUEST_ID_MULTIPLE_PERMISSIONS = 1
     }
-
-
-//
-//    private fun checkAndRequestPermissions(): Boolean {
-//        val permissionReadExternalStorage: Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-//            ContextCompat.checkSelfPermission(
-//                this,
-//                Manifest.permission.READ_MEDIA_IMAGES
-//            ) else ContextCompat.checkSelfPermission(
-//            this,
-//            Manifest.permission.READ_EXTERNAL_STORAGE
-//        )
-//
-//        val listPermissionsNeeded: MutableList<String> = ArrayList()
-//
-//        if (permissionReadExternalStorage != PackageManager.PERMISSION_GRANTED) {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) listPermissionsNeeded.add(
-//                Manifest.permission.READ_MEDIA_IMAGES
-//            ) else listPermissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-//        }
-//
-//        if (listPermissionsNeeded.isNotEmpty()) {
-//            ActivityCompat.requestPermissions(
-//                this,
-//                listPermissionsNeeded.toTypedArray(),
-//                REQUEST_ID_MULTIPLE_PERMISSIONS
-//            )
-//            return false
-//        }
-//        return true
-//    }
-//
-//
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int, permissions: Array<String>, grantResults: IntArray
-//    ) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        when (requestCode) {
-//            REQUEST_ID_MULTIPLE_PERMISSIONS -> {
-//                val perms: MutableMap<String, Int> = HashMap()
-//
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                    perms[Manifest.permission.READ_MEDIA_IMAGES] = PackageManager.PERMISSION_GRANTED
-//                } else {
-//                    perms[Manifest.permission.READ_EXTERNAL_STORAGE] = PackageManager.PERMISSION_GRANTED
-//                }
-//
-//                // Fill with actual results from user
-//                if (grantResults.isNotEmpty()) {
-//                    var i = 0
-//                    while (i < permissions.size) {
-//                        perms[permissions[i]] = grantResults[i]
-//                        i++
-//                    }
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                        if (perms[Manifest.permission.READ_MEDIA_IMAGES] == PackageManager.PERMISSION_GRANTED) {
-//                            Toast.makeText(
-//                                this,
-//                                "Thank You, For Granting Permission.",
-//                                Toast.LENGTH_LONG
-//                            ).show()
-//                            //else any one or both the permissions are not granted
-//                        } else {
-//                            if (ActivityCompat.shouldShowRequestPermissionRationale(
-//                                    this,
-//                                    Manifest.permission.READ_MEDIA_IMAGES
-//                                )
-//                            ) {
-//                                showDialogOK(
-//                                    "Necessary Permissions required for this app"
-//                                ) { _, which ->
-//                                    when (which) {
-//                                        DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions()
-//                                        DialogInterface.BUTTON_NEGATIVE ->                                                     // proceed with logic by disabling the related features or quit the app.
-//                                            Toast.makeText(
-//                                                this@MainActivity,
-//                                                "Necessary Permissions required for this app",
-//                                                Toast.LENGTH_LONG
-//                                            ).show()
-//                                    }
-//                                }
-//                            } else {
-//                                permissionSettingScreen()
-//                            }
-//                        }
-//                    } else {
-//                        if (perms[Manifest.permission.READ_EXTERNAL_STORAGE] == PackageManager.PERMISSION_GRANTED
-//                        ) {
-//                            Toast.makeText(
-//                                this,
-//                                "Jajakumullah, For Granting Permission.",
-//                                Toast.LENGTH_LONG
-//                            ).show()
-//                            //else any one or both the permissions are not granted
-//                        } else {
-//                            if (ActivityCompat.shouldShowRequestPermissionRationale(
-//                                    this,
-//                                    Manifest.permission.READ_EXTERNAL_STORAGE
-//                                )
-//                            ) {
-//                                showDialogOK(
-//                                    "Necessary Permissions required for this app"
-//                                ) { dialog, which ->
-//                                    when (which) {
-//                                        DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions()
-//                                        DialogInterface.BUTTON_NEGATIVE ->                                                     // proceed with logic by disabling the related features or quit the app.
-//                                            Toast.makeText(
-//                                                this@MainActivity,
-//                                                "Necessary Permissions required for this app",
-//                                                Toast.LENGTH_LONG
-//                                            ).show()
-//                                    }
-//                                }
-//                            } else {
-//                                permissionSettingScreen()
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    private fun permissionSettingScreen() {
-//        Toast.makeText(this, "Enable All permissions, Click On Permission", Toast.LENGTH_LONG)
-//            .show()
-//        val intent = Intent()
-//        intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-//        val uri: Uri = Uri.fromParts("package", packageName, null)
-//        intent.data = uri
-//        ContextCompat.startActivity(this, intent, null)
-//        finish()
-//    }
-//
-//    private fun showDialogOK(message: String, okListener: DialogInterface.OnClickListener) {
-//        AlertDialog.Builder(this)
-//            .setMessage(message)
-//            .setPositiveButton("OK", okListener)
-//            .setNegativeButton("Cancel", okListener)
-//            .create()
-//            .show()
-//    }
 
 }

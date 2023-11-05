@@ -250,13 +250,33 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
                 appHandler!!.leftMargin!!.toInt()
             }
             Surface.ROTATION_90 -> { //90 Landscape Left
-                (max(displayMetrics.widthPixels, displayMetrics.heightPixels) - width - appHandler!!.leftMargin!!.toInt())
+                when (appHandler?.gravityLand) {
+                    "Top" -> {
+                        (max(displayMetrics.widthPixels, displayMetrics.heightPixels) - width - appHandler!!.leftMargin!!.toInt())
+                    }
+                    "Bottom" -> {
+                        500
+                    }
+                    else -> {
+                        (max(displayMetrics.widthPixels, displayMetrics.heightPixels) - width - appHandler!!.leftMargin!!.toInt())
+                    }
+                }
             }
             Surface.ROTATION_180 -> { //180 Portrait up side down
                 0
             }
             Surface.ROTATION_270 -> { //270 Landscape Right
-                appHandler!!.leftMargin!!.toInt()
+                when (appHandler?.gravityLand) {
+                    "Top" -> {
+                        appHandler!!.leftMargin!!.toInt()
+                    }
+                    "Bottom" -> {
+                        0
+                    }
+                    else -> {
+                        appHandler!!.leftMargin!!.toInt()
+                    }
+                }
             }
             else -> 0
         }
@@ -266,13 +286,33 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
                 appHandler!!.leftMargin!!.toInt()
             }
             Surface.ROTATION_90 -> { //90 Landscape Right
-                0
+                when (appHandler?.gravityLand) {
+                    "Top" -> {
+                        0
+                    }
+                    "Bottom" -> {
+                        0
+                    }
+                    else -> {
+                        0
+                    }
+                }
             }
             Surface.ROTATION_180 -> { //180 Portrait up side down
                 appHandler!!.leftMargin!!.toInt()
             }
             Surface.ROTATION_270 -> { //270 Landscape Left
-                min(displayMetrics.widthPixels, displayMetrics.heightPixels)
+                when (appHandler?.gravityLand) {
+                    "Top" -> {
+                        min(displayMetrics.widthPixels, displayMetrics.heightPixels)
+                    }
+                    "Bottom" -> {
+                        0
+                    }
+                    else -> {
+                        min(displayMetrics.widthPixels, displayMetrics.heightPixels)
+                    }
+                }
             }
             else -> 0
         }
