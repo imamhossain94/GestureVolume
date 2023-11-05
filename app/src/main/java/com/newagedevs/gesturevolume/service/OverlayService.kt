@@ -213,29 +213,34 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
 
     private fun getLayoutParams(isPortrait: Boolean): WindowManager.LayoutParams {
         val displayMetrics = resources.displayMetrics
-        val width: Int
-        val height: Int
-        if (isPortrait) {
-            height = when (appHandler!!.size) {
+        val width: Int = when {
+            isPortrait -> {
+                when (appHandler!!.width) {
+                    "Slim" -> Constants.Slim
+                    "Regular" -> Constants.Regular
+                    "Bold" -> Constants.Bold
+                    else -> Constants.Slim
+                }
+            }
+            else -> {
+                when (appHandler!!.size) {
+                    "Small" -> Constants.Small
+                    "Medium" -> Constants.Medium
+                    "Large" -> Constants.Large
+                    else -> Constants.Small
+                }
+            }
+        }
+
+        val height: Int = if (isPortrait) {
+            when (appHandler!!.size) {
                 "Small" -> Constants.Small
                 "Medium" -> Constants.Medium
                 "Large" -> Constants.Large
                 else -> Constants.Small
-            }
-            width = when (appHandler!!.width) {
-                "Slim" -> Constants.Slim
-                "Regular" -> Constants.Regular
-                "Bold" -> Constants.Bold
-                else -> Constants.Slim
             }
         } else {
-            width = when (appHandler!!.size) {
-                "Small" -> Constants.Small
-                "Medium" -> Constants.Medium
-                "Large" -> Constants.Large
-                else -> Constants.Small
-            }
-            height = when (appHandler!!.width) {
+            when (appHandler!!.width) {
                 "Slim" -> Constants.Slim
                 "Regular" -> Constants.Regular
                 "Bold" -> Constants.Bold
@@ -245,25 +250,25 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
 
         val defaultDisplay = getSystemService<DisplayManager>()?.getDisplay(Display.DEFAULT_DISPLAY)
 
+        val isTop = appHandler?.gravityLand == "Top"
+        val isBottom = appHandler?.gravityLand == "Bottom"
+
+        val maxDisplayWidthHeight = max(displayMetrics.widthPixels, displayMetrics.heightPixels)
+        val minDisplayWidthHeight = min(displayMetrics.widthPixels, displayMetrics.heightPixels)
+
         val xLand = when (defaultDisplay?.rotation) {
-            Surface.ROTATION_0 -> appHandler?.leftMargin?.toInt() ?: 0
-            Surface.ROTATION_90 -> (max(displayMetrics.widthPixels, displayMetrics.heightPixels) - width - (appHandler?.leftMargin?.toInt() ?: 0))
+            Surface.ROTATION_0 -> appHandler!!.leftMargin!!.toInt()
+            Surface.ROTATION_90 -> if (isBottom) maxDisplayWidthHeight - width - appHandler!!.leftMargin!!.toInt() else appHandler!!.leftMargin!!.toInt()
             Surface.ROTATION_180 -> 0
-            Surface.ROTATION_270 -> appHandler?.leftMargin?.toInt() ?: 0
+            Surface.ROTATION_270 -> if (isTop) maxDisplayWidthHeight - width - appHandler!!.leftMargin!!.toInt() else appHandler!!.leftMargin!!.toInt()
             else -> 0
         }
 
         val yLand = when (defaultDisplay?.rotation) {
-            Surface.ROTATION_0 -> appHandler?.leftMargin?.toInt() ?: 0
-            Surface.ROTATION_90 -> when (appHandler?.gravityLand) {
-                "Bottom" -> min(displayMetrics.widthPixels, displayMetrics.heightPixels)
-                else -> 0
-            }
-            Surface.ROTATION_180 -> appHandler?.leftMargin?.toInt() ?: 0
-            Surface.ROTATION_270 -> when (appHandler?.gravityLand) {
-                "Top" -> min(displayMetrics.widthPixels, displayMetrics.heightPixels)
-                else -> 0
-            }
+            Surface.ROTATION_0 -> appHandler!!.leftMargin!!.toInt()
+            Surface.ROTATION_90 -> if (isTop) 0 else minDisplayWidthHeight
+            Surface.ROTATION_180 -> appHandler!!.leftMargin!!.toInt()
+            Surface.ROTATION_270 -> if (isBottom) 0 else minDisplayWidthHeight
             else -> 0
         }
 
@@ -281,36 +286,53 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
     }
 
     private fun getDrawableAndSetGravity(isPortrait: Boolean, layoutParams: WindowManager.LayoutParams): Drawable? {
+        val defaultDisplay = getSystemService<DisplayManager>()?.getDisplay(Display.DEFAULT_DISPLAY)
+
+        val gravityStartTop = Gravity.START or Gravity.TOP
+        val gravityEndTop = Gravity.END or Gravity.TOP
+
         return if (isPortrait) {
-            when (appHandler?.gravity) {
+            val drawableRes = when (appHandler?.gravity) {
                 "Left" -> {
-                    layoutParams.gravity = Gravity.START or Gravity.TOP
-                    ContextCompat.getDrawable(this@OverlayService, R.drawable.item_handler_left)
+                    layoutParams.gravity = gravityStartTop
+                    R.drawable.item_handler_left
                 }
-                "Right" -> {
-                    layoutParams.gravity = Gravity.END or Gravity.TOP
-                    ContextCompat.getDrawable(this@OverlayService, R.drawable.item_handler_right)
+                "Right", null -> {
+                    layoutParams.gravity = gravityEndTop
+                    R.drawable.item_handler_right
                 }
                 else -> {
-                    layoutParams.gravity = Gravity.END or Gravity.TOP
-                    ContextCompat.getDrawable(this@OverlayService, R.drawable.item_handler_right)
+                    layoutParams.gravity = gravityEndTop
+                    R.drawable.item_handler_right
                 }
             }
+            ContextCompat.getDrawable(this@OverlayService, drawableRes)
         } else {
-            when (appHandler?.gravity) {
-                "Left" -> {
-                    layoutParams.gravity = Gravity.START or Gravity.TOP
-                    ContextCompat.getDrawable(this@OverlayService, R.drawable.item_handler_top)
-                }
-                "Right" -> {
-                    layoutParams.gravity = Gravity.END or Gravity.TOP
-                    ContextCompat.getDrawable(this@OverlayService, R.drawable.item_handler_bottom)
+            val drawableRes = when (val rotation = defaultDisplay?.rotation ?: Surface.ROTATION_0) {
+                Surface.ROTATION_0, Surface.ROTATION_90, Surface.ROTATION_180, Surface.ROTATION_270 -> {
+                    val isTop = appHandler?.gravityLand == "Top"
+                    val isBottom = appHandler?.gravityLand == "Bottom"
+                    when {
+                        isTop -> {
+                            layoutParams.gravity = gravityStartTop
+                            if (rotation == Surface.ROTATION_270) R.drawable.item_handler_top else R.drawable.item_handler_bottom
+                        }
+                        isBottom -> {
+                            layoutParams.gravity = gravityEndTop
+                            if (rotation == Surface.ROTATION_270) R.drawable.item_handler_bottom else R.drawable.item_handler_top
+                        }
+                        else -> {
+                            layoutParams.gravity = gravityEndTop
+                            if (rotation == Surface.ROTATION_270) R.drawable.item_handler_top else R.drawable.item_handler_bottom
+                        }
+                    }
                 }
                 else -> {
-                    layoutParams.gravity = Gravity.END or Gravity.TOP
-                    ContextCompat.getDrawable(this@OverlayService, R.drawable.item_handler_bottom)
+                    layoutParams.gravity = gravityEndTop
+                    R.drawable.item_handler_bottom
                 }
             }
+            ContextCompat.getDrawable(this@OverlayService, drawableRes)
         }
     }
 
@@ -342,12 +364,6 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
 
         windowManager!!.addView(handleView, layoutParams)
     }
-
-
-
-
-
-
 
     override fun onTouch(view: View, event: MotionEvent) = when (event.action) {
 
