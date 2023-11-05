@@ -555,21 +555,43 @@ class OverlayService : Service(), OnTouchListener {
                 lockScreenUtil?.lockScreen()
             }
             "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+            "Active Music Overlay" -> createMusicOverlayView()
             else -> {}
         }
         return true
     }
 
     fun onDoubleTap(): Boolean {
-//        audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-//        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 10, 0)
+        when (appHandler!!.doubleClickAction) {
+            "None" -> {}
+            "Mute" -> {
+                audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+                audioManager.adjustVolume(AudioManager.ADJUST_MUTE, 0)
+            }
+            "Lock" -> {
+                lockScreenUtil?.lockScreen()
+            }
+            "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+            "Active Music Overlay" -> createMusicOverlayView()
+            else -> {}
+        }
         return true
     }
 
     fun onLongPress() {
-        createMusicOverlayView()
-//        audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-//        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 5, 0)
+        when (appHandler!!.longClickAction) {
+            "None" -> {}
+            "Mute" -> {
+                audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+                audioManager.adjustVolume(AudioManager.ADJUST_MUTE, 0)
+            }
+            "Lock" -> {
+                lockScreenUtil?.lockScreen()
+            }
+            "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+            "Active Music Overlay" -> createMusicOverlayView()
+            else -> {}
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")

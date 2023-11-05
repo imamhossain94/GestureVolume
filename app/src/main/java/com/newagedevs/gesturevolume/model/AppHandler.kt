@@ -20,6 +20,8 @@ data class AppHandler(
     val width: String?,
     val widthLand: String?,
     val clickAction: String?,
+    val doubleClickAction: String?,
+    val longClickAction: String?,
     val upperSwipe: String?,
     val bottomSwipe: String?,
 ) : Parcelable {

@@ -89,6 +89,18 @@ class MainViewModel constructor(
     var clickActionIcon: Int? by bindingProperty(R.drawable.ic_music_ui)
 
     @get:Bindable
+    var doubleClickAction: String? by bindingProperty("Open volume UI")
+
+    @get:Bindable
+    var doubleClickActionIcon: Int? by bindingProperty(R.drawable.ic_music_ui)
+
+    @get:Bindable
+    var longClickAction: String? by bindingProperty("Open volume UI")
+
+    @get:Bindable
+    var longClickActionIcon: Int? by bindingProperty(R.drawable.ic_music_ui)
+
+    @get:Bindable
     var upperSwipe: String? by bindingProperty("Increase volume and show UI")
 
     @get:Bindable
@@ -307,8 +319,8 @@ class MainViewModel constructor(
     @SuppressLint("Range")
     fun clickActionPicker(view: View) {
         val lockScreenUtil =LockScreenUtil(view.context)
-        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_mute, R.drawable.ic_lock, R.drawable.ic_music_ui)
-        val titles = listOf("None", "Open volume UI", "Mute", "Lock")
+        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_mute, R.drawable.ic_lock, R.drawable.ic_music_ui, R.drawable.ic_music_ui)
+        val titles = listOf("None", "Open volume UI", "Mute", "Active Music Overlay", "Lock")
 
         OptionSheet().show(view.context) {
             title("What should happen when you tap on the handler?")
@@ -319,6 +331,7 @@ class MainViewModel constructor(
                 Option(drawables[1], titles[1]),
                 Option(drawables[2], titles[2]),
                 Option(drawables[3], titles[3]),
+                Option(drawables[4], titles[4]),
             )
             onPositive { index: Int, _: Option ->
 
@@ -336,6 +349,84 @@ class MainViewModel constructor(
 
                     clickActionIcon = drawables[index]
                     clickAction = titles[index]
+                }
+
+            }
+        }
+    }
+
+    @SuppressLint("Range")
+    fun doubleClickActionPicker(view: View) {
+        val lockScreenUtil =LockScreenUtil(view.context)
+        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_mute, R.drawable.ic_lock, R.drawable.ic_music_ui, R.drawable.ic_music_ui)
+        val titles = listOf("None", "Open volume UI", "Mute", "Active Music Overlay", "Lock")
+
+        OptionSheet().show(view.context) {
+            title("What should happen when you tap on the handler?")
+            columns(1)
+            displayMode(DisplayMode.GRID_VERTICAL)
+            with(
+                Option(drawables[0], titles[0]),
+                Option(drawables[1], titles[1]),
+                Option(drawables[2], titles[2]),
+                Option(drawables[3], titles[3]),
+                Option(drawables[4], titles[4]),
+            )
+            onPositive { index: Int, _: Option ->
+
+                if(index == 2 && !lockScreenUtil.active()) {
+                    lockScreenUtil.enableAdmin()
+                    return@onPositive
+                }else{
+                    val textView = view as TextView
+
+                    val image = ResourcesCompat.getDrawable(resources, drawables[index], null)
+                    image?.setBounds(0, 0, 24.px, 24.px)
+
+                    textView.text = titles[index]
+                    textView.setCompoundDrawables(image, null, null, null)
+
+                    doubleClickActionIcon = drawables[index]
+                    doubleClickAction = titles[index]
+                }
+
+            }
+        }
+    }
+
+    @SuppressLint("Range")
+    fun longClickActionPicker(view: View) {
+        val lockScreenUtil =LockScreenUtil(view.context)
+        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_mute, R.drawable.ic_lock, R.drawable.ic_music_ui, R.drawable.ic_music_ui)
+        val titles = listOf("None", "Open volume UI", "Mute", "Active Music Overlay", "Lock")
+
+        OptionSheet().show(view.context) {
+            title("What should happen when you tap on the handler?")
+            columns(1)
+            displayMode(DisplayMode.GRID_VERTICAL)
+            with(
+                Option(drawables[0], titles[0]),
+                Option(drawables[1], titles[1]),
+                Option(drawables[2], titles[2]),
+                Option(drawables[3], titles[3]),
+                Option(drawables[4], titles[4]),
+            )
+            onPositive { index: Int, _: Option ->
+
+                if(index == 2 && !lockScreenUtil.active()) {
+                    lockScreenUtil.enableAdmin()
+                    return@onPositive
+                }else{
+                    val textView = view as TextView
+
+                    val image = ResourcesCompat.getDrawable(resources, drawables[index], null)
+                    image?.setBounds(0, 0, 24.px, 24.px)
+
+                    textView.text = titles[index]
+                    textView.setCompoundDrawables(image, null, null, null)
+
+                    longClickActionIcon = drawables[index]
+                    longClickAction = titles[index]
                 }
 
             }
@@ -528,6 +619,8 @@ class MainViewModel constructor(
             width = width,
             widthLand = widthLand,
             clickAction = clickAction,
+            doubleClickAction = doubleClickAction,
+            longClickAction = longClickAction,
             upperSwipe = upperSwipe,
             bottomSwipe = bottomSwipe,
         )
@@ -549,6 +642,8 @@ class MainViewModel constructor(
             width = handler.width
             widthLand = handler.widthLand
             clickAction = handler.clickAction
+            doubleClickAction = handler.doubleClickAction
+            longClickAction = handler.longClickAction
             upperSwipe = handler.upperSwipe
             bottomSwipe = handler.bottomSwipe
 
@@ -589,6 +684,18 @@ class MainViewModel constructor(
             }
             // Action icons
             clickActionIcon = when (clickAction) {
+                "None" -> R.drawable.ic_nothing
+                "Mute" -> R.drawable.ic_mute
+                "Open volume UI" -> R.drawable.ic_music_ui
+                else -> R.drawable.ic_music_ui
+            }
+            doubleClickActionIcon = when (doubleClickAction) {
+                "None" -> R.drawable.ic_nothing
+                "Mute" -> R.drawable.ic_mute
+                "Open volume UI" -> R.drawable.ic_music_ui
+                else -> R.drawable.ic_music_ui
+            }
+            longClickActionIcon = when (longClickAction) {
                 "None" -> R.drawable.ic_nothing
                 "Mute" -> R.drawable.ic_mute
                 "Open volume UI" -> R.drawable.ic_music_ui
