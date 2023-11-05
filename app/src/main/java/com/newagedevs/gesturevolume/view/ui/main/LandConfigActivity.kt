@@ -17,13 +17,12 @@ import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.databinding.ActivityLandConfigBinding
 import com.skydoves.bindables.BindingActivity
 import com.skydoves.bundler.intentOf
-import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
 
 
 class LandConfigActivity : BindingActivity<ActivityLandConfigBinding>(R.layout.activity_land_config) {
 
-    private val viewModel: MainViewModel by inject()
+    private val viewModel: MainViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,31 +45,31 @@ class LandConfigActivity : BindingActivity<ActivityLandConfigBinding>(R.layout.a
                 resources.getDimensionPixelSize(R.dimen.banner_height)
             )
         }
-        binding.adsContainer?.addView(adView)
+        binding.adsContainer.addView(adView)
         adView.loadAd()
     }
 
     private val bannerAdsListener = object : MaxAdViewAdListener {
         override fun onAdLoaded(p0: MaxAd?) {
-            binding.adsContainer?.visibility = View.VISIBLE
+            binding.adsContainer.visibility = View.VISIBLE
         }
 
         override fun onAdDisplayed(p0: MaxAd?) {
-            binding.adsContainer?.visibility = View.VISIBLE
+            binding.adsContainer.visibility = View.VISIBLE
         }
 
         override fun onAdHidden(p0: MaxAd?) {
-            binding.adsContainer?.visibility = View.GONE
+            binding.adsContainer.visibility = View.GONE
         }
 
         override fun onAdClicked(p0: MaxAd?) { }
 
         override fun onAdLoadFailed(p0: String?, p1: MaxError?) {
-            binding.adsContainer?.visibility = View.GONE
+            binding.adsContainer.visibility = View.GONE
         }
 
         override fun onAdDisplayFailed(p0: MaxAd?, p1: MaxError?) {
-            binding.adsContainer?.visibility = View.GONE
+            binding.adsContainer.visibility = View.GONE
         }
 
         override fun onAdExpanded(p0: MaxAd?) { }

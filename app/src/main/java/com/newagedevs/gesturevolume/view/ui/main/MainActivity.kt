@@ -2,11 +2,7 @@ package com.newagedevs.gesturevolume.view.ui.main
 
 import android.Manifest
 import android.app.WallpaperManager
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
-import android.content.res.Configuration
-import android.graphics.Color
-import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -14,7 +10,6 @@ import android.os.Looper
 import android.provider.Settings
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.app.ActivityCompat
@@ -193,6 +188,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     override fun onResume() {
         super.onResume()
         OverlayService.stop(this)
+        viewModel.initializeData()
     }
 
     companion object {

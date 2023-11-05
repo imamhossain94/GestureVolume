@@ -246,73 +246,23 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
         val defaultDisplay = getSystemService<DisplayManager>()?.getDisplay(Display.DEFAULT_DISPLAY)
 
         val xLand = when (defaultDisplay?.rotation) {
-            Surface.ROTATION_0 -> { //0 Portrait
-                appHandler!!.leftMargin!!.toInt()
-            }
-            Surface.ROTATION_90 -> { //90 Landscape Left
-                when (appHandler?.gravityLand) {
-                    "Top" -> {
-                        (max(displayMetrics.widthPixels, displayMetrics.heightPixels) - width - appHandler!!.leftMargin!!.toInt())
-                    }
-                    "Bottom" -> {
-                        500
-                    }
-                    else -> {
-                        (max(displayMetrics.widthPixels, displayMetrics.heightPixels) - width - appHandler!!.leftMargin!!.toInt())
-                    }
-                }
-            }
-            Surface.ROTATION_180 -> { //180 Portrait up side down
-                0
-            }
-            Surface.ROTATION_270 -> { //270 Landscape Right
-                when (appHandler?.gravityLand) {
-                    "Top" -> {
-                        appHandler!!.leftMargin!!.toInt()
-                    }
-                    "Bottom" -> {
-                        0
-                    }
-                    else -> {
-                        appHandler!!.leftMargin!!.toInt()
-                    }
-                }
-            }
+            Surface.ROTATION_0 -> appHandler?.leftMargin?.toInt() ?: 0
+            Surface.ROTATION_90 -> (max(displayMetrics.widthPixels, displayMetrics.heightPixels) - width - (appHandler?.leftMargin?.toInt() ?: 0))
+            Surface.ROTATION_180 -> 0
+            Surface.ROTATION_270 -> appHandler?.leftMargin?.toInt() ?: 0
             else -> 0
         }
 
         val yLand = when (defaultDisplay?.rotation) {
-            Surface.ROTATION_0 -> { //0 Portrait
-                appHandler!!.leftMargin!!.toInt()
+            Surface.ROTATION_0 -> appHandler?.leftMargin?.toInt() ?: 0
+            Surface.ROTATION_90 -> when (appHandler?.gravityLand) {
+                "Bottom" -> min(displayMetrics.widthPixels, displayMetrics.heightPixels)
+                else -> 0
             }
-            Surface.ROTATION_90 -> { //90 Landscape Right
-                when (appHandler?.gravityLand) {
-                    "Top" -> {
-                        0
-                    }
-                    "Bottom" -> {
-                        0
-                    }
-                    else -> {
-                        0
-                    }
-                }
-            }
-            Surface.ROTATION_180 -> { //180 Portrait up side down
-                appHandler!!.leftMargin!!.toInt()
-            }
-            Surface.ROTATION_270 -> { //270 Landscape Left
-                when (appHandler?.gravityLand) {
-                    "Top" -> {
-                        min(displayMetrics.widthPixels, displayMetrics.heightPixels)
-                    }
-                    "Bottom" -> {
-                        0
-                    }
-                    else -> {
-                        min(displayMetrics.widthPixels, displayMetrics.heightPixels)
-                    }
-                }
+            Surface.ROTATION_180 -> appHandler?.leftMargin?.toInt() ?: 0
+            Surface.ROTATION_270 -> when (appHandler?.gravityLand) {
+                "Top" -> min(displayMetrics.widthPixels, displayMetrics.heightPixels)
+                else -> 0
             }
             else -> 0
         }

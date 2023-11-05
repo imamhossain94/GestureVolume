@@ -551,7 +551,7 @@ class MainViewModel constructor(
         toast("Landscape Configuration Saved!!")
     }
 
-    private fun initializeData() {
+    fun initializeData() {
         val handler = mainRepository.getHandler()
 
         if (handler != null) {
