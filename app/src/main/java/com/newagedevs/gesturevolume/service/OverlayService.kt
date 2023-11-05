@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.*
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.hardware.display.DisplayManager
 import android.media.AudioManager
 import android.net.Uri
@@ -14,8 +15,7 @@ import android.os.*
 import android.provider.Settings
 import android.view.*
 import android.view.View.OnTouchListener
-import android.widget.FrameLayout
-import android.widget.ImageView
+import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -33,15 +33,13 @@ import kotlin.math.max
 import kotlin.math.min
 
 
-class OverlayService : Service(), OnTouchListener, View.OnClickListener {
+class OverlayService : Service(), OnTouchListener {
 
     companion object {
         private const val CHANNEL_ID = "overlay_channel_id"
         private const val CHANNEL_NAME = "Overlay notification"
         private const val TITLE = "Gesture Volume: Easy Control"
         private const val CONTENT = "Control your device volume through gesture-based interactions"
-        private const val TOUCH_MOVE_FACTOR = 20
-        private const val TOUCH_TIME_FACTOR = 300
 
         private const val START_FOREGROUND_ACTION = "START_FOREGROUND_ACTION"
         private const val STOP_FOREGROUND_ACTION = "STOP_FOREGROUND_ACTION"
@@ -93,6 +91,7 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
         }
     }
 
+    // Handler Variables
     var windowManager: WindowManager? = null
     private var handleView: FrameLayout? = null
     var lockScreenUtil: LockScreenUtil? = null
@@ -100,7 +99,8 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
     private lateinit var audioManager: AudioManager
     private lateinit var appDatabase: AppDatabase
     private var appHandler: AppHandler? = null
-    
+    private var gestureDetector: GestureDetector? = null
+
     private val looper = Handler(Looper.getMainLooper())
 
     private var eventX1: Float = 0f
@@ -108,7 +108,10 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
 
     private var actionDownPoint = PointF(0f, 0f)
     private var previousPoint = PointF(0f, 0f)
-    private var touchDownTime = 0L
+
+    // Music Overlay Variables
+    var windowManagerMusic: WindowManager? = null
+    private var musicOverlayView: FrameLayout? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -119,6 +122,51 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
         ).build()
 
         lockScreenUtil = LockScreenUtil(this)
+
+        gestureDetector = GestureDetector(this@OverlayService, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                // Single tap logic
+                return this@OverlayService.onSingleTap()
+            }
+
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                // Double tap logic
+                return this@OverlayService.onDoubleTap()
+            }
+
+            override fun onLongPress(e: MotionEvent) {
+                // Long press logic
+                this@OverlayService.onLongPress()
+            }
+
+            override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+                val sensitivityMultiplier = 3.0 // Adjust this value to increase or decrease sensitivity
+
+                val distanceY = (e2.y - e1.y) * sensitivityMultiplier
+                val distanceX = (e2.x - e1.x) * sensitivityMultiplier
+
+                return if (abs(distanceX) > abs(distanceY)) {
+                    if (distanceX > 0) {
+                        // Swipe Left to Right direction to Increase Volume
+                        audioManager.adjustVolume(AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI)
+                    } else {
+                        // Swipe Right to Left direction to Decrease Volume
+                        audioManager.adjustVolume(AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
+                    }
+                    true
+                } else {
+                    if (distanceY > 0) {
+                        // Swipe Up to Down direction to Decrease Volume
+                        audioManager.adjustVolume(AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
+                    } else {
+                        // Swipe Down to Up direction to Increase Volume
+                        audioManager.adjustVolume(AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI)
+                    }
+                    true
+                }
+            }
+
+        })
 
     }
 
@@ -359,55 +407,109 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
             }
         })
 
-        imageView.setOnClickListener(this@OverlayService)
         imageView.setOnTouchListener(this@OverlayService)
 
         windowManager!!.addView(handleView, layoutParams)
     }
 
-    override fun onTouch(view: View, event: MotionEvent) = when (event.action) {
-
-        MotionEvent.ACTION_DOWN -> {
-            actionDownPoint = PointF(event.x, event.y)
-            previousPoint = PointF(event.x, event.y)
-            touchDownTime = now()
-            eventX1 = event.x
-
-            true
+    private fun createMusicOverlayView() {
+        if (musicOverlayView != null) {
+            windowManagerMusic?.removeView(musicOverlayView)
+            musicOverlayView = null
         }
 
-        MotionEvent.ACTION_UP ->  {
+        windowManagerMusic = getSystemService(WINDOW_SERVICE) as WindowManager
+        musicOverlayView = FrameLayout(this@OverlayService)
+        musicOverlayView?.setBackgroundColor(Color.BLACK)
 
-            val isTouchDuration = now() - touchDownTime < TOUCH_TIME_FACTOR
-            val isTouchLength = abs(event.x - actionDownPoint.x) + abs(event.y - actionDownPoint.y) < TOUCH_MOVE_FACTOR
-            val shouldClick = isTouchLength && isTouchDuration
+        val layoutParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            else
+                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR or
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+            PixelFormat.TRANSLUCENT
+        )
 
-            if (shouldClick) view.performClick()
-
-            /* Do other stuff related to ACTION_UP you may whant here */
-
-            true
+        // This flag allows the window to extend outside the screen. Use it with caution.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            layoutParams.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
 
-        MotionEvent.ACTION_MOVE -> {
+        // Set flags to draw over status bar and navigation bar
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            layoutParams.flags = WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+        }
 
-            eventX2 = event.x
+        // Hide the status bar and navigation bar
+        musicOverlayView?.systemUiVisibility = (
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            or View.SYSTEM_UI_FLAG_FULLSCREEN
+            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        )
 
-            val halfHeight = view.height / 2f
-            if (event.y in 0f..halfHeight ) {
-                increaseVolume()
-            } else if (event.y in halfHeight..view.height.toFloat()) {
-                decreaseVolume()
+        // Add a TextView
+        val textView = TextView(this@OverlayService)
+        textView.text = "The music overlay is activated, allowing you to play video music in the background while applying a black overlay. If your display is Super AMOLED, it can help save battery life. You can unlock the phone by clicking the unlock button."
+        textView.setTextColor(Color.argb(150, 128, 128, 128))
+        textView.textSize = 14f
+        val textParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        )
+        textParams.gravity = Gravity.CENTER
+        textView.layoutParams = textParams.apply {
+            setMargins(150, 150, 150, 150)
+        }
+
+        // Add a Button
+        val button = Button(this@OverlayService)
+
+        // Set the background drawable to create an outlined button
+        val shape = GradientDrawable()
+        shape.shape = GradientDrawable.RECTANGLE
+        shape.setStroke(2, Color.argb(150, 128, 128, 128)) // Set the border width and color
+        shape.cornerRadius = 12f
+        shape.setColor(Color.TRANSPARENT) // Set the background color to transparent
+
+        // Set the custom background drawable to the button
+        button.background = shape
+
+        // Set other properties of the button
+        button.text = "Unlock"
+        button.setTextColor(Color.argb(150, 128, 128, 128))
+        button.textSize = 14f
+
+        val buttonParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        )
+        buttonParams.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+        button.layoutParams = buttonParams.apply {
+            setMargins(0, 0, 0, 150)
+        }
+        button.setOnClickListener {
+            if (musicOverlayView != null) {
+                windowManagerMusic?.removeView(musicOverlayView)
+                musicOverlayView = null
             }
-
-            previousPoint = PointF(event.x, event.y)
-            true
         }
 
-        else -> false
-    }
+        // Add the TextView and Button to the overlay view
+        musicOverlayView?.addView(textView)
+        musicOverlayView?.addView(button)
 
-    private fun now() = System.currentTimeMillis()
+        windowManagerMusic?.addView(musicOverlayView, layoutParams)
+    }
 
     private fun increaseVolume() {
         val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
@@ -424,7 +526,6 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
             }
             else -> audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeToSet, 0)
         }
-
     }
 
     private fun decreaseVolume() {
@@ -441,11 +542,9 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
             }
             else -> audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeToSet, 0)
         }
-
     }
 
-    override fun onClick(v: View) {
-
+    fun onSingleTap(): Boolean {
         when (appHandler!!.clickAction) {
             "None" -> {}
             "Mute" -> {
@@ -456,9 +555,54 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
                 lockScreenUtil?.lockScreen()
             }
             "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-            else -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+            else -> {}
+        }
+        return true
+    }
+
+    fun onDoubleTap(): Boolean {
+//        audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+//        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 10, 0)
+        return true
+    }
+
+    fun onLongPress() {
+        createMusicOverlayView()
+//        audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+//        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 5, 0)
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouch(view: View, event: MotionEvent): Boolean {
+
+        gestureDetector?.onTouchEvent(event)
+
+        when (event.action) {
+
+            MotionEvent.ACTION_DOWN -> {
+                actionDownPoint = PointF(event.x, event.y)
+                previousPoint = PointF(event.x, event.y)
+                eventX1 = event.x
+            }
+
+            MotionEvent.ACTION_UP ->  { }
+            MotionEvent.ACTION_MOVE -> {
+                eventX2 = event.x
+
+                val halfHeight = view.height / 2f
+                if (event.y in 0f..halfHeight ) {
+                    increaseVolume()
+                } else if (event.y in halfHeight..view.height.toFloat()) {
+                    decreaseVolume()
+                }
+
+                previousPoint = PointF(event.x, event.y)
+            }
+
+            else -> {}
         }
 
+        return true
     }
 
     override fun onDestroy() {
@@ -466,6 +610,10 @@ class OverlayService : Service(), OnTouchListener, View.OnClickListener {
         if (handleView != null) {
             windowManager!!.removeView(handleView)
             handleView = null
+        }
+        if (musicOverlayView != null) {
+            windowManagerMusic!!.removeView(musicOverlayView)
+            musicOverlayView = null
         }
     }
 

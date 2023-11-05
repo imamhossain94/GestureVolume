@@ -166,7 +166,7 @@
                                         android:background="?attr/bg_rounded"
                                         android:drawablePadding="15dp"
                                         android:gravity="center|start"
-                                        android:onClick="@{vm.gotoConfigureLandscapeActivity}"
+                                        android:onClick="@{vm.switchLandActivity}"
                                         android:padding="15dp"
                                         android:text="@string/configure"
                                         android:scaleX="1"

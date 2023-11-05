@@ -58,10 +58,10 @@ class MainViewModel constructor(
     var sizeIconLand: Int? by bindingProperty(R.drawable.ic_medium)
 
     @get:Bindable
-    var width: String? by bindingProperty("Regular")
+    var width: String? by bindingProperty("Slim")
 
     @get:Bindable
-    var widthLand: String? by bindingProperty("Regular")
+    var widthLand: String? by bindingProperty("Slim")
 
     @get:Bindable
     var widthIcon: Int? by bindingProperty(R.drawable.ic_small)
@@ -105,12 +105,6 @@ class MainViewModel constructor(
     fun toast(message: String) {
         toast = ""
         toast = message
-    }
-
-    // Landscape Handler settings
-    fun gotoConfigureLandscapeActivity(view: View) {
-//        toast("Coming soon...")
-        LandConfigActivity.startActivity(view.context)
     }
 
     // Handler settings
@@ -468,32 +462,22 @@ class MainViewModel constructor(
         }
     }
 
+    // Landscape Handler settings
+    fun switchLandActivity(view: View) {
+        saveData()
+        LandConfigActivity.startActivity(view.context)
+    }
+
     fun finishLandActivity(view: View) {
         val activity = view.context as Activity
         activity.finish()
     }
 
     fun submitData(view: View) {
-
+        saveData()
         val activity = view.context as Activity
-        val handler = AppHandler(
-            gravity = gravity,
-            gravityLand = gravityLand,
-            topMargin = topMargin,
-            leftMargin = leftMargin,
-            color = color,
-            colorLand = colorLand,
-            size = size,
-            sizeLand = sizeLand,
-            width = width,
-            widthLand = widthLand,
-            clickAction = clickAction,
-            upperSwipe = upperSwipe,
-            bottomSwipe = bottomSwipe,
-        )
 
         if (OverlayService.hasPermission(activity)) {
-            mainRepository.setHandler(handler)
 //            OverlayService.stop(activity)
             OverlayService.start(activity)
             toast("Configuration Saved!!")
@@ -526,8 +510,12 @@ class MainViewModel constructor(
     }
 
     fun submitDataLand(view: View) {
+        saveData()
+        (view.context as Activity).finish()
+        toast("Landscape Configuration Saved!!")
+    }
 
-        val activity = view.context as Activity
+    private fun saveData() {
         val handler = AppHandler(
             gravity = gravity,
             gravityLand = gravityLand,
@@ -543,12 +531,7 @@ class MainViewModel constructor(
             upperSwipe = upperSwipe,
             bottomSwipe = bottomSwipe,
         )
-
         mainRepository.setHandler(handler)
-
-        activity.finish()
-
-        toast("Landscape Configuration Saved!!")
     }
 
     fun initializeData() {
