@@ -219,7 +219,7 @@ class OverlayService : Service(), OnTouchListener {
             }
         }
 
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     private fun createOrUpdateHandleView(isPortrait: Boolean) {
@@ -547,15 +547,15 @@ class OverlayService : Service(), OnTouchListener {
     fun onSingleTap(): Boolean {
         when (appHandler!!.clickAction) {
             "None" -> {}
+            "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
             "Mute" -> {
                 audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
                 audioManager.adjustVolume(AudioManager.ADJUST_MUTE, 0)
             }
-            "Lock" -> {
-                lockScreenUtil?.lockScreen()
-            }
-            "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
             "Active Music Overlay" -> createMusicOverlayView()
+            "Lock" -> lockScreenUtil?.lockScreen()
+            "Hide Handler" -> stopSelfService()
+            "Open App" -> openApp()
             else -> {}
         }
         return true
@@ -564,15 +564,15 @@ class OverlayService : Service(), OnTouchListener {
     fun onDoubleTap(): Boolean {
         when (appHandler!!.doubleClickAction) {
             "None" -> {}
+            "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
             "Mute" -> {
                 audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
                 audioManager.adjustVolume(AudioManager.ADJUST_MUTE, 0)
             }
-            "Lock" -> {
-                lockScreenUtil?.lockScreen()
-            }
-            "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
             "Active Music Overlay" -> createMusicOverlayView()
+            "Lock" -> lockScreenUtil?.lockScreen()
+            "Hide Handler" -> stopSelfService()
+            "Open App" -> openApp()
             else -> {}
         }
         return true
@@ -581,32 +581,49 @@ class OverlayService : Service(), OnTouchListener {
     fun onLongPress() {
         when (appHandler!!.longClickAction) {
             "None" -> {}
+            "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
             "Mute" -> {
                 audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
                 audioManager.adjustVolume(AudioManager.ADJUST_MUTE, 0)
             }
-            "Lock" -> {
-                lockScreenUtil?.lockScreen()
-            }
-            "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
             "Active Music Overlay" -> createMusicOverlayView()
+            "Lock" -> lockScreenUtil?.lockScreen()
+            "Hide Handler" -> stopSelfService()
+            "Open App" -> openApp()
             else -> {}
+        }
+    }
+
+    private fun stopSelfService() {
+        if (handleView != null) {
+            windowManager!!.removeView(handleView)
+            handleView = null
+        }
+        try{
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                stopForeground(STOP_FOREGROUND_DETACH)
+            }
+            stopSelf()
+        } catch (_: IllegalStateException) { }
+    }
+
+    private fun openApp() {
+        val packageManager = applicationContext.packageManager
+        val intent = packageManager.getLaunchIntentForPackage(applicationContext.packageName)
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            applicationContext.startActivity(intent)
         }
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
-
-        gestureDetector?.onTouchEvent(event)
-
         when (event.action) {
-
             MotionEvent.ACTION_DOWN -> {
                 actionDownPoint = PointF(event.x, event.y)
                 previousPoint = PointF(event.x, event.y)
                 eventX1 = event.x
             }
-
             MotionEvent.ACTION_UP ->  { }
             MotionEvent.ACTION_MOVE -> {
                 eventX2 = event.x
@@ -617,13 +634,11 @@ class OverlayService : Service(), OnTouchListener {
                 } else if (event.y in halfHeight..view.height.toFloat()) {
                     decreaseVolume()
                 }
-
                 previousPoint = PointF(event.x, event.y)
             }
-
             else -> {}
         }
-
+        gestureDetector?.onTouchEvent(event)
         return true
     }
 

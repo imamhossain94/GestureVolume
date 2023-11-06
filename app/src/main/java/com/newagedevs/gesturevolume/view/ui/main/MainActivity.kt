@@ -1,6 +1,7 @@
 package com.newagedevs.gesturevolume.view.ui.main
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.WallpaperManager
 import android.content.pm.PackageManager
 import android.os.Build
@@ -24,6 +25,7 @@ import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.databinding.ActivityMainBinding
 import com.newagedevs.gesturevolume.service.LockScreenUtil
 import com.newagedevs.gesturevolume.service.OverlayService
+import com.newagedevs.gesturevolume.utils.SharedData
 import com.skydoves.bindables.BindingActivity
 import org.koin.android.viewmodel.ext.android.viewModel
 import java.util.concurrent.TimeUnit
@@ -115,23 +117,24 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         }
 
         override fun onAdDisplayFailed(ad: MaxAd?, error: MaxError?) {
-            this@MainActivity.finish()
+            SharedData.onAdsComplete()
         }
 
         override fun onAdDisplayed(maxAd: MaxAd) {
-            this@MainActivity.finish()
+            //SharedData.onAdsComplete()
         }
 
         override fun onAdClicked(maxAd: MaxAd) {
-            this@MainActivity.finish()
+            SharedData.onAdsComplete()
         }
 
         override fun onAdHidden(maxAd: MaxAd) {
-            this@MainActivity.finish()
+            SharedData.onAdsComplete()
         }
     }
     // ----------------------------------------------------------------
 
+    @SuppressLint("MissingPermission")
     private fun setupPreviewFrame() {
         val preview = findViewById<ImageView>(R.id.bg)
         val wallpaperManager = WallpaperManager.getInstance(this)

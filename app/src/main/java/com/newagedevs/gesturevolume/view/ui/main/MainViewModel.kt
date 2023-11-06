@@ -23,6 +23,7 @@ import com.newagedevs.gesturevolume.utils.SharedData
 import com.skydoves.bindables.BindingViewModel
 import com.skydoves.bindables.bindingProperty
 import timber.log.Timber
+import java.lang.ref.WeakReference
 
 
 class MainViewModel constructor(
@@ -86,16 +87,16 @@ class MainViewModel constructor(
     var clickAction: String? by bindingProperty("Open volume UI")
 
     @get:Bindable
-    var clickActionIcon: Int? by bindingProperty(R.drawable.ic_music_ui)
+    var clickActionIcon: Int? by bindingProperty(R.drawable.ic_vol_increase)
 
     @get:Bindable
-    var doubleClickAction: String? by bindingProperty("Open volume UI")
+    var doubleClickAction: String? by bindingProperty("Mute")
 
     @get:Bindable
-    var doubleClickActionIcon: Int? by bindingProperty(R.drawable.ic_music_ui)
+    var doubleClickActionIcon: Int? by bindingProperty(R.drawable.ic_mute)
 
     @get:Bindable
-    var longClickAction: String? by bindingProperty("Open volume UI")
+    var longClickAction: String? by bindingProperty("Active Music Overlay")
 
     @get:Bindable
     var longClickActionIcon: Int? by bindingProperty(R.drawable.ic_music_ui)
@@ -319,8 +320,8 @@ class MainViewModel constructor(
     @SuppressLint("Range")
     fun clickActionPicker(view: View) {
         val lockScreenUtil =LockScreenUtil(view.context)
-        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_mute, R.drawable.ic_lock, R.drawable.ic_music_ui, R.drawable.ic_music_ui)
-        val titles = listOf("None", "Open volume UI", "Mute", "Active Music Overlay", "Lock")
+        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_increase, R.drawable.ic_mute, R.drawable.ic_music_ui, R.drawable.ic_lock, R.drawable.ic_visibility_hide, R.drawable.ic_app_open)
+        val titles = listOf("None", "Open volume UI", "Mute", "Active Music Overlay", "Lock", "Hide Handler", "Open App")
 
         OptionSheet().show(view.context) {
             title("What should happen when you tap on the handler?")
@@ -332,10 +333,12 @@ class MainViewModel constructor(
                 Option(drawables[2], titles[2]),
                 Option(drawables[3], titles[3]),
                 Option(drawables[4], titles[4]),
+                Option(drawables[5], titles[5]),
+                Option(drawables[6], titles[6])
             )
             onPositive { index: Int, _: Option ->
 
-                if(index == 2 && !lockScreenUtil.active()) {
+                if(index == 4 && !lockScreenUtil.active()) {
                     lockScreenUtil.enableAdmin()
                     return@onPositive
                 }else{
@@ -358,11 +361,11 @@ class MainViewModel constructor(
     @SuppressLint("Range")
     fun doubleClickActionPicker(view: View) {
         val lockScreenUtil =LockScreenUtil(view.context)
-        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_mute, R.drawable.ic_lock, R.drawable.ic_music_ui, R.drawable.ic_music_ui)
-        val titles = listOf("None", "Open volume UI", "Mute", "Active Music Overlay", "Lock")
+        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_increase, R.drawable.ic_mute, R.drawable.ic_music_ui, R.drawable.ic_lock, R.drawable.ic_visibility_hide, R.drawable.ic_app_open)
+        val titles = listOf("None", "Open volume UI", "Mute", "Active Music Overlay", "Lock", "Hide Handler", "Open App")
 
         OptionSheet().show(view.context) {
-            title("What should happen when you tap on the handler?")
+            title("What should happen when you double tap on the handler?")
             columns(1)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
@@ -371,10 +374,12 @@ class MainViewModel constructor(
                 Option(drawables[2], titles[2]),
                 Option(drawables[3], titles[3]),
                 Option(drawables[4], titles[4]),
+                Option(drawables[5], titles[5]),
+                Option(drawables[6], titles[6])
             )
             onPositive { index: Int, _: Option ->
 
-                if(index == 2 && !lockScreenUtil.active()) {
+                if(index == 4 && !lockScreenUtil.active()) {
                     lockScreenUtil.enableAdmin()
                     return@onPositive
                 }else{
@@ -397,11 +402,11 @@ class MainViewModel constructor(
     @SuppressLint("Range")
     fun longClickActionPicker(view: View) {
         val lockScreenUtil =LockScreenUtil(view.context)
-        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_mute, R.drawable.ic_lock, R.drawable.ic_music_ui, R.drawable.ic_music_ui)
-        val titles = listOf("None", "Open volume UI", "Mute", "Active Music Overlay", "Lock")
+        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_increase, R.drawable.ic_mute, R.drawable.ic_music_ui, R.drawable.ic_lock, R.drawable.ic_visibility_hide, R.drawable.ic_app_open)
+        val titles = listOf("None", "Open volume UI", "Mute", "Active Music Overlay", "Lock", "Hide Handler", "Open App")
 
         OptionSheet().show(view.context) {
-            title("What should happen when you tap on the handler?")
+            title("What should happen when you long on the handler?")
             columns(1)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
@@ -410,10 +415,12 @@ class MainViewModel constructor(
                 Option(drawables[2], titles[2]),
                 Option(drawables[3], titles[3]),
                 Option(drawables[4], titles[4]),
+                Option(drawables[5], titles[5]),
+                Option(drawables[6], titles[6])
             )
             onPositive { index: Int, _: Option ->
 
-                if(index == 2 && !lockScreenUtil.active()) {
+                if(index == 4 && !lockScreenUtil.active()) {
                     lockScreenUtil.enableAdmin()
                     return@onPositive
                 }else{
@@ -435,7 +442,7 @@ class MainViewModel constructor(
 
     @SuppressLint("Range")
     fun upperSwipeActionPicker(view: View) {
-        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_plus, R.drawable.ic_vol_increase)
+        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_increase, R.drawable.ic_vol_plus)
         val titles = listOf("None", "Increase volume and show UI", "Increase volume")
 
         OptionSheet().show(view.context) {
@@ -465,7 +472,7 @@ class MainViewModel constructor(
 
     @SuppressLint("Range")
     fun bottomSwipeActionPicker(view: View) {
-        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_plus, R.drawable.ic_vol_increase)
+        val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_decrease, R.drawable.ic_vol_minus)
         val titles = listOf("None", "Decrease volume and show UI", "Decrease volume",)
 
         OptionSheet().show(view.context) {
@@ -556,44 +563,93 @@ class MainViewModel constructor(
     // Landscape Handler settings
     fun switchLandActivity(view: View) {
         saveData()
-        LandConfigActivity.startActivity(view.context)
+
+        val activity = view.context as Activity
+        SharedData.refActivity = WeakReference {
+            interstitialAd.loadAd()
+            LandConfigActivity.startActivity(activity)
+        }
+
+        val clickCount = prefRepository.getClickCount()
+        if (clickCount == 0) {
+            if (interstitialAd.isReady) {
+                interstitialAd.showAd()
+            } else {
+                LandConfigActivity.startActivity(activity)
+            }
+            prefRepository.incrementClickCount()
+        } else if (clickCount < 4) {
+            prefRepository.incrementClickCount()
+            LandConfigActivity.startActivity(activity)
+        } else {
+            if (interstitialAd.isReady) {
+                interstitialAd.showAd()
+            } else {
+                LandConfigActivity.startActivity(activity)
+            }
+            prefRepository.resetClickCount()
+        }
     }
 
     fun finishLandActivity(view: View) {
         val activity = view.context as Activity
-        activity.finish()
+        SharedData.refActivity = WeakReference {
+            interstitialAd.loadAd()
+            activity.finish()
+        }
+
+        val clickCount = prefRepository.getClickCount()
+        if (clickCount == 0) {
+            if (interstitialAd.isReady) {
+                interstitialAd.showAd()
+            } else {
+                activity.finish()
+            }
+            prefRepository.incrementClickCount()
+        } else if (clickCount < 4) {
+            prefRepository.incrementClickCount()
+            activity.finish()
+        } else {
+            if (interstitialAd.isReady) {
+                interstitialAd.showAd()
+            } else {
+                activity.finish()
+            }
+            prefRepository.resetClickCount()
+        }
     }
 
     fun submitData(view: View) {
         saveData()
         val activity = view.context as Activity
+        SharedData.refActivity = WeakReference {
+            activity.finish()
+        }
 
         if (OverlayService.hasPermission(activity)) {
-//            OverlayService.stop(activity)
             OverlayService.start(activity)
             toast("Configuration Saved!!")
-
             SharedData.shouldShowAppOpenAds = true
 
-//            val clickCount = prefRepository.getClickCount()
-//            if (clickCount == 0) {
-//                if (interstitialAd.isReady) {
-//                    interstitialAd.showAd()
-//                } else {
-//                    activity.finish()
-//                }
-//                prefRepository.incrementClickCount()
-//            } else if (clickCount < 2) {
-//                prefRepository.incrementClickCount()
-//                activity.finish()
-//            } else {
-//                if (interstitialAd.isReady) {
-//                    interstitialAd.showAd()
-//                } else {
-//                    activity.finish()
-//                }
-//                prefRepository.resetClickCount()
-//            }
+            val clickCount = prefRepository.getClickCount()
+            if (clickCount == 0) {
+                if (interstitialAd.isReady) {
+                    interstitialAd.showAd()
+                } else {
+                    activity.finish()
+                }
+                prefRepository.incrementClickCount()
+            } else if (clickCount < 4) {
+                prefRepository.incrementClickCount()
+                activity.finish()
+            } else {
+                if (interstitialAd.isReady) {
+                    interstitialAd.showAd()
+                } else {
+                    activity.finish()
+                }
+                prefRepository.resetClickCount()
+            }
         }else {
             toast("Please enable draw overlay permission!!")
         }
@@ -682,36 +738,49 @@ class MainViewModel constructor(
                 "Bold" -> R.drawable.ic_bold
                 else -> R.drawable.ic_small
             }
+
             // Action icons
             clickActionIcon = when (clickAction) {
                 "None" -> R.drawable.ic_nothing
+                "Open volume UI" -> R.drawable.ic_vol_increase
                 "Mute" -> R.drawable.ic_mute
-                "Open volume UI" -> R.drawable.ic_music_ui
-                else -> R.drawable.ic_music_ui
+                "Active Music Overlay" -> R.drawable.ic_music_ui
+                "Lock" -> R.drawable.ic_lock
+                "Hide Handler" -> R.drawable.ic_visibility_hide
+                "Open App" -> R.drawable.ic_app_open
+                else -> R.drawable.ic_nothing
             }
             doubleClickActionIcon = when (doubleClickAction) {
                 "None" -> R.drawable.ic_nothing
+                "Open volume UI" -> R.drawable.ic_vol_increase
                 "Mute" -> R.drawable.ic_mute
-                "Open volume UI" -> R.drawable.ic_music_ui
-                else -> R.drawable.ic_music_ui
+                "Active Music Overlay" -> R.drawable.ic_music_ui
+                "Lock" -> R.drawable.ic_lock
+                "Hide Handler" -> R.drawable.ic_visibility_hide
+                "Open App" -> R.drawable.ic_app_open
+                else -> R.drawable.ic_nothing
             }
             longClickActionIcon = when (longClickAction) {
                 "None" -> R.drawable.ic_nothing
+                "Open volume UI" -> R.drawable.ic_vol_increase
                 "Mute" -> R.drawable.ic_mute
-                "Open volume UI" -> R.drawable.ic_music_ui
-                else -> R.drawable.ic_music_ui
+                "Active Music Overlay" -> R.drawable.ic_music_ui
+                "Lock" -> R.drawable.ic_lock
+                "Hide Handler" -> R.drawable.ic_visibility_hide
+                "Open App" -> R.drawable.ic_app_open
+                else -> R.drawable.ic_nothing
             }
             upperSwipeIcon = when (upperSwipe) {
                 "None" -> R.drawable.ic_nothing
                 "Increase volume" -> R.drawable.ic_vol_plus
                 "Increase volume and show UI" -> R.drawable.ic_vol_increase
-                else -> R.drawable.ic_vol_plus
+                else -> R.drawable.ic_nothing
             }
             bottomSwipeIcon = when (bottomSwipe) {
                 "None" -> R.drawable.ic_nothing
                 "Decrease volume" -> R.drawable.ic_vol_minus
                 "Decrease volume and show UI" -> R.drawable.ic_vol_decrease
-                else -> R.drawable.ic_vol_minus
+                else -> R.drawable.ic_nothing
             }
         }
     }
