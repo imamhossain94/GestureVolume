@@ -17,6 +17,8 @@ class Constants {
         const val Slim = 35
         const val Regular = 45
         const val Bold = 55
+
+        const val showAdsOnEveryClick = 5
     }
 
 }

@@ -419,7 +419,6 @@ class MainViewModel constructor(
                 Option(drawables[6], titles[6])
             )
             onPositive { index: Int, _: Option ->
-
                 if(index == 4 && !lockScreenUtil.active()) {
                     lockScreenUtil.enableAdmin()
                     return@onPositive
@@ -435,7 +434,6 @@ class MainViewModel constructor(
                     longClickActionIcon = drawables[index]
                     longClickAction = titles[index]
                 }
-
             }
         }
     }
@@ -455,7 +453,6 @@ class MainViewModel constructor(
                 Option(drawables[2], titles[2]),
             )
             onPositive { index: Int, _: Option ->
-
                 val textView = view as TextView
 
                 val image = ResourcesCompat.getDrawable(resources, drawables[index], null)
@@ -473,7 +470,7 @@ class MainViewModel constructor(
     @SuppressLint("Range")
     fun bottomSwipeActionPicker(view: View) {
         val drawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_decrease, R.drawable.ic_vol_minus)
-        val titles = listOf("None", "Decrease volume and show UI", "Decrease volume",)
+        val titles = listOf("None", "Decrease volume and show UI", "Decrease volume")
 
         OptionSheet().show(view.context) {
             title("What should happen when you swipe the bottom half of the handler?")
@@ -485,7 +482,6 @@ class MainViewModel constructor(
                 Option(drawables[2], titles[2]),
             )
             onPositive { index: Int, _: Option ->
-
                 val textView = view as TextView
 
                 val image = ResourcesCompat.getDrawable(resources, drawables[index], null)
@@ -578,7 +574,7 @@ class MainViewModel constructor(
                 LandConfigActivity.startActivity(activity)
             }
             prefRepository.incrementClickCount()
-        } else if (clickCount < 4) {
+        } else if (clickCount < Constants.showAdsOnEveryClick) {
             prefRepository.incrementClickCount()
             LandConfigActivity.startActivity(activity)
         } else {
@@ -606,7 +602,7 @@ class MainViewModel constructor(
                 activity.finish()
             }
             prefRepository.incrementClickCount()
-        } else if (clickCount < 4) {
+        } else if (clickCount < Constants.showAdsOnEveryClick) {
             prefRepository.incrementClickCount()
             activity.finish()
         } else {
@@ -639,7 +635,7 @@ class MainViewModel constructor(
                     activity.finish()
                 }
                 prefRepository.incrementClickCount()
-            } else if (clickCount < 4) {
+            } else if (clickCount < Constants.showAdsOnEveryClick) {
                 prefRepository.incrementClickCount()
                 activity.finish()
             } else {
