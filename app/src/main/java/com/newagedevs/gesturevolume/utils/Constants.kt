@@ -14,9 +14,13 @@ class Constants {
         const val Medium = 345
         const val Large = 490
 
-        const val Slim = 35
-        const val Regular = 45
-        const val Bold = 55
+//        const val Slim = 35
+//        const val Regular = 45
+//        const val Bold = 55
+
+        const val Slim = 10
+        const val Regular = 25
+        const val Bold = 35
 
         const val showAdsOnEveryClick = 5
     }

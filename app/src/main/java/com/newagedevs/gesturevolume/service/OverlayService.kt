@@ -268,7 +268,7 @@ class OverlayService : Service(), OnTouchListener {
                     "Regular" -> Constants.Regular
                     "Bold" -> Constants.Bold
                     else -> Constants.Slim
-                }
+                } * 3
             }
             else -> {
                 when (appHandler!!.size) {
@@ -288,12 +288,12 @@ class OverlayService : Service(), OnTouchListener {
                 else -> Constants.Small
             }
         } else {
-            when (appHandler!!.width) {
+            when (appHandler!!.widthLand) {
                 "Slim" -> Constants.Slim
                 "Regular" -> Constants.Regular
                 "Bold" -> Constants.Bold
                 else -> Constants.Slim
-            }
+            } * 3
         }
 
         val defaultDisplay = getSystemService<DisplayManager>()?.getDisplay(Display.DEFAULT_DISPLAY)
@@ -384,6 +384,87 @@ class OverlayService : Service(), OnTouchListener {
         }
     }
 
+    private fun getImageLayoutParams(isPortrait: Boolean): FrameLayout.LayoutParams {
+        val width: Int = when {
+            isPortrait -> {
+                when (appHandler!!.width) {
+                    "Slim" -> Constants.Slim
+                    "Regular" -> Constants.Regular
+                    "Bold" -> Constants.Bold
+                    else -> Constants.Slim
+                }
+            }
+            else -> {
+                when (appHandler!!.size) {
+                    "Small" -> Constants.Small
+                    "Medium" -> Constants.Medium
+                    "Large" -> Constants.Large
+                    else -> Constants.Small
+                }
+            }
+        }
+
+        val height: Int = if (isPortrait) {
+            when (appHandler!!.size) {
+                "Small" -> Constants.Small
+                "Medium" -> Constants.Medium
+                "Large" -> Constants.Large
+                else -> Constants.Small
+            }
+        } else {
+            when (appHandler!!.width) {
+                "Slim" -> Constants.Slim
+                "Regular" -> Constants.Regular
+                "Bold" -> Constants.Bold
+                else -> Constants.Slim
+            }
+        }
+
+        val defaultDisplay = getSystemService<DisplayManager>()?.getDisplay(Display.DEFAULT_DISPLAY)
+
+        val handlerGravity = if (isPortrait) {
+            when (appHandler?.gravity) {
+                "Left" -> {
+                    Gravity.START or Gravity.LEFT
+                }
+                "Right", null -> {
+                    Gravity.END or Gravity.RIGHT
+                }
+                else -> {
+                    Gravity.END or Gravity.RIGHT
+                }
+            }
+        } else {
+            when (val rotation = defaultDisplay?.rotation ?: Surface.ROTATION_0) {
+                Surface.ROTATION_0, Surface.ROTATION_90, Surface.ROTATION_180, Surface.ROTATION_270 -> {
+                    val isTop = appHandler?.gravityLand == "Top"
+                    val isBottom = appHandler?.gravityLand == "Bottom"
+                    when {
+                        isTop -> {
+                            if (rotation == Surface.ROTATION_270) Gravity.BOTTOM else Gravity.TOP
+                        }
+                        isBottom -> {
+                            if (rotation == Surface.ROTATION_270) Gravity.TOP else Gravity.BOTTOM
+                        }
+                        else -> {
+                            if (rotation == Surface.ROTATION_270) Gravity.BOTTOM else Gravity.TOP
+                        }
+                    }
+                }
+                else -> {
+                    Gravity.TOP
+                }
+            }
+        }
+
+        return FrameLayout.LayoutParams(
+            width, height
+        ).apply {
+           gravity = handlerGravity
+        }
+    }
+
+
     @SuppressLint("ClickableViewAccessibility")
     private fun createView(isPortrait: Boolean, layoutParams: WindowManager.LayoutParams, drawable: Drawable?) {
         handleView = FrameLayout(this@OverlayService)
@@ -396,18 +477,9 @@ class OverlayService : Service(), OnTouchListener {
                 Color.BLACK
             }, PorterDuff.Mode.MULTIPLY
         )
-        handleView?.addView(imageView, FrameLayout.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT
-        ).apply {
-            gravity = if (isPortrait) {
-                Gravity.START or Gravity.TOP
-            } else {
-                Gravity.END or Gravity.TOP
-            }
-        })
+        handleView?.addView(imageView, getImageLayoutParams(isPortrait))
 
-        imageView.setOnTouchListener(this@OverlayService)
+        handleView?.setOnTouchListener(this@OverlayService)
 
         windowManager!!.addView(handleView, layoutParams)
     }

@@ -618,34 +618,34 @@ class MainViewModel constructor(
     fun submitData(view: View) {
         saveData()
         val activity = view.context as Activity
-        SharedData.refActivity = WeakReference {
-            activity.finish()
-        }
+//        SharedData.refActivity = WeakReference {
+//            activity.finish()
+//        }
 
         if (OverlayService.hasPermission(activity)) {
             OverlayService.start(activity)
             toast("Configuration Saved!!")
             SharedData.shouldShowAppOpenAds = true
 
-            val clickCount = prefRepository.getClickCount()
-            if (clickCount == 0) {
-                if (interstitialAd.isReady) {
-                    interstitialAd.showAd()
-                } else {
-                    activity.finish()
-                }
-                prefRepository.incrementClickCount()
-            } else if (clickCount < Constants.showAdsOnEveryClick) {
-                prefRepository.incrementClickCount()
-                activity.finish()
-            } else {
-                if (interstitialAd.isReady) {
-                    interstitialAd.showAd()
-                } else {
-                    activity.finish()
-                }
-                prefRepository.resetClickCount()
-            }
+//            val clickCount = prefRepository.getClickCount()
+//            if (clickCount == 0) {
+//                if (interstitialAd.isReady) {
+//                    interstitialAd.showAd()
+//                } else {
+//                    activity.finish()
+//                }
+//                prefRepository.incrementClickCount()
+//            } else if (clickCount < Constants.showAdsOnEveryClick) {
+//                prefRepository.incrementClickCount()
+//                activity.finish()
+//            } else {
+//                if (interstitialAd.isReady) {
+//                    interstitialAd.showAd()
+//                } else {
+//                    activity.finish()
+//                }
+//                prefRepository.resetClickCount()
+//            }
         }else {
             toast("Please enable draw overlay permission!!")
         }
