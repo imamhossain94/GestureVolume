@@ -160,18 +160,14 @@
                                         android:maxLines="2"
                                         android:text="@string/click_here_to_configure_the_landscape_screen_gravity_size_and_thickness_of_the_handler" />
 
-                                    <TextView
+                                    <androidx.appcompat.widget.SwitchCompat
+                                        android:id="@+id/configure_landscape_handler"
                                         android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
                                         android:background="?attr/bg_rounded"
-                                        android:drawablePadding="15dp"
-                                        android:gravity="center|start"
-                                        android:onClick="@{vm.switchLandActivity}"
-                                        android:padding="15dp"
+                                        android:layout_height="wrap_content"
                                         android:text="@string/configure"
-                                        android:scaleX="1"
-                                        android:scaleY="1"
-                                        app:drawableTint="?attr/icon_color"/>
+                                        android:padding="15dp"
+                                        android:onCheckedChanged="@{vm.executeOnLandConfigSwitchStatusChanged}" />
 
                                 </LinearLayout>
 

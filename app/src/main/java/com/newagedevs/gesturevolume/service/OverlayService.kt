@@ -234,9 +234,10 @@ class OverlayService : Service(), OnTouchListener {
             appHandler = getAppHandler()
             looper.post {
                 if (appHandler != null) {
-                    val layoutParams = getLayoutParams(isPortrait)
-                    val drawable = getDrawableAndSetGravity(isPortrait, layoutParams)
-                    createView(isPortrait, layoutParams, drawable)
+                    val portrait = if(appHandler?.activeLand == true) isPortrait else true
+                    val layoutParams = getLayoutParams(portrait)
+                    val drawable = getDrawableAndSetGravity(portrait, layoutParams)
+                    createView(portrait, layoutParams, drawable)
                 }
             }
         }

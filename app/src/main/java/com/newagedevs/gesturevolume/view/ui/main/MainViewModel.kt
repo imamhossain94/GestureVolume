@@ -3,6 +3,7 @@ package com.newagedevs.gesturevolume.view.ui.main
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.view.View
+import android.widget.CompoundButton
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.Bindable
@@ -113,7 +114,9 @@ class MainViewModel constructor(
     @get:Bindable
     var bottomSwipeIcon: Int? by bindingProperty(R.drawable.ic_vol_increase)
 
-    lateinit var interstitialAd: MaxInterstitialAd
+    var activeLand: Boolean = false
+
+    var interstitialAd: MaxInterstitialAd? = null
 
     fun toast(message: String) {
         toast = ""
@@ -557,19 +560,28 @@ class MainViewModel constructor(
     }
 
     // Landscape Handler settings
-    fun switchLandActivity(view: View) {
+    fun executeOnLandConfigSwitchStatusChanged(view: CompoundButton, isChecked: Boolean) {
+        Timber.d("Status changed")
+        activeLand = isChecked
+
+        if(isChecked) {
+            switchLandActivity(view)
+        }
+    }
+
+    private fun switchLandActivity(view: View) {
         saveData()
 
         val activity = view.context as Activity
         SharedData.refActivity = WeakReference {
-            interstitialAd.loadAd()
+            interstitialAd?.loadAd()
             LandConfigActivity.startActivity(activity)
         }
 
         val clickCount = prefRepository.getClickCount()
         if (clickCount == 0) {
-            if (interstitialAd.isReady) {
-                interstitialAd.showAd()
+            if (interstitialAd?.isReady == true) {
+                interstitialAd?.showAd()
             } else {
                 LandConfigActivity.startActivity(activity)
             }
@@ -578,8 +590,8 @@ class MainViewModel constructor(
             prefRepository.incrementClickCount()
             LandConfigActivity.startActivity(activity)
         } else {
-            if (interstitialAd.isReady) {
-                interstitialAd.showAd()
+            if (interstitialAd?.isReady == true) {
+                interstitialAd?.showAd()
             } else {
                 LandConfigActivity.startActivity(activity)
             }
@@ -587,17 +599,24 @@ class MainViewModel constructor(
         }
     }
 
+    fun submitDataLand(view: View) {
+        activeLand = true
+        saveData()
+        (view.context as Activity).finish()
+        toast("Landscape Configuration Saved!!")
+    }
+
     fun finishLandActivity(view: View) {
         val activity = view.context as Activity
         SharedData.refActivity = WeakReference {
-            interstitialAd.loadAd()
+            interstitialAd?.loadAd()
             activity.finish()
         }
 
         val clickCount = prefRepository.getClickCount()
         if (clickCount == 0) {
-            if (interstitialAd.isReady) {
-                interstitialAd.showAd()
+            if (interstitialAd?.isReady == true) {
+                interstitialAd?.showAd()
             } else {
                 activity.finish()
             }
@@ -606,8 +625,8 @@ class MainViewModel constructor(
             prefRepository.incrementClickCount()
             activity.finish()
         } else {
-            if (interstitialAd.isReady) {
-                interstitialAd.showAd()
+            if (interstitialAd?.isReady == true) {
+                interstitialAd?.showAd()
             } else {
                 activity.finish()
             }
@@ -618,44 +637,38 @@ class MainViewModel constructor(
     fun submitData(view: View) {
         saveData()
         val activity = view.context as Activity
-//        SharedData.refActivity = WeakReference {
-//            activity.finish()
-//        }
+        SharedData.refActivity = WeakReference {
+            activity.finish()
+        }
 
         if (OverlayService.hasPermission(activity)) {
             OverlayService.start(activity)
             toast("Configuration Saved!!")
             SharedData.shouldShowAppOpenAds = true
 
-//            val clickCount = prefRepository.getClickCount()
-//            if (clickCount == 0) {
-//                if (interstitialAd.isReady) {
-//                    interstitialAd.showAd()
-//                } else {
-//                    activity.finish()
-//                }
-//                prefRepository.incrementClickCount()
-//            } else if (clickCount < Constants.showAdsOnEveryClick) {
-//                prefRepository.incrementClickCount()
-//                activity.finish()
-//            } else {
-//                if (interstitialAd.isReady) {
-//                    interstitialAd.showAd()
-//                } else {
-//                    activity.finish()
-//                }
-//                prefRepository.resetClickCount()
-//            }
+            val clickCount = prefRepository.getClickCount()
+            if (clickCount == 0) {
+                if (interstitialAd?.isReady == true) {
+                    interstitialAd?.showAd()
+                } else {
+                    activity.finish()
+                }
+                prefRepository.incrementClickCount()
+            } else if (clickCount < Constants.showAdsOnEveryClick) {
+                prefRepository.incrementClickCount()
+                activity.finish()
+            } else {
+                if (interstitialAd?.isReady == true) {
+                    interstitialAd?.showAd()
+                } else {
+                    activity.finish()
+                }
+                prefRepository.resetClickCount()
+            }
         }else {
             toast("Please enable draw overlay permission!!")
         }
 
-    }
-
-    fun submitDataLand(view: View) {
-        saveData()
-        (view.context as Activity).finish()
-        toast("Landscape Configuration Saved!!")
     }
 
     private fun saveData() {
@@ -675,9 +688,11 @@ class MainViewModel constructor(
             longClickAction = longClickAction,
             upperSwipe = upperSwipe,
             bottomSwipe = bottomSwipe,
+            activeLand = activeLand
         )
         mainRepository.setHandler(handler)
     }
+
 
     fun initializeData() {
         val handler = mainRepository.getHandler()
@@ -698,6 +713,7 @@ class MainViewModel constructor(
             longClickAction = handler.longClickAction
             upperSwipe = handler.upperSwipe
             bottomSwipe = handler.bottomSwipe
+            activeLand = handler.activeLand ?: false
 
             // Set icon
             gravityIcon = when (gravity) {

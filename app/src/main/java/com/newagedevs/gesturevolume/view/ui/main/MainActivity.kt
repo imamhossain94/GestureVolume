@@ -52,6 +52,8 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
         createBannerAd()
         createInterstitialAd()
+
+        binding.configureLandscapeHandler?.isChecked = viewModel.activeLand
     }
 
     // ----------------------------------------------------------------
@@ -95,14 +97,12 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
         override fun onAdCollapsed(p0: MaxAd?) { }
     }
-    // ----------------------------------------------------------------
 
-    // ----------------------------------------------------------------
     private fun createInterstitialAd() {
         val interstitialId = BuildConfig.interstitial_AdUnit
         viewModel.interstitialAd = MaxInterstitialAd(interstitialId, this)
-        viewModel.interstitialAd.setListener(interstitialAdsListener)
-        viewModel.interstitialAd.loadAd()
+        viewModel.interstitialAd?.setListener(interstitialAdsListener)
+        viewModel.interstitialAd?.loadAd()
     }
 
     private val interstitialAdsListener = object : MaxAdListener {
@@ -113,7 +113,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         override fun onAdLoadFailed(adUnitId: String?, error: MaxError?) {
             retryAttempt++
             val delayMillis = TimeUnit.SECONDS.toMillis( 2.0.pow(6.0.coerceAtMost(retryAttempt)).toLong() )
-            Handler(Looper.getMainLooper()).postDelayed( { viewModel.interstitialAd.loadAd()  }, delayMillis )
+            Handler(Looper.getMainLooper()).postDelayed( { viewModel.interstitialAd?.loadAd()  }, delayMillis )
         }
 
         override fun onAdDisplayFailed(ad: MaxAd?, error: MaxError?) {

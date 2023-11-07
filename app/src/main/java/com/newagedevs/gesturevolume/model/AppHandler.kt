@@ -24,6 +24,7 @@ data class AppHandler(
     val longClickAction: String?,
     val upperSwipe: String?,
     val bottomSwipe: String?,
+    val activeLand: Boolean?
 ) : Parcelable {
     @IgnoredOnParcel
     @PrimaryKey(autoGenerate = true)

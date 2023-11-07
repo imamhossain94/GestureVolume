@@ -13,6 +13,7 @@ import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.newagedevs.gesturevolume.extensions.px
 import com.newagedevs.gesturevolume.utils.Constants
+import com.skydoves.whatif.whatIfNotNullAs
 import com.skydoves.whatif.whatIfNotNullOrEmpty
 
 
@@ -25,7 +26,6 @@ object ViewBinding {
             Toast.makeText(view.context, it, Toast.LENGTH_SHORT).show()
         }
     }
-
 
     @JvmStatic
     @BindingAdapter(value = ["app:drawableStart"], requireAll = false)
