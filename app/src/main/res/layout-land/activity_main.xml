@@ -76,7 +76,8 @@
                             android:onClick="@{vm.submitData}"
                             android:clickable="true"
                             android:focusable="true"
-                            app:tint="?attr/icon_color"/>
+                            app:tint="?attr/icon_color"
+                            app:srcImageView="@{vm.enabledHandler}"/>
 
                     </LinearLayout>
 

@@ -161,25 +161,25 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:gravity="center"
-            android:layout_gravity="top"
+            android:layout_gravity="start"
             app:landscapeTouchListener="@{vm}"
-            app:setLeftMarginLand="@{vm.leftMargin}"
-            android:visibility="@{vm.gravityLand==`Top`? View.VISIBLE : View.GONE}">
+            app:setTopMargin="@{vm.topMarginLand}"
+            android:visibility="@{vm.gravity==`Right`? View.GONE : View.VISIBLE}">
 
             <ImageView
-                android:layout_width="100dp"
-                android:layout_height="10dp"
-                android:background="@drawable/item_handler_bottom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/item_handler_left"
                 app:imageColorFilter="@{vm.colorLand}"
-                app:layoutHeightLand="@{vm.sizeLand}"
-                app:layoutWidthLand="@{vm.widthLand}"
+                app:layoutHeight="@{vm.sizeLand}"
+                app:layoutWidth="@{vm.widthLand}"
                 android:contentDescription="@string/handler" />
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:padding="5dp"
                 app:drawableStartCompat="@drawable/ic_move"
                 app:drawableTint="?attr/icon_color"/>
@@ -189,27 +189,27 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:gravity="center"
-            android:layout_gravity="bottom"
+            android:layout_gravity="end"
             app:landscapeTouchListener="@{vm}"
-            app:setLeftMarginLand="@{vm.leftMargin}"
-            android:visibility="@{vm.gravityLand==`Top`? View.GONE : View.VISIBLE}">
+            app:setTopMargin="@{vm.topMarginLand}"
+            android:visibility="@{vm.gravity==`Right`? View.VISIBLE : View.GONE}">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:padding="5dp"
                 app:drawableStartCompat="@drawable/ic_move"
                 app:drawableTint="?attr/icon_color"/>
 
             <ImageView
-                android:layout_width="100dp"
-                android:layout_height="10dp"
-                android:background="@drawable/item_handler_top"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/item_handler_right"
                 app:imageColorFilter="@{vm.colorLand}"
-                app:layoutHeightLand="@{vm.sizeLand}"
-                app:layoutWidthLand="@{vm.widthLand}"
+                app:layoutHeight="@{vm.sizeLand}"
+                app:layoutWidth="@{vm.widthLand}"
                 android:contentDescription="@string/handler" />
         </LinearLayout>
 

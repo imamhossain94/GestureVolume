@@ -36,16 +36,19 @@ class MainViewModel constructor(
     var toast: String? by bindingProperty(null)
 
     @get:Bindable
+    var enabledHandler: Boolean by bindingProperty(false)
+
+    @get:Bindable
     var gravity: String? by bindingProperty("Right")
 
     @get:Bindable
-    var gravityLand: String? by bindingProperty("Top")
+    var gravityLand: String? by bindingProperty("Right")
 
     @get:Bindable
     var gravityIcon: Int? by bindingProperty(R.drawable.ic_align_right)
 
     @get:Bindable
-    var gravityIconLand: Int? by bindingProperty(R.drawable.ic_align_top)
+    var gravityIconLand: Int? by bindingProperty(R.drawable.ic_align_right)
 
     @get:Bindable
     var size: String? by bindingProperty("Medium")
@@ -81,7 +84,7 @@ class MainViewModel constructor(
     var topMargin: Float? by bindingProperty(260f)
 
     @get:Bindable
-    var leftMargin: Float? by bindingProperty(260f)
+    var topMarginLand: Float? by bindingProperty(260f)
 
     // Gesture action
     @get:Bindable
@@ -155,8 +158,8 @@ class MainViewModel constructor(
 
     @SuppressLint("Range")
     fun gravityPickerLand(view: View) {
-        val drawables = listOf(R.drawable.ic_align_top, R.drawable.ic_align_bottom)
-        val titles = listOf("Top", "Bottom")
+        val drawables = listOf(R.drawable.ic_align_left, R.drawable.ic_align_right)
+        val titles = listOf("Left", "Right")
 
         OptionSheet().show(view.context) {
             title("Select your handedness or the gravity of the handler")
@@ -578,24 +581,10 @@ class MainViewModel constructor(
             LandConfigActivity.startActivity(activity)
         }
 
-        val clickCount = prefRepository.getClickCount()
-        if (clickCount == 0) {
-            if (interstitialAd?.isReady == true) {
-                interstitialAd?.showAd()
-            } else {
-                LandConfigActivity.startActivity(activity)
-            }
-            prefRepository.incrementClickCount()
-        } else if (clickCount < Constants.showAdsOnEveryClick) {
-            prefRepository.incrementClickCount()
-            LandConfigActivity.startActivity(activity)
+        if (interstitialAd?.isReady == true && prefRepository.shouldShowInterstitialAds()) {
+            interstitialAd?.showAd()
         } else {
-            if (interstitialAd?.isReady == true) {
-                interstitialAd?.showAd()
-            } else {
-                LandConfigActivity.startActivity(activity)
-            }
-            prefRepository.resetClickCount()
+            LandConfigActivity.startActivity(activity)
         }
     }
 
@@ -613,70 +602,52 @@ class MainViewModel constructor(
             activity.finish()
         }
 
-        val clickCount = prefRepository.getClickCount()
-        if (clickCount == 0) {
-            if (interstitialAd?.isReady == true) {
-                interstitialAd?.showAd()
-            } else {
-                activity.finish()
-            }
-            prefRepository.incrementClickCount()
-        } else if (clickCount < Constants.showAdsOnEveryClick) {
-            prefRepository.incrementClickCount()
-            activity.finish()
+        if (interstitialAd?.isReady == true && prefRepository.shouldShowInterstitialAds()) {
+            interstitialAd?.showAd()
         } else {
-            if (interstitialAd?.isReady == true) {
-                interstitialAd?.showAd()
-            } else {
-                activity.finish()
-            }
-            prefRepository.resetClickCount()
+            activity.finish()
         }
     }
 
     fun submitData(view: View) {
-        saveData()
         val activity = view.context as Activity
+
+        if(enabledHandler) {
+            OverlayService.stop(activity)
+            enabledHandler = false
+            saveData()
+            return
+        }
+
         SharedData.refActivity = WeakReference {
             activity.finish()
         }
 
         if (OverlayService.hasPermission(activity)) {
+            enabledHandler = true
+            saveData()
             OverlayService.start(activity)
             toast("Configuration Saved!!")
             SharedData.shouldShowAppOpenAds = true
 
-            val clickCount = prefRepository.getClickCount()
-            if (clickCount == 0) {
-                if (interstitialAd?.isReady == true) {
-                    interstitialAd?.showAd()
-                } else {
-                    activity.finish()
-                }
-                prefRepository.incrementClickCount()
-            } else if (clickCount < Constants.showAdsOnEveryClick) {
-                prefRepository.incrementClickCount()
-                activity.finish()
-            } else {
-                if (interstitialAd?.isReady == true) {
-                    interstitialAd?.showAd()
-                } else {
-                    activity.finish()
-                }
-                prefRepository.resetClickCount()
+            if (interstitialAd?.isReady == true && prefRepository.shouldShowInterstitialAds()) {
+                interstitialAd?.showAd()
             }
+
+            activity.finish()
         }else {
             toast("Please enable draw overlay permission!!")
         }
 
     }
 
-    private fun saveData() {
+    fun saveData() {
         val handler = AppHandler(
+            enabledHandler = enabledHandler,
             gravity = gravity,
             gravityLand = gravityLand,
             topMargin = topMargin,
-            leftMargin = leftMargin,
+            topMarginLand = topMarginLand,
             color = color,
             colorLand = colorLand,
             size = size,
@@ -693,15 +664,15 @@ class MainViewModel constructor(
         mainRepository.setHandler(handler)
     }
 
-
     fun initializeData() {
         val handler = mainRepository.getHandler()
 
         if (handler != null) {
+            enabledHandler = handler.enabledHandler
             gravity = handler.gravity
             gravityLand = handler.gravityLand
             topMargin = handler.topMargin
-            leftMargin = handler.leftMargin
+            topMarginLand = handler.topMarginLand
             color = handler.color
             colorLand = handler.colorLand
             size = handler.size
@@ -713,7 +684,7 @@ class MainViewModel constructor(
             longClickAction = handler.longClickAction
             upperSwipe = handler.upperSwipe
             bottomSwipe = handler.bottomSwipe
-            activeLand = handler.activeLand ?: false
+            activeLand = handler.activeLand
 
             // Set icon
             gravityIcon = when (gravity) {

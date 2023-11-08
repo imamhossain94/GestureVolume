@@ -22,7 +22,8 @@ class Constants {
         const val Regular = 25
         const val Bold = 35
 
-        const val showAdsOnEveryClick = 5
+        const val showAdsOnEveryOpen = 3
+        const val showAdsOnEveryClick = 15
     }
 
 }

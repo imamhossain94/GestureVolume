@@ -9,10 +9,11 @@ import kotlinx.parcelize.Parcelize
 @Entity
 @Parcelize
 data class AppHandler(
+    val enabledHandler: Boolean,
     var gravity: String?,
     var gravityLand: String?,
     val topMargin: Float?,
-    val leftMargin: Float?,
+    val topMarginLand: Float?,
     val color: Int?,
     val colorLand: Int?,
     val size: String?,
@@ -24,7 +25,7 @@ data class AppHandler(
     val longClickAction: String?,
     val upperSwipe: String?,
     val bottomSwipe: String?,
-    val activeLand: Boolean?
+    val activeLand: Boolean
 ) : Parcelable {
     @IgnoredOnParcel
     @PrimaryKey(autoGenerate = true)

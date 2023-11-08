@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.newagedevs.gesturevolume.model.AppHandler
 
-@Database(entities = [AppHandler::class], version = 3, exportSchema = true)
+@Database(entities = [AppHandler::class], version = 6, exportSchema = true)
 @TypeConverters(value = [])
 abstract class AppDatabase : RoomDatabase() {
 

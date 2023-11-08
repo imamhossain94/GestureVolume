@@ -46,10 +46,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         }
 
         setupPreviewFrame()
-
         OverlayService.stop(this)
-        //this.stopService(Intent(this, OverlayService::class.java))
-
         createBannerAd()
         createInterstitialAd()
 
@@ -183,8 +180,9 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
     override fun onPause() {
         super.onPause()
-        if(!OverlayService.isRunning(this)){
-            //OverlayService.start(this)
+        if(viewModel.enabledHandler) {
+            viewModel.saveData()
+            OverlayService.start(this)
         }
     }
 
@@ -192,6 +190,13 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         super.onResume()
         OverlayService.stop(this)
         viewModel.initializeData()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if(viewModel.enabledHandler) {
+            OverlayService.start(this)
+        }
     }
 
     companion object {

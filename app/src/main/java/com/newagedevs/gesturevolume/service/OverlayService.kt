@@ -2,6 +2,7 @@ package com.newagedevs.gesturevolume.service
 
 import android.annotation.SuppressLint
 import android.app.*
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -28,9 +29,9 @@ import com.newagedevs.gesturevolume.utils.Constants
 import com.newagedevs.gesturevolume.utils.SharedData
 import com.newagedevs.gesturevolume.view.ui.main.MainActivity
 import kotlinx.coroutines.*
+import timber.log.Timber
 import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.sqrt
 
 
 class OverlayService : Service(), OnTouchListener {
@@ -44,17 +45,23 @@ class OverlayService : Service(), OnTouchListener {
         private const val START_FOREGROUND_ACTION = "START_FOREGROUND_ACTION"
         private const val STOP_FOREGROUND_ACTION = "STOP_FOREGROUND_ACTION"
 
+        private const val TOUCH_MOVE_FACTOR: Long = 20 // Time in milliseconds
+        private const val TOUCH_TIME_FACTOR: Long = 300 // Time in milliseconds
+        private const val DOUBLE_CLICK_TIME_DELTA: Long = 300 // Time in milliseconds
+        private const val LONG_PRESS_TIME_THRESHOLD: Long = 500 // Time in milliseconds
 
         fun start(activity: Activity) {
             try{
-                val serviceIntent = Intent(activity, OverlayService::class.java).apply {
-                    action = START_FOREGROUND_ACTION
-                }
+                if(hasPermission(activity, false)){
+                    val serviceIntent = Intent(activity, OverlayService::class.java).apply {
+                        action = START_FOREGROUND_ACTION
+                    }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    activity.startForegroundService(serviceIntent)
-                } else {
-                    activity.startService(serviceIntent)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        activity.startForegroundService(serviceIntent)
+                    } else {
+                        activity.startService(serviceIntent)
+                    }
                 }
             } catch (_:Exception) { }
         }
@@ -77,14 +84,15 @@ class OverlayService : Service(), OnTouchListener {
             return false
         }
 
-        fun hasPermission(activity: Activity): Boolean {
+        fun hasPermission(activity: Activity, askPermission: Boolean = true): Boolean {
             if (!Settings.canDrawOverlays(activity)) {
                 SharedData.shouldShowAppOpenAds = false
                 val intent = Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:${activity.packageName}")
                 )
-                activity.startActivityForResult(intent, MainActivity.OVERLAY_REQUEST_CODE)
+                if(askPermission)
+                    activity.startActivityForResult(intent, MainActivity.OVERLAY_REQUEST_CODE)
                 return false
             }
             return true
@@ -92,22 +100,39 @@ class OverlayService : Service(), OnTouchListener {
     }
 
     // Handler Variables
-    var windowManager: WindowManager? = null
+    private var windowManager: WindowManager? = null
     private var handleView: FrameLayout? = null
     var lockScreenUtil: LockScreenUtil? = null
 
     private lateinit var audioManager: AudioManager
     private lateinit var appDatabase: AppDatabase
     private var appHandler: AppHandler? = null
-    private var gestureDetector: GestureDetector? = null
 
     private val looper = Handler(Looper.getMainLooper())
+    private val longPressHandler = Handler(Looper.getMainLooper())
 
     private var eventX1: Float = 0f
     private var eventX2: Float = 0f
 
+
     private var actionDownPoint = PointF(0f, 0f)
     private var previousPoint = PointF(0f, 0f)
+
+    private var touchDownTime = 0L
+    private var lastClickTime = 0L
+
+    // Long press
+    var longPressedRunnable = java.lang.Runnable {
+        // Timber.tag(TAG).e("Long press detected in long press Handler!")
+        onLongPress()
+        isLongPressHandlerActivated = true
+    }
+
+    private var isLongPressHandlerActivated = false
+
+    private var isActionMoveEventStored = false
+    private var lastActionMoveEventBeforeUpX = 0f
+    private var lastActionMoveEventBeforeUpY = 0f
 
     // Music Overlay Variables
     var windowManagerMusic: WindowManager? = null
@@ -122,51 +147,6 @@ class OverlayService : Service(), OnTouchListener {
         ).build()
 
         lockScreenUtil = LockScreenUtil(this)
-
-        gestureDetector = GestureDetector(this@OverlayService, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                // Single tap logic
-                return this@OverlayService.onSingleTap()
-            }
-
-            override fun onDoubleTap(e: MotionEvent): Boolean {
-                // Double tap logic
-                return this@OverlayService.onDoubleTap()
-            }
-
-            override fun onLongPress(e: MotionEvent) {
-                // Long press logic
-                this@OverlayService.onLongPress()
-            }
-
-            override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-                val sensitivityMultiplier = 3.0 // Adjust this value to increase or decrease sensitivity
-
-                val distanceY = (e2.y - e1.y) * sensitivityMultiplier
-                val distanceX = (e2.x - e1.x) * sensitivityMultiplier
-
-                return if (abs(distanceX) > abs(distanceY)) {
-                    if (distanceX > 0) {
-                        // Swipe Left to Right direction to Increase Volume
-                        audioManager.adjustVolume(AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI)
-                    } else {
-                        // Swipe Right to Left direction to Decrease Volume
-                        audioManager.adjustVolume(AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
-                    }
-                    true
-                } else {
-                    if (distanceY > 0) {
-                        // Swipe Up to Down direction to Decrease Volume
-                        audioManager.adjustVolume(AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
-                    } else {
-                        // Swipe Down to Up direction to Increase Volume
-                        audioManager.adjustVolume(AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI)
-                    }
-                    true
-                }
-            }
-
-        })
 
     }
 
@@ -261,7 +241,6 @@ class OverlayService : Service(), OnTouchListener {
     }
 
     private fun getLayoutParams(isPortrait: Boolean): WindowManager.LayoutParams {
-        val displayMetrics = resources.displayMetrics
         val width: Int = when {
             isPortrait -> {
                 when (appHandler!!.width) {
@@ -272,12 +251,12 @@ class OverlayService : Service(), OnTouchListener {
                 } * 3
             }
             else -> {
-                when (appHandler!!.size) {
-                    "Small" -> Constants.Small
-                    "Medium" -> Constants.Medium
-                    "Large" -> Constants.Large
-                    else -> Constants.Small
-                }
+                when (appHandler!!.widthLand) {
+                    "Slim" -> Constants.Slim
+                    "Regular" -> Constants.Regular
+                    "Bold" -> Constants.Bold
+                    else -> Constants.Slim
+                } * 3
             }
         }
 
@@ -289,36 +268,12 @@ class OverlayService : Service(), OnTouchListener {
                 else -> Constants.Small
             }
         } else {
-            when (appHandler!!.widthLand) {
-                "Slim" -> Constants.Slim
-                "Regular" -> Constants.Regular
-                "Bold" -> Constants.Bold
-                else -> Constants.Slim
-            } * 3
-        }
-
-        val defaultDisplay = getSystemService<DisplayManager>()?.getDisplay(Display.DEFAULT_DISPLAY)
-
-        val isTop = appHandler?.gravityLand == "Top"
-        val isBottom = appHandler?.gravityLand == "Bottom"
-
-        val maxDisplayWidthHeight = max(displayMetrics.widthPixels, displayMetrics.heightPixels)
-        val minDisplayWidthHeight = min(displayMetrics.widthPixels, displayMetrics.heightPixels)
-
-        val xLand = when (defaultDisplay?.rotation) {
-            Surface.ROTATION_0 -> appHandler!!.leftMargin!!.toInt()
-            Surface.ROTATION_90 -> if (isBottom) maxDisplayWidthHeight - width - appHandler!!.leftMargin!!.toInt() else appHandler!!.leftMargin!!.toInt()
-            Surface.ROTATION_180 -> 0
-            Surface.ROTATION_270 -> if (isTop) maxDisplayWidthHeight - width - appHandler!!.leftMargin!!.toInt() else appHandler!!.leftMargin!!.toInt()
-            else -> 0
-        }
-
-        val yLand = when (defaultDisplay?.rotation) {
-            Surface.ROTATION_0 -> appHandler!!.leftMargin!!.toInt()
-            Surface.ROTATION_90 -> if (isTop) 0 else minDisplayWidthHeight
-            Surface.ROTATION_180 -> appHandler!!.leftMargin!!.toInt()
-            Surface.ROTATION_270 -> if (isBottom) 0 else minDisplayWidthHeight
-            else -> 0
+            when (appHandler!!.size) {
+                "Small" -> Constants.Small
+                "Medium" -> Constants.Medium
+                "Large" -> Constants.Large
+                else -> Constants.Small
+            }
         }
 
         return WindowManager.LayoutParams(
@@ -329,14 +284,12 @@ class OverlayService : Service(), OnTouchListener {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
-            x = if (isPortrait) 0 else xLand
-            y = if (isPortrait) appHandler!!.topMargin!!.toInt() else yLand
+            x = 0
+            y = if (isPortrait) appHandler!!.topMargin!!.toInt() else 0
         }
     }
 
     private fun getDrawableAndSetGravity(isPortrait: Boolean, layoutParams: WindowManager.LayoutParams): Drawable? {
-        val defaultDisplay = getSystemService<DisplayManager>()?.getDisplay(Display.DEFAULT_DISPLAY)
-
         val gravityStartTop = Gravity.START or Gravity.TOP
         val gravityEndTop = Gravity.END or Gravity.TOP
 
@@ -357,28 +310,18 @@ class OverlayService : Service(), OnTouchListener {
             }
             ContextCompat.getDrawable(this@OverlayService, drawableRes)
         } else {
-            val drawableRes = when (val rotation = defaultDisplay?.rotation ?: Surface.ROTATION_0) {
-                Surface.ROTATION_0, Surface.ROTATION_90, Surface.ROTATION_180, Surface.ROTATION_270 -> {
-                    val isTop = appHandler?.gravityLand == "Top"
-                    val isBottom = appHandler?.gravityLand == "Bottom"
-                    when {
-                        isTop -> {
-                            layoutParams.gravity = gravityStartTop
-                            if (rotation == Surface.ROTATION_270) R.drawable.item_handler_top else R.drawable.item_handler_bottom
-                        }
-                        isBottom -> {
-                            layoutParams.gravity = gravityEndTop
-                            if (rotation == Surface.ROTATION_270) R.drawable.item_handler_bottom else R.drawable.item_handler_top
-                        }
-                        else -> {
-                            layoutParams.gravity = gravityEndTop
-                            if (rotation == Surface.ROTATION_270) R.drawable.item_handler_top else R.drawable.item_handler_bottom
-                        }
-                    }
+            val drawableRes = when (appHandler?.gravityLand) {
+                "Left" -> {
+                    layoutParams.gravity = gravityStartTop
+                    R.drawable.item_handler_left
+                }
+                "Right", null -> {
+                    layoutParams.gravity = gravityEndTop
+                    R.drawable.item_handler_right
                 }
                 else -> {
                     layoutParams.gravity = gravityEndTop
-                    R.drawable.item_handler_bottom
+                    R.drawable.item_handler_right
                 }
             }
             ContextCompat.getDrawable(this@OverlayService, drawableRes)
@@ -396,11 +339,11 @@ class OverlayService : Service(), OnTouchListener {
                 }
             }
             else -> {
-                when (appHandler!!.size) {
-                    "Small" -> Constants.Small
-                    "Medium" -> Constants.Medium
-                    "Large" -> Constants.Large
-                    else -> Constants.Small
+                when (appHandler!!.width) {
+                    "Slim" -> Constants.Slim
+                    "Regular" -> Constants.Regular
+                    "Bold" -> Constants.Bold
+                    else -> Constants.Slim
                 }
             }
         }
@@ -413,15 +356,13 @@ class OverlayService : Service(), OnTouchListener {
                 else -> Constants.Small
             }
         } else {
-            when (appHandler!!.width) {
-                "Slim" -> Constants.Slim
-                "Regular" -> Constants.Regular
-                "Bold" -> Constants.Bold
-                else -> Constants.Slim
+            when (appHandler!!.size) {
+                "Small" -> Constants.Small
+                "Medium" -> Constants.Medium
+                "Large" -> Constants.Large
+                else -> Constants.Small
             }
         }
-
-        val defaultDisplay = getSystemService<DisplayManager>()?.getDisplay(Display.DEFAULT_DISPLAY)
 
         val handlerGravity = if (isPortrait) {
             when (appHandler?.gravity) {
@@ -436,24 +377,15 @@ class OverlayService : Service(), OnTouchListener {
                 }
             }
         } else {
-            when (val rotation = defaultDisplay?.rotation ?: Surface.ROTATION_0) {
-                Surface.ROTATION_0, Surface.ROTATION_90, Surface.ROTATION_180, Surface.ROTATION_270 -> {
-                    val isTop = appHandler?.gravityLand == "Top"
-                    val isBottom = appHandler?.gravityLand == "Bottom"
-                    when {
-                        isTop -> {
-                            if (rotation == Surface.ROTATION_270) Gravity.BOTTOM else Gravity.TOP
-                        }
-                        isBottom -> {
-                            if (rotation == Surface.ROTATION_270) Gravity.TOP else Gravity.BOTTOM
-                        }
-                        else -> {
-                            if (rotation == Surface.ROTATION_270) Gravity.BOTTOM else Gravity.TOP
-                        }
-                    }
+            when (appHandler?.gravityLand) {
+                "Left" -> {
+                    Gravity.START or Gravity.LEFT
+                }
+                "Right", null -> {
+                    Gravity.END or Gravity.RIGHT
                 }
                 else -> {
-                    Gravity.TOP
+                    Gravity.END or Gravity.RIGHT
                 }
             }
         }
@@ -479,9 +411,7 @@ class OverlayService : Service(), OnTouchListener {
             }, PorterDuff.Mode.MULTIPLY
         )
         handleView?.addView(imageView, getImageLayoutParams(isPortrait))
-
         handleView?.setOnTouchListener(this@OverlayService)
-
         windowManager!!.addView(handleView, layoutParams)
     }
 
@@ -617,7 +547,7 @@ class OverlayService : Service(), OnTouchListener {
         }
     }
 
-    fun onSingleTap(): Boolean {
+    private fun onSingleTap(): Boolean {
         when (appHandler!!.clickAction) {
             "None" -> {}
             "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
@@ -634,7 +564,7 @@ class OverlayService : Service(), OnTouchListener {
         return true
     }
 
-    fun onDoubleTap(): Boolean {
+    private fun onDoubleTap(): Boolean {
         when (appHandler!!.doubleClickAction) {
             "None" -> {}
             "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
@@ -651,7 +581,7 @@ class OverlayService : Service(), OnTouchListener {
         return true
     }
 
-    fun onLongPress() {
+    private fun onLongPress() {
         when (appHandler!!.longClickAction) {
             "None" -> {}
             "Open volume UI" -> audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
@@ -689,30 +619,72 @@ class OverlayService : Service(), OnTouchListener {
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+                longPressHandler.postDelayed(longPressedRunnable, LONG_PRESS_TIME_THRESHOLD)
                 actionDownPoint = PointF(event.x, event.y)
                 previousPoint = PointF(event.x, event.y)
+                touchDownTime = now()
                 eventX1 = event.x
             }
-            MotionEvent.ACTION_UP ->  { }
-            MotionEvent.ACTION_MOVE -> {
-                eventX2 = event.x
-
-                val halfHeight = view.height / 2f
-                if (event.y in 0f..halfHeight ) {
-                    increaseVolume()
-                } else if (event.y in halfHeight..view.height.toFloat()) {
-                    decreaseVolume()
+            MotionEvent.ACTION_UP -> {
+                isActionMoveEventStored = false
+                longPressHandler.removeCallbacks(longPressedRunnable);
+                if(isLongPressHandlerActivated) {
+                    isLongPressHandlerActivated = false
+                    return false
                 }
-                previousPoint = PointF(event.x, event.y)
+
+                val isTouchDuration = now() - touchDownTime < TOUCH_TIME_FACTOR
+                val isTouchLength = abs(event.x - actionDownPoint.x) + abs(event.y - actionDownPoint.y) < TOUCH_MOVE_FACTOR
+                val shouldClick = isTouchLength && isTouchDuration
+
+                if (shouldClick) {
+                    if (now() - lastClickTime < DOUBLE_CLICK_TIME_DELTA) {
+                        // Double click
+                        onDoubleTap()
+                        lastClickTime = 0
+                    } else {
+                        lastClickTime = now()
+                        view.performClick()
+                        onSingleTap()
+                    }
+                }
             }
-            else -> {}
+            MotionEvent.ACTION_MOVE, MotionEvent.ACTION_HOVER_MOVE -> {
+
+                if (!isActionMoveEventStored) {
+                    isActionMoveEventStored = true
+                    lastActionMoveEventBeforeUpX = event.x
+                    lastActionMoveEventBeforeUpY = event.y
+                } else {
+                    val currentX = event.x
+                    val currentY = event.y
+                    val firstX = lastActionMoveEventBeforeUpX
+                    val firstY = lastActionMoveEventBeforeUpY
+                    val distance = sqrt(((currentY - firstY) * (currentY - firstY) + (currentX - firstX) * (currentX - firstX)).toDouble())
+                    if (distance > 20) {
+                        longPressHandler.removeCallbacks(longPressedRunnable)
+
+                        eventX2 = event.x
+                        val halfHeight = view.height / 2f
+                        if (event.y in 0f..halfHeight) {
+                            increaseVolume()
+                        } else if (event.y in halfHeight..view.height.toFloat()) {
+                            decreaseVolume()
+                        }
+                        previousPoint = PointF(event.x, event.y)
+                    }
+                }
+            }
         }
-        gestureDetector?.onTouchEvent(event)
         return true
+    }
+
+    private fun now(): Long {
+        return SystemClock.elapsedRealtime()
     }
 
     override fun onDestroy() {

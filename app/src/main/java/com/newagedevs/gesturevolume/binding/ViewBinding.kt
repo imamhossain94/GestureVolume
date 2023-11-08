@@ -1,5 +1,8 @@
 package com.newagedevs.gesturevolume.binding
 
+import android.app.Activity
+import android.content.Context
+import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.view.MotionEvent
@@ -11,6 +14,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
+import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.extensions.px
 import com.newagedevs.gesturevolume.utils.Constants
 import com.skydoves.whatif.whatIfNotNullAs
@@ -30,12 +34,24 @@ object ViewBinding {
     @JvmStatic
     @BindingAdapter(value = ["app:drawableStart"], requireAll = false)
     fun drawableStartCompat(view: TextView, resource: Int?) {
-
         val image = ResourcesCompat.getDrawable(view.resources, resource!!, null)
         image?.setBounds(0, 0, 24.px, 24.px)
 
         view.setCompoundDrawables(image, null, null, null)
+    }
 
+    @JvmStatic
+    @BindingAdapter("app:srcImageView")
+    fun srcImageView(view: ImageView, enabledHandler: Boolean?) {
+        enabledHandler.whatIfNotNullAs<Boolean> {
+            val resource: Int = if (it) {
+                R.drawable.ic_power
+            } else {
+                R.drawable.ic_check
+            }
+
+            view.setImageDrawable(ResourcesCompat.getDrawable(view.context.resources, resource, view.context.theme))
+        }
     }
 
     @JvmStatic
@@ -120,7 +136,7 @@ object ViewBinding {
     @JvmStatic
     @BindingAdapter("landscapeTouchListener", requireAll = false)
     fun setLandscapeTouchListener(self: View, vm: com.newagedevs.gesturevolume.view.ui.main.MainViewModel) {
-        var initialX = 0f
+        var initialY = 0f
         var initialTopMargin = 0
 
         self.setOnTouchListener { view, event ->
@@ -129,16 +145,16 @@ object ViewBinding {
             layoutParams?.let {
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
-                        initialX = event.rawX
-                        initialTopMargin = it.leftMargin
+                        initialY = event.rawY
+                        initialTopMargin = it.topMargin
                     }
                     MotionEvent.ACTION_MOVE -> {
-                        val deltaX = (event.rawX - initialX).toInt()
-                        it.leftMargin = initialTopMargin + deltaX
+                        val deltaY = (event.rawY - initialY).toInt()
+                        it.topMargin = initialTopMargin + deltaY
                         view.layoutParams = it
                     }
                     MotionEvent.ACTION_UP -> {
-                        vm.leftMargin = it.leftMargin.toFloat()
+                        vm.topMarginLand = it.topMargin.toFloat()
                     }
                 }
             }
