@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
@@ -60,12 +61,8 @@
             </intent-filter>
         </receiver>
 
-<!--        <service-->
-<!--            android:name=".service.OverlayService"-->
-<!--            android:exported="false" />-->
-
         <service
-            android:name=".service.OverlayService2"
+            android:name=".service.OverlayService"
             android:exported="false" />
 
         <meta-data android:name="applovin.sdk.key"

@@ -1,6 +1,5 @@
 package com.newagedevs.gesturevolume.service
 
-import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -18,7 +17,7 @@ class BootCompleteReceiver  : BroadcastReceiver() {
             wakeLock.acquire(10 * 60 * 1000L)
 
             // Start service
-            val serviceIntent = Intent(context, OverlayService2::class.java).apply {
+            val serviceIntent = Intent(context, OverlayService::class.java).apply {
                 action = "START_FOREGROUND_ACTION"
             }
 

@@ -50,11 +50,11 @@ class Application : Application() {
 //        val sdk = AppLovinSdk.getInstance(settings, this@Application)
 //        sdk.showMediationDebugger()
 
-    val sdk = AppLovinSdk.getInstance(this@Application)
-    sdk.mediationProvider = "max"
-    sdk.initializeSdk {
-      appOpenManager = AppOpenManager(this@Application)
-    }
+//    val sdk = AppLovinSdk.getInstance(this@Application)
+//    sdk.mediationProvider = "max"
+//    sdk.initializeSdk {
+//      appOpenManager = AppOpenManager(this@Application)
+//    }
   }
 
 }

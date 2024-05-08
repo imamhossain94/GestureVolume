@@ -54,7 +54,7 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="Single tab action" />
+                        android:text="Handler single tab action" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -62,7 +62,7 @@
                         android:background="?attr/bg_rounded"
                         android:drawablePadding="15dp"
                         android:gravity="center|start"
-                        android:onClick="@{viewModel.clickActionPicker}"
+                        android:onClick="clickActionPicker"
                         android:padding="15dp"
                         android:text="@{viewModel.clickAction}"
                         app:drawableStart="@{viewModel.clickActionIcon}"
@@ -85,7 +85,7 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="Double tap action" />
+                        android:text="Handler double tap action" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -93,7 +93,7 @@
                         android:background="?attr/bg_rounded"
                         android:drawablePadding="15dp"
                         android:gravity="center|start"
-                        android:onClick="@{viewModel.doubleClickActionPicker}"
+                        android:onClick="doubleClickActionPicker"
                         android:padding="15dp"
                         android:text="@{viewModel.doubleClickAction}"
                         app:drawableStart="@{viewModel.doubleClickActionIcon}"
@@ -116,7 +116,7 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="Long tap action" />
+                        android:text="Handler long tap action" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -124,7 +124,7 @@
                         android:background="?attr/bg_rounded"
                         android:drawablePadding="15dp"
                         android:gravity="center|start"
-                        android:onClick="@{viewModel.longClickActionPicker}"
+                        android:onClick="longClickActionPicker"
                         android:padding="15dp"
                         android:text="@{viewModel.longClickAction}"
                         app:drawableStart="@{viewModel.longClickActionIcon}"

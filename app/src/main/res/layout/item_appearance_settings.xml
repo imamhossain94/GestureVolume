@@ -53,7 +53,7 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="Select handler position or gravity" />
+                        android:text="Handler position or gravity" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -61,7 +61,7 @@
                         android:background="?attr/bg_rounded"
                         android:drawablePadding="15dp"
                         android:gravity="center|start"
-                        android:onClick="@{viewModel.gravityPicker}"
+                        android:onClick="gravityPicker"
                         android:padding="15dp"
                         android:text="@{viewModel.gravity}"
                         app:drawableStart="@{viewModel.gravityIcon}"
@@ -121,7 +121,7 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="Select handler color and transparency" />
+                        android:text="Handler color and transparency" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -130,7 +130,7 @@
                         android:drawablePadding="15dp"
                         android:gravity="center|start"
                         android:padding="15dp"
-                        android:onClick="@{viewModel.colorPicker}"
+                        android:onClick="colorPicker"
                         android:tag="Symbol Color"
                         app:colorCode="@{viewModel.color}"
                         app:drawableStartCompat="@drawable/ic_color_palette"
@@ -150,7 +150,7 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="Select handler height" />
+                        android:text="Handler size or height" />
 
 <!--                    <SeekBar-->
 <!--                        android:id="@+id/seekBar"-->
@@ -165,7 +165,7 @@
                         android:background="?attr/bg_rounded"
                         android:drawablePadding="15dp"
                         android:gravity="center|start"
-                        android:onClick="@{viewModel.sizePicker}"
+                        android:onClick="sizePicker"
                         android:padding="15dp"
                         android:text="@{viewModel.size}"
                         app:drawableStart="@{viewModel.sizeIcon}"
@@ -187,7 +187,7 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="Select handler thickness" />
+                        android:text="Handler thickness or width" />
 
 <!--                    <SeekBar-->
 <!--                        style="@style/Widget.AppCompat.SeekBar.Discrete"-->
@@ -204,7 +204,7 @@
                         android:background="?attr/bg_rounded"
                         android:drawablePadding="15dp"
                         android:gravity="center|start"
-                        android:onClick="@{viewModel.widthPicker}"
+                        android:onClick="widthPicker"
                         android:padding="15dp"
                         android:text="@{viewModel.width}"
                         app:drawableStart="@{viewModel.widthIcon}"
