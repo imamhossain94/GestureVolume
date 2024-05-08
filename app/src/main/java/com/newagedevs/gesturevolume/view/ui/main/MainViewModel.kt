@@ -14,11 +14,9 @@ import com.maxkeppeler.sheets.option.Option
 import com.maxkeppeler.sheets.option.OptionSheet
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.extensions.*
-import com.newagedevs.gesturevolume.model.AppHandler
-import com.newagedevs.gesturevolume.repository.MainRepository
-import com.newagedevs.gesturevolume.repository.SharedPrefRepository
+import com.newagedevs.gesturevolume.persistence.SharedPrefRepository
 import com.newagedevs.gesturevolume.service.LockScreenUtil
-import com.newagedevs.gesturevolume.service.OverlayService
+import com.newagedevs.gesturevolume.service.OverlayService2
 import com.newagedevs.gesturevolume.utils.Constants
 import com.newagedevs.gesturevolume.utils.SharedData
 import com.skydoves.bindables.BindingViewModel
@@ -28,7 +26,6 @@ import java.lang.ref.WeakReference
 
 
 class MainViewModel constructor(
-    private val mainRepository: MainRepository,
     private val prefRepository: SharedPrefRepository
 ) : BindingViewModel() {
 
@@ -134,7 +131,7 @@ class MainViewModel constructor(
 
         OptionSheet().show(view.context) {
             title("Select your handedness or the gravity of the handler")
-            columns(1)
+            columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
@@ -163,7 +160,7 @@ class MainViewModel constructor(
 
         OptionSheet().show(view.context) {
             title("Select your handedness or the gravity of the handler")
-            columns(1)
+            columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
@@ -192,7 +189,7 @@ class MainViewModel constructor(
 
         OptionSheet().show(view.context) {
             title("Select the height or size of the handler")
-            columns(1)
+            columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
@@ -222,7 +219,7 @@ class MainViewModel constructor(
 
         OptionSheet().show(view.context) {
             title("Select the height or size of the handler")
-            columns(1)
+            columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
@@ -252,7 +249,7 @@ class MainViewModel constructor(
 
         OptionSheet().show(view.context) {
             title("Select the width or thickness of the handler")
-            columns(1)
+            columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
@@ -282,7 +279,7 @@ class MainViewModel constructor(
 
         OptionSheet().show(view.context) {
             title("Select the width or thickness of the handler")
-            columns(1)
+            columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
@@ -331,7 +328,7 @@ class MainViewModel constructor(
 
         OptionSheet().show(view.context) {
             title("What should happen when you tap on the handler?")
-            columns(1)
+            columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
@@ -372,7 +369,7 @@ class MainViewModel constructor(
 
         OptionSheet().show(view.context) {
             title("What should happen when you double tap on the handler?")
-            columns(1)
+            columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
@@ -413,7 +410,7 @@ class MainViewModel constructor(
 
         OptionSheet().show(view.context) {
             title("What should happen when you long on the handler?")
-            columns(1)
+            columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
@@ -451,7 +448,7 @@ class MainViewModel constructor(
 
         OptionSheet().show(view.context) {
             title("What should happen when you swipe the upper half of the handler?")
-            columns(1)
+            columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
@@ -480,7 +477,7 @@ class MainViewModel constructor(
 
         OptionSheet().show(view.context) {
             title("What should happen when you swipe the bottom half of the handler?")
-            columns(1)
+            columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
             with(
                 Option(drawables[0], titles[0]),
@@ -554,7 +551,7 @@ class MainViewModel constructor(
                         toast = "Version: $appVersion"
                     }
                     10 -> {
-                        OverlayService.stop(requireActivity())
+                        OverlayService2.stop(requireActivity())
                         requireActivity().finish()
                     }
                 }
@@ -573,19 +570,18 @@ class MainViewModel constructor(
     }
 
     private fun switchLandActivity(view: View) {
-        saveData()
 
-        val activity = view.context as Activity
-        SharedData.refActivity = WeakReference {
-            interstitialAd?.loadAd()
-            LandConfigActivity.startActivity(activity)
-        }
-
-        if (interstitialAd?.isReady == true && prefRepository.shouldShowInterstitialAds()) {
-            interstitialAd?.showAd()
-        } else {
-            LandConfigActivity.startActivity(activity)
-        }
+//        val activity = view.context as Activity
+//        SharedData.refActivity = WeakReference {
+//            interstitialAd?.loadAd()
+//
+//        }
+//
+//        if (interstitialAd?.isReady == true && prefRepository.shouldShowInterstitialAds()) {
+//            interstitialAd?.showAd()
+//        } else {
+//
+//        }
     }
 
     fun submitDataLand(view: View) {
@@ -613,7 +609,7 @@ class MainViewModel constructor(
         val activity = view.context as Activity
 
         if(enabledHandler) {
-            OverlayService.stop(activity)
+            OverlayService2.stop(activity)
             enabledHandler = false
             saveData()
             return
@@ -623,149 +619,145 @@ class MainViewModel constructor(
             activity.finish()
         }
 
-        if (OverlayService.hasPermission(activity)) {
-            enabledHandler = true
-            saveData()
-            OverlayService.start(activity)
-            toast("Configuration Saved!!")
-            SharedData.shouldShowAppOpenAds = true
+        enabledHandler = true
+        saveData()
+        OverlayService2.start(activity)
+        toast("Configuration Saved!!")
+        SharedData.shouldShowAppOpenAds = true
 
-            if (interstitialAd?.isReady == true && prefRepository.shouldShowInterstitialAds()) {
-                interstitialAd?.showAd()
-            }
-
-            activity.finish()
-        }else {
-            toast("Please enable draw overlay permission!!")
+        if (interstitialAd?.isReady == true && prefRepository.shouldShowInterstitialAds()) {
+            interstitialAd?.showAd()
         }
+
+        activity.finish()
 
     }
 
     fun saveData() {
-        val handler = AppHandler(
-            enabledHandler = enabledHandler,
-            gravity = gravity,
-            gravityLand = gravityLand,
-            topMargin = topMargin,
-            topMarginLand = topMarginLand,
-            color = color,
-            colorLand = colorLand,
-            size = size,
-            sizeLand = sizeLand,
-            width = width,
-            widthLand = widthLand,
-            clickAction = clickAction,
-            doubleClickAction = doubleClickAction,
-            longClickAction = longClickAction,
-            upperSwipe = upperSwipe,
-            bottomSwipe = bottomSwipe,
-            activeLand = activeLand
-        )
-        mainRepository.setHandler(handler)
+//        val handler = AppHandler(
+//            enabledHandler = enabledHandler,
+//            gravity = gravity,
+//            gravityLand = gravityLand,
+//            topMargin = topMargin,
+//            topMarginLand = topMarginLand,
+//            color = color,
+//            colorLand = colorLand,
+//            size = size,
+//            sizeLand = sizeLand,
+//            width = width,
+//            widthLand = widthLand,
+//            clickAction = clickAction,
+//            doubleClickAction = doubleClickAction,
+//            longClickAction = longClickAction,
+//            upperSwipe = upperSwipe,
+//            bottomSwipe = bottomSwipe,
+//            activeLand = activeLand
+//        )
+//        mainRepository.setHandler(handler)
     }
 
     fun initializeData() {
-        val handler = mainRepository.getHandler()
-
-        if (handler != null) {
-            enabledHandler = handler.enabledHandler
-            gravity = handler.gravity
-            gravityLand = handler.gravityLand
-            topMargin = handler.topMargin
-            topMarginLand = handler.topMarginLand
-            color = handler.color
-            colorLand = handler.colorLand
-            size = handler.size
-            sizeLand = handler.sizeLand
-            width = handler.width
-            widthLand = handler.widthLand
-            clickAction = handler.clickAction
-            doubleClickAction = handler.doubleClickAction
-            longClickAction = handler.longClickAction
-            upperSwipe = handler.upperSwipe
-            bottomSwipe = handler.bottomSwipe
-            activeLand = handler.activeLand
-
-            // Set icon
-            gravityIcon = when (gravity) {
-                "Left" -> R.drawable.ic_align_left
-                "Right" -> R.drawable.ic_align_right
-                else -> R.drawable.ic_align_right
-            }
-            gravityIconLand = when (gravityLand) {
-                "Top" -> R.drawable.ic_align_top
-                "Bottom" -> R.drawable.ic_align_bottom
-                else -> R.drawable.ic_align_top
-            }
-            sizeIcon = when (size) {
-                "Small" -> R.drawable.ic_small
-                "Medium" -> R.drawable.ic_medium
-                "Large" -> R.drawable.ic_large
-                else -> R.drawable.ic_small
-            }
-            sizeIconLand = when (size) {
-                "Small" -> R.drawable.ic_small
-                "Medium" -> R.drawable.ic_medium
-                "Large" -> R.drawable.ic_large
-                else -> R.drawable.ic_small
-            }
-            widthIcon = when (width) {
-                "Slim" -> R.drawable.ic_small
-                "Regular" -> R.drawable.ic_regular
-                "Bold" -> R.drawable.ic_bold
-                else -> R.drawable.ic_small
-            }
-            widthIconLand = when (width) {
-                "Slim" -> R.drawable.ic_small
-                "Regular" -> R.drawable.ic_regular
-                "Bold" -> R.drawable.ic_bold
-                else -> R.drawable.ic_small
-            }
-
-            // Action icons
-            clickActionIcon = when (clickAction) {
-                "None" -> R.drawable.ic_nothing
-                "Open volume UI" -> R.drawable.ic_vol_increase
-                "Mute" -> R.drawable.ic_mute
-                "Active Music Overlay" -> R.drawable.ic_music_ui
-                "Lock" -> R.drawable.ic_lock
-                "Hide Handler" -> R.drawable.ic_visibility_hide
-                "Open App" -> R.drawable.ic_app_open
-                else -> R.drawable.ic_nothing
-            }
-            doubleClickActionIcon = when (doubleClickAction) {
-                "None" -> R.drawable.ic_nothing
-                "Open volume UI" -> R.drawable.ic_vol_increase
-                "Mute" -> R.drawable.ic_mute
-                "Active Music Overlay" -> R.drawable.ic_music_ui
-                "Lock" -> R.drawable.ic_lock
-                "Hide Handler" -> R.drawable.ic_visibility_hide
-                "Open App" -> R.drawable.ic_app_open
-                else -> R.drawable.ic_nothing
-            }
-            longClickActionIcon = when (longClickAction) {
-                "None" -> R.drawable.ic_nothing
-                "Open volume UI" -> R.drawable.ic_vol_increase
-                "Mute" -> R.drawable.ic_mute
-                "Active Music Overlay" -> R.drawable.ic_music_ui
-                "Lock" -> R.drawable.ic_lock
-                "Hide Handler" -> R.drawable.ic_visibility_hide
-                "Open App" -> R.drawable.ic_app_open
-                else -> R.drawable.ic_nothing
-            }
-            upperSwipeIcon = when (upperSwipe) {
-                "None" -> R.drawable.ic_nothing
-                "Increase volume" -> R.drawable.ic_vol_plus
-                "Increase volume and show UI" -> R.drawable.ic_vol_increase
-                else -> R.drawable.ic_nothing
-            }
-            bottomSwipeIcon = when (bottomSwipe) {
-                "None" -> R.drawable.ic_nothing
-                "Decrease volume" -> R.drawable.ic_vol_minus
-                "Decrease volume and show UI" -> R.drawable.ic_vol_decrease
-                else -> R.drawable.ic_nothing
-            }
-        }
+//        val handler = mainRepository.getHandler()
+//
+//        if (handler != null) {
+//            enabledHandler = handler.enabledHandler
+//            gravity = handler.gravity
+//            gravityLand = handler.gravityLand
+//            topMargin = handler.topMargin
+//            topMarginLand = handler.topMarginLand
+//            color = handler.color
+//            colorLand = handler.colorLand
+//            size = handler.size
+//            sizeLand = handler.sizeLand
+//            width = handler.width
+//            widthLand = handler.widthLand
+//            clickAction = handler.clickAction
+//            doubleClickAction = handler.doubleClickAction
+//            longClickAction = handler.longClickAction
+//            upperSwipe = handler.upperSwipe
+//            bottomSwipe = handler.bottomSwipe
+//            activeLand = handler.activeLand
+//
+//            // Set icon
+//            gravityIcon = when (gravity) {
+//                "Left" -> R.drawable.ic_align_left
+//                "Right" -> R.drawable.ic_align_right
+//                else -> R.drawable.ic_align_right
+//            }
+//            gravityIconLand = when (gravityLand) {
+//                "Top" -> R.drawable.ic_align_top
+//                "Bottom" -> R.drawable.ic_align_bottom
+//                else -> R.drawable.ic_align_top
+//            }
+//            sizeIcon = when (size) {
+//                "Small" -> R.drawable.ic_small
+//                "Medium" -> R.drawable.ic_medium
+//                "Large" -> R.drawable.ic_large
+//                else -> R.drawable.ic_small
+//            }
+//            sizeIconLand = when (size) {
+//                "Small" -> R.drawable.ic_small
+//                "Medium" -> R.drawable.ic_medium
+//                "Large" -> R.drawable.ic_large
+//                else -> R.drawable.ic_small
+//            }
+//            widthIcon = when (width) {
+//                "Slim" -> R.drawable.ic_small
+//                "Regular" -> R.drawable.ic_regular
+//                "Bold" -> R.drawable.ic_bold
+//                else -> R.drawable.ic_small
+//            }
+//            widthIconLand = when (width) {
+//                "Slim" -> R.drawable.ic_small
+//                "Regular" -> R.drawable.ic_regular
+//                "Bold" -> R.drawable.ic_bold
+//                else -> R.drawable.ic_small
+//            }
+//
+//            // Action icons
+//            clickActionIcon = when (clickAction) {
+//                "None" -> R.drawable.ic_nothing
+//                "Open volume UI" -> R.drawable.ic_vol_increase
+//                "Mute" -> R.drawable.ic_mute
+//                "Active Music Overlay" -> R.drawable.ic_music_ui
+//                "Lock" -> R.drawable.ic_lock
+//                "Hide Handler" -> R.drawable.ic_visibility_hide
+//                "Open App" -> R.drawable.ic_app_open
+//                else -> R.drawable.ic_nothing
+//            }
+//            doubleClickActionIcon = when (doubleClickAction) {
+//                "None" -> R.drawable.ic_nothing
+//                "Open volume UI" -> R.drawable.ic_vol_increase
+//                "Mute" -> R.drawable.ic_mute
+//                "Active Music Overlay" -> R.drawable.ic_music_ui
+//                "Lock" -> R.drawable.ic_lock
+//                "Hide Handler" -> R.drawable.ic_visibility_hide
+//                "Open App" -> R.drawable.ic_app_open
+//                else -> R.drawable.ic_nothing
+//            }
+//            longClickActionIcon = when (longClickAction) {
+//                "None" -> R.drawable.ic_nothing
+//                "Open volume UI" -> R.drawable.ic_vol_increase
+//                "Mute" -> R.drawable.ic_mute
+//                "Active Music Overlay" -> R.drawable.ic_music_ui
+//                "Lock" -> R.drawable.ic_lock
+//                "Hide Handler" -> R.drawable.ic_visibility_hide
+//                "Open App" -> R.drawable.ic_app_open
+//                else -> R.drawable.ic_nothing
+//            }
+//            upperSwipeIcon = when (upperSwipe) {
+//                "None" -> R.drawable.ic_nothing
+//                "Increase volume" -> R.drawable.ic_vol_plus
+//                "Increase volume and show UI" -> R.drawable.ic_vol_increase
+//                else -> R.drawable.ic_nothing
+//            }
+//            bottomSwipeIcon = when (bottomSwipe) {
+//                "None" -> R.drawable.ic_nothing
+//                "Decrease volume" -> R.drawable.ic_vol_minus
+//                "Decrease volume and show UI" -> R.drawable.ic_vol_decrease
+//                else -> R.drawable.ic_nothing
+//            }
+//        }
     }
 
     // Overlay Settings

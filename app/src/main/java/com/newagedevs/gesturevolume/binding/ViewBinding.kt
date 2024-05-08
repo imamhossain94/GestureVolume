@@ -25,7 +25,7 @@ object ViewBinding {
 
     @JvmStatic
     @BindingAdapter("toast")
-    fun bindToast(view: FrameLayout, text: String?) {
+    fun bindToast(view: LinearLayout, text: String?) {
         text.whatIfNotNullOrEmpty {
             Toast.makeText(view.context, it, Toast.LENGTH_SHORT).show()
         }

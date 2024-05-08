@@ -53,7 +53,7 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="Please select your handedness or the gravity of the handler" />
+                        android:text="Select handler position or gravity" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -69,6 +69,44 @@
                         android:scaleY="1"
                         app:drawableTint="?attr/icon_color"/>
 
+<!--                    <RadioGroup-->
+<!--                        android:id="@+id/radioGroup1"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:orientation="horizontal">-->
+
+<!--                       <FrameLayout-->
+<!--                           android:layout_width="0dp"-->
+<!--                           android:layout_height="wrap_content"-->
+<!--                           android:layout_weight="1"-->
+<!--                           android:background="?attr/bg_rounded"-->
+<!--                           android:paddingHorizontal="10dp">-->
+<!--                           <RadioButton-->
+<!--                               android:id="@+id/radioButton1"-->
+<!--                               android:layout_width="match_parent"-->
+<!--                               android:layout_height="wrap_content"-->
+<!--                               android:text="Left" />-->
+<!--                       </FrameLayout>-->
+
+<!--                        <Space-->
+<!--                            android:layout_width="15dp"-->
+<!--                            android:layout_height="wrap_content" />-->
+
+<!--                        <FrameLayout-->
+<!--                            android:layout_width="0dp"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_weight="1"-->
+<!--                            android:background="?attr/bg_rounded"-->
+<!--                            android:paddingHorizontal="10dp">-->
+<!--                            <RadioButton-->
+<!--                                android:id="@+id/radioButton2"-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:text="Right" />-->
+<!--                        </FrameLayout>-->
+
+<!--                    </RadioGroup>-->
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -83,7 +121,7 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="Please select the color and transparency of the handler" />
+                        android:text="Select handler color and transparency" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -112,7 +150,14 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="Please select the height or size of the handler" />
+                        android:text="Select handler height" />
+
+<!--                    <SeekBar-->
+<!--                        android:id="@+id/seekBar"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:background="?attr/bg_rounded"-->
+<!--                        android:padding="15dp"/>-->
 
                     <TextView
                         android:layout_width="match_parent"
@@ -142,7 +187,16 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="Please select the width or thickness of the handler" />
+                        android:text="Select handler thickness" />
+
+<!--                    <SeekBar-->
+<!--                        style="@style/Widget.AppCompat.SeekBar.Discrete"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:background="?attr/bg_rounded"-->
+<!--                        android:padding="15dp"-->
+<!--                        android:max="2"-->
+<!--                        android:progress="1" />-->
 
                     <TextView
                         android:layout_width="match_parent"
@@ -159,6 +213,7 @@
                         app:drawableTint="?attr/icon_color"/>
 
                 </LinearLayout>
+
 
             </LinearLayout>
 

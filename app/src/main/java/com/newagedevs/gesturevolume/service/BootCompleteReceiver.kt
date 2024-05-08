@@ -18,7 +18,7 @@ class BootCompleteReceiver  : BroadcastReceiver() {
             wakeLock.acquire(10 * 60 * 1000L)
 
             // Start service
-            val serviceIntent = Intent(context, OverlayService::class.java).apply {
+            val serviceIntent = Intent(context, OverlayService2::class.java).apply {
                 action = "START_FOREGROUND_ACTION"
             }
 

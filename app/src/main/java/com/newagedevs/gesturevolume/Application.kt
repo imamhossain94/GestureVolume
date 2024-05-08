@@ -14,9 +14,8 @@ import com.applovin.mediation.MaxError
 import com.applovin.mediation.ads.MaxAppOpenAd
 import com.applovin.sdk.AppLovinSdk
 import com.newagedevs.gesturevolume.di.persistenceModule
-import com.newagedevs.gesturevolume.di.repositoryModule
 import com.newagedevs.gesturevolume.di.viewModelModule
-import com.newagedevs.gesturevolume.repository.SharedPrefRepository
+import com.newagedevs.gesturevolume.persistence.SharedPrefRepository
 import com.newagedevs.gesturevolume.utils.SharedData.Companion.shouldShowAppOpenAds
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -34,7 +33,6 @@ class Application : Application() {
 
       //Adding Module
       modules(viewModelModule)
-      modules(repositoryModule)
       modules(persistenceModule)
     }
 
@@ -90,7 +88,7 @@ class AppOpenManager(context: Context) : LifecycleObserver,
 
   @OnLifecycleEvent(Lifecycle.Event.ON_START)
   fun onStart() {
-    showAdIfReady()
+    //showAdIfReady()
   }
 
   override fun onAdLoaded(ad: MaxAd) { }

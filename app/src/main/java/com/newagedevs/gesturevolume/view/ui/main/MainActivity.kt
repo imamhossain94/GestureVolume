@@ -24,7 +24,7 @@ import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.databinding.ActivityMainBinding
 import com.newagedevs.gesturevolume.service.LockScreenUtil
-import com.newagedevs.gesturevolume.service.OverlayService
+import com.newagedevs.gesturevolume.service.OverlayService2
 import com.newagedevs.gesturevolume.utils.SharedData
 import com.skydoves.bindables.BindingActivity
 import org.koin.android.viewmodel.ext.android.viewModel
@@ -45,8 +45,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             vm = viewModel
         }
 
-        setupPreviewFrame()
-        OverlayService.stop(this)
+        OverlayService2.stop(this)
         createBannerAd()
         createInterstitialAd()
 
@@ -68,31 +67,31 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     }
 
     private val bannerAdsListener = object : MaxAdViewAdListener {
-        override fun onAdLoaded(p0: MaxAd?) {
+        override fun onAdLoaded(p0: MaxAd) {
             binding.adsContainer.visibility = View.VISIBLE
         }
 
-        override fun onAdDisplayed(p0: MaxAd?) {
+        override fun onAdDisplayed(p0: MaxAd) {
             binding.adsContainer.visibility = View.VISIBLE
         }
 
-        override fun onAdHidden(p0: MaxAd?) {
+        override fun onAdHidden(p0: MaxAd) {
             binding.adsContainer.visibility = View.GONE
         }
 
-        override fun onAdClicked(p0: MaxAd?) { }
+        override fun onAdClicked(p0: MaxAd) { }
 
-        override fun onAdLoadFailed(p0: String?, p1: MaxError?) {
+        override fun onAdLoadFailed(p0: String, p1: MaxError) {
             binding.adsContainer.visibility = View.GONE
         }
 
-        override fun onAdDisplayFailed(p0: MaxAd?, p1: MaxError?) {
+        override fun onAdDisplayFailed(p0: MaxAd, p1: MaxError) {
             binding.adsContainer.visibility = View.GONE
         }
 
-        override fun onAdExpanded(p0: MaxAd?) { }
+        override fun onAdExpanded(p0: MaxAd) { }
 
-        override fun onAdCollapsed(p0: MaxAd?) { }
+        override fun onAdCollapsed(p0: MaxAd) { }
     }
 
     private fun createInterstitialAd() {
@@ -107,13 +106,13 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             retryAttempt = 0.0
         }
 
-        override fun onAdLoadFailed(adUnitId: String?, error: MaxError?) {
+        override fun onAdLoadFailed(adUnitId: String, error: MaxError) {
             retryAttempt++
             val delayMillis = TimeUnit.SECONDS.toMillis( 2.0.pow(6.0.coerceAtMost(retryAttempt)).toLong() )
             Handler(Looper.getMainLooper()).postDelayed( { viewModel.interstitialAd?.loadAd()  }, delayMillis )
         }
 
-        override fun onAdDisplayFailed(ad: MaxAd?, error: MaxError?) {
+        override fun onAdDisplayFailed(ad: MaxAd, error: MaxError) {
             SharedData.onAdsComplete()
         }
 
@@ -131,29 +130,6 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     }
     // ----------------------------------------------------------------
 
-    @SuppressLint("MissingPermission")
-    private fun setupPreviewFrame() {
-        val preview = findViewById<ImageView>(R.id.bg)
-        val wallpaperManager = WallpaperManager.getInstance(this)
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                    WALLPAPER_REQUEST_CODE
-                )
-                return
-            }
-
-            val wallpaperDrawable = wallpaperManager.drawable
-            preview.setImageDrawable(wallpaperDrawable)
-        }
-    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -164,12 +140,9 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
         if (requestCode == OVERLAY_REQUEST_CODE) {
             if (Settings.canDrawOverlays(this)) {
-                OverlayService.start(this)
+                OverlayService2.start(this)
             }
-        } else if (requestCode == WALLPAPER_REQUEST_CODE) {
-            setupPreviewFrame()
         } else if (requestCode == DEVICE_ADMIN_REQUEST_CODE) {
-
             if (LockScreenUtil(this).active()) {
                 viewModel.clickActionIcon = R.drawable.ic_lock
                 viewModel.clickAction = "Lock"
@@ -182,20 +155,20 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         super.onPause()
         if(viewModel.enabledHandler) {
             viewModel.saveData()
-            OverlayService.start(this)
+            OverlayService2.start(this)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        OverlayService.stop(this)
+        OverlayService2.stop(this)
         viewModel.initializeData()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         if(viewModel.enabledHandler) {
-            OverlayService.start(this)
+            OverlayService2.start(this)
         }
     }
 

@@ -1,9 +1,9 @@
 ext.versions = [
-    minSdk              : 23,
-    compileSdk          : 33,
-    targetSdk           : 33,
-    versionCode         : 6,
-    versionName         : '1.0.6',
+    minSdk              : 26, //23
+    compileSdk          : 34,
+    targetSdk           : 34,
+    versionCode         : 7,
+    versionName         : '1.0.7',
 
     // gradle plugins
     gradleBuildTool     : '4.1.3',
@@ -20,10 +20,10 @@ ext.versions = [
     // architecture components
     lifecycleVersion    : '2.2.0',
     roomVersion         : '2.2.5',
-    archCompomentVersion: '2.1.0',
+    archCompomentVersion: '2.2.0',
 
     // binding
-    bindablesVersion    : '1.0.8',
+    bindablesVersion    : '1.0.9',
 
     // di
     koinVersion         : '2.0.1',
@@ -32,16 +32,16 @@ ext.versions = [
     coroutinesVersion   : '1.4.3',
 
     // glide
-    glideVersion        : '4.12.0',
+    glideVersion        : '4.13.2',
 
     // whatIf
-    whatIfVersion       : '1.1.0',
+    whatIfVersion       : '1.1.1',
 
     // bundler
     bundlerVersion      : '1.0.4',
 
     // debugging
-    timberVersion       : '4.7.1',
+    timberVersion       : '5.0.1',
 
     // sheets
     color               : '2.3.1',

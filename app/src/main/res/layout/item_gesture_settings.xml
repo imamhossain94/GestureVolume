@@ -24,7 +24,7 @@
             android:layout_marginTop="15dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="0dp"
-            android:text="GESTURE SETTINGS"
+            android:text="HANDLER GESTURE SETTINGS"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -54,100 +54,7 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="What should happen when you tap on the handler?" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/bg_rounded"
-                        android:drawablePadding="15dp"
-                        android:gravity="center|start"
-                        android:onClick="@{viewModel.clickActionPicker}"
-                        android:padding="15dp"
-                        android:text="@{viewModel.clickAction}"
-                        app:drawableStart="@{viewModel.clickActionIcon}"
-                        android:scaleX="1"
-                        android:scaleY="1"
-                        app:drawableTint="?attr/icon_color"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:padding="15dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="0dp"
-                        android:layout_marginBottom="5dp"
-                        android:maxLines="2"
-                        android:text="What should happen when you double tap on the handler?" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/bg_rounded"
-                        android:drawablePadding="15dp"
-                        android:gravity="center|start"
-                        android:onClick="@{viewModel.doubleClickActionPicker}"
-                        android:padding="15dp"
-                        android:text="@{viewModel.doubleClickAction}"
-                        app:drawableStart="@{viewModel.doubleClickActionIcon}"
-                        android:scaleX="1"
-                        android:scaleY="1"
-                        app:drawableTint="?attr/icon_color"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:padding="15dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="0dp"
-                        android:layout_marginBottom="5dp"
-                        android:maxLines="2"
-                        android:text="What should happen when you long tap on the handler?" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/bg_rounded"
-                        android:drawablePadding="15dp"
-                        android:gravity="center|start"
-                        android:onClick="@{viewModel.longClickActionPicker}"
-                        android:padding="15dp"
-                        android:text="@{viewModel.longClickAction}"
-                        app:drawableStart="@{viewModel.longClickActionIcon}"
-                        android:scaleX="1"
-                        android:scaleY="1"
-                        app:drawableTint="?attr/icon_color"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:padding="15dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="0dp"
-                        android:layout_marginBottom="5dp"
-                        android:maxLines="2"
-                        android:text="What should happen when you swipe the upper half of the handler?" />
+                        android:text="Handler swipe up action" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -178,7 +85,7 @@
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="5dp"
                         android:maxLines="2"
-                        android:text="What should happen when you swipe the bottom half of the handler?" />
+                        android:text="Handler swipe down action" />
 
                     <TextView
                         android:layout_width="match_parent"

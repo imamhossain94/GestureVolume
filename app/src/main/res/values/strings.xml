@@ -6,7 +6,7 @@
     <string name="gesture_volume">GESTURE VOLUME</string>
 
     <string name="system_wallpaper">system_wallpaper</string>
-    <string name="appearance_settings">APPEARANCE SETTINGS</string>
+    <string name="appearance_settings">HANDLER APPEARANCE SETTINGS</string>
     <string name="handler">handler</string>
 
     <string name="device_description">Lock screen on click with Device Policy Manager API</string>
