@@ -76,8 +76,7 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     companion object {
 
-        private const val TAG = "OverlayService"
-        private const val CHANNEL_ID = "channel2"
+        private const val CHANNEL_ID = "Gesture Volume Channel ID"
         private const val NOTIFICATION_ID = 1
 
         private const val TOUCH_MOVE_FACTOR: Long = 20
@@ -196,6 +195,9 @@ class OverlayService : Service(), OverlayServiceInterface {
         intent?.action?.let {
             when (it) {
                 "show" -> {
+                    if (communicator.hasActiveObservers()) {
+                        communicator.postValue("show")
+                    }
                     createOverlayHandler()
                 }
                 "hide" -> {
@@ -204,7 +206,6 @@ class OverlayService : Service(), OverlayServiceInterface {
                     return START_STICKY
                 }
                 "stop" -> {
-
                     if (communicator.hasActiveObservers()) {
                         communicator.postValue("stop")
                     }
@@ -475,7 +476,7 @@ class OverlayService : Service(), OverlayServiceInterface {
                     }
                     MotionEvent.ACTION_UP -> {
                         isActionMoveEventStored = false
-                        longPressHandler.removeCallbacks(longPressedRunnable);
+                        longPressHandler.removeCallbacks(longPressedRunnable)
                         if(isLongPressHandlerActivated) {
                             isLongPressHandlerActivated = false
                             return@setOnTouchListener false

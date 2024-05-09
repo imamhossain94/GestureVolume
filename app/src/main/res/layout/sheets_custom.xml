@@ -4,20 +4,41 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <com.maxkeppeler.sheets.core.views.SheetsContent
-        android:id="@+id/contentTextView"
-        style="@style/TextAppearance.MaterialComponents.Body2"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:lineSpacingMultiplier="1.4"
+        android:elevation="10dp"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
+
+        <TextView
+            android:id="@+id/premium_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:focusable="false"
+            android:textSize="14sp"
+            android:textStyle="normal"
+            android:text="Gesture Volume has been, and always will be, free of charge and free of ads. This open-source project was created to replace broken volume keys and to extend the lifespan of existing volume keys. If you appreciate my work and would like to buy me a coffee, you can optionally unlock PRO features: access to all handler actions and all gesture actions. Your support is highly appreciated."/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/bg_rounded"
+            android:gravity="center"
+            android:padding="15dp"
+            android:layout_marginVertical="5dp"
+            android:layout_marginHorizontal="15dp"
+            android:text="UPGRADE"
+            android:clickable="true"
+            android:focusable="true"
+            android:scaleX="1"
+            android:scaleY="1"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

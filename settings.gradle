@@ -5,6 +5,10 @@ pluginManagement {
         mavenCentral()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
         maven { url "https://jitpack.io/" }
+        maven { url "https://cboost.jfrog.io/artifactory/chartboost-ads/" }
+        maven { url "https://android-sdk.is.com" }
+        maven { url "https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea" }
+        //noinspection JcenterRepositoryObsolete
         jcenter()
     }
 }
@@ -15,6 +19,10 @@ dependencyResolutionManagement {
         mavenCentral()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
         maven { url "https://jitpack.io/" }
+        maven { url "https://cboost.jfrog.io/artifactory/chartboost-ads/" }
+        maven { url "https://android-sdk.is.com" }
+        maven { url "https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea" }
+        //noinspection JcenterRepositoryObsolete
         jcenter()
     }
 }

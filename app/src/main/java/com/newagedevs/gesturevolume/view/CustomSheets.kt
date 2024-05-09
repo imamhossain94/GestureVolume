@@ -1,4 +1,4 @@
-package com.newagedevs.gesturevolume.view.ui
+package com.newagedevs.gesturevolume.view
 
 import android.content.Context
 import android.os.Bundle
@@ -41,8 +41,10 @@ class CustomSheet() : Sheet() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val contentText = view.findViewById<SheetsContent>(R.id.contentTextView)
-        contentText.text = this.content
+//        val contentText = view.findViewById<SheetsContent>(R.id.contentTextView)
+//        contentText.text = this.content
+
+
     }
 
     fun show(ctx: Context, width: Int? = null, func: CustomSheet.() -> Unit): CustomSheet {
@@ -50,6 +52,8 @@ class CustomSheet() : Sheet() {
         this.width = width
         this.func()
         this.show()
+        this.displayNegativeButton(false)
+        this.displayPositiveButton(false)
         return this
     }
 }

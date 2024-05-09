@@ -8,10 +8,6 @@ class SharedPrefRepository(private val context: Context) {
     // Shared preferences Constants2
     private val sharedPrefName = "MyPrefs"
 
-    // Click count properties
-    private val clickCountKey = "clickCount"
-    private val openCountKey = "openCount"
-
     // New properties
     private val isRunningKey = "isRunning"
 
@@ -31,82 +27,8 @@ class SharedPrefRepository(private val context: Context) {
     private val handlerSwipeUpKey = "handlerSwipeUp"
     private val handlerSwipeDownKey = "handlerSwipeDown"
 
-    // Increment click count
-    private fun incrementClickCount() {
-        val sharedPref = context.getSharedPreferences(sharedPrefName, Context.MODE_PRIVATE)
-        val currentCount = sharedPref.getInt(clickCountKey, 0)
-        val editor = sharedPref.edit()
-        editor.putInt(clickCountKey, currentCount + 1)
-        editor.apply()
-    }
-
-    // Get click count
-    private fun getClickCount(): Int {
-        val sharedPref = context.getSharedPreferences(sharedPrefName, Context.MODE_PRIVATE)
-        return sharedPref.getInt(clickCountKey, 0)
-    }
-
-    // Reset click count
-    private fun resetClickCount() {
-        val sharedPref = context.getSharedPreferences(sharedPrefName, Context.MODE_PRIVATE)
-        val editor = sharedPref.edit()
-        editor.putInt(clickCountKey, 0)
-        editor.apply()
-    }
-
-    // Increment open count
-    private fun incrementOpenCount() {
-        val sharedPref = context.getSharedPreferences(sharedPrefName, Context.MODE_PRIVATE)
-        val currentCount = sharedPref.getInt(openCountKey, 0)
-        val editor = sharedPref.edit()
-        editor.putInt(openCountKey, currentCount + 1)
-        editor.apply()
-    }
-
-    // Get open count
-    private fun getOpenCount(): Int {
-        val sharedPref = context.getSharedPreferences(sharedPrefName, Context.MODE_PRIVATE)
-        return sharedPref.getInt(openCountKey, 0)
-    }
-
-    // Reset open count
-    private fun resetOpenCount() {
-        val sharedPref = context.getSharedPreferences(sharedPrefName, Context.MODE_PRIVATE)
-        val editor = sharedPref.edit()
-        editor.putInt(openCountKey, 0)
-        editor.apply()
-    }
-
-    // Check if interstitial ads should be shown
-    fun shouldShowInterstitialAds(): Boolean {
-        val clickCount = getClickCount()
-        return if (clickCount == 0) {
-            true
-        } else if (clickCount < Constants.showAdsOnEveryClick) {
-            incrementClickCount()
-            false
-        } else {
-            resetClickCount()
-            true
-        }
-    }
-
-    // Check if app open ads should be shown
-    fun shouldShowAppOpenAds(): Boolean {
-        val clickCount = getOpenCount()
-        return if (clickCount == 0) {
-            true
-        } else if (clickCount < Constants.showAdsOnEveryOpen) {
-            incrementOpenCount()
-            false
-        } else {
-            resetOpenCount()
-            true
-        }
-    }
 
     // New properties
-
     // Check if the app is running
     fun isRunning(): Boolean {
         val sharedPref = context.getSharedPreferences(sharedPrefName, Context.MODE_PRIVATE)

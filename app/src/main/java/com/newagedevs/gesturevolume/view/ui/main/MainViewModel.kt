@@ -1,8 +1,6 @@
 package com.newagedevs.gesturevolume.view.ui.main
 
-import android.app.Activity
 import android.view.View
-import android.widget.CompoundButton
 import androidx.databinding.Bindable
 import com.applovin.mediation.ads.MaxInterstitialAd
 import com.maxkeppeler.sheets.option.DisplayMode
@@ -17,11 +15,9 @@ import com.newagedevs.gesturevolume.extensions.shareTheApp
 import com.newagedevs.gesturevolume.persistence.SharedPrefRepository
 import com.newagedevs.gesturevolume.service.OverlayService
 import com.newagedevs.gesturevolume.utils.Constants
-import com.newagedevs.gesturevolume.utils.SharedData
 import com.skydoves.bindables.BindingViewModel
 import com.skydoves.bindables.bindingProperty
 import timber.log.Timber
-import java.lang.ref.WeakReference
 
 
 class MainViewModel(
@@ -92,12 +88,12 @@ class MainViewModel(
     var swipeDownActionIcon: Int? by bindingProperty(R.drawable.ic_vol_increase)
 
     var interstitialAd: MaxInterstitialAd? = null
+    var retryAttempt = 0.0
 
     fun toast(message: String) {
         toast = ""
         toast = message
     }
-
 
     fun openMenu(view: View) {
         val appVersion = getApplicationVersion()

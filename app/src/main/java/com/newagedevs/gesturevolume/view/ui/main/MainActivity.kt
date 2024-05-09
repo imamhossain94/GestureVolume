@@ -6,56 +6,52 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
 import android.provider.Settings
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.res.ResourcesCompat
-import com.applovin.mediation.MaxAd
-import com.applovin.mediation.MaxAdListener
-import com.applovin.mediation.MaxAdViewAdListener
 import com.applovin.mediation.MaxError
-import com.applovin.mediation.ads.MaxAdView
-import com.applovin.mediation.ads.MaxInterstitialAd
 import com.maxkeppeler.sheets.color.ColorSheet
+import com.maxkeppeler.sheets.core.SheetStyle
 import com.maxkeppeler.sheets.option.DisplayMode
 import com.maxkeppeler.sheets.option.Option
 import com.maxkeppeler.sheets.option.OptionSheet
-import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.databinding.ActivityMainBinding
 import com.newagedevs.gesturevolume.extensions.px
+import com.newagedevs.gesturevolume.extensions.toast
+import com.newagedevs.gesturevolume.helper.ApplovinAdsCallback
+import com.newagedevs.gesturevolume.helper.ApplovinAdsManager
 import com.newagedevs.gesturevolume.persistence.SharedPrefRepository
 import com.newagedevs.gesturevolume.service.LockScreenUtil
 import com.newagedevs.gesturevolume.service.OverlayService
 import com.newagedevs.gesturevolume.service.OverlayServiceInterface
 import com.newagedevs.gesturevolume.utils.Constants
-import com.newagedevs.gesturevolume.utils.SharedData
+import com.newagedevs.gesturevolume.view.CustomSheet
 import com.newagedevs.gesturevolume.view.HandlerView
 import com.skydoves.bindables.BindingActivity
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
-import java.util.concurrent.TimeUnit
-import kotlin.math.pow
 
 
 class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main), HandlerView.HandlerPositionChangeListener {
 
     private val viewModel: MainViewModel by viewModel()
     private val preference: SharedPrefRepository by inject()
+
+    private lateinit var adsManager: ApplovinAdsManager
     private lateinit var handlerView: HandlerView
-    private var retryAttempt = 0.0
 
     var overlayService: OverlayServiceInterface? = null
     private var serviceConnection: ServiceConnection? = null
     private var isBound = false
     private var isRunning = false
+
+    var lastBackPressedTime: Long = 0
 
     inner class MyServiceConnection : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
@@ -78,12 +74,37 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             vm = viewModel
         }
 
+        val service = Intent(this, OverlayService::class.java)
+
+        adsManager = ApplovinAdsManager(this, viewModel, binding, object : ApplovinAdsCallback {
+            override fun onInterstitialAdLoaded() {
+
+                startService(service)
+                serviceConnection = MyServiceConnection()
+                serviceConnection?.let {
+                    bindService(service, it, BIND_AUTO_CREATE)
+                    binding.toggleService.text = "Service On"
+                }
+
+            }
+
+            override fun onInterstitialAdFailed(error: MaxError) {
+
+                startService(service)
+                serviceConnection = MyServiceConnection()
+                serviceConnection?.let {
+                    bindService(service, it, BIND_AUTO_CREATE)
+                    binding.toggleService.text = "Service On"
+                }
+
+            }
+        })
+
         isRunning = preference.isRunning()
         handlerView = HandlerView(this)
         handlerView.setHandlerPositionChangeListener(this)
 
         if(isRunning) {
-            val service = Intent(this, OverlayService::class.java)
             if(!isServiceRunning(OverlayService::class.java)) {
                 startService(service)
             }
@@ -97,6 +118,9 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             it?.let {
                 // Do what you need to do here
                 when (it) {
+                    "show" -> {
+                        //finish()
+                    }
                     "stop" -> {
                         preference.setRunning(false)
                         isRunning = false
@@ -113,14 +137,9 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         binding.toggleService.setOnCheckedChangeListener  { view, isChecked ->
             preference.setRunning(isChecked)
             isRunning = isChecked
-            val service = Intent(this, OverlayService::class.java)
+
             if (isChecked) {
-                startService(service)
-                serviceConnection = MyServiceConnection()
-                serviceConnection?.let {
-                    bindService(service, it, BIND_AUTO_CREATE)
-                    view.text = "Service On"
-                }
+                adsManager.createAndShowInterstitialAd()
             } else {
                 if (isBound) {
                     serviceConnection?.let { unbindService(it) }
@@ -139,13 +158,29 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         handlerView.setHandlerPositionIsLocked(false)
         handlerView.setTranslationYPosition(viewModel.translationY)
         handlerView.setViewGravity(if (viewModel.gravity == "Left") Gravity.START else Gravity.END)
-        viewModel.color?.let { handlerView.setViewColor(it, (it shr 24) and 0xFF) }
         handlerView.setViewDimension(Constants.handlerWidthValue(viewModel.width), Constants.handlerSizeValue(viewModel.size))
         handlerView.setHandlerPositionChangeListener(this)
         handlerView.setVibrateOnClick(false)
 
-        createBannerAd()
-        createInterstitialAd()
+        viewModel.color?.let {
+            val alpha = (it shr 24) and 0xFF
+            handlerView.setViewColor(it, alpha)
+        }
+
+        adsManager.createBannerAd()
+
+        onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastBackPressedTime > 2000) {
+                    toast("Press back again to exit")
+                    lastBackPressedTime = currentTime
+                } else {
+                    isEnabled = false
+                    finish()
+                }
+            }
+        })
     }
 
     fun gravityPicker(view: View) {
@@ -247,7 +282,6 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             }
         }
     }
-
 
     fun colorPicker(view: View) {
         ColorSheet().show(view.context) {
@@ -448,6 +482,16 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     fun closeApp(view: View) {
         view.context
         finish()
+
+//        CustomSheet().show(this@MainActivity) {
+//            style(SheetStyle.BOTTOM_SHEET)
+//            title("Upgrade to Pro")
+//            content("Are you sure you want to exit? Hope you will come back again.")
+//            onPositive("Exit") {
+//                finish()
+//            }
+//        }
+
     }
 
     @Suppress("DEPRECATION")
@@ -461,84 +505,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         return false
     }
 
-    // ----------------------------------------------------------------
-    private fun createBannerAd() {
-        val bannerId = BuildConfig.banner_AdUnit
-        val adView = MaxAdView(bannerId, this).apply {
-            setListener(bannerAdsListener)
-            layoutParams = FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                resources.getDimensionPixelSize(R.dimen.banner_height)
-            )
-        }
-        binding.adsContainer.addView(adView)
-        adView.loadAd()
-    }
 
-    private val bannerAdsListener = object : MaxAdViewAdListener {
-        override fun onAdLoaded(p0: MaxAd) {
-            binding.adsContainer.visibility = View.VISIBLE
-        }
-
-        override fun onAdDisplayed(p0: MaxAd) {
-            binding.adsContainer.visibility = View.VISIBLE
-        }
-
-        override fun onAdHidden(p0: MaxAd) {
-            binding.adsContainer.visibility = View.GONE
-        }
-
-        override fun onAdClicked(p0: MaxAd) { }
-
-        override fun onAdLoadFailed(p0: String, p1: MaxError) {
-            binding.adsContainer.visibility = View.GONE
-        }
-
-        override fun onAdDisplayFailed(p0: MaxAd, p1: MaxError) {
-            binding.adsContainer.visibility = View.GONE
-        }
-
-        override fun onAdExpanded(p0: MaxAd) { }
-
-        override fun onAdCollapsed(p0: MaxAd) { }
-    }
-
-    private fun createInterstitialAd() {
-        val interstitialId = BuildConfig.interstitial_AdUnit
-        viewModel.interstitialAd = MaxInterstitialAd(interstitialId, this)
-        viewModel.interstitialAd?.setListener(interstitialAdsListener)
-        viewModel.interstitialAd?.loadAd()
-    }
-
-    private val interstitialAdsListener = object : MaxAdListener {
-        override fun onAdLoaded(maxAd: MaxAd) {
-            retryAttempt = 0.0
-        }
-
-        override fun onAdLoadFailed(adUnitId: String, error: MaxError) {
-            retryAttempt++
-            val delayMillis = TimeUnit.SECONDS.toMillis( 2.0.pow(6.0.coerceAtMost(retryAttempt)).toLong() )
-            Handler(Looper.getMainLooper()).postDelayed( { viewModel.interstitialAd?.loadAd()  }, delayMillis )
-        }
-
-        override fun onAdDisplayFailed(ad: MaxAd, error: MaxError) {
-            SharedData.onAdsComplete()
-        }
-
-        override fun onAdDisplayed(maxAd: MaxAd) {
-            //SharedData.onAdsComplete()
-        }
-
-        override fun onAdClicked(maxAd: MaxAd) {
-            SharedData.onAdsComplete()
-        }
-
-        override fun onAdHidden(maxAd: MaxAd) {
-            SharedData.onAdsComplete()
-        }
-    }
-
-    // ----------------------------------------------------------------
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,

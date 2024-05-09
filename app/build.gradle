@@ -82,8 +82,8 @@ dependencies {
 
     // sheets
     implementation "com.maxkeppeler.sheets:color:$versions.color"
-    implementation "com.maxkeppeler.sheets:calendar:$versions.calendar"
     implementation "com.maxkeppeler.sheets:option:$versions.option"
+
 
     // gson
     implementation "com.google.code.gson:gson:$versions.gson"
@@ -93,7 +93,18 @@ dependencies {
 
     // Applovin
     implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
-    implementation 'com.applovin:applovin-sdk:12.1.0'
+    implementation 'com.applovin:applovin-sdk:12.4.2'
     implementation "androidx.lifecycle:lifecycle-process:2.7.0"
+
+    implementation 'com.applovin.mediation:chartboost-adapter:9.7.0.0'
+    implementation 'com.google.android.gms:play-services-base:18.4.0'
+    implementation 'com.applovin.mediation:inmobi-adapter:10.6.7.0'
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'com.applovin.mediation:ironsource-adapter:8.0.0.0.0'
+    implementation 'com.applovin.mediation:vungle-adapter:7.3.2.0'
+    implementation 'com.applovin.mediation:facebook-adapter:6.17.0.0'
+    implementation 'com.applovin.mediation:mintegral-adapter:16.7.31.0'
+    implementation 'com.applovin.mediation:unityads-adapter:4.10.0.0'
 
 }

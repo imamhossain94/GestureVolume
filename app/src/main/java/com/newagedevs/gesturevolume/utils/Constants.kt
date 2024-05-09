@@ -14,10 +14,6 @@ class Constants {
         const val publisherName = "https://play.google.com/store/apps/developer?id=NewAgeDevs"
         const val appStoreId = "https://play.google.com/store/apps/details?id=com.newagedevs.edgegestures"
 
-        const val showAdsOnEveryClick: Int = 5
-        const val showAdsOnEveryOpen: Int = 3
-
-
         val gravityDrawables = listOf(R.drawable.ic_align_left, R.drawable.ic_align_right)
         val gravityTitles = listOf("Left", "Right")
 
@@ -37,8 +33,7 @@ class Constants {
         val swipeDownTitles = listOf("None", "Decrease volume and show UI", "Decrease volume")
 
         // Default values for handler
-        val defaultHandlerColor: Int = Color.parseColor("#FF81C784")
-
+        val defaultHandlerColor: Int = Color.parseColor("#80808080")
 
         fun handlerSizeValue(title: String?): Int {
             return when(title) {
