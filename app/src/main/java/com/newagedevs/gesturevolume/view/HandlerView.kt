@@ -1,4 +1,4 @@
-package com.newagedevs.gesturevolume.view.ui
+package com.newagedevs.gesturevolume.view
 
 import android.R.attr
 import android.annotation.SuppressLint

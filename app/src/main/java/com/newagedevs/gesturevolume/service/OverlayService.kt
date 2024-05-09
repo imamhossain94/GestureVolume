@@ -27,11 +27,12 @@ import android.view.View
 import android.view.WindowManager
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.MutableLiveData
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.model.UnlockCondition
 import com.newagedevs.gesturevolume.persistence.SharedPrefRepository
 import com.newagedevs.gesturevolume.utils.Constants
-import com.newagedevs.gesturevolume.view.ui.HandlerView
+import com.newagedevs.gesturevolume.view.HandlerView
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -45,7 +46,6 @@ interface OverlayServiceInterface {
 
 class OverlayService : Service(), OverlayServiceInterface {
 
-
     private val binder: IBinder = LocalBinder()
 
     inner class LocalBinder : Binder() {
@@ -54,6 +54,10 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     override fun onBind(intent: Intent?): IBinder {
         return binder
+    }
+
+    override fun onRebind(intent: Intent?) {
+        super.onRebind(intent)
     }
 
     private var overlayView: View? = null
@@ -76,6 +80,8 @@ class OverlayService : Service(), OverlayServiceInterface {
         private const val TOUCH_TIME_FACTOR: Long = 300
         private const val DOUBLE_CLICK_TIME_DELTA: Long = 300
         private const val LONG_PRESS_TIME_THRESHOLD: Long = 500
+
+        val communicator = MutableLiveData<Any>()
 
         fun start(context: Context) {
             try{
@@ -188,6 +194,11 @@ class OverlayService : Service(), OverlayServiceInterface {
                     return START_STICKY
                 }
                 "stop" -> {
+
+                    if (communicator.hasActiveObservers()) {
+                        communicator.postValue("stop")
+                    }
+
                     SharedPrefRepository(this).setRunning(false)
                     hideOverlayView()
                     hideHandlerView()
@@ -212,6 +223,7 @@ class OverlayService : Service(), OverlayServiceInterface {
             val handlerSize = SharedPrefRepository(this).getHandlerSize()
             val handlerWidth = SharedPrefRepository(this).getHandlerWidth()
             val translationY = SharedPrefRepository(this).getHandlerTranslationY()
+            val clickAction = SharedPrefRepository(this).getHandlerSingleTapAction()
 
             val layoutParams = WindowManager.LayoutParams(
                 Constants.handlerWidthValue(handlerWidth),
@@ -243,11 +255,43 @@ class OverlayService : Service(), OverlayServiceInterface {
             })
 
             handlerView?.setOnClickListener {
-                hideHandlerView()
-                createOverlayView()
+
+                when (clickAction) {
+                    "None" -> { }
+                    "Open volume UI" -> {
+                        audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+                    }
+                    "Mute" -> {
+                        audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+                        audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
+                    }
+                    "Active Music Overlay" -> {
+                        hideHandlerView()
+                        createOverlayView()
+                    }
+                    "Lock" -> {
+                        lockScreenUtil?.lockScreen()
+                    }
+                    "Hide Handler" -> {
+                        hideHandlerView()
+                    }
+                    "Open App" -> {
+                        openApp()
+                    }
+                    else -> { }
+                }
             }
 
             windowManager?.addView(handlerView, layoutParams)
+        }
+    }
+
+    private fun openApp() {
+        val packageManager = applicationContext.packageManager
+        val intent = packageManager.getLaunchIntentForPackage(applicationContext.packageName)
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            applicationContext.startActivity(intent)
         }
     }
 

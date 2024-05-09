@@ -3,7 +3,6 @@ package com.newagedevs.gesturevolume.view.ui.main
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
@@ -38,7 +37,7 @@ import com.newagedevs.gesturevolume.service.OverlayService
 import com.newagedevs.gesturevolume.service.OverlayServiceInterface
 import com.newagedevs.gesturevolume.utils.Constants
 import com.newagedevs.gesturevolume.utils.SharedData
-import com.newagedevs.gesturevolume.view.ui.HandlerView
+import com.newagedevs.gesturevolume.view.HandlerView
 import com.skydoves.bindables.BindingActivity
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
@@ -53,39 +52,23 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     private lateinit var handlerView: HandlerView
     private var retryAttempt = 0.0
 
-    private var overlayServiceInterface: OverlayServiceInterface? = null
-
+    var overlayService: OverlayServiceInterface? = null
+    private var serviceConnection: ServiceConnection? = null
     private var isBound = false
     private var isRunning = false
 
-    private val connection: ServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(componentName: ComponentName, iBinder: IBinder) {
-            overlayServiceInterface = (iBinder as OverlayService.LocalBinder).instance()
+    inner class MyServiceConnection : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            overlayService = (service as OverlayService.LocalBinder).instance()
             isBound = true
         }
 
-        override fun onServiceDisconnected(componentName: ComponentName) {
-            overlayServiceInterface = null
+        override fun onServiceDisconnected(name: ComponentName) {
+            overlayService = null
             isBound = false
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (isRunning) {
-            val serviceIntent = Intent(this, OverlayService::class.java)
-            if(!isServiceRunning(OverlayService::class.java)) {
-                startForegroundService(serviceIntent)
-            }
-            bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE)
-            overlayServiceInterface?.hide()
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        unbindService(connection)
-    }
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,26 +82,52 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         handlerView = HandlerView(this)
         handlerView.setHandlerPositionChangeListener(this)
 
+        if(isRunning) {
+            val service = Intent(this, OverlayService::class.java)
+            if(!isServiceRunning(OverlayService::class.java)) {
+                startService(service)
+            }
+            serviceConnection = MyServiceConnection()
+            serviceConnection?.let {
+                bindService(service, it, BIND_AUTO_CREATE)
+            }
+        }
+
+        OverlayService.communicator.observe(this@MainActivity) {
+            it?.let {
+                // Do what you need to do here
+                when (it) {
+                    "stop" -> {
+                        preference.setRunning(false)
+                        isRunning = false
+                        binding.toggleService.isChecked = isRunning
+                        binding.toggleService.text = if (isRunning) "Service On" else "Service Off"
+                    }
+                }
+            }
+        }
+
         binding.rootLayout.addView(handlerView)
         binding.toggleService.isChecked = isRunning
         binding.toggleService.text = if (isRunning) "Service On" else "Service Off"
         binding.toggleService.setOnCheckedChangeListener  { view, isChecked ->
             preference.setRunning(isChecked)
             isRunning = isChecked
-
-            if (isChecked && !isBound) {
-                val serviceIntent = Intent(this, OverlayService::class.java)
-                if(!isServiceRunning(OverlayService::class.java)){
-                    startForegroundService(serviceIntent)
+            val service = Intent(this, OverlayService::class.java)
+            if (isChecked) {
+                startService(service)
+                serviceConnection = MyServiceConnection()
+                serviceConnection?.let {
+                    bindService(service, it, BIND_AUTO_CREATE)
+                    view.text = "Service On"
                 }
-                bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE)
-                overlayServiceInterface?.show()
-                isBound = true
-                view.text = "Service On"
-            } else if (!isChecked && isBound) {
-                unbindService(connection)
-                isBound = false
-                view.text = "Service Off"
+            } else {
+                if (isBound) {
+                    serviceConnection?.let { unbindService(it) }
+                    stopService(service)
+                    isBound = false
+                    view.text = "Service Off"
+                }
             }
         }
 
@@ -437,6 +446,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     }
 
     fun closeApp(view: View) {
+        view.context
         finish()
     }
 
@@ -450,7 +460,6 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         }
         return false
     }
-
 
     // ----------------------------------------------------------------
     private fun createBannerAd() {
@@ -528,9 +537,8 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             SharedData.onAdsComplete()
         }
     }
+
     // ----------------------------------------------------------------
-
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -548,31 +556,15 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
                 viewModel.clickAction = "Lock"
             }
         }
-
     }
-
-//    override fun onPause() {
-//        super.onPause()
-//        if (isBound) {
-//            unbindService(connection)
-//            isBound = false
-//        }
-//    }
 
     override fun onResume() {
         super.onResume()
         isRunning = preference.isRunning()
         binding.toggleService.isChecked = isRunning
         binding.toggleService.text = if (isRunning) "Service On" else "Service Off"
+        overlayService?.hide()
     }
-
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        if (isBound) {
-//            unbindService(connection)
-//            isBound = false
-//        }
-//    }
 
     override fun onVertical(rawY: Float) {
         preference.setHandlerTranslationY(rawY)
