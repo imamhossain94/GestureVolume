@@ -15,6 +15,7 @@ import com.applovin.mediation.ads.MaxAppOpenAd
 import com.applovin.sdk.AppLovinSdk
 import com.newagedevs.gesturevolume.di.persistenceModule
 import com.newagedevs.gesturevolume.di.viewModelModule
+import com.newagedevs.gesturevolume.persistence.SharedPrefRepository
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import timber.log.Timber
@@ -33,7 +34,9 @@ class Application : Application() {
             modules(persistenceModule)
         }
 
-        initializeAppLovinSdk()
+        if(!SharedPrefRepository(this).isProFeatureActivated()) {
+            initializeAppLovinSdk()
+        }
 
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())

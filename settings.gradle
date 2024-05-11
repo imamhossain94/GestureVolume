@@ -8,6 +8,7 @@ pluginManagement {
         maven { url "https://cboost.jfrog.io/artifactory/chartboost-ads/" }
         maven { url "https://android-sdk.is.com" }
         maven { url "https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea" }
+        maven { url "https://s3.amazonaws.com/smaato-sdk-releases/" }
         //noinspection JcenterRepositoryObsolete
         jcenter()
     }
@@ -22,6 +23,7 @@ dependencyResolutionManagement {
         maven { url "https://cboost.jfrog.io/artifactory/chartboost-ads/" }
         maven { url "https://android-sdk.is.com" }
         maven { url "https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea" }
+        maven { url "https://s3.amazonaws.com/smaato-sdk-releases/" }
         //noinspection JcenterRepositoryObsolete
         jcenter()
     }

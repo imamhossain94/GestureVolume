@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.PixelFormat
@@ -19,7 +20,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
-import android.provider.Settings
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -86,26 +86,6 @@ class OverlayService : Service(), OverlayServiceInterface {
 
         val communicator = MutableLiveData<Any>()
 
-        fun start(context: Context) {
-            try{
-                if (Settings.canDrawOverlays(context)) {
-                    val intent = Intent(context, OverlayService::class.java)
-                    context.startForegroundService(intent)
-                }
-            } catch (_:Exception) { }
-        }
-
-        fun stop(context: Context) {
-            try{
-                if (Settings.canDrawOverlays(context)) {
-                    val intent = Intent(context, OverlayService::class.java).apply {
-                        putExtra("command", "stop")
-                    }
-                    context.stopService(intent)
-                }
-            } catch (_:Exception) { }
-        }
-
         private var volume: Int = 0
     }
 
@@ -144,7 +124,7 @@ class OverlayService : Service(), OverlayServiceInterface {
     private var lastActionMoveEventBeforeUpX = 0f
     private var lastActionMoveEventBeforeUpY = 0f
 
-    @SuppressLint("ForegroundServiceType")
+
     override fun onCreate() {
         super.onCreate()
 
@@ -153,12 +133,14 @@ class OverlayService : Service(), OverlayServiceInterface {
         maxVolume = audioManager!!.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
         lockScreenUtil = LockScreenUtil(this)
 
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            "Overlay notification",
-            NotificationManager.IMPORTANCE_HIGH
-        )
-        (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Overlay notification",
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
+        }
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_gesture)
@@ -173,7 +155,18 @@ class OverlayService : Service(), OverlayServiceInterface {
             .addAction(R.drawable.ic_power, "Stop", getPendingIntent("stop"))
             .build()
 
-        startForeground(NOTIFICATION_ID, notification)
+
+        if (Build.VERSION.SDK_INT >= 34) {
+            startForeground(
+                NOTIFICATION_ID,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        }else {
+            startForeground(
+                NOTIFICATION_ID,
+                notification)
+        }
+
     }
 
 
@@ -188,7 +181,15 @@ class OverlayService : Service(), OverlayServiceInterface {
         super.onDestroy()
         hideOverlayView()
         hideHandlerView()
-        stopForeground(STOP_FOREGROUND_REMOVE)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            try{
+                stopForeground(true)
+            }catch (_:Exception) { }
+        }
+        stopSelf()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -213,7 +214,13 @@ class OverlayService : Service(), OverlayServiceInterface {
                     preference.setRunning(false)
                     hideOverlayView()
                     hideHandlerView()
-                    stopForeground(STOP_FOREGROUND_REMOVE)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        stopForeground(STOP_FOREGROUND_REMOVE)
+                    } else {
+                        try{
+                            stopForeground(true)
+                        }catch (_:Exception) { }
+                    }
                     stopSelf()
                 }
             }

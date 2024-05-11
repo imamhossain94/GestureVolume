@@ -95,67 +95,6 @@ class MainViewModel(
         toast = message
     }
 
-    fun openMenu(view: View) {
-        val appVersion = getApplicationVersion()
-        OptionSheet().show(view.context) {
-            title("Menu")
-            columns(3)
-            displayMode(DisplayMode.GRID_VERTICAL)
-            with(
-                Option(R.drawable.ic_share, "Share"),
-                Option(R.drawable.ic_edit, "Write us"),
-                Option(R.drawable.ic_feedback, "Feedback"),
-                Option(R.drawable.ic_bug, "Bug reports"),
-                Option(R.drawable.ic_privacy, "Privacy policy"),
-                Option(R.drawable.ic_playstore, "Other apps"),
-                Option(R.drawable.ic_star, "Rate us"),
-                Option(R.drawable.ic_github, "Source code"),
-                Option(R.drawable.ic_svg, "Icons by"),
-                Option(R.drawable.ic_plugin, "V:$appVersion"),
-                Option(R.drawable.ic_power, "Exit"),
-            )
-            onPositive { index: Int, _: Option ->
-                when (index) {
-                    0 -> {
-                        shareTheApp(requireActivity())
-                    }
-                    1 -> {
-                        openMailApp(requireActivity(), "Writing about app", Constants.contactMail)
-                    }
-                    2 -> {
-                        openMailApp(requireActivity(), "Feedback", Constants.feedbackMail)
-                    }
-                    3 -> {
-                        openMailApp(requireActivity(), "Bug reports", Constants.feedbackMail)
-                    }
-                    4 -> {
-                        openWebPage(requireActivity(), Constants.privacyPolicyUrl) { toast = it }
-                    }
-                    5 -> {
-                        openAppStore(requireActivity(), Constants.publisherName) { toast = it }
-                    }
-                    6 -> {
-                        openAppStore(requireActivity(), Constants.appStoreId) { toast = it }
-                    }
-                    7 -> {
-                        openWebPage(requireActivity(), Constants.sourceCodeUrl) { toast = it }
-                    }
-                    8 -> {
-                        toast = "Icons by svgrepo.com"
-                    }
-                    9 -> {
-                        toast = "Version: $appVersion"
-                    }
-                    10 -> {
-                        OverlayService.stop(requireActivity())
-                        requireActivity().finish()
-                    }
-                }
-            }
-        }
-    }
-
-
     private fun initializeData() {
         // Handler properties
         gravity = pref.getHandlerPosition()

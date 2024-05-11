@@ -2,7 +2,7 @@
     <!-- Base application theme. -->
     <style name="Theme.EdgeGestures" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">#5a5aa7</item>
+        <item name="colorPrimary">@color/white</item>
         <item name="colorPrimaryVariant">#343541</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->

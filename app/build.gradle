@@ -84,6 +84,8 @@ dependencies {
     implementation "com.maxkeppeler.sheets:color:$versions.color"
     implementation "com.maxkeppeler.sheets:option:$versions.option"
 
+    // Justified textview
+    implementation 'com.codesgood:justifiedtextview:1.1.0'
 
     // gson
     implementation "com.google.code.gson:gson:$versions.gson"
@@ -95,7 +97,6 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
     implementation 'com.applovin:applovin-sdk:12.4.2'
     implementation "androidx.lifecycle:lifecycle-process:2.7.0"
-
     implementation 'com.applovin.mediation:chartboost-adapter:9.7.0.0'
     implementation 'com.google.android.gms:play-services-base:18.4.0'
     implementation 'com.applovin.mediation:inmobi-adapter:10.6.7.0'
@@ -106,5 +107,9 @@ dependencies {
     implementation 'com.applovin.mediation:facebook-adapter:6.17.0.0'
     implementation 'com.applovin.mediation:mintegral-adapter:16.7.31.0'
     implementation 'com.applovin.mediation:unityads-adapter:4.10.0.0'
+
+    // billing
+    implementation 'com.android.billingclient:billing:6.2.1'
+    implementation 'com.github.akshaaatt:Google-IAP:1.6.0'
 
 }

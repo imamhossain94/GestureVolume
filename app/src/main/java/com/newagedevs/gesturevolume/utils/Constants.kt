@@ -1,7 +1,11 @@
 package com.newagedevs.gesturevolume.utils
 
+import android.app.Activity
+import android.content.Context
 import android.graphics.Color
+import com.maxkeppeler.sheets.option.Option
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.extensions.toast
 
 class Constants {
 
@@ -12,7 +16,7 @@ class Constants {
         const val privacyPolicyUrl = "https://newagedevs-privacy-policy.blogspot.com/2023/05/gesture-volume.html"
         const val sourceCodeUrl = "https://github.com/imamhossain94/GestureVolume"
         const val publisherName = "https://play.google.com/store/apps/developer?id=NewAgeDevs"
-        const val appStoreId = "https://play.google.com/store/apps/details?id=com.newagedevs.edgegestures"
+        const val appStoreId = "https://play.google.com/store/apps/details?id=com.newagedevs.gesturevolume"
 
         val gravityDrawables = listOf(R.drawable.ic_align_left, R.drawable.ic_align_right)
         val gravityTitles = listOf("Left", "Right")
@@ -51,6 +55,18 @@ class Constants {
                 widthTitles.last() -> 60
                 else -> 40
             }
+        }
+
+        fun tapActionLists(context: Context): MutableList<Option> {
+            return mutableListOf(
+                Option(tapActionDrawables[0], tapActionTitles[0], "") { context.toast(tapActionTitles[0]) },
+                Option(tapActionDrawables[1], tapActionTitles[1], "") { context.toast(tapActionTitles[1]) },
+                Option(tapActionDrawables[2], tapActionTitles[2], "") { context.toast(tapActionTitles[2]) },
+                Option(tapActionDrawables[3], tapActionTitles[3], "") { context.toast(tapActionTitles[3]) },
+                Option(tapActionDrawables[4], tapActionTitles[4], "") { context.toast(tapActionTitles[4]) },
+                Option(tapActionDrawables[5], tapActionTitles[5], "") { context.toast(tapActionTitles[5]) },
+                Option(tapActionDrawables[6], tapActionTitles[6], "") { context.toast(tapActionTitles[6]) }
+            )
         }
 
     }

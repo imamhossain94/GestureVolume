@@ -5,6 +5,8 @@ import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
@@ -13,19 +15,31 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.res.ResourcesCompat
 import com.applovin.mediation.MaxError
+import com.limurse.iap.DataWrappers
+import com.limurse.iap.IapConnector
+import com.limurse.iap.PurchaseServiceListener
 import com.maxkeppeler.sheets.color.ColorSheet
 import com.maxkeppeler.sheets.core.SheetStyle
 import com.maxkeppeler.sheets.option.DisplayMode
 import com.maxkeppeler.sheets.option.Option
 import com.maxkeppeler.sheets.option.OptionSheet
+import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.databinding.ActivityMainBinding
+import com.newagedevs.gesturevolume.extensions.getApplicationVersion
+import com.newagedevs.gesturevolume.extensions.openAppStore
+import com.newagedevs.gesturevolume.extensions.openMailApp
+import com.newagedevs.gesturevolume.extensions.openWebPage
 import com.newagedevs.gesturevolume.extensions.px
+import com.newagedevs.gesturevolume.extensions.shareTheApp
 import com.newagedevs.gesturevolume.extensions.toast
 import com.newagedevs.gesturevolume.helper.ApplovinAdsCallback
 import com.newagedevs.gesturevolume.helper.ApplovinAdsManager
+import com.newagedevs.gesturevolume.helper.NotificationUtil
 import com.newagedevs.gesturevolume.persistence.SharedPrefRepository
 import com.newagedevs.gesturevolume.service.LockScreenUtil
 import com.newagedevs.gesturevolume.service.OverlayService
@@ -43,7 +57,10 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     private val viewModel: MainViewModel by viewModel()
     private val preference: SharedPrefRepository by inject()
 
-    private lateinit var adsManager: ApplovinAdsManager
+    private var adsManager: ApplovinAdsManager? = null
+    private var iapConnector: IapConnector? = null
+    private var productDetails: DataWrappers.ProductDetails? = null
+
     private lateinit var handlerView: HandlerView
 
     var overlayService: OverlayServiceInterface? = null
@@ -52,6 +69,10 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     private var isRunning = false
 
     var lastBackPressedTime: Long = 0
+
+    private lateinit var notificationUtil: NotificationUtil
+    private lateinit var overlayPermissionLauncher: ActivityResultLauncher<Intent>
+    private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
 
     inner class MyServiceConnection : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
@@ -75,52 +96,37 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         }
 
         val service = Intent(this, OverlayService::class.java)
+        if(!preference.isProFeatureActivated()) {
+            adsManager = ApplovinAdsManager(this, viewModel, binding, object : ApplovinAdsCallback {
+                override fun onInterstitialAdLoaded() {
 
-        adsManager = ApplovinAdsManager(this, viewModel, binding, object : ApplovinAdsCallback {
-            override fun onInterstitialAdLoaded() {
+                    startService(service)
+                    serviceConnection = MyServiceConnection()
+                    serviceConnection?.let {
+                        bindService(service, it, BIND_AUTO_CREATE)
+                        binding.toggleService.text = "Service On"
+                    }
 
-                startService(service)
-                serviceConnection = MyServiceConnection()
-                serviceConnection?.let {
-                    bindService(service, it, BIND_AUTO_CREATE)
-                    binding.toggleService.text = "Service On"
                 }
 
-            }
+                override fun onInterstitialAdFailed(error: MaxError) {
 
-            override fun onInterstitialAdFailed(error: MaxError) {
+                    startService(service)
+                    serviceConnection = MyServiceConnection()
+                    serviceConnection?.let {
+                        bindService(service, it, BIND_AUTO_CREATE)
+                        binding.toggleService.text = "Service On"
+                    }
 
-                startService(service)
-                serviceConnection = MyServiceConnection()
-                serviceConnection?.let {
-                    bindService(service, it, BIND_AUTO_CREATE)
-                    binding.toggleService.text = "Service On"
                 }
-
-            }
-        })
-
-        isRunning = preference.isRunning()
-        handlerView = HandlerView(this)
-        handlerView.setHandlerPositionChangeListener(this)
-
-        if(isRunning) {
-            if(!isServiceRunning(OverlayService::class.java)) {
-                startService(service)
-            }
-            serviceConnection = MyServiceConnection()
-            serviceConnection?.let {
-                bindService(service, it, BIND_AUTO_CREATE)
-            }
+            })
         }
 
         OverlayService.communicator.observe(this@MainActivity) {
             it?.let {
                 // Do what you need to do here
                 when (it) {
-                    "show" -> {
-                        //finish()
-                    }
+                    "show" -> { }
                     "stop" -> {
                         preference.setRunning(false)
                         isRunning = false
@@ -131,23 +137,64 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             }
         }
 
+        notificationUtil = NotificationUtil(this)
+
+        isRunning = preference.isRunning()
+        handlerView = HandlerView(this)
+        handlerView.setHandlerPositionChangeListener(this)
+
         binding.rootLayout.addView(handlerView)
         binding.toggleService.isChecked = isRunning
         binding.toggleService.text = if (isRunning) "Service On" else "Service Off"
+
+        if(isRunning) {
+            if(Settings.canDrawOverlays(this@MainActivity)) {
+                if(!isServiceRunning(OverlayService::class.java)) {
+                    startService(service)
+                }
+                serviceConnection = MyServiceConnection()
+                serviceConnection?.let {
+                    bindService(service, it, BIND_AUTO_CREATE)
+                }
+            }
+        }
+
         binding.toggleService.setOnCheckedChangeListener  { view, isChecked ->
             preference.setRunning(isChecked)
             isRunning = isChecked
 
-            if (isChecked) {
-                adsManager.createAndShowInterstitialAd()
-            } else {
-                if (isBound) {
-                    serviceConnection?.let { unbindService(it) }
-                    stopService(service)
-                    isBound = false
-                    view.text = "Service Off"
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if(isChecked && !notificationUtil.isPermissionGranted()){
+                    notificationUtil.requestPermission(notificationPermissionLauncher)
                 }
             }
+
+            if(Settings.canDrawOverlays(this)) {
+                if (isChecked) {
+                    if(!preference.isProFeatureActivated()) {
+                        adsManager?.createAndShowInterstitialAd()
+                    } else {
+                        startService(service)
+                        serviceConnection = MyServiceConnection()
+                        serviceConnection?.let {
+                            bindService(service, it, BIND_AUTO_CREATE)
+                            binding.toggleService.text = "Service On"
+                        }
+                    }
+                } else {
+                    if (isBound) {
+                        serviceConnection?.let { unbindService(it) }
+                        stopService(service)
+                        isBound = false
+                        view.text = "Service Off"
+                    }
+                }
+            } else {
+                requestOverlayPermission()
+                binding.toggleService.isChecked = false
+                view.text = "Service Off"
+            }
+
         }
 
         // Set click listener for HandlerView
@@ -167,7 +214,9 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             handlerView.setViewColor(it, alpha)
         }
 
-        adsManager.createBannerAd()
+        if(!preference.isProFeatureActivated()) {
+            adsManager?.createBannerAd()
+        }
 
         onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -181,17 +230,130 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
                 }
             }
         })
+
+        overlayPermissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
+            if (!Settings.canDrawOverlays(this)) {
+                preference.setRunning(false)
+                isRunning = false
+                binding.toggleService.isChecked = false
+                Toast.makeText(this, "Overlay permission not granted", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        notificationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { _ ->
+            if(!notificationUtil.isPermissionGranted()) {
+                Toast.makeText(this, "Post notification permission not granted", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if(!notificationUtil.isPermissionGranted()){
+                notificationUtil.requestPermission(notificationPermissionLauncher)
+            }
+        }
+
+        // Pro features
+        iapConnector = IapConnector(
+            context = this,
+            nonConsumableKeys = listOf(BuildConfig.PRODUCT_ID),
+            key = BuildConfig.BASE_64_KEY,
+            enableLogging = true
+        )
+
+        iapConnector?.addPurchaseListener(object : PurchaseServiceListener {
+            override fun onPricesUpdated(iapKeyPrices: Map<String, List<DataWrappers.ProductDetails>>) {
+                productDetails = iapKeyPrices[BuildConfig.PRODUCT_ID]?.first()
+            }
+
+            override fun onProductPurchased(purchaseInfo: DataWrappers.PurchaseInfo) {
+                // will be triggered whenever purchase succeeded
+                toast("Succeeded purchase")
+                preference.setProFeatureActivated(true)
+            }
+
+            override fun onProductRestored(purchaseInfo: DataWrappers.PurchaseInfo) {
+                // will be triggered fetching owned products using IapConnector
+                //toast("Product restored")
+                preference.setProFeatureActivated(true)
+                updateProUI()
+            }
+
+            override fun onPurchaseFailed(purchaseInfo: DataWrappers.PurchaseInfo?, billingResponseCode: Int?) {
+                toast("Failed to purchase product")
+                preference.setProFeatureActivated(false)
+            }
+        })
+
+        updateProUI()
+    }
+
+    private fun updateProUI() {
+        if(!preference.isProFeatureActivated()) {
+            val tapSettingView = binding.layoutTapSettings.root
+
+            val doubleTapProTag: View = tapSettingView.findViewById(R.id.double_tap_pro_tag)
+            val longTapProTag: View = tapSettingView.findViewById(R.id.long_tap_pro_tag)
+
+            doubleTapProTag.visibility = View.VISIBLE
+            longTapProTag.visibility = View.VISIBLE
+        }
+    }
+
+    fun openMenu(view: View) {
+        val appVersion = getApplicationVersion()
+
+        val options =  mutableListOf(
+            Option(R.drawable.ic_share, "Share", "") { toast("Share") },
+            Option(R.drawable.ic_feedback, "Feedback", "") { toast("Feedback") },
+            Option(R.drawable.ic_privacy, "Privacy policy", "") { toast("Privacy policy") },
+            Option(R.drawable.ic_playstore, "Other apps", "") { toast("Other apps") },
+            Option(R.drawable.ic_star, "Rate us", "") { toast("Rate us") },
+            Option(R.drawable.ic_github, "Source code", "") { toast("Source code") },
+            Option(R.drawable.ic_svg, "Icons by", "") { toast("Icons by") },
+            Option(R.drawable.ic_plugin, "V:$appVersion", "") { toast("Version:$appVersion") },
+            Option(R.drawable.ic_power, "Exit", "") { toast("Exit") }
+        )
+
+         if(!preference.isProFeatureActivated()) {
+             options.add(0, Option(R.drawable.ic_crown_2, "Premium"))
+         }
+
+        OptionSheet().show(view.context) {
+            style(SheetStyle.DIALOG)
+            title("Menu")
+            columns(3)
+            displayMode(DisplayMode.GRID_VERTICAL)
+            with(options)
+            onPositive { index: Int, _: Option ->
+                when (if (!preference.isProFeatureActivated()) index else index + 1) {
+                    0 -> openProDialogue()
+                    1 -> shareTheApp(requireActivity())
+                    2 -> openMailApp(requireActivity(), "Feedback", Constants.feedbackMail)
+                    3 -> openWebPage(requireActivity(), Constants.privacyPolicyUrl) { viewModel.toast = it }
+                    4 -> openAppStore(requireActivity(), Constants.publisherName) { viewModel.toast = it }
+                    5 -> openAppStore(requireActivity(), Constants.appStoreId) { viewModel.toast = it }
+                    6 -> openWebPage(requireActivity(), Constants.sourceCodeUrl) { viewModel.toast = it }
+                    7 -> viewModel.toast = "Icons by svgrepo.com"
+                    8 -> viewModel.toast = "Version: $appVersion"
+                    9 -> requireActivity().finish()
+                }
+            }
+        }
     }
 
     fun gravityPicker(view: View) {
+
+        val options = mutableListOf(
+            Option(Constants.gravityDrawables[0], Constants.gravityTitles[0], "") { toast(Constants.gravityTitles[0]) },
+            Option(Constants.gravityDrawables[1], Constants.gravityTitles[1], "") { toast(Constants.gravityTitles[1]) }
+        )
+
         OptionSheet().show(view.context) {
+            style(SheetStyle.DIALOG)
             title("Select your handedness or the gravity of the handler")
             columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
-            with(
-                Option(Constants.gravityDrawables[0], Constants.gravityTitles[0]),
-                Option(Constants.gravityDrawables[1], Constants.gravityTitles[1]),
-            )
+            with(options)
             onPositive { index: Int, _: Option ->
                 val textView = view as TextView
 
@@ -221,15 +383,17 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
 
     fun sizePicker(view: View) {
+        val options = mutableListOf(
+            Option(Constants.sizeDrawables[0], Constants.sizeTitles[0], "") { toast(Constants.sizeTitles[0]) },
+            Option(Constants.sizeDrawables[1], Constants.sizeTitles[1], "") { toast(Constants.sizeTitles[1]) },
+            Option(Constants.sizeDrawables[2], Constants.sizeTitles[2], "") { toast(Constants.sizeTitles[2]) }
+        )
         OptionSheet().show(view.context) {
+            style(SheetStyle.DIALOG)
             title("Select the height or size of the handler")
             columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
-            with(
-                Option(Constants.sizeDrawables[0], Constants.sizeTitles[0]),
-                Option(Constants.sizeDrawables[1], Constants.sizeTitles[1]),
-                Option(Constants.sizeDrawables[2], Constants.sizeTitles[2]),
-            )
+            with(options)
             onPositive { index: Int, _: Option ->
 
                 val textView = view as TextView
@@ -253,15 +417,17 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
 
     fun widthPicker(view: View) {
+        val options = mutableListOf(
+            Option(Constants.widthDrawables[0], Constants.widthTitles[0], "") { toast(Constants.widthTitles[0]) },
+            Option(Constants.widthDrawables[1], Constants.widthTitles[1], "") { toast(Constants.widthTitles[1]) },
+            Option(Constants.widthDrawables[2], Constants.widthTitles[2], "") { toast(Constants.widthTitles[2]) }
+        )
         OptionSheet().show(view.context) {
+            style(SheetStyle.DIALOG)
             title("Select the width or thickness of the handler")
             columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
-            with(
-                Option(Constants.widthDrawables[0], Constants.widthTitles[0]),
-                Option(Constants.widthDrawables[1], Constants.widthTitles[1]),
-                Option(Constants.widthDrawables[2], Constants.widthTitles[2]),
-            )
+            with(options)
             onPositive { index: Int, _: Option ->
 
                 val textView = view as TextView
@@ -285,6 +451,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
     fun colorPicker(view: View) {
         ColorSheet().show(view.context) {
+            style(SheetStyle.DIALOG)
             title("Select the color and transparency of the handler")
             onPositive {
                 viewModel.color = it
@@ -298,20 +465,25 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
     fun clickActionPicker(view: View) {
         val lockScreenUtil =LockScreenUtil(view.context)
+        val options = Constants.tapActionLists(view.context)
+        if(!preference.isProFeatureActivated()) {
+            options[3] = Option(Constants.tapActionDrawables[3], Constants.tapActionTitles[3], "PRO") {
+                toast(Constants.tapActionTitles[3])
+            }.disable()
+            options[4] = Option(Constants.tapActionDrawables[4], Constants.tapActionTitles[4], "PRO") {
+                toast(Constants.tapActionTitles[4])
+            }.disable()
+            options[5] = Option(Constants.tapActionDrawables[5], Constants.tapActionTitles[5], "PRO") {
+                toast(Constants.tapActionTitles[5])
+            }.disable()
+        }
 
         OptionSheet().show(view.context) {
+            style(SheetStyle.DIALOG)
             title("What should happen when you tap on the handler?")
             columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
-            with(
-                Option(Constants.tapActionDrawables[0], Constants.tapActionTitles[0]),
-                Option(Constants.tapActionDrawables[1], Constants.tapActionTitles[1]),
-                Option(Constants.tapActionDrawables[2], Constants.tapActionTitles[2]),
-                Option(Constants.tapActionDrawables[3], Constants.tapActionTitles[3]),
-                Option(Constants.tapActionDrawables[4], Constants.tapActionTitles[4]),
-                Option(Constants.tapActionDrawables[5], Constants.tapActionTitles[5]),
-                Option(Constants.tapActionDrawables[6], Constants.tapActionTitles[6])
-            )
+            with(options)
             onPositive { index: Int, _: Option ->
 
                 if(index == 4 && !lockScreenUtil.active()) {
@@ -329,92 +501,81 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
                     viewModel.clickActionIcon = Constants.tapActionDrawables[index]
                     viewModel.clickAction = Constants.tapActionTitles[index]
                     preference.setHandlerSingleTapAction(Constants.tapActionTitles[index])
-
-
                 }
-
             }
         }
     }
 
-
     fun doubleClickActionPicker(view: View) {
         val lockScreenUtil =LockScreenUtil(view.context)
+        if (!preference.isProFeatureActivated()) {
+            openProDialogue()
+        }
 
-        OptionSheet().show(view.context) {
-            title("What should happen when you double tap on the handler?")
-            columns(3)
-            displayMode(DisplayMode.GRID_VERTICAL)
-            with(
-                Option(Constants.tapActionDrawables[0], Constants.tapActionTitles[0]),
-                Option(Constants.tapActionDrawables[1], Constants.tapActionTitles[1]),
-                Option(Constants.tapActionDrawables[2], Constants.tapActionTitles[2]),
-                Option(Constants.tapActionDrawables[3], Constants.tapActionTitles[3]),
-                Option(Constants.tapActionDrawables[4], Constants.tapActionTitles[4]),
-                Option(Constants.tapActionDrawables[5], Constants.tapActionTitles[5]),
-                Option(Constants.tapActionDrawables[6], Constants.tapActionTitles[6])
-            )
-            onPositive { index: Int, _: Option ->
+        if (preference.isProFeatureActivated()){
+            OptionSheet().show(view.context) {
+                style(SheetStyle.DIALOG)
+                title("What should happen when you double tap on the handler?")
+                columns(3)
+                displayMode(DisplayMode.GRID_VERTICAL)
+                with(Constants.tapActionLists(view.context))
+                onPositive { index: Int, _: Option ->
 
-                if(index == 4 && !lockScreenUtil.active()) {
-                    lockScreenUtil.enableAdmin()
-                    return@onPositive
-                }else{
-                    val textView = view as TextView
+                    if(index == 4 && !lockScreenUtil.active()) {
+                        lockScreenUtil.enableAdmin()
+                        return@onPositive
+                    }else{
+                        val textView = view as TextView
 
-                    val image = ResourcesCompat.getDrawable(resources, Constants.tapActionDrawables[index], null)
-                    image?.setBounds(0, 0, 24.px, 24.px)
+                        val image = ResourcesCompat.getDrawable(resources, Constants.tapActionDrawables[index], null)
+                        image?.setBounds(0, 0, 24.px, 24.px)
 
-                    textView.text = Constants.tapActionTitles[index]
-                    textView.setCompoundDrawables(image, null, null, null)
+                        textView.text = Constants.tapActionTitles[index]
+                        textView.setCompoundDrawables(image, null, null, null)
 
-                    viewModel.doubleClickActionIcon = Constants.tapActionDrawables[index]
-                    viewModel.doubleClickAction = Constants.tapActionTitles[index]
-                    preference.setHandlerDoubleTapAction(Constants.tapActionTitles[index])
-
-
+                        viewModel.doubleClickActionIcon = Constants.tapActionDrawables[index]
+                        viewModel.doubleClickAction = Constants.tapActionTitles[index]
+                        preference.setHandlerDoubleTapAction(Constants.tapActionTitles[index])
+                    }
                 }
-
             }
         }
+
     }
 
 
     fun longClickActionPicker(view: View) {
         val lockScreenUtil =LockScreenUtil(view.context)
+        if (!preference.isProFeatureActivated()) {
+            openProDialogue()
+        }
 
-        OptionSheet().show(view.context) {
-            title("What should happen when you long on the handler?")
-            columns(3)
-            displayMode(DisplayMode.GRID_VERTICAL)
-            with(
-                Option(Constants.tapActionDrawables[0], Constants.tapActionTitles[0]),
-                Option(Constants.tapActionDrawables[1], Constants.tapActionTitles[1]),
-                Option(Constants.tapActionDrawables[2], Constants.tapActionTitles[2]),
-                Option(Constants.tapActionDrawables[3], Constants.tapActionTitles[3]),
-                Option(Constants.tapActionDrawables[4], Constants.tapActionTitles[4]),
-                Option(Constants.tapActionDrawables[5], Constants.tapActionTitles[5]),
-                Option(Constants.tapActionDrawables[6], Constants.tapActionTitles[6])
-            )
-            onPositive { index: Int, _: Option ->
-                if(index == 4 && !lockScreenUtil.active()) {
-                    lockScreenUtil.enableAdmin()
-                    return@onPositive
-                }else{
-                    val textView = view as TextView
+        if (preference.isProFeatureActivated()) {
+            OptionSheet().show(view.context) {
+                style(SheetStyle.DIALOG)
+                title("What should happen when you long on the handler?")
+                columns(3)
+                displayMode(DisplayMode.GRID_VERTICAL)
+                with(Constants.tapActionLists(view.context))
+                onPositive { index: Int, _: Option ->
+                    if(index == 4 && !lockScreenUtil.active()) {
+                        lockScreenUtil.enableAdmin()
+                        return@onPositive
+                    }else{
+                        val textView = view as TextView
 
-                    val image = ResourcesCompat.getDrawable(resources, Constants.tapActionDrawables[index], null)
-                    image?.setBounds(0, 0, 24.px, 24.px)
+                        val image = ResourcesCompat.getDrawable(resources, Constants.tapActionDrawables[index], null)
+                        image?.setBounds(0, 0, 24.px, 24.px)
 
-                    textView.text = Constants.tapActionTitles[index]
-                    textView.setCompoundDrawables(image, null, null, null)
+                        textView.text = Constants.tapActionTitles[index]
+                        textView.setCompoundDrawables(image, null, null, null)
 
-                    viewModel.longClickActionIcon = Constants.tapActionDrawables[index]
-                    viewModel.longClickAction = Constants.tapActionTitles[index]
+                        viewModel.longClickActionIcon = Constants.tapActionDrawables[index]
+                        viewModel.longClickAction = Constants.tapActionTitles[index]
 
-                    preference.setHandlerLongTapAction(Constants.tapActionTitles[index])
+                        preference.setHandlerLongTapAction(Constants.tapActionTitles[index])
 
-
+                    }
                 }
             }
         }
@@ -422,15 +583,24 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
 
     fun swipeUpActionPicker(view: View) {
+        val options = mutableListOf(
+            Option(Constants.swipeUpDrawables[0], Constants.swipeUpTitles[0], "") { toast(Constants.swipeUpTitles[0]) },
+            Option(Constants.swipeUpDrawables[1], Constants.swipeUpTitles[1], "") { toast(Constants.swipeUpTitles[1]) },
+            Option(Constants.swipeUpDrawables[2], Constants.swipeUpTitles[2], "") { toast(Constants.swipeUpTitles[2]) }
+        )
+
+        if(!preference.isProFeatureActivated()) {
+            options[2] = Option(Constants.swipeUpDrawables[2], Constants.swipeUpTitles[2], "PRO") {
+                toast(Constants.swipeUpTitles[2])
+            }.disable()
+        }
+
         OptionSheet().show(view.context) {
+            style(SheetStyle.DIALOG)
             title("What should happen when you swipe the upper half of the handler?")
             columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
-            with(
-                Option(Constants.swipeUpDrawables[0], Constants.swipeUpTitles[0]),
-                Option(Constants.swipeUpDrawables[1], Constants.swipeUpTitles[1]),
-                Option(Constants.swipeUpDrawables[2], Constants.swipeUpTitles[2]),
-            )
+            with(options)
             onPositive { index: Int, _: Option ->
                 val textView = view as TextView
 
@@ -451,15 +621,24 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     }
 
     fun swipeDownActionPicker(view: View) {
+        val options = mutableListOf(
+            Option(Constants.swipeDownDrawables[0], Constants.swipeDownTitles[0], "") { toast(Constants.swipeDownTitles[0]) },
+            Option(Constants.swipeDownDrawables[1], Constants.swipeDownTitles[1], "") { toast(Constants.swipeDownTitles[1]) },
+            Option(Constants.swipeDownDrawables[2], Constants.swipeDownTitles[2], "") { toast(Constants.swipeDownTitles[2]) }
+        )
+
+        if(!preference.isProFeatureActivated()) {
+            options[2] = Option(Constants.swipeDownDrawables[2], Constants.swipeDownTitles[2], "PRO") {
+                toast(Constants.swipeDownTitles[2])
+            }.disable()
+        }
+
         OptionSheet().show(view.context) {
+            style(SheetStyle.DIALOG)
             title("What should happen when you swipe the bottom half of the handler?")
             columns(3)
             displayMode(DisplayMode.GRID_VERTICAL)
-            with(
-                Option(Constants.swipeDownDrawables[0], Constants.swipeDownTitles[0]),
-                Option(Constants.swipeDownDrawables[1], Constants.swipeDownTitles[1]),
-                Option(Constants.swipeDownDrawables[2], Constants.swipeDownTitles[2]),
-            )
+            with(options)
             onPositive { index: Int, _: Option ->
                 val textView = view as TextView
 
@@ -482,15 +661,26 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     fun closeApp(view: View) {
         view.context
         finish()
+    }
 
-//        CustomSheet().show(this@MainActivity) {
-//            style(SheetStyle.BOTTOM_SHEET)
-//            title("Upgrade to Pro")
-//            content("Are you sure you want to exit? Hope you will come back again.")
-//            onPositive("Exit") {
-//                finish()
-//            }
-//        }
+    private fun openProDialogue() {
+
+        val title = "Upgrade to Pro"
+        val description = "Gesture Volume has been, and always will be, free of charge and free of ads. This open-source project was created to replace broken volume keys and to extend the lifespan of existing volume keys. If you appreciate my work and would like to buy me a coffee, you can optionally unlock PRO features: access to all handler actions and all gesture actions. Your support is highly appreciated."
+        val productPrice = productDetails?.price
+
+        CustomSheet().show(this@MainActivity) {
+            style(SheetStyle.DIALOG)
+            title(title)
+            description(description)
+            productPrice?.let { price(it) }
+            onPositive("Upgrade") {
+                iapConnector?.purchase(this@MainActivity, BuildConfig.PRODUCT_ID)
+            }
+            onNegative("Cancel") {
+
+            }
+        }
 
     }
 
@@ -505,6 +695,15 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         return false
     }
 
+    private fun requestOverlayPermission() {
+        if (!Settings.canDrawOverlays(this)) {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:${this.packageName}")
+            )
+            overlayPermissionLauncher.launch(intent)
+        }
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -514,8 +713,8 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (requestCode == OVERLAY_REQUEST_CODE) {
-            if (Settings.canDrawOverlays(this)) {
-                OverlayService.start(this)
+            if (!Settings.canDrawOverlays(this)) {
+                requestOverlayPermission()
             }
         } else if (requestCode == DEVICE_ADMIN_REQUEST_CODE) {
             if (LockScreenUtil(this).active()) {

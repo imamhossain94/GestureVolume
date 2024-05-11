@@ -8,6 +8,9 @@ class SharedPrefRepository(private val context: Context) {
     // Shared preferences Constants2
     private val sharedPrefName = "MyPrefs"
 
+    // Pro features
+    private val proFeatureActivationKey = "proFeatureActivation"
+
     // New properties
     private val isRunningKey = "isRunning"
 
@@ -29,6 +32,22 @@ class SharedPrefRepository(private val context: Context) {
 
 
     // New properties
+    // Check if the app is running
+    fun isProFeatureActivated(): Boolean {
+        val sharedPref = context.getSharedPreferences(sharedPrefName, Context.MODE_PRIVATE)
+        return sharedPref.getBoolean(proFeatureActivationKey, false)
+    }
+
+    fun setProFeatureActivated(value: Boolean) {
+        val sharedPref = context.getSharedPreferences(sharedPrefName, Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.putBoolean(proFeatureActivationKey, value)
+        editor.apply()
+    }
+
+
+
+
     // Check if the app is running
     fun isRunning(): Boolean {
         val sharedPref = context.getSharedPreferences(sharedPrefName, Context.MODE_PRIVATE)

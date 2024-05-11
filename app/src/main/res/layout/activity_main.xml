@@ -28,7 +28,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:background="?android:statusBarColor"
+                android:padding="10dp"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -39,7 +40,7 @@
                     android:contentDescription="@string/menu"
                     android:padding="15dp"
                     android:src="@drawable/ic_menu"
-                    android:onClick="@{vm.openMenu}"
+                    android:onClick="openMenu"
                     android:clickable="true"
                     android:focusable="true"
                     app:tint="?attr/icon_color"/>
@@ -67,55 +68,62 @@
 
             </LinearLayout>
 
+            <View
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="0.15dp"
+                android:background="?android:attr/listDivider" />
+
             <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                android:scrollbars="none">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <!--                <LinearLayout-->
-                    <!--                    android:layout_width="match_parent"-->
-                    <!--                    android:layout_height="wrap_content"-->
-                    <!--                    android:background="?attr/bg_bottom_curve"-->
-                    <!--                    android:orientation="vertical">-->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/bg_bottom_curve"
+                        android:orientation="vertical">
 
 
-                    <!--                    <androidx.cardview.widget.CardView-->
-                    <!--                        android:layout_width="match_parent"-->
-                    <!--                        android:layout_height="wrap_content"-->
-                    <!--                        android:layout_margin="10dp"-->
-                    <!--                        app:cardCornerRadius="15dp"-->
-                    <!--                        app:cardBackgroundColor="#EBEBEB">-->
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="10dp"
+                            app:cardCornerRadius="15dp"
+                            app:cardBackgroundColor="#EBEBEB">
 
-                    <!--                        <FrameLayout-->
-                    <!--                            android:id="@+id/previewFrame"-->
-                    <!--                            android:layout_width="match_parent"-->
-                    <!--                            android:layout_height="200dp">-->
+                            <FrameLayout
+                                android:id="@+id/previewFrame"
+                                android:layout_width="match_parent"
+                                android:layout_height="200dp">
 
-                    <!--                            <ImageView-->
-                    <!--                                android:id="@+id/bg"-->
-                    <!--                                android:layout_width="match_parent"-->
-                    <!--                                android:layout_height="match_parent"-->
-                    <!--                                android:contentDescription="@string/system_wallpaper"-->
-                    <!--                                android:background="@color/black"-->
-                    <!--                                android:scaleType="centerCrop" />-->
+                                <ImageView
+                                    android:id="@+id/bg"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:contentDescription="@string/system_wallpaper"
+                                    android:background="@color/black"
+                                    android:scaleType="centerCrop" />
 
-                    <!--                            <com.airbnb.lottie.LottieAnimationView-->
-                    <!--                                android:layout_width="match_parent"-->
-                    <!--                                android:layout_height="match_parent"-->
-                    <!--                                app:lottie_autoPlay="true"-->
-                    <!--                                app:lottie_fileName="mobile_setting.json"-->
-                    <!--                                app:lottie_loop="true"-->
-                    <!--                                app:lottie_speed="1" />-->
+                                <com.airbnb.lottie.LottieAnimationView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    app:lottie_autoPlay="true"
+                                    app:lottie_fileName="mobile_setting.json"
+                                    app:lottie_loop="true"
+                                    app:lottie_speed="1" />
 
-                    <!--                        </FrameLayout>-->
-                    <!--                    </androidx.cardview.widget.CardView>-->
+                            </FrameLayout>
+                        </androidx.cardview.widget.CardView>
 
-                    <!--                </LinearLayout>-->
+                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -123,16 +131,16 @@
                         android:layout_marginTop="0dp"
                         android:orientation="vertical">
 
-                        <!--                    <TextView-->
-                        <!--                        android:layout_width="match_parent"-->
-                        <!--                        android:layout_height="wrap_content"-->
-                        <!--                        android:layout_marginStart="10dp"-->
-                        <!--                        android:layout_marginTop="15dp"-->
-                        <!--                        android:layout_marginEnd="10dp"-->
-                        <!--                        android:layout_marginBottom="0dp"-->
-                        <!--                        android:text="@string/landscape_appearance_settings"-->
-                        <!--                        android:textSize="16sp"-->
-                        <!--                        android:textStyle="bold" />-->
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_marginTop="15dp"
+                            android:layout_marginEnd="10dp"
+                            android:layout_marginBottom="0dp"
+                            android:text="CONFIGURE SERVICE"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
 
                         <androidx.cardview.widget.CardView
                             android:layout_width="match_parent"
@@ -166,7 +174,8 @@
                                         android:layout_width="match_parent"
                                         android:background="?attr/bg_rounded"
                                         android:layout_height="wrap_content"
-                                        android:text="Service On"
+                                        android:text="Service Off"
+                                        android:checked="false"
                                         android:padding="15dp"/>
 
                                 </LinearLayout>
@@ -178,18 +187,21 @@
                     </LinearLayout>
 
                     <include
+                        android:id="@+id/layout_appearance_settings"
                         layout="@layout/item_appearance_settings"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         app:viewModel="@{vm}"/>
 
                     <include
+                        android:id="@+id/layout_tap_settings"
                         layout="@layout/item_tap_settings"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         app:viewModel="@{vm}"/>
 
                     <include
+                        android:id="@+id/layout_gesture_settings"
                         layout="@layout/item_gesture_settings"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -200,11 +212,10 @@
 
             </ScrollView>
 
-            <!--            <View-->
-            <!--                android:id="@+id/divider"-->
-            <!--                android:layout_width="match_parent"-->
-            <!--                android:layout_height="1dp"-->
-            <!--                android:background="?android:attr/listDivider" />-->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?android:attr/listDivider" />
 
             <LinearLayout
                 android:id="@+id/ads_container"
