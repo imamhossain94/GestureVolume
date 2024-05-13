@@ -88,6 +88,7 @@ class OverlayService : Service(), OverlayServiceInterface {
 
         private var volume: Int = 0
     }
+    private var previousVolume: Int = 1
 
     private var lastX: Float = 0f
     private var lastY: Float = 0f
@@ -107,14 +108,15 @@ class OverlayService : Service(), OverlayServiceInterface {
     private var touchDownTime = 0L
     private var lastClickTime = 0L
 
-    // Long press
+    // Single press
     private var singleClickRunnable = java.lang.Runnable {
-        singleTapAction()
+        handlerTapActions(preference.getHandlerSingleTapAction())
     }
 
+    // Long press
     private var longPressedRunnable = java.lang.Runnable {
         onLongPress()
-        longPressAction()
+        handlerTapActions(preference.getHandlerLongTapAction())
         isLongPressHandlerActivated = true
     }
 
@@ -358,7 +360,7 @@ class OverlayService : Service(), OverlayServiceInterface {
                         if (currentTime - lastClickTime < DOUBLE_CLICK_TIME_DELTA) {
                             // Cancel the single click action and trigger double click
                             singleClickHandler.removeCallbacks(singleClickRunnable)
-                            doubleTapAction() // Double click detected
+                            handlerTapActions(preference.getHandlerDoubleTapAction()) // Double click detected
                         } else {
                             singleClickHandler.postDelayed(singleClickRunnable, DOUBLE_CLICK_TIME_DELTA)
                         }
@@ -570,35 +572,62 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     }
 
-    private fun singleTapAction() {
-        when (preference.getHandlerSingleTapAction()) {
-            "None" -> { }
-            "Open volume UI" -> {
-                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-            }
-            "Mute" -> {
-                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-                audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
-            }
-            "Active Music Overlay" -> {
-                hideHandlerView()
-                createOverlayView()
-            }
-            "Lock" -> {
-                lockScreenUtil?.lockScreen()
-            }
-            "Hide Handler" -> {
-                hideHandlerView()
-            }
-            "Open App" -> {
-                openApp()
-            }
-            else -> { }
-        }
-    }
+//    private fun singleTapAction() {
+//        when (preference.getHandlerSingleTapAction()) {
+//            "None" -> { }
+//            "Open volume UI" -> {
+//                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+//            }
+//            "Mute" -> {
+//                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+//                audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
+//            }
+//            "Active Music Overlay" -> {
+//                hideHandlerView()
+//                createOverlayView()
+//            }
+//            "Lock" -> {
+//                lockScreenUtil?.lockScreen()
+//            }
+//            "Hide Handler" -> {
+//                hideHandlerView()
+//            }
+//            "Open App" -> {
+//                openApp()
+//            }
+//            else -> { }
+//        }
+//    }
+//
+//    private fun doubleTapAction() {
+//        when (preference.getHandlerDoubleTapAction()) {
+//            "None" -> { }
+//            "Open volume UI" -> {
+//                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+//            }
+//            "Mute" -> {
+//                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+//                audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
+//            }
+//            "Active Music Overlay" -> {
+//                hideHandlerView()
+//                createOverlayView()
+//            }
+//            "Lock" -> {
+//                lockScreenUtil?.lockScreen()
+//            }
+//            "Hide Handler" -> {
+//                hideHandlerView()
+//            }
+//            "Open App" -> {
+//                openApp()
+//            }
+//            else -> { }
+//        }
+//    }
 
-    private fun doubleTapAction() {
-        when (preference.getHandlerDoubleTapAction()) {
+    private fun handlerTapActions(action:String) {
+        when (action) {
             "None" -> { }
             "Open volume UI" -> {
                 audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
@@ -607,32 +636,21 @@ class OverlayService : Service(), OverlayServiceInterface {
                 audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
                 audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
             }
-            "Active Music Overlay" -> {
-                hideHandlerView()
-                createOverlayView()
-            }
-            "Lock" -> {
-                lockScreenUtil?.lockScreen()
-            }
-            "Hide Handler" -> {
-                hideHandlerView()
-            }
-            "Open App" -> {
-                openApp()
-            }
-            else -> { }
-        }
-    }
+            "Mute or Unmute" -> {
+                val currentVolume = audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC)
 
-    private fun longPressAction() {
-        when (preference.getHandlerLongTapAction()) {
-            "None" -> { }
-            "Open volume UI" -> {
                 audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-            }
-            "Mute" -> {
-                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-                audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
+
+                if (currentVolume != null) {
+                    if (currentVolume > 0) {
+                        // If currently unmuted, mute
+                        previousVolume = currentVolume
+                        audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
+                    } else {
+                        // If currently muted, unmute
+                        audioManager?.setStreamVolume(AudioManager.STREAM_MUSIC, previousVolume, 0)
+                    }
+                }
             }
             "Active Music Overlay" -> {
                 hideHandlerView()

@@ -269,6 +269,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
                 // will be triggered whenever purchase succeeded
                 toast("Succeeded purchase")
                 preference.setProFeatureActivated(true)
+                updateProUI()
             }
 
             override fun onProductRestored(purchaseInfo: DataWrappers.PurchaseInfo) {
@@ -279,8 +280,9 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             }
 
             override fun onPurchaseFailed(purchaseInfo: DataWrappers.PurchaseInfo?, billingResponseCode: Int?) {
-                toast("Failed to purchase product")
-                preference.setProFeatureActivated(false)
+                if(!preference.isProFeatureActivated()) {
+                    toast("Failed to purchase product")
+                }
             }
         })
 
@@ -466,16 +468,13 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     fun clickActionPicker(view: View) {
         val lockScreenUtil =LockScreenUtil(view.context)
         val options = Constants.tapActionLists(view.context)
-        if(!preference.isProFeatureActivated()) {
-            options[3] = Option(Constants.tapActionDrawables[3], Constants.tapActionTitles[3], "PRO") {
-                toast(Constants.tapActionTitles[3])
-            }.disable()
-            options[4] = Option(Constants.tapActionDrawables[4], Constants.tapActionTitles[4], "PRO") {
-                toast(Constants.tapActionTitles[4])
-            }.disable()
-            options[5] = Option(Constants.tapActionDrawables[5], Constants.tapActionTitles[5], "PRO") {
-                toast(Constants.tapActionTitles[5])
-            }.disable()
+        if (!preference.isProFeatureActivated()) {
+            val disabledIndices = listOf(3, 4, 5, 6)
+            for (index in disabledIndices) {
+                options[index] = Option(Constants.tapActionDrawables[index], Constants.tapActionTitles[index], "PRO") {
+                    toast(Constants.tapActionTitles[index])
+                }.disable()
+            }
         }
 
         OptionSheet().show(view.context) {

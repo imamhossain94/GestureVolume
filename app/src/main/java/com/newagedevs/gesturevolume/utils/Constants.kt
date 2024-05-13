@@ -28,7 +28,7 @@ class Constants {
         val widthTitles = listOf("Slim", "Regular", "Bold")
 
         val tapActionDrawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_increase, R.drawable.ic_mute, R.drawable.ic_music_ui, R.drawable.ic_lock, R.drawable.ic_visibility_hide, R.drawable.ic_app_open)
-        val tapActionTitles = listOf("None", "Open volume UI", "Mute", "Active Music Overlay", "Lock", "Hide Handler", "Open App")
+        val tapActionTitles = listOf("None", "Open volume UI", "Mute", "Mute or Unmute", "Active Music Overlay", "Lock", "Hide Handler", "Open App")
 
         val swipeUpDrawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_increase, R.drawable.ic_vol_plus)
         val swipeUpTitles = listOf("None", "Increase volume and show UI", "Increase volume")
@@ -58,15 +58,14 @@ class Constants {
         }
 
         fun tapActionLists(context: Context): MutableList<Option> {
-            return mutableListOf(
-                Option(tapActionDrawables[0], tapActionTitles[0], "") { context.toast(tapActionTitles[0]) },
-                Option(tapActionDrawables[1], tapActionTitles[1], "") { context.toast(tapActionTitles[1]) },
-                Option(tapActionDrawables[2], tapActionTitles[2], "") { context.toast(tapActionTitles[2]) },
-                Option(tapActionDrawables[3], tapActionTitles[3], "") { context.toast(tapActionTitles[3]) },
-                Option(tapActionDrawables[4], tapActionTitles[4], "") { context.toast(tapActionTitles[4]) },
-                Option(tapActionDrawables[5], tapActionTitles[5], "") { context.toast(tapActionTitles[5]) },
-                Option(tapActionDrawables[6], tapActionTitles[6], "") { context.toast(tapActionTitles[6]) }
-            )
+            val options = mutableListOf<Option>()
+            for (i in tapActionDrawables.indices) {
+                val drawable = tapActionDrawables[i]
+                val title = tapActionTitles[i]
+                val action = { context.toast(title) }
+                options.add(Option(drawable, title, "", action))
+            }
+            return options
         }
 
     }
