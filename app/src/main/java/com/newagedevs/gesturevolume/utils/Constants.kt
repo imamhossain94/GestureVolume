@@ -27,7 +27,7 @@ class Constants {
         val widthDrawables = listOf(R.drawable.ic_small, R.drawable.ic_regular, R.drawable.ic_bold)
         val widthTitles = listOf("Slim", "Regular", "Bold")
 
-        val tapActionDrawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_increase, R.drawable.ic_mute, R.drawable.ic_music_ui, R.drawable.ic_lock, R.drawable.ic_visibility_hide, R.drawable.ic_app_open)
+        val tapActionDrawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_increase, R.drawable.ic_mute, R.drawable.ic_mute, R.drawable.ic_music_ui, R.drawable.ic_lock, R.drawable.ic_visibility_hide, R.drawable.ic_app_open)
         val tapActionTitles = listOf("None", "Open volume UI", "Mute", "Mute or Unmute", "Active Music Overlay", "Lock", "Hide Handler", "Open App")
 
         val swipeUpDrawables = listOf(R.drawable.ic_nothing, R.drawable.ic_vol_increase, R.drawable.ic_vol_plus)
