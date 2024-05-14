@@ -18,6 +18,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.Observer
 import com.applovin.mediation.MaxError
 import com.limurse.iap.DataWrappers
 import com.limurse.iap.IapConnector
@@ -40,6 +41,7 @@ import com.newagedevs.gesturevolume.extensions.toast
 import com.newagedevs.gesturevolume.helper.ApplovinAdsCallback
 import com.newagedevs.gesturevolume.helper.ApplovinAdsManager
 import com.newagedevs.gesturevolume.helper.NotificationUtil
+import com.newagedevs.gesturevolume.livedata.LiveDataManager
 import com.newagedevs.gesturevolume.persistence.SharedPrefRepository
 import com.newagedevs.gesturevolume.service.LockScreenUtil
 import com.newagedevs.gesturevolume.service.OverlayService
@@ -53,6 +55,8 @@ import org.koin.android.viewmodel.ext.android.viewModel
 
 
 class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main), HandlerView.HandlerPositionChangeListener {
+
+    private var messageObserver:Observer<String>? = null
 
     private val viewModel: MainViewModel by viewModel()
     private val preference: SharedPrefRepository by inject()
@@ -86,7 +90,6 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         }
     }
 
-
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,6 +97,8 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         binding {
             vm = viewModel
         }
+
+        setCommunicatorObserver()
 
         val service = Intent(this, OverlayService::class.java)
         if(!preference.isProFeatureActivated()) {
@@ -120,21 +125,6 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
                 }
             })
-        }
-
-        OverlayService.communicator.observe(this@MainActivity) {
-            it?.let {
-                // Do what you need to do here
-                when (it) {
-                    "show" -> { }
-                    "stop" -> {
-                        preference.setRunning(false)
-                        isRunning = false
-                        binding.toggleService.isChecked = isRunning
-                        binding.toggleService.text = if (isRunning) "Service On" else "Service Off"
-                    }
-                }
-            }
         }
 
         notificationUtil = NotificationUtil(this)
@@ -275,7 +265,9 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             override fun onProductRestored(purchaseInfo: DataWrappers.PurchaseInfo) {
                 // will be triggered fetching owned products using IapConnector
                 //toast("Product restored")
-                preference.setProFeatureActivated(true)
+                if(purchaseInfo.sku == "lifetime"){
+                    preference.setProFeatureActivated(true)
+                }
                 updateProUI()
             }
 
@@ -298,6 +290,9 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
             doubleTapProTag.visibility = View.VISIBLE
             longTapProTag.visibility = View.VISIBLE
+
+            binding.adsContainer.removeAllViews()
+            binding.adsContainer.visibility = View.GONE
         }
     }
 
@@ -330,7 +325,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
                 when (if (!preference.isProFeatureActivated()) index else index + 1) {
                     0 -> openProDialogue()
                     1 -> shareTheApp(requireActivity())
-                    2 -> openMailApp(requireActivity(), "Feedback", Constants.feedbackMail)
+                    2 -> openMailApp(requireActivity(), "Feedback on Gesture Volume", Constants.feedbackMail)
                     3 -> openWebPage(requireActivity(), Constants.privacyPolicyUrl) { viewModel.toast = it }
                     4 -> openAppStore(requireActivity(), Constants.publisherName) { viewModel.toast = it }
                     5 -> openAppStore(requireActivity(), Constants.appStoreId) { viewModel.toast = it }
@@ -720,6 +715,30 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
                 viewModel.clickActionIcon = R.drawable.ic_lock
                 viewModel.clickAction = "Lock"
             }
+        }
+    }
+
+    private fun setCommunicatorObserver() {
+        messageObserver = Observer {
+            when (it) {
+                "show" -> {
+                    if(overlayService?.shouldFinish == true){
+                        overlayService?.shouldFinish = false
+                        finish()
+                    }
+                }
+                "stop" -> {
+                    preference.setRunning(false)
+                    isRunning = false
+                    binding.toggleService.isChecked = isRunning
+                    binding.toggleService.text = if (isRunning) "Service On" else "Service Off"
+                }
+            }
+            overlayService?.shouldFinish = true
+        }
+
+        messageObserver?.let {
+            LiveDataManager.communicator().observe(this, it)
         }
     }
 

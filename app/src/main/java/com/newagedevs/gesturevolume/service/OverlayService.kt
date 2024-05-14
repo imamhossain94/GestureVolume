@@ -29,6 +29,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.MutableLiveData
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.livedata.LiveDataManager
 import com.newagedevs.gesturevolume.model.UnlockCondition
 import com.newagedevs.gesturevolume.persistence.SharedPrefRepository
 import com.newagedevs.gesturevolume.utils.Constants
@@ -42,14 +43,17 @@ interface OverlayServiceInterface {
     fun show()
     fun hide()
     fun update()
-}
 
+    var shouldFinish: Boolean
+}
 
 class OverlayService : Service(), OverlayServiceInterface {
 
+    override var shouldFinish: Boolean = true
+
     private val binder: IBinder = LocalBinder()
     private val preference: SharedPrefRepository by inject()
-
+    
     inner class LocalBinder : Binder() {
         fun instance(): OverlayServiceInterface = this@OverlayService
     }
@@ -73,9 +77,8 @@ class OverlayService : Service(), OverlayServiceInterface {
     private var lockScreenUtil: LockScreenUtil? = null
 
     private var minSwipeY: Float = 0f
-
+    
     companion object {
-
         private const val CHANNEL_ID = "Gesture Volume Channel ID"
         private const val NOTIFICATION_ID = 1
 
@@ -83,9 +86,6 @@ class OverlayService : Service(), OverlayServiceInterface {
         private const val TOUCH_TIME_FACTOR: Long = 300
         private const val DOUBLE_CLICK_TIME_DELTA: Long = 300
         private const val LONG_PRESS_TIME_THRESHOLD: Long = 500
-
-        val communicator = MutableLiveData<Any>()
-
         private var volume: Int = 0
     }
     private var previousVolume: Int = 1
@@ -196,11 +196,9 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.action?.let {
+            LiveDataManager.sendCommand(it)
             when (it) {
                 "show" -> {
-                    if (communicator.hasActiveObservers()) {
-                        communicator.postValue("show")
-                    }
                     createOverlayHandler()
                 }
                 "hide" -> {
@@ -209,10 +207,6 @@ class OverlayService : Service(), OverlayServiceInterface {
                     return START_STICKY
                 }
                 "stop" -> {
-                    if (communicator.hasActiveObservers()) {
-                        communicator.postValue("stop")
-                    }
-
                     preference.setRunning(false)
                     hideOverlayView()
                     hideHandlerView()
