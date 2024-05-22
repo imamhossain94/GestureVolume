@@ -38,7 +38,6 @@ import com.newagedevs.gesturevolume.extensions.openWebPage
 import com.newagedevs.gesturevolume.extensions.px
 import com.newagedevs.gesturevolume.extensions.shareTheApp
 import com.newagedevs.gesturevolume.extensions.toast
-import com.newagedevs.gesturevolume.helper.ApplovinAdsCallback
 import com.newagedevs.gesturevolume.helper.ApplovinAdsManager
 import com.newagedevs.gesturevolume.helper.NotificationUtil
 import com.newagedevs.gesturevolume.livedata.LiveDataManager
@@ -101,31 +100,6 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         setCommunicatorObserver()
 
         val service = Intent(this, OverlayService::class.java)
-        if(!preference.isProFeatureActivated()) {
-            adsManager = ApplovinAdsManager(this, viewModel, binding, object : ApplovinAdsCallback {
-                override fun onInterstitialAdLoaded() {
-
-                    startService(service)
-                    serviceConnection = MyServiceConnection()
-                    serviceConnection?.let {
-                        bindService(service, it, BIND_AUTO_CREATE)
-                        binding.toggleService.text = "Service On"
-                    }
-
-                }
-
-                override fun onInterstitialAdFailed(error: MaxError) {
-
-                    startService(service)
-                    serviceConnection = MyServiceConnection()
-                    serviceConnection?.let {
-                        bindService(service, it, BIND_AUTO_CREATE)
-                        binding.toggleService.text = "Service On"
-                    }
-
-                }
-            })
-        }
 
         notificationUtil = NotificationUtil(this)
 
@@ -162,14 +136,13 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             if(Settings.canDrawOverlays(this)) {
                 if (isChecked) {
                     if(!preference.isProFeatureActivated()) {
-                        adsManager?.createAndShowInterstitialAd()
-                    } else {
-                        startService(service)
-                        serviceConnection = MyServiceConnection()
-                        serviceConnection?.let {
-                            bindService(service, it, BIND_AUTO_CREATE)
-                            binding.toggleService.text = "Service On"
-                        }
+                        adsManager?.showInterstitialAd()
+                    }
+                    startService(service)
+                    serviceConnection = MyServiceConnection()
+                    serviceConnection?.let {
+                        bindService(service, it, BIND_AUTO_CREATE)
+                        binding.toggleService.text = "Service On"
                     }
                 } else {
                     if (isBound) {
@@ -202,10 +175,6 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         viewModel.color?.let {
             val alpha = (it shr 24) and 0xFF
             handlerView.setViewColor(it, alpha)
-        }
-
-        if(!preference.isProFeatureActivated()) {
-            adsManager?.createBannerAd()
         }
 
         onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true) {
@@ -242,6 +211,8 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             }
         }
 
+        updateProUI()
+
         // Pro features
         iapConnector = IapConnector(
             context = this,
@@ -265,7 +236,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             override fun onProductRestored(purchaseInfo: DataWrappers.PurchaseInfo) {
                 // will be triggered fetching owned products using IapConnector
                 //toast("Product restored")
-                if(purchaseInfo.sku == "lifetime"){
+                if(purchaseInfo.sku == "lifetime" && purchaseInfo.purchaseState == 1){
                     preference.setProFeatureActivated(true)
                 }
                 updateProUI()
@@ -277,11 +248,26 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
                 }
             }
         })
-
-        updateProUI()
     }
 
     private fun updateProUI() {
+
+        if(!preference.isProFeatureActivated()) {
+            adsManager = ApplovinAdsManager(this)
+            adsManager?.createBannerAd(binding.adsContainer)
+
+            binding.bannerAdsView.setAdsData(Constants.inHouseAds) { appLink ->
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    data = Uri.parse(appLink)
+                }
+                startActivity(intent)
+            }
+        } else {
+            binding.adsContainer.visibility = View.GONE
+            binding.bannerAdsView.visibility = View.GONE
+            binding.adsContainer.removeAllViews()
+        }
+
         if(!preference.isProFeatureActivated()) {
             val tapSettingView = binding.layoutTapSettings.root
 

@@ -23,6 +23,7 @@ import timber.log.Timber
 class Application : Application() {
 
     private lateinit var appOpenManager: AppOpenManager
+    private val preferences = SharedPrefRepository(this@Application)
 
     override fun onCreate() {
         super.onCreate()
@@ -34,7 +35,7 @@ class Application : Application() {
             modules(persistenceModule)
         }
 
-        if(!SharedPrefRepository(this).isProFeatureActivated()) {
+        if(!preferences.isProFeatureActivated()) {
             initializeAppLovinSdk()
         }
 
@@ -43,62 +44,61 @@ class Application : Application() {
         }
     }
 
-
     private fun initializeAppLovinSdk() {
         val sdk = AppLovinSdk.getInstance(this@Application)
         sdk.mediationProvider = "max"
         sdk.initializeSdk {
             appOpenManager = AppOpenManager(this@Application)
         }
-        //sdk.showMediationDebugger()
+        // sdk.showMediationDebugger()
     }
 
-}
 
-@Suppress("PrivatePropertyName", "DEPRECATION")
-class AppOpenManager(context: Context) : LifecycleObserver, MaxAdListener {
+    inner class AppOpenManager(context: Context) : LifecycleObserver,
+        MaxAdListener {
+        private val appOpenAd: MaxAppOpenAd?
+        private val context: Context
 
-    private val appOpenAd: MaxAppOpenAd?
-    private val context: Context
+        //Ads ID here
+        private val ADS_UNIT = BuildConfig.appOpen_AdUnit
 
-    //Ads ID here
-    private val ADS_UNIT = BuildConfig.appOpen_AdUnit
-
-    init {
-        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
-        this.context = context
-        appOpenAd = MaxAppOpenAd(ADS_UNIT, context)
-        appOpenAd.setListener(this)
-        appOpenAd.loadAd()
-    }
-
-    private fun showAdIfReady() {
-        if (appOpenAd == null || !AppLovinSdk.getInstance(context).isInitialized) return
-
-        if (appOpenAd.isReady) {
-            appOpenAd.showAd(ADS_UNIT)
-        } else {
+        init {
+            ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+            this.context = context
+            appOpenAd = MaxAppOpenAd(ADS_UNIT, context)
+            appOpenAd.setListener(this)
             appOpenAd.loadAd()
+        }
+
+        private fun showAdIfReady() {
+            if (appOpenAd == null || !AppLovinSdk.getInstance(context).isInitialized) return
+
+            if (appOpenAd.isReady) {
+                appOpenAd.showAd(ADS_UNIT)
+            } else {
+                appOpenAd.loadAd()
+            }
+        }
+
+        @OnLifecycleEvent(Lifecycle.Event.ON_START)
+        fun onStart() {
+            if(!preferences.isProFeatureActivated()) {
+                showAdIfReady()
+            }
+        }
+
+        override fun onAdLoaded(ad: MaxAd) { }
+        override fun onAdLoadFailed(adUnitId: String, error: MaxError) {}
+        override fun onAdDisplayed(ad: MaxAd) { }
+        override fun onAdClicked(ad: MaxAd) {}
+        override fun onAdHidden(ad: MaxAd) {
+            appOpenAd!!.loadAd()
+        }
+
+        override fun onAdDisplayFailed(ad: MaxAd, error: MaxError) {
+            appOpenAd!!.loadAd()
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun onStart() {
-        showAdIfReady()
-    }
-
-    override fun onAdLoaded(ad: MaxAd) {}
-    override fun onAdLoadFailed(adUnitId: String, error: MaxError) {}
-    override fun onAdDisplayed(ad: MaxAd) {}
-    override fun onAdClicked(ad: MaxAd) {}
-    override fun onAdHidden(ad: MaxAd) {
-        appOpenAd!!.loadAd()
-    }
-
-    override fun onAdDisplayFailed(ad: MaxAd, error: MaxError) {
-        appOpenAd!!.loadAd()
-    }
-
 }
-
 

@@ -5,6 +5,7 @@ import android.graphics.Color
 import com.maxkeppeler.sheets.option.Option
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.extensions.toast
+import com.newagedevs.gesturevolume.inhouseads.BannerAd
 
 class Constants {
 
@@ -66,6 +67,52 @@ class Constants {
             }
             return options
         }
+
+        val inHouseAds = listOf(
+            BannerAd(
+                "https://play-lh.googleusercontent.com/23iXWyFSHQT6DUN2QdkBFxEGZPUpNJfvICGN_FbU3elbhUAe-4ClKE92cE_sTiz0Hoc=w240-h480-rw",
+                "5G LTE Enabled",
+                "5G LTE Enabler will help you to set the preferred network type to 5G/4G/3G etc.",
+                "https://play.google.com/store/apps/details?id=com.newagedevs.enable_network"
+            ),
+            BannerAd(
+                "https://play-lh.googleusercontent.com/7pVgsRrLl5jbAhJsifnZTQyRKvKglO4no9ROFIiJfZavQpFhzCsfXgQvMZoT16Csq_s=w240-h480-rw",
+                "Reels Video Downloader",
+                "Download Instagram reels, stories, and public or private videos while scrolling",
+                "https://play.google.com/store/apps/details?id=com.newagedevs.reels_video_downloader"
+            ),
+            BannerAd(
+                "https://play-lh.googleusercontent.com/JF9gruedbqwmYGlJZevwnlg1uD-dt2oFoiMagnf7HLcAMlbuE9ifMsxxLqNHg85VlQ=w240-h480-rw",
+                "Fb Video Downloader",
+                "Download Facebook public and private videos including watch, reels, and stories.",
+                "https://play.google.com/store/apps/details?id=com.newagedevs.facebook_video_downloader"
+            ),
+            BannerAd(
+                "https://play-lh.googleusercontent.com/gbSKulARlfe1RPHzR9D0yzR1zaluks5-GpoCNNk6z4RaTrfRv3G9gYQmMMptlF789Js=w240-h480-rw",
+                "Temp Mail",
+                "Temporary email - create and receive email in only 10 seconds!",
+                "https://play.google.com/store/apps/details?id=com.newagedevs.temp_mail"
+            ),
+            BannerAd(
+                "https://play-lh.googleusercontent.com/SsCw3yTiHgYxRl-SNc_x1MXpaOW06JB35-fAdInyCpdQ_Xkz09iJYoNcfrUq2jVW2E4=w240-h480-rw",
+                "Music Overlay",
+                "Show a black screen on other apps while allowing music to play in the background.",
+                "https://play.google.com/store/apps/details?id=com.newagedevs.musicoverlay"
+            ),
+            BannerAd(
+                "https://play-lh.googleusercontent.com/GtUU7lD7yKhQxj8gpp7wYKVBV_rMHsD_DRCaXGstj8hBOnw-_4CMiiTFgUx94_tgsVta=w240-h480-rw",
+                "Couple Widgets",
+                "Keep your relationship strong with customized widgets for your home screen!",
+                "https://play.google.com/store/apps/details?id=com.newagedevs.couplewidgets"
+            ),
+            BannerAd(
+                "https://play-lh.googleusercontent.com/DUF7uUl2C48zt3b6x9wXPVZRZpPV-HiT9ZHObdhLW9KiPLen62cK51eDoDBlOdXeeXo=w240-h480-rw",
+                "Shortly - URL Shortener",
+                "Shorten or Expand links that are too long or already shorten using 9 providers.",
+                "https://play.google.com/store/apps/details?id=com.newagedevs.url_shortener"
+            )
+        )
+
 
     }
 
