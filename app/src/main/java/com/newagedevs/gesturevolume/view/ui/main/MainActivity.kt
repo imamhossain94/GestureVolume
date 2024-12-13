@@ -18,8 +18,11 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Observer
-import com.applovin.mediation.MaxError
+import androidx.activity.enableEdgeToEdge
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.limurse.iap.DataWrappers
 import com.limurse.iap.IapConnector
 import com.limurse.iap.PurchaseServiceListener
@@ -48,6 +51,8 @@ import com.newagedevs.gesturevolume.service.OverlayServiceInterface
 import com.newagedevs.gesturevolume.utils.Constants
 import com.newagedevs.gesturevolume.view.CustomSheet
 import com.newagedevs.gesturevolume.view.HandlerView
+import com.newagedevs.gesturevolume.view.ui.about.AboutActivity
+import com.newagedevs.gesturevolume.view.ui.feedback.FeedbackActivity
 import com.skydoves.bindables.BindingActivity
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
@@ -91,10 +96,17 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         binding {
             vm = viewModel
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.root_layout)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
         }
 
         setCommunicatorObserver()
@@ -255,6 +267,7 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         if(!preference.isProFeatureActivated()) {
             adsManager = ApplovinAdsManager(this)
             adsManager?.createBannerAd(binding.adsContainer)
+            adsManager?.createNativeAds(binding.nativeAdsContainer)
 
             binding.bannerAdsView.setAdsData(Constants.inHouseAds) { appLink ->
                 val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -264,26 +277,25 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             }
         } else {
             binding.adsContainer.visibility = View.GONE
+            binding.nativeAdsContainer.visibility = View.GONE
             binding.bannerAdsView.visibility = View.GONE
             binding.adsContainer.removeAllViews()
+            binding.nativeAdsContainer.removeAllViews()
         }
 
         if(!preference.isProFeatureActivated()) {
             val tapSettingView = binding.layoutTapSettings.root
 
-            val doubleTapProTag: View = tapSettingView.findViewById(R.id.double_tap_pro_tag)
+//            val doubleTapProTag: View = tapSettingView.findViewById(R.id.double_tap_pro_tag)
             val longTapProTag: View = tapSettingView.findViewById(R.id.long_tap_pro_tag)
 
-            doubleTapProTag.visibility = View.VISIBLE
+//            doubleTapProTag.visibility = View.VISIBLE
             longTapProTag.visibility = View.VISIBLE
-
-            binding.adsContainer.removeAllViews()
-            binding.adsContainer.visibility = View.GONE
         }
     }
 
     fun openMenu(view: View) {
-        val appVersion = getApplicationVersion()
+
 
         val options =  mutableListOf(
             Option(R.drawable.ic_share, "Share", "") { toast("Share") },
@@ -292,8 +304,8 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             Option(R.drawable.ic_playstore, "Other apps", "") { toast("Other apps") },
             Option(R.drawable.ic_star, "Rate us", "") { toast("Rate us") },
             Option(R.drawable.ic_github, "Source code", "") { toast("Source code") },
-            Option(R.drawable.ic_svg, "Icons by", "") { toast("Icons by") },
-            Option(R.drawable.ic_plugin, "V:$appVersion", "") { toast("Version:$appVersion") },
+//            Option(R.drawable.ic_svg, "Icons by", "") { toast("Icons by") },
+            Option(R.drawable.ic_nothing, "About", "") { toast("About") },
             Option(R.drawable.ic_power, "Exit", "") { toast("Exit") }
         )
 
@@ -311,14 +323,29 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
                 when (if (!preference.isProFeatureActivated()) index else index + 1) {
                     0 -> openProDialogue()
                     1 -> shareTheApp(requireActivity())
-                    2 -> openMailApp(requireActivity(), "Feedback on Gesture Volume", Constants.feedbackMail)
+                    2 -> {
+                        startActivity(Intent(this@MainActivity, FeedbackActivity::class.java))
+                    }
                     3 -> openWebPage(requireActivity(), Constants.privacyPolicyUrl) { viewModel.toast = it }
                     4 -> openAppStore(requireActivity(), Constants.publisherName) { viewModel.toast = it }
-                    5 -> openAppStore(requireActivity(), Constants.appStoreId) { viewModel.toast = it }
+                    5 -> {
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setTitle("Are You Enjoying?")
+                            .setMessage("If you like ${getString(R.string.app_name)}, please give it a 5 starts rating in Google Play, Thank You")
+                            .setNegativeButton("Cancel") { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                            .setPositiveButton("Rate") { dialog, _ ->
+                                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Constants.appStoreId)))
+                                dialog.dismiss()
+                            }.show()
+                    }
                     6 -> openWebPage(requireActivity(), Constants.sourceCodeUrl) { viewModel.toast = it }
-                    7 -> viewModel.toast = "Icons by svgrepo.com"
-                    8 -> viewModel.toast = "Version: $appVersion"
-                    9 -> requireActivity().finish()
+//                    7 -> viewModel.toast = "Icons by svgrepo.com"
+                    7 -> {
+                        startActivity(Intent(this@MainActivity, AboutActivity::class.java))
+                    }
+                    8 -> requireActivity().finish()
                 }
             }
         }
@@ -449,14 +476,14 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     fun clickActionPicker(view: View) {
         val lockScreenUtil =LockScreenUtil(view.context)
         val options = Constants.tapActionLists(view.context)
-        if (!preference.isProFeatureActivated()) {
-            val disabledIndices = listOf(3, 4, 5, 6)
-            for (index in disabledIndices) {
-                options[index] = Option(Constants.tapActionDrawables[index], Constants.tapActionTitles[index], "PRO") {
-                    toast(Constants.tapActionTitles[index])
-                }.disable()
-            }
-        }
+//        if (!preference.isProFeatureActivated()) {
+//            val disabledIndices = listOf(3, 4, 5, 6)
+//            for (index in disabledIndices) {
+//                options[index] = Option(Constants.tapActionDrawables[index], Constants.tapActionTitles[index], "PRO") {
+//                    toast(Constants.tapActionTitles[index])
+//                }.disable()
+//            }
+//        }
 
         OptionSheet().show(view.context) {
             style(SheetStyle.DIALOG)
@@ -488,35 +515,30 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
 
     fun doubleClickActionPicker(view: View) {
         val lockScreenUtil =LockScreenUtil(view.context)
-        if (!preference.isProFeatureActivated()) {
-            openProDialogue()
-        }
 
-        if (preference.isProFeatureActivated()){
-            OptionSheet().show(view.context) {
-                style(SheetStyle.DIALOG)
-                title("What should happen when you double tap on the handler?")
-                columns(3)
-                displayMode(DisplayMode.GRID_VERTICAL)
-                with(Constants.tapActionLists(view.context))
-                onPositive { index: Int, _: Option ->
+        OptionSheet().show(view.context) {
+            style(SheetStyle.DIALOG)
+            title("What should happen when you double tap on the handler?")
+            columns(3)
+            displayMode(DisplayMode.GRID_VERTICAL)
+            with(Constants.tapActionLists(view.context))
+            onPositive { index: Int, _: Option ->
 
-                    if(index == 4 && !lockScreenUtil.active()) {
-                        lockScreenUtil.enableAdmin()
-                        return@onPositive
-                    }else{
-                        val textView = view as TextView
+                if(index == 4 && !lockScreenUtil.active()) {
+                    lockScreenUtil.enableAdmin()
+                    return@onPositive
+                }else{
+                    val textView = view as TextView
 
-                        val image = ResourcesCompat.getDrawable(resources, Constants.tapActionDrawables[index], null)
-                        image?.setBounds(0, 0, 24.px, 24.px)
+                    val image = ResourcesCompat.getDrawable(resources, Constants.tapActionDrawables[index], null)
+                    image?.setBounds(0, 0, 24.px, 24.px)
 
-                        textView.text = Constants.tapActionTitles[index]
-                        textView.setCompoundDrawables(image, null, null, null)
+                    textView.text = Constants.tapActionTitles[index]
+                    textView.setCompoundDrawables(image, null, null, null)
 
-                        viewModel.doubleClickActionIcon = Constants.tapActionDrawables[index]
-                        viewModel.doubleClickAction = Constants.tapActionTitles[index]
-                        preference.setHandlerDoubleTapAction(Constants.tapActionTitles[index])
-                    }
+                    viewModel.doubleClickActionIcon = Constants.tapActionDrawables[index]
+                    viewModel.doubleClickAction = Constants.tapActionTitles[index]
+                    preference.setHandlerDoubleTapAction(Constants.tapActionTitles[index])
                 }
             }
         }
@@ -569,11 +591,11 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             Option(Constants.swipeUpDrawables[2], Constants.swipeUpTitles[2], "") { toast(Constants.swipeUpTitles[2]) }
         )
 
-        if(!preference.isProFeatureActivated()) {
-            options[2] = Option(Constants.swipeUpDrawables[2], Constants.swipeUpTitles[2], "PRO") {
-                toast(Constants.swipeUpTitles[2])
-            }.disable()
-        }
+//        if(!preference.isProFeatureActivated()) {
+//            options[2] = Option(Constants.swipeUpDrawables[2], Constants.swipeUpTitles[2], "PRO") {
+//                toast(Constants.swipeUpTitles[2])
+//            }.disable()
+//        }
 
         OptionSheet().show(view.context) {
             style(SheetStyle.DIALOG)
@@ -607,11 +629,11 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
             Option(Constants.swipeDownDrawables[2], Constants.swipeDownTitles[2], "") { toast(Constants.swipeDownTitles[2]) }
         )
 
-        if(!preference.isProFeatureActivated()) {
-            options[2] = Option(Constants.swipeDownDrawables[2], Constants.swipeDownTitles[2], "PRO") {
-                toast(Constants.swipeDownTitles[2])
-            }.disable()
-        }
+//        if(!preference.isProFeatureActivated()) {
+//            options[2] = Option(Constants.swipeDownDrawables[2], Constants.swipeDownTitles[2], "PRO") {
+//                toast(Constants.swipeDownTitles[2])
+//            }.disable()
+//        }
 
         OptionSheet().show(view.context) {
             style(SheetStyle.DIALOG)
@@ -734,6 +756,11 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
         binding.toggleService.isChecked = isRunning
         binding.toggleService.text = if (isRunning) "Service On" else "Service Off"
         overlayService?.hide()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        adsManager?.destroyAds()
     }
 
     override fun onVertical(rawY: Float) {

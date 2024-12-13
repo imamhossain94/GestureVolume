@@ -39,6 +39,14 @@
                 android:value="" />
         </activity>
 
+        <activity
+            android:name=".view.ui.feedback.FeedbackActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".view.ui.about.AboutActivity"
+            android:exported="true" />
+
         <receiver
             android:name=".service.BootCompleteReceiver"
             android:enabled="true"

@@ -4,6 +4,8 @@ package com.newagedevs.gesturevolume
 
 import android.app.Application
 import android.content.Context
+import android.os.Build
+import android.webkit.WebView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -33,6 +35,11 @@ class Application : Application() {
             //Adding Module
             modules(viewModelModule)
             modules(persistenceModule)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val process = getProcessName()
+            if (packageName != process) WebView.setDataDirectorySuffix(process)
         }
 
         if(!preferences.isProFeatureActivated()) {

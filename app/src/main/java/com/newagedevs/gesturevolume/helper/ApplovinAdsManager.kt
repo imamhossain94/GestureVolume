@@ -16,6 +16,9 @@ import com.applovin.mediation.MaxRewardedAdListener
 import com.applovin.mediation.ads.MaxAdView
 import com.applovin.mediation.ads.MaxInterstitialAd
 import com.applovin.mediation.ads.MaxRewardedAd
+import com.applovin.mediation.nativeAds.MaxNativeAdListener
+import com.applovin.mediation.nativeAds.MaxNativeAdLoader
+import com.applovin.mediation.nativeAds.MaxNativeAdView
 import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
 import java.util.concurrent.TimeUnit
@@ -31,15 +34,18 @@ class ApplovinAdsManager(private val context: Activity, private val listener: Ap
 
     private var interstitialAd: MaxInterstitialAd? = null
     private var rewardedAd: MaxRewardedAd? = null
+    private var nativeAdLoader: MaxNativeAdLoader? = null
+    private var nativeAd: MaxAd? = null
 
     private val bannerId = BuildConfig.banner_AdUnit
     private val interstitialId: String = BuildConfig.interstitial_AdUnit
     private val rewardId: String = BuildConfig.reward_AdUnit
+    private val nativeAdUnitId: String = BuildConfig.native_AdUnit
 
     init {
         // Preload interstitial and rewarded ads
         preloadInterstitialAd()
-        //preloadRewardedAd()
+        preloadRewardedAd()
     }
 
     // Function to create banner ads
@@ -72,6 +78,37 @@ class ApplovinAdsManager(private val context: Activity, private val listener: Ap
         }
     }
 
+    // Function to load native ads
+    fun createNativeAds(view: FrameLayout) {
+        nativeAdLoader = MaxNativeAdLoader(nativeAdUnitId, context).apply {
+            setNativeAdListener(object : MaxNativeAdListener() {
+                override fun onNativeAdLoaded(nativeAdView: MaxNativeAdView?, ad: MaxAd) {
+                    // Release the previous native ad if any
+                    nativeAd?.let { nativeAdLoader?.destroy(it) }
+                    nativeAd = ad
+
+                    // Clear previous ad views and add the new one
+                    view.removeAllViews()
+                    if (nativeAdView != null) {
+                        view.addView(nativeAdView)
+                        view.visibility = View.VISIBLE
+                    }
+                }
+
+                override fun onNativeAdLoadFailed(adUnitId: String, error: MaxError) {
+                    println("Native ad failed to load: ${error.message}")
+                    view.visibility = View.GONE
+                }
+
+                override fun onNativeAdClicked(ad: MaxAd) {
+                    println("Native ad clicked!")
+                }
+
+            })
+        }
+        nativeAdLoader?.loadAd()
+    }
+
     // Function to show preloaded interstitial ads
     fun showInterstitialAd(loaded: () -> Unit = { }, failed: () -> Unit = { }) {
         if (interstitialAd?.isReady == true) {
@@ -93,26 +130,38 @@ class ApplovinAdsManager(private val context: Activity, private val listener: Ap
         }
     }
 
+    // Destroy all ads to free resources
+    fun destroyAds() {
+        interstitialAd?.destroy()
+        rewardedAd?.destroy()
+        nativeAdLoader?.destroy(nativeAd)
+    }
+
     // Listener for banner ads
     class BannerAdsListener(private val view: LinearLayout) : MaxAdViewAdListener {
         override fun onAdLoaded(maxAd: MaxAd) {
             view.visibility = View.VISIBLE
         }
+
         override fun onAdDisplayed(maxAd: MaxAd) {
             view.visibility = View.VISIBLE
         }
+
         override fun onAdHidden(maxAd: MaxAd) {
             view.visibility = View.GONE
         }
+
         override fun onAdLoadFailed(maxAdUnitId: String, error: MaxError) {
             view.visibility = View.GONE
         }
+
         override fun onAdDisplayFailed(maxAd: MaxAd, error: MaxError) {
             view.visibility = View.GONE
         }
-        override fun onAdClicked(maxAd: MaxAd) { }
-        override fun onAdExpanded(maxAd: MaxAd) { }
-        override fun onAdCollapsed(maxAd: MaxAd) { }
+
+        override fun onAdClicked(maxAd: MaxAd) {}
+        override fun onAdExpanded(maxAd: MaxAd) {}
+        override fun onAdCollapsed(maxAd: MaxAd) {}
     }
 
     // Listener for interstitial ads

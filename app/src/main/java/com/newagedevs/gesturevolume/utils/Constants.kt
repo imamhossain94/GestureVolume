@@ -70,6 +70,12 @@ class Constants {
 
         val inHouseAds = listOf(
             BannerAd(
+                "https://play-lh.googleusercontent.com/E5emNUh511EaVyznSYbV3UoIvhpSZSAGBrnwHgLIImG2sO-b8TSJ6tel0i8E9C-06A=w240-h480-rw",
+                "Story Video Downloader",
+                "Download Facebook public and private videos including watch, reels, and stories.",
+                "https://play.google.com/store/apps/details?id=com.newagedevs.story_video_downloader"
+            ),
+            BannerAd(
                 "https://play-lh.googleusercontent.com/23iXWyFSHQT6DUN2QdkBFxEGZPUpNJfvICGN_FbU3elbhUAe-4ClKE92cE_sTiz0Hoc=w240-h480-rw",
                 "5G LTE Enabled",
                 "5G LTE Enabler will help you to set the preferred network type to 5G/4G/3G etc.",
@@ -92,18 +98,6 @@ class Constants {
                 "Temp Mail",
                 "Temporary email - create and receive email in only 10 seconds!",
                 "https://play.google.com/store/apps/details?id=com.newagedevs.temp_mail"
-            ),
-            BannerAd(
-                "https://play-lh.googleusercontent.com/SsCw3yTiHgYxRl-SNc_x1MXpaOW06JB35-fAdInyCpdQ_Xkz09iJYoNcfrUq2jVW2E4=w240-h480-rw",
-                "Music Overlay",
-                "Show a black screen on other apps while allowing music to play in the background.",
-                "https://play.google.com/store/apps/details?id=com.newagedevs.musicoverlay"
-            ),
-            BannerAd(
-                "https://play-lh.googleusercontent.com/GtUU7lD7yKhQxj8gpp7wYKVBV_rMHsD_DRCaXGstj8hBOnw-_4CMiiTFgUx94_tgsVta=w240-h480-rw",
-                "Couple Widgets",
-                "Keep your relationship strong with customized widgets for your home screen!",
-                "https://play.google.com/store/apps/details?id=com.newagedevs.couplewidgets"
             ),
             BannerAd(
                 "https://play-lh.googleusercontent.com/DUF7uUl2C48zt3b6x9wXPVZRZpPV-HiT9ZHObdhLW9KiPLen62cK51eDoDBlOdXeeXo=w240-h480-rw",
