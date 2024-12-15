@@ -17,11 +17,11 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.EdgeGestures"
+        android:theme="@style/Theme.AppTheme.Splash"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         tools:targetApi="33">
 
         <activity
@@ -41,10 +41,12 @@
 
         <activity
             android:name=".view.ui.feedback.FeedbackActivity"
+            android:theme="@style/Theme.GestureVolume"
             android:exported="true" />
 
         <activity
             android:name=".view.ui.about.AboutActivity"
+            android:theme="@style/Theme.GestureVolume"
             android:exported="true" />
 
         <receiver

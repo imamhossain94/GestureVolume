@@ -34,7 +34,7 @@
             android:layout_margin="10dp"
             app:cardCornerRadius="15dp"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="?attr/bg_card">
+            app:cardBackgroundColor="@color/bg_card">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -58,7 +58,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="?attr/bg_rounded"
+                        android:background="@drawable/bg_rounded"
                         android:drawablePadding="15dp"
                         android:gravity="center|start"
                         android:onClick="gravityPicker"
@@ -67,45 +67,45 @@
                         app:drawableStart="@{viewModel.gravityIcon}"
                         android:scaleX="1"
                         android:scaleY="1"
-                        app:drawableTint="?attr/icon_color"/>
+                        app:drawableTint="@color/icon_color"/>
 
-<!--                    <RadioGroup-->
-<!--                        android:id="@+id/radioGroup1"-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:orientation="horizontal">-->
+                    <!--                    <RadioGroup-->
+                    <!--                        android:id="@+id/radioGroup1"-->
+                    <!--                        android:layout_width="match_parent"-->
+                    <!--                        android:layout_height="wrap_content"-->
+                    <!--                        android:orientation="horizontal">-->
 
-<!--                       <FrameLayout-->
-<!--                           android:layout_width="0dp"-->
-<!--                           android:layout_height="wrap_content"-->
-<!--                           android:layout_weight="1"-->
-<!--                           android:background="?attr/bg_rounded"-->
-<!--                           android:paddingHorizontal="10dp">-->
-<!--                           <RadioButton-->
-<!--                               android:id="@+id/radioButton1"-->
-<!--                               android:layout_width="match_parent"-->
-<!--                               android:layout_height="wrap_content"-->
-<!--                               android:text="Left" />-->
-<!--                       </FrameLayout>-->
+                    <!--                       <FrameLayout-->
+                    <!--                           android:layout_width="0dp"-->
+                    <!--                           android:layout_height="wrap_content"-->
+                    <!--                           android:layout_weight="1"-->
+                    <!--                           android:background="@drawable/bg_rounded"-->
+                    <!--                           android:paddingHorizontal="10dp">-->
+                    <!--                           <RadioButton-->
+                    <!--                               android:id="@+id/radioButton1"-->
+                    <!--                               android:layout_width="match_parent"-->
+                    <!--                               android:layout_height="wrap_content"-->
+                    <!--                               android:text="Left" />-->
+                    <!--                       </FrameLayout>-->
 
-<!--                        <Space-->
-<!--                            android:layout_width="15dp"-->
-<!--                            android:layout_height="wrap_content" />-->
+                    <!--                        <Space-->
+                    <!--                            android:layout_width="15dp"-->
+                    <!--                            android:layout_height="wrap_content" />-->
 
-<!--                        <FrameLayout-->
-<!--                            android:layout_width="0dp"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:layout_weight="1"-->
-<!--                            android:background="?attr/bg_rounded"-->
-<!--                            android:paddingHorizontal="10dp">-->
-<!--                            <RadioButton-->
-<!--                                android:id="@+id/radioButton2"-->
-<!--                                android:layout_width="match_parent"-->
-<!--                                android:layout_height="wrap_content"-->
-<!--                                android:text="Right" />-->
-<!--                        </FrameLayout>-->
+                    <!--                        <FrameLayout-->
+                    <!--                            android:layout_width="0dp"-->
+                    <!--                            android:layout_height="wrap_content"-->
+                    <!--                            android:layout_weight="1"-->
+                    <!--                            android:background="@drawable/bg_rounded"-->
+                    <!--                            android:paddingHorizontal="10dp">-->
+                    <!--                            <RadioButton-->
+                    <!--                                android:id="@+id/radioButton2"-->
+                    <!--                                android:layout_width="match_parent"-->
+                    <!--                                android:layout_height="wrap_content"-->
+                    <!--                                android:text="Right" />-->
+                    <!--                        </FrameLayout>-->
 
-<!--                    </RadioGroup>-->
+                    <!--                    </RadioGroup>-->
 
                 </LinearLayout>
 
@@ -126,7 +126,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="?attr/bg_rounded"
+                        android:background="@drawable/bg_rounded"
                         android:drawablePadding="15dp"
                         android:gravity="center|start"
                         android:padding="15dp"
@@ -134,7 +134,7 @@
                         android:tag="Symbol Color"
                         app:colorCode="@{viewModel.color}"
                         app:drawableStartCompat="@drawable/ic_color_palette"
-                        app:drawableTint="?attr/icon_color"/>
+                        app:drawableTint="@color/icon_color"/>
 
                 </LinearLayout>
 
@@ -152,17 +152,17 @@
                         android:maxLines="2"
                         android:text="Handler size or height" />
 
-<!--                    <SeekBar-->
-<!--                        android:id="@+id/seekBar"-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:background="?attr/bg_rounded"-->
-<!--                        android:padding="15dp"/>-->
+                    <!--                    <SeekBar-->
+                    <!--                        android:id="@+id/seekBar"-->
+                    <!--                        android:layout_width="match_parent"-->
+                    <!--                        android:layout_height="wrap_content"-->
+                    <!--                        android:background="@drawable/bg_rounded"-->
+                    <!--                        android:padding="15dp"/>-->
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="?attr/bg_rounded"
+                        android:background="@drawable/bg_rounded"
                         android:drawablePadding="15dp"
                         android:gravity="center|start"
                         android:onClick="sizePicker"
@@ -171,7 +171,7 @@
                         app:drawableStart="@{viewModel.sizeIcon}"
                         android:scaleX="1"
                         android:scaleY="1"
-                        app:drawableTint="?attr/icon_color"/>
+                        app:drawableTint="@color/icon_color"/>
 
                 </LinearLayout>
 
@@ -189,19 +189,19 @@
                         android:maxLines="2"
                         android:text="Handler thickness or width" />
 
-<!--                    <SeekBar-->
-<!--                        style="@style/Widget.AppCompat.SeekBar.Discrete"-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:background="?attr/bg_rounded"-->
-<!--                        android:padding="15dp"-->
-<!--                        android:max="2"-->
-<!--                        android:progress="1" />-->
+                    <!--                    <SeekBar-->
+                    <!--                        style="@style/Widget.AppCompat.SeekBar.Discrete"-->
+                    <!--                        android:layout_width="match_parent"-->
+                    <!--                        android:layout_height="wrap_content"-->
+                    <!--                        android:background="@drawable/bg_rounded"-->
+                    <!--                        android:padding="15dp"-->
+                    <!--                        android:max="2"-->
+                    <!--                        android:progress="1" />-->
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="?attr/bg_rounded"
+                        android:background="@drawable/bg_rounded"
                         android:drawablePadding="15dp"
                         android:gravity="center|start"
                         android:onClick="widthPicker"
@@ -210,7 +210,7 @@
                         app:drawableStart="@{viewModel.widthIcon}"
                         android:scaleX="1"
                         android:scaleY="1"
-                        app:drawableTint="?attr/icon_color"/>
+                        app:drawableTint="@color/icon_color"/>
 
                 </LinearLayout>
 

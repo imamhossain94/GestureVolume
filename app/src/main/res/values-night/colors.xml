@@ -1,0 +1,29 @@
+<resources>
+    <!-- Primary colors -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="blue">#ff166FE5</color>
+
+    <!-- Brand colors -->
+    <color name="colorPrimary">#121212</color>
+
+    <color name="colorPrimaryVariant">#1D1D1D</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorSecondary">#303030</color>
+    <color name="colorSecondaryVariant">#BB86FC</color>
+    <color name="colorOnSecondary">#000000</color>
+
+    <!-- Custom colors -->
+    <color name="bg_color">#121212</color>
+
+    <color name="bg_rounded">#202123</color>
+    <color name="bg_rounded_icon">#3C3E49</color>
+    <color name="bg_bottom_curve">#24252C</color>
+    <color name="bg_right_curve">#121212</color>
+    <color name="icon_color">@color/white</color>
+    <color name="bg_card">#24252C</color>
+    <color name="seekbar_fill_color">#444444</color>
+
+    <!-- Status bar color for night mode -->
+    <color name="statusBarColor">#343541</color>
+</resources>

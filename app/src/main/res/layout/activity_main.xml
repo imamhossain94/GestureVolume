@@ -21,29 +21,28 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="?attr/backgroundColor"
             android:orientation="vertical"
             tools:ignore="UselessParent">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?android:statusBarColor"
                 android:padding="10dp"
                 android:gravity="center"
+                android:background="?android:statusBarColor"
                 android:orientation="horizontal">
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="?attr/bg_rounded_icon"
                     android:contentDescription="@string/menu"
                     android:padding="15dp"
                     android:src="@drawable/ic_menu"
                     android:onClick="openMenu"
                     android:clickable="true"
-                    android:focusable="true"
-                    app:tint="?attr/icon_color"/>
+                    android:background="@drawable/bg_rounded_icon"
+                    app:tint="@color/icon_color"
+                    android:focusable="true"/>
 
                 <TextView
                     android:layout_width="0dp"
@@ -57,14 +56,14 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="?attr/bg_rounded_icon"
                     android:contentDescription="@string/menu"
                     android:padding="15dp"
                     android:src="@drawable/ic_x_close"
                     android:onClick="closeApp"
                     android:clickable="true"
-                    android:focusable="true"
-                    app:tint="?attr/icon_color"/>
+                    android:background="@drawable/bg_rounded_icon"
+                    app:tint="@color/icon_color"
+                    android:focusable="true"/>
 
             </LinearLayout>
 
@@ -101,9 +100,8 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="?attr/bg_bottom_curve"
+                        android:background="@drawable/bg_bottom_curve"
                         android:orientation="vertical">
-
 
                         <androidx.cardview.widget.CardView
                             android:layout_width="match_parent"
@@ -161,7 +159,7 @@
                             android:layout_margin="10dp"
                             app:cardCornerRadius="15dp"
                             app:cardElevation="0dp"
-                            app:cardBackgroundColor="?attr/bg_card">
+                            app:cardBackgroundColor="@color/bg_card">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
@@ -185,9 +183,9 @@
                                     <androidx.appcompat.widget.SwitchCompat
                                         android:id="@+id/toggle_service"
                                         android:layout_width="match_parent"
-                                        android:background="?attr/bg_rounded"
                                         android:layout_height="wrap_content"
                                         android:text="Service Off"
+                                        android:background="@drawable/bg_rounded"
                                         android:checked="false"
                                         android:padding="15dp"/>
 
@@ -227,7 +225,7 @@
 
             <LinearLayout
                 android:id="@+id/ads_container"
-                android:visibility="visible"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/banner_height"
                 android:background="#ffffff"

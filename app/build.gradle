@@ -43,7 +43,6 @@ android {
 }
 
 dependencies {
-
     // android supports
     implementation "com.google.android.material:material:$versions.materialVersion"
     implementation "androidx.constraintlayout:constraintlayout:$versions.constraintVersion"
@@ -55,6 +54,9 @@ dependencies {
     implementation 'androidx.activity:activity:1.9.1'
     testImplementation "androidx.arch.core:core-testing:$versions.archCompomentVersion"
     implementation "androidx.preference:preference-ktx:1.2.1"
+
+    // Splash screen
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     // binding
     implementation "com.github.skydoves:bindables:$versions.bindablesVersion"

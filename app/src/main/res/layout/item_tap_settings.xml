@@ -34,7 +34,7 @@
             android:layout_margin="10dp"
             app:cardCornerRadius="15dp"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="?attr/bg_card">
+            app:cardBackgroundColor="@color/bg_card">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -59,7 +59,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="?attr/bg_rounded"
+                        android:background="@drawable/bg_rounded"
                         android:drawablePadding="15dp"
                         android:gravity="center|start"
                         android:onClick="clickActionPicker"
@@ -68,7 +68,7 @@
                         app:drawableStart="@{viewModel.clickActionIcon}"
                         android:scaleX="1"
                         android:scaleY="1"
-                        app:drawableTint="?attr/icon_color"/>
+                        app:drawableTint="@color/icon_color"/>
 
                 </LinearLayout>
 
@@ -90,7 +90,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="?attr/bg_rounded"
+                        android:background="@drawable/bg_rounded"
                         android:orientation="horizontal">
 
                         <TextView
@@ -105,7 +105,7 @@
                             android:scaleX="1"
                             android:scaleY="1"
                             android:onClick="doubleClickActionPicker"
-                            app:drawableTint="?attr/icon_color"/>
+                            app:drawableTint="@color/icon_color"/>
 
                         <TextView
                             android:id="@+id/double_tap_pro_tag"
@@ -117,7 +117,7 @@
                             android:maxLines="1"
                             android:text="PRO"
                             android:visibility="invisible"
-                            android:textColor="?attr/colorPrimary"
+                            android:textColor="@color/icon_color"
                             android:textStyle="bold"/>
 
                     </LinearLayout>
@@ -142,7 +142,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="?attr/bg_rounded"
+                        android:background="@drawable/bg_rounded"
                         android:orientation="horizontal">
 
                         <TextView
@@ -157,7 +157,7 @@
                             android:scaleX="1"
                             android:scaleY="1"
                             android:onClick="longClickActionPicker"
-                            app:drawableTint="?attr/icon_color"/>
+                            app:drawableTint="@color/icon_color"/>
 
                         <TextView
                             android:id="@+id/long_tap_pro_tag"
@@ -169,7 +169,7 @@
                             android:maxLines="1"
                             android:text="PRO"
                             android:visibility="invisible"
-                            android:textColor="?attr/colorPrimary"
+                            android:textColor="@color/icon_color"
                             android:textStyle="bold"/>
 
                     </LinearLayout>

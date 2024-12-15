@@ -15,8 +15,7 @@
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#00ffffff"
-            app:elevation="0dp">
+            android:background="#00ffffff">
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/topAppBar"
@@ -165,7 +164,7 @@
                 android:layout_height="46dp"
                 android:layout_margin="8dp"
                 android:layout_weight="1"
-                android:backgroundTint="@color/color_blue"
+                android:backgroundTint="@color/blue"
                 android:text="Send"
                 android:textColor="@color/white" />
 

@@ -14,8 +14,7 @@
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#00ffffff"
-            app:elevation="0dp">
+            android:background="#00ffffff">
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/topAppBar"
@@ -41,17 +40,22 @@
                 android:textColor="?attr/colorOnBackground"
                 android:textSize="16sp" />
 
-            <TextView
-                android:id="@+id/tv_app_version"
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/bg_rounded"
-                android:gravity="center"
-                android:padding="15dp"
                 android:layout_marginTop="10dp"
-                android:text="Unknown"
-                android:textSize="14sp"
-                app:drawableTint="?attr/icon_color"/>
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/bg_card">
+                <TextView
+                    android:id="@+id/tv_app_version"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:padding="15dp"
+                    android:text="Unknown"
+                    android:textSize="14sp"/>
+            </androidx.cardview.widget.CardView>
 
         </LinearLayout>
 
