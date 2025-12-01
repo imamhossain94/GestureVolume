@@ -1,0 +1,104 @@
+[versions]
+agp = "8.13.1"
+coilNetworkOkhttp = "3.3.0"
+coreSplashscreen = "1.2.0"
+googleIap = "1.8.0"
+kotlin = "2.2.21"
+coreKtx = "1.17.0"
+junit = "4.13.2"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+lifecycleRuntimeKtx = "2.10.0"
+activityCompose = "1.12.0"
+composeBom = "2025.11.01"
+
+# Hilt
+hilt = "2.57.2"
+hiltNavigationCompose = "1.3.0"
+
+# Coil
+coil = "3.3.0"
+
+# Sheets
+lottieCompose = "6.7.1"
+materialIconsExtended = "1.7.8"
+sheet = "1.3.0"
+
+# KSP
+ksp = "2.2.20-2.0.3"  # Must match Kotlin version
+
+# Other (optional but common)
+material3 = "1.4.0"
+lifecycleProcess = "2.10.0"
+constraintlayout = "2.2.1"
+cardview = "1.0.0"
+
+# Ads
+applovinSdk = "13.5.1"
+playServicesBase = "18.9.0"
+chartboostAdapter = "9.10.2.0"
+inmobiAdapter = "11.1.0.0"
+picasso = "2.71828"
+recyclerview = "1.4.0"
+ironsourceAdapter = "9.2.0.0.0"
+vungleAdapter = "7.6.1.0"
+facebookAdapter = "6.21.0.0"
+mintegralAdapter = "17.0.31.0"
+unityadsAdapter = "4.16.4.0"
+
+
+[libraries]
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilNetworkOkhttp" }
+google-iap = { module = "com.github.akshaaatt:Google-IAP", version.ref = "googleIap" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+
+# Hilt
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+
+# Coil
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil = { group = "io.coil-kt.coil3", name = "coil", version.ref = "coil" }
+
+# Sheets
+color = { module = "com.maxkeppeler.sheets-compose-dialogs:color", version.ref = "sheet" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieCompose" }
+androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
+
+# Ads
+androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
+applovin-sdk = { module = "com.applovin:applovin-sdk", version.ref = "applovinSdk" }
+facebook-adapter = { module = "com.applovin.mediation:facebook-adapter", version.ref = "facebookAdapter" }
+chartboost-adapter = { module = "com.applovin.mediation:chartboost-adapter", version.ref = "chartboostAdapter" }
+inmobi-adapter = { module = "com.applovin.mediation:inmobi-adapter", version.ref = "inmobiAdapter" }
+ironsource-adapter = { module = "com.applovin.mediation:ironsource-adapter", version.ref = "ironsourceAdapter" }
+mintegral-adapter = { module = "com.applovin.mediation:mintegral-adapter", version.ref = "mintegralAdapter" }
+picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
+play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
+unityads-adapter = { module = "com.applovin.mediation:unityads-adapter", version.ref = "unityadsAdapter" }
+vungle-adapter = { module = "com.applovin.mediation:vungle-adapter", version.ref = "vungleAdapter" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }

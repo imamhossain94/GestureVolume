@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/overlay_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,20 +11,17 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:visibility="visible">
-
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/clock_view_holder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="140dp"
-        android:orientation="horizontal"
-        android:gravity="center_horizontal"
         android:background="@color/black"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:paddingTop="140dp"
         android:visibility="visible">
-
     </LinearLayout>
 
 </FrameLayout>

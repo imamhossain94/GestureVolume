@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/pro_feature_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/ads_background">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp">
+                <!-- Media View - Fixed height with an aspect ratio constraint -->
+                <!-- AppLovin recommends a 1.91:1 ratio for landscape media -->
+                <FrameLayout
+                    android:id="@+id/media_view_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/black"/>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Content Section - Takes 2/3 of width -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <!-- Header with Icon and Info -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <!-- App Icon -->
+
+                    <!-- Title and Info -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <!-- Ad Badge and Title -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:id="@+id/ad_indicator_text_view"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textStyle="bold"
+                                android:textSize="9sp"
+                                android:text="AD"
+                                android:paddingHorizontal="5dp"
+                                android:paddingVertical="2dp"
+                                android:background="@drawable/capsul_background"
+                                android:letterSpacing="0.05"
+                                android:textColor="@color/white"
+                                android:gravity="center"/> <!-- Ensure text is centered in badge -->
+
+                            <TextView
+                                android:id="@+id/title_text_view"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="6dp"
+                                android:textStyle="bold"
+                                android:textSize="14sp"
+                                android:maxLines="1"
+                                android:ellipsize="end"
+                                tools:text="Pandora Music"
+                                android:textColor="@color/white"/>
+                        </LinearLayout>
+
+                        <!-- Advertiser (moved below the title for better hierarchy) -->
+                        <TextView
+                            android:id="@+id/advertiser_text_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            tools:text="pandora.com"
+                            android:textColor="@color/white"/>
+
+                        <!-- Star Rating (moved down to align with body text start time) -->
+                        <FrameLayout
+                            android:id="@+id/star_rating_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:visibility="gone"/> <!-- Set to gone, as it will be populated dynamically -->
+
+                    </LinearLayout>
+
+                    <!-- Options Menu -->
+                    <FrameLayout
+                        android:id="@+id/options_view"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="8dp"/>
+                </LinearLayout>
+
+                <!-- Body Text -->
+                <TextView
+                    android:id="@+id/body_text_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="2dp"
+                    android:textColor="@color/white"
+                    tools:text="A personalized listening experience that continually evolves with your tastes." />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- CTA Button -->
+        <Button
+            android:id="@+id/cta_button"
+            app:backgroundTint="@null"
+            android:background="@drawable/primary_button"
+            android:layout_marginBottom="12dp"
+            android:layout_marginHorizontal="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="39dp"
+            android:textColor="@android:color/white"
+            tools:text="Install" />
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

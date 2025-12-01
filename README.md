@@ -1,71 +1,112 @@
-<h1 align="center">Edge Gesture Volume</h1>
+<h1 align="center">Gesture Volume — Jetpack Compose</h1>
 
 <p align="center">
-  <img src="https://visitor-badge.laobi.icu/badge?page_id=imamhossain94.EdgeGestureVolumeControl" alt="Visitor">
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=imamhossain94.GestureVolumeJC" alt="Visitor">
   <img src="https://img.shields.io/badge/API-23%2B-brightgreen.svg?style=flat" alt="API">
-  <img src="https://img.shields.io/badge/Github-imamhossain94-blue" alt="Github">
+  <img src="https://img.shields.io/badge/GitHub-imamhossain94-blue" alt="GitHub">
 </p>
 
-<p align="center">  
-Edge Gesture Volume is a feature-rich Android application that provides intuitive gesture-based volume control for your device. Enhance the longevity of the physical volume button by utilizing an intuitive edge gesture.
+<p align="center">
+Gesture Volume is a modern Android application built using <b>Jetpack Compose</b>, offering intuitive gesture-based volume control. Reduce wear on physical buttons by using a smooth and customizable edge-gesture volume slider.
 </p>
 
 <br>
 
 <p align="center">
-<img src="/previews/preview.jpg" width="100%" title="Samsung volume panel">
+<img src="/previews/preview.jpg" width="100%" title="Gesture Volume Preview">
 </p>
 
+---
 
-## Screenshots
+## 📌 About This Project
 
-|               Home                |         Gesture Settings          |       Samsung Volume Panel       |
-|:---------------------------------:|:---------------------------------:|:--------------------------------:|
-|      ![](previews/home.jpg)       | ![](previews/gesture_setting.jpg) |     ![](previews/volume.jpg)     |
-|         Application Menu          |            Color Sheet            |          Handler Action          |
-|      ![](previews/menu.jpg)       |      ![](previews/color.jpg)      | ![](previews/handler_action.jpg) |
-|          Handler Gravity          |           Swipe Action            |          Handler Height          |
-| ![](previews/handler_gravity.jpg) |  ![](previews/gesture_swipe.jpg)  | ![](previews/handler_height.jpg) |
+This repository contains the **Jetpack Compose version** of Gesture Volume.
 
+👉 **Looking for the old XML-based version?**  
+You can find it on the **main** branch.  
 
-## 🔑 Key Features:
+---
 
-* Enhance the lifespan of your Volume button.
-* Revitalize devices with faulty volume keys.
-* Customize and style the volume gesture handler.
-* Add click action to the volume gesture handler.
-* Screen lock on the volume gesture handler click.
-* Choose upper half swipe action in the volume gesture handler.
-* Choose bottom half swipe action in the volume gesture handler.
+## 📸 Screenshots
 
-## 🔏 App Permissions
+|        Main Menu         |       Handler Appearance       |        Handler Actions        |
+|:------------------------:|:------------------------------:|:-----------------------------:|
+| ![](previews/g_dash.jpg) | ![](previews/g_ui_setting.jpg) | ![](previews/g_h_actions.jpg) |
 
-* READ_EXTERNAL_STORAGE
-* SYSTEM_ALERT_WINDOW
-* FOREGROUND_SERVICE
-* WAKE_LOCK
-* RECEIVE_BOOT_COMPLETED
+|       Permission Control       |           Available Actions           |
+|:------------------------------:|:-------------------------------------:|
+| ![](previews/g_permission.jpg) | ![](previews/g_available_actions.jpg) |
 
+---
 
-## 💕 Credit
+## 🔑 Key Features
 
-* Icons by [svgrepo.com](https://www.svgrepo.com/)
-* Lottie by [S M Rony](https://lottiefiles.com/110200-mobile-setting)
+- Preserve and extend the lifespan of your volume buttons.
+- Useful on devices with damaged or faulty volume keys.
+- Fully customize the gesture handler appearance.
+- Add click actions to the gesture area.
+- Lock the screen using a gesture-handler click.
+- Assign separate actions to:
+    - Upper-half swipe
+    - Lower-half swipe
 
-## 💻 Installation steps
+---
 
-Clone or download this project in your working directory, Open using android studio, Sync the
-project, build & run the project.
+## 🔏 Permissions Used
 
+- `READ_EXTERNAL_STORAGE`
+- `SYSTEM_ALERT_WINDOW`
+- `FOREGROUND_SERVICE`
+- `WAKE_LOCK`
+- `RECEIVE_BOOT_COMPLETED`
 
-## 🧑 Author
+---
 
-#### Md. Imam Hossain
+## 💻 Installation
 
-You can also follow my GitHub Profile to stay updated about my latest projects:
+1. Clone or download the repository.
+2. Open the project in **Android Studio**.
+3. Allow Gradle to sync.
+4. Build & run the app.
 
-[![GitHub Follow](https://img.shields.io/badge/Connect-imamhossain94-blue.svg?logo=Github&longCache=true&style=social&label=Follow)](https://github.com/imamhossain94)
+---
 
-If you liked the repo then kindly support it by giving it a star ⭐!
+## ⚙️ Configure `local.properties`
 
-Copyright (c) 2023 MD. IMAM HOSSAIN
+```env
+APPLOVIN_SDK_KEY=<your-applovin-sdk-key>
+
+AD_UNIT_APP_OPEN=<your-app-open-ad-unit-id>
+AD_UNIT_INTERSTITIAL=<your-interstitial-ad-unit-id>
+AD_UNIT_BANNER=<your-banner-ad-unit-id>
+AD_UNIT_REWARD=<your-rewarded-ad-unit-id-or-none>
+AD_UNIT_NATIVE=<your-native-ad-unit-id>
+
+BASE64_PUBLIC_KEY=<your-play-store-base64-public-key>
+
+PRODUCT_LIFETIME=<your-product-lifetime-id>
+```
+
+---
+
+## 💕 Credits
+
+- **Images:** [pexels.com](https://www.pexels.com/)
+- **Icons:** [svgrepo.com](https://www.svgrepo.com/)
+- **Lottie Animation:** [S M Rony](https://lottiefiles.com/110200-mobile-setting)
+
+---
+
+## 👨‍💻 Author
+### **Md. Imam Hossain**
+
+Stay updated with my latest projects:  
+[![GitHub Follow](https://img.shields.io/badge/Connect-imamhossain94-blue.svg?logo=GitHub&style=social&label=Follow)](https://github.com/imamhossain94)
+
+This project is **free to use, modify, and integrate** into your own applications.  
+If you like this project, please support it by giving a **star ⭐**!
+
+---
+
+© 2025 Md. Imam Hossain — All Rights Reserved.
+

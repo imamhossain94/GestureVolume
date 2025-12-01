@@ -20,6 +20,8 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -27,33 +29,34 @@ import android.view.View
 import android.view.WindowManager
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.NotificationCompat
-import androidx.lifecycle.MutableLiveData
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.data.local.SharedPref
+import com.newagedevs.gesturevolume.data.model.UnlockCondition
 import com.newagedevs.gesturevolume.livedata.LiveDataManager
-import com.newagedevs.gesturevolume.model.UnlockCondition
-import com.newagedevs.gesturevolume.persistence.SharedPrefRepository
-import com.newagedevs.gesturevolume.utils.Constants
-import com.newagedevs.gesturevolume.view.HandlerView
-import org.koin.android.ext.android.inject
+import com.newagedevs.gesturevolume.utils.LockScreenUtil
+import com.newagedevs.gesturevolume.ui.view.HandlerView
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.sqrt
-
 
 interface OverlayServiceInterface {
     fun show()
     fun hide()
     fun update()
-
     var shouldFinish: Boolean
 }
 
+@AndroidEntryPoint
 class OverlayService : Service(), OverlayServiceInterface {
+
+    @Inject
+    lateinit var preference: SharedPref
 
     override var shouldFinish: Boolean = true
 
     private val binder: IBinder = LocalBinder()
-    private val preference: SharedPrefRepository by inject()
-    
+
     inner class LocalBinder : Binder() {
         fun instance(): OverlayServiceInterface = this@OverlayService
     }
@@ -71,35 +74,31 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     private var windowManager: WindowManager? = null
     private var audioManager: AudioManager? = null
+    private var vibratorService: Vibrator? = null
     private var maxVolume: Int? = null
-
-
     private var lockScreenUtil: LockScreenUtil? = null
 
     private var minSwipeY: Float = 0f
-    
+
     companion object {
         private const val CHANNEL_ID = "Gesture Volume Channel ID"
         private const val NOTIFICATION_ID = 1
-
         private const val TOUCH_MOVE_FACTOR: Long = 20
         private const val TOUCH_TIME_FACTOR: Long = 300
         private const val DOUBLE_CLICK_TIME_DELTA: Long = 300
         private const val LONG_PRESS_TIME_THRESHOLD: Long = 500
         private var volume: Int = 0
     }
-    private var previousVolume: Int = 1
 
+    private var previousVolume: Int = 1
     private var lastX: Float = 0f
     private var lastY: Float = 0f
 
-//    private val handler = Handler(Looper.getMainLooper())
     private val longPressHandler = Handler(Looper.getMainLooper())
     private var singleClickHandler = Handler(Looper.getMainLooper())
 
     private var eventX1: Float = 0f
     private var eventX2: Float = 0f
-
     private var startY: Float = 0f
 
     private var actionDownPoint = PointF(0f, 0f)
@@ -108,42 +107,45 @@ class OverlayService : Service(), OverlayServiceInterface {
     private var touchDownTime = 0L
     private var lastClickTime = 0L
 
-    // Single press
-    private var singleClickRunnable = java.lang.Runnable {
+    private var singleClickRunnable = Runnable {
         handlerTapActions(preference.getHandlerSingleTapAction())
     }
 
-    // Long press
-    private var longPressedRunnable = java.lang.Runnable {
+    private var longPressedRunnable = Runnable {
         onLongPress()
         handlerTapActions(preference.getHandlerLongTapAction())
         isLongPressHandlerActivated = true
     }
 
     private var isLongPressHandlerActivated = false
-
     private var isActionMoveEventStored = false
     private var lastActionMoveEventBeforeUpX = 0f
     private var lastActionMoveEventBeforeUpY = 0f
-
 
     override fun onCreate() {
         super.onCreate()
 
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+        vibratorService = getSystemService(Vibrator::class.java)
         maxVolume = audioManager!!.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        volume = audioManager!!.getStreamVolume(AudioManager.STREAM_MUSIC)
         lockScreenUtil = LockScreenUtil(this)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Overlay notification",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
-        }
+        createNotificationChannel()
+        startForegroundService()
+    }
 
+    private fun createNotificationChannel() {
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "Overlay notification",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
+    }
+
+    private fun startForegroundService() {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_gesture)
             .setContentTitle("Gesture Volume")
@@ -157,26 +159,27 @@ class OverlayService : Service(), OverlayServiceInterface {
             .addAction(R.drawable.ic_power, "Stop", getPendingIntent("stop"))
             .build()
 
-
-        if (Build.VERSION.SDK_INT >= 34) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(
                 NOTIFICATION_ID,
                 notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
-        }else {
-            startForeground(
-                NOTIFICATION_ID,
-                notification)
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
         }
-
     }
-
 
     private fun getPendingIntent(action: String): PendingIntent {
         val intent = Intent(this, OverlayService::class.java).apply {
             this.action = action
         }
-        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_MUTABLE)
+        return PendingIntent.getService(
+            this,
+            action.hashCode(),
+            intent,
+            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
     }
 
     override fun onDestroy() {
@@ -184,63 +187,86 @@ class OverlayService : Service(), OverlayServiceInterface {
         hideOverlayView()
         hideHandlerView()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            try{
-                stopForeground(true)
-            }catch (_:Exception) { }
-        }
+        longPressHandler.removeCallbacks(longPressedRunnable)
+        singleClickHandler.removeCallbacks(singleClickRunnable)
+
+        stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        intent?.action?.let {
-            LiveDataManager.sendCommand(it)
-            when (it) {
-                "show" -> {
-                    createOverlayHandler()
-                }
+        intent?.action?.let { action ->
+            LiveDataManager.sendCommand(action)
+            when (action) {
+                "show" -> createOverlayHandler()
                 "hide" -> {
                     hideOverlayView()
                     hideHandlerView()
-                    return START_STICKY
                 }
                 "stop" -> {
                     preference.setRunning(false)
                     hideOverlayView()
                     hideHandlerView()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        stopForeground(STOP_FOREGROUND_REMOVE)
-                    } else {
-                        try{
-                            stopForeground(true)
-                        }catch (_:Exception) { }
-                    }
-                    stopSelf()
+                    stopForegroundAndSelf()
+                }
+                "update" -> {
+                    // Reload and update handler with new settings
+                    update()
                 }
             }
+        } ?: run {
+            // Service started without action, show handler
+            createOverlayHandler()
         }
         return START_STICKY
     }
 
-    private fun now(): Long {
-        return SystemClock.elapsedRealtime()
+    private fun stopForegroundAndSelf() {
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
 
+    private fun now(): Long = SystemClock.elapsedRealtime()
+
+    // Update the createOverlayHandler method in OverlayService.kt
 
     private fun createOverlayHandler() {
         if (handlerView == null) {
-            // load prefs
+            // Load all settings from preference
             val handlerPosition = preference.getHandlerPosition()
-            val handlerColor = preference.getHandlerColor()
-            val handlerSize = preference.getHandlerSize()
-            val handlerWidth = preference.getHandlerWidth()
+            val handlerWidth = preference.getHandlerWidthDp()
+            val handlerHeight = preference.getHandlerHeightDp()
+
             val translationY = preference.getHandlerTranslationY()
 
+            // Appearance settings
+            val backgroundColor = preference.getHandlerColor()
+            val backgroundAlpha = preference.getHandlerBackgroundAlpha()
+            val strokeColor = preference.getHandlerStrokeColor()
+            val strokeWidth = preference.getHandlerStrokeWidth()
+            val strokeAlpha = preference.getHandlerStrokeAlpha()
+
+            // Corner radius settings
+            val cornerRadiusTL = preference.getHandlerCornerRadiusTL()
+            val cornerRadiusTR = preference.getHandlerCornerRadiusTR()
+            val cornerRadiusBL = preference.getHandlerCornerRadiusBL()
+            val cornerRadiusBR = preference.getHandlerCornerRadiusBR()
+
+            // Icon settings
+            val iconRes = preference.getHandlerIconRes()
+            val iconSize = preference.getHandlerIconSize()
+            val iconColor = preference.getHandlerIconColor() // NEW
+            val showIcon = preference.getHandlerShowIcon()
+
+            // Behavior settings
+            val vibrateOnClick = preference.getHandlerVibrateOnClick()
+            val lockPosition = preference.getHandlerLockPosition()
+
+            val gravity = if (handlerPosition == "Left") Gravity.START else Gravity.END
+
             val layoutParams = WindowManager.LayoutParams(
-                Constants.handlerWidthValue(handlerWidth),
-                Constants.handlerSizeValue(handlerSize),
+                dpToPx(handlerWidth),
+                dpToPx(handlerHeight),
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                         WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
@@ -248,34 +274,50 @@ class OverlayService : Service(), OverlayServiceInterface {
             ).apply {
                 x = 0
                 y = translationY.toInt()
-                gravity = Gravity.TOP or if (handlerPosition == "Left") Gravity.START else Gravity.END
+                this.gravity = Gravity.TOP or gravity
             }
 
-            handlerView = HandlerView(this)
-            handlerView?.setHandlerPositionIsLocked(true)
-            handlerView?.setTranslationYPosition(0f)
-            handlerView?.setViewGravity(if (handlerPosition == "Left") Gravity.START else Gravity.END)
-            handlerView?.setViewColor(handlerColor, (handlerColor shr 24) and 0xFF)
-            handlerView?.setViewDimension(Constants.handlerWidthValue(handlerWidth), Constants.handlerSizeValue(handlerSize))
-            handlerView?.setHandlerPositionChangeListener(object : HandlerView.HandlerPositionChangeListener {
-                override fun onVertical(rawY: Float) { }
+            handlerView = HandlerView(this).apply {
+                // Position and dimensions
+                setViewGravity(gravity)
+                setViewDimensionsDp(handlerWidth, handlerHeight)
+                setTranslationYPosition(0f)
 
-                override fun onVertical(rawY: Int) {
+                // Appearance
+                setViewBackgroundColor(backgroundColor, backgroundAlpha)
+                setStrokeProperties(strokeColor, strokeWidth, strokeAlpha)
+                setCornerRadiiDp(cornerRadiusTL, cornerRadiusTR, cornerRadiusBL, cornerRadiusBR)
 
-                }
-            })
+                // Icon with color support
+                setCenterIcon(iconRes, iconSize, iconColor) // NEW: Pass icon color
+                setCenterIconColor(iconColor) // NEW: Set icon color
+                setCenterIconVisible(showIcon)
+
+                // Behavior
+                setVibrateOnClick(vibrateOnClick)
+                setHandlerPositionLocked(true)
+
+                // Click listener for tap actions
+                setHandlerClickListener(object : HandlerView.HandlerClickListener {
+                    override fun onSingleClick() {
+                        handlerTapActions(preference.getHandlerSingleTapAction())
+                    }
+
+                    override fun onDoubleClick() {
+                        handlerTapActions(preference.getHandlerDoubleTapAction())
+                    }
+                })
+            }
 
             handlerViewEvents()
-
             windowManager?.addView(handlerView, layoutParams)
         }
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun handlerViewEvents() {
-
-        val handlerSize = preference.getHandlerSize()
-        val handlerWidth = preference.getHandlerWidth()
+        val handlerHeight = preference.getHandlerHeightDp()
+        val handlerWidth = preference.getHandlerWidthDp()
 
         handlerView?.setOnTouchListener { _, event ->
             when (event.action) {
@@ -289,7 +331,7 @@ class OverlayService : Service(), OverlayServiceInterface {
                     minSwipeY = 0f
                     lastX = event.x
                     lastY = event.y
-                    return@setOnTouchListener true
+                    true
                 }
                 MotionEvent.ACTION_MOVE, MotionEvent.ACTION_HOVER_MOVE -> {
                     if (!isActionMoveEventStored) {
@@ -301,7 +343,10 @@ class OverlayService : Service(), OverlayServiceInterface {
                         val currentY = event.y
                         val firstX = lastActionMoveEventBeforeUpX
                         val firstY = lastActionMoveEventBeforeUpY
-                        val distance = sqrt(((currentY - firstY) * (currentY - firstY) + (currentX - firstX) * (currentX - firstX)).toDouble())
+                        val distance = sqrt(
+                            ((currentY - firstY) * (currentY - firstY) +
+                                    (currentX - firstX) * (currentX - firstX)).toDouble()
+                        )
 
                         if (distance > 20) {
                             longPressHandler.removeCallbacks(longPressedRunnable)
@@ -316,19 +361,19 @@ class OverlayService : Service(), OverlayServiceInterface {
 
                         minSwipeY += distanceY
 
-                        val sWidth = Constants.handlerWidthValue(handlerWidth)
-                        val sHeight = Constants.handlerSizeValue(handlerSize)
+                        val sWidth = dpToPx(handlerWidth)
+                        val sHeight = dpToPx(handlerHeight)
 
                         val border = 1
-                        if(event.x < border || event.y < border || event.x > sWidth - border || event.y > sHeight - border)
+                        if (event.x < border || event.y < border ||
+                            event.x > sWidth - border || event.y > sHeight - border) {
                             return@setOnTouchListener false
+                        }
 
-                        if(abs(distanceX) < abs(distanceY) && abs(minSwipeY) > 10){
+                        if (abs(distanceX) < abs(distanceY) && abs(minSwipeY) > 10) {
                             if (distanceY > 0) {
-                                // Swipe Down
                                 adjustVolume(-1, preference.getHandlerSwipeDownAction())
                             } else {
-                                // Swipe Up
                                 adjustVolume(1, preference.getHandlerSwipeUpAction())
                             }
                             minSwipeY = 0f
@@ -336,45 +381,54 @@ class OverlayService : Service(), OverlayServiceInterface {
                         lastX = x
                         lastY = y
                     }
+                    true
                 }
                 MotionEvent.ACTION_UP -> {
                     isActionMoveEventStored = false
                     longPressHandler.removeCallbacks(longPressedRunnable)
-                    if(isLongPressHandlerActivated) {
+
+                    if (isLongPressHandlerActivated) {
                         isLongPressHandlerActivated = false
                         return@setOnTouchListener false
                     }
 
                     val isTouchDuration = now() - touchDownTime < TOUCH_TIME_FACTOR
-                    val isTouchLength = abs(event.x - actionDownPoint.x) + abs(event.y - actionDownPoint.y) < TOUCH_MOVE_FACTOR
+                    val isTouchLength = abs(event.x - actionDownPoint.x) +
+                            abs(event.y - actionDownPoint.y) < TOUCH_MOVE_FACTOR
                     val shouldClick = isTouchLength && isTouchDuration
 
                     if (shouldClick) {
                         val currentTime = now()
                         if (currentTime - lastClickTime < DOUBLE_CLICK_TIME_DELTA) {
-                            // Cancel the single click action and trigger double click
                             singleClickHandler.removeCallbacks(singleClickRunnable)
-                            handlerTapActions(preference.getHandlerDoubleTapAction()) // Double click detected
+                            handlerTapActions(preference.getHandlerDoubleTapAction())
                         } else {
                             singleClickHandler.postDelayed(singleClickRunnable, DOUBLE_CLICK_TIME_DELTA)
                         }
                         lastClickTime = currentTime
                     }
+                    true
                 }
+                else -> false
             }
-
-            return@setOnTouchListener false
         }
-
     }
 
     private fun adjustVolume(change: Int, action: String) {
-        val newVolume = (volume + change).coerceIn(0, maxVolume)
+        volume = audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 0
+        val newVolume = (volume + change).coerceIn(0, maxVolume ?: 15)
+
         if (newVolume != volume) {
             volume = newVolume
             when (action) {
-                "Increase volume", "Decrease volume" -> audioManager!!.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0)
-                "Increase volume and show UI", "Decrease volume and show UI" -> audioManager!!.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_SHOW_UI)
+                "Increase volume", "Decrease volume" ->
+                    audioManager?.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0)
+                "Increase volume and show UI", "Decrease volume and show UI" ->
+                    audioManager?.setStreamVolume(
+                        AudioManager.STREAM_MUSIC,
+                        volume,
+                        AudioManager.FLAG_SHOW_UI
+                    )
             }
         }
     }
@@ -382,10 +436,10 @@ class OverlayService : Service(), OverlayServiceInterface {
     private fun openApp() {
         val packageManager = applicationContext.packageManager
         val intent = packageManager.getLaunchIntentForPackage(applicationContext.packageName)
-        if (intent != null) {
+        intent?.let {
             hideHandlerView()
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            applicationContext.startActivity(intent)
+            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            applicationContext.startActivity(it)
         }
     }
 
@@ -393,123 +447,22 @@ class OverlayService : Service(), OverlayServiceInterface {
     @Suppress("DEPRECATION")
     private fun createOverlayView() {
         if (overlayView == null) {
-            // load prefs
-
-            overlayView = LayoutInflater.from(this@OverlayService).inflate(R.layout.overlay_layout, null)
-            overlayView?.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+            overlayView = LayoutInflater.from(this).inflate(R.layout.overlay_layout, null).apply {
+                systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+            }
 
             val overlayViewHolder = overlayView?.findViewById<ConstraintLayout>(R.id.overlay_view_holder)
-
-            // Overlay background d color
-            val drawable = GradientDrawable()
-            drawable.setColor(Color.BLACK)
-            overlayViewHolder?.background = drawable
+            overlayViewHolder?.background = GradientDrawable().apply {
+                setColor(Color.BLACK)
+            }
 
             overlayViewHolder?.setOnTouchListener { _, event ->
-                when (event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        longPressHandler.postDelayed(longPressedRunnable, LONG_PRESS_TIME_THRESHOLD)
-                        actionDownPoint = PointF(event.x, event.y)
-                        previousPoint = PointF(event.x, event.y)
-                        touchDownTime = now()
-                        eventX1 = event.x
-                        startY = event.y
-
-                        minSwipeY = 0f
-
-                        lastX = event.x
-                        lastY = event.y
-
-                        return@setOnTouchListener true
-                    }
-                    MotionEvent.ACTION_MOVE, MotionEvent.ACTION_HOVER_MOVE -> {
-                        if (!isActionMoveEventStored) {
-                            isActionMoveEventStored = true
-                            lastActionMoveEventBeforeUpX = event.x
-                            lastActionMoveEventBeforeUpY = event.y
-                        } else {
-                            val currentX = event.x
-                            val currentY = event.y
-                            val firstX = lastActionMoveEventBeforeUpX
-                            val firstY = lastActionMoveEventBeforeUpY
-                            val distance = sqrt(((currentY - firstY) * (currentY - firstY) + (currentX - firstX) * (currentX - firstX)).toDouble())
-
-                            if (distance > 20) {
-                                longPressHandler.removeCallbacks(longPressedRunnable)
-                                eventX2 = event.x
-                                previousPoint = PointF(event.x, event.y)
-                            }
-
-                            val x = event.x
-                            val y = event.y
-                            val distanceX = x - lastX
-                            val distanceY = y - lastY
-
-                            minSwipeY += distanceY
-
-                            val sWidth = Resources.getSystem().displayMetrics.widthPixels
-                            val sHeight = Resources.getSystem().displayMetrics.heightPixels
-
-                            val border = 100 * Resources.getSystem().displayMetrics.density.toInt()
-                            if(event.x < border || event.y < border || event.x > sWidth - border || event.y > sHeight - border)
-                                return@setOnTouchListener false
-
-                            if(abs(distanceX) < abs(distanceY) && abs(minSwipeY) > 30){
-                                val maxVolume = audioManager!!.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-
-                                val newValue = if(distanceY > 0) {
-                                    volume - 1
-                                } else {
-                                    volume + 1
-                                }
-
-                                if(newValue in 0..maxVolume) volume = newValue
-                                audioManager!!.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_SHOW_UI)
-
-                                minSwipeY = 0f
-                            }
-                            lastX = x
-                            lastY = y
-                        }
-                    }
-                    MotionEvent.ACTION_UP -> {
-                        isActionMoveEventStored = false
-                        longPressHandler.removeCallbacks(longPressedRunnable)
-                        if(isLongPressHandlerActivated) {
-                            isLongPressHandlerActivated = false
-                            return@setOnTouchListener false
-                        }
-
-                        val isTouchDuration = now() - touchDownTime < TOUCH_TIME_FACTOR
-                        val isTouchLength = abs(event.x - actionDownPoint.x) + abs(event.y - actionDownPoint.y) < TOUCH_MOVE_FACTOR
-                        val shouldClick = isTouchLength && isTouchDuration
-
-                        if (shouldClick) {
-                            lastClickTime = if (now() - lastClickTime < DOUBLE_CLICK_TIME_DELTA) {
-                                // Double click
-                                if("Tap to unlock" == UnlockCondition.DOUBLE_TAP.displayText) {
-                                    hideOverlayView()
-                                    createOverlayHandler()
-                                }
-                                0
-                            } else {
-                                // Single click
-                                if("Tap to unlock" == UnlockCondition.TAP.displayText) {
-                                    hideOverlayView()
-                                    createOverlayHandler()
-                                }
-                                now()
-                            }
-                        }
-                    }
-                }
-
-                return@setOnTouchListener false
+                handleOverlayTouchEvent(event)
             }
 
             val layoutParams = WindowManager.LayoutParams(
@@ -525,13 +478,122 @@ class OverlayService : Service(), OverlayServiceInterface {
                         WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    flags =
-                        WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                    flags = WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR or
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                 }
             }
 
-            windowManager!!.addView(overlayView, layoutParams)
+            windowManager?.addView(overlayView, layoutParams)
         }
+    }
+
+    private fun handleOverlayTouchEvent(event: MotionEvent): Boolean {
+        return when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                longPressHandler.postDelayed(longPressedRunnable, LONG_PRESS_TIME_THRESHOLD)
+                actionDownPoint = PointF(event.x, event.y)
+                previousPoint = PointF(event.x, event.y)
+                touchDownTime = now()
+                eventX1 = event.x
+                startY = event.y
+                minSwipeY = 0f
+                lastX = event.x
+                lastY = event.y
+                true
+            }
+            MotionEvent.ACTION_MOVE, MotionEvent.ACTION_HOVER_MOVE -> {
+                handleOverlayMove(event)
+                false
+            }
+            MotionEvent.ACTION_UP -> {
+                handleOverlayUp(event)
+            }
+            else -> false
+        }
+    }
+
+    private fun handleOverlayMove(event: MotionEvent) {
+        if (!isActionMoveEventStored) {
+            isActionMoveEventStored = true
+            lastActionMoveEventBeforeUpX = event.x
+            lastActionMoveEventBeforeUpY = event.y
+        } else {
+            val currentX = event.x
+            val currentY = event.y
+            val distance = sqrt(
+                ((currentY - lastActionMoveEventBeforeUpY) * (currentY - lastActionMoveEventBeforeUpY) +
+                        (currentX - lastActionMoveEventBeforeUpX) * (currentX - lastActionMoveEventBeforeUpX)).toDouble()
+            )
+
+            if (distance > 20) {
+                longPressHandler.removeCallbacks(longPressedRunnable)
+                eventX2 = event.x
+                previousPoint = PointF(event.x, event.y)
+            }
+
+            val distanceY = event.y - lastY
+            minSwipeY += distanceY
+
+            val screenWidth = Resources.getSystem().displayMetrics.widthPixels
+            val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+            val border = (100 * Resources.getSystem().displayMetrics.density).toInt()
+
+            if (event.x < border || event.y < border ||
+                event.x > screenWidth - border || event.y > screenHeight - border) {
+                return
+            }
+
+            if (abs(distanceY) > abs(event.x - lastX) && abs(minSwipeY) > 30) {
+                volume = audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 0
+                val maxVol = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
+                val newVolume = if (distanceY > 0) volume - 1 else volume + 1
+
+                if (newVolume in 0..maxVol) {
+                    volume = newVolume
+                    audioManager?.setStreamVolume(
+                        AudioManager.STREAM_MUSIC,
+                        volume,
+                        AudioManager.FLAG_SHOW_UI
+                    )
+                }
+                minSwipeY = 0f
+            }
+            lastX = event.x
+            lastY = event.y
+        }
+    }
+
+    private fun handleOverlayUp(event: MotionEvent): Boolean {
+        isActionMoveEventStored = false
+        longPressHandler.removeCallbacks(longPressedRunnable)
+
+        if (isLongPressHandlerActivated) {
+            isLongPressHandlerActivated = false
+            return false
+        }
+
+        val isTouchDuration = now() - touchDownTime < TOUCH_TIME_FACTOR
+        val isTouchLength = abs(event.x - actionDownPoint.x) +
+                abs(event.y - actionDownPoint.y) < TOUCH_MOVE_FACTOR
+        val shouldClick = isTouchLength && isTouchDuration
+
+        if (shouldClick) {
+            val currentTime = now()
+            lastClickTime = if (currentTime - lastClickTime < DOUBLE_CLICK_TIME_DELTA) {
+                if (UnlockCondition.DOUBLE_TAP.displayText == "Double tap to unlock") {
+                    hideOverlayView()
+                    createOverlayHandler()
+                }
+                0
+            } else {
+                if (UnlockCondition.TAP.displayText == "Tap to unlock") {
+                    hideOverlayView()
+                    createOverlayHandler()
+                }
+                currentTime
+            }
+        }
+        return false
     }
 
     private fun onLongPress() {
@@ -540,15 +602,23 @@ class OverlayService : Service(), OverlayServiceInterface {
     }
 
     private fun hideOverlayView() {
-        overlayView?.let { oView ->
-            windowManager?.removeView(oView)
+        overlayView?.let { view ->
+            try {
+                windowManager?.removeView(view)
+            } catch (e: Exception) {
+                // View already removed
+            }
             overlayView = null
         }
     }
 
     private fun hideHandlerView() {
-        handlerView?.let { hView ->
-            windowManager?.removeView(hView)
+        handlerView?.let { view ->
+            try {
+                windowManager?.removeView(view)
+            } catch (e: Exception) {
+                // View already removed
+            }
             handlerView = null
         }
     }
@@ -563,66 +633,17 @@ class OverlayService : Service(), OverlayServiceInterface {
     }
 
     override fun update() {
-
+        // Remove existing handler and recreate with new settings
+        hideHandlerView()
+        createOverlayHandler()
     }
 
-//    private fun singleTapAction() {
-//        when (preference.getHandlerSingleTapAction()) {
-//            "None" -> { }
-//            "Open volume UI" -> {
-//                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-//            }
-//            "Mute" -> {
-//                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-//                audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
-//            }
-//            "Active Music Overlay" -> {
-//                hideHandlerView()
-//                createOverlayView()
-//            }
-//            "Lock" -> {
-//                lockScreenUtil?.lockScreen()
-//            }
-//            "Hide Handler" -> {
-//                hideHandlerView()
-//            }
-//            "Open App" -> {
-//                openApp()
-//            }
-//            else -> { }
-//        }
-//    }
-//
-//    private fun doubleTapAction() {
-//        when (preference.getHandlerDoubleTapAction()) {
-//            "None" -> { }
-//            "Open volume UI" -> {
-//                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-//            }
-//            "Mute" -> {
-//                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-//                audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
-//            }
-//            "Active Music Overlay" -> {
-//                hideHandlerView()
-//                createOverlayView()
-//            }
-//            "Lock" -> {
-//                lockScreenUtil?.lockScreen()
-//            }
-//            "Hide Handler" -> {
-//                hideHandlerView()
-//            }
-//            "Open App" -> {
-//                openApp()
-//            }
-//            else -> { }
-//        }
-//    }
-
-    private fun handlerTapActions(action:String) {
+    private fun handlerTapActions(action: String) {
+        if (preference.getHandlerVibrateOnClick()) {
+            vibratorService?.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
+        }
         when (action) {
-            "None" -> { }
+            "None" -> {}
             "Open volume UI" -> {
                 audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
             }
@@ -631,19 +652,14 @@ class OverlayService : Service(), OverlayServiceInterface {
                 audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
             }
             "Mute or Unmute" -> {
-                val currentVolume = audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC)
-
+                val currentVolume = audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 0
                 audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
 
-                if (currentVolume != null) {
-                    if (currentVolume > 0) {
-                        // If currently unmuted, mute
-                        previousVolume = currentVolume
-                        audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
-                    } else {
-                        // If currently muted, unmute
-                        audioManager?.setStreamVolume(AudioManager.STREAM_MUSIC, previousVolume, 0)
-                    }
+                if (currentVolume > 0) {
+                    previousVolume = currentVolume
+                    audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
+                } else {
+                    audioManager?.setStreamVolume(AudioManager.STREAM_MUSIC, previousVolume, 0)
                 }
             }
             "Active Music Overlay" -> {
@@ -659,12 +675,10 @@ class OverlayService : Service(), OverlayServiceInterface {
             "Open App" -> {
                 openApp()
             }
-            else -> { }
         }
     }
 
-
-
-
-
+    private fun dpToPx(dp: Float): Int {
+        return (dp * Resources.getSystem().displayMetrics.density).toInt()
+    }
 }

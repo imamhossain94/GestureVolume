@@ -1,0 +1,28 @@
+package com.newagedevs.gesturevolume.ui.viewmodels
+
+import com.newagedevs.gesturevolume.R
+
+data class MainState(
+    val isRunning: Boolean = false,
+    val isProActivated: Boolean = false,
+    val gravity: String = "Right",
+    val gravityIcon: Int = R.drawable.ic_align_right,
+    val color: Int = 0,
+    val translationY: Float = 260f,
+    val clickAction: String = "Open volume UI",
+    val clickActionIcon: Int = R.drawable.ic_vol_increase,
+    val doubleClickAction: String = "Mute",
+    val doubleClickActionIcon: Int = R.drawable.ic_mute,
+    val longClickAction: String = "Active Music Overlay",
+    val longClickActionIcon: Int = R.drawable.ic_music_ui,
+    val swipeUpAction: String = "Increase volume and show UI",
+    val swipeUpActionIcon: Int = R.drawable.ic_vol_increase,
+    val swipeDownAction: String = "Decrease volume and show UI",
+    val swipeDownActionIcon: Int = R.drawable.ic_vol_increase,
+    val hasOverlayPermission: Boolean = false,
+    val hasNotificationPermission: Boolean = false
+)
+
+
+
+
