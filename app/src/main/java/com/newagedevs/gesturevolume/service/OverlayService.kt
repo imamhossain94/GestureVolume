@@ -29,6 +29,7 @@ import android.view.View
 import android.view.WindowManager
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.data.model.UnlockCondition
@@ -289,8 +290,17 @@ class OverlayService : Service(), OverlayServiceInterface {
                 setCornerRadiiDp(cornerRadiusTL, cornerRadiusTR, cornerRadiusBL, cornerRadiusBR)
 
                 // Icon with color support
-                setCenterIcon(iconRes, iconSize, iconColor) // NEW: Pass icon color
-                setCenterIconColor(iconColor) // NEW: Set icon color
+                val safeDrawable = try {
+                    if (context.resources.getResourceTypeName(iconRes) == "drawable") {
+                        ContextCompat.getDrawable(context, iconRes)
+                    } else null
+                } catch (_: Exception) {
+                    null
+                } ?: ContextCompat.getDrawable(context, R.drawable.ic_vol_increase)
+
+                // Use overload that accepts Drawable
+                setCenterIcon(safeDrawable, iconSize, iconColor)
+                setCenterIconColor(iconColor)
                 setCenterIconVisible(showIcon)
 
                 // Behavior

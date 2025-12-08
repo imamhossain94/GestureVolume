@@ -79,7 +79,6 @@ APPLOVIN_SDK_KEY=<your-applovin-sdk-key>
 AD_UNIT_APP_OPEN=<your-app-open-ad-unit-id>
 AD_UNIT_INTERSTITIAL=<your-interstitial-ad-unit-id>
 AD_UNIT_BANNER=<your-banner-ad-unit-id>
-AD_UNIT_REWARD=<your-rewarded-ad-unit-id-or-none>
 AD_UNIT_NATIVE=<your-native-ad-unit-id>
 
 BASE64_PUBLIC_KEY=<your-play-store-base64-public-key>
