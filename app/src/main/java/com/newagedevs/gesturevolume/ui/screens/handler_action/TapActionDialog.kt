@@ -1,9 +1,8 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,20 +16,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.R
@@ -54,6 +52,8 @@ fun TapActionDialog(
             R.drawable.ic_app_open to "Open App"
         )
     }
+
+    val borderColor = Color(0xFF8B5CF6)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -86,6 +86,7 @@ fun TapActionDialog(
                                 iconRes = iconRes,
                                 actionName = actionName,
                                 isSelected = actionName == currentAction,
+                                borderColor = borderColor,
                                 onClick = { onSelect(actionName) },
                                 modifier = Modifier.weight(1f)
                             )
@@ -104,7 +105,7 @@ fun TapActionDialog(
                 Text("Close", fontWeight = FontWeight.Bold)
             }
         },
-        shape = RoundedCornerShape(10.dp)
+        shape = RoundedCornerShape(16.dp)
     )
 }
 
@@ -113,62 +114,44 @@ private fun ActionGridItem(
     iconRes: Int,
     actionName: String,
     isSelected: Boolean,
+    borderColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    Surface(
         modifier = modifier
             .aspectRatio(1f)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected)
-                Color.Transparent
-            else MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 4.dp else 1.dp
+        shape = RoundedCornerShape(12.dp),
+        color = if (isSelected) borderColor.copy(alpha = 0.1f) else Color.Transparent,
+        border = BorderStroke(
+            width = if (isSelected) 2.dp else 1.5.dp,
+            color = if (isSelected) borderColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
         )
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .then(
-                    if (isSelected) {
-                        Modifier.background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(Color(0xFF8B5CF6), Color(0xFF7C3AED))
-                            )
-                        )
-                    } else Modifier
-                )
                 .padding(8.dp),
-            contentAlignment = Alignment.Center
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    painter = painterResource(iconRes),
-                    contentDescription = actionName,
-                    modifier = Modifier.size(32.dp),
-                    tint = if (isSelected)
-                        Color.White
-                    else MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = actionName.take(12),
-                    fontSize = 9.sp,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isSelected)
-                        Color.White
-                    else MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    lineHeight = 10.sp
-                )
-            }
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = actionName,
+                modifier = Modifier.size(32.dp),
+                tint = if (isSelected) borderColor else MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = actionName,
+                fontSize = 10.sp,
+                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (isSelected) borderColor else MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                lineHeight = 12.sp,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

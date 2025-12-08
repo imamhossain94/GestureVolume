@@ -1,9 +1,8 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,17 +14,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -57,14 +54,7 @@ fun SwipeActionDialog(
         }
     }
 
-    val gradientColors = remember(isSwipeUp) {
-        if (isSwipeUp) {
-            listOf(Color(0xFF10B981), Color(0xFF059669))
-        } else {
-            listOf(Color(0xFF10B981), Color(0xFF059669))
-//            listOf(Color(0xFFEF4444), Color(0xFFDC2626))
-        }
-    }
+    val borderColor = Color(0xFF10B981)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -86,14 +76,14 @@ fun SwipeActionDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 actionOptions.forEach { (iconRes, actionName) ->
                     SwipeActionListItem(
                         iconRes = iconRes,
                         actionName = actionName,
                         isSelected = actionName == currentAction,
-                        gradientColors = gradientColors,
+                        borderColor = borderColor,
                         onClick = { onSelect(actionName) }
                     )
                 }
@@ -104,7 +94,7 @@ fun SwipeActionDialog(
                 Text("Close", fontWeight = FontWeight.Bold)
             }
         },
-        shape = RoundedCornerShape(10.dp)
+        shape = RoundedCornerShape(16.dp)
     )
 }
 
@@ -113,59 +103,38 @@ private fun SwipeActionListItem(
     iconRes: Int,
     actionName: String,
     isSelected: Boolean,
-    gradientColors: List<Color>,
+    borderColor: Color,
     onClick: () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected)
-                Color.Transparent
-            else MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 4.dp else 1.dp
+        shape = RoundedCornerShape(12.dp),
+        color = if (isSelected) borderColor.copy(alpha = 0.1f) else Color.Transparent,
+        border = BorderStroke(
+            width = if (isSelected) 2.dp else 1.5.dp,
+            color = if (isSelected) borderColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
         )
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .then(
-                    if (isSelected) {
-                        Modifier.background(
-                            brush = Brush.horizontalGradient(
-                                colors = gradientColors
-                            )
-                        )
-                    } else Modifier
-                )
-                .padding(16.dp)
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Icon(
-                    painter = painterResource(iconRes),
-                    contentDescription = actionName,
-                    modifier = Modifier.size(32.dp),
-                    tint = if (isSelected)
-                        Color.White
-                    else MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = actionName,
-                    fontSize = 14.sp,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isSelected)
-                        Color.White
-                    else MaterialTheme.colorScheme.onSurface
-                )
-            }
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = actionName,
+                modifier = Modifier.size(28.dp),
+                tint = if (isSelected) borderColor else MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = actionName,
+                fontSize = 15.sp,
+                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (isSelected) borderColor else MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }

@@ -35,9 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.ui.view.HandlerView
 
@@ -53,7 +51,6 @@ fun HandlerAppearanceScreen(
     var handlerViewRef by remember { mutableStateOf<HandlerView?>(null) }
     var isExpandedPreview by remember { mutableStateOf(false) }
 
-    // Load saved settings from SharedPreferences
     var handlerGravity by remember {
         mutableStateOf(
             if (preference.getHandlerPosition() == "Left") Gravity.START else Gravity.END
@@ -85,74 +82,23 @@ fun HandlerAppearanceScreen(
     LaunchedEffect(handlerGravity) {
         preference.setHandlerPosition(if (handlerGravity == Gravity.START) "Left" else "Right")
     }
-
-    LaunchedEffect(handlerWidth) {
-        preference.setHandlerWidthDp(handlerWidth)
-    }
-
-    LaunchedEffect(handlerHeight) {
-        preference.setHandlerHeightDp(handlerHeight)
-    }
-
-    LaunchedEffect(backgroundColor.toArgb()) {
-        preference.setHandlerColor(backgroundColor.toArgb())
-    }
-
-    LaunchedEffect(backgroundAlpha) {
-        preference.setHandlerBackgroundAlpha(backgroundAlpha)
-    }
-
-    LaunchedEffect(strokeColor.toArgb()) {
-        preference.setHandlerStrokeColor(strokeColor.toArgb())
-    }
-
-    LaunchedEffect(strokeWidth) {
-        preference.setHandlerStrokeWidth(strokeWidth)
-    }
-
-    LaunchedEffect(strokeAlpha) {
-        preference.setHandlerStrokeAlpha(strokeAlpha)
-    }
-
-    LaunchedEffect(cornerRadiusTL) {
-        preference.setHandlerCornerRadiusTL(cornerRadiusTL)
-    }
-
-    LaunchedEffect(cornerRadiusTR) {
-        preference.setHandlerCornerRadiusTR(cornerRadiusTR)
-    }
-
-    LaunchedEffect(cornerRadiusBL) {
-        preference.setHandlerCornerRadiusBL(cornerRadiusBL)
-    }
-
-    LaunchedEffect(cornerRadiusBR) {
-        preference.setHandlerCornerRadiusBR(cornerRadiusBR)
-    }
-
-    LaunchedEffect(selectedIconRes) {
-        preference.setHandlerIconRes(selectedIconRes)
-    }
-
-    LaunchedEffect(iconSize) {
-        preference.setHandlerIconSize(iconSize)
-    }
-
-    LaunchedEffect(iconColor.toArgb()) {
-        preference.setHandlerIconColor(iconColor.toArgb())
-    }
-
-    LaunchedEffect(showIcon) {
-        preference.setHandlerShowIcon(showIcon)
-    }
-
-    LaunchedEffect(enableVibration) {
-        preference.setHandlerVibrateOnClick(enableVibration)
-    }
-
-    LaunchedEffect(lockPosition) {
-        preference.setHandlerLockPosition(lockPosition)
-    }
+    LaunchedEffect(handlerWidth) { preference.setHandlerWidthDp(handlerWidth) }
+    LaunchedEffect(handlerHeight) { preference.setHandlerHeightDp(handlerHeight) }
+    LaunchedEffect(backgroundColor.toArgb()) { preference.setHandlerColor(backgroundColor.toArgb()) }
+    LaunchedEffect(backgroundAlpha) { preference.setHandlerBackgroundAlpha(backgroundAlpha) }
+    LaunchedEffect(strokeColor.toArgb()) { preference.setHandlerStrokeColor(strokeColor.toArgb()) }
+    LaunchedEffect(strokeWidth) { preference.setHandlerStrokeWidth(strokeWidth) }
+    LaunchedEffect(strokeAlpha) { preference.setHandlerStrokeAlpha(strokeAlpha) }
+    LaunchedEffect(cornerRadiusTL) { preference.setHandlerCornerRadiusTL(cornerRadiusTL) }
+    LaunchedEffect(cornerRadiusTR) { preference.setHandlerCornerRadiusTR(cornerRadiusTR) }
+    LaunchedEffect(cornerRadiusBL) { preference.setHandlerCornerRadiusBL(cornerRadiusBL) }
+    LaunchedEffect(cornerRadiusBR) { preference.setHandlerCornerRadiusBR(cornerRadiusBR) }
+    LaunchedEffect(selectedIconRes) { preference.setHandlerIconRes(selectedIconRes) }
+    LaunchedEffect(iconSize) { preference.setHandlerIconSize(iconSize) }
+    LaunchedEffect(iconColor.toArgb()) { preference.setHandlerIconColor(iconColor.toArgb()) }
+    LaunchedEffect(showIcon) { preference.setHandlerShowIcon(showIcon) }
+    LaunchedEffect(enableVibration) { preference.setHandlerVibrateOnClick(enableVibration) }
+    LaunchedEffect(lockPosition) { preference.setHandlerLockPosition(lockPosition) }
 
     // Apply changes to HandlerView
     LaunchedEffect(
@@ -190,7 +136,6 @@ fun HandlerAppearanceScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    // containerColor = MaterialTheme.colorScheme.primaryContainer,
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
@@ -203,7 +148,6 @@ fun HandlerAppearanceScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Fixed Live Preview Section at top
             PreviewSectionWithHandler(
                 handlerGravity = handlerGravity,
                 handlerWidth = handlerWidth,
@@ -223,12 +167,9 @@ fun HandlerAppearanceScreen(
                 showIcon = showIcon,
                 enableVibration = enableVibration,
                 backgroundImageURL = bgImage,
-                onHandlerCreated = {
-                    handlerViewRef = it
-                }
+                onHandlerCreated = { handlerViewRef = it }
             )
 
-            // Scrollable Customization Controls
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -237,9 +178,7 @@ fun HandlerAppearanceScreen(
             ) {
                 // Position Section
                 SectionTitle("POSITION", Color(0xFF8B5CF6))
-                CustomizationCard(
-                    gradientColors = listOf(Color(0xFF8B5CF6), Color(0xFF7C3AED))
-                ) {
+                CustomizationCard(borderColor = Color(0xFF8B5CF6)) {
                     LabeledControl(label = "Gravity") {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -248,26 +187,27 @@ fun HandlerAppearanceScreen(
                             SelectableButton(
                                 text = "Left",
                                 selected = handlerGravity == Gravity.START,
+                                borderColor = Color(0xFF8B5CF6),
                                 onClick = { handlerGravity = Gravity.START },
                                 modifier = Modifier.weight(1f)
                             )
                             SelectableButton(
                                 text = "Right",
                                 selected = handlerGravity == Gravity.END,
+                                borderColor = Color(0xFF8B5CF6),
                                 onClick = { handlerGravity = Gravity.END },
                                 modifier = Modifier.weight(1f)
                             )
                         }
                     }
-
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = Color.White.copy(alpha = 0.2f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
-
                     SwitchControl(
                         label = "Lock position",
                         checked = lockPosition,
+                        borderColor = Color(0xFF8B5CF6),
                         onCheckedChange = { lockPosition = it }
                     )
                 }
@@ -276,27 +216,25 @@ fun HandlerAppearanceScreen(
 
                 // Dimensions Section
                 SectionTitle("DIMENSIONS", Color(0xFF3B82F6))
-                CustomizationCard(
-                    gradientColors = listOf(Color(0xFF3B82F6), Color(0xFF2563EB))
-                ) {
+                CustomizationCard(borderColor = Color(0xFF3B82F6)) {
                     SliderControl(
                         label = "Width",
                         value = handlerWidth,
                         valueRange = 10f..60f,
                         valueDisplay = "${handlerWidth.toInt()}dp",
+                        borderColor = Color(0xFF3B82F6),
                         onValueChange = { handlerWidth = it }
                     )
-
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = Color.White.copy(alpha = 0.2f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
-
                     SliderControl(
                         label = "Height",
                         value = handlerHeight,
                         valueRange = 30f..200f,
                         valueDisplay = "${handlerHeight.toInt()}dp",
+                        borderColor = Color(0xFF3B82F6),
                         onValueChange = { handlerHeight = it }
                     )
                 }
@@ -305,25 +243,23 @@ fun HandlerAppearanceScreen(
 
                 // Background Section
                 SectionTitle("BACKGROUND", Color(0xFF10B981))
-                CustomizationCard(
-                    gradientColors = listOf(Color(0xFF10B981), Color(0xFF059669))
-                ) {
+                CustomizationCard(borderColor = Color(0xFF10B981)) {
                     ColorPickerControl(
                         label = "Color",
                         color = backgroundColor,
+                        borderColor = Color(0xFF10B981),
                         onColorChange = { backgroundColor = it }
                     )
-
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = Color.White.copy(alpha = 0.2f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
-
                     SliderControl(
                         label = "Opacity",
                         value = backgroundAlpha.toFloat(),
                         valueRange = 0f..255f,
                         valueDisplay = "${((backgroundAlpha / 255f) * 100).toInt()}%",
+                        borderColor = Color(0xFF10B981),
                         onValueChange = { backgroundAlpha = it.toInt() }
                     )
                 }
@@ -332,38 +268,35 @@ fun HandlerAppearanceScreen(
 
                 // Stroke Section
                 SectionTitle("STROKE", Color(0xFFF59E0B))
-                CustomizationCard(
-                    gradientColors = listOf(Color(0xFFF59E0B), Color(0xFFD97706))
-                ) {
+                CustomizationCard(borderColor = Color(0xFFF59E0B)) {
                     ColorPickerControl(
                         label = "Color",
                         color = strokeColor,
+                        borderColor = Color(0xFFF59E0B),
                         onColorChange = { strokeColor = it }
                     )
-
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = Color.White.copy(alpha = 0.2f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
-
                     SliderControl(
                         label = "Width",
                         value = strokeWidth,
                         valueRange = 0f..8f,
                         valueDisplay = "${strokeWidth.toInt()}dp",
+                        borderColor = Color(0xFFF59E0B),
                         onValueChange = { strokeWidth = it }
                     )
-
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = Color.White.copy(alpha = 0.2f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
-
                     SliderControl(
                         label = "Opacity",
                         value = strokeAlpha.toFloat(),
                         valueRange = 0f..255f,
                         valueDisplay = "${((strokeAlpha / 255f) * 100).toInt()}%",
+                        borderColor = Color(0xFFF59E0B),
                         onValueChange = { strokeAlpha = it.toInt() }
                     )
                 }
@@ -372,15 +305,13 @@ fun HandlerAppearanceScreen(
 
                 // Corner Radius Section
                 SectionTitle("CORNER RADIUS", Color(0xFFEC4899))
-                CustomizationCard(
-                    gradientColors = listOf(Color(0xFFEC4899), Color(0xFFDB2777))
-                ) {
-                    // NEW: All Corners slider
+                CustomizationCard(borderColor = Color(0xFFEC4899)) {
                     SliderControl(
                         label = "All Corners",
                         value = cornerRadiusAll,
                         valueRange = 0f..50f,
                         valueDisplay = "${cornerRadiusAll.toInt()}dp",
+                        borderColor = Color(0xFFEC4899),
                         onValueChange = { value ->
                             cornerRadiusAll = value
                             cornerRadiusTL = value
@@ -390,56 +321,52 @@ fun HandlerAppearanceScreen(
                             preference.setAllCornerRadii(value)
                         }
                     )
-
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = Color.White.copy(alpha = 0.2f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
-
                     SliderControl(
                         label = "Top Left",
                         value = cornerRadiusTL,
                         valueRange = 0f..50f,
                         valueDisplay = "${cornerRadiusTL.toInt()}dp",
+                        borderColor = Color(0xFFEC4899),
                         onValueChange = { cornerRadiusTL = it }
                     )
-
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = Color.White.copy(alpha = 0.2f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
-
                     SliderControl(
                         label = "Top Right",
                         value = cornerRadiusTR,
                         valueRange = 0f..50f,
                         valueDisplay = "${cornerRadiusTR.toInt()}dp",
+                        borderColor = Color(0xFFEC4899),
                         onValueChange = { cornerRadiusTR = it }
                     )
-
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = Color.White.copy(alpha = 0.2f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
-
                     SliderControl(
                         label = "Bottom Left",
                         value = cornerRadiusBL,
                         valueRange = 0f..50f,
                         valueDisplay = "${cornerRadiusBL.toInt()}dp",
+                        borderColor = Color(0xFFEC4899),
                         onValueChange = { cornerRadiusBL = it }
                     )
-
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = Color.White.copy(alpha = 0.2f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
-
                     SliderControl(
                         label = "Bottom Right",
                         value = cornerRadiusBR,
                         valueRange = 0f..50f,
                         valueDisplay = "${cornerRadiusBR.toInt()}dp",
+                        borderColor = Color(0xFFEC4899),
                         onValueChange = { cornerRadiusBR = it }
                     )
                 }
@@ -448,48 +375,45 @@ fun HandlerAppearanceScreen(
 
                 // Icon Section
                 SectionTitle("ICON", Color(0xFF06B6D4))
-                CustomizationCard(
-                    gradientColors = listOf(Color(0xFF06B6D4), Color(0xFF0891B2))
-                ) {
+                CustomizationCard(borderColor = Color(0xFF06B6D4)) {
                     SwitchControl(
                         label = "Show icon",
                         checked = showIcon,
+                        borderColor = Color(0xFF06B6D4),
                         onCheckedChange = { showIcon = it }
                     )
 
                     if (showIcon) {
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 12.dp),
-                            color = Color.White.copy(alpha = 0.2f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                         )
-
                         IconPickerControl(
                             label = "Icon",
                             selectedIconRes = selectedIconRes,
+                            borderColor = Color(0xFF06B6D4),
                             onClick = { showIconPicker = true }
                         )
-
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 12.dp),
-                            color = Color.White.copy(alpha = 0.2f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                         )
-
                         ColorPickerControl(
                             label = "Icon Color",
                             color = iconColor,
+                            borderColor = Color(0xFF06B6D4),
                             onColorChange = { iconColor = it }
                         )
-
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 12.dp),
-                            color = Color.White.copy(alpha = 0.2f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                         )
-
                         SliderControl(
                             label = "Icon Size",
                             value = iconSize,
                             valueRange = 16f..48f,
                             valueDisplay = "${iconSize.toInt()}dp",
+                            borderColor = Color(0xFF06B6D4),
                             onValueChange = { iconSize = it }
                         )
                     }
@@ -499,12 +423,11 @@ fun HandlerAppearanceScreen(
 
                 // Behavior Section
                 SectionTitle("BEHAVIOR", Color(0xFFEF4444))
-                CustomizationCard(
-                    gradientColors = listOf(Color(0xFFEF4444), Color(0xFFDC2626))
-                ) {
+                CustomizationCard(borderColor = Color(0xFFEF4444)) {
                     SwitchControl(
                         label = "Vibrate on click",
                         checked = enableVibration,
+                        borderColor = Color(0xFFEF4444),
                         onCheckedChange = { enableVibration = it }
                     )
                 }
@@ -514,7 +437,6 @@ fun HandlerAppearanceScreen(
         }
     }
 
-    // Expanded Preview Dialog
     if (isExpandedPreview) {
         ExpandedPreviewDialog(
             handlerGravity = handlerGravity,
@@ -541,7 +463,6 @@ fun HandlerAppearanceScreen(
         )
     }
 
-    // Icon Picker Dialog
     if (showIconPicker) {
         IconPickerDialog(
             selectedIconRes = selectedIconRes,

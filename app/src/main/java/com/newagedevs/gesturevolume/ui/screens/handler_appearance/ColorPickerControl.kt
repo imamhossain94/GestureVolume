@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 fun ColorPickerControl(
     label: String,
     color: Color,
+    borderColor: Color,
     onColorChange: (Color) -> Unit
 ) {
     var showColorPicker by remember { mutableStateOf(false) }
@@ -46,20 +47,18 @@ fun ColorPickerControl(
         Text(
             text = label,
             fontSize = 13.sp,
-            color = Color.White.copy(alpha = 0.9f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             modifier = Modifier.padding(bottom = 8.dp),
             fontWeight = FontWeight.Medium
         )
 
-        Card(
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { showColorPicker = true },
-            shape = RoundedCornerShape(10.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White.copy(alpha = 0.2f)
-            ),
-            border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.6f))
+            shape = RoundedCornerShape(12.dp),
+            color = Color.Transparent,
+            border = BorderStroke(1.5.dp, borderColor.copy(alpha = 0.3f))
         ) {
             Row(
                 modifier = Modifier
@@ -71,7 +70,7 @@ fun ColorPickerControl(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(32.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(color)
                     )
@@ -80,14 +79,14 @@ fun ColorPickerControl(
                         text = "#${color.toArgb().toUInt().toString(16).uppercase().takeLast(6)}",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Edit",
                     modifier = Modifier.size(20.dp),
-                    tint = Color.White.copy(alpha = 0.7f)
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                 )
             }
         }
@@ -104,4 +103,3 @@ fun ColorPickerControl(
         )
     }
 }
-

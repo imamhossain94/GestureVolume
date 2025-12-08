@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.dp
 fun SelectableButton(
     text: String,
     selected: Boolean,
+    borderColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -25,19 +27,19 @@ fun SelectableButton(
         modifier = modifier.height(44.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (selected)
-                Color.White.copy(alpha = 0.3f)
+                borderColor.copy(alpha = 0.1f)
             else
-                Color.White.copy(alpha = 0.15f)
+                Color.Transparent
         ),
-        shape = RoundedCornerShape(10.dp),
-        border = if (selected)
-            BorderStroke(0.5.dp, Color.White.copy(alpha = 0.6f))
-        else
-            null
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(
+            width = if (selected) 2.dp else 1.5.dp,
+            color = if (selected) borderColor else borderColor.copy(alpha = 0.3f)
+        )
     ) {
         Text(
             text = text,
-            color = Color.White,
+            color = if (selected) borderColor else MaterialTheme.colorScheme.onSurface,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
         )
     }

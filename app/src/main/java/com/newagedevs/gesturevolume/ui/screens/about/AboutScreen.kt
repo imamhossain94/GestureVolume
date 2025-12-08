@@ -1,9 +1,8 @@
 package com.newagedevs.gesturevolume.ui.screens.about
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -13,8 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -46,7 +43,6 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    // containerColor = MaterialTheme.colorScheme.primaryContainer,
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
@@ -70,7 +66,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.Star,
                     text = "Rate Us",
-                    gradientColors = listOf(Color(0xFFFBBF24), Color(0xFFF59E0B)),
+                    borderColor = Color(0xFFF59E0B),
                     onClick = {
                         openAppStore(context, Constants.APP_STORE_ID) {
 
@@ -81,7 +77,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.Share,
                     text = "Share",
-                    gradientColors = listOf(Color(0xFF10B981), Color(0xFF059669)),
+                    borderColor = Color(0xFF10B981),
                     onClick = {
                         shareApp(context)
                     }
@@ -98,7 +94,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.Build,
                     text = "Source",
-                    gradientColors = listOf(Color(0xFF8B5CF6), Color(0xFF7C3AED)),
+                    borderColor = Color(0xFF8B5CF6),
                     onClick = {
                         openAppStore(context, Constants.SOURCE_CODE_URL) {
 
@@ -109,7 +105,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.ShoppingCart,
                     text = "More Apps",
-                    gradientColors = listOf(Color(0xFFEC4899), Color(0xFFDB2777)),
+                    borderColor = Color(0xFFEC4899),
                     onClick = {
                         openAppStore(context, PUBLISHER_URL) {
 
@@ -121,63 +117,43 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Developer Info Card
-            Card(
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.Transparent
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                shape = RoundedCornerShape(16.dp),
+                color = Color.Transparent,
+                border = BorderStroke(1.5.dp, Color(0xFF6366F1))
             ) {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
-                            )
-                        )
-                        .padding(20.dp)
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.3f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = null,
-                                modifier = Modifier.size(32.dp),
-                                tint = Color.White
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Developed by",
-                            fontSize = 12.sp,
-                            color = Color.White.copy(alpha = 0.9f)
-                        )
-                        Text(
-                            text = "NewAgeDevs",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "© ${Calendar.getInstance().get(Calendar.YEAR)} All rights reserved",
-                            fontSize = 11.sp,
-                            color = Color.White.copy(alpha = 0.8f),
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = Color(0xFF6366F1)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Developed by",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = "NewAgeDevs",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "© ${Calendar.getInstance().get(Calendar.YEAR)} All rights reserved",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
 
@@ -186,12 +162,13 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
             // Links Section
             Text(
                 text = "LEGAL",
-                fontSize = 13.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                letterSpacing = 1.2.sp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp)
+                    .padding(bottom = 16.dp, start = 4.dp)
             )
 
             LinkCard(
