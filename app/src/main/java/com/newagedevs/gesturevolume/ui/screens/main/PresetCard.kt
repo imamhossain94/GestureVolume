@@ -1,6 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,10 +13,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -34,23 +34,23 @@ fun PresetCard(
     gradientColors: List<Color>,
     onClick: () -> Unit
 ) {
+    val accentColor = gradientColors.first()
+
     Card(
         modifier = modifier
             .height(90.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        border = BorderStroke(1.5.dp, accentColor.copy(alpha = 0.3f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = Brush.linearGradient(colors = gradientColors)
-                )
-                .padding(12.dp)
+                .padding(14.dp)
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -59,8 +59,8 @@ fun PresetCard(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    modifier = Modifier.size(22.dp),
-                    tint = Color.White.copy(alpha = 0.9f)
+                    modifier = Modifier.size(24.dp),
+                    tint = accentColor
                 )
 
                 Column(
@@ -68,19 +68,19 @@ fun PresetCard(
                 ) {
                     Text(
                         text = title,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.SemiBold,
                         fontSize = 14.sp,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = subtitle,
-                        fontSize = 10.sp,
-                        color = Color.White.copy(alpha = 0.85f),
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        lineHeight = 11.sp
+                        lineHeight = 13.sp
                     )
                 }
             }

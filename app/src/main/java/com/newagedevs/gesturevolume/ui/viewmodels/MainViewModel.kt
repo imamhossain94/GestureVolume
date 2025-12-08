@@ -156,12 +156,10 @@ class MainViewModel @Inject constructor(
         if (isRunning) {
             // Show interstitial ad with cooldown check
             if (!_state.value.isProActivated) {
-                val adShown = adsManager?.showInterstitialAd(context as Activity) ?: false
-                if (!adShown) {
-                    val remaining = adsManager?.getInterstitialCooldownRemaining() ?: 0
-                    if (remaining > 0 && BuildConfig.DEBUG) {
-                        showToast("Ad cooldown: ${remaining}s remaining")
-                    }
+                if (preference.shouldShowInterstitialAd()) {
+                    adsManager?.showInterstitialAd(
+                        loaded = { preference.saveInterstitialAdTime() }
+                    )
                 }
             }
             startOverlayService(context)
@@ -426,7 +424,7 @@ class MainViewModel @Inject constructor(
 
         if (adsManager == null) {
             // Pass preferences to the ads manager
-            adsManager = ApplovinAdsManager(activity, preference)
+            adsManager = ApplovinAdsManager(activity)
         }
     }
 

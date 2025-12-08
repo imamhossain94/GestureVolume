@@ -2,10 +2,8 @@ package com.newagedevs.gesturevolume.helper
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,9 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,8 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -42,7 +37,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import coil3.compose.rememberAsyncImagePainter
 import com.newagedevs.gesturevolume.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -67,35 +61,33 @@ fun InHouseBannerAdsView(
     // Smooth fade animation for page transitions
     val pageAlpha by animateFloatAsState(
         targetValue = 1f,
-        animationSpec = tween(300)
+        animationSpec = tween(300),
+        label = "pageAlpha"
     )
 
     LaunchedEffect(pagerState) {
         launch {
             while (true) {
-                delay(4000) // Slightly faster transition
+                delay(4000)
                 pagerState.animateScrollToPage((pagerState.currentPage + 1) % bannerAds.size)
             }
         }
     }
 
-    // Wrapper with modern styling matching SearchScreen
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 4.dp)
+            .padding(vertical = 4.dp)
     ) {
-        Card(
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(70.dp) // Compact height matching SearchScreen style
-                .clip(RoundedCornerShape(10.dp))
+                .height(70.dp)
+                .clip(RoundedCornerShape(12.dp))
                 .alpha(pageAlpha),
-            shape = RoundedCornerShape(10.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp) // Subtle elevation
+            shape = RoundedCornerShape(12.dp),
+            color = Color.Transparent,
+            border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
         ) {
             HorizontalPager(
                 state = pagerState,
@@ -104,12 +96,7 @@ fun InHouseBannerAdsView(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            color = MaterialTheme.colorScheme.surface,
-                            shape = RoundedCornerShape(10.dp)
-                        )
                         .graphicsLayer {
-                            // Subtle scaling effect during transitions
                             val pageOffset = pagerState.getOffsetDistanceInPages(pageIndex)
                             scaleX = 1f - (pageOffset.coerceIn(-1f, 1f) * 0.02f)
                             scaleY = 1f - (pageOffset.coerceIn(-1f, 1f) * 0.02f)
@@ -128,32 +115,25 @@ fun InHouseBannerAdsView(
 // Individual banner ad item composable
 @Composable
 fun BannerAdItem(bannerAd: BannerAd, onInstallClick: (String) -> Unit) {
-    Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onInstallClick(bannerAd.appLink) },
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        shape = RoundedCornerShape(12.dp),
+        color = Color.Transparent
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(horizontal = 8.dp, vertical = 0.dp),
+                .padding(horizontal = 12.dp, vertical = 0.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Modern App Icon
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .clip(RoundedCornerShape(10.dp))
+            // App Icon with subtle border
+            Surface(
+                modifier = Modifier.size(48.dp),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.Transparent,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
             ) {
                 AsyncImage(
                     model = bannerAd.appIconUrl,
@@ -177,7 +157,7 @@ fun BannerAdItem(bannerAd: BannerAd, onInstallClick: (String) -> Unit) {
                     text = bannerAd.title,
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.SemiBold
                     ),
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
@@ -191,7 +171,7 @@ fun BannerAdItem(bannerAd: BannerAd, onInstallClick: (String) -> Unit) {
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontSize = 12.sp
                     ),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -203,52 +183,38 @@ fun BannerAdItem(bannerAd: BannerAd, onInstallClick: (String) -> Unit) {
             Column(
                 horizontalAlignment = Alignment.End
             ) {
-                // Modern AD Badge
-                Box(
-                    modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                            shape = RoundedCornerShape(4.dp)
-                        )
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                // AD Badge with outline style
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    color = Color.Transparent,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                 ) {
                     Text(
                         text = "AD",
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 8.sp,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
                         ),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Modern Install Button
-                Box(
-                    modifier = Modifier
-                        .background(
-                            brush = Brush.linearGradient(
-                                colors = listOf(
-                                    Color(0xFFFFD700),
-                                    Color(0xFFFFA500)
-                                ),
-                                start = Offset(0f, 0f),
-                                end = Offset(100f, 100f)
-                            ),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .border(
-                            width = 1.dp,
-                            color = Color(0xFFFFD700),
-                            shape = RoundedCornerShape(8.dp)
-                        ).padding(horizontal = 12.dp, vertical = 5.dp),
+                // Install Button - Outline style with purple color
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFF8B5CF6),
+                    border = BorderStroke(1.5.dp, Color(0xFF8B5CF6))
                 ) {
                     Text(
                         text = "Install",
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.Bold
                         ),
                         color = Color.White
                     )

@@ -21,11 +21,7 @@ class BootCompleteReceiver  : BroadcastReceiver() {
                 action = "START_FOREGROUND_ACTION"
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(serviceIntent)
-            } else {
-                context.startService(serviceIntent)
-            }
+            context.startForegroundService(serviceIntent)
 
             wakeLock.release()
         }

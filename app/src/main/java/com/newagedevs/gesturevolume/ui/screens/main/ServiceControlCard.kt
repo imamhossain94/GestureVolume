@@ -1,6 +1,7 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,7 +19,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -28,9 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,11 +41,13 @@ fun ServiceControlCard(
     isRunning: Boolean,
     onToggle: (Boolean) -> Unit
 ) {
+    val accentColor = if (isRunning) Color(0xFF10B981) else Color(0xFF6366F1)
+
     // Pulsing animation when service is active
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.15f,
+        targetValue = 1.1f,
         animationSpec = infiniteRepeatable(
             animation = tween(1500, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -57,7 +58,7 @@ fun ServiceControlCard(
     // Ripple animation for active state
     val rippleScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.4f,
+        targetValue = 1.3f,
         animationSpec = infiniteRepeatable(
             animation = tween(2000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
@@ -65,7 +66,7 @@ fun ServiceControlCard(
         label = "rippleScale"
     )
     val rippleAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
+        initialValue = 0.15f,
         targetValue = 0f,
         animationSpec = infiniteRepeatable(
             animation = tween(2000, easing = LinearEasing),
@@ -77,7 +78,7 @@ fun ServiceControlCard(
     // Bounce animation for inactive state
     val bounceScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.1f,
+        targetValue = 1.08f,
         animationSpec = infiniteRepeatable(
             animation = tween(800, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -85,25 +86,18 @@ fun ServiceControlCard(
         label = "bounceScale"
     )
 
-    OutlinedCard(
+    Card(
         modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        )
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(1.5.dp, accentColor.copy(alpha = if (isRunning) 0.4f else 0.3f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = if (isRunning) {
-                            listOf(Color(0xFF34D399), Color(0xFF10B981))
-                        } else {
-                            listOf(Color(0xFF1a1a2e), Color(0xFF16213e), Color(0xFF0f3460))
-                        }
-                    )
-                )
                 .padding(16.dp)
         ) {
             Column(
@@ -118,10 +112,10 @@ fun ServiceControlCard(
                     if (isRunning) {
                         Box(
                             modifier = Modifier
-                                .size(64.dp)
+                                .size(72.dp)
                                 .scale(rippleScale)
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = rippleAlpha))
+                                .background(accentColor.copy(alpha = rippleAlpha))
                         )
                     }
 
@@ -129,51 +123,58 @@ fun ServiceControlCard(
                     if (isRunning) {
                         Box(
                             modifier = Modifier
-                                .size(64.dp)
+                                .size(72.dp)
                                 .scale(pulseScale)
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.2f))
+                                .background(accentColor.copy(alpha = 0.1f))
                         )
                     }
 
                     // Main icon box
                     Box(
                         modifier = Modifier
-                            .size(64.dp)
+                            .size(72.dp)
                             .scale(if (!isRunning) bounceScale else 1f)
                             .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.3f)),
+                            .background(accentColor.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = if (isRunning) Icons.Default.CheckCircle else Icons.Default.PlayArrow,
                             contentDescription = null,
-                            modifier = Modifier
-                                .size(40.dp),
-                            tint = Color.White
+                            modifier = Modifier.size(36.dp),
+                            tint = accentColor
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
                     text = if (isRunning) "Service Active" else "Service Inactive",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = Color.White
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = if (isRunning) "Tap to disable" else "Tap to enable",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Switch(
                     checked = isRunning,
                     onCheckedChange = onToggle,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = Color.White.copy(alpha = 0.5f),
-                        uncheckedThumbColor = Color.White.copy(alpha = 0.8f),
-                        uncheckedTrackColor = Color.White.copy(alpha = 0.3f)
+                        checkedThumbColor = accentColor,
+                        checkedTrackColor = accentColor.copy(alpha = 0.3f),
+                        uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
             }

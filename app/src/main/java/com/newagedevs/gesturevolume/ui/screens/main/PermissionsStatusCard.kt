@@ -1,6 +1,7 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.filled.PermDeviceInformation
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
@@ -46,12 +47,13 @@ fun PermissionsStatusCard(
 ) {
     val allPermissionsGranted = hasOverlayPermission && hasNotificationPermission
     val permissionCount = listOf(hasOverlayPermission, hasNotificationPermission).count { it }
+    val accentColor = if (allPermissionsGranted) Color(0xFF10B981) else Color(0xFFF97316)
 
     // Ripple animation for the box
     val infiniteTransition = rememberInfiniteTransition(label = "ripple")
     val rippleScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.3f,
+        targetValue = 1.25f,
         animationSpec = infiniteRepeatable(
             animation = tween(1000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
@@ -59,7 +61,7 @@ fun PermissionsStatusCard(
         label = "rippleScale"
     )
     val rippleAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
+        initialValue = 0.15f,
         targetValue = 0f,
         animationSpec = infiniteRepeatable(
             animation = tween(1000, easing = LinearEasing),
@@ -71,8 +73,8 @@ fun PermissionsStatusCard(
     // Shake animation for the icon
     val shakeTransition = rememberInfiniteTransition(label = "shake")
     val shakeRotation by shakeTransition.animateFloat(
-        initialValue = -10f,
-        targetValue = 10f,
+        initialValue = -8f,
+        targetValue = 8f,
         animationSpec = infiniteRepeatable(
             animation = tween(100, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
@@ -82,24 +84,16 @@ fun PermissionsStatusCard(
 
     Card(
         modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        border = BorderStroke(1.5.dp, accentColor.copy(alpha = if (allPermissionsGranted) 0.4f else 0.3f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = if (allPermissionsGranted) {
-                            listOf(Color(0xFF34D399), Color(0xFF10B981))
-                        } else {
-                            listOf(Color(0xFFFB923C), Color(0xFFF97316))
-                        }
-                    )
-                )
                 .padding(16.dp)
         ) {
             Row(
@@ -113,19 +107,19 @@ fun PermissionsStatusCard(
                     if (!allPermissionsGranted) {
                         Box(
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(52.dp)
                                 .scale(rippleScale)
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = rippleAlpha))
+                                .background(accentColor.copy(alpha = rippleAlpha))
                         )
                     }
 
                     // Main icon box
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(52.dp)
                             .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.3f)),
+                            .background(accentColor.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -137,31 +131,31 @@ fun PermissionsStatusCard(
                                     // Apply shake rotation only when permissions not granted
                                     rotationZ = if (!allPermissionsGranted) shakeRotation else 0f
                                 },
-                            tint = Color.White
+                            tint = accentColor
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(14.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Permissions",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = Color.White
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     if (allPermissionsGranted) {
                         Text(
                             text = "All permissions granted",
                             fontSize = 12.sp,
-                            color = Color.White.copy(alpha = 0.9f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
                     } else {
                         Text(
                             text = "Required permissions not granted",
                             fontSize = 12.sp,
-                            color = Color.White.copy(alpha = 0.9f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
                     }
                 }
@@ -173,16 +167,16 @@ fun PermissionsStatusCard(
                 ) {
                     if (!allPermissionsGranted) {
                         Surface(
-                            shape = CircleShape,
-                            color = Color.White.copy(alpha = 0.3f),
+                            shape = RoundedCornerShape(12.dp),
+                            color = accentColor.copy(alpha = 0.15f),
                             modifier = Modifier.padding(end = 4.dp)
                         ) {
                             Text(
                                 text = "$permissionCount/2",
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                                 fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                fontWeight = FontWeight.SemiBold,
+                                color = accentColor
                             )
                         }
                     }
@@ -190,8 +184,8 @@ fun PermissionsStatusCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = Color.White
+                        modifier = Modifier.size(20.dp),
+                        tint = accentColor.copy(alpha = 0.7f)
                     )
                 }
             }

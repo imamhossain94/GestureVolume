@@ -1,8 +1,9 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
 import android.app.Activity
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,7 +14,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -25,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -35,15 +39,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.newagedevs.gesturevolume.BuildConfig
-import com.newagedevs.gesturevolume.R
-import com.newagedevs.gesturevolume.ui.viewmodels.MainEffect
+import com.newagedevs.gesturevolume.ui.theme.Surface
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
@@ -91,7 +94,12 @@ fun MainScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Gesture Volume") },
+                    title = {
+                        Text(
+                            "Gesture Volume",
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu")
@@ -103,9 +111,8 @@ fun MainScreen(
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        // containerColor = MaterialTheme.colorScheme.primaryContainer,
                         containerColor = Color.Transparent,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        titleContentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     modifier = Modifier.statusBarsPadding()
                 )
@@ -148,7 +155,7 @@ fun MainScreen(
                                 .weight(1f),
                             title = "Appearance",
                             subtitle = "Customize handler",
-                            icon = R.drawable.ic_color_palette,
+                            icon = com.newagedevs.gesturevolume.R.drawable.ic_color_palette,
                             gradientColors = listOf(
                                 Color(0xFF6366F1),
                                 Color(0xFF8B5CF6)
@@ -163,7 +170,7 @@ fun MainScreen(
                                 .weight(1f),
                             title = "Actions",
                             subtitle = "Tap & gesture settings",
-                            icon = R.drawable.ic_app_open,
+                            icon = com.newagedevs.gesturevolume.R.drawable.ic_app_open,
                             gradientColors = listOf(
                                 Color(0xFF10B981),
                                 Color(0xFF06B6D4)
@@ -188,7 +195,17 @@ fun MainScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (!state.isProActivated) {
-                    viewModel.adsManager?.NativeAdWidget()
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, Color(0xFF8B5CF6).copy(alpha = 0.3f), RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                    ) {
+                        viewModel.adsManager?.NativeAdWidget(
+                            modifier = Modifier.wrapContentHeight()
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -196,10 +213,11 @@ fun MainScreen(
                 // Quick Presets Section
                 Text(
                     text = "QUICK PRESETS",
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    modifier = Modifier.padding(bottom = 10.dp),
+                    letterSpacing = 0.5.sp
                 )
 
                 PresetCardsGrid(
@@ -216,7 +234,3 @@ fun MainScreen(
         }
     }
 }
-
-
-
-

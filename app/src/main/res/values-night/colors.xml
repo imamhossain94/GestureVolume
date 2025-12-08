@@ -34,4 +34,9 @@
     <color name="statusBarColor">#343541</color>
 
     <color name="stroke_color">#49454f</color>
+
+    <color name="background">#101010</color>
+    <color name="primary">#FFFFFF</color>
+    <color name="onPrimary">#000000</color>
+    <color name="textColor">#FFFFFF</color>
 </resources>

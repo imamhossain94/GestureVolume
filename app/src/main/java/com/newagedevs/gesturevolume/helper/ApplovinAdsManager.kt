@@ -1,7 +1,6 @@
 package com.newagedevs.gesturevolume.helper
 
 import android.app.Activity
-import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.view.View
@@ -37,7 +36,6 @@ import com.applovin.mediation.nativeAds.MaxNativeAdView
 import com.applovin.mediation.nativeAds.MaxNativeAdViewBinder
 import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
-import com.newagedevs.gesturevolume.data.local.SharedPref
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -45,12 +43,10 @@ import kotlin.math.min
 import kotlin.math.pow
 
 class ApplovinAdsManager(
-    private val context: Activity,
-    private val preferences: SharedPref
+    private val context: Activity
 ) {
-    private var interstitialAd: MaxInterstitialAd? = null
     private var retryAttempt = 0.0
-    private var isShowingAd = false
+    private var interstitialAd: MaxInterstitialAd? = null
 
     private val bannerId = BuildConfig.AD_UNIT_BANNER
     private val interstitialId: String = BuildConfig.AD_UNIT_INTERSTITIAL
@@ -120,6 +116,7 @@ class ApplovinAdsManager(
                             return
                         }
 
+
                         // Clean up any pre-existing native ad to prevent memory leaks
                         nativeAd?.let { oldAd ->
                             nativeAdLoader?.destroy(oldAd)
@@ -171,6 +168,7 @@ class ApplovinAdsManager(
                     }
 
                     override fun onNativeAdClicked(ad: MaxAd) {
+
                         // Load a new ad after click (best practice for native ads)
                         if (!context.isFinishing && !context.isDestroyed) {
                             scope.launch {
@@ -188,6 +186,7 @@ class ApplovinAdsManager(
                     override fun onNativeAdExpired(ad: MaxAd) {
                         // Check if context is still valid
                         if (!context.isFinishing && !context.isDestroyed) {
+
                             // Clean up the expired ad
                             nativeAd?.let { expiredAd ->
                                 nativeAdLoader?.destroy(expiredAd)
@@ -225,7 +224,7 @@ class ApplovinAdsManager(
             AndroidView(
                 modifier = modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 0.dp, vertical = 8.dp),
+                    .padding(horizontal = 0.dp, vertical = 0.dp),
                 factory = { ctx ->
                     FrameLayout(ctx).apply {
                         layoutParams = FrameLayout.LayoutParams(
@@ -248,7 +247,7 @@ class ApplovinAdsManager(
 
     // Function to create a native ad view binder
     private fun createNativeAdBinder(): MaxNativeAdViewBinder {
-        return MaxNativeAdViewBinder.Builder(R.layout.applovin_small_native_ad_layout)
+        return MaxNativeAdViewBinder.Builder(R.layout.view_small_native_ads)
             .setTitleTextViewId(R.id.title_text_view)
             .setBodyTextViewId(R.id.body_text_view)
             .setAdvertiserTextViewId(R.id.advertiser_text_view)
@@ -272,37 +271,17 @@ class ApplovinAdsManager(
 
         interstitialAd = MaxInterstitialAd(interstitialId).apply {
             setListener(InterstitialAdsListener())
-
-            if(!isReady) {
-                loadAd()
-            }
+            loadAd()
         }
     }
 
-    fun showInterstitialAd(context: Activity): Boolean {
-        // Check if cooldown allows showing the ad
-        if (!preferences.shouldShowInterstitialAd()) {
-            preferences.getInterstitialAdCooldownRemaining()
-            return false
+    fun showInterstitialAd(loaded: () -> Unit = {}, failed: () -> Unit = {}) {
+        if (interstitialAd?.isReady == true && !context.isFinishing && !context.isDestroyed) {
+            interstitialAd?.showAd(context)
+            loaded.invoke()
+        } else {
+            failed.invoke()
         }
-
-        // Check if ad is ready
-        if (interstitialAd?.isReady != true) {
-            preloadInterstitialAd()
-            return false
-        }
-
-        // Check if already showing
-        if (isShowingAd) {
-            return false
-        }
-
-        interstitialAd?.showAd(context)
-        return true
-    }
-
-    fun getInterstitialCooldownRemaining(): Long {
-        return preferences.getInterstitialAdCooldownRemaining()
     }
 
     fun destroyAds() {
@@ -340,21 +319,16 @@ class ApplovinAdsManager(
         }
 
         override fun onAdDisplayFailed(maxAd: MaxAd, error: MaxError) {
-            isShowingAd = false
-
             if (!context.isFinishing && !context.isDestroyed) {
                 preloadInterstitialAd()
             }
         }
 
-        override fun onAdDisplayed(maxAd: MaxAd) {
-            isShowingAd = true
-        }
+        override fun onAdDisplayed(maxAd: MaxAd) {}
 
         override fun onAdClicked(maxAd: MaxAd) {}
 
         override fun onAdHidden(maxAd: MaxAd) {
-            isShowingAd = false
             if (!context.isFinishing && !context.isDestroyed) {
                 preloadInterstitialAd()
             }

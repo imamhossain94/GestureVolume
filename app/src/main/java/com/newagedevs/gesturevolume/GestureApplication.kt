@@ -87,7 +87,7 @@ class GestureApplication : Application() {
     inner class AppOpenManager(private val context: Context) : MaxAdListener {
 
         private var appOpenAd: MaxAppOpenAd? = null
-        private val adUnitId = BuildConfig.APPLOVIN_SDK_KEY
+        private val adUnitId = BuildConfig.AD_UNIT_APP_OPEN
         private var isLoadingAd = false
         private var isShowingAd = false
 

@@ -2,21 +2,12 @@ package com.newagedevs.gesturevolume.ui.screens.main
 
 import android.content.Context
 import android.graphics.Color
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color as ComposeColor
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import com.newagedevs.gesturevolume.R
@@ -28,11 +19,11 @@ fun PresetCardsGrid(
     context: Context,
     onNavigateToAppearance: () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         // --- Row 1 ---
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             PresetCard(
                 modifier = Modifier.weight(1f),
@@ -67,7 +58,7 @@ fun PresetCardsGrid(
         // --- Row 2 ---
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             PresetCard(
                 modifier = Modifier.weight(1f),
@@ -99,9 +90,10 @@ fun PresetCardsGrid(
             )
         }
 
+        // --- Row 3 ---
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             PresetCard(
                 modifier = Modifier.weight(1f),
@@ -119,7 +111,6 @@ fun PresetCardsGrid(
             )
 
             Spacer(modifier = Modifier.weight(1f))
-
         }
     }
 }

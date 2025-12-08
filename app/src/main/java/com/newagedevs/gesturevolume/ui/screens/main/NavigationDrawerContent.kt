@@ -1,20 +1,23 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
 import android.content.Intent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -22,7 +25,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -38,326 +40,336 @@ fun NavigationDrawerContent(
     val context = LocalContext.current
 
     ModalDrawerSheet(
-        modifier = Modifier.width(300.dp),
+        modifier = Modifier.width(320.dp),
         drawerContainerColor = MaterialTheme.colorScheme.surface
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+            modifier = Modifier.fillMaxSize()
         ) {
-            // === HEADER ===
-            if (!isProActivated) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 12.dp, vertical = 16.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.Transparent
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            // === APP HEADER ===
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 24.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .size(56.dp)
+                            .clip(RoundedCornerShape(12.dp))
                             .background(
-                                brush = Brush.verticalGradient(
+                                brush = Brush.linearGradient(
                                     colors = listOf(
                                         Color(0xFFAA7BFF),
-                                        Color(0xFF8B5CF6)
-                                    )
+                                        Color(0xFF2C209A)
+                                    ),
+                                    start = Offset(0f, 0f),
+                                    end = Offset(512f, 512f)
                                 )
-                            )
-                            .padding(16.dp)
+                            ),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Column {
-                            // Icon and Title Row
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(56.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(Color.White.copy(alpha = 0.25f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.ic_crown_2),
-                                        contentDescription = "Crown",
-                                        modifier = Modifier.size(32.dp),
-                                        contentScale = ContentScale.Fit,
-                                        colorFilter = ColorFilter.tint(Color.White)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(14.dp))
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "Upgrade to Pro",
-                                        fontSize = 17.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-
-                                    Surface(
-                                        shape = RoundedCornerShape(10.dp),
-                                        color = Color.White.copy(alpha = 0.25f),
-                                        modifier = Modifier.padding(top = 4.dp)
-                                    ) {
-                                        Text(
-                                            text = "$0.99 Lifetime",
-                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White
-                                        )
-                                    }
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Text(
-                                text = "Unlock all premium features including advanced gestures and handler actions. Your support helps us improve!",
-                                fontSize = 12.sp,
-                                color = Color.White.copy(alpha = 0.95f),
-                                lineHeight = 16.sp
-                            )
-
-                            Spacer(modifier = Modifier.height(14.dp))
-
-                            Button(
-                                onClick = { onMenuItemClick("Premium") },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.White,
-                                    contentColor = Color(0xFF8B5CF6)
-                                ),
-                                shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(vertical = 12.dp)
-                            ) {
-                                Text(
-                                    "Upgrade Now",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
-                                )
-                            }
-                        }
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = null,
+                            modifier = Modifier.size(56.dp),
+                            contentScale = ContentScale.Fit,
+                            alignment = Alignment.Center
+                        )
                     }
-                }
-            } else {
-                // Pro Activated Badge
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 12.dp, vertical = 16.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.Transparent
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                brush = Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color(0xFFFBBF24),
-                                        Color(0xFFF59E0B)
-                                    )
-                                )
-                            )
-                            .padding(20.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Start,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.3f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.ic_crown_2),
-                                    contentDescription = "Crown",
-                                    modifier = Modifier.size(24.dp),
-                                    colorFilter = ColorFilter.tint(Color.White)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    text = "PRO Member",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                                Text(
-                                    text = "All features unlocked",
-                                    fontSize = 11.sp,
-                                    color = Color.White.copy(alpha = 0.9f)
-                                )
-                            }
-                        }
+
+                    Spacer(modifier = Modifier.width(14.dp))
+
+                    Column {
+                        Text(
+                            text = "Gesture Volume",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = if (isProActivated) "Pro Version" else "Free Version",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
                     }
                 }
             }
 
-//            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+            )
 
             // Menu Items - Scrollable
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                // === PREMIUM SECTION ===
+                if (!isProActivated) {
+                    Text(
+                        text = "UPGRADE",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp, top = 4.dp),
+                        letterSpacing = 0.5.sp
+                    )
+
+                    PremiumNavigationItem(
+                        onClick = { onMenuItemClick("Premium") }
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+
+                // === GENERAL SECTION ===
+                Text(
+                    text = "GENERAL",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp, top = 4.dp),
+                    letterSpacing = 0.5.sp
+                )
+
                 NavigationDrawerItem(
                     icon = R.drawable.ic_share,
-                    label = "Share",
-                    gradientColors = listOf(Color(0xFF10B981), Color(0xFF059669)),
+                    label = "Share App",
+                    accentColor = Color(0xFF10B981),
                     onClick = { onMenuItemClick("Share") }
                 )
 
                 NavigationDrawerItem(
                     icon = R.drawable.ic_feedback,
-                    label = "Feedback",
-                    gradientColors = listOf(Color(0xFF3B82F6), Color(0xFF2563EB)),
+                    label = "Send Feedback",
+                    accentColor = Color(0xFF3B82F6),
                     onClick = { onMenuItemClick("Feedback") }
                 )
 
                 NavigationDrawerItem(
                     icon = R.drawable.ic_star,
-                    label = "Rate us",
-                    gradientColors = listOf(Color(0xFFFBBF24), Color(0xFFF59E0B)),
+                    label = "Rate on Play Store",
+                    accentColor = Color(0xFFFBBF24),
                     onClick = { onMenuItemClick("Rate us") }
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // === MORE SECTION ===
+                Text(
+                    text = "MORE",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp, top = 4.dp),
+                    letterSpacing = 0.5.sp
                 )
 
                 NavigationDrawerItem(
                     icon = R.drawable.ic_playstore,
-                    label = "Other apps",
-                    gradientColors = listOf(Color(0xFF06B6D4), Color(0xFF0891B2)),
+                    label = "Other Apps",
+                    accentColor = Color(0xFF06B6D4),
                     onClick = { onMenuItemClick("Other apps") }
                 )
 
                 NavigationDrawerItem(
                     icon = R.drawable.ic_nothing,
                     label = "About",
-                    gradientColors = listOf(Color(0xFFEC4899), Color(0xFFDB2777)),
+                    accentColor = Color(0xFFEC4899),
                     onClick = { onMenuItemClick("About") }
                 )
             }
 
             // Bottom Ads
             if (!isProActivated) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                )
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .navigationBarsPadding()
-                        .padding(12.dp)
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
                 ) {
-                    Card(
-                        shape = RoundedCornerShape(10.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        InHouseBannerAdsView(
-                            bannerAds = Constants.inHouseAdList,
-                            onInstallClick = { appLink ->
-                                val intent = Intent(Intent.ACTION_VIEW, appLink.toUri())
-                                context.startActivity(intent)
-                            }
-                        )
-                    }
+                    InHouseBannerAdsView(
+                        bannerAds = Constants.inHouseAdList,
+                        onInstallClick = { appLink ->
+                            val intent = Intent(Intent.ACTION_VIEW, appLink.toUri())
+                            context.startActivity(intent)
+                        }
+                    )
                 }
+            } else {
+                Spacer(modifier = Modifier.height(8.dp))
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-private fun NavigationDrawerItem(
-    icon: Int,
-    label: String,
-    gradientColors: List<Color>,
-    badge: String? = null,
+private fun PremiumNavigationItem(
     onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
+            containerColor = Color.White.copy(alpha = 0.02f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, Color(0xFF8B5CF6).copy(alpha = 0.25f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.horizontalGradient(colors = gradientColors)
-                )
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.25f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = icon),
-                        contentDescription = label,
-                        modifier = Modifier.size(18.dp),
-                        tint = Color.White
-                    )
-                }
 
-                Spacer(modifier = Modifier.width(12.dp))
+            // === ICON (48dp, left aligned) ===
+            Box(
+                modifier = Modifier
+                    .size(48.dp)   // ⬅️ updated to 48dp
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(
+                        brush = Brush.linearGradient(
+                            listOf(
+                                Color(0xFFAA7BFF),
+                                Color(0xFF2C209A)
+                            ),
+                            start = Offset.Zero,
+                            end = Offset(400f, 400f)
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_crown_2),
+                    contentDescription = "Crown",
+                    modifier = Modifier.size(26.dp),   // proportional to 48dp container
+                    colorFilter = ColorFilter.tint(Color.White)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            // === TEXT ===
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Upgrade to Pro",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
                 Text(
-                    text = label,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White,
-                    modifier = Modifier.weight(1f)
+                    text = "Unlock all features",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
+            }
 
-                if (badge != null) {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = Color.White.copy(alpha = 0.25f)
-                    ) {
-                        Text(
-                            text = badge,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                        )
-                    }
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // === PRICE TAG ===
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = Color(0xFF8B5CF6)
+            ) {
+                Text(
+                    text = "$0.99",
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = Color(0xFF8B5CF6)
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun NavigationDrawerItem(
+    icon: Int,
+    label: String,
+    accentColor: Color,
+    badge: String? = null,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        color = Color.Transparent
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(accentColor.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = label,
+                    modifier = Modifier.size(18.dp),
+                    tint = accentColor
+                )
+            }
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Text(
+                text = label,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+
+            if (badge != null) {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = accentColor.copy(alpha = 0.15f)
+                ) {
+                    Text(
+                        text = badge,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = accentColor,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
                 }
             }
         }
