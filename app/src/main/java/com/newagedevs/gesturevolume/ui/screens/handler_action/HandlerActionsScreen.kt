@@ -61,13 +61,12 @@ fun HandlerActionsScreen(
                 .padding(16.dp)
         ) {
             // Tap Actions Section
-            SectionTitle("TAP ACTIONS", Color(0xFF8B5CF6))
+            SectionTitle("TAP ACTIONS", MaterialTheme.colorScheme.primary)
 
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = Color.Transparent,
-                border = BorderStroke(1.5.dp, Color(0xFF8B5CF6))
+                color = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     ActionSettingItem(
@@ -75,13 +74,13 @@ fun HandlerActionsScreen(
                         description = "What happens on single tap",
                         value = state.clickAction,
                         icon = state.clickActionIcon,
-                        borderColor = Color(0xFF8B5CF6),
+                        borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = { showClickActionDialog = true }
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = Color(0xFF8B5CF6).copy(alpha = 0.2f))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                     Spacer(modifier = Modifier.height(16.dp))
 
                     ActionSettingItem(
@@ -89,7 +88,7 @@ fun HandlerActionsScreen(
                         description = "What happens on double tap",
                         value = state.doubleClickAction,
                         icon = state.doubleClickActionIcon,
-                        borderColor = Color(0xFF8B5CF6),
+                        borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = {
                             showDoubleClickActionDialog = true
@@ -97,7 +96,7 @@ fun HandlerActionsScreen(
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = Color(0xFF8B5CF6).copy(alpha = 0.2f))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                     Spacer(modifier = Modifier.height(16.dp))
 
                     ActionSettingItem(
@@ -105,7 +104,7 @@ fun HandlerActionsScreen(
                         description = "What happens on long press",
                         value = state.longClickAction,
                         icon = state.longClickActionIcon,
-                        borderColor = Color(0xFF8B5CF6),
+                        borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = !state.isProActivated,
                         onClick = {
                             if (state.isProActivated) {
@@ -121,13 +120,12 @@ fun HandlerActionsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Gesture Actions Section
-            SectionTitle("GESTURE ACTIONS", Color(0xFF10B981))
+            SectionTitle("GESTURE ACTIONS", MaterialTheme.colorScheme.primary)
 
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = Color.Transparent,
-                border = BorderStroke(1.5.dp, Color(0xFF10B981))
+                color = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     ActionSettingItem(
@@ -135,13 +133,13 @@ fun HandlerActionsScreen(
                         description = "What happens on swipe up",
                         value = state.swipeUpAction,
                         icon = state.swipeUpActionIcon,
-                        borderColor = Color(0xFF10B981),
+                        borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = { showSwipeUpDialog = true }
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = Color(0xFF10B981).copy(alpha = 0.2f))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                     Spacer(modifier = Modifier.height(16.dp))
 
                     ActionSettingItem(
@@ -149,7 +147,7 @@ fun HandlerActionsScreen(
                         description = "What happens on swipe down",
                         value = state.swipeDownAction,
                         icon = state.swipeDownActionIcon,
-                        borderColor = Color(0xFF10B981),
+                        borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = { showSwipeDownDialog = true }
                     )
@@ -162,8 +160,7 @@ fun HandlerActionsScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = Color.Transparent,
-                border = BorderStroke(1.5.dp, Color(0xFF3B82F6))
+                color = MaterialTheme.colorScheme.secondaryContainer
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -173,13 +170,13 @@ fun HandlerActionsScreen(
                         imageVector = Icons.Default.Info,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
-                        tint = Color(0xFF3B82F6)
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "Customize how you interact with the volume handler through taps and gestures",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                         lineHeight = 20.sp
                     )
                 }

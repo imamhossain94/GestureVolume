@@ -54,7 +54,7 @@ fun SwipeActionDialog(
         }
     }
 
-    val borderColor = Color(0xFF10B981)
+    val borderColor = MaterialTheme.colorScheme.primary
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -111,11 +111,7 @@ private fun SwipeActionListItem(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) borderColor.copy(alpha = 0.1f) else Color.Transparent,
-        border = BorderStroke(
-            width = if (isSelected) 2.dp else 1.5.dp,
-            color = if (isSelected) borderColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-        )
+        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -126,14 +122,14 @@ private fun SwipeActionListItem(
                 painter = painterResource(iconRes),
                 contentDescription = actionName,
                 modifier = Modifier.size(28.dp),
-                tint = if (isSelected) borderColor else MaterialTheme.colorScheme.onSurface
+                tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = actionName,
                 fontSize = 15.sp,
                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                color = if (isSelected) borderColor else MaterialTheme.colorScheme.onSurface
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

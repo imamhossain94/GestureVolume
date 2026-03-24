@@ -1,16 +1,7 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -33,7 +24,7 @@ fun ActionSettingItem(
     description: String,
     value: String,
     icon: Int,
-    borderColor: Color,
+    borderColor: Color, // Ignored
     showProBadge: Boolean = false,
     onClick: () -> Unit
 ) {
@@ -46,13 +37,13 @@ fun ActionSettingItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = label,
-                    fontSize = 14.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = description,
-                    fontSize = 12.sp,
+                    fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     modifier = Modifier.padding(top = 2.dp)
                 )
@@ -60,16 +51,15 @@ fun ActionSettingItem(
 
             if (showProBadge) {
                 Surface(
-                    shape = RoundedCornerShape(4.dp),
-                    color = Color.Transparent,
-                    border = BorderStroke(1.dp, borderColor)
+                    shape = RoundedCornerShape(6.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Text(
                         text = "PRO",
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         fontWeight = FontWeight.Bold,
                         fontSize = 10.sp,
-                        color = borderColor,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                         letterSpacing = 0.5.sp
                     )
                 }
@@ -83,8 +73,7 @@ fun ActionSettingItem(
                 .fillMaxWidth()
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(12.dp),
-            color = Color.Transparent,
-            border = BorderStroke(1.5.dp, borderColor.copy(alpha = 0.3f))
+            color = MaterialTheme.colorScheme.surfaceVariant
         ) {
             Row(
                 modifier = Modifier
@@ -98,21 +87,21 @@ fun ActionSettingItem(
                         painter = painterResource(id = icon),
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
-                        tint = borderColor
+                        tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = value,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                 )
             }
         }

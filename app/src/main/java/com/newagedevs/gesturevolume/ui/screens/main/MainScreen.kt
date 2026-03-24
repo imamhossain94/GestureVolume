@@ -67,6 +67,7 @@ fun MainScreen(
     // Update permissions status when screen appears
     LaunchedEffect(Unit) {
         viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
+        viewModel.onEvent(MainEvent.SyncServiceState(context))
     }
 
     BackHandler {

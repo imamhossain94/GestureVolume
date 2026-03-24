@@ -19,11 +19,12 @@ import kotlin.math.abs
 class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
 
     companion object {
-        private const val TOUCH_MOVE_FACTOR: Long = 20
-        private const val TOUCH_TIME_FACTOR: Long = 300
-        private const val DOUBLE_CLICK_TIME_DELTA: Long = 300
         private const val DEFAULT_INSET: Float = 0f
     }
+
+    private val touchMoveFactor: Long = (20 * resources.displayMetrics.density).toLong()
+    private val touchTimeFactor: Long = 300L
+    private val doubleClickTimeDelta: Long = 300L
 
     // View properties with default values
     private var viewWidth: Float = 50f
@@ -371,12 +372,12 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
                 }
             }
             MotionEvent.ACTION_UP -> {
-                val isTouchDuration = now() - touchDownTime < TOUCH_TIME_FACTOR
-                val isTouchLength = abs(event.x - actionDownPoint.x) + abs(event.y - actionDownPoint.y) < TOUCH_MOVE_FACTOR
+                val isTouchDuration = now() - touchDownTime < touchTimeFactor
+                val isTouchLength = abs(event.x - actionDownPoint.x) + abs(event.y - actionDownPoint.y) < touchMoveFactor
                 val shouldClick = isTouchLength && isTouchDuration
 
                 if (shouldClick) {
-                    if (now() - lastClickTime < DOUBLE_CLICK_TIME_DELTA) {
+                    if (now() - lastClickTime < doubleClickTimeDelta) {
                         // Double click
                         handlerClickListener?.onDoubleClick()
                         lastClickTime = 0

@@ -108,8 +108,7 @@ fun FeedbackScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.Transparent,
-                    border = BorderStroke(1.5.dp, Color(0xFF8B5CF6))
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Row(
                         modifier = Modifier.padding(20.dp),
@@ -119,7 +118,7 @@ fun FeedbackScreen(
                             imageVector = Icons.Default.Email,
                             contentDescription = null,
                             modifier = Modifier.size(32.dp),
-                            tint = Color(0xFF8B5CF6)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
@@ -127,12 +126,12 @@ fun FeedbackScreen(
                                 text = "We'd love to hear from you!",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
                                 text = "Help us improve the app",
                                 fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
                         }
                     }
@@ -145,7 +144,7 @@ fun FeedbackScreen(
                     text = "COMMON ISSUES",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFEF4444).copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     letterSpacing = 1.2.sp,
                     modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
                 )
@@ -154,8 +153,7 @@ fun FeedbackScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.Transparent,
-                    border = BorderStroke(1.5.dp, Color(0xFFEF4444).copy(alpha = 0.3f))
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         CheckboxItem(
@@ -211,7 +209,7 @@ fun FeedbackScreen(
                     text = "OTHER FEEDBACK",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF10B981).copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     letterSpacing = 1.2.sp,
                     modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
                 )
@@ -220,8 +218,7 @@ fun FeedbackScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.Transparent,
-                    border = BorderStroke(1.5.dp, Color(0xFF10B981))
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     OutlinedTextField(
                         value = otherIssueText,
@@ -239,7 +236,7 @@ fun FeedbackScreen(
                         maxLines = 6,
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF10B981),
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                         )
                     )
@@ -297,22 +294,17 @@ fun FeedbackScreen(
                         modifier = Modifier
                             .weight(1f)
                             .height(50.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF3B82F6)
-                        )
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
                             contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = Color.White
+                            modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             "Send Feedback",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }

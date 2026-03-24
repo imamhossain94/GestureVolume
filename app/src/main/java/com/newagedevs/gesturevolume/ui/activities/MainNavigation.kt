@@ -28,6 +28,7 @@ import com.newagedevs.gesturevolume.ui.screens.handler_action.HandlerActionsScre
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.HandlerAppearanceScreen
 import com.newagedevs.gesturevolume.ui.screens.main.MainScreen
 import com.newagedevs.gesturevolume.ui.screens.permission.PermissionsScreen
+import com.newagedevs.gesturevolume.ui.screens.walkthrough.WalkthroughScreen
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEffect
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
@@ -80,8 +81,19 @@ fun MainNavigation(
         Box(modifier = Modifier.weight(1f)) {
             NavHost(
                 navController = navController,
-                startDestination = "main"
+                startDestination = if (viewModel.preference.isFirstLaunch()) "walkthrough" else "main"
             ) {
+                composable("walkthrough") {
+                    WalkthroughScreen(
+                        viewModel = viewModel,
+                        onComplete = {
+                            navController.navigate("main") {
+                                popUpTo("walkthrough") { inclusive = true }
+                            }
+                        }
+                    )
+                }
+
                 composable("main") {
                     MainScreen(
                         viewModel = viewModel,

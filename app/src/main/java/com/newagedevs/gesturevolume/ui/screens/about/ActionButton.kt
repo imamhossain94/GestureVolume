@@ -1,6 +1,5 @@
 package com.newagedevs.gesturevolume.ui.screens.about
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,7 +25,7 @@ fun ActionButton(
     modifier: Modifier = Modifier,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     text: String,
-    borderColor: Color,
+    borderColor: Color, // kept for API compatibility, ignored internally
     onClick: () -> Unit
 ) {
     Surface(
@@ -34,8 +33,7 @@ fun ActionButton(
             .height(90.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        color = Color.Transparent,
-        border = BorderStroke(1.5.dp, borderColor)
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier
@@ -47,14 +45,14 @@ fun ActionButton(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
-                tint = borderColor
+                tint = MaterialTheme.colorScheme.primary
             )
 
             Text(
                 text = text,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

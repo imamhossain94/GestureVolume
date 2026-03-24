@@ -2,64 +2,64 @@ package com.newagedevs.gesturevolume.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Light Theme Colors - Google Play Console inspired
-val Primary = Color(0xFF1A73E8)  // Google Blue
+// Light Theme Colors - Clean & Minimal
+val Primary = Color(0xFF4F46E5)  // Indigo
 val OnPrimary = Color(0xFFFFFFFF)
-val PrimaryContainer = Color(0xFFD3E3FD)
-val OnPrimaryContainer = Color(0xFF001B3D)
+val PrimaryContainer = Color(0xFFE0E7FF)
+val OnPrimaryContainer = Color(0xFF312E81)
 
-val Secondary = Color(0xFF5E6267)
+val Secondary = Color(0xFF6B7280) // Gray 500
 val OnSecondary = Color(0xFFFFFFFF)
-val SecondaryContainer = Color(0xFFE2E4E8)
-val OnSecondaryContainer = Color(0xFF1B1D21)
+val SecondaryContainer = Color(0xFFF3F4F6)
+val OnSecondaryContainer = Color(0xFF1F2937)
 
-val Tertiary = Color(0xFF7B5800)
+val Tertiary = Color(0xFF14B8A6) // Teal 500
 val OnTertiary = Color(0xFFFFFFFF)
-val TertiaryContainer = Color(0xFFFFDEA7)
-val OnTertiaryContainer = Color(0xFF271900)
+val TertiaryContainer = Color(0xFFCCFBF1)
+val OnTertiaryContainer = Color(0xFF134E4A)
 
-val Error = Color(0xFFD93025)
+val Error = Color(0xFFEF4444)
 val OnError = Color(0xFFFFFFFF)
-val ErrorContainer = Color(0xFFFFDAD6)
-val OnErrorContainer = Color(0xFF410002)
+val ErrorContainer = Color(0xFFFEE2E2)
+val OnErrorContainer = Color(0xFF7F1D1D)
 
-val Background = Color(0xFFFCFCFF)
-val OnBackground = Color(0xFF1A1C1E)
-val Surface = Color(0xFFFCFCFF)
-val OnSurface = Color(0xFF1A1C1E)
-val SurfaceVariant = Color(0xFFE1E2EC)
-val OnSurfaceVariant = Color(0xFF44464F)
+val Background = Color(0xFFFFFFFF) // Pure White
+val OnBackground = Color(0xFF111827) // Gray 900
+val Surface = Color(0xFFFFFFFF) // Pure White
+val OnSurface = Color(0xFF1F2937) // Gray 800
+val SurfaceVariant = Color(0xFFF3F4F6) // Gray 100
+val OnSurfaceVariant = Color(0xFF4B5563) // Gray 600
 
-val Outline = Color(0xFF75777F)
-val OutlineVariant = Color(0xFFC5C6D0)
+val Outline = Color(0xFFD1D5DB) // Gray 300
+val OutlineVariant = Color(0xFFE5E7EB) // Gray 200
 
-// Dark Theme Colors - High contrast for better visibility
-val PrimaryDark = Color(0xFF8AB4F8)
-val OnPrimaryDark = Color(0xFF00315F)
-val PrimaryContainerDark = Color(0xFF004A77)
-val OnPrimaryContainerDark = Color(0xFFD3E3FD)
+// Dark Theme Colors - Elegant Dark Mode
+val PrimaryDark = Color(0xFF818CF8) // Indigo 400
+val OnPrimaryDark = Color(0xFF312E81)
+val PrimaryContainerDark = Color(0xFF4338CA)
+val OnPrimaryContainerDark = Color(0xFFE0E7FF)
 
-val SecondaryDark = Color(0xFFC6C6CC)
-val OnSecondaryDark = Color(0xFF2F3136)
-val SecondaryContainerDark = Color(0xFF45484D)
-val OnSecondaryContainerDark = Color(0xFFE2E4E8)
+val SecondaryDark = Color(0xFF9CA3AF) // Gray 400
+val OnSecondaryDark = Color(0xFF111827)
+val SecondaryContainerDark = Color(0xFF374151)
+val OnSecondaryContainerDark = Color(0xFFF3F4F6)
 
-val TertiaryDark = Color(0xFFFABD00)
-val OnTertiaryDark = Color(0xFF3E2E00)
-val TertiaryContainerDark = Color(0xFF5C4300)
-val OnTertiaryContainerDark = Color(0xFFFFDEA7)
+val TertiaryDark = Color(0xFF2DD4BF) // Teal 400
+val OnTertiaryDark = Color(0xFF134E4A)
+val TertiaryContainerDark = Color(0xFF0F766E)
+val OnTertiaryContainerDark = Color(0xFFCCFBF1)
 
-val ErrorDark = Color(0xFFFFB4AB)
-val OnErrorDark = Color(0xFF690005)
-val ErrorContainerDark = Color(0xFF93000A)
-val OnErrorContainerDark = Color(0xFFFFDAD6)
+val ErrorDark = Color(0xFFF87171)
+val OnErrorDark = Color(0xFF7F1D1D)
+val ErrorContainerDark = Color(0xFF991B1B)
+val OnErrorContainerDark = Color(0xFFFEE2E2)
 
-val BackgroundDark = Color(0xFF1A1C1E)
-val OnBackgroundDark = Color(0xFFE2E2E6)
-val SurfaceDark = Color(0xFF1A1C1E)
-val OnSurfaceDark = Color(0xFFE2E2E6)
-val SurfaceVariantDark = Color(0xFF44464F)
-val OnSurfaceVariantDark = Color(0xFFC5C6D0)
+val BackgroundDark = Color(0xFF0F172A) // Slate 900
+val OnBackgroundDark = Color(0xFFF8FAFC) // Slate 50
+val SurfaceDark = Color(0xFF1E293B) // Slate 800
+val OnSurfaceDark = Color(0xFFF1F5F9) // Slate 100
+val SurfaceVariantDark = Color(0xFF334155) // Slate 700
+val OnSurfaceVariantDark = Color(0xFFCBD5E1) // Slate 300
 
-val OutlineDark = Color(0xFF8F9099)
-val OutlineVariantDark = Color(0xFF44464F)
+val OutlineDark = Color(0xFF475569) // Slate 600
+val OutlineVariantDark = Color(0xFF334155) // Slate 700

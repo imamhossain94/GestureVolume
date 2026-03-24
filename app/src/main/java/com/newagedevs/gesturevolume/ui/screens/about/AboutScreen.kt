@@ -120,8 +120,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = Color.Transparent,
-                border = BorderStroke(1.5.dp, Color(0xFF6366F1))
+                color = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 Column(
                     modifier = Modifier
@@ -133,25 +132,25 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
-                        tint = Color(0xFF6366F1)
+                        tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "Developed by",
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                     Text(
                         text = "NewAgeDevs",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "© ${Calendar.getInstance().get(Calendar.YEAR)} All rights reserved",
                         fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         textAlign = TextAlign.Center
                     )
                 }

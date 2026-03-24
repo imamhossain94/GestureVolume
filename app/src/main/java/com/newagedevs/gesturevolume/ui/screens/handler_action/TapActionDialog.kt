@@ -53,7 +53,7 @@ fun TapActionDialog(
         )
     }
 
-    val borderColor = Color(0xFF8B5CF6)
+    val borderColor = MaterialTheme.colorScheme.primary
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -123,11 +123,7 @@ private fun ActionGridItem(
             .aspectRatio(1f)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) borderColor.copy(alpha = 0.1f) else Color.Transparent,
-        border = BorderStroke(
-            width = if (isSelected) 2.dp else 1.5.dp,
-            color = if (isSelected) borderColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-        )
+        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier
@@ -140,14 +136,14 @@ private fun ActionGridItem(
                 painter = painterResource(iconRes),
                 contentDescription = actionName,
                 modifier = Modifier.size(32.dp),
-                tint = if (isSelected) borderColor else MaterialTheme.colorScheme.onSurface
+                tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = actionName,
                 fontSize = 10.sp,
                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                color = if (isSelected) borderColor else MaterialTheme.colorScheme.onSurface,
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2,
                 lineHeight = 12.sp,
                 textAlign = TextAlign.Center

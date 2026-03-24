@@ -99,6 +99,7 @@ class MainViewModel @Inject constructor(
             is MainEvent.SetSwipeUpAction -> setSwipeUpAction(event.action)
             is MainEvent.SetSwipeDownAction -> setSwipeDownAction(event.action)
             is MainEvent.UpdatePermissionsStatus -> updatePermissionsStatus(event.context)
+            is MainEvent.SyncServiceState -> syncServiceState(event.context)
             MainEvent.ShowProDialog -> showProDialog()
         }
     }
@@ -115,6 +116,24 @@ class MainViewModel @Inject constructor(
             hasOverlayPermission = hasOverlay,
             hasNotificationPermission = hasNotification
         )
+    }
+
+    private fun syncServiceState(context: Context) {
+        val actualRunning = isServiceRunning(context, OverlayService::class.java)
+        val prefRunning = preference.isRunning()
+        
+        if (actualRunning != _state.value.isRunning || actualRunning != prefRunning) {
+            // If actual state differs from state/pref, we trust actual state
+            // But if user intended it to run (pref is true) but it's not (actual is false),
+            // it means it was killed. We might want to restart it here too,
+            // but for UI sync, we just update the state.
+            
+            _state.value = _state.value.copy(isRunning = actualRunning)
+            
+            // Note: We don't necessarily update SharedPref here because if it's true 
+            // and service is dead, our restart mechanisms should bring it back.
+            // However, for UI toggle sync, we use actualRunning.
+        }
     }
 
     fun showToast(message: String) {

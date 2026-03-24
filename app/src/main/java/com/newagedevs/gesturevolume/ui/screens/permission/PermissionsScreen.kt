@@ -143,8 +143,7 @@ fun PermissionsScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = Color.Transparent,
-                border = BorderStroke(1.5.dp, Color(0xFF3B82F6))
+                color = MaterialTheme.colorScheme.secondaryContainer
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -154,13 +153,13 @@ fun PermissionsScreen(
                         imageVector = Icons.Default.Info,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
-                        tint = Color(0xFF3B82F6)
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "The app requires certain permissions to function properly. Grant permissions below.",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                         lineHeight = 20.sp
                     )
                 }
@@ -270,8 +269,7 @@ fun PermissionsScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.Transparent,
-                    border = BorderStroke(1.5.dp, Color(0xFF10B981))
+                    color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp),
@@ -281,7 +279,7 @@ fun PermissionsScreen(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
-                            tint = Color(0xFF10B981)
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
@@ -289,13 +287,13 @@ fun PermissionsScreen(
                                 text = "All set!",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "All required permissions are granted. You can now use the app.",
                                 fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                                 lineHeight = 18.sp
                             )
                         }
