@@ -2,33 +2,30 @@ package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
 import android.view.Gravity
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -42,31 +39,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.ui.view.HandlerView
-
-private data class AppearanceState(
-    val gravity: Int,
-    val width: Float,
-    val height: Float,
-    val bgColor: Int,
-    val bgAlpha: Int,
-    val strokeColor: Int,
-    val strokeWidth: Float,
-    val strokeAlpha: Int,
-    val cornerTL: Float,
-    val cornerTR: Float,
-    val cornerBL: Float,
-    val cornerBR: Float,
-    val iconRes: Int,
-    val iconSize: Float,
-    val iconColor: Int,
-    val showIcon: Boolean,
-    val vibrate: Boolean,
-    val lockPosition: Boolean
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,188 +59,175 @@ fun HandlerAppearanceScreen(
     var isExpandedPreview by remember { mutableStateOf(false) }
     var showDiscardDialog by remember { mutableStateOf(false) }
     var showSaveDialog by remember { mutableStateOf(false) }
-
-    fun getSavedState() = AppearanceState(
-        gravity = if (preference.getHandlerPosition() == "Left") Gravity.START else Gravity.END,
-        width = preference.getHandlerWidthDp(),
-        height = preference.getHandlerHeightDp(),
-        bgColor = preference.getHandlerColor(),
-        bgAlpha = preference.getHandlerBackgroundAlpha(),
-        strokeColor = preference.getHandlerStrokeColor(),
-        strokeWidth = preference.getHandlerStrokeWidth(),
-        strokeAlpha = preference.getHandlerStrokeAlpha(),
-        cornerTL = preference.getHandlerCornerRadiusTL(),
-        cornerTR = preference.getHandlerCornerRadiusTR(),
-        cornerBL = preference.getHandlerCornerRadiusBL(),
-        cornerBR = preference.getHandlerCornerRadiusBR(),
-        iconRes = preference.getHandlerIconRes(),
-        iconSize = preference.getHandlerIconSize(),
-        iconColor = preference.getHandlerIconColor(),
-        showIcon = preference.getHandlerShowIcon(),
-        vibrate = preference.getHandlerVibrateOnClick(),
-        lockPosition = preference.getHandlerLockPosition()
-    )
-
-    var savedState by remember { mutableStateOf(getSavedState()) }
-
-    var handlerGravity by remember { mutableStateOf(savedState.gravity) }
-    var bgImage by remember { mutableStateOf(viewModel.getNextBackground()) }
-    var handlerWidth by remember { mutableStateOf(savedState.width) }
-    var handlerHeight by remember { mutableStateOf(savedState.height) }
-    var backgroundColor by remember { mutableStateOf(Color(savedState.bgColor)) }
-    var backgroundAlpha by remember { mutableStateOf(savedState.bgAlpha) }
-    var strokeColor by remember { mutableStateOf(Color(savedState.strokeColor)) }
-    var strokeWidth by remember { mutableStateOf(savedState.strokeWidth) }
-    var strokeAlpha by remember { mutableStateOf(savedState.strokeAlpha) }
-    
-    var cornerRadiusAll by remember { mutableStateOf(savedState.cornerTL) }
-    var cornerRadiusTL by remember { mutableStateOf(savedState.cornerTL) }
-    var cornerRadiusTR by remember { mutableStateOf(savedState.cornerTR) }
-    var cornerRadiusBL by remember { mutableStateOf(savedState.cornerBL) }
-    var cornerRadiusBR by remember { mutableStateOf(savedState.cornerBR) }
-    var selectedIconRes by remember { mutableStateOf(savedState.iconRes) }
-    var iconSize by remember { mutableStateOf(savedState.iconSize) }
-    var iconColor by remember { mutableStateOf(Color(savedState.iconColor)) }
-    var showIcon by remember { mutableStateOf(savedState.showIcon) }
-    var enableVibration by remember { mutableStateOf(savedState.vibrate) }
-    var lockPosition by remember { mutableStateOf(savedState.lockPosition) }
     var showIconPicker by remember { mutableStateOf(false) }
 
-    val currentState = AppearanceState(
-        gravity = handlerGravity,
-        width = handlerWidth,
-        height = handlerHeight,
-        bgColor = backgroundColor.toArgb(),
-        bgAlpha = backgroundAlpha,
-        strokeColor = strokeColor.toArgb(),
-        strokeWidth = strokeWidth,
-        strokeAlpha = strokeAlpha,
-        cornerTL = cornerRadiusTL,
-        cornerTR = cornerRadiusTR,
-        cornerBL = cornerRadiusBL,
-        cornerBR = cornerRadiusBR,
-        iconRes = selectedIconRes,
-        iconSize = iconSize,
-        iconColor = iconColor.toArgb(),
-        showIcon = showIcon,
-        vibrate = enableVibration,
-        lockPosition = lockPosition
-    )
+    val savedState = remember {
+        mutableStateOf(
+            AppearanceState(
+                gravity = if (preference.getHandlerPosition() == "Left") Gravity.START else Gravity.END,
+                width = preference.getHandlerWidthDp(),
+                height = preference.getHandlerHeightDp(),
+                bgColor = preference.getHandlerColor(),
+                bgAlpha = preference.getHandlerBackgroundAlpha(),
+                strokeColor = preference.getHandlerStrokeColor(),
+                strokeWidth = preference.getHandlerStrokeWidth(),
+                strokeAlpha = preference.getHandlerStrokeAlpha(),
+                cornerTL = preference.getHandlerCornerRadiusTL(),
+                cornerTR = preference.getHandlerCornerRadiusTR(),
+                cornerBL = preference.getHandlerCornerRadiusBL(),
+                cornerBR = preference.getHandlerCornerRadiusBR(),
+                iconRes = preference.getHandlerIconRes(),
+                iconSize = preference.getHandlerIconSize(),
+                iconColor = preference.getHandlerIconColor(),
+                showIcon = preference.getHandlerShowIcon(),
+                vibrate = preference.getHandlerVibrateOnClick(),
+                lockPosition = preference.getHandlerLockPosition()
+            )
+        )
+    }
 
-    val hasUnsavedChanges = currentState != savedState
+    val state = remember {
+        AppearanceStateHolder(
+            initialGravity = savedState.value.gravity,
+            initialWidth = savedState.value.width,
+            initialHeight = savedState.value.height,
+            initialBgColor = Color(savedState.value.bgColor),
+            initialBgAlpha = savedState.value.bgAlpha,
+            initialStrokeColor = Color(savedState.value.strokeColor),
+            initialStrokeWidth = savedState.value.strokeWidth,
+            initialStrokeAlpha = savedState.value.strokeAlpha,
+            initialCornerTL = savedState.value.cornerTL,
+            initialCornerTR = savedState.value.cornerTR,
+            initialCornerBL = savedState.value.cornerBL,
+            initialCornerBR = savedState.value.cornerBR,
+            initialIconRes = savedState.value.iconRes,
+            initialIconSize = savedState.value.iconSize,
+            initialIconColor = Color(savedState.value.iconColor),
+            initialShowIcon = savedState.value.showIcon,
+            initialVibrate = savedState.value.vibrate,
+            initialLockPosition = savedState.value.lockPosition
+        )
+    }
+
+    var bgImage by remember { mutableStateOf(viewModel.getNextBackground()) }
+    
+    // Automatically recomputes as nested properties change
+    val currentState = state.toState()
+    val hasUnsavedChanges = currentState != savedState.value
 
     LaunchedEffect(presetId) {
         if (presetId != null) {
             when (presetId) {
                 "Default" -> {
-                    handlerGravity = Gravity.END
-                    lockPosition = true
-                    handlerWidth = 30f
-                    handlerHeight = 100f
-                    backgroundColor = Color.White
-                    backgroundAlpha = 50
-                    strokeColor = Color.White
-                    strokeWidth = 1f
-                    strokeAlpha = 200
-                    cornerRadiusAll = 15f
-                    cornerRadiusTL = 15f
-                    cornerRadiusTR = 15f
-                    cornerRadiusBL = 15f
-                    cornerRadiusBR = 15f
-                    selectedIconRes = R.drawable.ic_vol_increase
-                    iconSize = 18f
-                    iconColor = Color.White
-                    showIcon = true
-                    enableVibration = false
+                    state.gravity = Gravity.END
+                    state.lockPosition = true
+                    state.width = 30f
+                    state.height = 100f
+                    state.bgColor = Color.White
+                    state.bgAlpha = 50
+                    state.strokeColor = Color.White
+                    state.strokeWidth = 1f
+                    state.strokeAlpha = 200
+                    state.cornerRadiusAll = 15f
+                    state.cornerTL = 15f
+                    state.cornerTR = 15f
+                    state.cornerBL = 15f
+                    state.cornerBR = 15f
+                    state.iconRes = R.drawable.ic_vol_increase
+                    state.iconSize = 18f
+                    state.iconColor = Color.White
+                    state.showIcon = true
+                    state.vibrate = false
                 }
                 "Minimal" -> {
-                    handlerGravity = Gravity.END
-                    lockPosition = true
-                    handlerWidth = 10f
-                    handlerHeight = 100f
-                    backgroundColor = Color.White
-                    backgroundAlpha = 50
-                    strokeColor = Color.White
-                    strokeWidth = 1f
-                    strokeAlpha = 200
-                    cornerRadiusAll = 5f
-                    cornerRadiusTL = 5f
-                    cornerRadiusTR = 5f
-                    cornerRadiusBL = 5f
-                    cornerRadiusBR = 5f
-                    selectedIconRes = R.drawable.ic_vol_increase
-                    iconSize = 18f
-                    iconColor = Color.White
-                    showIcon = false
-                    enableVibration = false
+                    state.gravity = Gravity.END
+                    state.lockPosition = true
+                    state.width = 10f
+                    state.height = 100f
+                    state.bgColor = Color.White
+                    state.bgAlpha = 50
+                    state.strokeColor = Color.White
+                    state.strokeWidth = 1f
+                    state.strokeAlpha = 200
+                    state.cornerRadiusAll = 5f
+                    state.cornerTL = 5f
+                    state.cornerTR = 5f
+                    state.cornerBL = 5f
+                    state.cornerBR = 5f
+                    state.iconRes = R.drawable.ic_vol_increase
+                    state.iconSize = 18f
+                    state.iconColor = Color.White
+                    state.showIcon = false
+                    state.vibrate = false
                 }
                 "Bold" -> {
-                    handlerGravity = Gravity.END
-                    lockPosition = true
-                    handlerWidth = 40f
-                    handlerHeight = 100f
-                    backgroundColor = Color.White
-                    backgroundAlpha = 50
-                    strokeColor = Color.White
-                    strokeWidth = 1f
-                    strokeAlpha = 255
-                    cornerRadiusAll = 15f
-                    cornerRadiusTL = 15f
-                    cornerRadiusTR = 15f
-                    cornerRadiusBL = 15f
-                    cornerRadiusBR = 15f
-                    selectedIconRes = R.drawable.ic_move
-                    iconSize = 32f
-                    iconColor = Color.White
-                    showIcon = true
-                    enableVibration = true
+                    state.gravity = Gravity.END
+                    state.lockPosition = true
+                    state.width = 40f
+                    state.height = 100f
+                    state.bgColor = Color.White
+                    state.bgAlpha = 50
+                    state.strokeColor = Color.White
+                    state.strokeWidth = 1f
+                    state.strokeAlpha = 255
+                    state.cornerRadiusAll = 15f
+                    state.cornerTL = 15f
+                    state.cornerTR = 15f
+                    state.cornerBL = 15f
+                    state.cornerBR = 15f
+                    state.iconRes = R.drawable.ic_move
+                    state.iconSize = 32f
+                    state.iconColor = Color.White
+                    state.showIcon = true
+                    state.vibrate = true
                 }
                 "Night" -> {
-                    handlerGravity = Gravity.END
-                    lockPosition = true
-                    handlerWidth = 30f
-                    handlerHeight = 100f
-                    backgroundColor = Color(0xFF1F2937)
-                    backgroundAlpha = 230
-                    strokeColor = Color(0xFF374151)
-                    strokeWidth = 1f
-                    strokeAlpha = 200
-                    cornerRadiusAll = 15f
-                    cornerRadiusTL = 15f
-                    cornerRadiusTR = 15f
-                    cornerRadiusBL = 15f
-                    cornerRadiusBR = 15f
-                    selectedIconRes = R.drawable.ic_vol_increase
-                    iconSize = 22f
-                    iconColor = Color(0xFF9CA3AF)
-                    showIcon = true
-                    enableVibration = true
+                    state.gravity = Gravity.END
+                    state.lockPosition = true
+                    state.width = 30f
+                    state.height = 100f
+                    state.bgColor = Color(0xFF1F2937)
+                    state.bgAlpha = 230
+                    state.strokeColor = Color(0xFF374151)
+                    state.strokeWidth = 1f
+                    state.strokeAlpha = 200
+                    state.cornerRadiusAll = 15f
+                    state.cornerTL = 15f
+                    state.cornerTR = 15f
+                    state.cornerBL = 15f
+                    state.cornerBR = 15f
+                    state.iconRes = R.drawable.ic_vol_increase
+                    state.iconSize = 22f
+                    state.iconColor = Color(0xFF9CA3AF)
+                    state.showIcon = true
+                    state.vibrate = true
                 }
                 "Ghost" -> {
-                    handlerGravity = Gravity.END
-                    lockPosition = true
-                    handlerWidth = 20f
-                    handlerHeight = 100f
-                    backgroundColor = Color.White
-                    backgroundAlpha = 5
-                    strokeColor = Color.White
-                    strokeWidth = 0.5f
-                    strokeAlpha = 5
-                    cornerRadiusAll = 12f
-                    cornerRadiusTL = 12f
-                    cornerRadiusTR = 12f
-                    cornerRadiusBL = 12f
-                    cornerRadiusBR = 12f
-                    selectedIconRes = R.drawable.ic_vol_increase
-                    iconSize = 16f
-                    iconColor = Color.White
-                    showIcon = false
-                    enableVibration = false
+                    state.gravity = Gravity.END
+                    state.lockPosition = true
+                    state.width = 20f
+                    state.height = 100f
+                    state.bgColor = Color.White
+                    state.bgAlpha = 5
+                    state.strokeColor = Color.White
+                    state.strokeWidth = 0.5f
+                    state.strokeAlpha = 5
+                    state.cornerRadiusAll = 12f
+                    state.cornerTL = 12f
+                    state.cornerTR = 12f
+                    state.cornerBL = 12f
+                    state.cornerBR = 12f
+                    state.iconRes = R.drawable.ic_vol_increase
+                    state.iconSize = 16f
+                    state.iconColor = Color.White
+                    state.showIcon = false
+                    state.vibrate = false
                 }
             }
         }
     }
 
+    // Apply changes to HandlerView instantly (Draft rendering)
     LaunchedEffect(currentState) {
         handlerViewRef?.let { handler ->
             handler.setViewGravity(currentState.gravity)
@@ -280,30 +244,30 @@ fun HandlerAppearanceScreen(
     }
 
     fun saveChanges() {
-        preference.setHandlerPosition(if (handlerGravity == Gravity.START) "Left" else "Right")
-        preference.setHandlerWidthDp(handlerWidth)
-        preference.setHandlerHeightDp(handlerHeight)
-        preference.setHandlerColor(backgroundColor.toArgb())
-        preference.setHandlerBackgroundAlpha(backgroundAlpha)
-        preference.setHandlerStrokeColor(strokeColor.toArgb())
-        preference.setHandlerStrokeWidth(strokeWidth)
-        preference.setHandlerStrokeAlpha(strokeAlpha)
-        preference.setHandlerCornerRadiusTL(cornerRadiusTL)
-        preference.setHandlerCornerRadiusTR(cornerRadiusTR)
-        preference.setHandlerCornerRadiusBL(cornerRadiusBL)
-        preference.setHandlerCornerRadiusBR(cornerRadiusBR)
-        preference.setHandlerIconRes(selectedIconRes)
-        preference.setHandlerIconSize(iconSize)
-        preference.setHandlerIconColor(iconColor.toArgb())
-        preference.setHandlerShowIcon(showIcon)
-        preference.setHandlerVibrateOnClick(enableVibration)
-        preference.setHandlerLockPosition(lockPosition)
+        preference.setHandlerPosition(if (state.gravity == Gravity.START) "Left" else "Right")
+        preference.setHandlerWidthDp(state.width)
+        preference.setHandlerHeightDp(state.height)
+        preference.setHandlerColor(state.bgColor.toArgb())
+        preference.setHandlerBackgroundAlpha(state.bgAlpha)
+        preference.setHandlerStrokeColor(state.strokeColor.toArgb())
+        preference.setHandlerStrokeWidth(state.strokeWidth)
+        preference.setHandlerStrokeAlpha(state.strokeAlpha)
+        preference.setHandlerCornerRadiusTL(state.cornerTL)
+        preference.setHandlerCornerRadiusTR(state.cornerTR)
+        preference.setHandlerCornerRadiusBL(state.cornerBL)
+        preference.setHandlerCornerRadiusBR(state.cornerBR)
+        preference.setHandlerIconRes(state.iconRes)
+        preference.setHandlerIconSize(state.iconSize)
+        preference.setHandlerIconColor(state.iconColor.toArgb())
+        preference.setHandlerShowIcon(state.showIcon)
+        preference.setHandlerVibrateOnClick(state.vibrate)
+        preference.setHandlerLockPosition(state.lockPosition)
 
-        if (cornerRadiusTL == cornerRadiusTR && cornerRadiusTR == cornerRadiusBL && cornerRadiusBL == cornerRadiusBR) {
-            preference.setAllCornerRadii(cornerRadiusTL)
+        if (state.cornerTL == state.cornerTR && state.cornerTR == state.cornerBL && state.cornerBL == state.cornerBR) {
+            preference.setAllCornerRadii(state.cornerTL)
         }
 
-        savedState = currentState
+        savedState.value = currentState
         viewModel.sendUpdateToService(context)
         viewModel.showToast("Appearance saved")
     }
@@ -419,8 +383,19 @@ fun HandlerAppearanceScreen(
                             Icon(Icons.Default.Check, contentDescription = "Save Changes", tint = MaterialTheme.colorScheme.primary)
                         }
                     }
-                    IconButton(onClick = { isExpandedPreview = true }) {
-                        Icon(Icons.Default.Fullscreen, contentDescription = "Expand Preview")
+                    OutlinedButton(
+                        onClick = { isExpandedPreview = true },
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Fullscreen,
+                            contentDescription = "Preview",
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Preview", fontSize = 13.sp)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -437,23 +412,23 @@ fun HandlerAppearanceScreen(
                 .padding(padding)
         ) {
             PreviewSectionWithHandler(
-                handlerGravity = handlerGravity,
-                handlerWidth = handlerWidth,
-                handlerHeight = handlerHeight,
-                backgroundColor = backgroundColor,
-                backgroundAlpha = backgroundAlpha,
-                strokeColor = strokeColor,
-                strokeWidth = strokeWidth,
-                strokeAlpha = strokeAlpha,
-                cornerRadiusTL = cornerRadiusTL,
-                cornerRadiusTR = cornerRadiusTR,
-                cornerRadiusBL = cornerRadiusBL,
-                cornerRadiusBR = cornerRadiusBR,
-                iconRes = selectedIconRes,
-                iconSize = iconSize,
-                iconColor = iconColor,
-                showIcon = showIcon,
-                enableVibration = enableVibration,
+                handlerGravity = currentState.gravity,
+                handlerWidth = currentState.width,
+                handlerHeight = currentState.height,
+                backgroundColor = Color(currentState.bgColor),
+                backgroundAlpha = currentState.bgAlpha,
+                strokeColor = Color(currentState.strokeColor),
+                strokeWidth = currentState.strokeWidth,
+                strokeAlpha = currentState.strokeAlpha,
+                cornerRadiusTL = currentState.cornerTL,
+                cornerRadiusTR = currentState.cornerTR,
+                cornerRadiusBL = currentState.cornerBL,
+                cornerRadiusBR = currentState.cornerBR,
+                iconRes = currentState.iconRes,
+                iconSize = currentState.iconSize,
+                iconColor = Color(currentState.iconColor),
+                showIcon = currentState.showIcon,
+                enableVibration = currentState.vibrate,
                 backgroundImageURL = bgImage,
                 onHandlerCreated = { handlerViewRef = it }
             )
@@ -462,299 +437,32 @@ fun HandlerAppearanceScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
             ) {
-                // Position Section
-                SectionTitle("POSITION", Color(0xFF8B5CF6))
-                CustomizationCard(borderColor = Color(0xFF8B5CF6)) {
-                    LabeledControl(label = "Gravity") {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            SelectableButton(
-                                text = "Left",
-                                selected = handlerGravity == Gravity.START,
-                                borderColor = Color(0xFF8B5CF6),
-                                onClick = { handlerGravity = Gravity.START },
-                                modifier = Modifier.weight(1f)
-                            )
-                            SelectableButton(
-                                text = "Right",
-                                selected = handlerGravity == Gravity.END,
-                                borderColor = Color(0xFF8B5CF6),
-                                onClick = { handlerGravity = Gravity.END },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SwitchControl(
-                        label = "Lock position",
-                        checked = lockPosition,
-                        borderColor = Color(0xFF8B5CF6),
-                        onCheckedChange = { lockPosition = it }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Dimensions Section
-                SectionTitle("DIMENSIONS", Color(0xFF3B82F6))
-                CustomizationCard(borderColor = Color(0xFF3B82F6)) {
-                    SliderControl(
-                        label = "Width",
-                        value = handlerWidth,
-                        valueRange = 10f..60f,
-                        valueDisplay = "${handlerWidth.toInt()}dp",
-                        borderColor = Color(0xFF3B82F6),
-                        onValueChange = { handlerWidth = it }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SliderControl(
-                        label = "Height",
-                        value = handlerHeight,
-                        valueRange = 30f..200f,
-                        valueDisplay = "${handlerHeight.toInt()}dp",
-                        borderColor = Color(0xFF3B82F6),
-                        onValueChange = { handlerHeight = it }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Background Section
-                SectionTitle("BACKGROUND", Color(0xFF10B981))
-                CustomizationCard(borderColor = Color(0xFF10B981)) {
-                    ColorPickerControl(
-                        label = "Color",
-                        color = backgroundColor,
-                        borderColor = Color(0xFF10B981),
-                        onColorChange = { backgroundColor = it }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SliderControl(
-                        label = "Opacity",
-                        value = backgroundAlpha.toFloat(),
-                        valueRange = 0f..255f,
-                        valueDisplay = "${((backgroundAlpha / 255f) * 100).toInt()}%",
-                        borderColor = Color(0xFF10B981),
-                        onValueChange = { backgroundAlpha = it.toInt() }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Stroke Section
-                SectionTitle("STROKE", Color(0xFFF59E0B))
-                CustomizationCard(borderColor = Color(0xFFF59E0B)) {
-                    ColorPickerControl(
-                        label = "Color",
-                        color = strokeColor,
-                        borderColor = Color(0xFFF59E0B),
-                        onColorChange = { strokeColor = it }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SliderControl(
-                        label = "Width",
-                        value = strokeWidth,
-                        valueRange = 0f..8f,
-                        valueDisplay = "${strokeWidth.toInt()}dp",
-                        borderColor = Color(0xFFF59E0B),
-                        onValueChange = { strokeWidth = it }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SliderControl(
-                        label = "Opacity",
-                        value = strokeAlpha.toFloat(),
-                        valueRange = 0f..255f,
-                        valueDisplay = "${((strokeAlpha / 255f) * 100).toInt()}%",
-                        borderColor = Color(0xFFF59E0B),
-                        onValueChange = { strokeAlpha = it.toInt() }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Corner Radius Section
-                SectionTitle("CORNER RADIUS", Color(0xFFEC4899))
-                CustomizationCard(borderColor = Color(0xFFEC4899)) {
-                    SliderControl(
-                        label = "All Corners",
-                        value = cornerRadiusAll,
-                        valueRange = 0f..50f,
-                        valueDisplay = "${cornerRadiusAll.toInt()}dp",
-                        borderColor = Color(0xFFEC4899),
-                        onValueChange = { value ->
-                            cornerRadiusAll = value
-                            cornerRadiusTL = value
-                            cornerRadiusTR = value
-                            cornerRadiusBL = value
-                            cornerRadiusBR = value
-                        }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SliderControl(
-                        label = "Top Left",
-                        value = cornerRadiusTL,
-                        valueRange = 0f..50f,
-                        valueDisplay = "${cornerRadiusTL.toInt()}dp",
-                        borderColor = Color(0xFFEC4899),
-                        onValueChange = { cornerRadiusTL = it }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SliderControl(
-                        label = "Top Right",
-                        value = cornerRadiusTR,
-                        valueRange = 0f..50f,
-                        valueDisplay = "${cornerRadiusTR.toInt()}dp",
-                        borderColor = Color(0xFFEC4899),
-                        onValueChange = { cornerRadiusTR = it }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SliderControl(
-                        label = "Bottom Left",
-                        value = cornerRadiusBL,
-                        valueRange = 0f..50f,
-                        valueDisplay = "${cornerRadiusBL.toInt()}dp",
-                        borderColor = Color(0xFFEC4899),
-                        onValueChange = { cornerRadiusBL = it }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SliderControl(
-                        label = "Bottom Right",
-                        value = cornerRadiusBR,
-                        valueRange = 0f..50f,
-                        valueDisplay = "${cornerRadiusBR.toInt()}dp",
-                        borderColor = Color(0xFFEC4899),
-                        onValueChange = { cornerRadiusBR = it }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Icon Section
-                SectionTitle("ICON", Color(0xFF06B6D4))
-                CustomizationCard(borderColor = Color(0xFF06B6D4)) {
-                    SwitchControl(
-                        label = "Show icon",
-                        checked = showIcon,
-                        borderColor = Color(0xFF06B6D4),
-                        onCheckedChange = { showIcon = it }
-                    )
-
-                    if (showIcon) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                        )
-                        IconPickerControl(
-                            label = "Icon",
-                            selectedIconRes = selectedIconRes,
-                            borderColor = Color(0xFF06B6D4),
-                            onClick = { showIconPicker = true }
-                        )
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                        )
-                        ColorPickerControl(
-                            label = "Icon Color",
-                            color = iconColor,
-                            borderColor = Color(0xFF06B6D4),
-                            onColorChange = { iconColor = it }
-                        )
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                        )
-                        SliderControl(
-                            label = "Icon Size",
-                            value = iconSize,
-                            valueRange = 16f..48f,
-                            valueDisplay = "${iconSize.toInt()}dp",
-                            borderColor = Color(0xFF06B6D4),
-                            onValueChange = { iconSize = it }
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Behavior Section
-                SectionTitle("BEHAVIOR", Color(0xFFEF4444))
-                CustomizationCard(borderColor = Color(0xFFEF4444)) {
-                    SwitchControl(
-                        label = "Vibrate on click",
-                        checked = enableVibration,
-                        borderColor = Color(0xFFEF4444),
-                        onCheckedChange = { enableVibration = it }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
+                HandlerAppearanceSettingsContent(
+                    state = state,
+                    onShowIconPicker = { showIconPicker = true },
+                    modifier = Modifier.padding(16.dp)
+                )
             }
         }
     }
 
     if (isExpandedPreview) {
         ExpandedPreviewDialog(
-            handlerGravity = handlerGravity,
-            handlerWidth = handlerWidth,
-            handlerHeight = handlerHeight,
-            backgroundColor = backgroundColor,
-            backgroundAlpha = backgroundAlpha,
-            strokeColor = strokeColor,
-            strokeWidth = strokeWidth,
-            strokeAlpha = strokeAlpha,
-            cornerRadiusTL = cornerRadiusTL,
-            cornerRadiusTR = cornerRadiusTR,
-            cornerRadiusBL = cornerRadiusBL,
-            cornerRadiusBR = cornerRadiusBR,
-            iconRes = selectedIconRes,
-            iconSize = iconSize,
-            iconColor = iconColor,
-            showIcon = showIcon,
-            enableVibration = enableVibration,
-            lockPosition = lockPosition,
+            state = state,
+            viewModel = viewModel,
             translationY = preference.getHandlerTranslationY(),
             backgroundImageURL = bgImage,
+            onShowIconPicker = { showIconPicker = true },
             onDismiss = { isExpandedPreview = false }
         )
     }
 
     if (showIconPicker) {
         IconPickerDialog(
-            selectedIconRes = selectedIconRes,
+            selectedIconRes = state.iconRes,
             onIconSelected = {
-                selectedIconRes = it
+                state.iconRes = it
                 showIconPicker = false
             },
             onDismiss = { showIconPicker = false }
