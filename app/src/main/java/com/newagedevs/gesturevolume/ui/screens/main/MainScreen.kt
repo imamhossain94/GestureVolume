@@ -55,7 +55,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
-    onNavigateToAppearance: () -> Unit,
+    onNavigateToAppearance: (String?) -> Unit,
     onNavigateToActions: () -> Unit,
     onNavigateToPermissions: () -> Unit,
 ) {
@@ -161,7 +161,7 @@ fun MainScreen(
                                 Color(0xFF6366F1),
                                 Color(0xFF8B5CF6)
                             ),
-                            onClick = onNavigateToAppearance
+                            onClick = { onNavigateToAppearance(null) }
                         )
 
                         // Actions Card
@@ -224,9 +224,9 @@ fun MainScreen(
                 PresetCardsGrid(
                     viewModel = viewModel,
                     context = context,
-                    onNavigateToAppearance = {
+                    onNavigateToAppearance = { presetId ->
                         scope.launch { drawerState.close() }
-                        onNavigateToAppearance()
+                        onNavigateToAppearance(presetId)
                     }
                 )
 

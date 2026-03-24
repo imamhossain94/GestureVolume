@@ -1,6 +1,7 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,12 +43,17 @@ fun PresetCard(
     previewCorner: Dp = 10.dp,
     previewColor: Color = MaterialTheme.colorScheme.primary,
     previewAlpha: Float = 0.8f,
+    isSelected: Boolean = false,
     onClick: () -> Unit
 ) {
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
+    val borderWidth = if (isSelected) 2.dp else 0.dp
+
     Surface(
         modifier = modifier
             .height(90.dp)
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .border(borderWidth, borderColor, RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceVariant
     ) {

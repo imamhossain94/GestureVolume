@@ -97,8 +97,12 @@ fun MainNavigation(
                 composable("main") {
                     MainScreen(
                         viewModel = viewModel,
-                        onNavigateToAppearance = {
-                            navController.navigate("appearance")
+                        onNavigateToAppearance = { presetId ->
+                            if (presetId != null) {
+                                navController.navigate("appearance?preset=$presetId")
+                            } else {
+                                navController.navigate("appearance")
+                            }
                         },
                         onNavigateToActions = {
                             navController.navigate("actions")
@@ -109,9 +113,14 @@ fun MainNavigation(
                     )
                 }
 
-                composable("appearance") {
+                composable(
+                    "appearance?preset={preset}",
+                    arguments = listOf(androidx.navigation.navArgument("preset") { nullable = true })
+                ) { backStackEntry ->
+                    val presetId = backStackEntry.arguments?.getString("preset")
                     HandlerAppearanceScreen(
                         viewModel = viewModel,
+                        presetId = presetId,
                         onNavigateBack = {
                             navController.popBackStack()
                         }

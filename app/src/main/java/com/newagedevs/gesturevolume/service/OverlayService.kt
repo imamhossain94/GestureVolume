@@ -229,6 +229,7 @@ class OverlayService : Service(), OverlayServiceInterface {
                     hideHandlerView()
                 }
                 "stop" -> {
+                    shouldFinish = true
                     preference.setRunning(false)
                     hideOverlayView()
                     hideHandlerView()
