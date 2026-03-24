@@ -214,11 +214,70 @@ class MainViewModel @Inject constructor(
     }
 
     fun stopOverlayService(context: Context) {
-        val service = Intent(context, OverlayService::class.java)
+        // Unbind if we're bound
         if (isBound) {
-            serviceConnection?.let { context.unbindService(it) }
-            context.stopService(service)
+            try {
+                serviceConnection?.let { context.unbindService(it) }
+            } catch (_: Exception) { /* already unbound */ }
             isBound = false
+        }
+        overlayService = null
+
+        // Always send stop Intent — works even if we weren't bound
+        val intent = Intent(context, OverlayService::class.java).apply {
+            action = "stop"
+        }
+        try {
+            context.startService(intent)
+        } catch (_: Exception) {
+            // Service might already be stopped
+            context.stopService(Intent(context, OverlayService::class.java))
+        }
+    }
+
+    /**
+     * Re-bind to an already-running OverlayService.
+     * Called from MainActivity.onStart() to recover the binding after the app
+     * was cleared from recents and reopened.
+     */
+    fun rebindToServiceIfRunning(context: Context) {
+        if (preference.isRunning() && !isBound) {
+            val actuallyRunning = isServiceRunning(context, OverlayService::class.java)
+            if (actuallyRunning) {
+                val service = Intent(context, OverlayService::class.java)
+                serviceConnection = object : ServiceConnection {
+                    override fun onServiceConnected(name: ComponentName, service: IBinder) {
+                        overlayService = (service as OverlayService.LocalBinder).instance()
+                        isBound = true
+                    }
+
+                    override fun onServiceDisconnected(name: ComponentName) {
+                        overlayService = null
+                        isBound = false
+                    }
+                }
+                serviceConnection?.let {
+                    context.bindService(service, it, Context.BIND_AUTO_CREATE)
+                }
+            } else {
+                // Service died — sync state
+                _state.value = _state.value.copy(isRunning = false)
+            }
+        }
+    }
+
+    /**
+     * Send an "update" command to the running service so it reloads
+     * its handler with the latest settings from SharedPref.
+     */
+    fun sendUpdateToService(context: Context) {
+        if (preference.isRunning()) {
+            val intent = Intent(context, OverlayService::class.java).apply {
+                action = "update"
+            }
+            try {
+                context.startService(intent)
+            } catch (_: Exception) { /* service not running */ }
         }
     }
 

@@ -41,7 +41,7 @@ fun PresetCardsGrid(
                 previewColor = primary,
                 previewAlpha = 0.5f,
                 onClick = {
-                    applyDefaultPreset(viewModel)
+                    applyDefaultPreset(viewModel, context)
                     onNavigateToAppearance()
                 }
             )
@@ -57,7 +57,7 @@ fun PresetCardsGrid(
                 previewColor = onSurface,
                 previewAlpha = 0.4f,
                 onClick = {
-                    applyMinimalPreset(viewModel)
+                    applyMinimalPreset(viewModel, context)
                     onNavigateToAppearance()
                 }
             )
@@ -80,7 +80,7 @@ fun PresetCardsGrid(
                 previewColor = primary,
                 previewAlpha = 0.85f,
                 onClick = {
-                    applyBoldPreset(viewModel)
+                    applyBoldPreset(viewModel, context)
                     onNavigateToAppearance()
                 }
             )
@@ -96,7 +96,7 @@ fun PresetCardsGrid(
                 previewColor = onSurface,
                 previewAlpha = 0.7f,
                 onClick = {
-                    applyNightPreset(viewModel)
+                    applyNightPreset(viewModel, context)
                     onNavigateToAppearance()
                 }
             )
@@ -119,7 +119,7 @@ fun PresetCardsGrid(
                 previewColor = onSurface,
                 previewAlpha = 0.1f,
                 onClick = {
-                    applyTransparentPreset(viewModel)
+                    applyTransparentPreset(viewModel, context)
                     onNavigateToAppearance()
                 }
             )
@@ -129,7 +129,7 @@ fun PresetCardsGrid(
     }
 }
 
-private fun applyDefaultPreset(viewModel: MainViewModel) {
+private fun applyDefaultPreset(viewModel: MainViewModel, context: Context) {
     val preference = viewModel.preference
 
     // Position
@@ -160,9 +160,12 @@ private fun applyDefaultPreset(viewModel: MainViewModel) {
 
     // Behavior
     preference.setHandlerVibrateOnClick(false)
+
+    // Update live service
+    viewModel.sendUpdateToService(context)
 }
 
-private fun applyMinimalPreset(viewModel: MainViewModel) {
+private fun applyMinimalPreset(viewModel: MainViewModel, context: Context) {
     val preference = viewModel.preference
 
     // Position
@@ -193,9 +196,12 @@ private fun applyMinimalPreset(viewModel: MainViewModel) {
 
     // Behavior
     preference.setHandlerVibrateOnClick(false)
+
+    // Update live service
+    viewModel.sendUpdateToService(context)
 }
 
-private fun applyBoldPreset(viewModel: MainViewModel) {
+private fun applyBoldPreset(viewModel: MainViewModel, context: Context) {
     val preference = viewModel.preference
 
     // Position
@@ -226,9 +232,12 @@ private fun applyBoldPreset(viewModel: MainViewModel) {
 
     // Behavior
     preference.setHandlerVibrateOnClick(true)
+
+    // Update live service
+    viewModel.sendUpdateToService(context)
 }
 
-private fun applyNightPreset(viewModel: MainViewModel) {
+private fun applyNightPreset(viewModel: MainViewModel, context: Context) {
     val preference = viewModel.preference
 
     // Position
@@ -259,9 +268,12 @@ private fun applyNightPreset(viewModel: MainViewModel) {
 
     // Behavior
     preference.setHandlerVibrateOnClick(true)
+
+    // Update live service
+    viewModel.sendUpdateToService(context)
 }
 
-private fun applyTransparentPreset(viewModel: MainViewModel) {
+private fun applyTransparentPreset(viewModel: MainViewModel, context: Context) {
     val preference = viewModel.preference
 
     // Position
@@ -292,4 +304,7 @@ private fun applyTransparentPreset(viewModel: MainViewModel) {
 
     // Behavior
     preference.setHandlerVibrateOnClick(false)
+
+    // Update live service
+    viewModel.sendUpdateToService(context)
 }
