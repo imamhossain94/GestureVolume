@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.R
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun ThemeDialog(
@@ -30,7 +31,11 @@ fun ThemeDialog(
     onDismiss: () -> Unit,
     onThemeSelect: (Int) -> Unit
 ) {
-    val options = listOf("System Default", "Light", "Dark")
+    val options: List<Int> = listOf(
+        R.string.system_default,
+        R.string.light,
+        R.string.dark
+    )
     var selectedOption by remember { mutableStateOf(currentTheme) }
 
     AlertDialog(
@@ -47,9 +52,9 @@ fun ThemeDialog(
                 modifier = Modifier.padding(top = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                options.forEachIndexed { index, label ->
+                options.forEachIndexed { index, resId ->
                     ThemeListItem(
-                        label = label,
+                        label = stringResource(resId),
                         isSelected = index == selectedOption,
                         onClick = { selectedOption = index }
                     )

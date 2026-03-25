@@ -25,7 +25,7 @@ fun HandlerAppearanceSettingsContent(
 ) {
     Column(modifier = modifier) {
         // Position Section
-        SectionTitle("POSITION", Color(0xFF8B5CF6))
+        SectionTitle(stringResource(R.string.position_uppercase), Color(0xFF8B5CF6))
         CustomizationCard(borderColor = Color(0xFF8B5CF6)) {
             LabeledControl(label = stringResource(R.string.gravity)) {
                 Row(
@@ -33,14 +33,14 @@ fun HandlerAppearanceSettingsContent(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     SelectableButton(
-                        text = "Left",
+                        text = stringResource(R.string.left),
                         selected = state.gravity == Gravity.START,
                         borderColor = Color(0xFF8B5CF6),
                         onClick = { state.gravity = Gravity.START },
                         modifier = Modifier.weight(1f)
                     )
                     SelectableButton(
-                        text = "Right",
+                        text = stringResource(R.string.right),
                         selected = state.gravity == Gravity.END,
                         borderColor = Color(0xFF8B5CF6),
                         onClick = { state.gravity = Gravity.END },
@@ -63,7 +63,7 @@ fun HandlerAppearanceSettingsContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Dimensions Section
-        SectionTitle("DIMENSIONS", Color(0xFF3B82F6))
+        SectionTitle(stringResource(R.string.dimensions_uppercase), Color(0xFF3B82F6))
         CustomizationCard(borderColor = Color(0xFF3B82F6)) {
             SliderControl(
                 label = stringResource(R.string.width),
@@ -90,7 +90,7 @@ fun HandlerAppearanceSettingsContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Background Section
-        SectionTitle("BACKGROUND", Color(0xFF10B981))
+        SectionTitle(stringResource(R.string.background_uppercase), Color(0xFF10B981))
         CustomizationCard(borderColor = Color(0xFF10B981)) {
             ColorPickerControl(
                 label = stringResource(R.string.color),
@@ -115,7 +115,7 @@ fun HandlerAppearanceSettingsContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Stroke Section
-        SectionTitle("STROKE", Color(0xFFF59E0B))
+        SectionTitle(stringResource(R.string.stroke_uppercase), Color(0xFFF59E0B))
         CustomizationCard(borderColor = Color(0xFFF59E0B)) {
             ColorPickerControl(
                 label = stringResource(R.string.color),
@@ -152,7 +152,7 @@ fun HandlerAppearanceSettingsContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Corner Radius Section
-        SectionTitle("CORNER RADIUS", Color(0xFFEC4899))
+        SectionTitle(stringResource(R.string.corner_radius_uppercase), Color(0xFFEC4899))
         CustomizationCard(borderColor = Color(0xFFEC4899)) {
             SliderControl(
                 label = stringResource(R.string.all_corners),
@@ -221,7 +221,7 @@ fun HandlerAppearanceSettingsContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Icon Section
-        SectionTitle("ICON", Color(0xFF06B6D4))
+        SectionTitle(stringResource(R.string.icon_settings), Color(0xFF06B6D4))
         CustomizationCard(borderColor = Color(0xFF06B6D4)) {
             SwitchControl(
                 label = stringResource(R.string.show_icon),
@@ -269,7 +269,7 @@ fun HandlerAppearanceSettingsContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Behavior Section
-        SectionTitle("BEHAVIOR", Color(0xFFEF4444))
+        SectionTitle(stringResource(R.string.behavior_uppercase), Color(0xFFEF4444))
         CustomizationCard(borderColor = Color(0xFFEF4444)) {
             SwitchControl(
                 label = stringResource(R.string.vibrate_on_click),

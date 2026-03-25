@@ -42,14 +42,14 @@ fun TapActionDialog(
 ) {
     val actionOptions = remember {
         listOf(
-            R.drawable.ic_nothing to "None",
-            R.drawable.ic_vol_increase to "Open volume UI",
-            R.drawable.ic_mute to "Mute",
-            R.drawable.ic_mute to "Mute or Unmute",
-            R.drawable.ic_music_ui to "Active Music Overlay",
-            R.drawable.ic_lock to "Lock",
-            R.drawable.ic_visibility_hide to "Hide Handler",
-            R.drawable.ic_app_open to "Open App"
+            Triple(R.drawable.ic_nothing, "None", R.string.action_none),
+            Triple(R.drawable.ic_vol_increase, "Open volume UI", R.string.action_open_volume_ui),
+            Triple(R.drawable.ic_mute, "Mute", R.string.action_mute),
+            Triple(R.drawable.ic_mute, "Mute or Unmute", R.string.action_mute_unmute),
+            Triple(R.drawable.ic_music_ui, "Active Music Overlay", R.string.action_music_overlay),
+            Triple(R.drawable.ic_lock, "Lock", R.string.action_lock),
+            Triple(R.drawable.ic_visibility_hide, "Hide Handler", R.string.action_hide_handler),
+            Triple(R.drawable.ic_app_open, "Open App", R.string.action_open_app)
         )
     }
 
@@ -74,12 +74,12 @@ fun TapActionDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        rowActions.forEach { (iconRes, actionName) ->
+                        rowActions.forEach { (iconRes, identifier, labelRes) ->
                             ActionGridItem(
                                 iconRes = iconRes,
-                                actionName = actionName,
-                                isSelected = actionName == currentAction,
-                                onClick = { onSelect(actionName) },
+                                actionName = stringResource(labelRes),
+                                isSelected = identifier == currentAction,
+                                onClick = { onSelect(identifier) },
                                 modifier = Modifier.weight(1f)
                             )
                         }

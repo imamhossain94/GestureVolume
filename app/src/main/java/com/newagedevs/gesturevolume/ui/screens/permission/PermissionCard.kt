@@ -31,6 +31,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
 
 
 @Composable
@@ -83,7 +85,7 @@ fun PermissionCard(
                                     color = MaterialTheme.colorScheme.primaryContainer
                                 ) {
                                     Text(
-                                        text = "OPTIONAL",
+                                        text = stringResource(R.string.optional_uppercase),
                                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Bold,
@@ -107,7 +109,7 @@ fun PermissionCard(
                     Spacer(modifier = Modifier.width(12.dp))
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Granted",
+                        contentDescription = stringResource(R.string.granted),
                         tint = MaterialTheme.colorScheme.primary, // Unified primary
                         modifier = Modifier.size(24.dp)
                     )
@@ -136,7 +138,7 @@ fun PermissionCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Grant Permission",
+                        text = stringResource(R.string.grant_permission),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -161,7 +163,7 @@ fun PermissionCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Revoke Permission",
+                        text = stringResource(R.string.revoke_permission),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
                     )

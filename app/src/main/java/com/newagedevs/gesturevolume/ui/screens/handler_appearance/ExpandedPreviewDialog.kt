@@ -81,6 +81,8 @@ import com.newagedevs.gesturevolume.ui.view.HandlerView
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import kotlin.math.abs
 import kotlin.math.sqrt
+import com.newagedevs.gesturevolume.R
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -203,10 +205,10 @@ fun ExpandedPreviewDialog(
             "Lock",
             "Hide Handler",
             "Open App" -> {
-                viewModel.showToast("This action is not available here.")
+                viewModel.showToast(context.getString(R.string.action_not_available_msg))
             }
             else -> {
-                viewModel.showToast("Unknown action.")
+                viewModel.showToast(context.getString(R.string.unknown_action_msg))
             }
         }
     }
@@ -459,13 +461,13 @@ fun ExpandedPreviewDialog(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
-                                contentDescription = "Settings",
+                                contentDescription = stringResource(R.string.settings),
                                 tint = Color(0xFF1F2937),
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "SETTINGS",
+                                text = stringResource(R.string.settings),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
                                 color = Color(0xFF1F2937),
@@ -491,13 +493,13 @@ fun ExpandedPreviewDialog(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.FullscreenExit,
-                                contentDescription = "Minimize",
+                                contentDescription = stringResource(R.string.minimize),
                                 tint = Color(0xFF1F2937),
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "MINIMIZE",
+                                text = stringResource(R.string.minimize),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
                                 color = Color(0xFF1F2937),
@@ -529,13 +531,13 @@ fun ExpandedPreviewDialog(
                     ) {
                         Icon(
                             imageVector = if (state.lockPosition) Icons.Default.Lock else Icons.Default.LockOpen,
-                            contentDescription = if (state.lockPosition) "Locked" else "Unlocked",
+                            contentDescription = if (state.lockPosition) stringResource(R.string.locked) else stringResource(R.string.unlocked),
                             tint = if (state.lockPosition) Color.White else Color(0xFF1F2937),
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (state.lockPosition) "POSITION LOCKED" else "UNLOCK TO REPOSITION",
+                            text = if (state.lockPosition) stringResource(R.string.position_locked) else stringResource(R.string.unlock_to_reposition),
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
                             color = if (state.lockPosition) Color.White else Color(0xFF1F2937),
@@ -580,7 +582,7 @@ fun ExpandedPreviewDialog(
 
                     Column {
                         Text(
-                            text = if (state.lockPosition) "Test Mode" else "Reposition Mode",
+                            text = if (state.lockPosition) stringResource(R.string.test_mode) else stringResource(R.string.reposition_mode),
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
                             color = Color(0xFF1F2937)
@@ -588,9 +590,9 @@ fun ExpandedPreviewDialog(
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = if (state.lockPosition)
-                                "Try swipes and taps"
+                                stringResource(R.string.test_mode_desc)
                             else
-                                "Drag handler to new position",
+                                stringResource(R.string.reposition_mode_desc),
                             fontSize = 12.sp,
                             color = Color(0xFF6B7280),
                             lineHeight = 16.sp

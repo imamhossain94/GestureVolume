@@ -41,27 +41,27 @@ fun IconPickerDialog(
 ) {
     val iconOptions = remember {
         listOf(
-            R.drawable.ic_vol_increase to "Increase",
-            R.drawable.ic_vol_decrease to "Decrease",
-            R.drawable.ic_vol_plus to "Boost",
-            R.drawable.ic_vol_minus to "Reduce",
-            R.drawable.ic_bug to "Bug",
-            R.drawable.ic_check to "Check",
-            R.drawable.ic_color_palette to "Palette",
-            R.drawable.ic_crown_2 to "Crown",
-            R.drawable.ic_edit to "Edit",
-            R.drawable.ic_feedback to "Feedback",
-            R.drawable.ic_github to "GitHub",
-            R.drawable.ic_lock to "Lock",
-            R.drawable.ic_move to "Move",
-            R.drawable.ic_music_ui to "Music",
-            R.drawable.ic_nothing to "None",
-            R.drawable.ic_plugin to "Plugin",
-            R.drawable.ic_power to "Power",
-            R.drawable.ic_share to "Share",
-            R.drawable.ic_star to "Star",
-            R.drawable.ic_visibility_hide to "Hide",
-            R.drawable.ic_x_close to "Close",
+            R.drawable.ic_vol_increase to R.string.icon_increase,
+            R.drawable.ic_vol_decrease to R.string.icon_decrease,
+            R.drawable.ic_vol_plus to R.string.icon_boost,
+            R.drawable.ic_vol_minus to R.string.icon_reduce,
+            R.drawable.ic_bug to R.string.icon_bug,
+            R.drawable.ic_check to R.string.icon_check,
+            R.drawable.ic_color_palette to R.string.icon_palette,
+            R.drawable.ic_crown_2 to R.string.icon_crown,
+            R.drawable.ic_edit to R.string.icon_edit,
+            R.drawable.ic_feedback to R.string.icon_feedback,
+            R.drawable.ic_github to R.string.icon_github,
+            R.drawable.ic_lock to R.string.icon_lock,
+            R.drawable.ic_move to R.string.icon_move,
+            R.drawable.ic_music_ui to R.string.icon_music,
+            R.drawable.ic_nothing to R.string.icon_none,
+            R.drawable.ic_plugin to R.string.icon_plugin,
+            R.drawable.ic_power to R.string.icon_power,
+            R.drawable.ic_share to R.string.icon_share,
+            R.drawable.ic_star to R.string.icon_star,
+            R.drawable.ic_visibility_hide to R.string.icon_hide,
+            R.drawable.ic_x_close to R.string.icon_close,
         )
     }
 
@@ -69,7 +69,7 @@ fun IconPickerDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Select Icon",
+                text = stringResource(R.string.select_icon),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -87,10 +87,10 @@ fun IconPickerDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        rowIcons.forEach { (iconRes, iconName) ->
+                        rowIcons.forEach { (iconRes, iconNameRes) ->
                             IconGridItem(
                                 iconRes = iconRes,
-                                iconName = iconName,
+                                iconName = stringResource(iconNameRes),
                                 isSelected = iconRes == selectedIconRes,
                                 onClick = { onIconSelected(iconRes) },
                                 modifier = Modifier.weight(1f)

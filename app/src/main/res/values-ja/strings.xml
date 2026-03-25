@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="app_name">GestureVolume</string>
+
     <string name="device_description">Device Policy Manager API を使ったクリックで画面ロック</string>
     <string name="device_admin_label">ジェスチャーボリュームデバイス管理者</string>
     <string name="landscape_appearance_settings">ランドスケープ外観設定</string>
@@ -10,7 +11,7 @@
     <string name="ad">AD</string>
     <string name="about">情報</string>
     <string name="all_corners">すべての角</string>
-    <string name="all_required_permissions_are_granted_you_can_now_use_the_app">必要な権限がすべて付与されました。アプリを使用できます。</string>
+    <string name="all_required_permissions_granted">必要な権限がすべて付与されます。これでアプリを使用できるようになります。</string>
     <string name="all_set">完了しました！</string>
     <string name="apply">適用</string>
     <string name="apply_changes">変更を適用しますか？</string>
@@ -58,19 +59,20 @@
     <string name="opacity">不透明度</string>
     <string name="other_apps">その他のアプリ</string>
     <string name="pro">PRO</string>
-    <string name="permission_granted">権限付与済み ✓</string>
+    <string name="purchase_failed">購入に失敗しました。もう一度試してください。</string>
+    <string name="purchase_restored">購入が復活しました！プレミアムが有効になりました。</string>
+    <string name="purchase_success">購入成功しました！プレミアムが有効になりました。</string>
+    <string name="overlay_permission_toast">続行するにはオーバーレイ権限を付与してください。</string>
+    <string name="permission_granted_check">許可の付与 ✓</string>
     <string name="permissions">権限</string>
-    <string name="please_grant_overlay_permission_to_continue">続行するには、オーバーレイの権限を付与してください。</string>
-    <string name="press_back_again_to_exit">もう一度戻るボタンを押して終了</string>
-    <string name="preview">プレビュー</string>
-    <string name="purchase_failed_please_try_again">購入に失敗しました。再試行してください。</string>
-    <string name="purchase_restored_premium_activated">購入を復元しました！プレミアムが有効になりました。</string>
-    <string name="purchase_successful_premium_activated">購入に成功しました！プレミアムが有効になりました。</string>
+    <string name="action_required">アクションが必要です</string>
+    <string name="all_permissions_granted">付与されたすべての権限</string>
     <string name="quick_presets">クイックプリセット</string>
     <string name="required_permissions">必須権限</string>
     <string name="rate_on_play_store">Play ストアで評価する</string>
     <string name="revoke_permission">権限を取り消す</string>
     <string name="settings">設定</string>
+    <string name="menu">メニュー</string>
     <string name="select_icon">アイコンを選択</string>
     <string name="select_the_color_and_transparency_of_the_handler">ハンドラーの色と透明度を選択します</string>
     <string name="send_feedback">フィードバックを送信</string>
@@ -83,8 +85,10 @@
     <string name="tap_to_change">タップして変更</string>
     <string name="tap_to_manage_overlay">オーバーレイを管理するにはここをタップ</string>
     <string name="tell_us_more_about_your_experience">体験について詳しく教えてください...</string>
-    <string name="the_app_requires_certain_permissions_to_function_properly_grant_permissions_below">アプリが正常に機能するには権限が必要です。</string>
+    <string name="permissions_header_info">アプリが適切に機能するには、特定の権限が必要です。以下の権限を付与します。</string>
     <string name="theme">テーマ</string>
+    <string name="theme_desc">アプリの色のテーマ</string>
+    <string name="language_desc">アプリ言語</string>
     <string name="top_left">左上</string>
     <string name="top_right">右上</string>
     <string name="upgrade">アップグレード</string>
@@ -94,6 +98,171 @@
     <string name="vibrate_on_click">クリック時にバイブレーション</string>
     <string name="we_d_love_to_hear_from_you">ぜひご意見をお聞かせください！</string>
     <string name="width">幅</string>
-    <string name="you_already_have_premium">すでにプレミアムをお持ちです！</string>
+    <string name="already_have_premium">すでにプレミアムをお持ちです!</string>
     <string name="you_have_unsaved_changes_do_you_want_to_apply_them_before_leaving">保存されていない変更があります。適用してから離れますか？</string>
+
+    <!-- About Screen -->
+    <string name="rate_us">評価してください</string>
+    <string name="share">共有</string>
+    <string name="source">ソース</string>
+    <string name="more_apps">その他のアプリ</string>
+    <string name="privacy_policy">プライバシーポリシー</string>
+    <string name="back">戻る</string>
+
+    <!-- Feedback Screen -->
+    <string name="issue_crash">アプリが頻繁にクラッシュする</string>
+    <string name="issue_ads">広告が多すぎる</string>
+    <string name="issue_unresponsive">アプリがフリーズするか応答しなくなる</string>
+    <string name="issue_not_user_friendly">アプリがユーザーフレンドリーではない</string>
+    <string name="no_feedback_provided">フィードバックは提供されません</string>
+    <string name="selected_issues">選択された問題:</string>
+    <string name="additional_feedback">追加のフィードバック:</string>
+
+    <!-- Actions Screen -->
+    <string name="tap_actions">タップアクション</string>
+    <string name="gesture_actions">ジェスチャーアクション</string>
+    <string name="single_tap_desc">シングルタップで何が起こるか</string>
+    <string name="double_tap_desc">ダブルタップすると何が起こるか</string>
+    <string name="long_press_desc">長押しすると何が起こるか</string>
+    <string name="swipe_up_desc">上にスワイプすると何が起こるか</string>
+    <string name="swipe_down_desc">下にスワイプすると何が起こるか</string>
+    <string name="tap_gesture_settings">タップ＆タップジェスチャー設定</string>
+
+    <!-- Appearance -->
+    <string name="appearance_saved">外観が保存されました</string>
+    <string name="appearance">外観</string>
+    <string name="appearance_desc">ハンドラーのカスタマイズ</string>
+    <string name="customize_handler">ハンドラーのカスタマイズ</string>
+    <string name="actions">アクション</string>
+    <string name="actions_desc">タップ＆タップジェスチャー設定</string>
+
+    <!-- Navigation -->
+    <string name="pro_version">プロ版</string>
+    <string name="free_version">無料版</string>
+
+    <!-- Permissions -->
+    <string name="overlay_permission">他のアプリの上に重ねて表示する</string>
+    <string name="overlay_permission_desc">画面上にボリュームハンドラーオーバーレイを表示するために必要です</string>
+    <string name="notification_permission">通知を投稿する</string>
+    <string name="notification_permission_desc">サービスの実行中に永続的な通知を表示するために必要です</string>
+    <string name="device_admin_permission">デバイス管理者</string>
+    <string name="device_admin_permission_desc">オプション: 構成時にハンドラーがデバイス画面をロックできるようにします。</string>
+
+    <!-- Walkthrough -->
+    <string name="walkthrough_welcome_title">ジェスチャーボリュームへようこそ</string>
+    <string name="walkthrough_welcome_desc">画面上の簡単なジェスチャーでデバイスの音量を制御します。物理的なボタンに手を伸ばす必要はありません。</string>
+    <string name="walkthrough_overlay_title">オーバーレイ許可</string>
+    <string name="walkthrough_overlay_desc">他のアプリの上にボリューム ハンドラーを表示するには、「他のアプリの上に描画」権限が必要です。</string>
+    <string name="walkthrough_notifications_title">通知</string>
+    <string name="walkthrough_notifications_desc">通知をオプトインすると、ジェスチャ サービスをバックグラウンドでスムーズに実行し続けることができます。</string>
+    <string name="walkthrough_all_set_title">準備は完了です!</string>
+    <string name="walkthrough_all_set_desc">ジェスチャーボリュームを使用する準備ができました。メイン画面の外観とアクションをカスタマイズします。</string>
+    <string name="get_started">始めましょう</string>
+    <string name="next">次</string>
+    <string name="finish">仕上げる</string>
+
+    <!-- Expanded Preview -->
+    <string name="position_locked">位置がロックされました</string>
+    <string name="unlock_to_reposition">ロックを解除して位置を変更します</string>
+    <string name="test_mode">テストモード</string>
+    <string name="reposition_mode">再配置モード</string>
+    <string name="test_mode_desc">スワイプとタップを試してください</string>
+    <string name="reposition_mode_desc">ハンドラーを新しい位置にドラッグします</string>
+
+    <!-- Appearance Settings Content -->
+    <string name="position_uppercase">位置</string>
+    <string name="left">左</string>
+    <string name="right">右</string>
+    <string name="dimensions_uppercase">寸法</string>
+    <string name="background_uppercase">背景</string>
+    <string name="stroke_uppercase">脳卒中</string>
+    <string name="corner_radius_uppercase">コーナー半径</string>
+    <string name="behavior_uppercase">行動</string>
+    <string name="icon_settings">アイコン設定</string>
+
+    <!-- Actions -->
+    <string name="action_none">なし</string>
+    <string name="action_open_volume_ui">ボリューム UI を開く</string>
+    <string name="action_mute">ミュート</string>
+    <string name="action_mute_unmute">ミュートまたはミュート解除</string>
+    <string name="action_music_overlay">アクティブミュージックオーバーレイ</string>
+    <string name="action_lock">ロック</string>
+    <string name="action_hide_handler">ハンドラーを非表示にする</string>
+    <string name="action_open_app">アプリを開く</string>
+    <string name="action_increase_vol_ui">音量を上げて UI を表示する</string>
+    <string name="action_increase_vol">音量を上げる</string>
+    <string name="action_decrease_vol_ui">音量を下げて UI を表示する</string>
+    <string name="action_decrease_vol">音量を下げる</string>
+
+    <!-- Messages -->
+    <string name="action_not_available_msg">このアクションはここでは利用できません。</string>
+    <string name="unknown_action_msg">未知のアクション。</string>
+    <string name="save_changes">変更を保存</string>
+    <string name="locked">ロックされています</string>
+    <string name="unlocked">ロック解除済み</string>
+    <string name="icon_increase">増加</string>
+    <string name="icon_decrease">減少</string>
+    <string name="icon_boost">ブースト</string>
+    <string name="icon_reduce">減らす</string>
+    <string name="icon_bug">バグ</string>
+    <string name="icon_check">チェック</string>
+    <string name="icon_palette">パレット</string>
+    <string name="icon_crown">クラウン</string>
+    <string name="icon_edit">編集</string>
+    <string name="icon_feedback">フィードバック</string>
+    <string name="icon_github">GitHub</string>
+    <string name="icon_lock">ロック</string>
+    <string name="icon_move">動く</string>
+    <string name="icon_music">音楽</string>
+    <string name="icon_none">なし</string>
+    <string name="icon_plugin">プラグイン</string>
+    <string name="icon_power">力</string>
+    <string name="icon_share">共有</string>
+    <string name="icon_star">星</string>
+    <string name="icon_hide">隠れる</string>
+    <string name="icon_close">近い</string>
+    <string name="crown">クラウン</string>
+
+    <!-- Languages -->
+    <string name="lang_english">英語</string>
+    <string name="lang_bangla">バングラ語</string>
+    <string name="lang_arabic">アラビア語</string>
+    <string name="lang_hindi">ヒンディー語</string>
+    <string name="lang_korean">韓国人</string>
+    <string name="lang_japanese">日本語</string>
+    <string name="lang_chinese">中国語</string>
+    <string name="lang_german">ドイツ語</string>
+    <string name="lang_spanish">スペイン語</string>
+    <string name="lang_french">フランス語</string>
+    <string name="lang_italian">イタリア語</string>
+    <string name="lang_portuguese">ポルトガル語</string>
+    <string name="lang_russian">ロシア</string>
+    <string name="lang_turkish">トルコ語</string>
+    <string name="lang_vietnamese">ベトナム語</string>
+
+    <!-- Theme Options -->
+    <string name="system_default">システムのデフォルト</string>
+    <string name="light">ライト</string>
+    <string name="dark">暗い</string>
+
+    <!-- Additional UI -->
+    <string name="optional_uppercase">オプション</string>
+    <string name="granted">付与された</string>
+
+    <!-- Presets -->
+    <string name="preset_default_title">デフォルト</string>
+    <string name="preset_default_subtitle">標準ハンドル</string>
+    <string name="preset_minimal_title">最小限</string>
+    <string name="preset_minimal_subtitle">薄型＆薄型微妙</string>
+    <string name="preset_bold_title">大胆な</string>
+    <string name="preset_bold_subtitle">大型＆大型見える</string>
+    <string name="preset_night_title">夜</string>
+    <string name="preset_night_subtitle">ダークテーマ</string>
+    <string name="preset_ghost_title">おばけ</string>
+    <string name="preset_ghost_subtitle">ほとんど見えない</string>
+
+    <!-- Missing Strings -->
+    <string name="preview">プレビュー</string>
+    <string name="press_back_again_to_exit">もう一度戻るボタンを押して終了</string>
+    <string name="volume_gesture_handler">ボリュームジェスチャハンドラー</string>
 </resources>

@@ -70,13 +70,13 @@ fun NavigationDrawerContent(
 
                     Column {
                         Text(
-                            text = "Gesture Volume",
+                            text = stringResource(R.string.app_name),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = if (isProActivated) "Pro Version" else "Free Version",
+                            text = if (isProActivated) stringResource(R.string.pro_version) else stringResource(R.string.free_version),
                             fontSize = 13.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -100,7 +100,7 @@ fun NavigationDrawerContent(
                 // === PREMIUM SECTION ===
                 if (!isProActivated) {
                     Text(
-                        text = "UPGRADE",
+                        text = stringResource(R.string.upgrade),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
@@ -117,18 +117,12 @@ fun NavigationDrawerContent(
 
                 // === GENERAL SECTION ===
                 Text(
-                    text = "GENERAL",
+                    text = stringResource(R.string.general),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     modifier = Modifier.padding(start = 4.dp, bottom = 8.dp, top = 4.dp),
                     letterSpacing = 0.5.sp
-                )
-
-                NavigationDrawerItem(
-                    icon = R.drawable.ic_color_swatch,
-                    label = stringResource(R.string.theme),
-                    onClick = { onMenuItemClick("Theme") }
                 )
 
                 NavigationDrawerItem(
@@ -138,15 +132,15 @@ fun NavigationDrawerContent(
                 )
 
                 NavigationDrawerItem(
-                    icon = R.drawable.ic_share,
-                    label = stringResource(R.string.share_app),
-                    onClick = { onMenuItemClick("Share") }
+                    icon = R.drawable.ic_color_swatch,
+                    label = stringResource(R.string.theme),
+                    onClick = { onMenuItemClick("Theme") }
                 )
 
                 NavigationDrawerItem(
-                    icon = R.drawable.ic_feedback,
-                    label = stringResource(R.string.send_feedback),
-                    onClick = { onMenuItemClick("Feedback") }
+                    icon = R.drawable.ic_share,
+                    label = stringResource(R.string.share_app),
+                    onClick = { onMenuItemClick("Share") }
                 )
 
                 NavigationDrawerItem(
@@ -155,11 +149,17 @@ fun NavigationDrawerContent(
                     onClick = { onMenuItemClick("Rate us") }
                 )
 
+                NavigationDrawerItem(
+                    icon = R.drawable.ic_feedback,
+                    label = stringResource(R.string.send_feedback),
+                    onClick = { onMenuItemClick("Feedback") }
+                )
+
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // === MORE SECTION ===
                 Text(
-                    text = "MORE",
+                    text = stringResource(R.string.more),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
@@ -235,7 +235,7 @@ private fun PremiumNavigationItem(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_crown_2),
-                    contentDescription = "Crown",
+                    contentDescription = stringResource(R.string.crown),
                     modifier = Modifier.size(22.dp),
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
@@ -247,13 +247,13 @@ private fun PremiumNavigationItem(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Upgrade to Pro",
+                    text = stringResource(R.string.upgrade_to_pro),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = "Unlock all features",
+                    text = stringResource(R.string.unlock_all_features),
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
@@ -266,7 +266,7 @@ private fun PremiumNavigationItem(
                 color = MaterialTheme.colorScheme.primary
             ) {
                 Text(
-                    text = "PRO",
+                    text = stringResource(R.string.pro),
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,

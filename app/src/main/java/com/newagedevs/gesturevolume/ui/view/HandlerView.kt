@@ -14,6 +14,7 @@ import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import kotlin.math.abs
+import com.newagedevs.gesturevolume.R
 
 class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
 
@@ -78,7 +79,7 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
 
     init {
         // Accessibility defaults
-        contentDescription = "Volume gesture handler"
+        contentDescription = context.getString(R.string.volume_gesture_handler)
         isFocusable = true
 
         // Create and add center icon ImageView

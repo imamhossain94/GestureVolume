@@ -91,25 +91,25 @@ fun WalkthroughScreen(
             AnimatedContent(targetState = currentPage, label = "walkthrough") { page ->
                 when (page) {
                     0 -> WalkthroughPage(
-                        title = "Welcome to Gesture Volume",
-                        description = "Control your device's volume with simple on-screen gestures. No need to reach for the physical buttons.",
+                        title = stringResource(R.string.walkthrough_welcome_title),
+                        description = stringResource(R.string.walkthrough_welcome_desc),
                         iconRes = R.drawable.ic_launcher_foreground
                     )
                     1 -> WalkthroughPage(
-                        title = "Overlay Permission",
-                        description = "To show the volume handler on top of other apps, we need the 'Draw over other apps' permission.",
+                        title = stringResource(R.string.walkthrough_overlay_title),
+                        description = stringResource(R.string.walkthrough_overlay_desc),
                         iconRes = R.drawable.ic_layer_group,
                         isGranted = hasOverlayPermission.value
                     )
                     2 -> WalkthroughPage(
-                        title = "Notifications",
-                        description = "Opt-in to notifications so we can keep the gesture service running smoothly in the background.",
+                        title = stringResource(R.string.walkthrough_notifications_title),
+                        description = stringResource(R.string.walkthrough_notifications_desc),
                         iconRes = R.drawable.ic_notification_unread_lines,
                         isGranted = hasNotificationPermission.value
                     )
                     else -> WalkthroughPage(
-                        title = "You're all set!",
-                        description = "Gesture Volume is ready to use. Customize the appearance and actions in the main screen.",
+                        title = stringResource(R.string.walkthrough_all_set_title),
+                        description = stringResource(R.string.walkthrough_all_set_desc),
                         iconRes = R.drawable.ic_smile_circle
                     )
                 }
@@ -175,10 +175,10 @@ fun WalkthroughScreen(
             ) {
                 Text(
                     text = when (currentPage) {
-                        0 -> "Get Started"
-                        1 -> if (hasOverlayPermission.value) "Next" else "Grant Permission"
-                        2 -> if (hasNotificationPermission.value) "Next" else "Grant Permission"
-                        else -> "Finish"
+                        0 -> stringResource(R.string.get_started)
+                        1 -> if (hasOverlayPermission.value) stringResource(R.string.next) else stringResource(R.string.grant_permission)
+                        2 -> if (hasNotificationPermission.value) stringResource(R.string.next) else stringResource(R.string.grant_permission)
+                        else -> stringResource(R.string.finish)
                     },
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -254,7 +254,7 @@ fun WalkthroughPage(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
-                    text = "Permission Granted ✓",
+                    text = stringResource(R.string.permission_granted_check),
                     color = Color(0xFF10B981),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)

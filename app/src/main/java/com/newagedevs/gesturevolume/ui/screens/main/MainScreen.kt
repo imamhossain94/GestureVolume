@@ -50,6 +50,8 @@ import com.newagedevs.gesturevolume.ui.theme.Surface
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,7 +76,7 @@ fun MainScreen(
         if (drawerState.isOpen) {
             scope.launch { drawerState.close() }
         } else {
-            viewModel.onBackPressed {
+            viewModel.onBackPressed(context) {
                 (context as? Activity)?.finish()
             }
         }
@@ -97,18 +99,18 @@ fun MainScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            "Gesture Volume",
+                            stringResource(R.string.app_name),
                             fontWeight = FontWeight.SemiBold
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                            Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.menu))
                         }
                     },
                     actions = {
                         IconButton(onClick = { (context as? Activity)?.finish() }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close")
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -154,9 +156,9 @@ fun MainScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
-                            title = "Appearance",
-                            subtitle = "Customize handler",
-                            icon = com.newagedevs.gesturevolume.R.drawable.ic_color_palette,
+                            title = stringResource(R.string.appearance),
+                            subtitle = stringResource(R.string.appearance_desc),
+                            icon = R.drawable.ic_color_palette,
                             gradientColors = listOf(
                                 Color(0xFF6366F1),
                                 Color(0xFF8B5CF6)
@@ -169,9 +171,9 @@ fun MainScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
-                            title = "Actions",
-                            subtitle = "Tap & gesture settings",
-                            icon = com.newagedevs.gesturevolume.R.drawable.ic_app_open,
+                            title = stringResource(R.string.actions),
+                            subtitle = stringResource(R.string.actions_desc),
+                            icon = R.drawable.ic_app_open,
                             gradientColors = listOf(
                                 Color(0xFF10B981),
                                 Color(0xFF06B6D4)
@@ -213,7 +215,7 @@ fun MainScreen(
 
                 // Quick Presets Section
                 Text(
-                    text = "QUICK PRESETS",
+                    text = stringResource(R.string.quick_presets),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),

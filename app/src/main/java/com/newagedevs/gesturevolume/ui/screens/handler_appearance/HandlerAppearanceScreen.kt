@@ -270,7 +270,7 @@ fun HandlerAppearanceScreen(
 
         savedState.value = currentState
         viewModel.sendUpdateToService(context)
-        viewModel.showToast("Appearance saved")
+        viewModel.showToast(context.getString(R.string.appearance_saved))
     }
 
     BackHandler(enabled = hasUnsavedChanges) {
@@ -282,14 +282,14 @@ fun HandlerAppearanceScreen(
             onDismissRequest = { showDiscardDialog = false },
             title = {
                 Text(
-                    text = "Unsaved Changes",
+                    text = stringResource(R.string.unsaved_changes),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
             },
             text = {
                 Text(
-                    text = "You have unsaved changes. Do you want to apply them before leaving?",
+                    text = stringResource(R.string.you_have_unsaved_changes_do_you_want_to_apply_them_before_leaving),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -327,14 +327,14 @@ fun HandlerAppearanceScreen(
             onDismissRequest = { showSaveDialog = false },
             title = {
                 Text(
-                    text = "Apply Changes?",
+                    text = stringResource(R.string.apply_changes),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
             },
             text = {
                 Text(
-                    text = "Are you sure you want to apply these appearance settings to your active handler?",
+                    text = stringResource(R.string.are_you_sure_you_want_to_apply_these_appearance_settings_to_your_active_handler),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -375,13 +375,13 @@ fun HandlerAppearanceScreen(
                             onNavigateBack()
                         }
                     }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
                     if (hasUnsavedChanges) {
                         IconButton(onClick = { showSaveDialog = true }) {
-                            Icon(Icons.Default.Check, contentDescription = "Save Changes", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.Check, contentDescription = stringResource(R.string.save_changes), tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                     OutlinedButton(
@@ -392,7 +392,7 @@ fun HandlerAppearanceScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Fullscreen,
-                            contentDescription = "Preview",
+                            contentDescription = stringResource(R.string.preview),
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))

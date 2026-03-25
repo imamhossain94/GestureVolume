@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="app_name">GestureVolume</string>
+
     <string name="device_description">ডিভাইস পলিসি ম্যানেজার এপিআই দিয়ে ক্লিকে স্ক্রিন লক করুন</string>
     <string name="device_admin_label">জেসচার ভলিউম ডিভাইস অ্যাডমিন</string>
     <string name="landscape_appearance_settings">ল্যান্ডস্কেপ অ্যাপিয়ারেন্স সেটিংস</string>
@@ -10,7 +11,7 @@
     <string name="ad">AD</string>
     <string name="about">সম্পর্কে</string>
     <string name="all_corners">সব কোণ</string>
-    <string name="all_required_permissions_are_granted_you_can_now_use_the_app">সমস্ত অনুমতি দেওয়া হয়েছে। আপনি এখন অ্যাপটি ব্যবহার করতে পারবেন।</string>
+    <string name="all_required_permissions_granted">সমস্ত প্রয়োজনীয় অনুমতি দেওয়া হয়. আপনি এখন অ্যাপটি ব্যবহার করতে পারেন।</string>
     <string name="all_set">সব ঠিক আছে!</string>
     <string name="apply">প্রয়োগ করুন</string>
     <string name="apply_changes">পরিবর্তন প্রয়োগ করবেন?</string>
@@ -58,19 +59,20 @@
     <string name="opacity">অস্বচ্ছতা</string>
     <string name="other_apps">অন্যান্য অ্যাপস</string>
     <string name="pro">PRO</string>
-    <string name="permission_granted">অনুমতি দেওয়া হয়েছে ✓</string>
+    <string name="purchase_failed">ক্রয় ব্যর্থ হয়েছে. আবার চেষ্টা করুন.</string>
+    <string name="purchase_restored">ক্রয় পুনরুদ্ধার করা হয়েছে! প্রিমিয়াম সক্রিয় করা হয়েছে।</string>
+    <string name="purchase_success">ক্রয় সফল! প্রিমিয়াম সক্রিয় করা হয়েছে।</string>
+    <string name="overlay_permission_toast">চালিয়ে যাওয়ার জন্য অনুগ্রহ করে ওভারলে অনুমতি দিন।</string>
+    <string name="permission_granted_check">অনুমতি দেওয়া হয়েছে ✓</string>
     <string name="permissions">অনুমতি</string>
-    <string name="please_grant_overlay_permission_to_continue">চালিয়ে যেতে অনুগ্রহ করে ওভারলে অনুমতি দিন।</string>
-    <string name="press_back_again_to_exit">প্রস্থান করতে আবার ব্যাক চাপুন</string>
-    <string name="preview">প্রিভিউ</string>
-    <string name="purchase_failed_please_try_again">কেনাকাটা ব্যর্থ। আবার চেষ্টা করুন।</string>
-    <string name="purchase_restored_premium_activated">পুনরুদ্ধার সফল! প্রিমিয়াম চালু হয়েছে।</string>
-    <string name="purchase_successful_premium_activated">কেনাকাটা সফল! প্রিমিয়াম চালু হয়েছে।</string>
+    <string name="action_required">অ্যাকশন প্রয়োজন</string>
+    <string name="all_permissions_granted">সমস্ত অনুমতি দেওয়া হয়েছে</string>
     <string name="quick_presets">দ্রুত প্রিসেট</string>
     <string name="required_permissions">প্রয়োজনীয় অনুমতি</string>
     <string name="rate_on_play_store">প্লেস্টোরে রেটিং দিন</string>
     <string name="revoke_permission">অনুমতি প্রত্যাহার করুন</string>
     <string name="settings">সেটিংস</string>
+    <string name="menu">মেনু</string>
     <string name="select_icon">আইকন নির্বাচন করুন</string>
     <string name="select_the_color_and_transparency_of_the_handler">হ্যান্ডলারের রং নির্বাচন করুন</string>
     <string name="send_feedback">মতামত পাঠান</string>
@@ -83,8 +85,10 @@
     <string name="tap_to_change">পরিবর্তন করতে ট্যাপ করুন</string>
     <string name="tap_to_manage_overlay">ওভারলে পরিচালনা করতে ট্যাপ করুন</string>
     <string name="tell_us_more_about_your_experience">আপনার অভিজ্ঞতা সম্পর্কে আরও বলুন...</string>
-    <string name="the_app_requires_certain_permissions_to_function_properly_grant_permissions_below">অ্যাপটির সঠিকভাবে কাজ করতে অনুমতির প্রয়োজন।</string>
+    <string name="permissions_header_info">অ্যাপটিকে সঠিকভাবে কাজ করার জন্য নির্দিষ্ট কিছু অনুমতির প্রয়োজন। নিচে অনুমতি দিন.</string>
     <string name="theme">থিম</string>
+    <string name="theme_desc">অ্যাপ রঙের থিম</string>
+    <string name="language_desc">অ্যাপের ভাষা</string>
     <string name="top_left">উপরে বামে</string>
     <string name="top_right">উপরে ডানে</string>
     <string name="upgrade">আপগ্রেড</string>
@@ -94,6 +98,171 @@
     <string name="vibrate_on_click">ক্লিকে ভাইব্রেট করুন</string>
     <string name="we_d_love_to_hear_from_you">আপনার মতামত জানতে আমরা আগ্রহী!</string>
     <string name="width">প্রস্থ</string>
-    <string name="you_already_have_premium">আপনার আগে থেকেই প্রিমিয়াম আছে!</string>
+    <string name="already_have_premium">আপনি ইতিমধ্যে প্রিমিয়াম আছে!</string>
     <string name="you_have_unsaved_changes_do_you_want_to_apply_them_before_leaving">আপনার অসংরক্ষিত পরিবর্তন আছে। আপনি কি এগুলো প্রয়োগ করতে চান?</string>
+
+    <!-- About Screen -->
+    <string name="rate_us">আমাদের রেট</string>
+    <string name="share">শেয়ার করুন</string>
+    <string name="source">উৎস</string>
+    <string name="more_apps">আরও অ্যাপ</string>
+    <string name="privacy_policy">গোপনীয়তা নীতি</string>
+    <string name="back">ফিরে</string>
+
+    <!-- Feedback Screen -->
+    <string name="issue_crash">অ্যাপ অনেক ক্র্যাশ করে</string>
+    <string name="issue_ads">অনেক বিজ্ঞাপন</string>
+    <string name="issue_unresponsive">অ্যাপ জমে যায় বা প্রতিক্রিয়াহীন হয়ে যায়</string>
+    <string name="issue_not_user_friendly">অ্যাপ ব্যবহারকারী-বান্ধব নয়</string>
+    <string name="no_feedback_provided">কোন প্রতিক্রিয়া প্রদান করা হয়</string>
+    <string name="selected_issues">নির্বাচিত সমস্যা:</string>
+    <string name="additional_feedback">অতিরিক্ত প্রতিক্রিয়া:</string>
+
+    <!-- Actions Screen -->
+    <string name="tap_actions">অ্যাকশনে ট্যাপ করুন</string>
+    <string name="gesture_actions">অঙ্গভঙ্গি কর্ম</string>
+    <string name="single_tap_desc">একক ট্যাপে কি হয়</string>
+    <string name="double_tap_desc">ডাবল ট্যাপে কি হয়</string>
+    <string name="long_press_desc">দীর্ঘ প্রেসে কি ঘটে</string>
+    <string name="swipe_up_desc">সোয়াইপ আপ করলে কি হয়</string>
+    <string name="swipe_down_desc">নিচে সোয়াইপ করলে কি হয়</string>
+    <string name="tap_gesture_settings">আলতো চাপুন &amp; অঙ্গভঙ্গি সেটিংস</string>
+
+    <!-- Appearance -->
+    <string name="appearance_saved">চেহারা সংরক্ষিত</string>
+    <string name="appearance">চেহারা</string>
+    <string name="appearance_desc">হ্যান্ডলার কাস্টমাইজ করুন</string>
+    <string name="customize_handler">হ্যান্ডলার কাস্টমাইজ করুন</string>
+    <string name="actions">কর্ম</string>
+    <string name="actions_desc">আলতো চাপুন &amp; অঙ্গভঙ্গি সেটিংস</string>
+
+    <!-- Navigation -->
+    <string name="pro_version">প্রো সংস্করণ</string>
+    <string name="free_version">বিনামূল্যে সংস্করণ</string>
+
+    <!-- Permissions -->
+    <string name="overlay_permission">অন্যান্য অ্যাপের উপরে প্রদর্শন করুন</string>
+    <string name="overlay_permission_desc">আপনার স্ক্রিনে ভলিউম হ্যান্ডলার ওভারলে দেখানোর জন্য প্রয়োজন</string>
+    <string name="notification_permission">পোস্ট বিজ্ঞপ্তি</string>
+    <string name="notification_permission_desc">পরিষেবা চলাকালীন অবিরাম বিজ্ঞপ্তি দেখানোর জন্য প্রয়োজনীয়</string>
+    <string name="device_admin_permission">ডিভাইস প্রশাসক</string>
+    <string name="device_admin_permission_desc">ঐচ্ছিক: কনফিগার করা হলে হ্যান্ডলারকে আপনার ডিভাইসের স্ক্রীন লক করার অনুমতি দেয়</string>
+
+    <!-- Walkthrough -->
+    <string name="walkthrough_welcome_title">জেসচার ভলিউমে স্বাগতম</string>
+    <string name="walkthrough_welcome_desc">সহজ অন-স্ক্রীন অঙ্গভঙ্গি দিয়ে আপনার ডিভাইসের ভলিউম নিয়ন্ত্রণ করুন। শারীরিক বোতামগুলির জন্য পৌঁছানোর দরকার নেই।</string>
+    <string name="walkthrough_overlay_title">ওভারলে অনুমতি</string>
+    <string name="walkthrough_overlay_desc">অন্যান্য অ্যাপের উপরে ভলিউম হ্যান্ডলার দেখানোর জন্য, আমাদের \'অন্যান্য অ্যাপের উপর আঁকা\' অনুমতি প্রয়োজন।</string>
+    <string name="walkthrough_notifications_title">বিজ্ঞপ্তি</string>
+    <string name="walkthrough_notifications_desc">বিজ্ঞপ্তিগুলিতে অপ্ট-ইন করুন যাতে আমরা ব্যাকগ্রাউন্ডে ইঙ্গিত পরিষেবাটি মসৃণভাবে চলতে পারি৷</string>
+    <string name="walkthrough_all_set_title">আপনি সব প্রস্তুত!</string>
+    <string name="walkthrough_all_set_desc">অঙ্গভঙ্গি ভলিউম ব্যবহারের জন্য প্রস্তুত। প্রধান পর্দায় উপস্থিতি এবং কর্ম কাস্টমাইজ করুন.</string>
+    <string name="get_started">শুরু করুন</string>
+    <string name="next">পরবর্তী</string>
+    <string name="finish">শেষ করুন</string>
+
+    <!-- Expanded Preview -->
+    <string name="position_locked">অবস্থান লক করা</string>
+    <string name="unlock_to_reposition">অবস্থান আনলক করুন</string>
+    <string name="test_mode">পরীক্ষা মোড</string>
+    <string name="reposition_mode">রিপজিশন মোড</string>
+    <string name="test_mode_desc">সোয়াইপ এবং ট্যাপ চেষ্টা করুন</string>
+    <string name="reposition_mode_desc">হ্যান্ডলারকে নতুন অবস্থানে টেনে আনুন</string>
+
+    <!-- Appearance Settings Content -->
+    <string name="position_uppercase">অবস্থান</string>
+    <string name="left">বাম</string>
+    <string name="right">ঠিক</string>
+    <string name="dimensions_uppercase">মাত্রা</string>
+    <string name="background_uppercase">ব্যাকগ্রাউন্ড</string>
+    <string name="stroke_uppercase">স্ট্রোক</string>
+    <string name="corner_radius_uppercase">কোণ ব্যাসার্ধ</string>
+    <string name="behavior_uppercase">আচরণ</string>
+    <string name="icon_settings">আইকন সেটিংস</string>
+
+    <!-- Actions -->
+    <string name="action_none">কোনোটিই নয়</string>
+    <string name="action_open_volume_ui">ভলিউম UI খুলুন</string>
+    <string name="action_mute">নিঃশব্দ</string>
+    <string name="action_mute_unmute">মিউট বা আনমিউট</string>
+    <string name="action_music_overlay">সক্রিয় সঙ্গীত ওভারলে</string>
+    <string name="action_lock">তালা</string>
+    <string name="action_hide_handler">হ্যান্ডলার লুকান</string>
+    <string name="action_open_app">অ্যাপ খুলুন</string>
+    <string name="action_increase_vol_ui">ভলিউম বাড়ান এবং UI দেখান</string>
+    <string name="action_increase_vol">ভলিউম বাড়ান</string>
+    <string name="action_decrease_vol_ui">ভলিউম কমান এবং UI দেখান</string>
+    <string name="action_decrease_vol">ভলিউম হ্রাস করুন</string>
+
+    <!-- Messages -->
+    <string name="action_not_available_msg">এই কর্ম এখানে উপলব্ধ নয়.</string>
+    <string name="unknown_action_msg">অজানা কর্ম।</string>
+    <string name="save_changes">পরিবর্তনগুলি সংরক্ষণ করুন</string>
+    <string name="locked">তালাবদ্ধ</string>
+    <string name="unlocked">আনলক করা হয়েছে</string>
+    <string name="icon_increase">বৃদ্ধি</string>
+    <string name="icon_decrease">হ্রাস</string>
+    <string name="icon_boost">বুস্ট</string>
+    <string name="icon_reduce">কমিয়ে দিন</string>
+    <string name="icon_bug">বাগ</string>
+    <string name="icon_check">চেক করুন</string>
+    <string name="icon_palette">প্যালেট</string>
+    <string name="icon_crown">মুকুট</string>
+    <string name="icon_edit">সম্পাদনা করুন</string>
+    <string name="icon_feedback">প্রতিক্রিয়া</string>
+    <string name="icon_github">গিটহাব</string>
+    <string name="icon_lock">তালা</string>
+    <string name="icon_move">সরান</string>
+    <string name="icon_music">সঙ্গীত</string>
+    <string name="icon_none">কোনোটিই নয়</string>
+    <string name="icon_plugin">প্লাগইন</string>
+    <string name="icon_power">শক্তি</string>
+    <string name="icon_share">শেয়ার করুন</string>
+    <string name="icon_star">তারা</string>
+    <string name="icon_hide">লুকান</string>
+    <string name="icon_close">বন্ধ</string>
+    <string name="crown">মুকুট</string>
+
+    <!-- Languages -->
+    <string name="lang_english">ইংরেজি</string>
+    <string name="lang_bangla">বাংলা</string>
+    <string name="lang_arabic">আরবি</string>
+    <string name="lang_hindi">হিন্দি</string>
+    <string name="lang_korean">কোরিয়ান</string>
+    <string name="lang_japanese">জাপানিজ</string>
+    <string name="lang_chinese">চাইনিজ</string>
+    <string name="lang_german">জার্মান</string>
+    <string name="lang_spanish">স্প্যানিশ</string>
+    <string name="lang_french">ফরাসি</string>
+    <string name="lang_italian">ইতালীয়</string>
+    <string name="lang_portuguese">পর্তুগিজ</string>
+    <string name="lang_russian">রাশিয়ান</string>
+    <string name="lang_turkish">তুর্কি</string>
+    <string name="lang_vietnamese">ভিয়েতনামী</string>
+
+    <!-- Theme Options -->
+    <string name="system_default">সিস্টেম ডিফল্ট</string>
+    <string name="light">আলো</string>
+    <string name="dark">অন্ধকার</string>
+
+    <!-- Additional UI -->
+    <string name="optional_uppercase">ঐচ্ছিক</string>
+    <string name="granted">মঞ্জুর</string>
+
+    <!-- Presets -->
+    <string name="preset_default_title">ডিফল্ট</string>
+    <string name="preset_default_subtitle">স্ট্যান্ডার্ড হ্যান্ডেল</string>
+    <string name="preset_minimal_title">ন্যূনতম</string>
+    <string name="preset_minimal_subtitle">পাতলা &amp; সূক্ষ্ম</string>
+    <string name="preset_bold_title">সাহসী</string>
+    <string name="preset_bold_subtitle">বড় &amp; দৃশ্যমান</string>
+    <string name="preset_night_title">রাত্রি</string>
+    <string name="preset_night_subtitle">গাঢ় থিম</string>
+    <string name="preset_ghost_title">ভূত</string>
+    <string name="preset_ghost_subtitle">প্রায় অদৃশ্য</string>
+
+    <!-- Missing Strings -->
+    <string name="preview">প্রিভিউ</string>
+    <string name="press_back_again_to_exit">প্রস্থান করতে আবার ব্যাক চাপুন</string>
+    <string name="volume_gesture_handler">ভলিউম অঙ্গভঙ্গি হ্যান্ডলার</string>
 </resources>

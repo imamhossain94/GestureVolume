@@ -42,15 +42,15 @@ fun SwipeActionDialog(
     val actionOptions = remember(isSwipeUp) {
         if (isSwipeUp) {
             listOf(
-                R.drawable.ic_nothing to "None",
-                R.drawable.ic_vol_increase to "Increase volume and show UI",
-                R.drawable.ic_vol_plus to "Increase volume"
+                Triple(R.drawable.ic_nothing, "None", R.string.action_none),
+                Triple(R.drawable.ic_vol_increase, "Increase volume and show UI", R.string.action_increase_vol_ui),
+                Triple(R.drawable.ic_vol_plus, "Increase volume", R.string.action_increase_vol)
             )
         } else {
             listOf(
-                R.drawable.ic_nothing to "None",
-                R.drawable.ic_vol_decrease to "Decrease volume and show UI",
-                R.drawable.ic_vol_minus to "Decrease volume"
+                Triple(R.drawable.ic_nothing, "None", R.string.action_none),
+                Triple(R.drawable.ic_vol_decrease, "Decrease volume and show UI", R.string.action_decrease_vol_ui),
+                Triple(R.drawable.ic_vol_minus, "Decrease volume", R.string.action_decrease_vol)
             )
         }
     }
@@ -72,12 +72,12 @@ fun SwipeActionDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                actionOptions.forEach { (iconRes, actionName) ->
+                actionOptions.forEach { (iconRes, identifier, labelRes) ->
                     SwipeActionListItem(
                         iconRes = iconRes,
-                        actionName = actionName,
-                        isSelected = actionName == currentAction,
-                        onClick = { onSelect(actionName) }
+                        actionName = stringResource(labelRes),
+                        isSelected = identifier == currentAction,
+                        onClick = { onSelect(identifier) }
                     )
                 }
             }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.R
 
-data class LanguageOption(val code: String, val name: String)
+data class LanguageOption(val code: String, val nameRes: Int)
 
 @Composable
 fun LanguageDialog(
@@ -35,14 +36,21 @@ fun LanguageDialog(
     onLanguageSelect: (String) -> Unit
 ) {
     val options = listOf(
-        LanguageOption("en", "English"),
-        LanguageOption("bn", "Bangla"),
-        LanguageOption("ar", "Arabic"),
-        LanguageOption("hi", "Indian (Hindi)"),
-        LanguageOption("ko", "Korean"),
-        LanguageOption("ja", "Japanese"),
-        LanguageOption("zh", "Chinese"),
-        LanguageOption("de", "Germany")
+        LanguageOption("en", R.string.lang_english),
+        LanguageOption("bn", R.string.lang_bangla),
+        LanguageOption("ar", R.string.lang_arabic),
+        LanguageOption("hi", R.string.lang_hindi),
+        LanguageOption("ko", R.string.lang_korean),
+        LanguageOption("ja", R.string.lang_japanese),
+        LanguageOption("zh", R.string.lang_chinese),
+        LanguageOption("de", R.string.lang_german),
+        LanguageOption("es", R.string.lang_spanish),
+        LanguageOption("fr", R.string.lang_french),
+        LanguageOption("it", R.string.lang_italian),
+        LanguageOption("pt", R.string.lang_portuguese),
+        LanguageOption("ru", R.string.lang_russian),
+        LanguageOption("tr", R.string.lang_turkish),
+        LanguageOption("vi", R.string.lang_vietnamese)
     )
 
     var selectedOption by remember { mutableStateOf(currentLanguage) }
@@ -60,13 +68,14 @@ fun LanguageDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(max = 450.dp)
                     .padding(top = 8.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 options.forEach { option ->
                     LanguageListItem(
-                        name = option.name,
+                        name = stringResource(option.nameRes),
                         isSelected = option.code == selectedOption,
                         onClick = { selectedOption = option.code }
                     )
@@ -112,7 +121,7 @@ private fun LanguageListItem(
     ) {
         Text(
             text = name,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             fontSize = 15.sp,
             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
             color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant

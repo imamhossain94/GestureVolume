@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="app_name">GestureVolume</string>
+
     <string name="device_description">Sperrbildschirm bei Klick mit der Device Policy Manager API</string>
     <string name="device_admin_label">Gesture Volume Geräte-Admin</string>
     <string name="landscape_appearance_settings">ERSCHEINUNGSBILD (QUERFORMAT)</string>
@@ -10,7 +11,7 @@
     <string name="ad">AD</string>
     <string name="about">Über</string>
     <string name="all_corners">Alle Ecken</string>
-    <string name="all_required_permissions_are_granted_you_can_now_use_the_app">Alle Berechtigungen wurden erteilt. Sie können die App jetzt verwenden.</string>
+    <string name="all_required_permissions_granted">Alle erforderlichen Berechtigungen werden erteilt. Sie können die App jetzt nutzen.</string>
     <string name="all_set">Alles bereit!</string>
     <string name="apply">Anwenden</string>
     <string name="apply_changes">Änderungen anwenden?</string>
@@ -58,19 +59,20 @@
     <string name="opacity">Deckkraft</string>
     <string name="other_apps">Andere Apps</string>
     <string name="pro">PRO</string>
-    <string name="permission_granted">Erlaubnis erteilt ✓</string>
+    <string name="purchase_failed">Der Kauf ist fehlgeschlagen. Bitte versuchen Sie es erneut.</string>
+    <string name="purchase_restored">Kauf wiederhergestellt! Premium aktiviert.</string>
+    <string name="purchase_success">Kauf erfolgreich! Premium aktiviert.</string>
+    <string name="overlay_permission_toast">Bitte erteilen Sie die Overlay-Berechtigung, um fortzufahren.</string>
+    <string name="permission_granted_check">Erlaubnis erteilt ✓</string>
     <string name="permissions">Berechtigungen</string>
-    <string name="please_grant_overlay_permission_to_continue">Bitte erteilen Sie die Overlay-Berechtigung, um fortzufahren.</string>
-    <string name="press_back_again_to_exit">Erneut tippen, um zu beenden</string>
-    <string name="preview">Vorschau</string>
-    <string name="purchase_failed_please_try_again">Kauf fehlgeschlagen. Bitte versuchen Sie es erneut.</string>
-    <string name="purchase_restored_premium_activated">Käufe wiederhergestellt! Premium aktiviert.</string>
-    <string name="purchase_successful_premium_activated">Kauf erfolgreich! Premium aktiviert.</string>
+    <string name="action_required">Aktion erforderlich</string>
+    <string name="all_permissions_granted">Alle Berechtigungen erteilt</string>
     <string name="quick_presets">Schnell-Vorlagen</string>
     <string name="required_permissions">Erforderliche Berechtigungen</string>
     <string name="rate_on_play_store">Im Play Store bewerten</string>
     <string name="revoke_permission">Berechtigung entziehen</string>
     <string name="settings">EINSTELLUNGEN</string>
+    <string name="menu">Speisekarte</string>
     <string name="select_icon">Symbol auswählen</string>
     <string name="select_the_color_and_transparency_of_the_handler">Wählen Sie Farbe und Transparenz des Handlers</string>
     <string name="send_feedback">Feedback senden</string>
@@ -83,8 +85,10 @@
     <string name="tap_to_change">Tippen zum Ändern</string>
     <string name="tap_to_manage_overlay">Tippen, um das Overlay zu verwalten</string>
     <string name="tell_us_more_about_your_experience">Erzählen Sie uns mehr über Ihre Erfahrung...</string>
-    <string name="the_app_requires_certain_permissions_to_function_properly_grant_permissions_below">Die App erfordert bestimmte Berechtigungen. Bitte unten gewähren.</string>
+    <string name="permissions_header_info">Die App benötigt bestimmte Berechtigungen, um ordnungsgemäß zu funktionieren. Erteilen Sie unten Berechtigungen.</string>
     <string name="theme">Design</string>
+    <string name="theme_desc">App-Farbthema</string>
+    <string name="language_desc">App-Sprache</string>
     <string name="top_left">Oben Links</string>
     <string name="top_right">Oben Rechts</string>
     <string name="upgrade">UPGRADE</string>
@@ -94,6 +98,171 @@
     <string name="vibrate_on_click">Vibrieren bei Klick</string>
     <string name="we_d_love_to_hear_from_you">Wir würden uns freuen, von Ihnen zu hören!</string>
     <string name="width">Breite</string>
-    <string name="you_already_have_premium">Sie haben bereits Premium!</string>
+    <string name="already_have_premium">Sie haben bereits Premium!</string>
     <string name="you_have_unsaved_changes_do_you_want_to_apply_them_before_leaving">Sie haben ungespeicherte Änderungen. Möchten Sie diese vorher anwenden?</string>
+
+    <!-- About Screen -->
+    <string name="rate_us">Bewerten Sie uns</string>
+    <string name="share">Aktie</string>
+    <string name="source">Quelle</string>
+    <string name="more_apps">Weitere Apps</string>
+    <string name="privacy_policy">Datenschutzrichtlinie</string>
+    <string name="back">Zurück</string>
+
+    <!-- Feedback Screen -->
+    <string name="issue_crash">App stürzt häufig ab</string>
+    <string name="issue_ads">Zu viele Anzeigen</string>
+    <string name="issue_unresponsive">Die App friert ein oder reagiert nicht mehr</string>
+    <string name="issue_not_user_friendly">App ist nicht benutzerfreundlich</string>
+    <string name="no_feedback_provided">Kein Feedback gegeben</string>
+    <string name="selected_issues">Ausgewählte Probleme:</string>
+    <string name="additional_feedback">Zusätzliches Feedback:</string>
+
+    <!-- Actions Screen -->
+    <string name="tap_actions">Tippen Sie auf Aktionen</string>
+    <string name="gesture_actions">GESTENAKTIONEN</string>
+    <string name="single_tap_desc">Was passiert mit einem einzigen Tastendruck?</string>
+    <string name="double_tap_desc">Was passiert beim Doppeltippen?</string>
+    <string name="long_press_desc">Was passiert bei langem Drücken?</string>
+    <string name="swipe_up_desc">Was passiert beim Wischen nach oben?</string>
+    <string name="swipe_down_desc">Was passiert beim Wischen nach unten?</string>
+    <string name="tap_gesture_settings">Tippen Sie auf &amp; Gesteneinstellungen</string>
+
+    <!-- Appearance -->
+    <string name="appearance_saved">Aussehen gespeichert</string>
+    <string name="appearance">Aussehen</string>
+    <string name="appearance_desc">Handler anpassen</string>
+    <string name="customize_handler">Handler anpassen</string>
+    <string name="actions">Aktionen</string>
+    <string name="actions_desc">Tippen Sie auf &amp; Gesteneinstellungen</string>
+
+    <!-- Navigation -->
+    <string name="pro_version">Pro-Version</string>
+    <string name="free_version">Kostenlose Version</string>
+
+    <!-- Permissions -->
+    <string name="overlay_permission">Anzeige über anderen Apps</string>
+    <string name="overlay_permission_desc">Erforderlich, um das Volume-Handler-Overlay auf Ihrem Bildschirm anzuzeigen</string>
+    <string name="notification_permission">Benachrichtigungen veröffentlichen</string>
+    <string name="notification_permission_desc">Erforderlich, um die dauerhafte Benachrichtigung anzuzeigen, wenn der Dienst ausgeführt wird</string>
+    <string name="device_admin_permission">Geräteadministrator</string>
+    <string name="device_admin_permission_desc">Optional: Ermöglicht dem Handler, den Bildschirm Ihres Geräts zu sperren, wenn dies konfiguriert ist</string>
+
+    <!-- Walkthrough -->
+    <string name="walkthrough_welcome_title">Willkommen bei Gesture Volume</string>
+    <string name="walkthrough_welcome_desc">Steuern Sie die Lautstärke Ihres Geräts mit einfachen Gesten auf dem Bildschirm. Sie müssen nicht nach den physischen Tasten greifen.</string>
+    <string name="walkthrough_overlay_title">Overlay-Berechtigung</string>
+    <string name="walkthrough_overlay_desc">Um den Volume-Handler über anderen Apps anzuzeigen, benötigen wir die Berechtigung „Über andere Apps zeichnen“.</string>
+    <string name="walkthrough_notifications_title">Benachrichtigungen</string>
+    <string name="walkthrough_notifications_desc">Aktivieren Sie Benachrichtigungen, damit der Gestendienst reibungslos im Hintergrund läuft.</string>
+    <string name="walkthrough_all_set_title">Sie sind bereit!</string>
+    <string name="walkthrough_all_set_desc">Gesture Volume ist einsatzbereit. Passen Sie das Erscheinungsbild und die Aktionen im Hauptbildschirm an.</string>
+    <string name="get_started">Legen Sie los</string>
+    <string name="next">Nächste</string>
+    <string name="finish">Beenden</string>
+
+    <!-- Expanded Preview -->
+    <string name="position_locked">POSITION GESPERRT</string>
+    <string name="unlock_to_reposition">ENTSPERREN ZUM NEUPOSITIONIEREN</string>
+    <string name="test_mode">Testmodus</string>
+    <string name="reposition_mode">Neupositionierungsmodus</string>
+    <string name="test_mode_desc">Versuchen Sie es mit Wischen und Tippen</string>
+    <string name="reposition_mode_desc">Ziehen Sie den Handler an die neue Position</string>
+
+    <!-- Appearance Settings Content -->
+    <string name="position_uppercase">POSITION</string>
+    <string name="left">Links</string>
+    <string name="right">Rechts</string>
+    <string name="dimensions_uppercase">ABMESSUNGEN</string>
+    <string name="background_uppercase">HINTERGRUND</string>
+    <string name="stroke_uppercase">SCHLAGANFALL</string>
+    <string name="corner_radius_uppercase">ECKENRADIUS</string>
+    <string name="behavior_uppercase">VERHALTEN</string>
+    <string name="icon_settings">ICON-EINSTELLUNGEN</string>
+
+    <!-- Actions -->
+    <string name="action_none">Keiner</string>
+    <string name="action_open_volume_ui">Öffnen Sie die Volume-Benutzeroberfläche</string>
+    <string name="action_mute">Stumm</string>
+    <string name="action_mute_unmute">Stummschalten oder Stummschaltung aufheben</string>
+    <string name="action_music_overlay">Aktive Musiküberlagerung</string>
+    <string name="action_lock">Sperren</string>
+    <string name="action_hide_handler">Handler ausblenden</string>
+    <string name="action_open_app">App öffnen</string>
+    <string name="action_increase_vol_ui">Erhöhen Sie die Lautstärke und zeigen Sie die Benutzeroberfläche an</string>
+    <string name="action_increase_vol">Lautstärke erhöhen</string>
+    <string name="action_decrease_vol_ui">Lautstärke verringern und Benutzeroberfläche anzeigen</string>
+    <string name="action_decrease_vol">Lautstärke verringern</string>
+
+    <!-- Messages -->
+    <string name="action_not_available_msg">Diese Aktion ist hier nicht verfügbar.</string>
+    <string name="unknown_action_msg">Unbekannte Aktion.</string>
+    <string name="save_changes">Änderungen speichern</string>
+    <string name="locked">Gesperrt</string>
+    <string name="unlocked">Entsperrt</string>
+    <string name="icon_increase">Zunahme</string>
+    <string name="icon_decrease">Verringern</string>
+    <string name="icon_boost">Schub</string>
+    <string name="icon_reduce">Reduzieren</string>
+    <string name="icon_bug">Insekt</string>
+    <string name="icon_check">Überprüfen</string>
+    <string name="icon_palette">Palette</string>
+    <string name="icon_crown">Krone</string>
+    <string name="icon_edit">Bearbeiten</string>
+    <string name="icon_feedback">Rückmeldung</string>
+    <string name="icon_github">GitHub</string>
+    <string name="icon_lock">Sperren</string>
+    <string name="icon_move">Bewegen</string>
+    <string name="icon_music">Musik</string>
+    <string name="icon_none">Keiner</string>
+    <string name="icon_plugin">Plugin</string>
+    <string name="icon_power">Leistung</string>
+    <string name="icon_share">Aktie</string>
+    <string name="icon_star">Stern</string>
+    <string name="icon_hide">Verstecken</string>
+    <string name="icon_close">Schließen</string>
+    <string name="crown">Krone</string>
+
+    <!-- Languages -->
+    <string name="lang_english">Englisch</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabisch</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Koreanisch</string>
+    <string name="lang_japanese">japanisch</string>
+    <string name="lang_chinese">chinesisch</string>
+    <string name="lang_german">Deutsch</string>
+    <string name="lang_spanish">Spanisch</string>
+    <string name="lang_french">Französisch</string>
+    <string name="lang_italian">Italienisch</string>
+    <string name="lang_portuguese">Portugiesisch</string>
+    <string name="lang_russian">Russisch</string>
+    <string name="lang_turkish">Türkisch</string>
+    <string name="lang_vietnamese">Vietnamesisch</string>
+
+    <!-- Theme Options -->
+    <string name="system_default">Systemstandard</string>
+    <string name="light">Licht</string>
+    <string name="dark">Dunkel</string>
+
+    <!-- Additional UI -->
+    <string name="optional_uppercase">OPTIONAL</string>
+    <string name="granted">Gewährt</string>
+
+    <!-- Presets -->
+    <string name="preset_default_title">Standard</string>
+    <string name="preset_default_subtitle">Standardgriff</string>
+    <string name="preset_minimal_title">Minimal</string>
+    <string name="preset_minimal_subtitle">Dünn &amp; subtil</string>
+    <string name="preset_bold_title">Deutlich</string>
+    <string name="preset_bold_subtitle">Groß &amp; sichtbar</string>
+    <string name="preset_night_title">Nacht</string>
+    <string name="preset_night_subtitle">Dunkles Thema</string>
+    <string name="preset_ghost_title">Geist</string>
+    <string name="preset_ghost_subtitle">Fast unsichtbar</string>
+
+    <!-- Missing Strings -->
+    <string name="preview">Vorschau</string>
+    <string name="press_back_again_to_exit">Erneut tippen, um zu beenden</string>
+    <string name="volume_gesture_handler">Handler für Lautstärkegesten</string>
 </resources>

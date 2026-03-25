@@ -163,7 +163,7 @@ class MainViewModel @Inject constructor(
 
             viewModelScope.launch {
                 _effect.send(MainEffect.RequestOverlayPermission)
-                _effect.send(MainEffect.ShowToast("Please grant overlay permission to continue."))
+                _effect.send(MainEffect.ShowToast(context.getString(R.string.overlay_permission_toast)))
             }
             return
         }
@@ -404,12 +404,12 @@ class MainViewModel @Inject constructor(
             }
             "Other apps" -> openAppStore(context, Constants.PUBLISHER_URL) {
                 viewModelScope.launch {
-                    _effect.send(MainEffect.ShowToast("Cannot open Play Store"))
+                    _effect.send(MainEffect.ShowToast(context.getString(R.string.cannot_open_play_store)))
                 }
             }
             "Rate us" -> openAppStore(context, Constants.APP_STORE_ID) {
                 viewModelScope.launch {
-                    _effect.send(MainEffect.ShowToast("Cannot open Play Store"))
+                    _effect.send(MainEffect.ShowToast(context.getString(R.string.cannot_open_play_store)))
                 }
             }
             "About" -> viewModelScope.launch {
@@ -437,23 +437,23 @@ class MainViewModel @Inject constructor(
                     PurchaseEvent.PURCHASE_SUCCESS -> {
                         adsManager?.destroyAds()
                         adsManager = null
-                        _effect.send(MainEffect.ShowToast("Purchase successful! Premium activated."))
+                        _effect.send(MainEffect.ShowToast(context.getString(R.string.purchase_success)))
                         _state.value = _state.value.copy(isProActivated = true)
                     }
                     PurchaseEvent.PURCHASE_RESTORED -> {
                         adsManager?.destroyAds()
                         adsManager = null
-                        _effect.send(MainEffect.ShowToast("Purchase restored! Premium activated."))
+                        _effect.send(MainEffect.ShowToast(context.getString(R.string.purchase_restored)))
                         _state.value = _state.value.copy(isProActivated = true)
                     }
                     PurchaseEvent.ALREADY_OWNED -> {
-                        _effect.send(MainEffect.ShowToast("Item already owned"))
+                        _effect.send(MainEffect.ShowToast(context.getString(R.string.item_already_owned)))
                     }
                     PurchaseEvent.PURCHASE_FAILURE -> {
-                        _effect.send(MainEffect.ShowToast("Purchase failed. Please try again."))
+                        _effect.send(MainEffect.ShowToast(context.getString(R.string.purchase_failed)))
                     }
                     PurchaseEvent.NOTHING_TO_RESTORE -> {
-                        _effect.send(MainEffect.ShowToast("Nothing to restore"))
+                        _effect.send(MainEffect.ShowToast(context.getString(R.string.nothing_to_restore)))
                     }
                 }
             }
@@ -484,7 +484,7 @@ class MainViewModel @Inject constructor(
     fun purchasePro(activity: Activity) {
         if (_state.value.isProActivated) {
             viewModelScope.launch {
-                _effect.send(MainEffect.ShowToast("You already have premium!"))
+                _effect.send(MainEffect.ShowToast(activity.getString(R.string.already_have_premium)))
             }
             return
         }
@@ -492,11 +492,11 @@ class MainViewModel @Inject constructor(
         billingManager.purchase(activity, BuildConfig.PRODUCT_LIFETIME)
     }
 
-    fun onBackPressed(finishActivity: () -> Unit) {
+    fun onBackPressed(context: Context, finishActivity: () -> Unit) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastBackPressedTime > 2000) {
             viewModelScope.launch {
-                _effect.send(MainEffect.ShowToast("Press back again to exit"))
+                _effect.send(MainEffect.ShowToast(context.getString(R.string.press_back_again_to_exit)))
             }
             lastBackPressedTime = currentTime
         } else {

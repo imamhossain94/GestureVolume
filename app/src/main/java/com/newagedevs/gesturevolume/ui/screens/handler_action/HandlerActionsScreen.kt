@@ -44,7 +44,7 @@ fun HandlerActionsScreen(
                 title = { Text(stringResource(R.string.handler_actions)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -63,7 +63,7 @@ fun HandlerActionsScreen(
                 .padding(16.dp)
         ) {
             // Tap Actions Section
-            SectionTitle("TAP ACTIONS", MaterialTheme.colorScheme.primary)
+            SectionTitle(stringResource(R.string.tap_actions), MaterialTheme.colorScheme.primary)
 
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -73,7 +73,7 @@ fun HandlerActionsScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     ActionSettingItem(
                         label = stringResource(R.string.single_tap_action),
-                        description = "What happens on single tap",
+                        description = stringResource(R.string.single_tap_desc),
                         value = state.clickAction,
                         icon = state.clickActionIcon,
                         borderColor = MaterialTheme.colorScheme.primary,
@@ -87,7 +87,7 @@ fun HandlerActionsScreen(
 
                     ActionSettingItem(
                         label = stringResource(R.string.double_tap_action),
-                        description = "What happens on double tap",
+                        description = stringResource(R.string.double_tap_desc),
                         value = state.doubleClickAction,
                         icon = state.doubleClickActionIcon,
                         borderColor = MaterialTheme.colorScheme.primary,
@@ -103,7 +103,7 @@ fun HandlerActionsScreen(
 
                     ActionSettingItem(
                         label = stringResource(R.string.long_press_action),
-                        description = "What happens on long press",
+                        description = stringResource(R.string.long_press_desc),
                         value = state.longClickAction,
                         icon = state.longClickActionIcon,
                         borderColor = MaterialTheme.colorScheme.primary,
@@ -122,7 +122,7 @@ fun HandlerActionsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Gesture Actions Section
-            SectionTitle("GESTURE ACTIONS", MaterialTheme.colorScheme.primary)
+            SectionTitle(stringResource(R.string.gesture_actions), MaterialTheme.colorScheme.primary)
 
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -132,7 +132,7 @@ fun HandlerActionsScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     ActionSettingItem(
                         label = stringResource(R.string.swipe_up_action),
-                        description = "What happens on swipe up",
+                        description = stringResource(R.string.swipe_up_desc),
                         value = state.swipeUpAction,
                         icon = state.swipeUpActionIcon,
                         borderColor = MaterialTheme.colorScheme.primary,
@@ -146,7 +146,7 @@ fun HandlerActionsScreen(
 
                     ActionSettingItem(
                         label = stringResource(R.string.swipe_down_action),
-                        description = "What happens on swipe down",
+                        description = stringResource(R.string.swipe_down_desc),
                         value = state.swipeDownAction,
                         icon = state.swipeDownActionIcon,
                         borderColor = MaterialTheme.colorScheme.primary,
@@ -176,7 +176,7 @@ fun HandlerActionsScreen(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Customize how you interact with the volume handler through taps and gestures",
+                        text = stringResource(R.string.customize_how_you_interact_with_the_volume_handler_through_taps_and_gestures),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         lineHeight = 20.sp
@@ -191,7 +191,7 @@ fun HandlerActionsScreen(
     // Dialogs
     if (showClickActionDialog) {
         TapActionDialog(
-            title = "Single Tap Action",
+            title = stringResource(R.string.single_tap_action),
             currentAction = state.clickAction,
             onDismiss = { showClickActionDialog = false },
             onSelect = { action ->
@@ -203,7 +203,7 @@ fun HandlerActionsScreen(
 
     if (showDoubleClickActionDialog) {
         TapActionDialog(
-            title = "Double Tap Action",
+            title = stringResource(R.string.double_tap_action),
             currentAction = state.doubleClickAction,
             onDismiss = { showDoubleClickActionDialog = false },
             onSelect = { action ->
@@ -215,7 +215,7 @@ fun HandlerActionsScreen(
 
     if (showLongClickActionDialog) {
         TapActionDialog(
-            title = "Long Press Action",
+            title = stringResource(R.string.long_press_action),
             currentAction = state.longClickAction,
             onDismiss = { showLongClickActionDialog = false },
             onSelect = { action ->
@@ -227,7 +227,7 @@ fun HandlerActionsScreen(
 
     if (showSwipeUpDialog) {
         SwipeActionDialog(
-            title = "Swipe Up Action",
+            title = stringResource(R.string.swipe_up_action),
             currentAction = state.swipeUpAction,
             isSwipeUp = true,
             onDismiss = { showSwipeUpDialog = false },
@@ -240,7 +240,7 @@ fun HandlerActionsScreen(
 
     if (showSwipeDownDialog) {
         SwipeActionDialog(
-            title = "Swipe Down Action",
+            title = stringResource(R.string.swipe_down_action),
             currentAction = state.swipeDownAction,
             isSwipeUp = false,
             onDismiss = { showSwipeDownDialog = false },

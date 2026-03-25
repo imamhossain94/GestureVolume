@@ -1,0 +1,268 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GestureVolume</string>
+
+    <string name="device_description">Device Policy Manager API ile tıklandığında ekranı kilitleyin</string>
+    <string name="device_admin_label">Hareket Sesi Cihaz Yöneticisi</string>
+    <string name="landscape_appearance_settings">MANZARA GÖRÜNÜM AYARLARI</string>
+    <string name="click_">Anahtarı aktif hale getirin ve işleyicinin yer çekimini, boyutunu, kalınlığını ve konumunu yatay ekranda yapılandırın.</string>
+    <string name="configure">Yapılandır</string>
+    <string name="please">İşleyici konumunu yapılandırmak için lütfen telefonunuzu tekrar dikey moda döndürün.</string>
+    <string name="ad">reklam</string>
+    <string name="about">Hakkında</string>
+    <string name="all_corners">Tüm Köşeler</string>
+    <string name="all_required_permissions_granted">Gerekli tüm izinler verilmiştir. You can now use the app.</string>
+    <string name="all_set">Her şey hazır!</string>
+    <string name="apply">Uygula</string>
+    <string name="apply_changes">Değişiklikler Uygulansın mı?</string>
+    <string name="are_you_sure_you_want_to_apply_these_appearance_settings_to_your_active_handler">Bu görünüm ayarlarını etkin işleyicinize uygulamak istediğinizden emin misiniz?</string>
+    <string name="bottom_left">Sol Alt</string>
+    <string name="bottom_right">Sağ Alt</string>
+    <string name="common_issues">ORTAK SORUNLAR</string>
+    <string name="cancel">İptal etmek</string>
+    <string name="cannot_open_play_store">Play Store açılamıyor</string>
+    <string name="choose_language">Dil Seçin</string>
+    <string name="choose_theme">Tema Seç</string>
+    <string name="close">Kapalı</string>
+    <string name="color">Renk</string>
+    <string name="confirm">Onaylamak</string>
+    <string name="customize_how_you_interact_with_the_volume_handler_through_taps_and_gestures">Dokunma ve hareketlerle ses düzeyi işleyiciyle nasıl etkileşimde bulunacağınızı özelleştirin</string>
+    <string name="describe_the_issue_or_suggestion">Sorunu veya öneriyi açıklayın</string>
+    <string name="developed_by">Tarafından geliştirildi</string>
+    <string name="discard">At</string>
+    <string name="double_tap_action">Çift dokunma eylemi</string>
+    <string name="feedback">Geri bildirim</string>
+    <string name="general">GENEL</string>
+    <string name="gesture_volume">Hareket Hacmi</string>
+    <string name="grant_permission">İzin Ver</string>
+    <string name="gravity">Yer çekimi</string>
+    <string name="handler_actions">İşleyici Eylemleri</string>
+    <string name="handler_appearance">İşleyici Görünümü</string>
+    <string name="height">Yükseklik</string>
+    <string name="help_us_improve_the_app">Uygulamayı geliştirmemize yardımcı olun</string>
+    <string name="icon">Simge</string>
+    <string name="icon_color">Simge Rengi</string>
+    <string name="icon_size">Simge Boyutu</string>
+    <string name="install">Düzenlemek</string>
+    <string name="item_already_owned">Öğe zaten sahip olundu</string>
+    <string name="legal">YASAL</string>
+    <string name="language">Dil</string>
+    <string name="lock_position">Kilit konumu</string>
+    <string name="long_press_action">Uzun basma eylemi</string>
+    <string name="minimize">EN AZA İNDİR</string>
+    <string name="more">DAHA</string>
+    <string name="newagedevs">NewAgeDev\'ler</string>
+    <string name="nothing_to_restore">Geri yüklenecek bir şey yok</string>
+    <string name="optional">İSTEĞE BAĞLI</string>
+    <string name="optional_permissions">İSTEĞE BAĞLI İZİNLER</string>
+    <string name="other_feedback">DİĞER GERİ BİLDİRİM</string>
+    <string name="opacity">Opaklık</string>
+    <string name="other_apps">Diğer Uygulamalar</string>
+    <string name="pro">PRO</string>
+    <string name="purchase_failed">Satın alma başarısız oldu. Lütfen tekrar deneyin.</string>
+    <string name="purchase_restored">Satın alma işlemi geri yüklendi! Premium etkinleştirildi.</string>
+    <string name="purchase_success">Başarılı satın alma! Premium etkinleştirildi.</string>
+    <string name="overlay_permission_toast">Lütfen devam etmek için yer paylaşımı izni verin.</string>
+    <string name="permission_granted_check">İzin Verildi ✓</string>
+    <string name="permissions">İzinler</string>
+    <string name="action_required">İşlem gerekli</string>
+    <string name="all_permissions_granted">Tüm izinler verildi</string>
+    <string name="quick_presets">HIZLI ÖN AYARLAR</string>
+    <string name="required_permissions">GEREKLİ İZİNLER</string>
+    <string name="rate_on_play_store">Play Store\'da puan verin</string>
+    <string name="revoke_permission">İzni İptal Et</string>
+    <string name="settings">AYARLAR</string>
+    <string name="menu">Menü</string>
+    <string name="select_icon">Simge Seç</string>
+    <string name="select_the_color_and_transparency_of_the_handler">İşleyicinin rengini ve şeffaflığını seçin</string>
+    <string name="send_feedback">Geri Bildirim Gönder</string>
+    <string name="share_app">Uygulamayı Paylaş</string>
+    <string name="show_icon">Simgeyi göster</string>
+    <string name="single_tap_action">Tek dokunuşla eylem</string>
+    <string name="skip_for_now">Şimdilik atla</string>
+    <string name="swipe_down_action">Aşağı kaydırma eylemi</string>
+    <string name="swipe_up_action">Yukarı kaydırma eylemi</string>
+    <string name="tap_to_change">Değiştirmek için dokunun</string>
+    <string name="tap_to_manage_overlay">Kaplamayı yönetmek için dokunun</string>
+    <string name="tell_us_more_about_your_experience">Bize deneyiminiz hakkında daha fazla bilgi verin...</string>
+    <string name="permissions_header_info">Uygulamanın düzgün çalışması için belirli izinler gerekiyor. Aşağıdaki izinleri verin.</string>
+    <string name="theme">Tema</string>
+    <string name="theme_desc">Uygulama renk teması</string>
+    <string name="language_desc">Uygulama dili</string>
+    <string name="top_left">Sol Üst</string>
+    <string name="top_right">Sağ Üst</string>
+    <string name="upgrade">GÜNCELLEME</string>
+    <string name="unlock_all_features">Tüm özelliklerin kilidini açın</string>
+    <string name="unsaved_changes">Kaydedilmemiş Değişiklikler</string>
+    <string name="upgrade_to_pro">Pro\'ya yükseltin</string>
+    <string name="vibrate_on_click">Tıklandığında titret</string>
+    <string name="we_d_love_to_hear_from_you">Sizden haber almayı çok isteriz!</string>
+    <string name="width">Genişlik</string>
+    <string name="already_have_premium">Zaten premiumunuz var!</string>
+    <string name="you_have_unsaved_changes_do_you_want_to_apply_them_before_leaving">Kaydedilmemiş değişiklikleriniz var. Ayrılmadan önce bunları uygulamak ister misiniz?</string>
+
+    <!-- About Screen -->
+    <string name="rate_us">Bizi Değerlendirin</string>
+    <string name="share">Paylaşmak</string>
+    <string name="source">Kaynak</string>
+    <string name="more_apps">Daha Fazla Uygulama</string>
+    <string name="privacy_policy">Gizlilik Politikası</string>
+    <string name="back">Geri</string>
+
+    <!-- Feedback Screen -->
+    <string name="issue_crash">Uygulama çok çöküyor</string>
+    <string name="issue_ads">Çok fazla reklam</string>
+    <string name="issue_unresponsive">Uygulama donuyor veya yanıt vermiyor</string>
+    <string name="issue_not_user_friendly">Uygulama kullanıcı dostu değil</string>
+    <string name="no_feedback_provided">Geri bildirim sağlanmadı</string>
+    <string name="selected_issues">Seçilmiş Sayılar:</string>
+    <string name="additional_feedback">Ek Geribildirim:</string>
+
+    <!-- Actions Screen -->
+    <string name="tap_actions">DOKUNMA EYLEMLERİ</string>
+    <string name="gesture_actions">JEST EYLEMLERİ</string>
+    <string name="single_tap_desc">Tek dokunuşla ne olur?</string>
+    <string name="double_tap_desc">Çift dokunuşta ne olur?</string>
+    <string name="long_press_desc">Uzun basıldığında ne olur?</string>
+    <string name="swipe_up_desc">Yukarı kaydırdığınızda ne olur?</string>
+    <string name="swipe_down_desc">Aşağı kaydırdığınızda ne olur?</string>
+    <string name="tap_gesture_settings">Dokunun ve dokunun hareket ayarları</string>
+
+    <!-- Appearance -->
+    <string name="appearance_saved">Görünüm kaydedildi</string>
+    <string name="appearance">Dış görünüş</string>
+    <string name="appearance_desc">İşleyiciyi özelleştirin</string>
+    <string name="customize_handler">İşleyiciyi özelleştirin</string>
+    <string name="actions">Eylemler</string>
+    <string name="actions_desc">Dokunun ve dokunun hareket ayarları</string>
+
+    <!-- Navigation -->
+    <string name="pro_version">Profesyonel Sürüm</string>
+    <string name="free_version">Ücretsiz Sürüm</string>
+
+    <!-- Permissions -->
+    <string name="overlay_permission">Diğer uygulamaların üzerinde görüntüle</string>
+    <string name="overlay_permission_desc">Birim işleyicisi katmanını ekranınızda göstermek için gereklidir</string>
+    <string name="notification_permission">Bildirim yayınlama</string>
+    <string name="notification_permission_desc">Hizmet çalışırken kalıcı bildirimin gösterilmesi için gereklidir</string>
+    <string name="device_admin_permission">Cihaz yöneticisi</string>
+    <string name="device_admin_permission_desc">İsteğe bağlı: Yapılandırıldığında işleyicinin cihazınızın ekranını kilitlemesine izin verir</string>
+
+    <!-- Walkthrough -->
+    <string name="walkthrough_welcome_title">Gesture Volume\'a hoş geldiniz</string>
+    <string name="walkthrough_welcome_desc">Basit ekran hareketleriyle cihazınızın sesini kontrol edin. Fiziksel düğmelere ulaşmanıza gerek yok.</string>
+    <string name="walkthrough_overlay_title">Yer Paylaşımı İzni</string>
+    <string name="walkthrough_overlay_desc">Birim işleyicisini diğer uygulamaların üstünde göstermek için \'Diğer uygulamaların üzerine çizim yap\' iznine ihtiyacımız var.</string>
+    <string name="walkthrough_notifications_title">Bildirimler</string>
+    <string name="walkthrough_notifications_desc">Hareket hizmetinin arka planda sorunsuz çalışmasını sağlayabilmemiz için bildirimleri etkinleştirin.</string>
+    <string name="walkthrough_all_set_title">Artık hazırsınız!</string>
+    <string name="walkthrough_all_set_desc">Hareket Hacmi kullanıma hazır. Ana ekrandaki görünümü ve eylemleri özelleştirin.</string>
+    <string name="get_started">Başlayın</string>
+    <string name="next">Sonraki</string>
+    <string name="finish">Sona ermek</string>
+
+    <!-- Expanded Preview -->
+    <string name="position_locked">KONUM KİLİTLİ</string>
+    <string name="unlock_to_reposition">YENİDEN KONUMLANDIRMANIN KİLİDİNİ AÇ</string>
+    <string name="test_mode">Test Modu</string>
+    <string name="reposition_mode">Yeniden Konumlandırma Modu</string>
+    <string name="test_mode_desc">Kaydırmayı ve dokunmayı deneyin</string>
+    <string name="reposition_mode_desc">İşleyiciyi yeni konuma sürükleyin</string>
+
+    <!-- Appearance Settings Content -->
+    <string name="position_uppercase">KONUM</string>
+    <string name="left">Sol</string>
+    <string name="right">Sağ</string>
+    <string name="dimensions_uppercase">BOYUTLAR</string>
+    <string name="background_uppercase">ARKA PLAN</string>
+    <string name="stroke_uppercase">FELÇ</string>
+    <string name="corner_radius_uppercase">KÖŞE YARIÇAPI</string>
+    <string name="behavior_uppercase">DAVRANIŞ</string>
+    <string name="icon_settings">SİMGE AYARLARI</string>
+
+    <!-- Actions -->
+    <string name="action_none">Hiçbiri</string>
+    <string name="action_open_volume_ui">Birim kullanıcı arayüzünü aç</string>
+    <string name="action_mute">Sesini kapatmak</string>
+    <string name="action_mute_unmute">Sesi Kapat veya Sesi Aç</string>
+    <string name="action_music_overlay">Aktif Müzik Yer Paylaşımı</string>
+    <string name="action_lock">Kilit</string>
+    <string name="action_hide_handler">İşleyiciyi Gizle</string>
+    <string name="action_open_app">Uygulamayı Aç</string>
+    <string name="action_increase_vol_ui">Sesi artırın ve kullanıcı arayüzünü gösterin</string>
+    <string name="action_increase_vol">Sesi artır</string>
+    <string name="action_decrease_vol_ui">Sesi azalt ve kullanıcı arayüzünü göster</string>
+    <string name="action_decrease_vol">Sesi azalt</string>
+
+    <!-- Messages -->
+    <string name="action_not_available_msg">Bu eylem burada mevcut değil.</string>
+    <string name="unknown_action_msg">Bilinmeyen eylem.</string>
+    <string name="save_changes">Değişiklikleri Kaydet</string>
+    <string name="locked">Kilitli</string>
+    <string name="unlocked">Kilitli değil</string>
+    <string name="icon_increase">Arttırmak</string>
+    <string name="icon_decrease">Azaltmak</string>
+    <string name="icon_boost">Artırmak</string>
+    <string name="icon_reduce">Azaltmak</string>
+    <string name="icon_bug">Böcek</string>
+    <string name="icon_check">Kontrol etmek</string>
+    <string name="icon_palette">Palet</string>
+    <string name="icon_crown">Taç</string>
+    <string name="icon_edit">Düzenlemek</string>
+    <string name="icon_feedback">Geri bildirim</string>
+    <string name="icon_github">GitHub</string>
+    <string name="icon_lock">Kilit</string>
+    <string name="icon_move">Taşınmak</string>
+    <string name="icon_music">Müzik</string>
+    <string name="icon_none">Hiçbiri</string>
+    <string name="icon_plugin">Eklenti</string>
+    <string name="icon_power">Güç</string>
+    <string name="icon_share">Paylaşmak</string>
+    <string name="icon_star">Yıldız</string>
+    <string name="icon_hide">Saklamak</string>
+    <string name="icon_close">Kapalı</string>
+    <string name="crown">Taç</string>
+
+    <!-- Languages -->
+    <string name="lang_english">İngilizce</string>
+    <string name="lang_bangla">Bangladeş</string>
+    <string name="lang_arabic">Arapça</string>
+    <string name="lang_hindi">Hintçe</string>
+    <string name="lang_korean">Korece</string>
+    <string name="lang_japanese">Japonca</string>
+    <string name="lang_chinese">Çince</string>
+    <string name="lang_german">Almanca</string>
+    <string name="lang_spanish">İspanyol</string>
+    <string name="lang_french">Fransızca</string>
+    <string name="lang_italian">İtalyan</string>
+    <string name="lang_portuguese">Portekizce</string>
+    <string name="lang_russian">Rusça</string>
+    <string name="lang_turkish">Türkçe</string>
+    <string name="lang_vietnamese">Vietnam</string>
+
+    <!-- Theme Options -->
+    <string name="system_default">Sistem Varsayılanı</string>
+    <string name="light">Işık</string>
+    <string name="dark">Karanlık</string>
+
+    <!-- Additional UI -->
+    <string name="optional_uppercase">İSTEĞE BAĞLI</string>
+    <string name="granted">İmtiyazlı</string>
+
+    <!-- Presets -->
+    <string name="preset_default_title">Varsayılan</string>
+    <string name="preset_default_subtitle">Standart sap</string>
+    <string name="preset_minimal_title">Asgari</string>
+    <string name="preset_minimal_subtitle">İnce ve hemen göze çarpmayan</string>
+    <string name="preset_bold_title">Gözü pek</string>
+    <string name="preset_bold_subtitle">Büyük ve görünür</string>
+    <string name="preset_night_title">Gece</string>
+    <string name="preset_night_subtitle">Koyu tema</string>
+    <string name="preset_ghost_title">Hayalet</string>
+    <string name="preset_ghost_subtitle">Neredeyse görünmez</string>
+
+    <!-- Missing Strings -->
+    <string name="preview">Önizleme</string>
+    <string name="press_back_again_to_exit">Çıkmak için tekrar geri tuşuna basın</string>
+    <string name="volume_gesture_handler">Ses seviyesi hareketi işleyicisi</string>
+</resources>

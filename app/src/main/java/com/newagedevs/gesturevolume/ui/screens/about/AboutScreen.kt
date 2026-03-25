@@ -40,7 +40,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -67,7 +67,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                 ActionButton(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.Star,
-                    text = "Rate Us",
+                    text = stringResource(R.string.rate_us),
                     borderColor = Color(0xFFF59E0B),
                     onClick = {
                         openAppStore(context, Constants.APP_STORE_ID) {
@@ -78,7 +78,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                 ActionButton(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.Share,
-                    text = "Share",
+                    text = stringResource(R.string.share),
                     borderColor = Color(0xFF10B981),
                     onClick = {
                         shareApp(context)
@@ -95,7 +95,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                 ActionButton(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.Build,
-                    text = "Source",
+                    text = stringResource(R.string.source),
                     borderColor = Color(0xFF8B5CF6),
                     onClick = {
                         openAppStore(context, Constants.SOURCE_CODE_URL) {
@@ -106,7 +106,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                 ActionButton(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.ShoppingCart,
-                    text = "More Apps",
+                    text = stringResource(R.string.more_apps),
                     borderColor = Color(0xFFEC4899),
                     onClick = {
                         openAppStore(context, PUBLISHER_URL) {
@@ -138,12 +138,12 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Developed by",
+                        text = stringResource(R.string.developed_by),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                     Text(
-                        text = "NewAgeDevs",
+                        text = stringResource(R.string.newagedevs),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -162,7 +162,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
 
             // Links Section
             Text(
-                text = "LEGAL",
+                text = stringResource(R.string.legal),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
@@ -174,7 +174,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
 
             LinkCard(
                 icon = Icons.Default.Info,
-                text = "Privacy Policy",
+                text = stringResource(R.string.privacy_policy),
                 onClick = {
                     openWebPage(context, Constants.PRIVACY_POLICY_URL) {
 

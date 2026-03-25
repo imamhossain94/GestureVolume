@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="app_name">GestureVolume</string>
+
     <string name="device_description">Device Policy Manager API を使用してクリックで画面をロックする</string>
     <string name="device_admin_label">Gesture Volume 设备管理员</string>
     <string name="landscape_appearance_settings">横屏外观设置</string>
@@ -10,7 +11,7 @@
     <string name="ad">AD</string>
     <string name="about">关于</string>
     <string name="all_corners">所有角落</string>
-    <string name="all_required_permissions_are_granted_you_can_now_use_the_app">所需权限均已授予。您现在可以使用该应用程序了。</string>
+    <string name="all_required_permissions_granted">已授予所有必需的权限。您现在可以使用该应用程序。</string>
     <string name="all_set">一切就绪！</string>
     <string name="apply">应用</string>
     <string name="apply_changes">应用更改？</string>
@@ -58,19 +59,20 @@
     <string name="opacity">不透明度</string>
     <string name="other_apps">其他应用</string>
     <string name="pro">PRO</string>
-    <string name="permission_granted">已授权 ✓</string>
+    <string name="purchase_failed">购买失败。请再试一次。</string>
+    <string name="purchase_restored">恢复购买！高级版已激活。</string>
+    <string name="purchase_success">购买成功！高级版已激活。</string>
+    <string name="overlay_permission_toast">请授予覆盖权限以继续。</string>
+    <string name="permission_granted_check">已授予许可 ✓</string>
     <string name="permissions">权限</string>
-    <string name="please_grant_overlay_permission_to_continue">请授予悬浮窗权限以继续。</string>
-    <string name="press_back_again_to_exit">再次按返回键退出</string>
-    <string name="preview">预览</string>
-    <string name="purchase_failed_please_try_again">购买失败。请再试一次。</string>
-    <string name="purchase_restored_premium_activated">购买已恢复！高级版已激活。</string>
-    <string name="purchase_successful_premium_activated">购买成功！高级版已激活。</string>
+    <string name="action_required">需要采取行动</string>
+    <string name="all_permissions_granted">已授予所有权限</string>
     <string name="quick_presets">快速预设</string>
     <string name="required_permissions">必需权限</string>
     <string name="rate_on_play_store">去 Play 商店评价</string>
     <string name="revoke_permission">撤销权限</string>
     <string name="settings">设置</string>
+    <string name="menu">菜单</string>
     <string name="select_icon">选择图标</string>
     <string name="select_the_color_and_transparency_of_the_handler">选择触发器的颜色和透明度</string>
     <string name="send_feedback">发送反馈</string>
@@ -83,8 +85,10 @@
     <string name="tap_to_change">点击以更改</string>
     <string name="tap_to_manage_overlay">点击进入悬浮窗管理</string>
     <string name="tell_us_more_about_your_experience">向我们讲述更多您的体验...</string>
-    <string name="the_app_requires_certain_permissions_to_function_properly_grant_permissions_below">该应用需要一定的权限才能正常运行。</string>
+    <string name="permissions_header_info">该应用程序需要某些权限才能正常运行。授予以下权限。</string>
     <string name="theme">主题</string>
+    <string name="theme_desc">应用颜色主题</string>
+    <string name="language_desc">应用语言</string>
     <string name="top_left">左上角</string>
     <string name="top_right">右上角</string>
     <string name="upgrade">升级</string>
@@ -94,6 +98,171 @@
     <string name="vibrate_on_click">点击时震动</string>
     <string name="we_d_love_to_hear_from_you">我们很乐意听到您的声音！</string>
     <string name="width">宽度</string>
-    <string name="you_already_have_premium">您已经拥有高级版！</string>
+    <string name="already_have_premium">您已经有溢价了！</string>
     <string name="you_have_unsaved_changes_do_you_want_to_apply_them_before_leaving">您有未保存的更改。您想在离开前应用它们吗？</string>
+
+    <!-- About Screen -->
+    <string name="rate_us">评价我们</string>
+    <string name="share">分享</string>
+    <string name="source">来源</string>
+    <string name="more_apps">更多应用程序</string>
+    <string name="privacy_policy">隐私政策</string>
+    <string name="back">后退</string>
+
+    <!-- Feedback Screen -->
+    <string name="issue_crash">应用程序经常崩溃</string>
+    <string name="issue_ads">广告太多</string>
+    <string name="issue_unresponsive">应用程序冻结或变得无响应</string>
+    <string name="issue_not_user_friendly">应用程序不方便用户使用</string>
+    <string name="no_feedback_provided">没有提供反馈</string>
+    <string name="selected_issues">选定的问题：</string>
+    <string name="additional_feedback">附加反馈：</string>
+
+    <!-- Actions Screen -->
+    <string name="tap_actions">点击操作</string>
+    <string name="gesture_actions">手势动作</string>
+    <string name="single_tap_desc">单击时会发生什么</string>
+    <string name="double_tap_desc">双击会发生什么</string>
+    <string name="long_press_desc">长按会发生什么</string>
+    <string name="swipe_up_desc">向上滑动会发生什么</string>
+    <string name="swipe_down_desc">向下滑动会发生什么</string>
+    <string name="tap_gesture_settings">点击&amp;手势设置</string>
+
+    <!-- Appearance -->
+    <string name="appearance_saved">外观已保存</string>
+    <string name="appearance">外貌</string>
+    <string name="appearance_desc">自定义处理程序</string>
+    <string name="customize_handler">自定义处理程序</string>
+    <string name="actions">行动</string>
+    <string name="actions_desc">点击&amp;手势设置</string>
+
+    <!-- Navigation -->
+    <string name="pro_version">专业版</string>
+    <string name="free_version">免费版</string>
+
+    <!-- Permissions -->
+    <string name="overlay_permission">显示在其他应用之上</string>
+    <string name="overlay_permission_desc">需要在屏幕上显示音量处理程序覆盖层</string>
+    <string name="notification_permission">发布通知</string>
+    <string name="notification_permission_desc">需要在服务运行时显示持久通知</string>
+    <string name="device_admin_permission">设备管理员</string>
+    <string name="device_admin_permission_desc">可选：允许处理程序在配置后锁定您的设备屏幕</string>
+
+    <!-- Walkthrough -->
+    <string name="walkthrough_welcome_title">欢迎使用手势音量</string>
+    <string name="walkthrough_welcome_desc">通过简单的屏幕手势控制设备的音量。无需触碰物理按钮。</string>
+    <string name="walkthrough_overlay_title">叠加权限</string>
+    <string name="walkthrough_overlay_desc">要在其他应用程序之上显示音量处理程序，我们需要“在其他应用程序上绘制”权限。</string>
+    <string name="walkthrough_notifications_title">通知</string>
+    <string name="walkthrough_notifications_desc">选择接收通知，以便我们可以保持手势服务在后台顺利运行。</string>
+    <string name="walkthrough_all_set_title">你都准备好了！</string>
+    <string name="walkthrough_all_set_desc">手势音量即可使用。自定义主屏幕中的外观和操作。</string>
+    <string name="get_started">开始使用</string>
+    <string name="next">下一个</string>
+    <string name="finish">结束</string>
+
+    <!-- Expanded Preview -->
+    <string name="position_locked">位置锁定</string>
+    <string name="unlock_to_reposition">解锁以重新定位</string>
+    <string name="test_mode">测试模式</string>
+    <string name="reposition_mode">重新定位模式</string>
+    <string name="test_mode_desc">尝试滑动和点击</string>
+    <string name="reposition_mode_desc">将处理程序拖动到新位置</string>
+
+    <!-- Appearance Settings Content -->
+    <string name="position_uppercase">位置</string>
+    <string name="left">左边</string>
+    <string name="right">正确的</string>
+    <string name="dimensions_uppercase">方面</string>
+    <string name="background_uppercase">背景</string>
+    <string name="stroke_uppercase">中风</string>
+    <string name="corner_radius_uppercase">拐角半径</string>
+    <string name="behavior_uppercase">行为</string>
+    <string name="icon_settings">图标设置</string>
+
+    <!-- Actions -->
+    <string name="action_none">没有任何</string>
+    <string name="action_open_volume_ui">打开音量 UI</string>
+    <string name="action_mute">沉默的</string>
+    <string name="action_mute_unmute">静音或取消静音</string>
+    <string name="action_music_overlay">活跃音乐叠加</string>
+    <string name="action_lock">锁</string>
+    <string name="action_hide_handler">隐藏处理程序</string>
+    <string name="action_open_app">打开应用程序</string>
+    <string name="action_increase_vol_ui">增加音量并显示 UI</string>
+    <string name="action_increase_vol">增加音量</string>
+    <string name="action_decrease_vol_ui">降低音量并显示 UI</string>
+    <string name="action_decrease_vol">减小音量</string>
+
+    <!-- Messages -->
+    <string name="action_not_available_msg">此操作在此不可用。</string>
+    <string name="unknown_action_msg">未知的行动。</string>
+    <string name="save_changes">保存更改</string>
+    <string name="locked">锁定</string>
+    <string name="unlocked">解锁</string>
+    <string name="icon_increase">增加</string>
+    <string name="icon_decrease">减少</string>
+    <string name="icon_boost">促进</string>
+    <string name="icon_reduce">减少</string>
+    <string name="icon_bug">漏洞</string>
+    <string name="icon_check">查看</string>
+    <string name="icon_palette">调色板</string>
+    <string name="icon_crown">王冠</string>
+    <string name="icon_edit">编辑</string>
+    <string name="icon_feedback">反馈</string>
+    <string name="icon_github">GitHub</string>
+    <string name="icon_lock">锁</string>
+    <string name="icon_move">移动</string>
+    <string name="icon_music">音乐</string>
+    <string name="icon_none">没有任何</string>
+    <string name="icon_plugin">插件</string>
+    <string name="icon_power">力量</string>
+    <string name="icon_share">分享</string>
+    <string name="icon_star">星星</string>
+    <string name="icon_hide">隐藏</string>
+    <string name="icon_close">关闭</string>
+    <string name="crown">王冠</string>
+
+    <!-- Languages -->
+    <string name="lang_english">英语</string>
+    <string name="lang_bangla">孟加拉语</string>
+    <string name="lang_arabic">阿拉伯</string>
+    <string name="lang_hindi">印地语</string>
+    <string name="lang_korean">韩国人</string>
+    <string name="lang_japanese">日本人</string>
+    <string name="lang_chinese">中国人</string>
+    <string name="lang_german">德语</string>
+    <string name="lang_spanish">西班牙语</string>
+    <string name="lang_french">法语</string>
+    <string name="lang_italian">意大利语</string>
+    <string name="lang_portuguese">葡萄牙语</string>
+    <string name="lang_russian">俄语</string>
+    <string name="lang_turkish">土耳其</string>
+    <string name="lang_vietnamese">越南语</string>
+
+    <!-- Theme Options -->
+    <string name="system_default">系统默认值</string>
+    <string name="light">光</string>
+    <string name="dark">黑暗的</string>
+
+    <!-- Additional UI -->
+    <string name="optional_uppercase">选修的</string>
+    <string name="granted">的确</string>
+
+    <!-- Presets -->
+    <string name="preset_default_title">默认</string>
+    <string name="preset_default_subtitle">标准手柄</string>
+    <string name="preset_minimal_title">最小</string>
+    <string name="preset_minimal_subtitle">薄&amp;微妙的</string>
+    <string name="preset_bold_title">大胆的</string>
+    <string name="preset_bold_subtitle">大&amp;可见的</string>
+    <string name="preset_night_title">夜晚</string>
+    <string name="preset_night_subtitle">深色主题</string>
+    <string name="preset_ghost_title">鬼</string>
+    <string name="preset_ghost_subtitle">几乎看不见</string>
+
+    <!-- Missing Strings -->
+    <string name="preview">预览</string>
+    <string name="press_back_again_to_exit">再次按返回键退出</string>
+    <string name="volume_gesture_handler">音量手势处理程序</string>
 </resources>

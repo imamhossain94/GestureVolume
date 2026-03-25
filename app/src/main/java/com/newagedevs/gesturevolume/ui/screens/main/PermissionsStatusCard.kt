@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
 
 @Composable
 fun PermissionsStatusCard(
@@ -48,14 +50,14 @@ fun PermissionsStatusCard(
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Permissions",
+                    text = stringResource(R.string.permissions),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,
                     color = if (allPermissionsGranted) MaterialTheme.colorScheme.onSurfaceVariant 
                     else MaterialTheme.colorScheme.onErrorContainer
                 )
                 Text(
-                    text = if (allPermissionsGranted) "All permissions granted" else "Action required",
+                    text = if (allPermissionsGranted) stringResource(R.string.all_permissions_granted) else stringResource(R.string.action_required),
                     fontSize = 13.sp,
                     color = if (allPermissionsGranted) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.7f)
                     else MaterialTheme.colorScheme.onErrorContainer.copy(alpha=0.8f)
