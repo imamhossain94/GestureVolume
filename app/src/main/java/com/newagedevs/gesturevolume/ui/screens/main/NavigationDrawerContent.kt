@@ -60,7 +60,7 @@ fun NavigationDrawerContent(
                         Image(
                             painter = painterResource(id = R.drawable.ic_launcher_foreground),
                             contentDescription = null,
-                            modifier = Modifier.size(48.dp),
+                            modifier = Modifier.size(56.dp),
                             contentScale = ContentScale.Fit,
                             alignment = Alignment.Center
                         )

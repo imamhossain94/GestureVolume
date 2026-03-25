@@ -224,21 +224,21 @@
     <string name="crown">Vương miện</string>
 
     <!-- Languages -->
-    <string name="lang_english">Tiếng Anh</string>
+    <string name="lang_english">English</string>
     <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">tiếng Ả Rập</string>
-    <string name="lang_hindi">Tiếng Hindi</string>
-    <string name="lang_korean">Tiếng Hàn</string>
-    <string name="lang_japanese">tiếng Nhật</string>
-    <string name="lang_chinese">Tiếng Trung</string>
-    <string name="lang_german">tiếng Đức</string>
-    <string name="lang_spanish">tiếng Tây Ban Nha</string>
-    <string name="lang_french">người Pháp</string>
-    <string name="lang_italian">người Ý</string>
-    <string name="lang_portuguese">tiếng Bồ Đào Nha</string>
-    <string name="lang_russian">tiếng Nga</string>
-    <string name="lang_turkish">tiếng Thổ Nhĩ Kỳ</string>
-    <string name="lang_vietnamese">Tiếng Việt</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">Mặc định hệ thống</string>
@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">Trình xử lý cử chỉ âm lượng</string>
     <string name="troubleshoot">Khắc phục sự cố</string>
     <string name="troubleshoot_desc">Giữ ứng dụng tồn tại trên thiết bị của bạn</string>
-    <string name="troubleshoot_title">Câu hỏi thường gặp &amp; Khắc phục sự cố</string>
     <string name="troubleshoot_info">Tối ưu hóa pin mạnh mẽ trên một số thiết bị (như Xiaomi, Huawei, Oppo, Vivo) có thể giết chết các dịch vụ nền. Hãy làm theo các bước sau để đảm bảo Âm lượng cử chỉ chạy ổn định:</string>
     <string name="step_auto_start">1. Bật Tự động khởi động: Đi tới Cài đặt → Ứng dụng → Quản lý ứng dụng → Âm lượng cử chỉ → Bật Tự động khởi động.</string>
     <string name="step_battery">2. Tối ưu hóa pin: Đặt Trình tiết kiệm pin thành \"Không hạn chế\".</string>

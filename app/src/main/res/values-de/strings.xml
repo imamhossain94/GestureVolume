@@ -224,21 +224,21 @@
     <string name="crown">Krone</string>
 
     <!-- Languages -->
-    <string name="lang_english">Englisch</string>
+    <string name="lang_english">English</string>
     <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">Arabisch</string>
+    <string name="lang_arabic">Arabic</string>
     <string name="lang_hindi">Hindi</string>
-    <string name="lang_korean">Koreanisch</string>
-    <string name="lang_japanese">japanisch</string>
-    <string name="lang_chinese">chinesisch</string>
-    <string name="lang_german">Deutsch</string>
-    <string name="lang_spanish">Spanisch</string>
-    <string name="lang_french">Französisch</string>
-    <string name="lang_italian">Italienisch</string>
-    <string name="lang_portuguese">Portugiesisch</string>
-    <string name="lang_russian">Russisch</string>
-    <string name="lang_turkish">Türkisch</string>
-    <string name="lang_vietnamese">Vietnamesisch</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">Systemstandard</string>
@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">Handler für Lautstärkegesten</string>
     <string name="troubleshoot">Fehlerbehebung</string>
     <string name="troubleshoot_desc">Halten Sie die App auf Ihrem Gerät am Leben</string>
-    <string name="troubleshoot_title">FAQ &amp; Fehlerbehebung</string>
     <string name="troubleshoot_info">Eine aggressive Akkuoptimierung auf einigen Geräten (wie Xiaomi, Huawei, Oppo, Vivo) kann dazu führen, dass Hintergrunddienste unterbrochen werden. Befolgen Sie diese Schritte, um sicherzustellen, dass Gesture Volume zuverlässig läuft:</string>
     <string name="step_auto_start">1. Autostart aktivieren: Gehen Sie zu Einstellungen → Apps → Apps verwalten → Gestenlautstärke → Autostart aktivieren.</string>
     <string name="step_battery">2. Batterieoptimierung: Stellen Sie den Batteriesparmodus auf „Keine Einschränkungen“.</string>

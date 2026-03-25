@@ -224,21 +224,21 @@
     <string name="crown">মুকুট</string>
 
     <!-- Languages -->
-    <string name="lang_english">ইংরেজি</string>
-    <string name="lang_bangla">বাংলা</string>
-    <string name="lang_arabic">আরবি</string>
-    <string name="lang_hindi">হিন্দি</string>
-    <string name="lang_korean">কোরিয়ান</string>
-    <string name="lang_japanese">জাপানিজ</string>
-    <string name="lang_chinese">চাইনিজ</string>
-    <string name="lang_german">জার্মান</string>
-    <string name="lang_spanish">স্প্যানিশ</string>
-    <string name="lang_french">ফরাসি</string>
-    <string name="lang_italian">ইতালীয়</string>
-    <string name="lang_portuguese">পর্তুগিজ</string>
-    <string name="lang_russian">রাশিয়ান</string>
-    <string name="lang_turkish">তুর্কি</string>
-    <string name="lang_vietnamese">ভিয়েতনামী</string>
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">সিস্টেম ডিফল্ট</string>
@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">ভলিউম অঙ্গভঙ্গি হ্যান্ডলার</string>
     <string name="troubleshoot">সমস্যা সমাধান</string>
     <string name="troubleshoot_desc">অ্যাপটিকে আপনার ডিভাইসে জীবিত রাখুন</string>
-    <string name="troubleshoot_title">FAQ &amp; সমস্যা সমাধান</string>
     <string name="troubleshoot_info">কিছু ডিভাইসে আক্রমনাত্মক ব্যাটারি অপ্টিমাইজেশান (যেমন Xiaomi, Huawei, Oppo, Vivo) ব্যাকগ্রাউন্ড পরিষেবাগুলিকে মেরে ফেলতে পারে। অঙ্গভঙ্গি ভলিউম নির্ভরযোগ্যভাবে চালানো নিশ্চিত করতে এই পদক্ষেপগুলি অনুসরণ করুন:</string>
     <string name="step_auto_start">1. স্বতঃ-শুরু সক্ষম করুন: সেটিংস → অ্যাপস → অ্যাপস পরিচালনা করুন → অঙ্গভঙ্গি ভলিউম → স্বয়ংক্রিয়-শুরু সক্ষম করুন এ যান।</string>
     <string name="step_battery">2. ব্যাটারি অপ্টিমাইজেশান: ব্যাটারি সেভার সেট করুন \"কোন সীমাবদ্ধতা নেই\"।</string>

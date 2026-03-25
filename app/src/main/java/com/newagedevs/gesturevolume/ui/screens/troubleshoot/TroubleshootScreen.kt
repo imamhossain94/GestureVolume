@@ -28,7 +28,7 @@ fun TroubleshootScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.troubleshoot_title)) },
+                title = { Text(stringResource(R.string.troubleshoot)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(

@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">Volume gesture handler</string>
     <string name="troubleshoot">Troubleshooting</string>
     <string name="troubleshoot_desc">Keep app alive on your device</string>
-    <string name="troubleshoot_title">FAQ &amp; Troubleshooting</string>
     <string name="troubleshoot_info">Aggressive battery optimization on some devices (like Xiaomi, Huawei, Oppo, Vivo) may kill background services. Follow these steps to ensure Gesture Volume runs reliably:</string>
     <string name="step_auto_start">1. Enable Auto-start: Go to Settings → Apps → Manage Apps → Gesture Volume → Enable Auto-start.</string>
     <string name="step_battery">2. Battery Optimization: Set Battery Saver to \"No Restrictions\".</string>

@@ -224,21 +224,21 @@
     <string name="crown">Корона</string>
 
     <!-- Languages -->
-    <string name="lang_english">Английский</string>
-    <string name="lang_bangla">Бангла</string>
-    <string name="lang_arabic">арабский</string>
-    <string name="lang_hindi">хинди</string>
-    <string name="lang_korean">корейский</string>
-    <string name="lang_japanese">японский</string>
-    <string name="lang_chinese">китайский</string>
-    <string name="lang_german">немецкий</string>
-    <string name="lang_spanish">испанский</string>
-    <string name="lang_french">Французский</string>
-    <string name="lang_italian">итальянский</string>
-    <string name="lang_portuguese">португальский</string>
-    <string name="lang_russian">Русский</string>
-    <string name="lang_turkish">турецкий</string>
-    <string name="lang_vietnamese">вьетнамский</string>
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">Системные настройки по умолчанию</string>
@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">Обработчик жестов громкости</string>
     <string name="troubleshoot">Поиск неисправностей</string>
     <string name="troubleshoot_desc">Поддерживайте работу приложения на своем устройстве</string>
-    <string name="troubleshoot_title">Часто задаваемые вопросы и усиление; Поиск неисправностей</string>
     <string name="troubleshoot_info">Агрессивная оптимизация батареи на некоторых устройствах (например, Xiaomi, Huawei, Oppo, Vivo) может привести к отключению фоновых служб. Выполните следующие действия, чтобы обеспечить надежную работу Gesture Volume:</string>
     <string name="step_auto_start">1. Включите автозапуск: выберите «Настройки» → «Приложения» → «Управление приложениями» → «Громкость жестов» → «Включить автозапуск».</string>
     <string name="step_battery">2. Оптимизация батареи: установите для режима экономии заряда значение «Без ограничений».</string>

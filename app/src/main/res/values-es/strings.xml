@@ -224,21 +224,21 @@
     <string name="crown">Corona</string>
 
     <!-- Languages -->
-    <string name="lang_english">Inglés</string>
-    <string name="lang_bangla">bengalí</string>
-    <string name="lang_arabic">árabe</string>
-    <string name="lang_hindi">hindi</string>
-    <string name="lang_korean">coreano</string>
-    <string name="lang_japanese">japonés</string>
-    <string name="lang_chinese">Chino</string>
-    <string name="lang_german">Alemán</string>
-    <string name="lang_spanish">Español</string>
-    <string name="lang_french">Francés</string>
-    <string name="lang_italian">italiano</string>
-    <string name="lang_portuguese">portugués</string>
-    <string name="lang_russian">ruso</string>
-    <string name="lang_turkish">turco</string>
-    <string name="lang_vietnamese">vietnamita</string>
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">Valor predeterminado del sistema</string>
@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">Controlador de gestos de volumen</string>
     <string name="troubleshoot">Solución de problemas</string>
     <string name="troubleshoot_desc">Mantenga viva la aplicación en su dispositivo</string>
-    <string name="troubleshoot_title">Preguntas frecuentes y preguntas Solución de problemas</string>
     <string name="troubleshoot_info">La optimización agresiva de la batería en algunos dispositivos (como Xiaomi, Huawei, Oppo, Vivo) puede interrumpir los servicios en segundo plano. Siga estos pasos para garantizar que Gesture Volume se ejecute de manera confiable:</string>
     <string name="step_auto_start">1. Habilite el inicio automático: vaya a Configuración → Aplicaciones → Administrar aplicaciones → Volumen de gestos → Habilite el inicio automático.</string>
     <string name="step_battery">2. Optimización de la batería: configure el ahorro de batería en \"Sin restricciones\".</string>

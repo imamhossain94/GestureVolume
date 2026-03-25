@@ -224,21 +224,21 @@
     <string name="crown">Taç</string>
 
     <!-- Languages -->
-    <string name="lang_english">İngilizce</string>
-    <string name="lang_bangla">Bangladeş</string>
-    <string name="lang_arabic">Arapça</string>
-    <string name="lang_hindi">Hintçe</string>
-    <string name="lang_korean">Korece</string>
-    <string name="lang_japanese">Japonca</string>
-    <string name="lang_chinese">Çince</string>
-    <string name="lang_german">Almanca</string>
-    <string name="lang_spanish">İspanyol</string>
-    <string name="lang_french">Fransızca</string>
-    <string name="lang_italian">İtalyan</string>
-    <string name="lang_portuguese">Portekizce</string>
-    <string name="lang_russian">Rusça</string>
-    <string name="lang_turkish">Türkçe</string>
-    <string name="lang_vietnamese">Vietnam</string>
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">Sistem Varsayılanı</string>
@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">Ses seviyesi hareketi işleyicisi</string>
     <string name="troubleshoot">Sorun giderme</string>
     <string name="troubleshoot_desc">Uygulamayı cihazınızda canlı tutun</string>
-    <string name="troubleshoot_title">SSS ve Sorun giderme</string>
     <string name="troubleshoot_info">Bazı cihazlarda (Xiaomi, Huawei, Oppo, Vivo gibi) agresif pil optimizasyonu arka plan hizmetlerini sonlandırabilir. Hareket Sesi\'nin güvenilir bir şekilde çalıştığından emin olmak için şu adımları izleyin:</string>
     <string name="step_auto_start">1. Otomatik başlatmayı etkinleştirin: Ayarlar → Uygulamalar → Uygulamaları Yönet → Hareket Ses Düzeyi → Otomatik başlatmayı etkinleştir seçeneğine gidin.</string>
     <string name="step_battery">2. Pil Optimizasyonu: Pil Tasarrufunu \"Kısıtlama Yok\" olarak ayarlayın.</string>

@@ -1,6 +1,7 @@
 package com.newagedevs.gesturevolume.ui.activities
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.collectAsState
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,6 +39,9 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
+    // Bumped in onConfigurationChanged to trigger recomposition with new locale strings
+    private val configVersion = mutableIntStateOf(0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -45,6 +50,8 @@ class MainActivity : AppCompatActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
+            // Read configVersion so Compose recomposes when locale changes
+            val version = configVersion.intValue
             val state by viewModel.state.collectAsState()
             val isDarkTheme = when (state.theme) {
                 1 -> false
@@ -114,6 +121,12 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         // Show handler when app goes to background — use Intent (works even if not bound)
         sendServiceCommand("show")
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // Bump version to force Compose to recompose with updated locale resources
+        configVersion.intValue++
     }
 
     override fun onDestroy() {

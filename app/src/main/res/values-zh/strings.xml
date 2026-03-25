@@ -224,21 +224,21 @@
     <string name="crown">王冠</string>
 
     <!-- Languages -->
-    <string name="lang_english">英语</string>
-    <string name="lang_bangla">孟加拉语</string>
-    <string name="lang_arabic">阿拉伯</string>
-    <string name="lang_hindi">印地语</string>
-    <string name="lang_korean">韩国人</string>
-    <string name="lang_japanese">日本人</string>
-    <string name="lang_chinese">中国人</string>
-    <string name="lang_german">德语</string>
-    <string name="lang_spanish">西班牙语</string>
-    <string name="lang_french">法语</string>
-    <string name="lang_italian">意大利语</string>
-    <string name="lang_portuguese">葡萄牙语</string>
-    <string name="lang_russian">俄语</string>
-    <string name="lang_turkish">土耳其</string>
-    <string name="lang_vietnamese">越南语</string>
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">系统默认值</string>
@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">音量手势处理程序</string>
     <string name="troubleshoot">故障排除</string>
     <string name="troubleshoot_desc">让应用程序在您的设备上保持活动状态</string>
-    <string name="troubleshoot_title">常见问题及解答故障排除</string>
     <string name="troubleshoot_info">某些设备（如小米、华为、Oppo、Vivo）上的激进电池优化可能会终止后台服务。请按照以下步骤确保手势音量可靠运行：</string>
     <string name="step_auto_start">1. 启用自动启动：进入设置→应用程序→管理应用程序→手势音量→启用自动启动。</string>
     <string name="step_battery">2. 电池优化：将省电模式设置为“无限制”。</string>

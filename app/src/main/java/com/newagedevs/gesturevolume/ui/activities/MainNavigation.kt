@@ -61,6 +61,8 @@ fun MainNavigation(
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
+        // Resume app open ads now that the user has returned from the overlay permission screen
+        viewModel.preference.setAppOpenAdPaused(false)
         viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
     }
 
@@ -75,6 +77,8 @@ fun MainNavigation(
                         Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         "package:${context.packageName}".toUri()
                     )
+                    // Pause ads while the user is in the overlay permission screen
+                    viewModel.preference.setAppOpenAdPaused(true)
                     overlayPermissionLauncher.launch(intent)
                 }
                 is MainEffect.RequestNotificationPermission -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

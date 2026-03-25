@@ -224,21 +224,21 @@
     <string name="crown">Couronne</string>
 
     <!-- Languages -->
-    <string name="lang_english">Anglais</string>
+    <string name="lang_english">English</string>
     <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">arabe</string>
-    <string name="lang_hindi">hindi</string>
-    <string name="lang_korean">coréen</string>
-    <string name="lang_japanese">japonais</string>
-    <string name="lang_chinese">Chinois</string>
-    <string name="lang_german">Allemand</string>
-    <string name="lang_spanish">Espagnol</string>
-    <string name="lang_french">Français</string>
-    <string name="lang_italian">italien</string>
-    <string name="lang_portuguese">portugais</string>
-    <string name="lang_russian">russe</string>
-    <string name="lang_turkish">turc</string>
-    <string name="lang_vietnamese">vietnamien</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">Système par défaut</string>
@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">Gestionnaire de gestes de volume</string>
     <string name="troubleshoot">Dépannage</string>
     <string name="troubleshoot_desc">Gardez l\'application active sur votre appareil</string>
-    <string name="troubleshoot_title">FAQ et amp; Dépannage</string>
     <string name="troubleshoot_info">Une optimisation agressive de la batterie sur certains appareils (comme Xiaomi, Huawei, Oppo, Vivo) peut tuer les services d\'arrière-plan. Suivez ces étapes pour garantir un fonctionnement fiable de Gesture Volume :</string>
     <string name="step_auto_start">1. Activez le démarrage automatique : accédez à Paramètres → Applications → Gérer les applications → Volume gestuel → Activer le démarrage automatique.</string>
     <string name="step_battery">2. Optimisation de la batterie : définissez l\'économiseur de batterie sur \"Aucune restriction\".</string>

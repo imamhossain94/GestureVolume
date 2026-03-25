@@ -224,21 +224,21 @@
     <string name="crown">ताज</string>
 
     <!-- Languages -->
-    <string name="lang_english">अंग्रेज़ी</string>
-    <string name="lang_bangla">बांग्ला</string>
-    <string name="lang_arabic">अरबी</string>
-    <string name="lang_hindi">हिंदी</string>
-    <string name="lang_korean">कोरियाई</string>
-    <string name="lang_japanese">जापानी</string>
-    <string name="lang_chinese">चीनी</string>
-    <string name="lang_german">जर्मन</string>
-    <string name="lang_spanish">स्पैनिश</string>
-    <string name="lang_french">फ़्रेंच</string>
-    <string name="lang_italian">इतालवी</string>
-    <string name="lang_portuguese">पुर्तगाली</string>
-    <string name="lang_russian">रूसी</string>
-    <string name="lang_turkish">तुर्की</string>
-    <string name="lang_vietnamese">वियतनामी</string>
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">प्रणालीगत चूक</string>
@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">वॉल्यूम जेस्चर हैंडलर</string>
     <string name="troubleshoot">समस्या निवारण</string>
     <string name="troubleshoot_desc">ऐप को अपने डिवाइस पर सक्रिय रखें</string>
-    <string name="troubleshoot_title">अक्सर पूछे जाने वाले प्रश्न &amp; समस्या निवारण</string>
     <string name="troubleshoot_info">कुछ उपकरणों (जैसे Xiaomi, Huawei, OPPO, Vivo) पर आक्रामक बैटरी अनुकूलन पृष्ठभूमि सेवाओं को ख़त्म कर सकता है। यह सुनिश्चित करने के लिए कि जेस्चर वॉल्यूम विश्वसनीय रूप से चलता है, इन चरणों का पालन करें:</string>
     <string name="step_auto_start">1. ऑटो-स्टार्ट सक्षम करें: सेटिंग्स → ऐप्स → ऐप्स प्रबंधित करें → जेस्चर वॉल्यूम → ऑटो-स्टार्ट सक्षम करें पर जाएं।</string>
     <string name="step_battery">2. बैटरी अनुकूलन: बैटरी सेवर को \"कोई प्रतिबंध नहीं\" पर सेट करें।</string>

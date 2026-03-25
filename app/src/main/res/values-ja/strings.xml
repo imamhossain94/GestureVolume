@@ -224,21 +224,21 @@
     <string name="crown">クラウン</string>
 
     <!-- Languages -->
-    <string name="lang_english">英語</string>
-    <string name="lang_bangla">バングラ語</string>
-    <string name="lang_arabic">アラビア語</string>
-    <string name="lang_hindi">ヒンディー語</string>
-    <string name="lang_korean">韓国人</string>
-    <string name="lang_japanese">日本語</string>
-    <string name="lang_chinese">中国語</string>
-    <string name="lang_german">ドイツ語</string>
-    <string name="lang_spanish">スペイン語</string>
-    <string name="lang_french">フランス語</string>
-    <string name="lang_italian">イタリア語</string>
-    <string name="lang_portuguese">ポルトガル語</string>
-    <string name="lang_russian">ロシア</string>
-    <string name="lang_turkish">トルコ語</string>
-    <string name="lang_vietnamese">ベトナム語</string>
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">システムのデフォルト</string>
@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">ボリュームジェスチャハンドラー</string>
     <string name="troubleshoot">トラブルシューティング</string>
     <string name="troubleshoot_desc">デバイス上でアプリを存続させ続ける</string>
-    <string name="troubleshoot_title">よくある質問と質問トラブルシューティング</string>
     <string name="troubleshoot_info">一部のデバイス (Xiaomi、Huawei、Oppo、Vivo など) でバッテリーを積極的に最適化すると、バックグラウンド サービスが停止される可能性があります。 Gesture Volume が確実に実行されるようにするには、次の手順に従ってください。</string>
     <string name="step_auto_start">1. 自動開始を有効にする: [設定] → [アプリ] → [アプリの管理] → [ジェスチャー音量] → [自動開始を有効にする] に移動します。</string>
     <string name="step_battery">2. バッテリーの最適化: バッテリー セーバーを「制限なし」に設定します。</string>

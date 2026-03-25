@@ -113,6 +113,8 @@ fun PermissionsScreen(
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
+        // Resume app open ads now that the user has returned from the overlay permission screen
+        viewModel.preference.setAppOpenAdPaused(false)
         overlayPermissionGranted = Settings.canDrawOverlays(context)
         viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
     }
@@ -202,6 +204,8 @@ fun PermissionsScreen(
                         Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         "package:${context.packageName}".toUri()
                     )
+                    // Pause ads while the user is in the overlay permission screen
+                    viewModel.preference.setAppOpenAdPaused(true)
                     overlayPermissionLauncher.launch(intent)
                 }
             )

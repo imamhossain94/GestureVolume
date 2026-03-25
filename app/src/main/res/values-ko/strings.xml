@@ -224,21 +224,21 @@
     <string name="crown">왕관</string>
 
     <!-- Languages -->
-    <string name="lang_english">영어</string>
-    <string name="lang_bangla">벵골어</string>
-    <string name="lang_arabic">아라비아 말</string>
-    <string name="lang_hindi">힌디 어</string>
-    <string name="lang_korean">한국인</string>
-    <string name="lang_japanese">일본어</string>
-    <string name="lang_chinese">중국인</string>
-    <string name="lang_german">독일 사람</string>
-    <string name="lang_spanish">스페인 사람</string>
-    <string name="lang_french">프랑스 국민</string>
-    <string name="lang_italian">이탈리아 사람</string>
-    <string name="lang_portuguese">포르투갈 인</string>
-    <string name="lang_russian">러시아인</string>
-    <string name="lang_turkish">터키어</string>
-    <string name="lang_vietnamese">베트남 사람</string>
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">시스템 기본값</string>
@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">볼륨 제스처 핸들러</string>
     <string name="troubleshoot">문제 해결</string>
     <string name="troubleshoot_desc">기기에서 앱을 계속 활성화하세요.</string>
-    <string name="troubleshoot_title">FAQ &amp; 문제 해결</string>
     <string name="troubleshoot_info">일부 장치(예: Xiaomi, Huawei, Oppo, Vivo)에서 공격적인 배터리 최적화로 인해 백그라운드 서비스가 종료될 수 있습니다. Gesture Volume이 안정적으로 실행되도록 하려면 다음 단계를 따르세요.</string>
     <string name="step_auto_start">1. 자동 시작 활성화: 설정 → 앱 → 앱 관리 → 동작 볼륨 → 자동 시작 활성화로 이동합니다.</string>
     <string name="step_battery">2. 배터리 최적화: 배터리 절약 모드를 \"제한 없음\"으로 설정하세요.</string>

@@ -224,21 +224,21 @@
     <string name="crown">تاج</string>
 
     <!-- Languages -->
-    <string name="lang_english">إنجليزي</string>
-    <string name="lang_bangla">البنغالية</string>
-    <string name="lang_arabic">عربي</string>
-    <string name="lang_hindi">الهندية</string>
-    <string name="lang_korean">كوري</string>
-    <string name="lang_japanese">اليابانية</string>
-    <string name="lang_chinese">الصينية</string>
-    <string name="lang_german">الألمانية</string>
-    <string name="lang_spanish">الأسبانية</string>
-    <string name="lang_french">فرنسي</string>
-    <string name="lang_italian">ايطالي</string>
-    <string name="lang_portuguese">البرتغالية</string>
-    <string name="lang_russian">الروسية</string>
-    <string name="lang_turkish">تركي</string>
-    <string name="lang_vietnamese">الفيتنامية</string>
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">النظام الافتراضي</string>
@@ -267,7 +267,6 @@
     <string name="volume_gesture_handler">معالج إيماءة مستوى الصوت</string>
     <string name="troubleshoot">استكشاف الأخطاء وإصلاحها</string>
     <string name="troubleshoot_desc">إبقاء التطبيق على قيد الحياة على جهازك</string>
-    <string name="troubleshoot_title">الأسئلة الشائعة &amp; استكشاف الأخطاء وإصلاحها</string>
     <string name="troubleshoot_info">قد يؤدي التحسين القوي للبطارية على بعض الأجهزة (مثل Xiaomi وHuawei وOppo وVivo) إلى إنهاء خدمات الخلفية. اتبع هذه الخطوات للتأكد من تشغيل حجم الإيماءة بشكل موثوق:</string>
     <string name="step_auto_start">1. تمكين البدء التلقائي: انتقل إلى الإعدادات ← التطبيقات ← إدارة التطبيقات ← مستوى صوت الإيماءة ← تمكين البدء التلقائي.</string>
     <string name="step_battery">2. تحسين البطارية: اضبط توفير طاقة البطارية على \"بلا قيود\".</string>
