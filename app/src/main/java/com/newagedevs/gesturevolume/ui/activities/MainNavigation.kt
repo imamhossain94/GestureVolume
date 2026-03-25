@@ -35,6 +35,7 @@ import com.newagedevs.gesturevolume.ui.screens.handler_action.HandlerActionsScre
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.HandlerAppearanceScreen
 import com.newagedevs.gesturevolume.ui.screens.main.MainScreen
 import com.newagedevs.gesturevolume.ui.screens.permission.PermissionsScreen
+import com.newagedevs.gesturevolume.ui.screens.troubleshoot.TroubleshootScreen
 import com.newagedevs.gesturevolume.ui.screens.walkthrough.WalkthroughScreen
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEffect
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
@@ -81,6 +82,7 @@ fun MainNavigation(
                 }
                 is MainEffect.ShowThemeDialog -> showThemeDialog = true
                 is MainEffect.ShowLanguageDialog -> showLanguageDialog = true
+                is MainEffect.NavigateToTroubleshoot -> navController.navigate("troubleshoot")
                 else -> {}
             }
         }
@@ -167,6 +169,14 @@ fun MainNavigation(
 
                 composable("feedback") {
                     FeedbackScreen(
+                        onNavigateBack = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
+
+                composable("troubleshoot") {
+                    TroubleshootScreen(
                         onNavigateBack = {
                             navController.popBackStack()
                         }

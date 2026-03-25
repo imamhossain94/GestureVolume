@@ -265,4 +265,14 @@
     <string name="preview">معاينة</string>
     <string name="press_back_again_to_exit">اضغط على زر الرجوع مرة أخرى للخروج</string>
     <string name="volume_gesture_handler">معالج إيماءة مستوى الصوت</string>
+    <string name="troubleshoot">استكشاف الأخطاء وإصلاحها</string>
+    <string name="troubleshoot_desc">إبقاء التطبيق على قيد الحياة على جهازك</string>
+    <string name="troubleshoot_title">الأسئلة الشائعة &amp; استكشاف الأخطاء وإصلاحها</string>
+    <string name="troubleshoot_info">قد يؤدي التحسين القوي للبطارية على بعض الأجهزة (مثل Xiaomi وHuawei وOppo وVivo) إلى إنهاء خدمات الخلفية. اتبع هذه الخطوات للتأكد من تشغيل حجم الإيماءة بشكل موثوق:</string>
+    <string name="step_auto_start">1. تمكين البدء التلقائي: انتقل إلى الإعدادات ← التطبيقات ← إدارة التطبيقات ← مستوى صوت الإيماءة ← تمكين البدء التلقائي.</string>
+    <string name="step_battery">2. تحسين البطارية: اضبط توفير طاقة البطارية على \"بلا قيود\".</string>
+    <string name="step_recents">3. قفل التطبيقات الحديثة: افتح شاشة \"التطبيقات الحديثة\"، واضغط لفترة طويلة على بطاقة التطبيق، وانقر على أيقونة القفل 🔒.</string>
+    <string name="step_popup">4. الأذونات: تأكد من تمكين \"عرض النوافذ المنبثقة أثناء التشغيل في الخلفية\".</string>
+    <string name="troubleshoot_footer">للحصول على تعليمات خاصة بالجهاز، يرجى زيارة الموقع dontkillmyapp.com</string>
+    <string name="visit_website">زيارة الموقع</string>
 </resources>

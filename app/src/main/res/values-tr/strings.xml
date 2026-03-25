@@ -265,4 +265,14 @@
     <string name="preview">Önizleme</string>
     <string name="press_back_again_to_exit">Çıkmak için tekrar geri tuşuna basın</string>
     <string name="volume_gesture_handler">Ses seviyesi hareketi işleyicisi</string>
+    <string name="troubleshoot">Sorun giderme</string>
+    <string name="troubleshoot_desc">Uygulamayı cihazınızda canlı tutun</string>
+    <string name="troubleshoot_title">SSS ve Sorun giderme</string>
+    <string name="troubleshoot_info">Bazı cihazlarda (Xiaomi, Huawei, Oppo, Vivo gibi) agresif pil optimizasyonu arka plan hizmetlerini sonlandırabilir. Hareket Sesi\'nin güvenilir bir şekilde çalıştığından emin olmak için şu adımları izleyin:</string>
+    <string name="step_auto_start">1. Otomatik başlatmayı etkinleştirin: Ayarlar → Uygulamalar → Uygulamaları Yönet → Hareket Ses Düzeyi → Otomatik başlatmayı etkinleştir seçeneğine gidin.</string>
+    <string name="step_battery">2. Pil Optimizasyonu: Pil Tasarrufunu \"Kısıtlama Yok\" olarak ayarlayın.</string>
+    <string name="step_recents">3. Son Kullanılanları Kilitleyin: \"Son Uygulamalar\" ekranını açın, uygulama kartına uzun basın ve Kilit simgesine 🔒 tıklayın.</string>
+    <string name="step_popup">4. İzinler: \"Arka planda çalışırken açılır pencereleri görüntüle\" seçeneğinin etkinleştirildiğinden emin olun.</string>
+    <string name="troubleshoot_footer">Cihaza özel talimatlar için lütfen dontkillmyapp.com adresini ziyaret edin.</string>
+    <string name="visit_website">Web Sitesini Ziyaret Edin</string>
 </resources>

@@ -265,4 +265,14 @@
     <string name="preview">पूर्वावलोकन</string>
     <string name="press_back_again_to_exit">बाहर निकलने के लिए फिर से वापस दबाएं</string>
     <string name="volume_gesture_handler">वॉल्यूम जेस्चर हैंडलर</string>
+    <string name="troubleshoot">समस्या निवारण</string>
+    <string name="troubleshoot_desc">ऐप को अपने डिवाइस पर सक्रिय रखें</string>
+    <string name="troubleshoot_title">अक्सर पूछे जाने वाले प्रश्न &amp; समस्या निवारण</string>
+    <string name="troubleshoot_info">कुछ उपकरणों (जैसे Xiaomi, Huawei, OPPO, Vivo) पर आक्रामक बैटरी अनुकूलन पृष्ठभूमि सेवाओं को ख़त्म कर सकता है। यह सुनिश्चित करने के लिए कि जेस्चर वॉल्यूम विश्वसनीय रूप से चलता है, इन चरणों का पालन करें:</string>
+    <string name="step_auto_start">1. ऑटो-स्टार्ट सक्षम करें: सेटिंग्स → ऐप्स → ऐप्स प्रबंधित करें → जेस्चर वॉल्यूम → ऑटो-स्टार्ट सक्षम करें पर जाएं।</string>
+    <string name="step_battery">2. बैटरी अनुकूलन: बैटरी सेवर को \"कोई प्रतिबंध नहीं\" पर सेट करें।</string>
+    <string name="step_recents">3. हाल ही में लॉक करें: \"हाल ही के ऐप्स\" स्क्रीन खोलें, ऐप कार्ड को देर तक दबाएं, और लॉक आइकन 🔒 पर क्लिक करें।</string>
+    <string name="step_popup">4. अनुमतियाँ: सुनिश्चित करें कि \"पृष्ठभूमि में चलते समय पॉप-अप विंडो प्रदर्शित करें\" सक्षम है।</string>
+    <string name="troubleshoot_footer">डिवाइस-विशिष्ट निर्देशों के लिए, कृपया dontkillmyapp.com पर जाएं</string>
+    <string name="visit_website">बेवसाइट देखना</string>
 </resources>

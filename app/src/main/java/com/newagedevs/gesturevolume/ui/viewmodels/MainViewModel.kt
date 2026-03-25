@@ -415,6 +415,9 @@ class MainViewModel @Inject constructor(
             "About" -> viewModelScope.launch {
                 _effect.send(MainEffect.NavigateToAbout)
             }
+            "Troubleshoot" -> viewModelScope.launch {
+                _effect.send(MainEffect.NavigateToTroubleshoot)
+            }
         }
     }
 

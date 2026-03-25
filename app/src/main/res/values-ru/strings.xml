@@ -265,4 +265,14 @@
     <string name="preview">Предварительный просмотр</string>
     <string name="press_back_again_to_exit">Нажмите назад еще раз, чтобы выйти</string>
     <string name="volume_gesture_handler">Обработчик жестов громкости</string>
+    <string name="troubleshoot">Поиск неисправностей</string>
+    <string name="troubleshoot_desc">Поддерживайте работу приложения на своем устройстве</string>
+    <string name="troubleshoot_title">Часто задаваемые вопросы и усиление; Поиск неисправностей</string>
+    <string name="troubleshoot_info">Агрессивная оптимизация батареи на некоторых устройствах (например, Xiaomi, Huawei, Oppo, Vivo) может привести к отключению фоновых служб. Выполните следующие действия, чтобы обеспечить надежную работу Gesture Volume:</string>
+    <string name="step_auto_start">1. Включите автозапуск: выберите «Настройки» → «Приложения» → «Управление приложениями» → «Громкость жестов» → «Включить автозапуск».</string>
+    <string name="step_battery">2. Оптимизация батареи: установите для режима экономии заряда значение «Без ограничений».</string>
+    <string name="step_recents">3. Блокировка недавних приложений. Откройте экран «Недавние приложения», нажмите и удерживайте карточку приложения и нажмите значок блокировки 🔒.</string>
+    <string name="step_popup">4. Разрешения: убедитесь, что параметр «Отображать всплывающие окна во время работы в фоновом режиме» включен.</string>
+    <string name="troubleshoot_footer">Инструкции для конкретных устройств можно найти на сайте dontkillmyapp.com.</string>
+    <string name="visit_website">Посетите веб-сайт</string>
 </resources>

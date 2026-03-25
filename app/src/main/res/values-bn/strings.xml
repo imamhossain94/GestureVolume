@@ -265,4 +265,14 @@
     <string name="preview">প্রিভিউ</string>
     <string name="press_back_again_to_exit">প্রস্থান করতে আবার ব্যাক চাপুন</string>
     <string name="volume_gesture_handler">ভলিউম অঙ্গভঙ্গি হ্যান্ডলার</string>
+    <string name="troubleshoot">সমস্যা সমাধান</string>
+    <string name="troubleshoot_desc">অ্যাপটিকে আপনার ডিভাইসে জীবিত রাখুন</string>
+    <string name="troubleshoot_title">FAQ &amp; সমস্যা সমাধান</string>
+    <string name="troubleshoot_info">কিছু ডিভাইসে আক্রমনাত্মক ব্যাটারি অপ্টিমাইজেশান (যেমন Xiaomi, Huawei, Oppo, Vivo) ব্যাকগ্রাউন্ড পরিষেবাগুলিকে মেরে ফেলতে পারে। অঙ্গভঙ্গি ভলিউম নির্ভরযোগ্যভাবে চালানো নিশ্চিত করতে এই পদক্ষেপগুলি অনুসরণ করুন:</string>
+    <string name="step_auto_start">1. স্বতঃ-শুরু সক্ষম করুন: সেটিংস → অ্যাপস → অ্যাপস পরিচালনা করুন → অঙ্গভঙ্গি ভলিউম → স্বয়ংক্রিয়-শুরু সক্ষম করুন এ যান।</string>
+    <string name="step_battery">2. ব্যাটারি অপ্টিমাইজেশান: ব্যাটারি সেভার সেট করুন \"কোন সীমাবদ্ধতা নেই\"।</string>
+    <string name="step_recents">3. লক ইন রিসেন্টস: \"সাম্প্রতিক অ্যাপস\" স্ক্রীন খুলুন, অ্যাপ কার্ডটি দীর্ঘক্ষণ প্রেস করুন এবং লক আইকনে ক্লিক করুন 🔒।</string>
+    <string name="step_popup">4. অনুমতি: নিশ্চিত করুন \"পটভূমিতে চলার সময় পপ-আপ উইন্ডো প্রদর্শন করুন\" সক্ষম করা আছে।</string>
+    <string name="troubleshoot_footer">ডিভাইস-নির্দিষ্ট নির্দেশাবলীর জন্য, অনুগ্রহ করে dontkillmyapp.com-এ যান</string>
+    <string name="visit_website">ওয়েবসাইট ভিজিট করুন</string>
 </resources>

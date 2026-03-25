@@ -265,4 +265,14 @@
     <string name="preview">プレビュー</string>
     <string name="press_back_again_to_exit">もう一度戻るボタンを押して終了</string>
     <string name="volume_gesture_handler">ボリュームジェスチャハンドラー</string>
+    <string name="troubleshoot">トラブルシューティング</string>
+    <string name="troubleshoot_desc">デバイス上でアプリを存続させ続ける</string>
+    <string name="troubleshoot_title">よくある質問と質問トラブルシューティング</string>
+    <string name="troubleshoot_info">一部のデバイス (Xiaomi、Huawei、Oppo、Vivo など) でバッテリーを積極的に最適化すると、バックグラウンド サービスが停止される可能性があります。 Gesture Volume が確実に実行されるようにするには、次の手順に従ってください。</string>
+    <string name="step_auto_start">1. 自動開始を有効にする: [設定] → [アプリ] → [アプリの管理] → [ジェスチャー音量] → [自動開始を有効にする] に移動します。</string>
+    <string name="step_battery">2. バッテリーの最適化: バッテリー セーバーを「制限なし」に設定します。</string>
+    <string name="step_recents">3. 最近使ったアプリをロックする: 「最近使ったアプリ」画面を開き、アプリカードを長押しして、ロックアイコン 🔒 をクリックします。</string>
+    <string name="step_popup">4. 権限: [バックグラウンドでの実行中にポップアップ ウィンドウを表示する] が有効になっていることを確認します。</string>
+    <string name="troubleshoot_footer">デバイス固有の手順については、dontkillmyapp.com をご覧ください。</string>
+    <string name="visit_website">ウェブサイトにアクセス</string>
 </resources>

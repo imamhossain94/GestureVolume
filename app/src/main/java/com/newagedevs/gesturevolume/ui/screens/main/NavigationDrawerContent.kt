@@ -154,6 +154,12 @@ fun NavigationDrawerContent(
                     label = stringResource(R.string.send_feedback),
                     onClick = { onMenuItemClick("Feedback") }
                 )
+                
+                NavigationDrawerItem(
+                    icon = R.drawable.ic_bug,
+                    label = stringResource(R.string.troubleshoot),
+                    onClick = { onMenuItemClick("Troubleshoot") }
+                )
 
                 Spacer(modifier = Modifier.height(20.dp))
 

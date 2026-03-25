@@ -265,4 +265,14 @@
     <string name="preview">Xem trước</string>
     <string name="press_back_again_to_exit">Nhấn lại lần nữa để thoát</string>
     <string name="volume_gesture_handler">Trình xử lý cử chỉ âm lượng</string>
+    <string name="troubleshoot">Khắc phục sự cố</string>
+    <string name="troubleshoot_desc">Giữ ứng dụng tồn tại trên thiết bị của bạn</string>
+    <string name="troubleshoot_title">Câu hỏi thường gặp &amp; Khắc phục sự cố</string>
+    <string name="troubleshoot_info">Tối ưu hóa pin mạnh mẽ trên một số thiết bị (như Xiaomi, Huawei, Oppo, Vivo) có thể giết chết các dịch vụ nền. Hãy làm theo các bước sau để đảm bảo Âm lượng cử chỉ chạy ổn định:</string>
+    <string name="step_auto_start">1. Bật Tự động khởi động: Đi tới Cài đặt → Ứng dụng → Quản lý ứng dụng → Âm lượng cử chỉ → Bật Tự động khởi động.</string>
+    <string name="step_battery">2. Tối ưu hóa pin: Đặt Trình tiết kiệm pin thành \"Không hạn chế\".</string>
+    <string name="step_recents">3. Khóa trong Mục gần đây: Mở màn hình \"Ứng dụng gần đây\", nhấn và giữ thẻ ứng dụng và nhấp vào biểu tượng Khóa 🔒.</string>
+    <string name="step_popup">4. Quyền: Đảm bảo \"Hiển thị cửa sổ bật lên khi chạy ở chế độ nền\" được bật.</string>
+    <string name="troubleshoot_footer">Để biết hướng dẫn dành riêng cho thiết bị, vui lòng truy cập Dontkillmyapp.com</string>
+    <string name="visit_website">Truy cập trang web</string>
 </resources>

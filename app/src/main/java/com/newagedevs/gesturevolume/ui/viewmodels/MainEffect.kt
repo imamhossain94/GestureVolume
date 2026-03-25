@@ -12,4 +12,5 @@ sealed class MainEffect {
     object NavigateToFeedback : MainEffect()
     object ShowThemeDialog : MainEffect()
     object ShowLanguageDialog : MainEffect()
+    object NavigateToTroubleshoot : MainEffect()
 }

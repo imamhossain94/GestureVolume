@@ -265,4 +265,14 @@
     <string name="preview">미리보기</string>
     <string name="press_back_again_to_exit">뒤로 버튼을 다시 누르면 종료</string>
     <string name="volume_gesture_handler">볼륨 제스처 핸들러</string>
+    <string name="troubleshoot">문제 해결</string>
+    <string name="troubleshoot_desc">기기에서 앱을 계속 활성화하세요.</string>
+    <string name="troubleshoot_title">FAQ &amp; 문제 해결</string>
+    <string name="troubleshoot_info">일부 장치(예: Xiaomi, Huawei, Oppo, Vivo)에서 공격적인 배터리 최적화로 인해 백그라운드 서비스가 종료될 수 있습니다. Gesture Volume이 안정적으로 실행되도록 하려면 다음 단계를 따르세요.</string>
+    <string name="step_auto_start">1. 자동 시작 활성화: 설정 → 앱 → 앱 관리 → 동작 볼륨 → 자동 시작 활성화로 이동합니다.</string>
+    <string name="step_battery">2. 배터리 최적화: 배터리 절약 모드를 \"제한 없음\"으로 설정하세요.</string>
+    <string name="step_recents">3. 최근 항목 잠금: \'최근 앱\' 화면을 열고 앱 카드를 길게 누른 다음 잠금 아이콘 🔒을 클릭하세요.</string>
+    <string name="step_popup">4. 권한: \"백그라운드 실행 중 팝업 창 표시\"가 활성화되어 있는지 확인하세요.</string>
+    <string name="troubleshoot_footer">기기별 지침을 보려면 dontkillmyapp.com을 방문하세요.</string>
+    <string name="visit_website">웹사이트 방문</string>
 </resources>

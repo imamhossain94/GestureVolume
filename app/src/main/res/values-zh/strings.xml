@@ -265,4 +265,14 @@
     <string name="preview">预览</string>
     <string name="press_back_again_to_exit">再次按返回键退出</string>
     <string name="volume_gesture_handler">音量手势处理程序</string>
+    <string name="troubleshoot">故障排除</string>
+    <string name="troubleshoot_desc">让应用程序在您的设备上保持活动状态</string>
+    <string name="troubleshoot_title">常见问题及解答故障排除</string>
+    <string name="troubleshoot_info">某些设备（如小米、华为、Oppo、Vivo）上的激进电池优化可能会终止后台服务。请按照以下步骤确保手势音量可靠运行：</string>
+    <string name="step_auto_start">1. 启用自动启动：进入设置→应用程序→管理应用程序→手势音量→启用自动启动。</string>
+    <string name="step_battery">2. 电池优化：将省电模式设置为“无限制”。</string>
+    <string name="step_recents">3. 锁定最近使用的应用程序：打开“最近使用的应用程序”屏幕，长按应用程序卡，然后单击锁定图标🔒。</string>
+    <string name="step_popup">4. 权限：确保启用“在后台运行时显示弹出窗口”。</string>
+    <string name="troubleshoot_footer">有关特定于设备的说明，请访问 dontkillmyapp.com</string>
+    <string name="visit_website">访问网站</string>
 </resources>

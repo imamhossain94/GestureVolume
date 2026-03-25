@@ -265,4 +265,14 @@
     <string name="preview">Avance</string>
     <string name="press_back_again_to_exit">Presione Atrás nuevamente para salir.</string>
     <string name="volume_gesture_handler">Controlador de gestos de volumen</string>
+    <string name="troubleshoot">Solución de problemas</string>
+    <string name="troubleshoot_desc">Mantenga viva la aplicación en su dispositivo</string>
+    <string name="troubleshoot_title">Preguntas frecuentes y preguntas Solución de problemas</string>
+    <string name="troubleshoot_info">La optimización agresiva de la batería en algunos dispositivos (como Xiaomi, Huawei, Oppo, Vivo) puede interrumpir los servicios en segundo plano. Siga estos pasos para garantizar que Gesture Volume se ejecute de manera confiable:</string>
+    <string name="step_auto_start">1. Habilite el inicio automático: vaya a Configuración → Aplicaciones → Administrar aplicaciones → Volumen de gestos → Habilite el inicio automático.</string>
+    <string name="step_battery">2. Optimización de la batería: configure el ahorro de batería en \"Sin restricciones\".</string>
+    <string name="step_recents">3. Bloquear Recientes: abra la pantalla \"Aplicaciones recientes\", mantenga presionada la tarjeta de la aplicación y haga clic en el ícono de bloqueo 🔒.</string>
+    <string name="step_popup">4. Permisos: asegúrese de que \"Mostrar ventanas emergentes mientras se ejecuta en segundo plano\" esté habilitado.</string>
+    <string name="troubleshoot_footer">Para obtener instrucciones específicas del dispositivo, visite dontkillmyapp.com</string>
+    <string name="visit_website">Visitar sitio web</string>
 </resources>

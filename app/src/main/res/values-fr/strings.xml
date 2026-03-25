@@ -265,4 +265,14 @@
     <string name="preview">Aperçu</string>
     <string name="press_back_again_to_exit">Appuyez à nouveau pour quitter</string>
     <string name="volume_gesture_handler">Gestionnaire de gestes de volume</string>
+    <string name="troubleshoot">Dépannage</string>
+    <string name="troubleshoot_desc">Gardez l\'application active sur votre appareil</string>
+    <string name="troubleshoot_title">FAQ et amp; Dépannage</string>
+    <string name="troubleshoot_info">Une optimisation agressive de la batterie sur certains appareils (comme Xiaomi, Huawei, Oppo, Vivo) peut tuer les services d\'arrière-plan. Suivez ces étapes pour garantir un fonctionnement fiable de Gesture Volume :</string>
+    <string name="step_auto_start">1. Activez le démarrage automatique : accédez à Paramètres → Applications → Gérer les applications → Volume gestuel → Activer le démarrage automatique.</string>
+    <string name="step_battery">2. Optimisation de la batterie : définissez l\'économiseur de batterie sur \"Aucune restriction\".</string>
+    <string name="step_recents">3. Verrouiller les applications récentes : ouvrez l\'écran \"Applications récentes\", appuyez longuement sur la carte de l\'application et cliquez sur l\'icône de verrouillage 🔒.</string>
+    <string name="step_popup">4. Autorisations : assurez-vous que « Afficher les fenêtres contextuelles lors de l\'exécution en arrière-plan » est activé.</string>
+    <string name="troubleshoot_footer">Pour obtenir des instructions spécifiques à l\'appareil, veuillez visiter dontkillmyapp.com</string>
+    <string name="visit_website">Visitez le site Web</string>
 </resources>

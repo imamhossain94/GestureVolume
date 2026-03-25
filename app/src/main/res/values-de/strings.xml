@@ -265,4 +265,14 @@
     <string name="preview">Vorschau</string>
     <string name="press_back_again_to_exit">Erneut tippen, um zu beenden</string>
     <string name="volume_gesture_handler">Handler für Lautstärkegesten</string>
+    <string name="troubleshoot">Fehlerbehebung</string>
+    <string name="troubleshoot_desc">Halten Sie die App auf Ihrem Gerät am Leben</string>
+    <string name="troubleshoot_title">FAQ &amp; Fehlerbehebung</string>
+    <string name="troubleshoot_info">Eine aggressive Akkuoptimierung auf einigen Geräten (wie Xiaomi, Huawei, Oppo, Vivo) kann dazu führen, dass Hintergrunddienste unterbrochen werden. Befolgen Sie diese Schritte, um sicherzustellen, dass Gesture Volume zuverlässig läuft:</string>
+    <string name="step_auto_start">1. Autostart aktivieren: Gehen Sie zu Einstellungen → Apps → Apps verwalten → Gestenlautstärke → Autostart aktivieren.</string>
+    <string name="step_battery">2. Batterieoptimierung: Stellen Sie den Batteriesparmodus auf „Keine Einschränkungen“.</string>
+    <string name="step_recents">3. In „Letzte Apps“ sperren: Öffnen Sie den Bildschirm „Letzte Apps“, drücken Sie lange auf die App-Karte und klicken Sie auf das Sperrsymbol 🔒.</string>
+    <string name="step_popup">4. Berechtigungen: Stellen Sie sicher, dass „Popup-Fenster bei Ausführung im Hintergrund anzeigen“ aktiviert ist.</string>
+    <string name="troubleshoot_footer">Für gerätespezifische Anweisungen besuchen Sie bitte dontkillmyapp.com</string>
+    <string name="visit_website">Besuchen Sie die Website</string>
 </resources>
