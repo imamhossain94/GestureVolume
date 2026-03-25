@@ -14,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
 
 @Composable
 fun HandlerAppearanceSettingsContent(
@@ -25,7 +27,7 @@ fun HandlerAppearanceSettingsContent(
         // Position Section
         SectionTitle("POSITION", Color(0xFF8B5CF6))
         CustomizationCard(borderColor = Color(0xFF8B5CF6)) {
-            LabeledControl(label = "Gravity") {
+            LabeledControl(label = stringResource(R.string.gravity)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -51,7 +53,7 @@ fun HandlerAppearanceSettingsContent(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
             SwitchControl(
-                label = "Lock position",
+                label = stringResource(R.string.lock_position),
                 checked = state.lockPosition,
                 borderColor = Color(0xFF8B5CF6),
                 onCheckedChange = { state.lockPosition = it }
@@ -64,7 +66,7 @@ fun HandlerAppearanceSettingsContent(
         SectionTitle("DIMENSIONS", Color(0xFF3B82F6))
         CustomizationCard(borderColor = Color(0xFF3B82F6)) {
             SliderControl(
-                label = "Width",
+                label = stringResource(R.string.width),
                 value = state.width,
                 valueRange = 10f..60f,
                 valueDisplay = "${state.width.toInt()}dp",
@@ -76,7 +78,7 @@ fun HandlerAppearanceSettingsContent(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
             SliderControl(
-                label = "Height",
+                label = stringResource(R.string.height),
                 value = state.height,
                 valueRange = 30f..200f,
                 valueDisplay = "${state.height.toInt()}dp",
@@ -91,7 +93,7 @@ fun HandlerAppearanceSettingsContent(
         SectionTitle("BACKGROUND", Color(0xFF10B981))
         CustomizationCard(borderColor = Color(0xFF10B981)) {
             ColorPickerControl(
-                label = "Color",
+                label = stringResource(R.string.color),
                 color = state.bgColor,
                 borderColor = Color(0xFF10B981),
                 onColorChange = { state.bgColor = it }
@@ -101,7 +103,7 @@ fun HandlerAppearanceSettingsContent(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
             SliderControl(
-                label = "Opacity",
+                label = stringResource(R.string.opacity),
                 value = state.bgAlpha.toFloat(),
                 valueRange = 0f..255f,
                 valueDisplay = "${((state.bgAlpha / 255f) * 100).toInt()}%",
@@ -116,7 +118,7 @@ fun HandlerAppearanceSettingsContent(
         SectionTitle("STROKE", Color(0xFFF59E0B))
         CustomizationCard(borderColor = Color(0xFFF59E0B)) {
             ColorPickerControl(
-                label = "Color",
+                label = stringResource(R.string.color),
                 color = state.strokeColor,
                 borderColor = Color(0xFFF59E0B),
                 onColorChange = { state.strokeColor = it }
@@ -126,7 +128,7 @@ fun HandlerAppearanceSettingsContent(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
             SliderControl(
-                label = "Width",
+                label = stringResource(R.string.width),
                 value = state.strokeWidth,
                 valueRange = 0f..8f,
                 valueDisplay = "${state.strokeWidth.toInt()}dp",
@@ -138,7 +140,7 @@ fun HandlerAppearanceSettingsContent(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
             SliderControl(
-                label = "Opacity",
+                label = stringResource(R.string.opacity),
                 value = state.strokeAlpha.toFloat(),
                 valueRange = 0f..255f,
                 valueDisplay = "${((state.strokeAlpha / 255f) * 100).toInt()}%",
@@ -153,7 +155,7 @@ fun HandlerAppearanceSettingsContent(
         SectionTitle("CORNER RADIUS", Color(0xFFEC4899))
         CustomizationCard(borderColor = Color(0xFFEC4899)) {
             SliderControl(
-                label = "All Corners",
+                label = stringResource(R.string.all_corners),
                 value = state.cornerRadiusAll,
                 valueRange = 0f..50f,
                 valueDisplay = "${state.cornerRadiusAll.toInt()}dp",
@@ -171,7 +173,7 @@ fun HandlerAppearanceSettingsContent(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
             SliderControl(
-                label = "Top Left",
+                label = stringResource(R.string.top_left),
                 value = state.cornerTL,
                 valueRange = 0f..50f,
                 valueDisplay = "${state.cornerTL.toInt()}dp",
@@ -183,7 +185,7 @@ fun HandlerAppearanceSettingsContent(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
             SliderControl(
-                label = "Top Right",
+                label = stringResource(R.string.top_right),
                 value = state.cornerTR,
                 valueRange = 0f..50f,
                 valueDisplay = "${state.cornerTR.toInt()}dp",
@@ -195,7 +197,7 @@ fun HandlerAppearanceSettingsContent(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
             SliderControl(
-                label = "Bottom Left",
+                label = stringResource(R.string.bottom_left),
                 value = state.cornerBL,
                 valueRange = 0f..50f,
                 valueDisplay = "${state.cornerBL.toInt()}dp",
@@ -207,7 +209,7 @@ fun HandlerAppearanceSettingsContent(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
             SliderControl(
-                label = "Bottom Right",
+                label = stringResource(R.string.bottom_right),
                 value = state.cornerBR,
                 valueRange = 0f..50f,
                 valueDisplay = "${state.cornerBR.toInt()}dp",
@@ -222,7 +224,7 @@ fun HandlerAppearanceSettingsContent(
         SectionTitle("ICON", Color(0xFF06B6D4))
         CustomizationCard(borderColor = Color(0xFF06B6D4)) {
             SwitchControl(
-                label = "Show icon",
+                label = stringResource(R.string.show_icon),
                 checked = state.showIcon,
                 borderColor = Color(0xFF06B6D4),
                 onCheckedChange = { state.showIcon = it }
@@ -234,7 +236,7 @@ fun HandlerAppearanceSettingsContent(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                 )
                 IconPickerControl(
-                    label = "Icon",
+                    label = stringResource(R.string.icon),
                     selectedIconRes = state.iconRes,
                     borderColor = Color(0xFF06B6D4),
                     onClick = { onShowIconPicker() }
@@ -244,7 +246,7 @@ fun HandlerAppearanceSettingsContent(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                 )
                 ColorPickerControl(
-                    label = "Icon Color",
+                    label = stringResource(R.string.icon_color),
                     color = state.iconColor,
                     borderColor = Color(0xFF06B6D4),
                     onColorChange = { state.iconColor = it }
@@ -254,7 +256,7 @@ fun HandlerAppearanceSettingsContent(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                 )
                 SliderControl(
-                    label = "Icon Size",
+                    label = stringResource(R.string.icon_size),
                     value = state.iconSize,
                     valueRange = 16f..48f,
                     valueDisplay = "${state.iconSize.toInt()}dp",
@@ -270,7 +272,7 @@ fun HandlerAppearanceSettingsContent(
         SectionTitle("BEHAVIOR", Color(0xFFEF4444))
         CustomizationCard(borderColor = Color(0xFFEF4444)) {
             SwitchControl(
-                label = "Vibrate on click",
+                label = stringResource(R.string.vibrate_on_click),
                 checked = state.vibrate,
                 borderColor = Color(0xFFEF4444),
                 onCheckedChange = { state.vibrate = it }

@@ -56,6 +56,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.helper.extensions.openMailApp
 import com.newagedevs.gesturevolume.utils.Constants
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +75,7 @@ fun FeedbackScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Feedback") },
+                title = { Text(stringResource(R.string.feedback)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -224,10 +226,10 @@ fun FeedbackScreen(
                         value = otherIssueText,
                         onValueChange = { otherIssueText = it },
                         label = {
-                            Text("Describe the issue or suggestion")
+                            Text(stringResource(R.string.describe_the_issue_or_suggestion))
                         },
                         placeholder = {
-                            Text("Tell us more about your experience...")
+                            Text(stringResource(R.string.tell_us_more_about_your_experience))
                         },
                         modifier = Modifier
                             .fillMaxWidth()

@@ -64,6 +64,8 @@ import com.newagedevs.gesturevolume.utils.LockScreenUtil
 import com.newagedevs.gesturevolume.utils.NotificationUtil
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +77,13 @@ fun PermissionsScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val coroutineScope = rememberCoroutineScope()
+
+    DisposableEffect(Unit) {
+        viewModel.preference.setAppOpenAdPaused(true)
+        onDispose {
+            viewModel.preference.setAppOpenAdPaused(false)
+        }
+    }
 
     var overlayPermissionGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
     var notificationPermissionGranted by remember { mutableStateOf(
@@ -118,7 +127,7 @@ fun PermissionsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Permissions") },
+                title = { Text(stringResource(R.string.permissions)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")

@@ -33,7 +33,7 @@ fun SelectableButton(
         ),
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(
-            width = if (selected) 2.dp else 1.5.dp,
+            width = if (selected) 1.5.dp else 0.5.dp,
             color = if (selected) borderColor else borderColor.copy(alpha = 0.3f)
         )
     ) {

@@ -44,6 +44,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.ui.view.HandlerView
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -302,7 +303,7 @@ fun HandlerAppearanceScreen(
                     },
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Apply")
+                    Text(stringResource(R.string.apply))
                 }
             },
             dismissButton = {
@@ -313,7 +314,7 @@ fun HandlerAppearanceScreen(
                     },
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Discard")
+                    Text(stringResource(R.string.discard))
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
@@ -346,7 +347,7 @@ fun HandlerAppearanceScreen(
                     },
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Apply")
+                    Text(stringResource(R.string.apply))
                 }
             },
             dismissButton = {
@@ -354,7 +355,7 @@ fun HandlerAppearanceScreen(
                     onClick = { showSaveDialog = false },
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
@@ -365,7 +366,7 @@ fun HandlerAppearanceScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Handler Appearance") },
+                title = { Text(stringResource(R.string.handler_appearance)) },
                 navigationIcon = {
                     IconButton(onClick = {
                         if (hasUnsavedChanges) {
@@ -395,7 +396,7 @@ fun HandlerAppearanceScreen(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Preview", fontSize = 13.sp)
+                        Text(stringResource(R.string.preview), fontSize = 13.sp)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

@@ -14,7 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import com.newagedevs.gesturevolume.ui.screens.main.LanguageDialog
+import com.newagedevs.gesturevolume.ui.screens.main.ThemeDialog
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -40,6 +47,9 @@ fun MainNavigation(
     val context = LocalContext.current
     val navController = rememberNavController()
     val state by viewModel.state.collectAsState()
+
+    var showThemeDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -69,6 +79,8 @@ fun MainNavigation(
                 is MainEffect.RequestNotificationPermission -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
+                is MainEffect.ShowThemeDialog -> showThemeDialog = true
+                is MainEffect.ShowLanguageDialog -> showLanguageDialog = true
                 else -> {}
             }
         }
@@ -172,6 +184,25 @@ fun MainNavigation(
             ) {
                 viewModel.adsManager?.BannerAdView()
             }
+        }
+
+        if (showThemeDialog) {
+            ThemeDialog(
+                currentTheme = state.theme,
+                onDismiss = { showThemeDialog = false },
+                onThemeSelect = { theme -> viewModel.setTheme(theme) }
+            )
+        }
+
+        if (showLanguageDialog) {
+            LanguageDialog(
+                currentLanguage = state.language,
+                onDismiss = { showLanguageDialog = false },
+                onLanguageSelect = { code -> 
+                    viewModel.setLanguage(code)
+                    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(code))
+                }
+            )
         }
     }
 }

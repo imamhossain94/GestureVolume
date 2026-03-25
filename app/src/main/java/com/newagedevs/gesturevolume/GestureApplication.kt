@@ -127,6 +127,11 @@ class GestureApplication : Application() {
                 return false
             }
 
+            // Check if app open ads are paused (e.g., during permission request screens)
+            if (preferences.isAppOpenAdPaused()) {
+                return false
+            }
+
             // Check cooldown using the new method
             val shouldShow = preferences.shouldShowAppOpenAd()
 

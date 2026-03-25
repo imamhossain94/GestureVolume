@@ -39,14 +39,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,7 +53,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,8 +64,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -95,8 +97,26 @@ fun ExpandedPreviewDialog(
 
     var handlerViewRef by remember { mutableStateOf<HandlerView?>(null) }
     
+    val coroutineScope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val sheetOffsetY = remember { Animatable(0f) }
+    var sheetHeightPx by remember { mutableFloatStateOf(0f) }
+
+    // Slide in when shown
+    LaunchedEffect(showBottomSheet) {
+        if (showBottomSheet) {
+            sheetOffsetY.snapTo(sheetHeightPx.coerceAtLeast(1f))
+            sheetOffsetY.animateTo(0f, animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f))
+        }
+    }
+
+    fun dismissSheet() {
+        coroutineScope.launch {
+            sheetOffsetY.animateTo(sheetHeightPx, animationSpec = spring(dampingRatio = 1f, stiffness = 300f))
+            showBottomSheet = false
+            sheetOffsetY.snapTo(0f)
+        }
+    }
 
     val touchMoveFactor: Long = 20
     val touchTimeFactor: Long = 300
@@ -580,48 +600,59 @@ fun ExpandedPreviewDialog(
             // End of Bottom Info Card
             }
         
-        // Bottom Sheet Settings using AnimatedVisibility to avoid scrim and modal limits
-        AnimatedVisibility(
-            visible = showBottomSheet,
-            enter = slideInVertically(initialOffsetY = { it }),
-            exit = slideOutVertically(targetOffsetY = { it }),
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
+        // Draggable Bottom Sheet
+        if (showBottomSheet) {
             Card(
                 modifier = Modifier
+                    .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .fillMaxHeight(0.55f),
+                    .fillMaxHeight(0.55f)
+                    .onSizeChanged { sheetHeightPx = it.height.toFloat() }
+                    .offset { IntOffset(0, sheetOffsetY.value.toInt()) }
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures(
+                            onDragEnd = {
+                                coroutineScope.launch {
+                                    if (sheetOffsetY.value > sheetHeightPx * 0.3f) {
+                                        dismissSheet()
+                                    } else {
+                                        sheetOffsetY.animateTo(
+                                            0f,
+                                            animationSpec = spring(dampingRatio = 0.6f, stiffness = 500f)
+                                        )
+                                    }
+                                }
+                            },
+                            onDragCancel = {
+                                coroutineScope.launch {
+                                    sheetOffsetY.animateTo(0f, animationSpec = spring(dampingRatio = 0.6f, stiffness = 500f))
+                                }
+                            }
+                        ) { _, dragAmount ->
+                            coroutineScope.launch {
+                                val newOffset = (sheetOffsetY.value + dragAmount).coerceAtLeast(0f)
+                                sheetOffsetY.snapTo(newOffset)
+                            }
+                        }
+                    },
                 shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    // Header / Drag handle visual
+                    // Drag handle pill
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Box(
                             modifier = Modifier
-                                .width(36.dp)
+                                .width(40.dp)
                                 .height(4.dp)
                                 .background(Color.Gray.copy(alpha = 0.4f), CircleShape)
-                                .align(Alignment.Center)
                         )
-                        IconButton(
-                            onClick = { showBottomSheet = false },
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .padding(end = 8.dp)
-                                .size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = androidx.compose.material.icons.Icons.Default.Close,
-                                contentDescription = "Close Settings",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
                     }
 
                     // Settings Content

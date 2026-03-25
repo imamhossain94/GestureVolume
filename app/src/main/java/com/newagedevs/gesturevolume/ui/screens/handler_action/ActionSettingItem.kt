@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,7 +25,7 @@ fun ActionSettingItem(
     description: String,
     value: String,
     icon: Int,
-    borderColor: Color, // Ignored
+    borderColor: Color,
     showProBadge: Boolean = false,
     onClick: () -> Unit
 ) {
@@ -73,7 +74,8 @@ fun ActionSettingItem(
                 .fillMaxWidth()
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            border = BorderStroke(0.5.dp, borderColor.copy(alpha = 0.1f))
         ) {
             Row(
                 modifier = Modifier

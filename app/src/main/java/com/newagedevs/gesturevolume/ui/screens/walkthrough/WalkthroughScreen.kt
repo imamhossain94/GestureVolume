@@ -30,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.NotificationUtil
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -39,6 +40,13 @@ fun WalkthroughScreen(
 ) {
     val context = LocalContext.current
     var currentPage by remember { mutableStateOf(0) }
+
+    DisposableEffect(Unit) {
+        viewModel.preference.setAppOpenAdPaused(true)
+        onDispose {
+            viewModel.preference.setAppOpenAdPaused(false)
+        }
+    }
 
     val hasOverlayPermission = remember { mutableStateOf(Settings.canDrawOverlays(context)) }
     val hasNotificationPermission = remember { 
@@ -85,24 +93,24 @@ fun WalkthroughScreen(
                     0 -> WalkthroughPage(
                         title = "Welcome to Gesture Volume",
                         description = "Control your device's volume with simple on-screen gestures. No need to reach for the physical buttons.",
-                        iconRes = R.drawable.ic_vol_increase // Assuming this exists based on MainViewModel
+                        iconRes = R.drawable.ic_launcher_foreground
                     )
                     1 -> WalkthroughPage(
                         title = "Overlay Permission",
                         description = "To show the volume handler on top of other apps, we need the 'Draw over other apps' permission.",
-                        iconRes = R.drawable.ic_align_right,
+                        iconRes = R.drawable.ic_layer_group,
                         isGranted = hasOverlayPermission.value
                     )
                     2 -> WalkthroughPage(
                         title = "Notifications",
                         description = "Opt-in to notifications so we can keep the gesture service running smoothly in the background.",
-                        iconRes = R.drawable.ic_lock, // Fallback icon
+                        iconRes = R.drawable.ic_notification_unread_lines,
                         isGranted = hasNotificationPermission.value
                     )
                     else -> WalkthroughPage(
                         title = "You're all set!",
                         description = "Gesture Volume is ready to use. Customize the appearance and actions in the main screen.",
-                        iconRes = R.drawable.ic_app_open
+                        iconRes = R.drawable.ic_smile_circle
                     )
                 }
             }
@@ -183,7 +191,7 @@ fun WalkthroughScreen(
                     onClick = { currentPage++ },
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
-                    Text("Skip for now", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.skip_for_now), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
                 Spacer(modifier = Modifier.height(56.dp)) // Maintain spacing

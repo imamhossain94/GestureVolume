@@ -24,6 +24,8 @@ import com.newagedevs.gesturevolume.helper.extensions.shareApp
 import com.newagedevs.gesturevolume.utils.Constants
 import com.newagedevs.gesturevolume.utils.Constants.Companion.PUBLISHER_URL
 import java.util.Calendar
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +35,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("About") },
+                title = { Text(stringResource(R.string.about)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(

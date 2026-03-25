@@ -55,6 +55,33 @@ class SharedPref @Inject constructor(
         const val HANDLER_SHOW_ICON = "handlerShowIcon"
         const val HANDLER_VIBRATE_ON_CLICK = "handlerVibrateOnClick"
         const val HANDLER_LOCK_POSITION = "handlerLockPosition"
+        const val APP_LAUNCH_COUNT = "appLaunchCount"
+        const val HAS_SHOWN_REVIEW = "hasShownReview"
+        const val APP_OPEN_AD_PAUSED = "appOpenAdPaused"
+
+        const val THEME = "app_theme"
+        const val LANGUAGE = "app_language"
+    }
+
+    // App Open Ad Paused
+    fun isAppOpenAdPaused(): Boolean = sharedPreferences.getBoolean(APP_OPEN_AD_PAUSED, false)
+    
+    fun setAppOpenAdPaused(value: Boolean) {
+        sharedPreferences.edit { putBoolean(APP_OPEN_AD_PAUSED, value) }
+    }
+
+    // App Launch Count for Review
+    fun getAppLaunchCount(): Int = sharedPreferences.getInt(APP_LAUNCH_COUNT, 0)
+    
+    fun incrementAppLaunchCount() {
+        val count = getAppLaunchCount()
+        sharedPreferences.edit { putInt(APP_LAUNCH_COUNT, count + 1) }
+    }
+    
+    fun hasShownReview(): Boolean = sharedPreferences.getBoolean(HAS_SHOWN_REVIEW, false)
+    
+    fun setHasShownReview(value: Boolean) {
+        sharedPreferences.edit { putBoolean(HAS_SHOWN_REVIEW, value) }
     }
 
     // Pro feature
@@ -392,5 +419,16 @@ class SharedPref @Inject constructor(
 
     fun setHandlerLockPosition(value: Boolean) {
         sharedPreferences.edit { putBoolean(HANDLER_LOCK_POSITION, value) }
+    }
+
+    // Theme and Language
+    fun getTheme(): Int = sharedPreferences.getInt(THEME, 0)
+    fun setTheme(theme: Int) {
+        sharedPreferences.edit { putInt(THEME, theme) }
+    }
+
+    fun getLanguage(): String = sharedPreferences.getString(LANGUAGE, "en") ?: "en"
+    fun setLanguage(language: String) {
+        sharedPreferences.edit { putString(LANGUAGE, language) }
     }
 }

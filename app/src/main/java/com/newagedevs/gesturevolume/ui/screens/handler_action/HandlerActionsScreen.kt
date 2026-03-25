@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +41,7 @@ fun HandlerActionsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Handler Actions") },
+                title = { Text(stringResource(R.string.handler_actions)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -70,7 +72,7 @@ fun HandlerActionsScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     ActionSettingItem(
-                        label = "Single tap action",
+                        label = stringResource(R.string.single_tap_action),
                         description = "What happens on single tap",
                         value = state.clickAction,
                         icon = state.clickActionIcon,
@@ -84,7 +86,7 @@ fun HandlerActionsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     ActionSettingItem(
-                        label = "Double tap action",
+                        label = stringResource(R.string.double_tap_action),
                         description = "What happens on double tap",
                         value = state.doubleClickAction,
                         icon = state.doubleClickActionIcon,
@@ -100,7 +102,7 @@ fun HandlerActionsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     ActionSettingItem(
-                        label = "Long press action",
+                        label = stringResource(R.string.long_press_action),
                         description = "What happens on long press",
                         value = state.longClickAction,
                         icon = state.longClickActionIcon,
@@ -129,7 +131,7 @@ fun HandlerActionsScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     ActionSettingItem(
-                        label = "Swipe up action",
+                        label = stringResource(R.string.swipe_up_action),
                         description = "What happens on swipe up",
                         value = state.swipeUpAction,
                         icon = state.swipeUpActionIcon,
@@ -143,7 +145,7 @@ fun HandlerActionsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     ActionSettingItem(
-                        label = "Swipe down action",
+                        label = stringResource(R.string.swipe_down_action),
                         description = "What happens on swipe down",
                         value = state.swipeDownAction,
                         icon = state.swipeDownActionIcon,

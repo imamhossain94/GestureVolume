@@ -24,6 +24,7 @@ import androidx.core.net.toUri
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.helper.InHouseBannerAdsView
 import com.newagedevs.gesturevolume.utils.Constants
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun NavigationDrawerContent(
@@ -53,7 +54,7 @@ fun NavigationDrawerContent(
                         modifier = Modifier
                             .size(56.dp)
                             .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer),
+                            .background(MaterialTheme.colorScheme.primary),
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
@@ -125,20 +126,32 @@ fun NavigationDrawerContent(
                 )
 
                 NavigationDrawerItem(
+                    icon = R.drawable.ic_color_swatch,
+                    label = stringResource(R.string.theme),
+                    onClick = { onMenuItemClick("Theme") }
+                )
+
+                NavigationDrawerItem(
+                    icon = R.drawable.ic_translate,
+                    label = stringResource(R.string.language),
+                    onClick = { onMenuItemClick("Language") }
+                )
+
+                NavigationDrawerItem(
                     icon = R.drawable.ic_share,
-                    label = "Share App",
+                    label = stringResource(R.string.share_app),
                     onClick = { onMenuItemClick("Share") }
                 )
 
                 NavigationDrawerItem(
                     icon = R.drawable.ic_feedback,
-                    label = "Send Feedback",
+                    label = stringResource(R.string.send_feedback),
                     onClick = { onMenuItemClick("Feedback") }
                 )
 
                 NavigationDrawerItem(
                     icon = R.drawable.ic_star,
-                    label = "Rate on Play Store",
+                    label = stringResource(R.string.rate_on_play_store),
                     onClick = { onMenuItemClick("Rate us") }
                 )
 
@@ -156,13 +169,13 @@ fun NavigationDrawerContent(
 
                 NavigationDrawerItem(
                     icon = R.drawable.ic_playstore,
-                    label = "Other Apps",
+                    label = stringResource(R.string.other_apps),
                     onClick = { onMenuItemClick("Other apps") }
                 )
 
                 NavigationDrawerItem(
                     icon = R.drawable.ic_nothing,
-                    label = "About",
+                    label = stringResource(R.string.about),
                     onClick = { onMenuItemClick("About") }
                 )
             }

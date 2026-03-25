@@ -3,8 +3,12 @@ package com.newagedevs.gesturevolume.ui.activities
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -19,8 +23,13 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.android.play.core.review.ReviewManagerFactory
+
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     companion object {
         const val DEVICE_ADMIN_REQUEST_CODE = 3
@@ -36,7 +45,14 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            GestureVolumeTheme {
+            val state by viewModel.state.collectAsState()
+            val isDarkTheme = when (state.theme) {
+                1 -> false
+                2 -> true
+                else -> isSystemInDarkTheme()
+            }
+
+            GestureVolumeTheme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -60,6 +76,13 @@ class MainActivity : ComponentActivity() {
 
         // Observe LiveData communicator
         viewModel.observeCommunicator(this)
+
+        // Increment launch count and check for review
+        viewModel.preference.incrementAppLaunchCount()
+        showInAppReviewIfNeeded()
+
+        // Check for App Updates
+        checkForAppUpdate()
     }
 
     override fun onStart() {
@@ -72,6 +95,19 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         // Hide handler when app is in foreground — use Intent (works even if not bound)
         sendServiceCommand("hide")
+
+        // Resume App Update if needed
+        val appUpdateManager = AppUpdateManagerFactory.create(this)
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                appUpdateManager.startUpdateFlowForResult(
+                    appUpdateInfo,
+                    AppUpdateType.IMMEDIATE,
+                    this,
+                    1001
+                )
+            }
+        }
     }
 
     override fun onPause() {
@@ -85,11 +121,6 @@ class MainActivity : ComponentActivity() {
         viewModel.removeObserver()
     }
 
-    /**
-     * Send a command to OverlayService via Intent.
-     * This works regardless of whether we're bound to the service or not.
-     * Only sends if the service should be running (preference check).
-     */
     private fun sendServiceCommand(action: String) {
         if (viewModel.preference.isRunning()) {
             val intent = Intent(this, OverlayService::class.java).apply {
@@ -99,6 +130,45 @@ class MainActivity : ComponentActivity() {
                 startService(intent)
             } catch (_: Exception) {
                 // Service might not be running, ignore
+            }
+        }
+    }
+
+    private fun checkForAppUpdate() {
+        val appUpdateManager = AppUpdateManagerFactory.create(this)
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+            ) {
+                appUpdateManager.startUpdateFlowForResult(
+                    appUpdateInfo,
+                    AppUpdateType.IMMEDIATE,
+                    this,
+                    1001
+                )
+            }
+        }
+    }
+
+    private fun showInAppReviewIfNeeded() {
+        if (viewModel.preference.hasShownReview()) return
+
+        val launchCount = viewModel.preference.getAppLaunchCount()
+        
+        // Show review on 3rd, 10th, 20th launch etc if not shown
+        if (launchCount == 3 || launchCount == 10 || launchCount == 20) {
+            val manager = ReviewManagerFactory.create(this)
+            val request = manager.requestReviewFlow()
+            request.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val reviewInfo = task.result
+                    val flow = manager.launchReviewFlow(this, reviewInfo)
+                    flow.addOnCompleteListener {
+                        viewModel.preference.setHasShownReview(true)
+                    }
+                }
             }
         }
     }

@@ -55,6 +55,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
@@ -88,8 +89,14 @@ dependencies {
     // Sheets
     implementation(libs.color)
 
-    // IAP
-    implementation(libs.google.iap)
+    // Billing
+    implementation(libs.billing.ktx)
+
+    // Play Core
+    implementation(libs.play.update)
+    implementation(libs.play.update.ktx)
+    implementation(libs.play.review)
+    implementation(libs.play.review.ktx)
 
     // Ads
     implementation(libs.applovin.sdk)
