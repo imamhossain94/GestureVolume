@@ -1,6 +1,5 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,17 +13,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,60 +42,56 @@ fun SwipeActionDialog(
     val actionOptions = remember(isSwipeUp) {
         if (isSwipeUp) {
             listOf(
-                R.drawable.ic_nothing to "None",
-                R.drawable.ic_vol_increase to "Increase volume and show UI",
-                R.drawable.ic_vol_plus to "Increase volume"
+                Triple(R.drawable.ic_nothing, "None", R.string.action_none),
+                Triple(R.drawable.ic_vol_increase, "Increase volume and show UI", R.string.action_increase_vol_ui),
+                Triple(R.drawable.ic_vol_plus, "Increase volume", R.string.action_increase_vol)
             )
         } else {
             listOf(
-                R.drawable.ic_nothing to "None",
-                R.drawable.ic_vol_decrease to "Decrease volume and show UI",
-                R.drawable.ic_vol_minus to "Decrease volume"
+                Triple(R.drawable.ic_nothing, "None", R.string.action_none),
+                Triple(R.drawable.ic_vol_decrease, "Decrease volume and show UI", R.string.action_decrease_vol_ui),
+                Triple(R.drawable.ic_vol_minus, "Decrease volume", R.string.action_decrease_vol)
             )
         }
     }
 
-    val borderColor = Color(0xFF10B981)
-
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Column {
-                Text(
-                    title,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    "${actionOptions.size} actions available",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
         },
         text = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(top = 8.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                actionOptions.forEach { (iconRes, actionName) ->
+                actionOptions.forEach { (iconRes, identifier, labelRes) ->
                     SwipeActionListItem(
                         iconRes = iconRes,
-                        actionName = actionName,
-                        isSelected = actionName == currentAction,
-                        borderColor = borderColor,
-                        onClick = { onSelect(actionName) }
+                        actionName = stringResource(labelRes),
+                        isSelected = identifier == currentAction,
+                        onClick = { onSelect(identifier) }
                     )
                 }
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Close", fontWeight = FontWeight.Bold)
+            Button(
+                onClick = onDismiss,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(stringResource(R.string.close))
             }
         },
-        shape = RoundedCornerShape(16.dp)
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(24.dp)
     )
 }
 
@@ -103,7 +100,6 @@ private fun SwipeActionListItem(
     iconRes: Int,
     actionName: String,
     isSelected: Boolean,
-    borderColor: Color,
     onClick: () -> Unit
 ) {
     Surface(
@@ -111,11 +107,7 @@ private fun SwipeActionListItem(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) borderColor.copy(alpha = 0.1f) else Color.Transparent,
-        border = BorderStroke(
-            width = if (isSelected) 2.dp else 1.5.dp,
-            color = if (isSelected) borderColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-        )
+        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -126,14 +118,14 @@ private fun SwipeActionListItem(
                 painter = painterResource(iconRes),
                 contentDescription = actionName,
                 modifier = Modifier.size(28.dp),
-                tint = if (isSelected) borderColor else MaterialTheme.colorScheme.onSurface
+                tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = actionName,
                 fontSize = 15.sp,
                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                color = if (isSelected) borderColor else MaterialTheme.colorScheme.onSurface
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

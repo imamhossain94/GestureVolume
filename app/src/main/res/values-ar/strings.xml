@@ -1,0 +1,277 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GestureVolume</string>
+
+    <string name="device_description">قفل الشاشة عند النقر باستخدام Device Policy Manager API</string>
+    <string name="device_admin_label">مشرف جهاز Gesture Volume</string>
+    <string name="landscape_appearance_settings">إعدادات المظهر الأفقي</string>
+    <string name="click_">تحقق من المفتاح لتنشيط وتكوين مؤشر الشاشة</string>
+    <string name="configure">تكوين</string>
+    <string name="please">يرجى تدوير هاتفك مرة أخرى إلى الوضع الرأسي</string>
+    <string name="ad">AD</string>
+    <string name="about">حول</string>
+    <string name="all_corners">جميع الزوايا</string>
+    <string name="all_required_permissions_granted">يتم منح كافة الأذونات المطلوبة. يمكنك الآن استخدام التطبيق.</string>
+    <string name="all_set">تم الانتهاء!</string>
+    <string name="apply">تطبيق</string>
+    <string name="apply_changes">تطبيق التغييرات؟</string>
+    <string name="are_you_sure_you_want_to_apply_these_appearance_settings_to_your_active_handler">هل أنت متأكد أنك تريد تطبيق هذه الإعدادات؟</string>
+    <string name="bottom_left">أسفل اليسار</string>
+    <string name="bottom_right">أسفل اليمين</string>
+    <string name="common_issues">مشاكل شائعة</string>
+    <string name="cancel">إلغاء</string>
+    <string name="cannot_open_play_store">لا يمكن فتح متجر Play</string>
+    <string name="choose_language">اختر اللغة</string>
+    <string name="choose_theme">اختر المظهر</string>
+    <string name="close">إغلاق</string>
+    <string name="color">لون</string>
+    <string name="confirm">تأكيد</string>
+    <string name="customize_how_you_interact_with_the_volume_handler_through_taps_and_gestures">تخصيص كيفية التفاعل مع المؤشر</string>
+    <string name="describe_the_issue_or_suggestion">صف المشكلة أو الاقتراح...</string>
+    <string name="developed_by">تم التطوير بواسطة</string>
+    <string name="discard">تجاهل</string>
+    <string name="double_tap_action">إجراء النقر المزدوج</string>
+    <string name="feedback">الملاحظات</string>
+    <string name="general">عام</string>
+    <string name="gesture_volume">إيماءة الصوت</string>
+    <string name="grant_permission">منح الإذن</string>
+    <string name="gravity">الجاذبية</string>
+    <string name="handler_actions">إجراءات المؤشر</string>
+    <string name="handler_appearance">مظهر المؤشر</string>
+    <string name="height">الارتفاع</string>
+    <string name="help_us_improve_the_app">ساعدنا في تحسين التطبيق</string>
+    <string name="icon">أيقونة</string>
+    <string name="icon_color">لون الأيقونة</string>
+    <string name="icon_size">حجم الأيقونة</string>
+    <string name="install">تثبيت</string>
+    <string name="item_already_owned">هذا العنصر مملوك بالفعل</string>
+    <string name="legal">قانوني</string>
+    <string name="language">اللغة</string>
+    <string name="lock_position">قفل الموضع</string>
+    <string name="long_press_action">إجراء الضغط المطول</string>
+    <string name="minimize">تصغير</string>
+    <string name="more">المزيد</string>
+    <string name="newagedevs">NewAgeDevs</string>
+    <string name="nothing_to_restore">لا شيء لاستعادته</string>
+    <string name="optional">اختياري</string>
+    <string name="optional_permissions">أذونات اختيارية</string>
+    <string name="other_feedback">ملاحظات أخرى</string>
+    <string name="opacity">العتامة</string>
+    <string name="other_apps">تطبيقات أخرى</string>
+    <string name="pro">PRO</string>
+    <string name="purchase_failed">فشل الشراء. يرجى المحاولة مرة أخرى.</string>
+    <string name="purchase_restored">تمت استعادة الشراء! تم تفعيل قسط.</string>
+    <string name="purchase_success">عملية الشراء ناجحة! تم تفعيل قسط.</string>
+    <string name="overlay_permission_toast">يرجى منح إذن التراكب للمتابعة.</string>
+    <string name="permission_granted_check">تم منح الإذن ✓</string>
+    <string name="permissions">الأذونات</string>
+    <string name="action_required">الإجراء مطلوب</string>
+    <string name="all_permissions_granted">تم منح كافة الأذونات</string>
+    <string name="quick_presets">إعدادات سريعة</string>
+    <string name="required_permissions">أذونات مطلوبة</string>
+    <string name="rate_on_play_store">قيمنا في متجر Play</string>
+    <string name="revoke_permission">إلغاء الإذن</string>
+    <string name="settings">الإعدادات</string>
+    <string name="menu">قائمة طعام</string>
+    <string name="select_icon">اختر الأيقونة</string>
+    <string name="select_the_color_and_transparency_of_the_handler">حدد لون وشفافية المؤشر</string>
+    <string name="send_feedback">إرسال الملاحظات</string>
+    <string name="share_app">مشاركة التطبيق</string>
+    <string name="show_icon">إظهار الأيقونة</string>
+    <string name="single_tap_action">إجراء نقرة واحدة</string>
+    <string name="skip_for_now">تخطي الآن</string>
+    <string name="swipe_down_action">قم بالتمرير لأسفل</string>
+    <string name="swipe_up_action">قم بالتمرير لأعلى</string>
+    <string name="tap_to_change">انقر للتغيير</string>
+    <string name="tap_to_manage_overlay">انقر لإدارة المؤشر</string>
+    <string name="tell_us_more_about_your_experience">أخبرنا عن تجربتك...</string>
+    <string name="permissions_header_info">يتطلب التطبيق أذونات معينة ليعمل بشكل صحيح. منح الأذونات أدناه.</string>
+    <string name="theme">المظهر</string>
+    <string name="theme_desc">موضوع لون التطبيق</string>
+    <string name="language_desc">لغة التطبيق</string>
+    <string name="top_left">أعلى اليسار</string>
+    <string name="top_right">أعلى اليمين</string>
+    <string name="upgrade">ترقية</string>
+    <string name="unlock_all_features">افتح كل الميزات</string>
+    <string name="unsaved_changes">تغييرات غير محفوظة</string>
+    <string name="upgrade_to_pro">الترقية إلى برو</string>
+    <string name="vibrate_on_click">اهتزاز عند النقر</string>
+    <string name="we_d_love_to_hear_from_you">يسعدنا أن نسمع منك!</string>
+    <string name="width">العرض</string>
+    <string name="already_have_premium">لديك بالفعل قسط!</string>
+    <string name="you_have_unsaved_changes_do_you_want_to_apply_them_before_leaving">توجد تغييرات غير محفوظة. هل تريد حفظها؟</string>
+
+    <!-- About Screen -->
+    <string name="rate_us">قيمنا</string>
+    <string name="share">يشارك</string>
+    <string name="source">مصدر</string>
+    <string name="more_apps">المزيد من التطبيقات</string>
+    <string name="privacy_policy">سياسة الخصوصية</string>
+    <string name="back">خلف</string>
+
+    <!-- Feedback Screen -->
+    <string name="issue_crash">يتعطل التطبيق كثيرًا</string>
+    <string name="issue_ads">عدد كبير جدًا من الإعلانات</string>
+    <string name="issue_unresponsive">يتجمد التطبيق أو يصبح غير مستجيب</string>
+    <string name="issue_not_user_friendly">التطبيق ليس سهل الاستخدام</string>
+    <string name="no_feedback_provided">لم يتم تقديم أي تعليقات</string>
+    <string name="selected_issues">قضايا مختارة:</string>
+    <string name="additional_feedback">تعليقات إضافية:</string>
+
+    <!-- Actions Screen -->
+    <string name="tap_actions">اضغط على الإجراءات</string>
+    <string name="gesture_actions">إجراءات الإيماءة</string>
+    <string name="single_tap_desc">ماذا يحدث بنقرة واحدة</string>
+    <string name="double_tap_desc">ماذا يحدث عند النقر المزدوج</string>
+    <string name="long_press_desc">ماذا يحدث عند الضغط لفترة طويلة</string>
+    <string name="swipe_up_desc">ماذا يحدث عند التمرير لأعلى</string>
+    <string name="swipe_down_desc">ماذا يحدث عند التمرير لأسفل</string>
+    <string name="tap_gesture_settings">اضغط &amp; إعدادات الإيماءات</string>
+
+    <!-- Appearance -->
+    <string name="appearance_saved">تم حفظ المظهر</string>
+    <string name="appearance">مظهر</string>
+    <string name="appearance_desc">تخصيص المعالج</string>
+    <string name="customize_handler">تخصيص المعالج</string>
+    <string name="actions">الإجراءات</string>
+    <string name="actions_desc">اضغط &amp; إعدادات الإيماءات</string>
+
+    <!-- Navigation -->
+    <string name="pro_version">النسخة الاحترافية</string>
+    <string name="free_version">نسخة مجانية</string>
+
+    <!-- Permissions -->
+    <string name="overlay_permission">العرض على التطبيقات الأخرى</string>
+    <string name="overlay_permission_desc">مطلوب لإظهار تراكب معالج الصوت على شاشتك</string>
+    <string name="notification_permission">نشر الإخطارات</string>
+    <string name="notification_permission_desc">مطلوب لإظهار الإخطار المستمر عند تشغيل الخدمة</string>
+    <string name="device_admin_permission">مسؤول الجهاز</string>
+    <string name="device_admin_permission_desc">اختياري: يسمح للمعالج بقفل شاشة جهازك عند تكوينه</string>
+
+    <!-- Walkthrough -->
+    <string name="walkthrough_welcome_title">مرحبًا بك في حجم الإيماءة</string>
+    <string name="walkthrough_welcome_desc">تحكم في مستوى صوت جهازك بإيماءات بسيطة على الشاشة. لا حاجة للوصول إلى الأزرار المادية.</string>
+    <string name="walkthrough_overlay_title">إذن التراكب</string>
+    <string name="walkthrough_overlay_desc">لإظهار معالج مستوى الصوت أعلى التطبيقات الأخرى، نحتاج إلى إذن \"الرسم فوق التطبيقات الأخرى\".</string>
+    <string name="walkthrough_notifications_title">إشعارات</string>
+    <string name="walkthrough_notifications_desc">قم بالاشتراك في الإشعارات حتى نتمكن من الحفاظ على تشغيل خدمة الإيماءات بسلاسة في الخلفية.</string>
+    <string name="walkthrough_all_set_title">أنت جاهز تمامًا!</string>
+    <string name="walkthrough_all_set_desc">حجم الإيماءة جاهز للاستخدام. تخصيص المظهر والإجراءات في الشاشة الرئيسية.</string>
+    <string name="get_started">ابدأ</string>
+    <string name="next">التالي</string>
+    <string name="finish">ينهي</string>
+
+    <!-- Expanded Preview -->
+    <string name="position_locked">الموقف مغلق</string>
+    <string name="unlock_to_reposition">فتح للتغيير</string>
+    <string name="test_mode">وضع الاختبار</string>
+    <string name="reposition_mode">وضع إعادة الوضع</string>
+    <string name="test_mode_desc">حاول الضربات الشديدة والصنابير</string>
+    <string name="reposition_mode_desc">اسحب المعالج إلى الموضع الجديد</string>
+
+    <!-- Appearance Settings Content -->
+    <string name="position_uppercase">موضع</string>
+    <string name="left">غادر</string>
+    <string name="right">يمين</string>
+    <string name="dimensions_uppercase">أبعاد</string>
+    <string name="background_uppercase">خلفية</string>
+    <string name="stroke_uppercase">سكتة دماغية</string>
+    <string name="corner_radius_uppercase">نصف قطر الزاوية</string>
+    <string name="behavior_uppercase">سلوك</string>
+    <string name="icon_settings">إعدادات الأيقونات</string>
+
+    <!-- Actions -->
+    <string name="action_none">لا أحد</string>
+    <string name="action_open_volume_ui">فتح واجهة المستخدم لحجم الصوت</string>
+    <string name="action_mute">صامت</string>
+    <string name="action_mute_unmute">كتم الصوت أو إلغاء كتم الصوت</string>
+    <string name="action_music_overlay">تراكب الموسيقى النشطة</string>
+    <string name="action_lock">قفل</string>
+    <string name="action_hide_handler">إخفاء المعالج</string>
+    <string name="action_open_app">افتح التطبيق</string>
+    <string name="action_increase_vol_ui">زيادة مستوى الصوت وإظهار واجهة المستخدم</string>
+    <string name="action_increase_vol">زيادة الحجم</string>
+    <string name="action_decrease_vol_ui">خفض مستوى الصوت وإظهار واجهة المستخدم</string>
+    <string name="action_decrease_vol">تقليل الحجم</string>
+
+    <!-- Messages -->
+    <string name="action_not_available_msg">هذا الإجراء غير متوفر هنا.</string>
+    <string name="unknown_action_msg">عمل غير معروف.</string>
+    <string name="save_changes">حفظ التغييرات</string>
+    <string name="locked">مغلق</string>
+    <string name="unlocked">مفتوح</string>
+    <string name="icon_increase">يزيد</string>
+    <string name="icon_decrease">ينقص</string>
+    <string name="icon_boost">يعزز</string>
+    <string name="icon_reduce">يقلل</string>
+    <string name="icon_bug">حشرة</string>
+    <string name="icon_check">يفحص</string>
+    <string name="icon_palette">لوحة</string>
+    <string name="icon_crown">تاج</string>
+    <string name="icon_edit">يحرر</string>
+    <string name="icon_feedback">تعليق</string>
+    <string name="icon_github">جيثب</string>
+    <string name="icon_lock">قفل</string>
+    <string name="icon_move">يتحرك</string>
+    <string name="icon_music">موسيقى</string>
+    <string name="icon_none">لا أحد</string>
+    <string name="icon_plugin">البرنامج المساعد</string>
+    <string name="icon_power">قوة</string>
+    <string name="icon_share">يشارك</string>
+    <string name="icon_star">نجم</string>
+    <string name="icon_hide">يخفي</string>
+    <string name="icon_close">يغلق</string>
+    <string name="crown">تاج</string>
+
+    <!-- Languages -->
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
+
+    <!-- Theme Options -->
+    <string name="system_default">النظام الافتراضي</string>
+    <string name="light">ضوء</string>
+    <string name="dark">مظلم</string>
+
+    <!-- Additional UI -->
+    <string name="optional_uppercase">خياري</string>
+    <string name="granted">ممنوح</string>
+
+    <!-- Presets -->
+    <string name="preset_default_title">تقصير</string>
+    <string name="preset_default_subtitle">مقبض قياسي</string>
+    <string name="preset_minimal_title">الحد الأدنى</string>
+    <string name="preset_minimal_subtitle">رقيقة وأمبير. دقيق</string>
+    <string name="preset_bold_title">عريض</string>
+    <string name="preset_bold_subtitle">كبير &amp; مرئي</string>
+    <string name="preset_night_title">ليلة</string>
+    <string name="preset_night_subtitle">موضوع مظلم</string>
+    <string name="preset_ghost_title">شبح</string>
+    <string name="preset_ghost_subtitle">غير مرئية تقريبا</string>
+
+    <!-- Missing Strings -->
+    <string name="preview">معاينة</string>
+    <string name="press_back_again_to_exit">اضغط على زر الرجوع مرة أخرى للخروج</string>
+    <string name="volume_gesture_handler">معالج إيماءة مستوى الصوت</string>
+    <string name="troubleshoot">استكشاف الأخطاء وإصلاحها</string>
+    <string name="troubleshoot_desc">إبقاء التطبيق على قيد الحياة على جهازك</string>
+    <string name="troubleshoot_info">قد يؤدي التحسين القوي للبطارية على بعض الأجهزة (مثل Xiaomi وHuawei وOppo وVivo) إلى إنهاء خدمات الخلفية. اتبع هذه الخطوات للتأكد من تشغيل حجم الإيماءة بشكل موثوق:</string>
+    <string name="step_auto_start">1. تمكين البدء التلقائي: انتقل إلى الإعدادات ← التطبيقات ← إدارة التطبيقات ← مستوى صوت الإيماءة ← تمكين البدء التلقائي.</string>
+    <string name="step_battery">2. تحسين البطارية: اضبط توفير طاقة البطارية على \"بلا قيود\".</string>
+    <string name="step_recents">3. قفل التطبيقات الحديثة: افتح شاشة \"التطبيقات الحديثة\"، واضغط لفترة طويلة على بطاقة التطبيق، وانقر على أيقونة القفل 🔒.</string>
+    <string name="step_popup">4. الأذونات: تأكد من تمكين \"عرض النوافذ المنبثقة أثناء التشغيل في الخلفية\".</string>
+    <string name="troubleshoot_footer">للحصول على تعليمات خاصة بالجهاز، يرجى زيارة الموقع dontkillmyapp.com</string>
+    <string name="visit_website">زيارة الموقع</string>
+</resources>

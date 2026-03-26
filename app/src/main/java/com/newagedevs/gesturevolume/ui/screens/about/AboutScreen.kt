@@ -24,6 +24,8 @@ import com.newagedevs.gesturevolume.helper.extensions.shareApp
 import com.newagedevs.gesturevolume.utils.Constants
 import com.newagedevs.gesturevolume.utils.Constants.Companion.PUBLISHER_URL
 import java.util.Calendar
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,12 +35,12 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("About") },
+                title = { Text(stringResource(R.string.about)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -65,7 +67,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                 ActionButton(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.Star,
-                    text = "Rate Us",
+                    text = stringResource(R.string.rate_us),
                     borderColor = Color(0xFFF59E0B),
                     onClick = {
                         openAppStore(context, Constants.APP_STORE_ID) {
@@ -76,7 +78,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                 ActionButton(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.Share,
-                    text = "Share",
+                    text = stringResource(R.string.share),
                     borderColor = Color(0xFF10B981),
                     onClick = {
                         shareApp(context)
@@ -93,7 +95,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                 ActionButton(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.Build,
-                    text = "Source",
+                    text = stringResource(R.string.source),
                     borderColor = Color(0xFF8B5CF6),
                     onClick = {
                         openAppStore(context, Constants.SOURCE_CODE_URL) {
@@ -104,7 +106,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                 ActionButton(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.ShoppingCart,
-                    text = "More Apps",
+                    text = stringResource(R.string.more_apps),
                     borderColor = Color(0xFFEC4899),
                     onClick = {
                         openAppStore(context, PUBLISHER_URL) {
@@ -120,8 +122,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = Color.Transparent,
-                border = BorderStroke(1.5.dp, Color(0xFF6366F1))
+                color = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 Column(
                     modifier = Modifier
@@ -133,25 +134,25 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
-                        tint = Color(0xFF6366F1)
+                        tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Developed by",
+                        text = stringResource(R.string.developed_by),
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                     Text(
-                        text = "NewAgeDevs",
+                        text = stringResource(R.string.newagedevs),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "© ${Calendar.getInstance().get(Calendar.YEAR)} All rights reserved",
                         fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         textAlign = TextAlign.Center
                     )
                 }
@@ -161,7 +162,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
 
             // Links Section
             Text(
-                text = "LEGAL",
+                text = stringResource(R.string.legal),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
@@ -173,7 +174,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
 
             LinkCard(
                 icon = Icons.Default.Info,
-                text = "Privacy Policy",
+                text = stringResource(R.string.privacy_policy),
                 onClick = {
                     openWebPage(context, Constants.PRIVACY_POLICY_URL) {
 

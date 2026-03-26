@@ -1,58 +1,90 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
 import android.content.Context
-import android.graphics.Color
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.toColorInt
-import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
+import com.newagedevs.gesturevolume.R
+import androidx.compose.ui.res.stringResource
+
+// Data class to hold preset configuration for preview
+private data class PresetConfig(
+    val nameRes: Int,
+    val subtitleRes: Int,
+    val icon: ImageVector,
+    val gradientColors: List<ComposeColor>,
+    val previewWidth: Dp,
+    val previewCorner: Dp,
+    val previewColor: ComposeColor,
+    val previewAlpha: Float
+)
 
 @Composable
 fun PresetCardsGrid(
     viewModel: MainViewModel,
     context: Context,
-    onNavigateToAppearance: () -> Unit
+    onNavigateToAppearance: (String) -> Unit
 ) {
+    val primary = MaterialTheme.colorScheme.primary
+    val onSurface = MaterialTheme.colorScheme.onSurface
+
+    val presets = remember(primary, onSurface) {
+        listOf(
+            PresetConfig(R.string.preset_default_title, R.string.preset_default_subtitle, Icons.Default.Settings,
+                listOf(primary, primary), 22.dp, 10.dp, primary, 0.5f),
+            PresetConfig(R.string.preset_minimal_title, R.string.preset_minimal_subtitle, Icons.Default.LinearScale,
+                listOf(primary, primary), 8.dp, 6.dp, onSurface, 0.4f),
+            PresetConfig(R.string.preset_bold_title, R.string.preset_bold_subtitle, Icons.Default.VerticalAlignCenter,
+                listOf(primary, primary), 36.dp, 12.dp, primary, 0.85f),
+            PresetConfig(R.string.preset_night_title, R.string.preset_night_subtitle, Icons.Default.DarkMode,
+                listOf(primary, primary), 22.dp, 10.dp, onSurface, 0.7f),
+            PresetConfig(R.string.preset_ghost_title, R.string.preset_ghost_subtitle, Icons.Default.HideSource,
+                listOf(primary, primary), 16.dp, 8.dp, onSurface, 0.1f)
+        )
+    }
+
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         // --- Row 1 ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            PresetCard(
-                modifier = Modifier.weight(1f),
-                title = "Default",
-                subtitle = "Standard settings",
-                icon = Icons.Default.Settings,
-                gradientColors = listOf(
-                    ComposeColor(0xFF3B82F6),
-                    ComposeColor(0xFF2563EB)
-                ),
-                onClick = {
-                    applyDefaultPreset(viewModel)
-                    onNavigateToAppearance()
-                }
-            )
-            PresetCard(
-                modifier = Modifier.weight(1f),
-                title = "Minimal",
-                subtitle = "Slim & discrete",
-                icon = Icons.Default.Face,
-                gradientColors = listOf(
-                    ComposeColor(0xFF8B5CF6),
-                    ComposeColor(0xFF7C3AED)
-                ),
-                onClick = {
-                    applyMinimalPreset(viewModel)
-                    onNavigateToAppearance()
-                }
-            )
+            presets[0].let { preset ->
+                PresetCard(
+                    modifier = Modifier.weight(1f),
+                    title = stringResource(preset.nameRes),
+                    subtitle = stringResource(preset.subtitleRes),
+                    icon = preset.icon,
+                    gradientColors = preset.gradientColors,
+                    previewWidth = preset.previewWidth,
+                    previewCorner = preset.previewCorner,
+                    previewColor = preset.previewColor,
+                    previewAlpha = preset.previewAlpha,
+                    onClick = { onNavigateToAppearance(context.getString(preset.nameRes)) }
+                )
+            }
+            presets[1].let { preset ->
+                PresetCard(
+                    modifier = Modifier.weight(1f),
+                    title = stringResource(preset.nameRes),
+                    subtitle = stringResource(preset.subtitleRes),
+                    icon = preset.icon,
+                    gradientColors = preset.gradientColors,
+                    previewWidth = preset.previewWidth,
+                    previewCorner = preset.previewCorner,
+                    previewColor = preset.previewColor,
+                    previewAlpha = preset.previewAlpha,
+                    onClick = { onNavigateToAppearance(context.getString(preset.nameRes)) }
+                )
+            }
         }
 
         // --- Row 2 ---
@@ -60,34 +92,34 @@ fun PresetCardsGrid(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            PresetCard(
-                modifier = Modifier.weight(1f),
-                title = "Bold",
-                subtitle = "Large & visible",
-                icon = Icons.Default.Star,
-                gradientColors = listOf(
-                    ComposeColor(0xFFEC4899),
-                    ComposeColor(0xFFDB2777)
-                ),
-                onClick = {
-                    applyBoldPreset(viewModel)
-                    onNavigateToAppearance()
-                }
-            )
-            PresetCard(
-                modifier = Modifier.weight(1f),
-                title = "Night",
-                subtitle = "Dark theme",
-                icon = Icons.Default.DarkMode,
-                gradientColors = listOf(
-                    ComposeColor(0xFF1F2937),
-                    ComposeColor(0xFF111827)
-                ),
-                onClick = {
-                    applyNightPreset(viewModel)
-                    onNavigateToAppearance()
-                }
-            )
+            presets[2].let { preset ->
+                PresetCard(
+                    modifier = Modifier.weight(1f),
+                    title = stringResource(preset.nameRes),
+                    subtitle = stringResource(preset.subtitleRes),
+                    icon = preset.icon,
+                    gradientColors = preset.gradientColors,
+                    previewWidth = preset.previewWidth,
+                    previewCorner = preset.previewCorner,
+                    previewColor = preset.previewColor,
+                    previewAlpha = preset.previewAlpha,
+                    onClick = { onNavigateToAppearance(context.getString(preset.nameRes)) }
+                )
+            }
+            presets[3].let { preset ->
+                PresetCard(
+                    modifier = Modifier.weight(1f),
+                    title = stringResource(preset.nameRes),
+                    subtitle = stringResource(preset.subtitleRes),
+                    icon = preset.icon,
+                    gradientColors = preset.gradientColors,
+                    previewWidth = preset.previewWidth,
+                    previewCorner = preset.previewCorner,
+                    previewColor = preset.previewColor,
+                    previewAlpha = preset.previewAlpha,
+                    onClick = { onNavigateToAppearance(context.getString(preset.nameRes)) }
+                )
+            }
         }
 
         // --- Row 3 ---
@@ -95,187 +127,21 @@ fun PresetCardsGrid(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            PresetCard(
-                modifier = Modifier.weight(1f),
-                title = "Transparent",
-                subtitle = "Slim & invisible",
-                icon = Icons.Default.HideSource,
-                gradientColors = listOf(
-                    ComposeColor(0xFF06B6D4),
-                    ComposeColor(0xFF3B82F6)
-                ),
-                onClick = {
-                    applyTransparentPreset(viewModel)
-                    onNavigateToAppearance()
-                }
-            )
-
+            presets[4].let { preset ->
+                PresetCard(
+                    modifier = Modifier.weight(1f),
+                    title = stringResource(preset.nameRes),
+                    subtitle = stringResource(preset.subtitleRes),
+                    icon = preset.icon,
+                    gradientColors = preset.gradientColors,
+                    previewWidth = preset.previewWidth,
+                    previewCorner = preset.previewCorner,
+                    previewColor = preset.previewColor,
+                    previewAlpha = preset.previewAlpha,
+                    onClick = { onNavigateToAppearance(context.getString(preset.nameRes)) }
+                )
+            }
             Spacer(modifier = Modifier.weight(1f))
         }
     }
-}
-
-private fun applyDefaultPreset(viewModel: MainViewModel) {
-    val preference = viewModel.preference
-
-    // Position
-    preference.setHandlerPosition("Right")
-    preference.setHandlerLockPosition(true)
-
-    // Dimensions
-    preference.setHandlerWidthDp(30f)
-    preference.setHandlerHeightDp(100f)
-
-    // Background
-    preference.setHandlerColor("#FFFFFF".toColorInt())
-    preference.setHandlerBackgroundAlpha(50)
-
-    // Stroke
-    preference.setHandlerStrokeColor("#FFFFFF".toColorInt())
-    preference.setHandlerStrokeWidth(1f)
-    preference.setHandlerStrokeAlpha(200)
-
-    // Corner Radius
-    preference.setAllCornerRadii(15f)
-
-    // Icon
-    preference.setHandlerIconRes(R.drawable.ic_vol_increase)
-    preference.setHandlerIconSize(18f)
-    preference.setHandlerIconColor(Color.WHITE)
-    preference.setHandlerShowIcon(true)
-
-    // Behavior
-    preference.setHandlerVibrateOnClick(false)
-}
-
-private fun applyMinimalPreset(viewModel: MainViewModel) {
-    val preference = viewModel.preference
-
-    // Position
-    preference.setHandlerPosition("Right")
-    preference.setHandlerLockPosition(true)
-
-    // Dimensions
-    preference.setHandlerWidthDp(10f)
-    preference.setHandlerHeightDp(100f)
-
-    // Background
-    preference.setHandlerColor("#FFFFFF".toColorInt())
-    preference.setHandlerBackgroundAlpha(50)
-
-    // Stroke
-    preference.setHandlerStrokeColor("#FFFFFF".toColorInt())
-    preference.setHandlerStrokeWidth(1f)
-    preference.setHandlerStrokeAlpha(200)
-
-    // Corner Radius
-    preference.setAllCornerRadii(5f)
-
-    // Icon
-    preference.setHandlerIconRes(R.drawable.ic_vol_increase)
-    preference.setHandlerIconSize(18f)
-    preference.setHandlerIconColor(Color.WHITE)
-    preference.setHandlerShowIcon(false)
-
-    // Behavior
-    preference.setHandlerVibrateOnClick(false)
-}
-
-private fun applyBoldPreset(viewModel: MainViewModel) {
-    val preference = viewModel.preference
-
-    // Position
-    preference.setHandlerPosition("Right")
-    preference.setHandlerLockPosition(true)
-
-    // Dimensions
-    preference.setHandlerWidthDp(40f)
-    preference.setHandlerHeightDp(100f)
-
-    // Background
-    preference.setHandlerColor("#FFFFFF".toColorInt())
-    preference.setHandlerBackgroundAlpha(50)
-
-    // Stroke
-    preference.setHandlerStrokeColor("#FFFFFF".toColorInt())
-    preference.setHandlerStrokeWidth(1f)
-    preference.setHandlerStrokeAlpha(255)
-
-    // Corner Radius
-    preference.setAllCornerRadii(15f)
-
-    // Icon
-    preference.setHandlerIconRes(R.drawable.ic_move)
-    preference.setHandlerIconSize(32f)
-    preference.setHandlerIconColor(Color.WHITE)
-    preference.setHandlerShowIcon(true)
-
-    // Behavior
-    preference.setHandlerVibrateOnClick(true)
-}
-
-private fun applyNightPreset(viewModel: MainViewModel) {
-    val preference = viewModel.preference
-
-    // Position
-    preference.setHandlerPosition("Right")
-    preference.setHandlerLockPosition(true)
-
-    // Dimensions
-    preference.setHandlerWidthDp(30f)
-    preference.setHandlerHeightDp(100f)
-
-    // Background
-    preference.setHandlerColor("#1F2937".toColorInt())
-    preference.setHandlerBackgroundAlpha(230)
-
-    // Stroke
-    preference.setHandlerStrokeColor("#374151".toColorInt())
-    preference.setHandlerStrokeWidth(1f)
-    preference.setHandlerStrokeAlpha(200)
-
-    // Corner Radius
-    preference.setAllCornerRadii(15f)
-
-    // Icon
-    preference.setHandlerIconRes(R.drawable.ic_vol_increase)
-    preference.setHandlerIconSize(22f)
-    preference.setHandlerIconColor("#9CA3AF".toColorInt())
-    preference.setHandlerShowIcon(true)
-
-    // Behavior
-    preference.setHandlerVibrateOnClick(true)
-}
-
-private fun applyTransparentPreset(viewModel: MainViewModel) {
-    val preference = viewModel.preference
-
-    // Position
-    preference.setHandlerPosition("Right")
-    preference.setHandlerLockPosition(true)
-
-    // Dimensions
-    preference.setHandlerWidthDp(20f)
-    preference.setHandlerHeightDp(100f)
-
-    // Background
-    preference.setHandlerColor("#FFFFFF".toColorInt())
-    preference.setHandlerBackgroundAlpha(5)
-
-    // Stroke
-    preference.setHandlerStrokeColor("#FFFFFF".toColorInt())
-    preference.setHandlerStrokeWidth(0.5f)
-    preference.setHandlerStrokeAlpha(5)
-
-    // Corner Radius
-    preference.setAllCornerRadii(12f)
-
-    // Icon
-    preference.setHandlerIconRes(R.drawable.ic_vol_increase)
-    preference.setHandlerIconSize(16f)
-    preference.setHandlerIconColor(Color.WHITE)
-    preference.setHandlerShowIcon(false)
-
-    // Behavior
-    preference.setHandlerVibrateOnClick(false)
 }

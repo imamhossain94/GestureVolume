@@ -84,12 +84,15 @@ class OverlayService : Service(), OverlayServiceInterface {
     companion object {
         private const val CHANNEL_ID = "Gesture Volume Channel ID"
         private const val NOTIFICATION_ID = 1
-        private const val TOUCH_MOVE_FACTOR: Long = 20
-        private const val TOUCH_TIME_FACTOR: Long = 300
-        private const val DOUBLE_CLICK_TIME_DELTA: Long = 300
         private const val LONG_PRESS_TIME_THRESHOLD: Long = 500
         private var volume: Int = 0
     }
+
+    private val touchMoveFactor: Long by lazy { 
+        (20 * resources.displayMetrics.density).toLong() 
+    }
+    private val touchTimeFactor: Long = 300L
+    private val doubleClickTimeDelta: Long = 300L
 
     private var previousVolume: Int = 1
     private var lastX: Float = 0f
@@ -191,8 +194,29 @@ class OverlayService : Service(), OverlayServiceInterface {
         longPressHandler.removeCallbacks(longPressedRunnable)
         singleClickHandler.removeCallbacks(singleClickRunnable)
 
+        if (!shouldFinish && preference.isRunning()) {
+            scheduleServiceRestart()
+        }
+
         stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
+    }
+
+    private fun scheduleServiceRestart() {
+        val restartIntent = Intent(this, ServiceRestartReceiver::class.java).apply {
+            action = "com.newagedevs.gesturevolume.RESTART_SERVICE"
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            1,
+            restartIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+        alarmManager.set(
+            android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime() + 1000,
+            pendingIntent
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -205,6 +229,7 @@ class OverlayService : Service(), OverlayServiceInterface {
                     hideHandlerView()
                 }
                 "stop" -> {
+                    shouldFinish = true
                     preference.setRunning(false)
                     hideOverlayView()
                     hideHandlerView()
@@ -291,12 +316,12 @@ class OverlayService : Service(), OverlayServiceInterface {
 
                 // Icon with color support
                 val safeDrawable = try {
-                    if (context.resources.getResourceTypeName(iconRes) == "drawable") {
-                        ContextCompat.getDrawable(context, iconRes)
+                    if (resources.getResourceTypeName(iconRes) == "drawable") {
+                        ContextCompat.getDrawable(this@OverlayService, iconRes)
                     } else null
                 } catch (_: Exception) {
                     null
-                } ?: ContextCompat.getDrawable(context, R.drawable.ic_vol_increase)
+                } ?: ContextCompat.getDrawable(this@OverlayService, R.drawable.ic_vol_increase)
 
                 // Use overload that accepts Drawable
                 setCenterIcon(safeDrawable, iconSize, iconColor)
@@ -402,18 +427,18 @@ class OverlayService : Service(), OverlayServiceInterface {
                         return@setOnTouchListener false
                     }
 
-                    val isTouchDuration = now() - touchDownTime < TOUCH_TIME_FACTOR
+                    val isTouchDuration = now() - touchDownTime < touchTimeFactor
                     val isTouchLength = abs(event.x - actionDownPoint.x) +
-                            abs(event.y - actionDownPoint.y) < TOUCH_MOVE_FACTOR
+                            abs(event.y - actionDownPoint.y) < touchMoveFactor
                     val shouldClick = isTouchLength && isTouchDuration
 
                     if (shouldClick) {
                         val currentTime = now()
-                        if (currentTime - lastClickTime < DOUBLE_CLICK_TIME_DELTA) {
+                        if (currentTime - lastClickTime < doubleClickTimeDelta) {
                             singleClickHandler.removeCallbacks(singleClickRunnable)
                             handlerTapActions(preference.getHandlerDoubleTapAction())
                         } else {
-                            singleClickHandler.postDelayed(singleClickRunnable, DOUBLE_CLICK_TIME_DELTA)
+                            singleClickHandler.postDelayed(singleClickRunnable, doubleClickTimeDelta)
                         }
                         lastClickTime = currentTime
                     }
@@ -582,14 +607,14 @@ class OverlayService : Service(), OverlayServiceInterface {
             return false
         }
 
-        val isTouchDuration = now() - touchDownTime < TOUCH_TIME_FACTOR
+        val isTouchDuration = now() - touchDownTime < touchTimeFactor
         val isTouchLength = abs(event.x - actionDownPoint.x) +
-                abs(event.y - actionDownPoint.y) < TOUCH_MOVE_FACTOR
+                abs(event.y - actionDownPoint.y) < touchMoveFactor
         val shouldClick = isTouchLength && isTouchDuration
 
         if (shouldClick) {
             val currentTime = now()
-            lastClickTime = if (currentTime - lastClickTime < DOUBLE_CLICK_TIME_DELTA) {
+            lastClickTime = if (currentTime - lastClickTime < doubleClickTimeDelta) {
                 if (UnlockCondition.DOUBLE_TAP.displayText == "Double tap to unlock") {
                     hideOverlayView()
                     createOverlayHandler()

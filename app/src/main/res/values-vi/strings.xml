@@ -1,0 +1,277 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GestureVolume</string>
+
+    <string name="device_description">Khóa màn hình khi nhấp chuột bằng API Trình quản lý chính sách thiết bị</string>
+    <string name="device_admin_label">Quản trị viên thiết bị khối lượng cử chỉ</string>
+    <string name="landscape_appearance_settings">CÀI ĐẶT XUẤT HIỆN CẢNH QUAN</string>
+    <string name="click_">Kiểm tra công tắc để hoạt động và định cấu hình trọng lực, kích thước, độ dày và vị trí của bộ xử lý trên màn hình ngang.</string>
+    <string name="configure">Cấu hình</string>
+    <string name="please">Vui lòng xoay điện thoại của bạn về chế độ dọc để định cấu hình vị trí xử lý.</string>
+    <string name="ad">QUẢNG CÁO</string>
+    <string name="about">Về</string>
+    <string name="all_corners">Tất cả các góc</string>
+    <string name="all_required_permissions_granted">Tất cả các quyền cần thiết đều được cấp. Bây giờ bạn có thể sử dụng ứng dụng.</string>
+    <string name="all_set">Đã hoàn tất!</string>
+    <string name="apply">Áp dụng</string>
+    <string name="apply_changes">Áp dụng Thay đổi?</string>
+    <string name="are_you_sure_you_want_to_apply_these_appearance_settings_to_your_active_handler">Bạn có chắc chắn muốn áp dụng các cài đặt giao diện này cho trình xử lý đang hoạt động của mình không?</string>
+    <string name="bottom_left">Dưới cùng bên trái</string>
+    <string name="bottom_right">Dưới cùng bên phải</string>
+    <string name="common_issues">CÁC VẤN ĐỀ THƯỜNG GẶP</string>
+    <string name="cancel">Hủy bỏ</string>
+    <string name="cannot_open_play_store">Không thể mở Cửa hàng Play</string>
+    <string name="choose_language">Chọn ngôn ngữ</string>
+    <string name="choose_theme">Chọn chủ đề</string>
+    <string name="close">Đóng</string>
+    <string name="color">Màu sắc</string>
+    <string name="confirm">Xác nhận</string>
+    <string name="customize_how_you_interact_with_the_volume_handler_through_taps_and_gestures">Tùy chỉnh cách bạn tương tác với bộ xử lý âm lượng thông qua các thao tác nhấn và cử chỉ</string>
+    <string name="describe_the_issue_or_suggestion">Mô tả vấn đề hoặc gợi ý</string>
+    <string name="developed_by">Được phát triển bởi</string>
+    <string name="discard">Loại bỏ</string>
+    <string name="double_tap_action">Thao tác nhấn đúp</string>
+    <string name="feedback">Nhận xét</string>
+    <string name="general">TỔNG QUAN</string>
+    <string name="gesture_volume">Âm lượng cử chỉ</string>
+    <string name="grant_permission">Cấp quyền</string>
+    <string name="gravity">Trọng lực</string>
+    <string name="handler_actions">Hành động xử lý</string>
+    <string name="handler_appearance">Ngoại hình xử lý</string>
+    <string name="height">Chiều cao</string>
+    <string name="help_us_improve_the_app">Hãy giúp chúng tôi cải thiện ứng dụng</string>
+    <string name="icon">Biểu tượng</string>
+    <string name="icon_color">Màu biểu tượng</string>
+    <string name="icon_size">Kích thước biểu tượng</string>
+    <string name="install">Cài đặt</string>
+    <string name="item_already_owned">Mục đã sở hữu</string>
+    <string name="legal">HỢP PHÁP</string>
+    <string name="language">Ngôn ngữ</string>
+    <string name="lock_position">Vị trí khóa</string>
+    <string name="long_press_action">Hành động nhấn và giữ</string>
+    <string name="minimize">TỐI THIỂU</string>
+    <string name="more">HƠN</string>
+    <string name="newagedevs">NewAgeDevs</string>
+    <string name="nothing_to_restore">Không có gì để khôi phục</string>
+    <string name="optional">KHÔNG BẮT BUỘC</string>
+    <string name="optional_permissions">QUYỀN TÙY CHỌN</string>
+    <string name="other_feedback">PHẢN HỒI KHÁC</string>
+    <string name="opacity">Độ mờ</string>
+    <string name="other_apps">Ứng dụng khác</string>
+    <string name="pro">CHUYÊN NGHIỆP</string>
+    <string name="purchase_failed">Mua hàng không thành công. Vui lòng thử lại.</string>
+    <string name="purchase_restored">Đã khôi phục mua hàng! Đã kích hoạt cao cấp.</string>
+    <string name="purchase_success">Mua hàng thành công! Đã kích hoạt cao cấp.</string>
+    <string name="overlay_permission_toast">Vui lòng cấp quyền cho lớp phủ để tiếp tục.</string>
+    <string name="permission_granted_check">Đã được cấp phép ✓</string>
+    <string name="permissions">Quyền</string>
+    <string name="action_required">Cần hành động</string>
+    <string name="all_permissions_granted">Tất cả các quyền được cấp</string>
+    <string name="quick_presets">CÀI ĐẶT TRƯỚC NHANH</string>
+    <string name="required_permissions">SỰ PHÉP BẮT BUỘC</string>
+    <string name="rate_on_play_store">Đánh giá trên Cửa hàng Play</string>
+    <string name="revoke_permission">Thu hồi quyền</string>
+    <string name="settings">CÀI ĐẶT</string>
+    <string name="menu">Thực đơn</string>
+    <string name="select_icon">Chọn biểu tượng</string>
+    <string name="select_the_color_and_transparency_of_the_handler">Chọn màu sắc và độ trong suốt của trình xử lý</string>
+    <string name="send_feedback">Gửi phản hồi</string>
+    <string name="share_app">Chia sẻ ứng dụng</string>
+    <string name="show_icon">Hiển thị biểu tượng</string>
+    <string name="single_tap_action">Hành động nhấn một lần</string>
+    <string name="skip_for_now">Bỏ qua bây giờ</string>
+    <string name="swipe_down_action">Hành động vuốt xuống</string>
+    <string name="swipe_up_action">Thao tác vuốt lên</string>
+    <string name="tap_to_change">Nhấn để thay đổi</string>
+    <string name="tap_to_manage_overlay">Nhấn để quản lý lớp phủ</string>
+    <string name="tell_us_more_about_your_experience">Hãy cho chúng tôi biết thêm về trải nghiệm của bạn...</string>
+    <string name="permissions_header_info">Ứng dụng yêu cầu một số quyền nhất định để hoạt động bình thường. Cấp quyền bên dưới.</string>
+    <string name="theme">chủ đề</string>
+    <string name="theme_desc">Chủ đề màu ứng dụng</string>
+    <string name="language_desc">Ngôn ngữ ứng dụng</string>
+    <string name="top_left">Trên cùng bên trái</string>
+    <string name="top_right">Trên cùng bên phải</string>
+    <string name="upgrade">NÂNG CẤP</string>
+    <string name="unlock_all_features">Mở khóa tất cả các tính năng</string>
+    <string name="unsaved_changes">Những thay đổi chưa được lưu</string>
+    <string name="upgrade_to_pro">Nâng cấp lên Pro</string>
+    <string name="vibrate_on_click">Rung khi nhấp chuột</string>
+    <string name="we_d_love_to_hear_from_you">Chúng tôi rất muốn nghe ý kiến ​​từ bạn!</string>
+    <string name="width">Chiều rộng</string>
+    <string name="already_have_premium">Bạn đã có phí bảo hiểm!</string>
+    <string name="you_have_unsaved_changes_do_you_want_to_apply_them_before_leaving">Bạn có những thay đổi chưa được lưu. Bạn có muốn áp dụng chúng trước khi rời đi?</string>
+
+    <!-- About Screen -->
+    <string name="rate_us">Đánh giá chúng tôi</string>
+    <string name="share">Chia sẻ</string>
+    <string name="source">Nguồn</string>
+    <string name="more_apps">Nhiều ứng dụng hơn</string>
+    <string name="privacy_policy">Chính sách bảo mật</string>
+    <string name="back">Mặt sau</string>
+
+    <!-- Feedback Screen -->
+    <string name="issue_crash">Ứng dụng bị lỗi rất nhiều</string>
+    <string name="issue_ads">Quá nhiều quảng cáo</string>
+    <string name="issue_unresponsive">Ứng dụng bị treo hoặc không phản hồi</string>
+    <string name="issue_not_user_friendly">Ứng dụng không thân thiện với người dùng</string>
+    <string name="no_feedback_provided">Không có phản hồi nào được cung cấp</string>
+    <string name="selected_issues">Các vấn đề được chọn:</string>
+    <string name="additional_feedback">Phản hồi bổ sung:</string>
+
+    <!-- Actions Screen -->
+    <string name="tap_actions">TÁC ĐỘNG NHẤN</string>
+    <string name="gesture_actions">HÀNH ĐỘNG CỬ CHÍ</string>
+    <string name="single_tap_desc">Điều gì xảy ra khi nhấn một lần</string>
+    <string name="double_tap_desc">Điều gì xảy ra khi nhấn đúp</string>
+    <string name="long_press_desc">Điều gì xảy ra khi nhấn giữ</string>
+    <string name="swipe_up_desc">Điều gì xảy ra khi vuốt lên</string>
+    <string name="swipe_down_desc">Điều gì xảy ra khi vuốt xuống</string>
+    <string name="tap_gesture_settings">Nhấn &amp; cài đặt cử chỉ</string>
+
+    <!-- Appearance -->
+    <string name="appearance_saved">Đã lưu giao diện</string>
+    <string name="appearance">Vẻ bề ngoài</string>
+    <string name="appearance_desc">Tùy chỉnh trình xử lý</string>
+    <string name="customize_handler">Tùy chỉnh trình xử lý</string>
+    <string name="actions">hành động</string>
+    <string name="actions_desc">Nhấn &amp; cài đặt cử chỉ</string>
+
+    <!-- Navigation -->
+    <string name="pro_version">Phiên bản chuyên nghiệp</string>
+    <string name="free_version">Phiên bản miễn phí</string>
+
+    <!-- Permissions -->
+    <string name="overlay_permission">Hiển thị trên các ứng dụng khác</string>
+    <string name="overlay_permission_desc">Bắt buộc phải hiển thị lớp phủ xử lý âm lượng trên màn hình của bạn</string>
+    <string name="notification_permission">Đăng thông báo</string>
+    <string name="notification_permission_desc">Bắt buộc phải hiển thị thông báo liên tục khi dịch vụ đang chạy</string>
+    <string name="device_admin_permission">Quản trị viên thiết bị</string>
+    <string name="device_admin_permission_desc">Tùy chọn: Cho phép trình xử lý khóa màn hình thiết bị của bạn khi được định cấu hình</string>
+
+    <!-- Walkthrough -->
+    <string name="walkthrough_welcome_title">Chào mừng đến với Khối lượng cử chỉ</string>
+    <string name="walkthrough_welcome_desc">Kiểm soát âm lượng của thiết bị bằng các cử chỉ đơn giản trên màn hình. Không cần phải chạm tới các nút vật lý.</string>
+    <string name="walkthrough_overlay_title">Quyền lớp phủ</string>
+    <string name="walkthrough_overlay_desc">Để hiển thị trình xử lý âm lượng lên trên các ứng dụng khác, chúng tôi cần có quyền \'Vẽ lên các ứng dụng khác\'.</string>
+    <string name="walkthrough_notifications_title">Thông báo</string>
+    <string name="walkthrough_notifications_desc">Chọn tham gia thông báo để chúng tôi có thể giữ cho dịch vụ cử chỉ chạy trơn tru trong nền.</string>
+    <string name="walkthrough_all_set_title">Bạn đã hoàn tất!</string>
+    <string name="walkthrough_all_set_desc">Khối lượng cử chỉ đã sẵn sàng để sử dụng. Tùy chỉnh giao diện và hành động trong màn hình chính.</string>
+    <string name="get_started">Bắt đầu</string>
+    <string name="next">Kế tiếp</string>
+    <string name="finish">Hoàn thành</string>
+
+    <!-- Expanded Preview -->
+    <string name="position_locked">VỊ TRÍ KHÓA</string>
+    <string name="unlock_to_reposition">MỞ KHÓA ĐỂ ĐỔI VỊ TRÍ</string>
+    <string name="test_mode">Chế độ kiểm tra</string>
+    <string name="reposition_mode">Chế độ định vị lại</string>
+    <string name="test_mode_desc">Hãy thử vuốt và chạm</string>
+    <string name="reposition_mode_desc">Kéo trình xử lý đến vị trí mới</string>
+
+    <!-- Appearance Settings Content -->
+    <string name="position_uppercase">CHỨC VỤ</string>
+    <string name="left">Bên trái</string>
+    <string name="right">Phải</string>
+    <string name="dimensions_uppercase">KÍCH THƯỚC</string>
+    <string name="background_uppercase">LÝ LỊCH</string>
+    <string name="stroke_uppercase">ĐỘT QUỴ</string>
+    <string name="corner_radius_uppercase">BÁNH GIÁ GÓC</string>
+    <string name="behavior_uppercase">HÀNH VI</string>
+    <string name="icon_settings">CÀI ĐẶT BIỂU TƯỢNG</string>
+
+    <!-- Actions -->
+    <string name="action_none">Không có</string>
+    <string name="action_open_volume_ui">Giao diện người dùng âm lượng mở</string>
+    <string name="action_mute">Tắt tiếng</string>
+    <string name="action_mute_unmute">Tắt tiếng hoặc bật tiếng</string>
+    <string name="action_music_overlay">Lớp phủ âm nhạc hoạt động</string>
+    <string name="action_lock">Khóa</string>
+    <string name="action_hide_handler">Ẩn trình xử lý</string>
+    <string name="action_open_app">Mở ứng dụng</string>
+    <string name="action_increase_vol_ui">Tăng âm lượng và hiển thị giao diện người dùng</string>
+    <string name="action_increase_vol">Tăng âm lượng</string>
+    <string name="action_decrease_vol_ui">Giảm âm lượng và hiển thị giao diện người dùng</string>
+    <string name="action_decrease_vol">Giảm âm lượng</string>
+
+    <!-- Messages -->
+    <string name="action_not_available_msg">Hành động này không có sẵn ở đây.</string>
+    <string name="unknown_action_msg">Hành động không xác định.</string>
+    <string name="save_changes">Lưu thay đổi</string>
+    <string name="locked">Đã khóa</string>
+    <string name="unlocked">Đã mở khóa</string>
+    <string name="icon_increase">Tăng</string>
+    <string name="icon_decrease">Giảm bớt</string>
+    <string name="icon_boost">Tăng</string>
+    <string name="icon_reduce">Giảm bớt</string>
+    <string name="icon_bug">Sâu bọ</string>
+    <string name="icon_check">Kiểm tra</string>
+    <string name="icon_palette">Bảng màu</string>
+    <string name="icon_crown">Vương miện</string>
+    <string name="icon_edit">Biên tập</string>
+    <string name="icon_feedback">Nhận xét</string>
+    <string name="icon_github">GitHub</string>
+    <string name="icon_lock">Khóa</string>
+    <string name="icon_move">Di chuyển</string>
+    <string name="icon_music">Âm nhạc</string>
+    <string name="icon_none">Không có</string>
+    <string name="icon_plugin">Trình cắm</string>
+    <string name="icon_power">Quyền lực</string>
+    <string name="icon_share">Chia sẻ</string>
+    <string name="icon_star">Ngôi sao</string>
+    <string name="icon_hide">Trốn</string>
+    <string name="icon_close">Đóng</string>
+    <string name="crown">Vương miện</string>
+
+    <!-- Languages -->
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
+
+    <!-- Theme Options -->
+    <string name="system_default">Mặc định hệ thống</string>
+    <string name="light">Ánh sáng</string>
+    <string name="dark">Tối tăm</string>
+
+    <!-- Additional UI -->
+    <string name="optional_uppercase">KHÔNG BẮT BUỘC</string>
+    <string name="granted">Giả dụ như vậy</string>
+
+    <!-- Presets -->
+    <string name="preset_default_title">Mặc định</string>
+    <string name="preset_default_subtitle">Tay cầm tiêu chuẩn</string>
+    <string name="preset_minimal_title">Tối thiểu</string>
+    <string name="preset_minimal_subtitle">Mỏng &amp; tinh tế</string>
+    <string name="preset_bold_title">In đậm</string>
+    <string name="preset_bold_subtitle">Lớn &amp; dễ thấy</string>
+    <string name="preset_night_title">Đêm</string>
+    <string name="preset_night_subtitle">Chủ đề tối</string>
+    <string name="preset_ghost_title">Bóng ma</string>
+    <string name="preset_ghost_subtitle">Gần như vô hình</string>
+
+    <!-- Missing Strings -->
+    <string name="preview">Xem trước</string>
+    <string name="press_back_again_to_exit">Nhấn lại lần nữa để thoát</string>
+    <string name="volume_gesture_handler">Trình xử lý cử chỉ âm lượng</string>
+    <string name="troubleshoot">Khắc phục sự cố</string>
+    <string name="troubleshoot_desc">Giữ ứng dụng tồn tại trên thiết bị của bạn</string>
+    <string name="troubleshoot_info">Tối ưu hóa pin mạnh mẽ trên một số thiết bị (như Xiaomi, Huawei, Oppo, Vivo) có thể giết chết các dịch vụ nền. Hãy làm theo các bước sau để đảm bảo Âm lượng cử chỉ chạy ổn định:</string>
+    <string name="step_auto_start">1. Bật Tự động khởi động: Đi tới Cài đặt → Ứng dụng → Quản lý ứng dụng → Âm lượng cử chỉ → Bật Tự động khởi động.</string>
+    <string name="step_battery">2. Tối ưu hóa pin: Đặt Trình tiết kiệm pin thành \"Không hạn chế\".</string>
+    <string name="step_recents">3. Khóa trong Mục gần đây: Mở màn hình \"Ứng dụng gần đây\", nhấn và giữ thẻ ứng dụng và nhấp vào biểu tượng Khóa 🔒.</string>
+    <string name="step_popup">4. Quyền: Đảm bảo \"Hiển thị cửa sổ bật lên khi chạy ở chế độ nền\" được bật.</string>
+    <string name="troubleshoot_footer">Để biết hướng dẫn dành riêng cho thiết bị, vui lòng truy cập Dontkillmyapp.com</string>
+    <string name="visit_website">Truy cập trang web</string>
+</resources>

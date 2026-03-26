@@ -31,6 +31,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
 
 
 @Composable
@@ -47,8 +49,7 @@ fun PermissionCard(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = Color.Transparent,
-        border = BorderStroke(1.5.dp, borderColor)
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -64,7 +65,7 @@ fun PermissionCard(
                         imageVector = icon,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
-                        tint = borderColor
+                        tint = MaterialTheme.colorScheme.primary // Using unified primary instead of borderColor
                     )
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -81,15 +82,14 @@ fun PermissionCard(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Surface(
                                     shape = RoundedCornerShape(4.dp),
-                                    color = Color.Transparent,
-                                    border = BorderStroke(1.dp, borderColor.copy(alpha = 0.6f))
+                                    color = MaterialTheme.colorScheme.primaryContainer
                                 ) {
                                     Text(
-                                        text = "OPTIONAL",
+                                        text = stringResource(R.string.optional_uppercase),
                                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = borderColor,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                         letterSpacing = 0.5.sp
                                     )
                                 }
@@ -109,8 +109,8 @@ fun PermissionCard(
                     Spacer(modifier = Modifier.width(12.dp))
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Granted",
-                        tint = borderColor,
+                        contentDescription = stringResource(R.string.granted),
+                        tint = MaterialTheme.colorScheme.primary, // Unified primary
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -124,8 +124,8 @@ fun PermissionCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = borderColor,
-                        contentColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.primary, // Unified primary
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     elevation = ButtonDefaults.buttonElevation(
                         defaultElevation = 0.dp
@@ -138,7 +138,7 @@ fun PermissionCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Grant Permission",
+                        text = stringResource(R.string.grant_permission),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -152,9 +152,9 @@ fun PermissionCard(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = Color.Transparent,
-                        contentColor = borderColor
+                        contentColor = MaterialTheme.colorScheme.primary
                     ),
-                    border = BorderStroke(1.5.dp, borderColor)
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
@@ -163,7 +163,7 @@ fun PermissionCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Revoke Permission",
+                        text = stringResource(R.string.revoke_permission),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
                     )
