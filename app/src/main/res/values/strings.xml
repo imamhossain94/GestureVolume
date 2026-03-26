@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="app_name">GestureVolume</string>
 
@@ -7,4 +8,270 @@
     <string name="click_">Check the switch to active and configure the gravity, size, thickness, and position of the handler on the landscape screen.</string>
     <string name="configure">Configure</string>
     <string name="please">Please rotate your phone back to portrait mode to configure the handler position.</string>
+    <string name="ad">AD</string>
+    <string name="about">About</string>
+    <string name="all_corners">All Corners</string>
+    <string name="all_required_permissions_granted">All required permissions are granted. You can now use the app.</string>
+    <string name="all_set">All set!</string>
+    <string name="apply">Apply</string>
+    <string name="apply_changes">Apply Changes?</string>
+    <string name="are_you_sure_you_want_to_apply_these_appearance_settings_to_your_active_handler">Are you sure you want to apply these appearance settings to your active handler?</string>
+    <string name="bottom_left">Bottom Left</string>
+    <string name="bottom_right">Bottom Right</string>
+    <string name="common_issues">COMMON ISSUES</string>
+    <string name="cancel">Cancel</string>
+    <string name="cannot_open_play_store">Cannot open Play Store</string>
+    <string name="choose_language">Choose Language</string>
+    <string name="choose_theme">Choose Theme</string>
+    <string name="close">Close</string>
+    <string name="color">Color</string>
+    <string name="confirm">Confirm</string>
+    <string name="customize_how_you_interact_with_the_volume_handler_through_taps_and_gestures">Customize how you interact with the volume handler through taps and gestures</string>
+    <string name="describe_the_issue_or_suggestion">Describe the issue or suggestion</string>
+    <string name="developed_by">Developed by</string>
+    <string name="discard">Discard</string>
+    <string name="double_tap_action">Double tap action</string>
+    <string name="feedback">Feedback</string>
+    <string name="general">GENERAL</string>
+    <string name="gesture_volume">Gesture Volume</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="gravity">Gravity</string>
+    <string name="handler_actions">Handler Actions</string>
+    <string name="handler_appearance">Handler Appearance</string>
+    <string name="height">Height</string>
+    <string name="help_us_improve_the_app">Help us improve the app</string>
+    <string name="icon">Icon</string>
+    <string name="icon_color">Icon Color</string>
+    <string name="icon_size">Icon Size</string>
+    <string name="install">Install</string>
+    <string name="item_already_owned">Item already owned</string>
+    <string name="legal">LEGAL</string>
+    <string name="language">Language</string>
+    <string name="lock_position">Lock position</string>
+    <string name="long_press_action">Long press action</string>
+    <string name="minimize">MINIMIZE</string>
+    <string name="more">MORE</string>
+    <string name="newagedevs">NewAgeDevs</string>
+    <string name="nothing_to_restore">Nothing to restore</string>
+    <string name="optional">OPTIONAL</string>
+    <string name="optional_permissions">OPTIONAL PERMISSIONS</string>
+    <string name="other_feedback">OTHER FEEDBACK</string>
+    <string name="opacity">Opacity</string>
+    <string name="other_apps">Other Apps</string>
+    <string name="pro">PRO</string>
+    <string name="purchase_failed">Purchase failed. Please try again.</string>
+    <string name="purchase_restored">Purchase restored! Premium activated.</string>
+    <string name="purchase_success">Purchase successful! Premium activated.</string>
+    <string name="overlay_permission_toast">Please grant overlay permission to continue.</string>
+    <string name="permission_granted_check">Permission Granted ✓</string>
+    <string name="permissions">Permissions</string>
+    <string name="action_required">Action required</string>
+    <string name="all_permissions_granted">All permissions granted</string>
+    <string name="quick_presets">QUICK PRESETS</string>
+    <string name="required_permissions">REQUIRED PERMISSIONS</string>
+    <string name="rate_on_play_store">Rate on Play Store</string>
+    <string name="revoke_permission">Revoke Permission</string>
+    <string name="settings">SETTINGS</string>
+    <string name="menu">Menu</string>
+    <string name="select_icon">Select Icon</string>
+    <string name="select_the_color_and_transparency_of_the_handler">Select the color and transparency of the handler</string>
+    <string name="send_feedback">Send Feedback</string>
+    <string name="share_app">Share App</string>
+    <string name="show_icon">Show icon</string>
+    <string name="single_tap_action">Single tap action</string>
+    <string name="skip_for_now">Skip for now</string>
+    <string name="swipe_down_action">Swipe down action</string>
+    <string name="swipe_up_action">Swipe up action</string>
+    <string name="tap_to_change">Tap to change</string>
+    <string name="tap_to_manage_overlay">Tap to manage overlay</string>
+    <string name="tell_us_more_about_your_experience">Tell us more about your experience...</string>
+    <string name="permissions_header_info">The app requires certain permissions to function properly. Grant permissions below.</string>
+    <string name="theme">Theme</string>
+    <string name="theme_desc">App color theme</string>
+    <string name="language_desc">App language</string>
+    <string name="top_left">Top Left</string>
+    <string name="top_right">Top Right</string>
+    <string name="upgrade">UPGRADE</string>
+    <string name="unlock_all_features">Unlock all features</string>
+    <string name="unsaved_changes">Unsaved Changes</string>
+    <string name="upgrade_to_pro">Upgrade to Pro</string>
+    <string name="vibrate_on_click">Vibrate on click</string>
+    <string name="we_d_love_to_hear_from_you">We\'d love to hear from you!</string>
+    <string name="width">Width</string>
+    <string name="already_have_premium">You already have premium!</string>
+    <string name="you_have_unsaved_changes_do_you_want_to_apply_them_before_leaving">You have unsaved changes. Do you want to apply them before leaving?</string>
+
+    <!-- About Screen -->
+    <string name="rate_us">Rate Us</string>
+    <string name="share">Share</string>
+    <string name="source">Source</string>
+    <string name="more_apps">More Apps</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="back">Back</string>
+
+    <!-- Feedback Screen -->
+    <string name="issue_crash">App crashes a lot</string>
+    <string name="issue_ads">Too many ads</string>
+    <string name="issue_unresponsive">App freezes or becomes unresponsive</string>
+    <string name="issue_not_user_friendly">App is not user-friendly</string>
+    <string name="no_feedback_provided">No feedback provided</string>
+    <string name="selected_issues">Selected Issues:</string>
+    <string name="additional_feedback">Additional Feedback:</string>
+
+    <!-- Actions Screen -->
+    <string name="tap_actions">TAP ACTIONS</string>
+    <string name="gesture_actions">GESTURE ACTIONS</string>
+    <string name="single_tap_desc">What happens on single tap</string>
+    <string name="double_tap_desc">What happens on double tap</string>
+    <string name="long_press_desc">What happens on long press</string>
+    <string name="swipe_up_desc">What happens on swipe up</string>
+    <string name="swipe_down_desc">What happens on swipe down</string>
+    <string name="tap_gesture_settings">Tap &amp; gesture settings</string>
+
+    <!-- Appearance -->
+    <string name="appearance_saved">Appearance saved</string>
+    <string name="appearance">Appearance</string>
+    <string name="appearance_desc">Customize handler</string>
+    <string name="customize_handler">Customize handler</string>
+    <string name="actions">Actions</string>
+    <string name="actions_desc">Tap &amp; gesture settings</string>
+
+    <!-- Navigation -->
+    <string name="pro_version">Pro Version</string>
+    <string name="free_version">Free Version</string>
+
+    <!-- Permissions -->
+    <string name="overlay_permission">Display over other apps</string>
+    <string name="overlay_permission_desc">Required to show the volume handler overlay on your screen</string>
+    <string name="notification_permission">Post notifications</string>
+    <string name="notification_permission_desc">Required to show the persistent notification when service is running</string>
+    <string name="device_admin_permission">Device administrator</string>
+    <string name="device_admin_permission_desc">Optional: Allows the handler to lock your device screen when configured</string>
+
+    <!-- Walkthrough -->
+    <string name="walkthrough_welcome_title">Welcome to Gesture Volume</string>
+    <string name="walkthrough_welcome_desc">Control your device\'s volume with simple on-screen gestures. No need to reach for the physical buttons.</string>
+    <string name="walkthrough_overlay_title">Overlay Permission</string>
+    <string name="walkthrough_overlay_desc">To show the volume handler on top of other apps, we need the \'Draw over other apps\' permission.</string>
+    <string name="walkthrough_notifications_title">Notifications</string>
+    <string name="walkthrough_notifications_desc">Opt-in to notifications so we can keep the gesture service running smoothly in the background.</string>
+    <string name="walkthrough_all_set_title">You\'re all set!</string>
+    <string name="walkthrough_all_set_desc">Gesture Volume is ready to use. Customize the appearance and actions in the main screen.</string>
+    <string name="get_started">Get Started</string>
+    <string name="next">Next</string>
+    <string name="finish">Finish</string>
+
+    <!-- Expanded Preview -->
+    <string name="position_locked">POSITION LOCKED</string>
+    <string name="unlock_to_reposition">UNLOCK TO REPOSITION</string>
+    <string name="test_mode">Test Mode</string>
+    <string name="reposition_mode">Reposition Mode</string>
+    <string name="test_mode_desc">Try swipes and taps</string>
+    <string name="reposition_mode_desc">Drag handler to new position</string>
+
+    <!-- Appearance Settings Content -->
+    <string name="position_uppercase">POSITION</string>
+    <string name="left">Left</string>
+    <string name="right">Right</string>
+    <string name="dimensions_uppercase">DIMENSIONS</string>
+    <string name="background_uppercase">BACKGROUND</string>
+    <string name="stroke_uppercase">STROKE</string>
+    <string name="corner_radius_uppercase">CORNER RADIUS</string>
+    <string name="behavior_uppercase">BEHAVIOR</string>
+    <string name="icon_settings">ICON SETTINGS</string>
+
+    <!-- Actions -->
+    <string name="action_none">None</string>
+    <string name="action_open_volume_ui">Open volume UI</string>
+    <string name="action_mute">Mute</string>
+    <string name="action_mute_unmute">Mute or Unmute</string>
+    <string name="action_music_overlay">Active Music Overlay</string>
+    <string name="action_lock">Lock</string>
+    <string name="action_hide_handler">Hide Handler</string>
+    <string name="action_open_app">Open App</string>
+    <string name="action_increase_vol_ui">Increase volume and show UI</string>
+    <string name="action_increase_vol">Increase volume</string>
+    <string name="action_decrease_vol_ui">Decrease volume and show UI</string>
+    <string name="action_decrease_vol">Decrease volume</string>
+
+    <!-- Messages -->
+    <string name="action_not_available_msg">This action is not available here.</string>
+    <string name="unknown_action_msg">Unknown action.</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="locked">Locked</string>
+    <string name="unlocked">Unlocked</string>
+    <string name="icon_increase">Increase</string>
+    <string name="icon_decrease">Decrease</string>
+    <string name="icon_boost">Boost</string>
+    <string name="icon_reduce">Reduce</string>
+    <string name="icon_bug">Bug</string>
+    <string name="icon_check">Check</string>
+    <string name="icon_palette">Palette</string>
+    <string name="icon_crown">Crown</string>
+    <string name="icon_edit">Edit</string>
+    <string name="icon_feedback">Feedback</string>
+    <string name="icon_github">GitHub</string>
+    <string name="icon_lock">Lock</string>
+    <string name="icon_move">Move</string>
+    <string name="icon_music">Music</string>
+    <string name="icon_none">None</string>
+    <string name="icon_plugin">Plugin</string>
+    <string name="icon_power">Power</string>
+    <string name="icon_share">Share</string>
+    <string name="icon_star">Star</string>
+    <string name="icon_hide">Hide</string>
+    <string name="icon_close">Close</string>
+    <string name="crown">Crown</string>
+
+    <!-- Languages -->
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
+
+    <!-- Theme Options -->
+    <string name="system_default">System Default</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+
+    <!-- Additional UI -->
+    <string name="optional_uppercase">OPTIONAL</string>
+    <string name="granted">Granted</string>
+
+    <!-- Presets -->
+    <string name="preset_default_title">Default</string>
+    <string name="preset_default_subtitle">Standard handle</string>
+    <string name="preset_minimal_title">Minimal</string>
+    <string name="preset_minimal_subtitle">Thin &amp; subtle</string>
+    <string name="preset_bold_title">Bold</string>
+    <string name="preset_bold_subtitle">Large &amp; visible</string>
+    <string name="preset_night_title">Night</string>
+    <string name="preset_night_subtitle">Dark theme</string>
+    <string name="preset_ghost_title">Ghost</string>
+    <string name="preset_ghost_subtitle">Almost invisible</string>
+
+    <!-- Missing Strings -->
+    <string name="preview">Preview</string>
+    <string name="press_back_again_to_exit">Press back again to exit</string>
+    <string name="volume_gesture_handler">Volume gesture handler</string>
+    <string name="troubleshoot">Troubleshooting</string>
+    <string name="troubleshoot_desc">Keep app alive on your device</string>
+    <string name="troubleshoot_info">Aggressive battery optimization on some devices (like Xiaomi, Huawei, Oppo, Vivo) may kill background services. Follow these steps to ensure Gesture Volume runs reliably:</string>
+    <string name="step_auto_start">1. Enable Auto-start: Go to Settings → Apps → Manage Apps → Gesture Volume → Enable Auto-start.</string>
+    <string name="step_battery">2. Battery Optimization: Set Battery Saver to \"No Restrictions\".</string>
+    <string name="step_recents">3. Lock in Recents: Open the \"Recent Apps\" screen, long-press the app card, and click the Lock icon 🔒.</string>
+    <string name="step_popup">4. Permissions: Ensure \"Display pop-up windows while running in the background\" is enabled.</string>
+    <string name="troubleshoot_footer">For device-specific instructions, please visit dontkillmyapp.com</string>
+    <string name="visit_website">Visit Website</string>
 </resources>

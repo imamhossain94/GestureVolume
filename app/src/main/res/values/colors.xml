@@ -36,7 +36,7 @@
     <color name="stroke_color">#cdc7d3</color>
 
 
-    <color name="background">#FFFFFF</color>
+    <color name="background">#FFF3F4F6</color>
     <color name="primary">#000000</color>
     <color name="onPrimary">#FFFFFF</color>
     <color name="textColor">#191919</color>

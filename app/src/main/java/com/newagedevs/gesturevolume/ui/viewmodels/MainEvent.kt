@@ -13,5 +13,6 @@ sealed class MainEvent {
     data class SetSwipeUpAction(val action: String) : MainEvent()
     data class SetSwipeDownAction(val action: String) : MainEvent()
     data class UpdatePermissionsStatus(val context: Context) : MainEvent()
+    data class SyncServiceState(val context: Context) : MainEvent()
     object ShowProDialog : MainEvent()
 }

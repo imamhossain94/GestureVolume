@@ -17,22 +17,34 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,7 +53,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,8 +64,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -61,46 +77,48 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.newagedevs.gesturevolume.ui.view.HandlerView
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import kotlin.math.abs
 import kotlin.math.sqrt
+import com.newagedevs.gesturevolume.R
+import androidx.compose.ui.res.stringResource
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpandedPreviewDialog(
+    state: AppearanceStateHolder,
     viewModel: MainViewModel = hiltViewModel(),
-    handlerGravity: Int,
-    handlerWidth: Float,
-    handlerHeight: Float,
-    backgroundColor: Color,
-    backgroundAlpha: Int,
-    strokeColor: Color,
-    strokeWidth: Float,
-    strokeAlpha: Int,
-    cornerRadiusTL: Float,
-    cornerRadiusTR: Float,
-    cornerRadiusBL: Float,
-    cornerRadiusBR: Float,
-    iconRes: Int,
-    iconSize: Float,
-    iconColor: Color,
-    showIcon: Boolean,
-    enableVibration: Boolean,
-    lockPosition: Boolean,
     translationY: Float,
     backgroundImageURL: String,
+    onShowIconPicker: () -> Unit,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
     val preference = remember { viewModel.preference }
 
-    var isPositionLocked by remember { mutableStateOf(lockPosition) }
     var handlerViewRef by remember { mutableStateOf<HandlerView?>(null) }
+    
+    val coroutineScope = rememberCoroutineScope()
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val sheetOffsetY = remember { Animatable(0f) }
+    var sheetHeightPx by remember { mutableFloatStateOf(0f) }
+
+    // Slide in when shown
+    LaunchedEffect(showBottomSheet) {
+        if (showBottomSheet) {
+            sheetOffsetY.snapTo(sheetHeightPx.coerceAtLeast(1f))
+            sheetOffsetY.animateTo(0f, animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f))
+        }
+    }
+
+    fun dismissSheet() {
+        coroutineScope.launch {
+            sheetOffsetY.animateTo(sheetHeightPx, animationSpec = spring(dampingRatio = 1f, stiffness = 300f))
+            showBottomSheet = false
+            sheetOffsetY.snapTo(0f)
+        }
+    }
 
     val touchMoveFactor: Long = 20
     val touchTimeFactor: Long = 300
@@ -137,8 +155,26 @@ fun ExpandedPreviewDialog(
     val lastActionMoveEventBeforeUpY = remember { mutableFloatStateOf(0f) }
 
     // Update handler when lock position changes
-    LaunchedEffect(isPositionLocked) {
-        handlerViewRef?.setHandlerPositionLocked(isPositionLocked)
+    LaunchedEffect(state.lockPosition) {
+        handlerViewRef?.setHandlerPositionLocked(state.lockPosition)
+    }
+
+    // Reactively update handler view as state properties change
+    LaunchedEffect(state.gravity, state.width, state.height, state.bgColor, state.bgAlpha,
+        state.strokeColor, state.strokeWidth, state.strokeAlpha, state.cornerTL,
+        state.cornerTR, state.cornerBL, state.cornerBR, state.iconRes, state.iconSize,
+        state.iconColor, state.showIcon, state.vibrate) {
+        handlerViewRef?.apply {
+            setViewDimensionsDp(state.width, state.height)
+            setViewGravity(state.gravity)
+            setViewBackgroundColor(state.bgColor.toArgb(), state.bgAlpha)
+            setCornerRadiiDp(state.cornerTL, state.cornerTR, state.cornerBL, state.cornerBR)
+            setStrokeProperties(state.strokeColor.toArgb(), state.strokeWidth, state.strokeAlpha)
+            setCenterIcon(state.iconRes, state.iconSize, state.iconColor.toArgb())
+            setCenterIconColor(state.iconColor.toArgb())
+            setCenterIconVisible(state.showIcon)
+            setVibrateOnClick(state.vibrate)
+        }
     }
 
     fun handlerTapActions(action: String) {
@@ -169,10 +205,10 @@ fun ExpandedPreviewDialog(
             "Lock",
             "Hide Handler",
             "Open App" -> {
-                viewModel.showToast("This action is not available here.")
+                viewModel.showToast(context.getString(R.string.action_not_available_msg))
             }
             else -> {
-                viewModel.showToast("Unknown action.")
+                viewModel.showToast(context.getString(R.string.unknown_action_msg))
             }
         }
     }
@@ -200,10 +236,7 @@ fun ExpandedPreviewDialog(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Color.Transparent,
-                    shape = RoundedCornerShape(0.dp)
-                )
+                .background(Color.Transparent, shape = RoundedCornerShape(0.dp))
         ) {
             Card(
                 modifier = Modifier
@@ -233,15 +266,7 @@ fun ExpandedPreviewDialog(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-
-                val composition by rememberLottieComposition(
-                    LottieCompositionSpec.Asset("mobile_setting.json")
-                )
-                LottieAnimation(
-                    composition = composition,
-                    iterations = LottieConstants.IterateForever,
-                    modifier = Modifier.fillMaxSize()
-                )
+                // Removed LottieAnimation to make it cleaner, the AsyncImage is sufficient
             }
 
             // Handler View
@@ -249,26 +274,26 @@ fun ExpandedPreviewDialog(
                 factory = { ctx ->
                     FrameLayout(ctx).apply {
                         val handler = HandlerView(ctx).apply {
-                            setViewDimensionsDp(handlerWidth, handlerHeight)
-                            setViewGravity(handlerGravity)
-                            setViewBackgroundColor(backgroundColor.toArgb(), backgroundAlpha)
-                            setCornerRadiiDp(cornerRadiusTL, cornerRadiusTR, cornerRadiusBL, cornerRadiusBR)
-                            setStrokeProperties(strokeColor.toArgb(), strokeWidth, strokeAlpha)
-                            setCenterIcon(iconRes, iconSize, iconColor.toArgb())
-                            setCenterIconColor(iconColor.toArgb())
-                            setCenterIconVisible(showIcon)
-                            setHandlerPositionLocked(isPositionLocked)
-                            setVibrateOnClick(enableVibration)
+                            setViewDimensionsDp(state.width, state.height)
+                            setViewGravity(state.gravity)
+                            setViewBackgroundColor(state.bgColor.toArgb(), state.bgAlpha)
+                            setCornerRadiiDp(state.cornerTL, state.cornerTR, state.cornerBL, state.cornerBR)
+                            setStrokeProperties(state.strokeColor.toArgb(), state.strokeWidth, state.strokeAlpha)
+                            setCenterIcon(state.iconRes, state.iconSize, state.iconColor.toArgb())
+                            setCenterIconColor(state.iconColor.toArgb())
+                            setCenterIconVisible(state.showIcon)
+                            setHandlerPositionLocked(state.lockPosition)
+                            setVibrateOnClick(state.vibrate)
 
                             setHandlerClickListener(object : HandlerView.HandlerClickListener {
                                 override fun onSingleClick() {
-                                    if (isPositionLocked) {
+                                    if (state.lockPosition) {
                                         handlerTapActions(preference.getHandlerSingleTapAction())
                                     }
                                 }
 
                                 override fun onDoubleClick() {
-                                    if (isPositionLocked) {
+                                    if (state.lockPosition) {
                                         handlerTapActions(preference.getHandlerDoubleTapAction())
                                     }
                                 }
@@ -286,7 +311,7 @@ fun ExpandedPreviewDialog(
 
                             // Custom touch listener for swipe gestures
                             setOnTouchListener { view, event ->
-                                if (!isPositionLocked) {
+                                if (!state.lockPosition) {
                                     // Let the HandlerView handle dragging when unlocked
                                     return@setOnTouchListener false
                                 }
@@ -338,8 +363,8 @@ fun ExpandedPreviewDialog(
 
                                             minSwipeY.floatValue += distanceY
 
-                                            val sWidth = dpToPx(handlerWidth)
-                                            val sHeight = dpToPx(handlerHeight)
+                                            val sWidth = dpToPx(state.width)
+                                            val sHeight = dpToPx(state.height)
 
                                             val border = 1
                                             if (event.x < border || event.y < border ||
@@ -404,9 +429,8 @@ fun ExpandedPreviewDialog(
                 },
                 modifier = Modifier.fillMaxSize(),
                 update = { frameLayout ->
-                    // Update handler when isPositionLocked changes
                     (frameLayout.getChildAt(0) as? HandlerView)?.apply {
-                        setHandlerPositionLocked(isPositionLocked)
+                        setHandlerPositionLocked(state.lockPosition)
                     }
                 }
             )
@@ -419,51 +443,84 @@ fun ExpandedPreviewDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Minimize Button
-                Card(
-                    modifier = Modifier.clickable(onClick = onDismiss),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.White
-                    ),
-                    border = BorderStroke(2.dp, Color.Black.copy(alpha = 0.1f)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Settings Button
+                    Card(
+                        modifier = Modifier.clickable { showBottomSheet = true },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        ),
+                        border = BorderStroke(2.dp, Color.Black.copy(alpha = 0.1f)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.FullscreenExit,
-                            contentDescription = "Minimize",
-                            tint = Color(0xFF1F2937),
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "MINIMIZE",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            color = Color(0xFF1F2937),
-                            letterSpacing = 1.sp
-                        )
+                        Row(
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = stringResource(R.string.settings),
+                                tint = Color(0xFF1F2937),
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.settings),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = Color(0xFF1F2937),
+                                letterSpacing = 1.sp
+                            )
+                        }
+                    }
+
+                    // Minimize Button
+                    Card(
+                        modifier = Modifier.clickable(onClick = onDismiss),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        ),
+                        border = BorderStroke(2.dp, Color.Black.copy(alpha = 0.1f)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.FullscreenExit,
+                                contentDescription = stringResource(R.string.minimize),
+                                tint = Color(0xFF1F2937),
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.minimize),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = Color(0xFF1F2937),
+                                letterSpacing = 1.sp
+                            )
+                        }
                     }
                 }
 
                 // Lock Position Toggle
                 Card(
                     modifier = Modifier.clickable {
-                        isPositionLocked = !isPositionLocked
-                        preference.setHandlerLockPosition(isPositionLocked)
+                        state.lockPosition = !state.lockPosition
                     },
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isPositionLocked) Color(0xFF10B981) else Color.White
+                        containerColor = if (state.lockPosition) Color(0xFF10B981) else Color.White
                     ),
                     border = BorderStroke(
                         2.dp,
-                        if (isPositionLocked) Color(0xFF10B981) else Color.Black.copy(alpha = 0.1f)
+                        if (state.lockPosition) Color(0xFF10B981) else Color.Black.copy(alpha = 0.1f)
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
@@ -473,17 +530,17 @@ fun ExpandedPreviewDialog(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            imageVector = if (isPositionLocked) Icons.Default.Lock else Icons.Default.LockOpen,
-                            contentDescription = if (isPositionLocked) "Locked" else "Unlocked",
-                            tint = if (isPositionLocked) Color.White else Color(0xFF1F2937),
+                            imageVector = if (state.lockPosition) Icons.Default.Lock else Icons.Default.LockOpen,
+                            contentDescription = if (state.lockPosition) stringResource(R.string.locked) else stringResource(R.string.unlocked),
+                            tint = if (state.lockPosition) Color.White else Color(0xFF1F2937),
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (isPositionLocked) "POSITION LOCKED" else "UNLOCK TO REPOSITION",
+                            text = if (state.lockPosition) stringResource(R.string.position_locked) else stringResource(R.string.unlock_to_reposition),
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
-                            color = if (isPositionLocked) Color.White else Color(0xFF1F2937),
+                            color = if (state.lockPosition) Color.White else Color(0xFF1F2937),
                             letterSpacing = 0.8.sp
                         )
                     }
@@ -525,24 +582,96 @@ fun ExpandedPreviewDialog(
 
                     Column {
                         Text(
-                            text = if (isPositionLocked) "Test Mode" else "Reposition Mode",
+                            text = if (state.lockPosition) stringResource(R.string.test_mode) else stringResource(R.string.reposition_mode),
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
                             color = Color(0xFF1F2937)
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = if (isPositionLocked)
-                                "Try swipes and taps"
+                            text = if (state.lockPosition)
+                                stringResource(R.string.test_mode_desc)
                             else
-                                "Drag handler to new position",
+                                stringResource(R.string.reposition_mode_desc),
                             fontSize = 12.sp,
                             color = Color(0xFF6B7280),
                             lineHeight = 16.sp
                         )
                     }
                 }
+            // End of Bottom Info Card
             }
+        
+        // Draggable Bottom Sheet
+        if (showBottomSheet) {
+            Card(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.55f)
+                    .onSizeChanged { sheetHeightPx = it.height.toFloat() }
+                    .offset { IntOffset(0, sheetOffsetY.value.toInt()) }
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures(
+                            onDragEnd = {
+                                coroutineScope.launch {
+                                    if (sheetOffsetY.value > sheetHeightPx * 0.3f) {
+                                        dismissSheet()
+                                    } else {
+                                        sheetOffsetY.animateTo(
+                                            0f,
+                                            animationSpec = spring(dampingRatio = 0.6f, stiffness = 500f)
+                                        )
+                                    }
+                                }
+                            },
+                            onDragCancel = {
+                                coroutineScope.launch {
+                                    sheetOffsetY.animateTo(0f, animationSpec = spring(dampingRatio = 0.6f, stiffness = 500f))
+                                }
+                            }
+                        ) { _, dragAmount ->
+                            coroutineScope.launch {
+                                val newOffset = (sheetOffsetY.value + dragAmount).coerceAtLeast(0f)
+                                sheetOffsetY.snapTo(newOffset)
+                            }
+                        }
+                    },
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // Drag handle pill
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .width(40.dp)
+                                .height(4.dp)
+                                .background(Color.Gray.copy(alpha = 0.4f), CircleShape)
+                        )
+                    }
+
+                    // Settings Content
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        HandlerAppearanceSettingsContent(
+                            state = state,
+                            onShowIconPicker = onShowIconPicker,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+            }
+        }
         }
     }
 }

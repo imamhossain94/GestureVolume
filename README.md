@@ -44,6 +44,7 @@ You can find it on the **main** branch.
 - Preserve and extend the lifespan of your volume buttons.
 - Useful on devices with damaged or faulty volume keys.
 - Fully customize the gesture handler appearance.
+- Multi-language support (14+ languages including English, Arabic, Bangla, Hindi, Japanese, Korean, Chinese, German, Spanish, French, Italian, Portuguese, Russian, Turkish, and Vietnamese).
 - Add click actions to the gesture area.
 - Lock the screen using a gesture-handler click.
 - Assign separate actions to:
@@ -80,8 +81,6 @@ AD_UNIT_APP_OPEN=<your-app-open-ad-unit-id>
 AD_UNIT_INTERSTITIAL=<your-interstitial-ad-unit-id>
 AD_UNIT_BANNER=<your-banner-ad-unit-id>
 AD_UNIT_NATIVE=<your-native-ad-unit-id>
-
-BASE64_PUBLIC_KEY=<your-play-store-base64-public-key>
 
 PRODUCT_LIFETIME=<your-product-lifetime-id>
 ```

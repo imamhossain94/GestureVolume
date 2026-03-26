@@ -13,9 +13,8 @@ import androidx.core.content.edit
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.limurse.iap.DataWrappers
-import com.limurse.iap.IapConnector
-import com.limurse.iap.PurchaseServiceListener
+import com.newagedevs.gesturevolume.manager.BillingManager
+import com.newagedevs.gesturevolume.manager.PurchaseEvent
 import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.SharedPref
@@ -37,7 +36,8 @@ import com.newagedevs.gesturevolume.livedata.LiveDataManager
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    val preference: SharedPref
+    val preference: SharedPref,
+    val billingManager: BillingManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MainState())
@@ -53,8 +53,6 @@ class MainViewModel @Inject constructor(
     var lastBackPressedTime: Long = 0
 
     var adsManager: ApplovinAdsManager? = null
-    var iapConnector: IapConnector? = null
-    private var productDetails: DataWrappers.PricingPhase? = null
 
     private var messageObserver: Observer<String>? = null
 
@@ -83,7 +81,9 @@ class MainViewModel @Inject constructor(
             doubleClickActionIcon = getActionIcon(preference.getHandlerDoubleTapAction()),
             longClickActionIcon = getActionIcon(preference.getHandlerLongTapAction()),
             swipeUpActionIcon = getSwipeUpIcon(preference.getHandlerSwipeUpAction()),
-            swipeDownActionIcon = getSwipeDownIcon(preference.getHandlerSwipeDownAction())
+            swipeDownActionIcon = getSwipeDownIcon(preference.getHandlerSwipeDownAction()),
+            theme = preference.getTheme(),
+            language = preference.getLanguage()
         )
     }
 
@@ -99,6 +99,7 @@ class MainViewModel @Inject constructor(
             is MainEvent.SetSwipeUpAction -> setSwipeUpAction(event.action)
             is MainEvent.SetSwipeDownAction -> setSwipeDownAction(event.action)
             is MainEvent.UpdatePermissionsStatus -> updatePermissionsStatus(event.context)
+            is MainEvent.SyncServiceState -> syncServiceState(event.context)
             MainEvent.ShowProDialog -> showProDialog()
         }
     }
@@ -115,6 +116,24 @@ class MainViewModel @Inject constructor(
             hasOverlayPermission = hasOverlay,
             hasNotificationPermission = hasNotification
         )
+    }
+
+    private fun syncServiceState(context: Context) {
+        val actualRunning = isServiceRunning(context, OverlayService::class.java)
+        val prefRunning = preference.isRunning()
+        
+        if (actualRunning != _state.value.isRunning || actualRunning != prefRunning) {
+            // If actual state differs from state/pref, we trust actual state
+            // But if user intended it to run (pref is true) but it's not (actual is false),
+            // it means it was killed. We might want to restart it here too,
+            // but for UI sync, we just update the state.
+            
+            _state.value = _state.value.copy(isRunning = actualRunning)
+            
+            // Note: We don't necessarily update SharedPref here because if it's true 
+            // and service is dead, our restart mechanisms should bring it back.
+            // However, for UI toggle sync, we use actualRunning.
+        }
     }
 
     fun showToast(message: String) {
@@ -144,7 +163,7 @@ class MainViewModel @Inject constructor(
 
             viewModelScope.launch {
                 _effect.send(MainEffect.RequestOverlayPermission)
-                _effect.send(MainEffect.ShowToast("Please grant overlay permission to continue."))
+                _effect.send(MainEffect.ShowToast(context.getString(R.string.overlay_permission_toast)))
             }
             return
         }
@@ -175,7 +194,14 @@ class MainViewModel @Inject constructor(
 
     private fun startOverlayService(context: Context) {
         val service = Intent(context, OverlayService::class.java)
-        if (!isServiceRunning(context, OverlayService::class.java)) {
+        
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(service)
+            } else {
+                context.startService(service)
+            }
+        } catch (e: Exception) {
             context.startService(service)
         }
         serviceConnection = object : ServiceConnection {
@@ -195,11 +221,64 @@ class MainViewModel @Inject constructor(
     }
 
     fun stopOverlayService(context: Context) {
-        val service = Intent(context, OverlayService::class.java)
+        // Unbind if we're bound
         if (isBound) {
-            serviceConnection?.let { context.unbindService(it) }
-            context.stopService(service)
+            try {
+                serviceConnection?.let { context.unbindService(it) }
+            } catch (_: Exception) { /* already unbound */ }
             isBound = false
+        }
+        overlayService = null
+
+        // Always stop the service directly rather than routing via intents to avoid LiveDataManager loops
+        try {
+            context.stopService(Intent(context, OverlayService::class.java))
+        } catch (_: Exception) {}
+    }
+
+    /**
+     * Re-bind to an already-running OverlayService.
+     * Called from MainActivity.onStart() to recover the binding after the app
+     * was cleared from recents and reopened.
+     */
+    fun rebindToServiceIfRunning(context: Context) {
+        if (preference.isRunning() && !isBound) {
+            val actuallyRunning = isServiceRunning(context, OverlayService::class.java)
+            if (actuallyRunning) {
+                val service = Intent(context, OverlayService::class.java)
+                serviceConnection = object : ServiceConnection {
+                    override fun onServiceConnected(name: ComponentName, service: IBinder) {
+                        overlayService = (service as OverlayService.LocalBinder).instance()
+                        isBound = true
+                    }
+
+                    override fun onServiceDisconnected(name: ComponentName) {
+                        overlayService = null
+                        isBound = false
+                    }
+                }
+                serviceConnection?.let {
+                    context.bindService(service, it, Context.BIND_AUTO_CREATE)
+                }
+            } else {
+                // Service died — sync state
+                _state.value = _state.value.copy(isRunning = false)
+            }
+        }
+    }
+
+    /**
+     * Send an "update" command to the running service so it reloads
+     * its handler with the latest settings from SharedPref.
+     */
+    fun sendUpdateToService(context: Context) {
+        if (preference.isRunning()) {
+            val intent = Intent(context, OverlayService::class.java).apply {
+                action = "update"
+            }
+            try {
+                context.startService(intent)
+            } catch (_: Exception) { /* service not running */ }
         }
     }
 
@@ -317,22 +396,27 @@ class MainViewModel @Inject constructor(
     fun handleMenuOption(option: String, context: Context) {
         when (option) {
             "Premium" -> purchasePro(context as Activity)
+            "Theme" -> viewModelScope.launch { _effect.send(MainEffect.ShowThemeDialog) }
+            "Language" -> viewModelScope.launch { _effect.send(MainEffect.ShowLanguageDialog) }
             "Share" -> shareApp(context)
             "Feedback" -> viewModelScope.launch {
                 _effect.send(MainEffect.NavigateToFeedback)
             }
             "Other apps" -> openAppStore(context, Constants.PUBLISHER_URL) {
                 viewModelScope.launch {
-                    _effect.send(MainEffect.ShowToast("Cannot open Play Store"))
+                    _effect.send(MainEffect.ShowToast(context.getString(R.string.cannot_open_play_store)))
                 }
             }
             "Rate us" -> openAppStore(context, Constants.APP_STORE_ID) {
                 viewModelScope.launch {
-                    _effect.send(MainEffect.ShowToast("Cannot open Play Store"))
+                    _effect.send(MainEffect.ShowToast(context.getString(R.string.cannot_open_play_store)))
                 }
             }
             "About" -> viewModelScope.launch {
                 _effect.send(MainEffect.NavigateToAbout)
+            }
+            "Troubleshoot" -> viewModelScope.launch {
+                _effect.send(MainEffect.NavigateToTroubleshoot)
             }
         }
     }
@@ -342,78 +426,50 @@ class MainViewModel @Inject constructor(
      * Sets up purchase listeners and handles purchase/restore events
      */
     fun initializeIAP(context: Context) {
-        if (iapConnector != null) return // Already initialized
+        billingManager.initialize()
 
-        iapConnector = IapConnector(
-            context = context,
-            nonConsumableKeys = listOf(BuildConfig.PRODUCT_LIFETIME),
-            key = BuildConfig.BASE64_PUBLIC_KEY,
-            enableLogging = BuildConfig.DEBUG
-        )
-
-        iapConnector?.addPurchaseListener(object : PurchaseServiceListener {
-            override fun onPricesUpdated(iapKeyPrices: Map<String, DataWrappers.ProductDetails>) {
-                val product = iapKeyPrices[BuildConfig.PRODUCT_LIFETIME]
-                productDetails = product?.offers?.firstOrNull()?.pricingPhases?.first()
-
-                viewModelScope.launch {
-                    productDetails?.let { details ->
-                        _effect.send(MainEffect.ProductDetailsLoaded(details))
+        viewModelScope.launch {
+            billingManager.lifetimePrice.collect { price ->
+                _effect.send(MainEffect.ProductDetailsLoaded(price))
+            }
+        }
+        
+        viewModelScope.launch {
+            billingManager.events.collect { event ->
+                when(event) {
+                    PurchaseEvent.PURCHASE_SUCCESS -> {
+                        adsManager?.destroyAds()
+                        adsManager = null
+                        _effect.send(MainEffect.ShowToast(context.getString(R.string.purchase_success)))
+                        _state.value = _state.value.copy(isProActivated = true)
+                    }
+                    PurchaseEvent.PURCHASE_RESTORED -> {
+                        adsManager?.destroyAds()
+                        adsManager = null
+                        _effect.send(MainEffect.ShowToast(context.getString(R.string.purchase_restored)))
+                        _state.value = _state.value.copy(isProActivated = true)
+                    }
+                    PurchaseEvent.ALREADY_OWNED -> {
+                        _effect.send(MainEffect.ShowToast(context.getString(R.string.item_already_owned)))
+                    }
+                    PurchaseEvent.PURCHASE_FAILURE -> {
+                        _effect.send(MainEffect.ShowToast(context.getString(R.string.purchase_failed)))
+                    }
+                    PurchaseEvent.NOTHING_TO_RESTORE -> {
+                        _effect.send(MainEffect.ShowToast(context.getString(R.string.nothing_to_restore)))
                     }
                 }
             }
-
-            override fun onProductPurchased(purchaseInfo: DataWrappers.PurchaseInfo) {
-                if (purchaseInfo.sku == BuildConfig.PRODUCT_LIFETIME && purchaseInfo.purchaseState == 1) {
-                    preference.setProFeatureActivated(true)
+        }
+        
+        viewModelScope.launch {
+            billingManager.isPremium.collect { isPremium ->
+                if (isPremium) {
                     _state.value = _state.value.copy(isProActivated = true)
-
-                    // Destroy ads after successful purchase
-                    adsManager?.destroyAds()
-                    adsManager = null
-
-                    viewModelScope.launch {
-                        _effect.send(MainEffect.ShowToast("Purchase successful! Premium activated."))
-                    }
                 }
             }
-
-            override fun onProductRestored(purchaseInfo: DataWrappers.PurchaseInfo) {
-                if (purchaseInfo.sku == BuildConfig.PRODUCT_LIFETIME && purchaseInfo.purchaseState == 1) {
-                    preference.setProFeatureActivated(true)
-                    _state.value = _state.value.copy(isProActivated = true)
-
-                    // Destroy ads after restore
-                    adsManager?.destroyAds()
-                    adsManager = null
-
-                    viewModelScope.launch {
-                        _effect.send(MainEffect.ShowToast("Purchase restored! Premium activated."))
-                    }
-                }
-            }
-
-            override fun onPurchaseFailed(purchaseInfo: DataWrappers.PurchaseInfo?, billingResponseCode: Int?) {
-                if (!_state.value.isProActivated) {
-                    val message = when (billingResponseCode) {
-                        1 -> "Purchase canceled"
-                        2 -> "Service unavailable. Please try again."
-                        3 -> "Billing service unavailable"
-                        4 -> "Item unavailable"
-                        5 -> "Developer error"
-                        6 -> "Error during purchase"
-                        7 -> "Item already owned"
-                        8 -> "Item not owned"
-                        else -> "Purchase failed. Please try again."
-                    }
-                    viewModelScope.launch {
-                        _effect.send(MainEffect.ShowToast(message))
-                    }
-                }
-            }
-        })
+        }
     }
-
 
     fun initializeAdsManager(activity: Activity) {
         if (_state.value.isProActivated) {
@@ -431,19 +487,19 @@ class MainViewModel @Inject constructor(
     fun purchasePro(activity: Activity) {
         if (_state.value.isProActivated) {
             viewModelScope.launch {
-                _effect.send(MainEffect.ShowToast("You already have premium!"))
+                _effect.send(MainEffect.ShowToast(activity.getString(R.string.already_have_premium)))
             }
             return
         }
 
-        iapConnector?.purchase(activity, BuildConfig.PRODUCT_LIFETIME)
+        billingManager.purchase(activity, BuildConfig.PRODUCT_LIFETIME)
     }
 
-    fun onBackPressed(finishActivity: () -> Unit) {
+    fun onBackPressed(context: Context, finishActivity: () -> Unit) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastBackPressedTime > 2000) {
             viewModelScope.launch {
-                _effect.send(MainEffect.ShowToast("Press back again to exit"))
+                _effect.send(MainEffect.ShowToast(context.getString(R.string.press_back_again_to_exit)))
             }
             lastBackPressedTime = currentTime
         } else {
@@ -528,11 +584,20 @@ class MainViewModel @Inject constructor(
         return backgrounds[nextIndex]
     }
 
+    fun setTheme(theme: Int) {
+        preference.setTheme(theme)
+        _state.value = _state.value.copy(theme = theme)
+    }
+
+    fun setLanguage(language: String) {
+        preference.setLanguage(language)
+        _state.value = _state.value.copy(language = language)
+    }
+
     override fun onCleared() {
         super.onCleared()
         adsManager?.destroyAds()
         adsManager = null
-        iapConnector = null
         messageObserver = null
     }
 }

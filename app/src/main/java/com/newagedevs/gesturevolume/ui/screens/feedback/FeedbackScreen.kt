@@ -56,6 +56,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.helper.extensions.openMailApp
 import com.newagedevs.gesturevolume.utils.Constants
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
+import android.content.Context
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,12 +76,12 @@ fun FeedbackScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Feedback") },
+                title = { Text(stringResource(R.string.feedback)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -108,8 +111,7 @@ fun FeedbackScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.Transparent,
-                    border = BorderStroke(1.5.dp, Color(0xFF8B5CF6))
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Row(
                         modifier = Modifier.padding(20.dp),
@@ -119,20 +121,20 @@ fun FeedbackScreen(
                             imageVector = Icons.Default.Email,
                             contentDescription = null,
                             modifier = Modifier.size(32.dp),
-                            tint = Color(0xFF8B5CF6)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
                             Text(
-                                text = "We'd love to hear from you!",
+                                text = stringResource(R.string.we_d_love_to_hear_from_you),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "Help us improve the app",
+                                text = stringResource(R.string.help_us_improve_the_app),
                                 fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
                         }
                     }
@@ -142,10 +144,10 @@ fun FeedbackScreen(
 
                 // Problems Section Title
                 Text(
-                    text = "COMMON ISSUES",
+                    text = stringResource(R.string.common_issues),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFEF4444).copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     letterSpacing = 1.2.sp,
                     modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
                 )
@@ -154,12 +156,11 @@ fun FeedbackScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.Transparent,
-                    border = BorderStroke(1.5.dp, Color(0xFFEF4444).copy(alpha = 0.3f))
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         CheckboxItem(
-                            text = "App crashes a lot",
+                            text = stringResource(R.string.issue_crash),
                             checked = appCrashesChecked,
                             onCheckedChange = { appCrashesChecked = it },
                             icon = Icons.Default.Warning,
@@ -171,7 +172,7 @@ fun FeedbackScreen(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         CheckboxItem(
-                            text = "Too many ads",
+                            text = stringResource(R.string.issue_ads),
                             checked = tooManyAdsChecked,
                             onCheckedChange = { tooManyAdsChecked = it },
                             icon = Icons.Default.Star,
@@ -183,7 +184,7 @@ fun FeedbackScreen(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         CheckboxItem(
-                            text = "App freezes or becomes unresponsive",
+                            text = stringResource(R.string.issue_unresponsive),
                             checked = appFreezesChecked,
                             onCheckedChange = { appFreezesChecked = it },
                             icon = Icons.Default.Info,
@@ -195,7 +196,7 @@ fun FeedbackScreen(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         CheckboxItem(
-                            text = "App is not user-friendly",
+                            text = stringResource(R.string.issue_not_user_friendly),
                             checked = notUserFriendlyChecked,
                             onCheckedChange = { notUserFriendlyChecked = it },
                             icon = Icons.Default.ThumbUp,
@@ -208,10 +209,10 @@ fun FeedbackScreen(
 
                 // Other Issues Section Title
                 Text(
-                    text = "OTHER FEEDBACK",
+                    text = stringResource(R.string.other_feedback),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF10B981).copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     letterSpacing = 1.2.sp,
                     modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
                 )
@@ -220,17 +221,16 @@ fun FeedbackScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.Transparent,
-                    border = BorderStroke(1.5.dp, Color(0xFF10B981))
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     OutlinedTextField(
                         value = otherIssueText,
                         onValueChange = { otherIssueText = it },
                         label = {
-                            Text("Describe the issue or suggestion")
+                            Text(stringResource(R.string.describe_the_issue_or_suggestion))
                         },
                         placeholder = {
-                            Text("Tell us more about your experience...")
+                            Text(stringResource(R.string.tell_us_more_about_your_experience))
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -239,7 +239,7 @@ fun FeedbackScreen(
                         maxLines = 6,
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF10B981),
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                         )
                     )
@@ -278,41 +278,37 @@ fun FeedbackScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Cancel",
+                            stringResource(R.string.cancel),
                             fontWeight = FontWeight.SemiBold
                         )
                     }
 
                     Button(
                         onClick = {
-                            val answers = buildFeedbackMessage(
-                                appCrashesChecked,
-                                tooManyAdsChecked,
-                                appFreezesChecked,
-                                notUserFriendlyChecked,
-                                otherIssueText
-                            )
-                            openMailApp(context, "App Feedback", Constants.feedbackEmails, answers)
+                                val answers = buildFeedbackMessage(
+                                    context,
+                                    appCrashesChecked,
+                                    tooManyAdsChecked,
+                                    appFreezesChecked,
+                                    notUserFriendlyChecked,
+                                    otherIssueText
+                                )
+                                openMailApp(context, "App Feedback", Constants.feedbackEmails, answers)
                         },
                         modifier = Modifier
                             .weight(1f)
                             .height(50.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF3B82F6)
-                        )
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
                             contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = Color.White
+                            modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Send Feedback",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            stringResource(R.string.send_feedback),
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -323,6 +319,7 @@ fun FeedbackScreen(
 
 
 private fun buildFeedbackMessage(
+    context: Context,
     appCrashes: Boolean,
     tooManyAds: Boolean,
     appFreezes: Boolean,
@@ -331,21 +328,21 @@ private fun buildFeedbackMessage(
 ): String {
     val selectedProblems = mutableListOf<String>()
 
-    if (appCrashes) selectedProblems.add("• App crashes a lot")
-    if (tooManyAds) selectedProblems.add("• Too many ads")
-    if (appFreezes) selectedProblems.add("• App freezes or becomes unresponsive")
-    if (notUserFriendly) selectedProblems.add("• App is not user-friendly")
+    if (appCrashes) selectedProblems.add("• ${context.getString(R.string.issue_crash)}")
+    if (tooManyAds) selectedProblems.add("• ${context.getString(R.string.issue_ads)}")
+    if (appFreezes) selectedProblems.add("• ${context.getString(R.string.issue_unresponsive)}")
+    if (notUserFriendly) selectedProblems.add("• ${context.getString(R.string.issue_not_user_friendly)}")
 
     var message = ""
 
     if (selectedProblems.isNotEmpty()) {
-        message = "Selected Issues:\n" + selectedProblems.joinToString("\n")
+        message = "${context.getString(R.string.selected_issues)}\n" + selectedProblems.joinToString("\n")
     }
 
     if (otherIssue.isNotEmpty()) {
         if (message.isNotEmpty()) message += "\n\n"
-        message += "Additional Feedback:\n$otherIssue"
+        message += "${context.getString(R.string.additional_feedback)}\n$otherIssue"
     }
 
-    return message.ifEmpty { "No feedback provided" }
+    return message.ifEmpty { context.getString(R.string.no_feedback_provided) }
 }

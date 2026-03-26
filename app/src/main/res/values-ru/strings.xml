@@ -1,0 +1,277 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GestureVolume</string>
+
+    <string name="device_description">Блокировка экрана при нажатии с помощью API диспетчера политик устройств</string>
+    <string name="device_admin_label">Администратор устройства громкости жестов</string>
+    <string name="landscape_appearance_settings">НАСТРОЙКИ ВИДА ЛАНДШАФТА</string>
+    <string name="click_">Установите переключатель в активное положение и настройте гравитацию, размер, толщину и положение манипулятора на горизонтальном экране.</string>
+    <string name="configure">Настроить</string>
+    <string name="please">Пожалуйста, поверните телефон обратно в портретный режим, чтобы настроить положение манипулятора.</string>
+    <string name="ad">ОБЪЯВЛЕНИЕ</string>
+    <string name="about">О</string>
+    <string name="all_corners">Все углы</string>
+    <string name="all_required_permissions_granted">Все необходимые разрешения предоставлены. Теперь вы можете использовать приложение.</string>
+    <string name="all_set">Все готово!</string>
+    <string name="apply">Применять</string>
+    <string name="apply_changes">Применить изменения?</string>
+    <string name="are_you_sure_you_want_to_apply_these_appearance_settings_to_your_active_handler">Вы уверены, что хотите применить эти настройки внешнего вида к активному обработчику?</string>
+    <string name="bottom_left">Внизу слева</string>
+    <string name="bottom_right">Внизу справа</string>
+    <string name="common_issues">ОБЩИЕ ПРОБЛЕМЫ</string>
+    <string name="cancel">Отмена</string>
+    <string name="cannot_open_play_store">Не могу открыть Play Маркет</string>
+    <string name="choose_language">Выберите язык</string>
+    <string name="choose_theme">Выбрать тему</string>
+    <string name="close">Закрывать</string>
+    <string name="color">Цвет</string>
+    <string name="confirm">Подтверждать</string>
+    <string name="customize_how_you_interact_with_the_volume_handler_through_taps_and_gestures">Настройте способ взаимодействия с обработчиком громкости с помощью касаний и жестов.</string>
+    <string name="describe_the_issue_or_suggestion">Опишите проблему или предложение</string>
+    <string name="developed_by">Разработано</string>
+    <string name="discard">Отказаться</string>
+    <string name="double_tap_action">Двойное нажатие</string>
+    <string name="feedback">Обратная связь</string>
+    <string name="general">ОБЩИЙ</string>
+    <string name="gesture_volume">Громкость жестов</string>
+    <string name="grant_permission">Предоставить разрешение</string>
+    <string name="gravity">Гравитация</string>
+    <string name="handler_actions">Действия обработчика</string>
+    <string name="handler_appearance">Внешний вид обработчика</string>
+    <string name="height">Высота</string>
+    <string name="help_us_improve_the_app">Помогите нам улучшить приложение</string>
+    <string name="icon">Икона</string>
+    <string name="icon_color">Цвет значка</string>
+    <string name="icon_size">Размер значка</string>
+    <string name="install">Установить</string>
+    <string name="item_already_owned">Объект уже принадлежит</string>
+    <string name="legal">ЮРИДИЧЕСКИЙ</string>
+    <string name="language">Язык</string>
+    <string name="lock_position">Положение блокировки</string>
+    <string name="long_press_action">Длительное нажатие</string>
+    <string name="minimize">МИНИМИЗИРОВАТЬ</string>
+    <string name="more">БОЛЕЕ</string>
+    <string name="newagedevs">НьюЭйджДевс</string>
+    <string name="nothing_to_restore">Нечего восстанавливать</string>
+    <string name="optional">НЕОБЯЗАТЕЛЬНЫЙ</string>
+    <string name="optional_permissions">ДОПОЛНИТЕЛЬНЫЕ РАЗРЕШЕНИЯ</string>
+    <string name="other_feedback">ДРУГИЕ ОТЗЫВЫ</string>
+    <string name="opacity">Непрозрачность</string>
+    <string name="other_apps">Другие приложения</string>
+    <string name="pro">ПРО</string>
+    <string name="purchase_failed">Покупка не удалась. Пожалуйста, попробуйте еще раз.</string>
+    <string name="purchase_restored">Покупка восстановлена! Премиум активирован.</string>
+    <string name="purchase_success">Покупка удачная! Премиум активирован.</string>
+    <string name="overlay_permission_toast">Чтобы продолжить, дайте разрешение на наложение.</string>
+    <string name="permission_granted_check">Разрешение получено ✓</string>
+    <string name="permissions">Разрешения</string>
+    <string name="action_required">Требуется действие</string>
+    <string name="all_permissions_granted">Все разрешения предоставлены</string>
+    <string name="quick_presets">БЫСТРЫЕ ПРЕСЕТЫ</string>
+    <string name="required_permissions">НЕОБХОДИМЫЕ РАЗРЕШЕНИЯ</string>
+    <string name="rate_on_play_store">Оценить в магазине Play</string>
+    <string name="revoke_permission">Отозвать разрешение</string>
+    <string name="settings">НАСТРОЙКИ</string>
+    <string name="menu">Меню</string>
+    <string name="select_icon">Выберите значок</string>
+    <string name="select_the_color_and_transparency_of_the_handler">Выберите цвет и прозрачность обработчика</string>
+    <string name="send_feedback">Отправить отзыв</string>
+    <string name="share_app">Поделиться приложением</string>
+    <string name="show_icon">Показать значок</string>
+    <string name="single_tap_action">Действие одним нажатием</string>
+    <string name="skip_for_now">Пропустить сейчас</string>
+    <string name="swipe_down_action">Проведите пальцем вниз</string>
+    <string name="swipe_up_action">Проведите пальцем вверх</string>
+    <string name="tap_to_change">Нажмите, чтобы изменить</string>
+    <string name="tap_to_manage_overlay">Нажмите, чтобы управлять наложением</string>
+    <string name="tell_us_more_about_your_experience">Расскажите нам больше о своем опыте...</string>
+    <string name="permissions_header_info">Для правильной работы приложению требуются определенные разрешения. Предоставьте разрешения ниже.</string>
+    <string name="theme">Тема</string>
+    <string name="theme_desc">Цветовая тема приложения</string>
+    <string name="language_desc">Язык приложения</string>
+    <string name="top_left">Вверху слева</string>
+    <string name="top_right">Вверху справа</string>
+    <string name="upgrade">ОБНОВЛЕНИЕ</string>
+    <string name="unlock_all_features">Разблокировать все функции</string>
+    <string name="unsaved_changes">Несохраненные изменения</string>
+    <string name="upgrade_to_pro">Обновите до Pro</string>
+    <string name="vibrate_on_click">Вибрация при нажатии</string>
+    <string name="we_d_love_to_hear_from_you">Мы хотели бы услышать ваше мнение!</string>
+    <string name="width">Ширина</string>
+    <string name="already_have_premium">У вас уже есть премиум!</string>
+    <string name="you_have_unsaved_changes_do_you_want_to_apply_them_before_leaving">У вас есть несохраненные изменения. Хотите применить их перед отъездом?</string>
+
+    <!-- About Screen -->
+    <string name="rate_us">Оцените нас</string>
+    <string name="share">Делиться</string>
+    <string name="source">Источник</string>
+    <string name="more_apps">Больше приложений</string>
+    <string name="privacy_policy">политика конфиденциальности</string>
+    <string name="back">Назад</string>
+
+    <!-- Feedback Screen -->
+    <string name="issue_crash">Приложение часто вылетает</string>
+    <string name="issue_ads">Слишком много рекламы</string>
+    <string name="issue_unresponsive">Приложение зависает или перестает отвечать на запросы</string>
+    <string name="issue_not_user_friendly">Приложение не удобное для пользователя</string>
+    <string name="no_feedback_provided">Отзывы не предоставлены</string>
+    <string name="selected_issues">Избранные вопросы:</string>
+    <string name="additional_feedback">Дополнительный отзыв:</string>
+
+    <!-- Actions Screen -->
+    <string name="tap_actions">НАЖМИТЕ ДЕЙСТВИЯ</string>
+    <string name="gesture_actions">ДЕЙСТВИЯ ЖЕСТОВ</string>
+    <string name="single_tap_desc">Что происходит при одном нажатии</string>
+    <string name="double_tap_desc">Что происходит при двойном нажатии</string>
+    <string name="long_press_desc">Что происходит при длительном нажатии</string>
+    <string name="swipe_up_desc">Что происходит при свайпе вверх</string>
+    <string name="swipe_down_desc">Что происходит при свайпе вниз</string>
+    <string name="tap_gesture_settings">Нажмите &amp; настройки жестов</string>
+
+    <!-- Appearance -->
+    <string name="appearance_saved">Внешний вид сохранен</string>
+    <string name="appearance">Появление</string>
+    <string name="appearance_desc">Настроить обработчик</string>
+    <string name="customize_handler">Настроить обработчик</string>
+    <string name="actions">Действия</string>
+    <string name="actions_desc">Нажмите &amp; настройки жестов</string>
+
+    <!-- Navigation -->
+    <string name="pro_version">Профессиональная версия</string>
+    <string name="free_version">Бесплатная версия</string>
+
+    <!-- Permissions -->
+    <string name="overlay_permission">Отображать поверх других приложений</string>
+    <string name="overlay_permission_desc">Требуется для отображения наложения обработчика громкости на экране.</string>
+    <string name="notification_permission">Опубликовать уведомления</string>
+    <string name="notification_permission_desc">Требуется для отображения постоянного уведомления при запуске службы.</string>
+    <string name="device_admin_permission">Администратор устройства</string>
+    <string name="device_admin_permission_desc">Необязательно: позволяет обработчику блокировать экран вашего устройства при настройке.</string>
+
+    <!-- Walkthrough -->
+    <string name="walkthrough_welcome_title">Добро пожаловать в объем жестов</string>
+    <string name="walkthrough_welcome_desc">Управляйте громкостью вашего устройства с помощью простых жестов на экране. Не нужно тянуться к физическим кнопкам.</string>
+    <string name="walkthrough_overlay_title">Разрешение наложения</string>
+    <string name="walkthrough_overlay_desc">Чтобы отобразить обработчик громкости поверх других приложений, нам нужно разрешение «Рисовать поверх других приложений».</string>
+    <string name="walkthrough_notifications_title">Уведомления</string>
+    <string name="walkthrough_notifications_desc">Включите уведомления, чтобы мы могли обеспечить бесперебойную работу службы жестов в фоновом режиме.</string>
+    <string name="walkthrough_all_set_title">Все готово!</string>
+    <string name="walkthrough_all_set_desc">Функция Gesture Volume готова к использованию. Настройте внешний вид и действия на главном экране.</string>
+    <string name="get_started">Начать</string>
+    <string name="next">Следующий</string>
+    <string name="finish">Заканчивать</string>
+
+    <!-- Expanded Preview -->
+    <string name="position_locked">ПОЛОЖЕНИЕ ЗАБЛОКИРОВАНО</string>
+    <string name="unlock_to_reposition">РАЗБЛОКИРОВАТЬ ДЛЯ ПЕРЕМЕЩЕНИЯ</string>
+    <string name="test_mode">Тестовый режим</string>
+    <string name="reposition_mode">Режим изменения положения</string>
+    <string name="test_mode_desc">Попробуйте провести пальцем по экрану и нажать</string>
+    <string name="reposition_mode_desc">Перетащите обработчик в новое положение</string>
+
+    <!-- Appearance Settings Content -->
+    <string name="position_uppercase">ПОЗИЦИЯ</string>
+    <string name="left">Левый</string>
+    <string name="right">Верно</string>
+    <string name="dimensions_uppercase">РАЗМЕРЫ</string>
+    <string name="background_uppercase">ФОН</string>
+    <string name="stroke_uppercase">ГЛАДИТЬ</string>
+    <string name="corner_radius_uppercase">УГЛОВОЙ РАДИУС</string>
+    <string name="behavior_uppercase">ПОВЕДЕНИЕ</string>
+    <string name="icon_settings">НАСТРОЙКИ ЗНАЧКОВ</string>
+
+    <!-- Actions -->
+    <string name="action_none">Никто</string>
+    <string name="action_open_volume_ui">Открыть пользовательский интерфейс тома</string>
+    <string name="action_mute">Немой</string>
+    <string name="action_mute_unmute">Отключить или включить звук</string>
+    <string name="action_music_overlay">Наложение активной музыки</string>
+    <string name="action_lock">Замок</string>
+    <string name="action_hide_handler">Скрыть обработчик</string>
+    <string name="action_open_app">Открыть приложение</string>
+    <string name="action_increase_vol_ui">Увеличьте громкость и отобразите пользовательский интерфейс</string>
+    <string name="action_increase_vol">Увеличение громкости</string>
+    <string name="action_decrease_vol_ui">Уменьшить громкость и показать пользовательский интерфейс</string>
+    <string name="action_decrease_vol">Уменьшить громкость</string>
+
+    <!-- Messages -->
+    <string name="action_not_available_msg">Это действие здесь недоступно.</string>
+    <string name="unknown_action_msg">Неизвестное действие.</string>
+    <string name="save_changes">Сохранить изменения</string>
+    <string name="locked">Заблокировано</string>
+    <string name="unlocked">Разблокировано</string>
+    <string name="icon_increase">Увеличивать</string>
+    <string name="icon_decrease">Снижаться</string>
+    <string name="icon_boost">Способствовать росту</string>
+    <string name="icon_reduce">Уменьшать</string>
+    <string name="icon_bug">Ошибка</string>
+    <string name="icon_check">Проверять</string>
+    <string name="icon_palette">Палитра</string>
+    <string name="icon_crown">Корона</string>
+    <string name="icon_edit">Редактировать</string>
+    <string name="icon_feedback">Обратная связь</string>
+    <string name="icon_github">GitHub</string>
+    <string name="icon_lock">Замок</string>
+    <string name="icon_move">Двигаться</string>
+    <string name="icon_music">Музыка</string>
+    <string name="icon_none">Никто</string>
+    <string name="icon_plugin">Плагин</string>
+    <string name="icon_power">Власть</string>
+    <string name="icon_share">Делиться</string>
+    <string name="icon_star">Звезда</string>
+    <string name="icon_hide">Скрывать</string>
+    <string name="icon_close">Закрывать</string>
+    <string name="crown">Корона</string>
+
+    <!-- Languages -->
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
+
+    <!-- Theme Options -->
+    <string name="system_default">Системные настройки по умолчанию</string>
+    <string name="light">Свет</string>
+    <string name="dark">Темный</string>
+
+    <!-- Additional UI -->
+    <string name="optional_uppercase">НЕОБЯЗАТЕЛЬНЫЙ</string>
+    <string name="granted">Предоставленный</string>
+
+    <!-- Presets -->
+    <string name="preset_default_title">По умолчанию</string>
+    <string name="preset_default_subtitle">Стандартная ручка</string>
+    <string name="preset_minimal_title">Минимальный</string>
+    <string name="preset_minimal_subtitle">Тонкий усилитель; тонкий</string>
+    <string name="preset_bold_title">Смелый</string>
+    <string name="preset_bold_subtitle">Большой &amp; видимый</string>
+    <string name="preset_night_title">Ночь</string>
+    <string name="preset_night_subtitle">Темная тема</string>
+    <string name="preset_ghost_title">Призрак</string>
+    <string name="preset_ghost_subtitle">Почти невидимый</string>
+
+    <!-- Missing Strings -->
+    <string name="preview">Предварительный просмотр</string>
+    <string name="press_back_again_to_exit">Нажмите назад еще раз, чтобы выйти</string>
+    <string name="volume_gesture_handler">Обработчик жестов громкости</string>
+    <string name="troubleshoot">Поиск неисправностей</string>
+    <string name="troubleshoot_desc">Поддерживайте работу приложения на своем устройстве</string>
+    <string name="troubleshoot_info">Агрессивная оптимизация батареи на некоторых устройствах (например, Xiaomi, Huawei, Oppo, Vivo) может привести к отключению фоновых служб. Выполните следующие действия, чтобы обеспечить надежную работу Gesture Volume:</string>
+    <string name="step_auto_start">1. Включите автозапуск: выберите «Настройки» → «Приложения» → «Управление приложениями» → «Громкость жестов» → «Включить автозапуск».</string>
+    <string name="step_battery">2. Оптимизация батареи: установите для режима экономии заряда значение «Без ограничений».</string>
+    <string name="step_recents">3. Блокировка недавних приложений. Откройте экран «Недавние приложения», нажмите и удерживайте карточку приложения и нажмите значок блокировки 🔒.</string>
+    <string name="step_popup">4. Разрешения: убедитесь, что параметр «Отображать всплывающие окна во время работы в фоновом режиме» включен.</string>
+    <string name="troubleshoot_footer">Инструкции для конкретных устройств можно найти на сайте dontkillmyapp.com.</string>
+    <string name="visit_website">Посетите веб-сайт</string>
+</resources>

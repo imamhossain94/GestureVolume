@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +22,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -50,12 +53,14 @@ import com.newagedevs.gesturevolume.ui.theme.Surface
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
-    onNavigateToAppearance: () -> Unit,
+    onNavigateToAppearance: (String?) -> Unit,
     onNavigateToActions: () -> Unit,
     onNavigateToPermissions: () -> Unit,
 ) {
@@ -67,13 +72,14 @@ fun MainScreen(
     // Update permissions status when screen appears
     LaunchedEffect(Unit) {
         viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
+        viewModel.onEvent(MainEvent.SyncServiceState(context))
     }
 
     BackHandler {
         if (drawerState.isOpen) {
             scope.launch { drawerState.close() }
         } else {
-            viewModel.onBackPressed {
+            viewModel.onBackPressed(context) {
                 (context as? Activity)?.finish()
             }
         }
@@ -96,18 +102,18 @@ fun MainScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            "Gesture Volume",
+                            stringResource(R.string.app_name),
                             fontWeight = FontWeight.SemiBold
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                            Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.menu))
                         }
                     },
                     actions = {
                         IconButton(onClick = { (context as? Activity)?.finish() }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close")
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -153,14 +159,14 @@ fun MainScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
-                            title = "Appearance",
-                            subtitle = "Customize handler",
-                            icon = com.newagedevs.gesturevolume.R.drawable.ic_color_palette,
+                            title = stringResource(R.string.appearance),
+                            subtitle = stringResource(R.string.appearance_desc),
+                            icon = R.drawable.ic_color_palette,
                             gradientColors = listOf(
                                 Color(0xFF6366F1),
                                 Color(0xFF8B5CF6)
                             ),
-                            onClick = onNavigateToAppearance
+                            onClick = { onNavigateToAppearance(null) }
                         )
 
                         // Actions Card
@@ -168,9 +174,9 @@ fun MainScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
-                            title = "Actions",
-                            subtitle = "Tap & gesture settings",
-                            icon = com.newagedevs.gesturevolume.R.drawable.ic_app_open,
+                            title = stringResource(R.string.actions),
+                            subtitle = stringResource(R.string.actions_desc),
+                            icon = R.drawable.ic_app_open,
                             gradientColors = listOf(
                                 Color(0xFF10B981),
                                 Color(0xFF06B6D4)
@@ -195,12 +201,12 @@ fun MainScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (!state.isProActivated) {
-                    Surface(
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(1.dp, Color(0xFF8B5CF6).copy(alpha = 0.3f), RoundedCornerShape(16.dp))
+                            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
                             .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.surface)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         viewModel.adsManager?.NativeAdWidget(
                             modifier = Modifier.wrapContentHeight()
@@ -212,7 +218,7 @@ fun MainScreen(
 
                 // Quick Presets Section
                 Text(
-                    text = "QUICK PRESETS",
+                    text = stringResource(R.string.quick_presets),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
@@ -223,9 +229,9 @@ fun MainScreen(
                 PresetCardsGrid(
                     viewModel = viewModel,
                     context = context,
-                    onNavigateToAppearance = {
+                    onNavigateToAppearance = { presetId ->
                         scope.launch { drawerState.close() }
-                        onNavigateToAppearance()
+                        onNavigateToAppearance(presetId)
                     }
                 )
 

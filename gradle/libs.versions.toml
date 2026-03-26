@@ -2,7 +2,8 @@
 agp = "8.13.1"
 coilNetworkOkhttp = "3.3.0"
 coreSplashscreen = "1.2.0"
-googleIap = "1.8.0"
+appcompat = "1.6.1"
+billingKtx = "8.3.0"
 kotlin = "2.2.21"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -45,14 +46,19 @@ vungleAdapter = "7.6.1.0"
 facebookAdapter = "6.21.0.0"
 mintegralAdapter = "17.0.31.0"
 unityadsAdapter = "4.16.4.0"
+playUpdate = "2.1.0"
+playUpdateKtx = "2.1.0"
+playReview = "2.0.1"
+playReviewKtx = "2.0.1"
 
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilNetworkOkhttp" }
-google-iap = { module = "com.github.akshaaatt:Google-IAP", version.ref = "googleIap" }
+billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billingKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -95,6 +101,12 @@ picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
 unityads-adapter = { module = "com.applovin.mediation:unityads-adapter", version.ref = "unityadsAdapter" }
 vungle-adapter = { module = "com.applovin.mediation:vungle-adapter", version.ref = "vungleAdapter" }
+
+# Play Core
+play-update = { module = "com.google.android.play:app-update", version.ref = "playUpdate" }
+play-update-ktx = { module = "com.google.android.play:app-update-ktx", version.ref = "playUpdateKtx" }
+play-review = { module = "com.google.android.play:review", version.ref = "playReview" }
+play-review-ktx = { module = "com.google.android.play:review-ktx", version.ref = "playReviewKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

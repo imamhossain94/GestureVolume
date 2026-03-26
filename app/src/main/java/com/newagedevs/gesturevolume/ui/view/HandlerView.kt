@@ -11,21 +11,28 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.*
 import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import kotlin.math.abs
+import com.newagedevs.gesturevolume.R
 
 class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
 
     companion object {
-        private const val TOUCH_MOVE_FACTOR: Long = 20
-        private const val TOUCH_TIME_FACTOR: Long = 300
-        private const val DOUBLE_CLICK_TIME_DELTA: Long = 300
         private const val DEFAULT_INSET: Float = 0f
     }
 
-    // View properties with default values
+    // ========== Touch Configuration (device-calibrated) ==========
+    private val touchSlop: Int = ViewConfiguration.get(context).scaledTouchSlop
+    private val doubleClickTimeDelta: Long = 300L
+    private val pressAnimDuration: Long = 100L
+    private val pressAlpha: Float = 0.7f
+
+    // Gesture state machine
+    private enum class GestureState { IDLE, PRESSED, DRAGGING }
+    private var gestureState = GestureState.IDLE
+
+    // ========== View properties with default values ==========
     private var viewWidth: Float = 50f
     private var viewHeight: Float = 300f
     private var viewGravityPosition: Int = Gravity.END
@@ -52,7 +59,7 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     // Icon properties
     private var centerIcon: Drawable? = null
     private var centerIconSize: Float = 24f
-    private var centerIconColor: Int = Color.WHITE // NEW: Icon color property
+    private var centerIconColor: Int = Color.WHITE
     private var centerIconVisible: Boolean = true
     private val centerIconView: ImageView
 
@@ -61,12 +68,20 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     private var vibrateOnClick: Boolean = false
 
     // Touch tracking
-    private var lastY = 0f
+    private var lastRawY = 0f
     private var actionDownPoint = PointF(0f, 0f)
     private var touchDownTime = 0L
     private var lastClickTime = 0L
 
+    // Delayed single-click handler
+    private val clickHandler = Handler(Looper.getMainLooper())
+    private var pendingSingleClick: Runnable? = null
+
     init {
+        // Accessibility defaults
+        contentDescription = context.getString(R.string.volume_gesture_handler)
+        isFocusable = true
+
         // Create and add center icon ImageView
         centerIconView = ImageView(context).apply {
             layoutParams = LayoutParams(
@@ -82,7 +97,8 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         updateViewAppearance()
     }
 
-    // Data class for option items
+    // ========== Data class and Listeners ==========
+
     data class OptionItem(
         val id: Int,
         val icon: Drawable? = null,
@@ -90,7 +106,6 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         val subtitle: String? = null
     )
 
-    // Listeners
     interface HandlerPositionChangeListener {
         fun onVertical(rawY: Float)
         fun onVertical(rawY: Int)
@@ -111,7 +126,6 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     fun setHandlerClickListener(listener: HandlerClickListener) {
         handlerClickListener = listener
     }
-
 
     // ========== Dimension Setters ==========
 
@@ -154,7 +168,6 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         updateViewAppearance()
     }
 
-    // NEW: Set all corner radii at once
     fun setAllCornerRadiiDp(radius: Float) {
         cornerRadiusTopLeft = radius
         cornerRadiusTopRight = radius
@@ -198,7 +211,6 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
 
     // ========== Icon Setters ==========
 
-    // UPDATED: Added color parameter
     fun setCenterIcon(drawable: Drawable?, sizeDp: Float = 24f, color: Int = centerIconColor) {
         centerIcon = drawable
         centerIconSize = sizeDp
@@ -206,7 +218,6 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         updateCenterIcon()
     }
 
-    // UPDATED: Added color parameter
     fun setCenterIcon(drawableRes: Int, sizeDp: Float = 24f, color: Int = centerIconColor) {
         centerIcon = ContextCompat.getDrawable(context, drawableRes)
         centerIconSize = sizeDp
@@ -226,18 +237,15 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
 
     fun isCenterIconVisible(): Boolean = centerIconVisible
 
-    // NEW: Set icon color
     fun setCenterIconColor(color: Int) {
         centerIconColor = color
         updateCenterIcon()
     }
 
-    // UPDATED: Apply color tint to icon
     private fun updateCenterIcon() {
         if (centerIconVisible && centerIcon != null) {
             centerIconView.visibility = VISIBLE
 
-            // Apply color tint to the icon
             val tintedDrawable = centerIcon?.mutate()?.let { drawable ->
                 DrawableCompat.wrap(drawable).apply {
                     DrawableCompat.setTint(this, centerIconColor)
@@ -350,51 +358,116 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         updateCenterIcon()
     }
 
+    // ========== Touch Handling (State Machine) ==========
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                lastY = event.rawY
+                gestureState = GestureState.PRESSED
+                lastRawY = event.rawY
                 actionDownPoint = PointF(event.x, event.y)
                 touchDownTime = now()
+
+                // Visual press feedback
+                animate().alpha(pressAlpha).setDuration(pressAnimDuration).start()
+
+                return true
             }
+
             MotionEvent.ACTION_MOVE -> {
-                if (!positionLocked) {
-                    val deltaY = event.rawY - lastY
-                    translationY += deltaY
-                    lastY = event.rawY
-                    handlerPositionChangeListener?.onVertical(translationY)
-                } else {
-                    val deltaY = event.rawY - lastY
-                    lastY = event.rawY
-                    handlerPositionChangeListener?.onVertical(deltaY.toInt())
-                }
-            }
-            MotionEvent.ACTION_UP -> {
-                val isTouchDuration = now() - touchDownTime < TOUCH_TIME_FACTOR
-                val isTouchLength = abs(event.x - actionDownPoint.x) + abs(event.y - actionDownPoint.y) < TOUCH_MOVE_FACTOR
-                val shouldClick = isTouchLength && isTouchDuration
+                val dx = abs(event.x - actionDownPoint.x)
+                val dy = abs(event.y - actionDownPoint.y)
 
-                if (shouldClick) {
-                    if (now() - lastClickTime < DOUBLE_CLICK_TIME_DELTA) {
-                        // Double click
-                        handlerClickListener?.onDoubleClick()
-                        lastClickTime = 0
-                    } else {
-                        lastClickTime = now()
-
-                        if (vibrateOnClick) {
-                            performHapticFeedback()
+                when (gestureState) {
+                    GestureState.PRESSED -> {
+                        // Transition to DRAGGING if finger moved beyond touch slop
+                        if (dx > touchSlop || dy > touchSlop) {
+                            gestureState = GestureState.DRAGGING
+                            // Release press animation since we're now dragging
+                            animate().alpha(1f).setDuration(pressAnimDuration).start()
                         }
+                    }
+                    GestureState.DRAGGING -> {
+                        if (!positionLocked) {
+                            val deltaY = event.rawY - lastRawY
+                            translationY += deltaY
+                            lastRawY = event.rawY
+                            handlerPositionChangeListener?.onVertical(translationY)
+                        } else {
+                            val deltaY = event.rawY - lastRawY
+                            lastRawY = event.rawY
+                            handlerPositionChangeListener?.onVertical(deltaY.toInt())
+                        }
+                    }
+                    else -> { /* IDLE — shouldn't happen during MOVE */ }
+                }
+                return true
+            }
 
-                        performClick()
-                        handlerClickListener?.onSingleClick()
+            MotionEvent.ACTION_UP -> {
+                // Release press animation
+                animate().alpha(1f).setDuration(pressAnimDuration).start()
 
+                if (gestureState == GestureState.PRESSED) {
+                    // Finger didn't move beyond touch slop — this is a click
+                    val isTouchDuration = now() - touchDownTime < 500L
+                    if (isTouchDuration) {
+                        handleClick()
                     }
                 }
+
+                gestureState = GestureState.IDLE
+                return true
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                // Clean up: restore visual state, cancel pending clicks
+                animate().alpha(1f).setDuration(pressAnimDuration).start()
+                cancelPendingSingleClick()
+                gestureState = GestureState.IDLE
+                return true
             }
         }
-        return true
+        return super.onTouchEvent(event)
+    }
+
+    private fun handleClick() {
+        val currentTime = now()
+
+        if (currentTime - lastClickTime < doubleClickTimeDelta) {
+            // Double click detected — cancel pending single click
+            cancelPendingSingleClick()
+            lastClickTime = 0L
+
+            if (vibrateOnClick) {
+                triggerHapticFeedback()
+            }
+
+            handlerClickListener?.onDoubleClick()
+        } else {
+            // Possible single click — defer to allow double-click window
+            lastClickTime = currentTime
+
+            pendingSingleClick = Runnable {
+                if (vibrateOnClick) {
+                    triggerHapticFeedback()
+                }
+
+                performClick()
+                handlerClickListener?.onSingleClick()
+                pendingSingleClick = null
+            }
+
+            clickHandler.postDelayed(pendingSingleClick!!, doubleClickTimeDelta)
+        }
+    }
+
+    private fun cancelPendingSingleClick() {
+        pendingSingleClick?.let {
+            clickHandler.removeCallbacks(it)
+            pendingSingleClick = null
+        }
     }
 
     override fun performClick(): Boolean {
@@ -402,16 +475,16 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         return true
     }
 
-    private fun performHapticFeedback() {
-        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vibratorManager.defaultVibrator
+    private fun triggerHapticFeedback() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
         } else {
             @Suppress("DEPRECATION")
-            context.getSystemService(AppCompatActivity.VIBRATOR_SERVICE) as Vibrator
+            performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
         }
-        vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
     }
+
+    // ========== Utility ==========
 
     fun dpToPx(dp: Float): Float {
         return TypedValue.applyDimension(
@@ -423,4 +496,9 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
 
     private fun now(): Long = SystemClock.elapsedRealtime()
 
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        cancelPendingSingleClick()
+        animate().cancel()
+    }
 }

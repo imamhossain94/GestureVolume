@@ -5,6 +5,7 @@ package com.newagedevs.gesturevolume
 import android.app.Application
 import android.content.Context
 import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import android.webkit.WebView
 import androidx.lifecycle.Lifecycle
@@ -124,6 +125,16 @@ class GestureApplication : Application() {
 
             // Check if currently showing ad
             if (isShowingAd) {
+                return false
+            }
+
+            // Don't show if draw-over-other-apps permission is not granted
+            if (!Settings.canDrawOverlays(context)) {
+                return false
+            }
+
+            // Check if app open ads are paused (e.g., during permission request screens)
+            if (preferences.isAppOpenAdPaused()) {
                 return false
             }
 

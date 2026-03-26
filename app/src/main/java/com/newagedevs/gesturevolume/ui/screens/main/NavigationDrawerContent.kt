@@ -1,26 +1,19 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
 import android.content.Intent
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -31,6 +24,7 @@ import androidx.core.net.toUri
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.helper.InHouseBannerAdsView
 import com.newagedevs.gesturevolume.utils.Constants
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun NavigationDrawerContent(
@@ -59,17 +53,8 @@ fun NavigationDrawerContent(
                     Box(
                         modifier = Modifier
                             .size(56.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(
-                                        Color(0xFFAA7BFF),
-                                        Color(0xFF2C209A)
-                                    ),
-                                    start = Offset(0f, 0f),
-                                    end = Offset(512f, 512f)
-                                )
-                            ),
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.primary),
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
@@ -85,13 +70,13 @@ fun NavigationDrawerContent(
 
                     Column {
                         Text(
-                            text = "Gesture Volume",
+                            text = stringResource(R.string.app_name),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = if (isProActivated) "Pro Version" else "Free Version",
+                            text = if (isProActivated) stringResource(R.string.pro_version) else stringResource(R.string.free_version),
                             fontSize = 13.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -115,7 +100,7 @@ fun NavigationDrawerContent(
                 // === PREMIUM SECTION ===
                 if (!isProActivated) {
                     Text(
-                        text = "UPGRADE",
+                        text = stringResource(R.string.upgrade),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
@@ -132,7 +117,7 @@ fun NavigationDrawerContent(
 
                 // === GENERAL SECTION ===
                 Text(
-                    text = "GENERAL",
+                    text = stringResource(R.string.general),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
@@ -141,31 +126,46 @@ fun NavigationDrawerContent(
                 )
 
                 NavigationDrawerItem(
+                    icon = R.drawable.ic_translate,
+                    label = stringResource(R.string.language),
+                    onClick = { onMenuItemClick("Language") }
+                )
+
+                NavigationDrawerItem(
+                    icon = R.drawable.ic_color_swatch,
+                    label = stringResource(R.string.theme),
+                    onClick = { onMenuItemClick("Theme") }
+                )
+
+                NavigationDrawerItem(
                     icon = R.drawable.ic_share,
-                    label = "Share App",
-                    accentColor = Color(0xFF10B981),
+                    label = stringResource(R.string.share_app),
                     onClick = { onMenuItemClick("Share") }
                 )
 
                 NavigationDrawerItem(
-                    icon = R.drawable.ic_feedback,
-                    label = "Send Feedback",
-                    accentColor = Color(0xFF3B82F6),
-                    onClick = { onMenuItemClick("Feedback") }
+                    icon = R.drawable.ic_star,
+                    label = stringResource(R.string.rate_on_play_store),
+                    onClick = { onMenuItemClick("Rate us") }
                 )
 
                 NavigationDrawerItem(
-                    icon = R.drawable.ic_star,
-                    label = "Rate on Play Store",
-                    accentColor = Color(0xFFFBBF24),
-                    onClick = { onMenuItemClick("Rate us") }
+                    icon = R.drawable.ic_feedback,
+                    label = stringResource(R.string.send_feedback),
+                    onClick = { onMenuItemClick("Feedback") }
+                )
+                
+                NavigationDrawerItem(
+                    icon = R.drawable.ic_bug,
+                    label = stringResource(R.string.troubleshoot),
+                    onClick = { onMenuItemClick("Troubleshoot") }
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // === MORE SECTION ===
                 Text(
-                    text = "MORE",
+                    text = stringResource(R.string.more),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
@@ -175,15 +175,13 @@ fun NavigationDrawerContent(
 
                 NavigationDrawerItem(
                     icon = R.drawable.ic_playstore,
-                    label = "Other Apps",
-                    accentColor = Color(0xFF06B6D4),
+                    label = stringResource(R.string.other_apps),
                     onClick = { onMenuItemClick("Other apps") }
                 )
 
                 NavigationDrawerItem(
                     icon = R.drawable.ic_nothing,
-                    label = "About",
-                    accentColor = Color(0xFFEC4899),
+                    label = stringResource(R.string.about),
                     onClick = { onMenuItemClick("About") }
                 )
             }
@@ -225,88 +223,63 @@ private fun PremiumNavigationItem(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.02f)
-        ),
-        border = BorderStroke(1.dp, Color(0xFF8B5CF6).copy(alpha = 0.25f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+                .padding(horizontal = 14.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
-            // === ICON (48dp, left aligned) ===
             Box(
                 modifier = Modifier
-                    .size(48.dp)   // ⬅️ updated to 48dp
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(
-                        brush = Brush.linearGradient(
-                            listOf(
-                                Color(0xFFAA7BFF),
-                                Color(0xFF2C209A)
-                            ),
-                            start = Offset.Zero,
-                            end = Offset(400f, 400f)
-                        )
-                    ),
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
+                Icon(
                     painter = painterResource(id = R.drawable.ic_crown_2),
-                    contentDescription = "Crown",
-                    modifier = Modifier.size(26.dp),   // proportional to 48dp container
-                    colorFilter = ColorFilter.tint(Color.White)
+                    contentDescription = stringResource(R.string.crown),
+                    modifier = Modifier.size(22.dp),
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
             Spacer(modifier = Modifier.width(14.dp))
 
-            // === TEXT ===
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Upgrade to Pro",
+                    text = stringResource(R.string.upgrade_to_pro),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-
                 Text(
-                    text = "Unlock all features",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    text = stringResource(R.string.unlock_all_features),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
             }
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // === PRICE TAG ===
             Surface(
-                shape = RoundedCornerShape(6.dp),
-                color = Color(0xFF8B5CF6)
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.primary
             ) {
                 Text(
-                    text = "$0.99",
+                    text = stringResource(R.string.pro),
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    fontSize = 11.sp,
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    letterSpacing = 0.5.sp
                 )
             }
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-                tint = Color(0xFF8B5CF6)
-            )
         }
     }
 }
@@ -316,7 +289,6 @@ private fun PremiumNavigationItem(
 private fun NavigationDrawerItem(
     icon: Int,
     label: String,
-    accentColor: Color,
     badge: String? = null,
     onClick: () -> Unit
 ) {
@@ -333,22 +305,14 @@ private fun NavigationDrawerItem(
                 .padding(horizontal = 12.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(accentColor.copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = icon),
-                    contentDescription = label,
-                    modifier = Modifier.size(18.dp),
-                    tint = accentColor
-                )
-            }
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = label,
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
             Text(
                 text = label,
@@ -361,13 +325,13 @@ private fun NavigationDrawerItem(
             if (badge != null) {
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = accentColor.copy(alpha = 0.15f)
+                    color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Text(
                         text = badge,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = accentColor,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                     )
                 }

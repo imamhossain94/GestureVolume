@@ -20,7 +20,9 @@ data class MainState(
     val swipeDownAction: String = "Decrease volume and show UI",
     val swipeDownActionIcon: Int = R.drawable.ic_vol_increase,
     val hasOverlayPermission: Boolean = false,
-    val hasNotificationPermission: Boolean = false
+    val hasNotificationPermission: Boolean = false,
+    val theme: Int = 0,
+    val language: String = "en"
 )
 
 

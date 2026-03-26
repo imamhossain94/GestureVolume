@@ -14,7 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import com.newagedevs.gesturevolume.ui.screens.main.LanguageDialog
+import com.newagedevs.gesturevolume.ui.screens.main.ThemeDialog
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -28,6 +35,8 @@ import com.newagedevs.gesturevolume.ui.screens.handler_action.HandlerActionsScre
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.HandlerAppearanceScreen
 import com.newagedevs.gesturevolume.ui.screens.main.MainScreen
 import com.newagedevs.gesturevolume.ui.screens.permission.PermissionsScreen
+import com.newagedevs.gesturevolume.ui.screens.troubleshoot.TroubleshootScreen
+import com.newagedevs.gesturevolume.ui.screens.walkthrough.WalkthroughScreen
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEffect
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
@@ -40,6 +49,9 @@ fun MainNavigation(
     val navController = rememberNavController()
     val state by viewModel.state.collectAsState()
 
+    var showThemeDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
+
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {
@@ -49,6 +61,8 @@ fun MainNavigation(
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
+        // Resume app open ads now that the user has returned from the overlay permission screen
+        viewModel.preference.setAppOpenAdPaused(false)
         viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
     }
 
@@ -63,11 +77,16 @@ fun MainNavigation(
                         Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         "package:${context.packageName}".toUri()
                     )
+                    // Pause ads while the user is in the overlay permission screen
+                    viewModel.preference.setAppOpenAdPaused(true)
                     overlayPermissionLauncher.launch(intent)
                 }
                 is MainEffect.RequestNotificationPermission -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
+                is MainEffect.ShowThemeDialog -> showThemeDialog = true
+                is MainEffect.ShowLanguageDialog -> showLanguageDialog = true
+                is MainEffect.NavigateToTroubleshoot -> navController.navigate("troubleshoot")
                 else -> {}
             }
         }
@@ -80,13 +99,28 @@ fun MainNavigation(
         Box(modifier = Modifier.weight(1f)) {
             NavHost(
                 navController = navController,
-                startDestination = "main"
+                startDestination = if (viewModel.preference.isFirstLaunch()) "walkthrough" else "main"
             ) {
+                composable("walkthrough") {
+                    WalkthroughScreen(
+                        viewModel = viewModel,
+                        onComplete = {
+                            navController.navigate("main") {
+                                popUpTo("walkthrough") { inclusive = true }
+                            }
+                        }
+                    )
+                }
+
                 composable("main") {
                     MainScreen(
                         viewModel = viewModel,
-                        onNavigateToAppearance = {
-                            navController.navigate("appearance")
+                        onNavigateToAppearance = { presetId ->
+                            if (presetId != null) {
+                                navController.navigate("appearance?preset=$presetId")
+                            } else {
+                                navController.navigate("appearance")
+                            }
                         },
                         onNavigateToActions = {
                             navController.navigate("actions")
@@ -97,9 +131,14 @@ fun MainNavigation(
                     )
                 }
 
-                composable("appearance") {
+                composable(
+                    "appearance?preset={preset}",
+                    arguments = listOf(androidx.navigation.navArgument("preset") { nullable = true })
+                ) { backStackEntry ->
+                    val presetId = backStackEntry.arguments?.getString("preset")
                     HandlerAppearanceScreen(
                         viewModel = viewModel,
+                        presetId = presetId,
                         onNavigateBack = {
                             navController.popBackStack()
                         }
@@ -139,6 +178,14 @@ fun MainNavigation(
                         }
                     )
                 }
+
+                composable("troubleshoot") {
+                    TroubleshootScreen(
+                        onNavigateBack = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
             }
         }
 
@@ -151,6 +198,25 @@ fun MainNavigation(
             ) {
                 viewModel.adsManager?.BannerAdView()
             }
+        }
+
+        if (showThemeDialog) {
+            ThemeDialog(
+                currentTheme = state.theme,
+                onDismiss = { showThemeDialog = false },
+                onThemeSelect = { theme -> viewModel.setTheme(theme) }
+            )
+        }
+
+        if (showLanguageDialog) {
+            LanguageDialog(
+                currentLanguage = state.language,
+                onDismiss = { showLanguageDialog = false },
+                onLanguageSelect = { code -> 
+                    viewModel.setLanguage(code)
+                    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(code))
+                }
+            )
         }
     }
 }

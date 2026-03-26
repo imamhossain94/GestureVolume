@@ -1,0 +1,277 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GestureVolume</string>
+
+    <string name="device_description">Schermata di blocco al clic con l\'API Device Policy Manager</string>
+    <string name="device_admin_label">Gesto Volume Amministrazione dispositivo</string>
+    <string name="landscape_appearance_settings">IMPOSTAZIONI DELL\'ASPETTO DEL PAESAGGIO</string>
+    <string name="click_">Seleziona l\'interruttore su attivo e configura la gravità, le dimensioni, lo spessore e la posizione del gestore sullo schermo orizzontale.</string>
+    <string name="configure">Configura</string>
+    <string name="please">Ruota nuovamente il telefono in modalità verticale per configurare la posizione del gestore.</string>
+    <string name="ad">A.D</string>
+    <string name="about">Di</string>
+    <string name="all_corners">Tutti gli angoli</string>
+    <string name="all_required_permissions_granted">Vengono concesse tutte le autorizzazioni necessarie. Ora puoi utilizzare l\'app.</string>
+    <string name="all_set">Tutto pronto!</string>
+    <string name="apply">Fare domanda a</string>
+    <string name="apply_changes">Applicare modifiche?</string>
+    <string name="are_you_sure_you_want_to_apply_these_appearance_settings_to_your_active_handler">Vuoi applicare queste impostazioni di aspetto al tuo gestore attivo?</string>
+    <string name="bottom_left">In basso a sinistra</string>
+    <string name="bottom_right">In basso a destra</string>
+    <string name="common_issues">PROBLEMI COMUNI</string>
+    <string name="cancel">Cancellare</string>
+    <string name="cannot_open_play_store">Impossibile aprire il Play Store</string>
+    <string name="choose_language">Scegli la lingua</string>
+    <string name="choose_theme">Scegli Tema</string>
+    <string name="close">Vicino</string>
+    <string name="color">Colore</string>
+    <string name="confirm">Confermare</string>
+    <string name="customize_how_you_interact_with_the_volume_handler_through_taps_and_gestures">Personalizza il modo in cui interagisci con il gestore del volume tramite tocchi e gesti</string>
+    <string name="describe_the_issue_or_suggestion">Descrivi il problema o il suggerimento</string>
+    <string name="developed_by">Sviluppato da</string>
+    <string name="discard">Scartare</string>
+    <string name="double_tap_action">Azione doppio tocco</string>
+    <string name="feedback">Feedback</string>
+    <string name="general">GENERALE</string>
+    <string name="gesture_volume">Volume dei gesti</string>
+    <string name="grant_permission">Concedere l\'autorizzazione</string>
+    <string name="gravity">Gravità</string>
+    <string name="handler_actions">Azioni del gestore</string>
+    <string name="handler_appearance">Aspetto del gestore</string>
+    <string name="height">Altezza</string>
+    <string name="help_us_improve_the_app">Aiutaci a migliorare l\'app</string>
+    <string name="icon">Icona</string>
+    <string name="icon_color">Colore dell\'icona</string>
+    <string name="icon_size">Dimensioni dell\'icona</string>
+    <string name="install">Installare</string>
+    <string name="item_already_owned">Oggetto già posseduto</string>
+    <string name="legal">LEGALE</string>
+    <string name="language">Lingua</string>
+    <string name="lock_position">Posizione di blocco</string>
+    <string name="long_press_action">Azione di pressione prolungata</string>
+    <string name="minimize">MINIMIZZARE</string>
+    <string name="more">DI PIÙ</string>
+    <string name="newagedevs">NewAgeDev</string>
+    <string name="nothing_to_restore">Niente da ripristinare</string>
+    <string name="optional">OPZIONALE</string>
+    <string name="optional_permissions">AUTORIZZAZIONI FACOLTATIVE</string>
+    <string name="other_feedback">ALTRI FEEDBACK</string>
+    <string name="opacity">Opacità</string>
+    <string name="other_apps">Altre app</string>
+    <string name="pro">PRO</string>
+    <string name="purchase_failed">Acquisto fallito. Per favore riprova.</string>
+    <string name="purchase_restored">Acquisto ripristinato! Premio attivato.</string>
+    <string name="purchase_success">Acquisto riuscito! Premio attivato.</string>
+    <string name="overlay_permission_toast">Concedi l\'autorizzazione alla sovrapposizione per continuare.</string>
+    <string name="permission_granted_check">Autorizzazione concessa ✓</string>
+    <string name="permissions">Autorizzazioni</string>
+    <string name="action_required">Azione richiesta</string>
+    <string name="all_permissions_granted">Tutte le autorizzazioni concesse</string>
+    <string name="quick_presets">PRESET VELOCI</string>
+    <string name="required_permissions">AUTORIZZAZIONI RICHIESTE</string>
+    <string name="rate_on_play_store">Vota sul Play Store</string>
+    <string name="revoke_permission">Revoca autorizzazione</string>
+    <string name="settings">IMPOSTAZIONI</string>
+    <string name="menu">Menu</string>
+    <string name="select_icon">Seleziona l\'icona</string>
+    <string name="select_the_color_and_transparency_of_the_handler">Seleziona il colore e la trasparenza del gestore</string>
+    <string name="send_feedback">Invia feedback</string>
+    <string name="share_app">Condividi l\'app</string>
+    <string name="show_icon">Mostra icona</string>
+    <string name="single_tap_action">Azione con tocco singolo</string>
+    <string name="skip_for_now">Salta per ora</string>
+    <string name="swipe_down_action">Scorri verso il basso l\'azione</string>
+    <string name="swipe_up_action">Azione di scorrimento verso l\'alto</string>
+    <string name="tap_to_change">Tocca per modificare</string>
+    <string name="tap_to_manage_overlay">Tocca per gestire la sovrapposizione</string>
+    <string name="tell_us_more_about_your_experience">Raccontaci di più della tua esperienza...</string>
+    <string name="permissions_header_info">L\'app richiede determinate autorizzazioni per funzionare correttamente. Concedi le autorizzazioni di seguito.</string>
+    <string name="theme">Tema</string>
+    <string name="theme_desc">Tema colore dell\'app</string>
+    <string name="language_desc">Lingua dell\'app</string>
+    <string name="top_left">In alto a sinistra</string>
+    <string name="top_right">In alto a destra</string>
+    <string name="upgrade">AGGIORNAMENTO</string>
+    <string name="unlock_all_features">Sblocca tutte le funzionalità</string>
+    <string name="unsaved_changes">Modifiche non salvate</string>
+    <string name="upgrade_to_pro">Passa a Pro</string>
+    <string name="vibrate_on_click">Vibra al clic</string>
+    <string name="we_d_love_to_hear_from_you">Ci piacerebbe sentire la tua opinione!</string>
+    <string name="width">Larghezza</string>
+    <string name="already_have_premium">Hai già un premio!</string>
+    <string name="you_have_unsaved_changes_do_you_want_to_apply_them_before_leaving">Sono presenti modifiche non salvate. Vuoi applicarli prima di partire?</string>
+
+    <!-- About Screen -->
+    <string name="rate_us">Valutaci</string>
+    <string name="share">Condividere</string>
+    <string name="source">Fonte</string>
+    <string name="more_apps">Più app</string>
+    <string name="privacy_policy">politica sulla riservatezza</string>
+    <string name="back">Indietro</string>
+
+    <!-- Feedback Screen -->
+    <string name="issue_crash">L\'app si blocca spesso</string>
+    <string name="issue_ads">Troppe pubblicità</string>
+    <string name="issue_unresponsive">L\'app si blocca o non risponde</string>
+    <string name="issue_not_user_friendly">L\'app non è facile da usare</string>
+    <string name="no_feedback_provided">Nessun feedback fornito</string>
+    <string name="selected_issues">Problemi selezionati:</string>
+    <string name="additional_feedback">Feedback aggiuntivo:</string>
+
+    <!-- Actions Screen -->
+    <string name="tap_actions">AZIONI TOCCO</string>
+    <string name="gesture_actions">AZIONI DEL GESTO</string>
+    <string name="single_tap_desc">Cosa succede con un solo tocco</string>
+    <string name="double_tap_desc">Cosa succede con il doppio tocco</string>
+    <string name="long_press_desc">Cosa succede con una pressione prolungata</string>
+    <string name="swipe_up_desc">Cosa succede quando scorri verso l\'alto</string>
+    <string name="swipe_down_desc">Cosa succede quando scorri verso il basso</string>
+    <string name="tap_gesture_settings">Tocca &amp; impostazioni dei gesti</string>
+
+    <!-- Appearance -->
+    <string name="appearance_saved">Aspetto salvato</string>
+    <string name="appearance">Aspetto</string>
+    <string name="appearance_desc">Personalizza il gestore</string>
+    <string name="customize_handler">Personalizza il gestore</string>
+    <string name="actions">Azioni</string>
+    <string name="actions_desc">Tocca &amp; impostazioni dei gesti</string>
+
+    <!-- Navigation -->
+    <string name="pro_version">Versione Pro</string>
+    <string name="free_version">Versione gratuita</string>
+
+    <!-- Permissions -->
+    <string name="overlay_permission">Visualizza su altre app</string>
+    <string name="overlay_permission_desc">Necessario per mostrare la sovrapposizione del gestore del volume sullo schermo</string>
+    <string name="notification_permission">Pubblica notifiche</string>
+    <string name="notification_permission_desc">Necessario per mostrare la notifica persistente quando il servizio è in esecuzione</string>
+    <string name="device_admin_permission">Amministratore del dispositivo</string>
+    <string name="device_admin_permission_desc">Facoltativo: consente al gestore di bloccare lo schermo del dispositivo quando configurato</string>
+
+    <!-- Walkthrough -->
+    <string name="walkthrough_welcome_title">Benvenuti nel volume dei gesti</string>
+    <string name="walkthrough_welcome_desc">Controlla il volume del tuo dispositivo con semplici gesti sullo schermo. Non è necessario raggiungere i pulsanti fisici.</string>
+    <string name="walkthrough_overlay_title">Autorizzazione di sovrapposizione</string>
+    <string name="walkthrough_overlay_desc">Per mostrare il gestore del volume sopra altre app, abbiamo bisogno dell\'autorizzazione \"Disegna su altre app\".</string>
+    <string name="walkthrough_notifications_title">Notifiche</string>
+    <string name="walkthrough_notifications_desc">Attiva le notifiche in modo da poter mantenere il servizio gestuale perfettamente funzionante in background.</string>
+    <string name="walkthrough_all_set_title">È tutto pronto!</string>
+    <string name="walkthrough_all_set_desc">Gesture Volume è pronto per l\'uso. Personalizza l\'aspetto e le azioni nella schermata principale.</string>
+    <string name="get_started">Inizia</string>
+    <string name="next">Prossimo</string>
+    <string name="finish">Fine</string>
+
+    <!-- Expanded Preview -->
+    <string name="position_locked">POSIZIONE BLOCCATA</string>
+    <string name="unlock_to_reposition">SBLOCCA PER RIPOSIZIONARE</string>
+    <string name="test_mode">Test Mode</string>
+    <string name="reposition_mode">Modalità di riposizionamento</string>
+    <string name="test_mode_desc">Prova i passaggi e i tocchi</string>
+    <string name="reposition_mode_desc">Trascina il gestore nella nuova posizione</string>
+
+    <!-- Appearance Settings Content -->
+    <string name="position_uppercase">POSIZIONE</string>
+    <string name="left">Sinistra</string>
+    <string name="right">Giusto</string>
+    <string name="dimensions_uppercase">DIMENSIONI</string>
+    <string name="background_uppercase">SFONDO</string>
+    <string name="stroke_uppercase">COLPO</string>
+    <string name="corner_radius_uppercase">RAGGIO D\'ANGOLO</string>
+    <string name="behavior_uppercase">COMPORTAMENTO</string>
+    <string name="icon_settings">IMPOSTAZIONI DELLE ICONE</string>
+
+    <!-- Actions -->
+    <string name="action_none">Nessuno</string>
+    <string name="action_open_volume_ui">Apri l\'interfaccia utente del volume</string>
+    <string name="action_mute">Muto</string>
+    <string name="action_mute_unmute">Disattiva o Attiva audio</string>
+    <string name="action_music_overlay">Sovrapposizione musicale attiva</string>
+    <string name="action_lock">Serratura</string>
+    <string name="action_hide_handler">Nascondi gestore</string>
+    <string name="action_open_app">Apri l\'app</string>
+    <string name="action_increase_vol_ui">Aumenta il volume e mostra l\'interfaccia utente</string>
+    <string name="action_increase_vol">Aumenta il volume</string>
+    <string name="action_decrease_vol_ui">Riduci il volume e mostra l\'interfaccia utente</string>
+    <string name="action_decrease_vol">Diminuire il volume</string>
+
+    <!-- Messages -->
+    <string name="action_not_available_msg">Questa azione non è disponibile qui.</string>
+    <string name="unknown_action_msg">Azione sconosciuta.</string>
+    <string name="save_changes">Salva modifiche</string>
+    <string name="locked">Bloccato</string>
+    <string name="unlocked">Sbloccato</string>
+    <string name="icon_increase">Aumento</string>
+    <string name="icon_decrease">Diminuire</string>
+    <string name="icon_boost">Aumento</string>
+    <string name="icon_reduce">Ridurre</string>
+    <string name="icon_bug">Insetto</string>
+    <string name="icon_check">Controllo</string>
+    <string name="icon_palette">Tavolozza</string>
+    <string name="icon_crown">Corona</string>
+    <string name="icon_edit">Modificare</string>
+    <string name="icon_feedback">Feedback</string>
+    <string name="icon_github">GitHub</string>
+    <string name="icon_lock">Serratura</string>
+    <string name="icon_move">Mossa</string>
+    <string name="icon_music">Musica</string>
+    <string name="icon_none">Nessuno</string>
+    <string name="icon_plugin">Collegare</string>
+    <string name="icon_power">Energia</string>
+    <string name="icon_share">Condividere</string>
+    <string name="icon_star">Stella</string>
+    <string name="icon_hide">Nascondere</string>
+    <string name="icon_close">Vicino</string>
+    <string name="crown">Corona</string>
+
+    <!-- Languages -->
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">Bangla</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_korean">Korean</string>
+    <string name="lang_japanese">Japanese</string>
+    <string name="lang_chinese">Chinese</string>
+    <string name="lang_german">German</string>
+    <string name="lang_spanish">Spanish</string>
+    <string name="lang_french">French</string>
+    <string name="lang_italian">Italian</string>
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_russian">Russian</string>
+    <string name="lang_turkish">Turkish</string>
+    <string name="lang_vietnamese">Vietnamese</string>
+
+    <!-- Theme Options -->
+    <string name="system_default">Predefinito del sistema</string>
+    <string name="light">Leggero</string>
+    <string name="dark">Buio</string>
+
+    <!-- Additional UI -->
+    <string name="optional_uppercase">OPZIONALE</string>
+    <string name="granted">Concesso</string>
+
+    <!-- Presets -->
+    <string name="preset_default_title">Predefinito</string>
+    <string name="preset_default_subtitle">Maniglia standard</string>
+    <string name="preset_minimal_title">Minimo</string>
+    <string name="preset_minimal_subtitle">Sottile e; impercettibile</string>
+    <string name="preset_bold_title">Grassetto</string>
+    <string name="preset_bold_subtitle">Grandi e grandi visibile</string>
+    <string name="preset_night_title">Notte</string>
+    <string name="preset_night_subtitle">Tema oscuro</string>
+    <string name="preset_ghost_title">Fantasma</string>
+    <string name="preset_ghost_subtitle">Quasi invisibile</string>
+
+    <!-- Missing Strings -->
+    <string name="preview">Anteprima</string>
+    <string name="press_back_again_to_exit">Premi nuovamente indietro per uscire</string>
+    <string name="volume_gesture_handler">Gestore dei gesti del volume</string>
+    <string name="troubleshoot">Risoluzione dei problemi</string>
+    <string name="troubleshoot_desc">Mantieni l\'app attiva sul tuo dispositivo</string>
+    <string name="troubleshoot_info">L\'ottimizzazione aggressiva della batteria su alcuni dispositivi (come Xiaomi, Huawei, Oppo, Vivo) potrebbe interrompere i servizi in background. Seguire questi passaggi per garantire che Gesture Volume funzioni in modo affidabile:</string>
+    <string name="step_auto_start">1. Abilita l\'avvio automatico: vai su Impostazioni → App → Gestisci app → Gesto volume → Abilita l\'avvio automatico.</string>
+    <string name="step_battery">2. Ottimizzazione della batteria: imposta Risparmio batteria su \"Nessuna restrizione\".</string>
+    <string name="step_recents">3. Blocca in Recenti: apri la schermata \"App recenti\", premi a lungo la scheda dell\'app e fai clic sull\'icona Blocca 🔒.</string>
+    <string name="step_popup">4. Autorizzazioni: assicurati che \"Visualizza finestre popup durante l\'esecuzione in background\" sia abilitato.</string>
+    <string name="troubleshoot_footer">Per istruzioni specifiche per il dispositivo, visitare dontkillmyapp.com</string>
+    <string name="visit_website">Visita il sito web</string>
+</resources>

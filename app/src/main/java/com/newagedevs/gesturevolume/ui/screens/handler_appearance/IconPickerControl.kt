@@ -48,7 +48,7 @@ fun IconPickerControl(
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(12.dp),
             color = Color.Transparent,
-            border = BorderStroke(1.5.dp, borderColor.copy(alpha = 0.3f))
+            border = BorderStroke(0.5.dp, borderColor.copy(alpha = 0.1f))
         ) {
             Row(
                 modifier = Modifier

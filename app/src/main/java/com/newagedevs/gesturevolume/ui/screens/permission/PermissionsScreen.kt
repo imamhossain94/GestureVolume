@@ -64,6 +64,8 @@ import com.newagedevs.gesturevolume.utils.LockScreenUtil
 import com.newagedevs.gesturevolume.utils.NotificationUtil
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +77,13 @@ fun PermissionsScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val coroutineScope = rememberCoroutineScope()
+
+    DisposableEffect(Unit) {
+        viewModel.preference.setAppOpenAdPaused(true)
+        onDispose {
+            viewModel.preference.setAppOpenAdPaused(false)
+        }
+    }
 
     var overlayPermissionGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
     var notificationPermissionGranted by remember { mutableStateOf(
@@ -104,6 +113,8 @@ fun PermissionsScreen(
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
+        // Resume app open ads now that the user has returned from the overlay permission screen
+        viewModel.preference.setAppOpenAdPaused(false)
         overlayPermissionGranted = Settings.canDrawOverlays(context)
         viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
     }
@@ -118,10 +129,10 @@ fun PermissionsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Permissions") },
+                title = { Text(stringResource(R.string.permissions)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -143,8 +154,7 @@ fun PermissionsScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = Color.Transparent,
-                border = BorderStroke(1.5.dp, Color(0xFF3B82F6))
+                color = MaterialTheme.colorScheme.secondaryContainer
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -154,13 +164,13 @@ fun PermissionsScreen(
                         imageVector = Icons.Default.Info,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
-                        tint = Color(0xFF3B82F6)
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "The app requires certain permissions to function properly. Grant permissions below.",
+                        text = stringResource(R.string.permissions_header_info),
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                         lineHeight = 20.sp
                     )
                 }
@@ -170,7 +180,7 @@ fun PermissionsScreen(
 
             // Required Permissions Section
             Text(
-                text = "REQUIRED PERMISSIONS",
+                text = stringResource(R.string.required_permissions),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
@@ -180,8 +190,8 @@ fun PermissionsScreen(
 
             // Overlay Permission
             PermissionCard(
-                title = "Display over other apps",
-                description = "Required to show the volume handler overlay on your screen",
+                title = stringResource(R.string.overlay_permission),
+                description = stringResource(R.string.overlay_permission_desc),
                 icon = Icons.Default.Settings,
                 isGranted = overlayPermissionGranted,
                 borderColor = if (overlayPermissionGranted) {
@@ -194,6 +204,8 @@ fun PermissionsScreen(
                         Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         "package:${context.packageName}".toUri()
                     )
+                    // Pause ads while the user is in the overlay permission screen
+                    viewModel.preference.setAppOpenAdPaused(true)
                     overlayPermissionLauncher.launch(intent)
                 }
             )
@@ -203,8 +215,8 @@ fun PermissionsScreen(
             // Notification Permission (Android 13+)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 PermissionCard(
-                    title = "Post notifications",
-                    description = "Required to show the persistent notification when service is running",
+                    title = stringResource(R.string.notification_permission),
+                    description = stringResource(R.string.notification_permission_desc),
                     icon = Icons.Default.Notifications,
                     isGranted = notificationPermissionGranted,
                     borderColor = if (notificationPermissionGranted) {
@@ -224,7 +236,7 @@ fun PermissionsScreen(
 
             // Optional Permissions Section
             Text(
-                text = "OPTIONAL PERMISSIONS",
+                text = stringResource(R.string.optional_permissions),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
@@ -234,8 +246,8 @@ fun PermissionsScreen(
 
             // Device Admin Permission
             PermissionCard(
-                title = "Device administrator",
-                description = "Optional: Allows the handler to lock your device screen when configured",
+                title = stringResource(R.string.device_admin_permission),
+                description = stringResource(R.string.device_admin_permission_desc),
                 icon = Icons.Default.Lock,
                 isGranted = deviceAdminGranted,
                 isOptional = true,
@@ -270,8 +282,7 @@ fun PermissionsScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.Transparent,
-                    border = BorderStroke(1.5.dp, Color(0xFF10B981))
+                    color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp),
@@ -281,21 +292,21 @@ fun PermissionsScreen(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
-                            tint = Color(0xFF10B981)
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "All set!",
+                                text = stringResource(R.string.all_set),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "All required permissions are granted. You can now use the app.",
+                                text = stringResource(R.string.all_required_permissions_granted),
                                 fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                                 lineHeight = 18.sp
                             )
                         }
