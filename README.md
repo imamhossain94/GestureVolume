@@ -29,9 +29,20 @@ You can find it on the **main** branch.
 
 ## 📸 Screenshots
 
-| | | | | | | | |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| <img src="previews/g_dash.jpg" width="200" /> | <img src="previews/g_ui_setting.jpg" width="200" /> | <img src="previews/g_ui_setting_2.jpg" width="200" /> | <img src="previews/g_ui_setting_3.jpg" width="200" /> | <img src="previews/g_ui_setting_4.jpg" width="200" /> | <img src="previews/g_h_actions.jpg" width="200" /> | <img src="previews/g_permission.jpg" width="200" /> | <img src="previews/g_available_actions.jpg" width="200" /> |
+<div align="center">
+  <table>
+    <tr>
+      <td><img src="previews/g_dash.jpg" width="230" /></td>
+      <td><img src="previews/g_ui_setting.jpg" width="230" /></td>
+      <td><img src="previews/g_ui_setting_2.jpg" width="230" /></td>
+      <td><img src="previews/g_ui_setting_3.jpg" width="230" /></td>
+      <td><img src="previews/g_ui_setting_4.jpg" width="230" /></td>
+      <td><img src="previews/g_h_actions.jpg" width="230" /></td>
+      <td><img src="previews/g_permission.jpg" width="230" /></td>
+      <td><img src="previews/g_available_actions.jpg" width="230" /></td>
+    </tr>
+  </table>
+</div>
 
 ---
 
