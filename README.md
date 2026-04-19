@@ -13,7 +13,7 @@ Gesture Volume is a modern Android application built using <b>Jetpack Compose</b
 <br>
 
 <p align="center">
-<img src="/previews/preview.jpg" width="100%" title="Gesture Volume Preview">
+<img src="previews/preview.png" width="100%" title="Gesture Volume Preview">
 </p>
 
 ---
@@ -29,13 +29,20 @@ You can find it on the **main** branch.
 
 ## 📸 Screenshots
 
-|        Main Menu         |       Handler Appearance       |        Handler Actions        |
-|:------------------------:|:------------------------------:|:-----------------------------:|
-| ![](previews/g_dash.jpg) | ![](previews/g_ui_setting.jpg) | ![](previews/g_h_actions.jpg) |
-
-|       Permission Control       |           Available Actions           |
-|:------------------------------:|:-------------------------------------:|
-| ![](previews/g_permission.jpg) | ![](previews/g_available_actions.jpg) |
+<div align="center">
+  <table>
+    <tr>
+      <td><img src="previews/g_dash.jpg" width="230" /></td>
+      <td><img src="previews/g_ui_setting.jpg" width="230" /></td>
+      <td><img src="previews/g_ui_setting_2.jpg" width="230" /></td>
+      <td><img src="previews/g_ui_setting_3.jpg" width="230" /></td>
+      <td><img src="previews/g_ui_setting_4.jpg" width="230" /></td>
+      <td><img src="previews/g_h_actions.jpg" width="230" /></td>
+      <td><img src="previews/g_permission.jpg" width="230" /></td>
+      <td><img src="previews/g_available_actions.jpg" width="230" /></td>
+    </tr>
+  </table>
+</div>
 
 ---
 
