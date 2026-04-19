@@ -1,6 +1,5 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
-import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,10 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import com.newagedevs.gesturevolume.R
-import com.newagedevs.gesturevolume.helper.InHouseBannerAdsView
-import com.newagedevs.gesturevolume.utils.Constants
 import androidx.compose.ui.res.stringResource
 
 @Composable
@@ -186,30 +182,7 @@ fun NavigationDrawerContent(
                 )
             }
 
-            // Bottom Ads
-            if (!isProActivated) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 20.dp),
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
-                ) {
-                    InHouseBannerAdsView(
-                        bannerAds = Constants.inHouseAdList,
-                        onInstallClick = { appLink ->
-                            val intent = Intent(Intent.ACTION_VIEW, appLink.toUri())
-                            context.startActivity(intent)
-                        }
-                    )
-                }
-            } else {
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
