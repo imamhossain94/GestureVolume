@@ -174,16 +174,25 @@ class MainViewModel @Inject constructor(
 
         if (isRunning) {
             // Show interstitial ad with cooldown check
-            if (!_state.value.isProActivated) {
-                if (preference.shouldShowInterstitialAd()) {
-                    adsManager?.showInterstitialAd(
-                        loaded = { preference.saveInterstitialAdTime() }
-                    )
-                }
-            }
+            maybeShowInterstitialAd()
             startOverlayService(context)
         } else {
             stopOverlayService(context)
+        }
+    }
+
+    /**
+     * Show an interstitial at a natural transition (service start, opening Appearance/Actions),
+     * gated by SharedPref cooldowns + the per-session cap. Interstitial is by far the
+     * top-earning format ($3.10 eCPM) yet it fired only on service-toggle before, so it barely
+     * showed; adding a few genuine break points lifts revenue while the caps protect retention.
+     */
+    fun maybeShowInterstitialAd() {
+        if (_state.value.isProActivated) return
+        if (preference.shouldShowInterstitialAd()) {
+            adsManager?.showInterstitialAd(
+                loaded = { preference.saveInterstitialAdTime() }
+            )
         }
     }
 

@@ -4,6 +4,7 @@ package com.newagedevs.gesturevolume
 
 import android.app.Application
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
@@ -17,8 +18,11 @@ import com.applovin.mediation.MaxError
 import com.applovin.mediation.ads.MaxAppOpenAd
 import com.applovin.sdk.AppLovinMediationProvider
 import com.applovin.sdk.AppLovinSdk
+import com.applovin.sdk.AppLovinSdkConfiguration
 import com.applovin.sdk.AppLovinSdkInitializationConfiguration
 import com.newagedevs.gesturevolume.data.local.SharedPref
+import com.newagedevs.gesturevolume.helper.AdRevenueTracker
+import com.newagedevs.gesturevolume.utils.Constants
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -64,6 +68,21 @@ class GestureApplication : Application() {
     private fun initializeAppLovinSdk() {
         try {
             val appLovinSdk = AppLovinSdk.getInstance(this)
+
+            // Enable AppLovin's built-in Terms & Privacy Policy flow (Google UMP CMP).
+            // Without a consent string, premium demand (e.g. Meta) bids nearly blind — the
+            // primary cause of the very low banner eCPM and the exchange winning blind
+            // inventory at $0.03. Must be configured BEFORE initialize(). The matching CMP
+            // must also be enabled in the AppLovin MAX dashboard (Privacy → CMP → Google UMP).
+            appLovinSdk.settings.termsAndPrivacyPolicyFlowSettings.apply {
+                isEnabled = true
+                privacyPolicyUri = Uri.parse(Constants.PRIVACY_POLICY_URL)
+                termsOfServiceUri = Uri.parse(Constants.TERMS_OF_SERVICE_URL)
+                // Force the GDPR flow in debug so we can verify the prompt outside the EEA.
+                if (BuildConfig.DEBUG) {
+                    debugUserGeography = AppLovinSdkConfiguration.ConsentFlowUserGeography.GDPR
+                }
+            }
 
             val initConfig = AppLovinSdkInitializationConfiguration.builder(BuildConfig.APPLOVIN_SDK_KEY)
                 .setMediationProvider(AppLovinMediationProvider.MAX)
@@ -159,6 +178,7 @@ class GestureApplication : Application() {
             if (appOpenAd == null) {
                 appOpenAd = MaxAppOpenAd(adUnitId).apply {
                     setListener(this@AppOpenManager)
+                    setRevenueListener { ad -> AdRevenueTracker.logAdRevenue(context, ad) }
                 }
             }
 
