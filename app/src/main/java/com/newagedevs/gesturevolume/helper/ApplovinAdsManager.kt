@@ -34,6 +34,7 @@ import com.applovin.mediation.nativeAds.MaxNativeAdListener
 import com.applovin.mediation.nativeAds.MaxNativeAdLoader
 import com.applovin.mediation.nativeAds.MaxNativeAdView
 import com.applovin.mediation.nativeAds.MaxNativeAdViewBinder
+import com.applovin.sdk.AppLovinSdkUtils
 import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
 import kotlinx.coroutines.delay
@@ -74,9 +75,13 @@ class ApplovinAdsManager(
                         override fun onAdExpanded(maxAd: MaxAd) { }
                         override fun onAdCollapsed(maxAd: MaxAd) { }
                     })
+                    setRevenueListener { ad -> AdRevenueTracker.logAdRevenue(ctx, ad) }
+                    // Adaptive banners fill better and earn more than a fixed 320x50.
+                    setExtraParameter("adaptive_banner", "true")
+                    val heightDp = if (AppLovinSdkUtils.isTablet(ctx)) 90 else 50
                     layoutParams = FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
-                        ctx.resources.getDimensionPixelSize(R.dimen.banner_height)
+                        AppLovinSdkUtils.dpToPx(ctx, heightDp)
                     )
                     loadAd()
                 }
@@ -202,6 +207,7 @@ class ApplovinAdsManager(
                         }
                     }
                 })
+                setRevenueListener { ad -> AdRevenueTracker.logAdRevenue(context, ad) }
             }
 
             nativeAdLoader = loader
@@ -271,6 +277,7 @@ class ApplovinAdsManager(
 
         interstitialAd = MaxInterstitialAd(interstitialId).apply {
             setListener(InterstitialAdsListener())
+            setRevenueListener { ad -> AdRevenueTracker.logAdRevenue(context, ad) }
             loadAd()
         }
     }

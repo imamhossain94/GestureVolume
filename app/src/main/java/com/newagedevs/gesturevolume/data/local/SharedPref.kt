@@ -36,9 +36,16 @@ class SharedPref @Inject constructor(
         const val LAST_ANY_AD_TIME = "lastAnyAdTime"
 
         // Cooldown periods in milliseconds
-        const val APP_OPEN_AD_COOLDOWN = 60 * 60 * 1000L // 60 minutes
-        const val INTERSTITIAL_AD_COOLDOWN = 90 * 1000L // 90 seconds
+        // App-open dropped 60m → 25m: app-open earns ~$0.42 eCPM (≈40× banner), so more
+        // qualified resumes is real lift. Interstitial 90s → 3m to stay retention-safe now
+        // that interstitials also fire at screen transitions (it's the top earner, $3.10 eCPM).
+        const val APP_OPEN_AD_COOLDOWN = 25 * 60 * 1000L // 25 minutes
+        const val INTERSTITIAL_AD_COOLDOWN = 3 * 60 * 1000L // 3 minutes
         const val MIN_TIME_BETWEEN_ANY_ADS = 90 * 1000L // 90 seconds between any ad types
+
+        // Cap interstitials per app session (in-memory; resets on process restart) so the
+        // added screen-transition triggers can't stack up within one sitting.
+        const val MAX_INTERSTITIALS_PER_SESSION = 5
 
         // Appearance settings keys
         const val HANDLER_BACKGROUND_ALPHA = "handlerBackgroundAlpha"
@@ -190,6 +197,9 @@ class SharedPref @Inject constructor(
 
     // ========== AD MANAGEMENT WITH COOLDOWNS ==========
 
+    // Number of interstitials shown this app session (process lifetime). Not persisted.
+    private var sessionInterstitialCount = 0
+
     /**
      * Save the time when an app open ad was shown
      * This also updates the "any ad" time to prevent interstitial ads immediately after
@@ -208,6 +218,7 @@ class SharedPref @Inject constructor(
      */
     fun saveInterstitialAdTime() {
         val currentTime = System.currentTimeMillis()
+        sessionInterstitialCount++
         sharedPreferences.edit {
             putLong(LAST_INTERSTITIAL_AD_TIME, currentTime)
             putLong(LAST_ANY_AD_TIME, currentTime)
@@ -248,6 +259,11 @@ class SharedPref @Inject constructor(
      * 2. 90 seconds have passed since any ad (app open or interstitial)
      */
     fun shouldShowInterstitialAd(): Boolean {
+        // Respect the per-session cap before anything else.
+        if (sessionInterstitialCount >= MAX_INTERSTITIALS_PER_SESSION) {
+            return false
+        }
+
         val currentTime = System.currentTimeMillis()
         val lastInterstitialAdTime = sharedPreferences.getLong(LAST_INTERSTITIAL_AD_TIME, -1L)
         val lastAnyAdTime = sharedPreferences.getLong(LAST_ANY_AD_TIME, -1L)
