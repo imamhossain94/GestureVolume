@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.newagedevs.gesturevolume.GestureApplication
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.NotificationUtil
@@ -165,6 +166,8 @@ fun WalkthroughScreen(
                         }
                         else -> {
                             viewModel.preference.setFirstLaunchCompleted()
+                            // Onboarding done — now safe to init ads + consent flow off the walkthrough.
+                            (context.applicationContext as? GestureApplication)?.initializeAdsIfNeeded()
                             onComplete()
                         }
                     }

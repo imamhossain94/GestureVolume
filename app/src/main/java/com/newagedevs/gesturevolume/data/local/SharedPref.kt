@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.core.graphics.toColorInt
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,8 +13,9 @@ import javax.inject.Singleton
 class SharedPref @Inject constructor(
     context: Context
 ) {
+    private val appContext: Context = context.applicationContext
     val sharedPreferences: SharedPreferences =
-        context.applicationContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        appContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
 
     private companion object {
         const val PRO_FEATURE_ACTIVATION = "proFeatureActivation"
@@ -57,6 +59,7 @@ class SharedPref @Inject constructor(
         const val HANDLER_CORNER_RADIUS_BL = "handlerCornerRadiusBL"
         const val HANDLER_CORNER_RADIUS_BR = "handlerCornerRadiusBR"
         const val HANDLER_ICON_RES = "handlerIconRes"
+        const val HANDLER_ICON_NAME = "handlerIconName"
         const val HANDLER_ICON_SIZE = "handlerIconSize"
         const val HANDLER_ICON_COLOR = "handlerIconColor"
         const val HANDLER_SHOW_ICON = "handlerShowIcon"
@@ -394,11 +397,34 @@ class SharedPref @Inject constructor(
     }
 
     // Icon settings
-    fun getHandlerIconRes(): Int =
-        sharedPreferences.getInt(HANDLER_ICON_RES, R.drawable.ic_vol_increase)
+    //
+    // The handler icon is persisted by its stable resource ENTRY NAME (e.g. "ic_vol_increase")
+    // rather than the raw R.drawable Int. Resource IDs are not stable across app builds, so a
+    // previously stored Int can dangle after an update and crash painterResource()/getDrawable()
+    // with Resources$NotFoundException. Names always resolve to a valid id in the current build,
+    // or fall back to the default when the icon no longer exists.
+    fun getHandlerIconRes(): Int {
+        val name = sharedPreferences.getString(HANDLER_ICON_NAME, null)
+        if (name != null) {
+            val id = appContext.resources.getIdentifier(name, "drawable", appContext.packageName)
+            return if (id != 0) id else R.drawable.ic_vol_increase
+        }
+        // Migrate legacy Int-based storage to the name-based format (one-time, on first read).
+        val legacyId = appContext.safeDrawableIdOrDefault(
+            sharedPreferences.getInt(HANDLER_ICON_RES, R.drawable.ic_vol_increase)
+        )
+        setHandlerIconRes(legacyId)
+        return legacyId
+    }
 
     fun setHandlerIconRes(value: Int) {
-        sharedPreferences.edit { putInt(HANDLER_ICON_RES, value) }
+        val safeId = appContext.safeDrawableIdOrDefault(value)
+        val name = try {
+            appContext.resources.getResourceEntryName(safeId)
+        } catch (_: Exception) {
+            appContext.resources.getResourceEntryName(R.drawable.ic_vol_increase)
+        }
+        sharedPreferences.edit { putString(HANDLER_ICON_NAME, name) }
     }
 
     fun getHandlerIconSize(): Float =
