@@ -35,7 +35,7 @@ constraintlayout = "2.2.1"
 cardview = "1.0.0"
 
 # Ads
-applovinSdk = "13.6.2"
+applovinSdk = "13.6.3"
 playServicesBase = "18.10.0"
 inmobiAdapter = "11.3.0.0"
 mintegralAdapter = "17.1.61.0"
