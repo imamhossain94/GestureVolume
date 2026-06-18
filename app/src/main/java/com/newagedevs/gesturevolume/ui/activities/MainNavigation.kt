@@ -28,6 +28,7 @@ import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.newagedevs.gesturevolume.ui.screens.about.AboutScreen
 import com.newagedevs.gesturevolume.ui.screens.feedback.FeedbackScreen
@@ -48,6 +49,11 @@ fun MainNavigation(
     val context = LocalContext.current
     val navController = rememberNavController()
     val state by viewModel.state.collectAsState()
+
+    // Banner is kept only on the secondary info screens (removed from the home/control flow,
+    // where 91% of impressions came from at $0.01 eCPM).
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+    val bannerRoutes = setOf("about", "feedback", "troubleshoot")
 
     var showThemeDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
@@ -116,6 +122,8 @@ fun MainNavigation(
                     MainScreen(
                         viewModel = viewModel,
                         onNavigateToAppearance = { presetId ->
+                            // Interstitial at a genuine screen transition (capped + cooled down).
+                            viewModel.maybeShowInterstitialAd()
                             if (presetId != null) {
                                 navController.navigate("appearance?preset=$presetId")
                             } else {
@@ -123,6 +131,7 @@ fun MainNavigation(
                             }
                         },
                         onNavigateToActions = {
+                            viewModel.maybeShowInterstitialAd()
                             navController.navigate("actions")
                         },
                         onNavigateToPermissions = {
@@ -189,8 +198,8 @@ fun MainNavigation(
             }
         }
 
-        // Banner ad at the bottom (only for non-pro users)
-        if (!state.isProActivated) {
+        // Banner ad — non-pro users, secondary info screens only (About/Feedback/Troubleshoot)
+        if (!state.isProActivated && currentRoute in bannerRoutes) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surface,

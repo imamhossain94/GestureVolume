@@ -3,15 +3,15 @@ agp = "9.1.1"
 coilNetworkOkhttp = "3.4.0"
 coreSplashscreen = "1.2.0"
 appcompat = "1.7.1"
-billingKtx = "8.3.0"
-kotlin = "2.3.20"
+billingKtx = "9.0.0"
+kotlin = "2.3.21"
 coreKtx = "1.18.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.13.0"
-composeBom = "2026.03.01"
+composeBom = "2026.05.01"
 
 # Hilt
 hilt = "2.59.2"
@@ -37,12 +37,13 @@ cardview = "1.0.0"
 # Ads
 applovinSdk = "13.6.2"
 playServicesBase = "18.10.0"
-inmobiAdapter = "11.2.0.0"
+inmobiAdapter = "11.3.0.0"
+mintegralAdapter = "17.1.61.0"
 picasso = "2.71828"
 recyclerview = "1.4.0"
-vungleAdapter = "7.7.1.0"
+vungleAdapter = "7.7.4.0"
 facebookAdapter = "6.21.0.0"
-unityadsAdapter = "4.17.0.0"
+unityadsAdapter = "4.18.1.0"
 
 # Play Core
 playUpdate = "2.1.0"
@@ -93,6 +94,7 @@ androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version
 applovin-sdk = { module = "com.applovin:applovin-sdk", version.ref = "applovinSdk" }
 facebook-adapter = { module = "com.applovin.mediation:facebook-adapter", version.ref = "facebookAdapter" }
 inmobi-adapter = { module = "com.applovin.mediation:inmobi-adapter", version.ref = "inmobiAdapter" }
+mintegral-adapter = { module = "com.applovin.mediation:mintegral-adapter", version.ref = "mintegralAdapter" }
 picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
 unityads-adapter = { module = "com.applovin.mediation:unityads-adapter", version.ref = "unityadsAdapter" }
