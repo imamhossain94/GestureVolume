@@ -8,8 +8,6 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,12 +21,10 @@ import androidx.core.os.LocaleListCompat
 import com.newagedevs.gesturevolume.ui.screens.main.LanguageDialog
 import com.newagedevs.gesturevolume.ui.screens.main.ThemeDialog
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.newagedevs.gesturevolume.ui.screens.about.AboutScreen
 import com.newagedevs.gesturevolume.ui.screens.feedback.FeedbackScreen
@@ -38,6 +34,7 @@ import com.newagedevs.gesturevolume.ui.screens.main.MainScreen
 import com.newagedevs.gesturevolume.ui.screens.permission.PermissionsScreen
 import com.newagedevs.gesturevolume.ui.screens.troubleshoot.TroubleshootScreen
 import com.newagedevs.gesturevolume.ui.screens.walkthrough.WalkthroughScreen
+import com.newagedevs.gesturevolume.ui.util.navigateBackOnce
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEffect
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
@@ -50,10 +47,8 @@ fun MainNavigation(
     val navController = rememberNavController()
     val state by viewModel.state.collectAsState()
 
-    // Banner is kept only on the secondary info screens (removed from the home/control flow,
-    // where 91% of impressions came from at $0.01 eCPM).
-    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-    val bannerRoutes = setOf("about", "feedback", "troubleshoot")
+    // Banner ads were removed entirely: 1,600 impressions/week for ~$0.01 (a $0.00 eCPM) while
+    // being a top driver of "too many ads" complaints. Net-zero revenue loss, less clutter.
 
     var showThemeDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
@@ -149,7 +144,7 @@ fun MainNavigation(
                         viewModel = viewModel,
                         presetId = presetId,
                         onNavigateBack = {
-                            navController.popBackStack()
+                            navController.navigateBackOnce()
                         }
                     )
                 }
@@ -158,7 +153,7 @@ fun MainNavigation(
                     HandlerActionsScreen(
                         viewModel = viewModel,
                         onNavigateBack = {
-                            navController.popBackStack()
+                            navController.navigateBackOnce()
                         }
                     )
                 }
@@ -167,7 +162,7 @@ fun MainNavigation(
                     PermissionsScreen(
                         viewModel = viewModel,
                         onNavigateBack = {
-                            navController.popBackStack()
+                            navController.navigateBackOnce()
                         }
                     )
                 }
@@ -175,7 +170,7 @@ fun MainNavigation(
                 composable("about") {
                     AboutScreen(
                         onNavigateBack = {
-                            navController.popBackStack()
+                            navController.navigateBackOnce()
                         }
                     )
                 }
@@ -183,7 +178,7 @@ fun MainNavigation(
                 composable("feedback") {
                     FeedbackScreen(
                         onNavigateBack = {
-                            navController.popBackStack()
+                            navController.navigateBackOnce()
                         }
                     )
                 }
@@ -191,21 +186,10 @@ fun MainNavigation(
                 composable("troubleshoot") {
                     TroubleshootScreen(
                         onNavigateBack = {
-                            navController.popBackStack()
+                            navController.navigateBackOnce()
                         }
                     )
                 }
-            }
-        }
-
-        // Banner ad — non-pro users, secondary info screens only (About/Feedback/Troubleshoot)
-        if (!state.isProActivated && currentRoute in bannerRoutes) {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 2.dp
-            ) {
-                viewModel.adsManager?.BannerAdView()
             }
         }
 

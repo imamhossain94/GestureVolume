@@ -26,10 +26,17 @@ class ServiceRestartReceiver : BroadcastReceiver() {
                     this.action = "show"
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    context.startForegroundService(serviceIntent)
-                } else {
-                    context.startService(serviceIntent)
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        context.startForegroundService(serviceIntent)
+                    } else {
+                        context.startService(serviceIntent)
+                    }
+                } catch (e: Exception) {
+                    // Android 12+ can reject a background FGS start
+                    // (ForegroundServiceStartNotAllowedException). Don't crash the receiver;
+                    // the service will be restarted on the next app launch or boot.
+                    android.util.Log.e("ServiceRestartReceiver", "Failed to (re)start service", e)
                 }
             }
         }

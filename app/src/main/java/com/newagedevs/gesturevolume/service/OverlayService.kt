@@ -35,6 +35,7 @@ import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.data.model.UnlockCondition
 import com.newagedevs.gesturevolume.livedata.LiveDataManager
 import com.newagedevs.gesturevolume.utils.LockScreenUtil
+import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import com.newagedevs.gesturevolume.ui.view.HandlerView
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -82,7 +83,10 @@ class OverlayService : Service(), OverlayServiceInterface {
     private var minSwipeY: Float = 0f
 
     companion object {
-        private const val CHANNEL_ID = "Gesture Volume Channel ID"
+        // v2 channel: low importance (silent, no heads-up). Bumped from the old id so existing
+        // installs also move off the intrusive IMPORTANCE_HIGH channel.
+        private const val CHANNEL_ID = "gesture_volume_service_v2"
+        private const val LEGACY_CHANNEL_ID = "Gesture Volume Channel ID"
         private const val NOTIFICATION_ID = 1
         private const val LONG_PRESS_TIME_THRESHOLD: Long = 500
         private var volume: Int = 0
@@ -141,12 +145,25 @@ class OverlayService : Service(), OverlayServiceInterface {
     }
 
     private fun createNotificationChannel() {
+        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        // Silent, low-importance channel: the notification is required to keep the foreground
+        // service alive, but it should sit quietly in the bar without sound or heads-up.
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Overlay notification",
-            NotificationManager.IMPORTANCE_HIGH
-        )
-        (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
+            "Overlay service",
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            setShowBadge(false)
+            setSound(null, null)
+            enableVibration(false)
+        }
+        manager.createNotificationChannel(channel)
+        // Remove the old intrusive channel from app notification settings.
+        try {
+            manager.deleteNotificationChannel(LEGACY_CHANNEL_ID)
+        } catch (_: Exception) {
+            // Channel may not exist; ignore.
+        }
     }
 
     private fun startForegroundService() {
@@ -154,7 +171,7 @@ class OverlayService : Service(), OverlayServiceInterface {
             .setSmallIcon(R.drawable.ic_gesture)
             .setContentTitle("Gesture Volume")
             .setContentText("Tap to manage overlay")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .setAutoCancel(false)
             .setOngoing(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -163,14 +180,21 @@ class OverlayService : Service(), OverlayServiceInterface {
             .addAction(R.drawable.ic_power, "Stop", getPendingIntent("stop"))
             .build()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(
-                NOTIFICATION_ID,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+            }
+        } catch (e: Exception) {
+            // Starting the foreground service can be rejected by the OS when launched from the
+            // background on Android 12+ (ForegroundServiceStartNotAllowedException). Fail quietly
+            // instead of crashing — the service will be retried via START_STICKY / boot receiver.
+            android.util.Log.e("OverlayService", "startForeground failed", e)
         }
     }
 
@@ -314,14 +338,13 @@ class OverlayService : Service(), OverlayServiceInterface {
                 setStrokeProperties(strokeColor, strokeWidth, strokeAlpha)
                 setCornerRadiiDp(cornerRadiusTL, cornerRadiusTR, cornerRadiusBL, cornerRadiusBR)
 
-                // Icon with color support
-                val safeDrawable = try {
-                    if (resources.getResourceTypeName(iconRes) == "drawable") {
-                        ContextCompat.getDrawable(this@OverlayService, iconRes)
-                    } else null
-                } catch (_: Exception) {
-                    null
-                } ?: ContextCompat.getDrawable(this@OverlayService, R.drawable.ic_vol_increase)
+                // Icon with color support. Resolve through the shared safe-resolver so a stale
+                // stored icon id (R.drawable values shift across app updates) falls back to the
+                // default instead of throwing Resources$NotFoundException.
+                val safeDrawable = ContextCompat.getDrawable(
+                    this@OverlayService,
+                    this@OverlayService.safeDrawableIdOrDefault(iconRes)
+                )
 
                 // Use overload that accepts Drawable
                 setCenterIcon(safeDrawable, iconSize, iconColor)

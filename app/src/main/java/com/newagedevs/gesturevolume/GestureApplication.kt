@@ -39,6 +39,9 @@ class GestureApplication : Application() {
 
     private lateinit var appOpenManager: AppOpenManager
 
+    @Volatile
+    private var hasInitializedAds = false
+
     // Use application scope for background tasks
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -48,10 +51,25 @@ class GestureApplication : Application() {
         // Configure WebView early
         configureWebView()
 
-        // Only initialize ads if not pro user
-        if (!preferences.isProFeatureActivated()) {
-            initializeAppLovinSdk()
+        // Defer the ad SDK init — and therefore its consent/CMP prompt — until onboarding is
+        // complete, so the consent sheet never covers the first-launch walkthrough. New users
+        // trigger init from WalkthroughScreen.onComplete via initializeAdsIfNeeded(); returning
+        // users initialize here.
+        if (!preferences.isFirstLaunch()) {
+            initializeAdsIfNeeded()
         }
+    }
+
+    /**
+     * Initializes the AppLovin SDK once, if the user isn't Pro. Idempotent and safe to call
+     * from multiple entry points (app start for returning users, walkthrough completion for
+     * new users).
+     */
+    fun initializeAdsIfNeeded() {
+        if (hasInitializedAds) return
+        if (preferences.isProFeatureActivated()) return
+        hasInitializedAds = true
+        initializeAppLovinSdk()
     }
 
     private fun configureWebView() {
