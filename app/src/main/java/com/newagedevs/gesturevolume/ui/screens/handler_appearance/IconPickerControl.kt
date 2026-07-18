@@ -21,10 +21,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 
 @Composable
 fun IconPickerControl(
@@ -33,6 +35,10 @@ fun IconPickerControl(
     borderColor: Color,
     onClick: () -> Unit
 ) {
+    // Guard against dangling stored icon ids (stale across app updates) so a missing
+    // resource renders the default instead of crashing the whole screen.
+    val context = LocalContext.current
+    val safeIconRes = context.safeDrawableIdOrDefault(selectedIconRes)
     Column {
         Text(
             text = label,
@@ -59,7 +65,7 @@ fun IconPickerControl(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        painter = painterResource(selectedIconRes),
+                        painter = painterResource(safeIconRes),
                         contentDescription = "Selected Icon",
                         modifier = Modifier.size(24.dp),
                         tint = borderColor
