@@ -206,7 +206,7 @@ fun MainScreen(
                             .fillMaxWidth()
                             .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
                             .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f))
                     ) {
                         viewModel.adsManager?.NativeAdWidget(
                             modifier = Modifier.wrapContentHeight()
