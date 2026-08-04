@@ -57,7 +57,6 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     private val centerIconView: ImageView
 
     // Behavior properties
-    private var positionLocked: Boolean = false
     private var vibrateOnClick: Boolean = false
 
     /**
@@ -286,12 +285,6 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
 
     // ========== Behavior Setters ==========
 
-    fun setHandlerPositionLocked(locked: Boolean) {
-        positionLocked = locked
-    }
-
-    fun getHandlerPositionLocked(): Boolean = positionLocked
-
     fun setVibrateOnClick(vibrate: Boolean) {
         vibrateOnClick = vibrate
     }
@@ -374,15 +367,6 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     override fun performClick(): Boolean {
         super.performClick()
         return true
-    }
-
-    fun triggerHapticFeedback() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
-        } else {
-            @Suppress("DEPRECATION")
-            performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-        }
     }
 
     /**

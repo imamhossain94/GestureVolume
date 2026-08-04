@@ -92,7 +92,7 @@
     <string name="top_left">أعلى اليسار</string>
     <string name="top_right">أعلى اليمين</string>
     <string name="upgrade">ترقية</string>
-    <string name="unlock_all_features">افتح كل الميزات</string>
+    <string name="unlock_all_features">إزالة جميع الإعلانات</string>
     <string name="unsaved_changes">تغييرات غير محفوظة</string>
     <string name="upgrade_to_pro">الترقية إلى برو</string>
     <string name="vibrate_on_click">اهتزاز عند النقر</string>

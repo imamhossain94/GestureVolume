@@ -92,7 +92,7 @@
     <string name="top_left">Top Left</string>
     <string name="top_right">Top Right</string>
     <string name="upgrade">UPGRADE</string>
-    <string name="unlock_all_features">Unlock all features</string>
+    <string name="unlock_all_features">Remove all ads</string>
     <string name="unsaved_changes">Unsaved Changes</string>
     <string name="upgrade_to_pro">Upgrade to Pro</string>
     <string name="vibrate_on_click">Vibrate on click</string>
@@ -123,7 +123,7 @@
     <string name="gesture_actions">GESTURE ACTIONS</string>
     <string name="single_tap_desc">What happens on single tap</string>
     <string name="double_tap_desc">What happens on double tap</string>
-    <string name="long_press_desc">What happens on long press</string>
+    <string name="long_press_desc">Moves the handler by default</string>
     <string name="swipe_up_desc">What happens on swipe up</string>
     <string name="swipe_down_desc">What happens on swipe down</string>
     <string name="tap_gesture_settings">Tap &amp; gesture settings</string>
@@ -163,11 +163,12 @@
 
     <!-- Expanded Preview -->
     <string name="position_locked">POSITION LOCKED</string>
+    <string name="long_press_to_reposition">LONG PRESS TO MOVE</string>
     <string name="unlock_to_reposition">UNLOCK TO REPOSITION</string>
     <string name="test_mode">Test Mode</string>
     <string name="reposition_mode">Reposition Mode</string>
     <string name="test_mode_desc">Try swipes and taps</string>
-    <string name="reposition_mode_desc">Drag handler to new position</string>
+    <string name="reposition_mode_desc">Long press, then drag to move it</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">POSITION</string>
@@ -189,6 +190,7 @@
     <string name="action_lock">Lock</string>
     <string name="action_hide_handler">Hide Handler</string>
     <string name="action_open_app">Open App</string>
+    <string name="action_reposition">Move handler</string>
     <string name="action_increase_vol_ui">Increase volume and show UI</string>
     <string name="action_increase_vol">Increase volume</string>
     <string name="action_decrease_vol_ui">Decrease volume and show UI</string>
@@ -294,7 +296,7 @@
     <string name="edge_offset">Edge offset</string>
     <string name="edge_offset_desc">Move the bar inward from the screen edge. Helps on curved screens and when gesture navigation is on.</string>
     <string name="reset_position">Reset position</string>
-    <string name="drag_to_move_hint">Turn off Lock position, then drag the bar up or down to move it.</string>
+    <string name="drag_to_move_hint">To move the bar: long press it, wait for the vibration, then drag up or down. Set the long press action to “Move handler” to enable this.</string>
     <string name="fix_battery_title">Battery optimization</string>
     <string name="fix_battery_desc">Allow unrestricted battery use so Android does not stop the service.</string>
     <string name="fix_battery_allowed">Unrestricted</string>

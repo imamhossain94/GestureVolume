@@ -40,6 +40,16 @@ object HandlerActions {
     /** NEW in 1.2.9. Assignable to single/double/long tap. Requires WRITE_SETTINGS. */
     const val TOGGLE_AUTO_BRIGHTNESS = "Toggle auto brightness"
 
+    /**
+     * NEW in 1.2.9. Long press only, and the default there.
+     *
+     * Unlike every other identifier this one is not "run something on release" — it arms
+     * drag-to-reposition for the rest of the gesture. Binding it to the long press is what lets a
+     * plain vertical swipe stay dedicated to volume/brightness: the two no longer share the same
+     * gesture, so neither can steal the other.
+     */
+    const val REPOSITION = "Reposition handler"
+
     /** True when this swipe identifier drives screen brightness rather than media volume. */
     fun isBrightnessSwipe(action: String): Boolean =
         action == INCREASE_BRIGHTNESS || action == DECREASE_BRIGHTNESS

@@ -1,6 +1,5 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
-import android.app.Activity
 import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -173,14 +172,8 @@ fun HandlerActionsScreen(
                         value = state.longClickAction,
                         icon = state.longClickActionIcon,
                         borderColor = MaterialTheme.colorScheme.primary,
-                        showProBadge = !state.isProActivated,
-                        onClick = {
-                            if (state.isProActivated) {
-                                showLongClickActionDialog = true
-                            } else {
-                                viewModel.purchasePro(context as Activity)
-                            }
-                        }
+                        showProBadge = false,
+                        onClick = { showLongClickActionDialog = true }
                     )
                 }
             }
@@ -283,6 +276,7 @@ fun HandlerActionsScreen(
         TapActionDialog(
             title = stringResource(R.string.long_press_action),
             currentAction = state.longClickAction,
+            allowReposition = true,
             onDismiss = { showLongClickActionDialog = false },
             onSelect = { action ->
                 viewModel.onEvent(MainEvent.SetLongClickAction(action, context))

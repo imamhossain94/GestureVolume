@@ -162,8 +162,6 @@ class MainViewModel @Inject constructor(
         when (slot) {
             ActionSlot.SINGLE_TAP -> setClickAction(action, context)
             ActionSlot.DOUBLE_TAP -> setDoubleClickAction(action, context)
-            // Long press is Pro-gated, so it has to go back through the same check rather than
-            // writing the preference directly.
             ActionSlot.LONG_TAP -> setLongClickAction(action, context)
             ActionSlot.SWIPE_UP -> setSwipeUpAction(action, context)
             ActionSlot.SWIPE_DOWN -> setSwipeDownAction(action, context)
@@ -402,10 +400,6 @@ class MainViewModel @Inject constructor(
     }
 
     private fun setLongClickAction(action: String, context: Context) {
-        if (!_state.value.isProActivated) {
-            purchasePro(context as Activity)
-            return
-        }
         val lockScreenUtil = LockScreenUtil(context)
         if (action == "Lock" && !lockScreenUtil.active()) {
             lockScreenUtil.enableAdmin()
@@ -453,6 +447,7 @@ class MainViewModel @Inject constructor(
             HandlerActions.HIDE_HANDLER -> R.drawable.ic_visibility_hide
             HandlerActions.OPEN_APP -> R.drawable.ic_app_open
             HandlerActions.TOGGLE_AUTO_BRIGHTNESS -> R.drawable.ic_brightness_auto
+            HandlerActions.REPOSITION -> R.drawable.ic_move
             else -> R.drawable.ic_nothing
         }
     }

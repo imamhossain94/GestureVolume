@@ -106,6 +106,9 @@ class OverlayService : Service(), OverlayServiceInterface {
     private var adjustShowsUi = false
     private var adjustEnabled = false
 
+    /** Direction the latched swipe settings belong to: `+1` up, `-1` down, `0` nothing resolved. */
+    private var adjustDirection = 0
+
     // ---- drag-to-reposition state ----------------------------------------------------------
 
     private var dragStartY = 0
@@ -381,7 +384,6 @@ class OverlayService : Service(), OverlayServiceInterface {
                 setCenterIconVisible(showIcon)
 
                 setVibrateOnClick(vibrateOnClick)
-                setHandlerPositionLocked(preference.getHandlerLockPosition())
             }
 
             val detector = HandlerGestureDetector(this, gestureHost)
@@ -507,7 +509,8 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     private val gestureHost = object : HandlerGestureDetector.Host {
 
-        override fun isDragEnabled(): Boolean = !preference.getHandlerLockPosition()
+        override fun isLongPressReposition(): Boolean =
+            preference.getHandlerLongTapAction() == HandlerActions.REPOSITION
 
         override fun isDoubleTapArmed(): Boolean =
             preference.getHandlerDoubleTapAction() != HandlerActions.NONE
@@ -528,47 +531,34 @@ class OverlayService : Service(), OverlayServiceInterface {
         }
 
         override fun onAdjustBegin(initialDirection: Int) {
-            val action = if (initialDirection > 0) {
-                preference.getHandlerSwipeUpAction()
-            } else {
-                preference.getHandlerSwipeDownAction()
-            }
-
-            adjustIsBrightness = HandlerActions.isBrightnessSwipe(action)
-            adjustShowsUi = HandlerActions.showsVolumeUi(action)
-            adjustEnabled = !HandlerActions.isDisabled(action)
-
-            if (adjustIsBrightness) {
-                val controller = brightness
-                if (controller == null || !controller.canWrite()) {
-                    adjustEnabled = false
-                    mainHandler.post { showIndicatorMessage(getString(R.string.brightness_needs_permission_short)) }
-                    return
-                }
-                if (controller.disableAutoBrightnessIfNeeded()) {
-                    preference.setBrightnessAutoWasOn(true)
-                }
-                gestureDetector?.setStepCount(controller.stepCount)
-            } else {
-                val steps = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
-                gestureDetector?.setStepCount(steps)
-            }
+            adjustDirection = 0
+            resolveAdjustAction(initialDirection)
         }
 
         override fun onAdjustStep(direction: Int): Boolean {
+            // Re-resolved per step, not latched at gesture start: swipe up and swipe down are two
+            // independent settings, so reversing mid-gesture has to switch to the other one. Latching
+            // meant a swipe that started upward kept driving the swipe-UP action on the way back
+            // down — a "Decrease brightness" swipe-down would silently move the volume instead.
+            resolveAdjustAction(direction)
             if (!adjustEnabled) return false
             return if (adjustIsBrightness) stepBrightness(direction) else stepVolume(direction)
         }
 
         override fun onAdjustEnd() {
             adjustEnabled = false
+            adjustDirection = 0
         }
 
         override fun onDragCue(active: Boolean) {
             handlerView?.setDragCue(active)
-            if (active && preference.getHandlerVibrateOnClick()) {
-                handlerView?.triggerHapticFeedback()
-            }
+            if (!active || !preference.getHandlerVibrateOnClick()) return
+            // The vibrator rather than View.performHapticFeedback: this view lives in an overlay
+            // window, where OEM builds routinely drop view haptics, and this buzz is the only signal
+            // that the long press took and the bar is now following the finger.
+            vibratorService?.vibrate(
+                VibrationEffect.createOneShot(40, VibrationEffect.DEFAULT_AMPLITUDE)
+            )
         }
 
         override fun onDragBegin() {
@@ -600,6 +590,47 @@ class OverlayService : Service(), OverlayServiceInterface {
             preference.setHandlerPositionFraction(
                 HandlerGeometry.yToFraction(params.y, currentFrame.usableHeight, params.height)
             )
+        }
+    }
+
+    /**
+     * Loads the swipe settings for [direction] — which domain it drives, whether it shows the system
+     * volume panel, whether it is switched off at all — and sizes one step accordingly.
+     *
+     * Cheap and idempotent: it returns immediately while the direction is unchanged, so calling it
+     * on every emitted step costs one comparison for all but the reversals.
+     */
+    private fun resolveAdjustAction(direction: Int) {
+        if (direction == adjustDirection || direction == 0) return
+        adjustDirection = direction
+
+        val action = if (direction > 0) {
+            preference.getHandlerSwipeUpAction()
+        } else {
+            preference.getHandlerSwipeDownAction()
+        }
+
+        adjustIsBrightness = HandlerActions.isBrightnessSwipe(action)
+        adjustShowsUi = HandlerActions.showsVolumeUi(action)
+        adjustEnabled = !HandlerActions.isDisabled(action)
+        if (!adjustEnabled) return
+
+        if (adjustIsBrightness) {
+            val controller = brightness
+            if (controller == null || !controller.canWrite()) {
+                adjustEnabled = false
+                mainHandler.post {
+                    showIndicatorMessage(getString(R.string.brightness_needs_permission_short))
+                }
+                return
+            }
+            if (controller.disableAutoBrightnessIfNeeded()) {
+                preference.setBrightnessAutoWasOn(true)
+            }
+            gestureDetector?.setStepCount(controller.stepCount)
+        } else {
+            val steps = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
+            gestureDetector?.setStepCount(steps)
         }
     }
 
@@ -708,6 +739,9 @@ class OverlayService : Service(), OverlayServiceInterface {
     // =============================================================================================
 
     private fun handlerTapActions(action: String) {
+        // Reposition is armed by the gesture engine itself and never runs as an action; reaching
+        // here with it would only buzz the phone for nothing.
+        if (action == HandlerActions.REPOSITION) return
         if (preference.getHandlerVibrateOnClick()) {
             vibratorService?.vibrate(
                 VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE)

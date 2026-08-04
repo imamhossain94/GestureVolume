@@ -26,8 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -129,10 +128,12 @@ fun ExpandedPreviewDialog(
     val gestureDetectorRef = remember { mutableStateOf<HandlerGestureDetector?>(null) }
     val adjustIsBrightness = remember { mutableStateOf(false) }
     val adjustEnabled = remember { mutableStateOf(false) }
+    val adjustDirection = remember { mutableIntStateOf(0) }
 
-    // Update handler when lock position changes
-    LaunchedEffect(state.lockPosition) {
-        handlerViewRef?.setHandlerPositionLocked(state.lockPosition)
+    // Whether a long press moves the bar, for the on-screen hints. Read once per composition —
+    // the gesture host reads it live, so a change made while this dialog is open still takes effect.
+    val repositionOnLongPress = remember {
+        preference.getHandlerLongTapAction() == HandlerActions.REPOSITION
     }
 
     // Keep the preview in step with a position changed from elsewhere — Reset position, or a preset.
@@ -182,7 +183,8 @@ fun ExpandedPreviewDialog(
             vibratorService?.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
         }
         when (action) {
-            HandlerActions.NONE -> {}
+            // Reposition is armed by the gesture engine, never run as an action.
+            HandlerActions.NONE, HandlerActions.REPOSITION -> {}
             HandlerActions.OPEN_VOLUME_UI -> {
                 audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
             }
@@ -291,7 +293,6 @@ fun ExpandedPreviewDialog(
                             setCenterIcon(state.iconRes, state.iconSize, state.iconColor.toArgb())
                             setCenterIconColor(state.iconColor.toArgb())
                             setCenterIconVisible(state.showIcon)
-                            setHandlerPositionLocked(state.lockPosition)
                             setVibrateOnClick(state.vibrate)
                             setEdgeMarginDp(state.edgeMargin)
                         }
@@ -299,7 +300,8 @@ fun ExpandedPreviewDialog(
                         val host = object : HandlerGestureDetector.Host {
                             private var dragStartY = 0f
 
-                            override fun isDragEnabled(): Boolean = !state.lockPosition
+                            override fun isLongPressReposition(): Boolean =
+                                preference.getHandlerLongTapAction() == HandlerActions.REPOSITION
 
                             override fun isDoubleTapArmed(): Boolean =
                                 preference.getHandlerDoubleTapAction() != HandlerActions.NONE
@@ -313,8 +315,12 @@ fun ExpandedPreviewDialog(
                             override fun onLongPress() =
                                 handlerTapActions(preference.getHandlerLongTapAction())
 
-                            override fun onAdjustBegin(initialDirection: Int) {
-                                val action = if (initialDirection > 0) {
+                            /** Mirrors `OverlayService.resolveAdjustAction` — see the note there. */
+                            private fun resolveAdjustAction(direction: Int) {
+                                if (direction == adjustDirection.intValue || direction == 0) return
+                                adjustDirection.intValue = direction
+
+                                val action = if (direction > 0) {
                                     preference.getHandlerSwipeUpAction()
                                 } else {
                                     preference.getHandlerSwipeDownAction()
@@ -326,7 +332,13 @@ fun ExpandedPreviewDialog(
                                 )
                             }
 
+                            override fun onAdjustBegin(initialDirection: Int) {
+                                adjustDirection.intValue = 0
+                                resolveAdjustAction(initialDirection)
+                            }
+
                             override fun onAdjustStep(direction: Int): Boolean {
+                                resolveAdjustAction(direction)
                                 if (!adjustEnabled.value) return false
                                 if (adjustIsBrightness.value) {
                                     if (!brightness.canWrite()) return false
@@ -340,11 +352,19 @@ fun ExpandedPreviewDialog(
 
                             override fun onAdjustEnd() {
                                 adjustEnabled.value = false
+                                adjustDirection.intValue = 0
                             }
 
                             override fun onDragCue(active: Boolean) {
                                 handler.setDragCue(active)
-                                if (active && state.vibrate) handler.triggerHapticFeedback()
+                                if (active && state.vibrate) {
+                                    vibratorService?.vibrate(
+                                        VibrationEffect.createOneShot(
+                                            40,
+                                            VibrationEffect.DEFAULT_AMPLITUDE
+                                        )
+                                    )
+                                }
                             }
 
                             override fun onDragBegin() {
@@ -388,12 +408,7 @@ fun ExpandedPreviewDialog(
                         addView(handler)
                     }
                 },
-                modifier = Modifier.fillMaxSize(),
-                update = { frameLayout ->
-                    (frameLayout.getChildAt(0) as? HandlerView)?.apply {
-                        setHandlerPositionLocked(state.lockPosition)
-                    }
-                }
+                modifier = Modifier.fillMaxSize()
             )
 
             // Top Control Panel
@@ -470,40 +485,35 @@ fun ExpandedPreviewDialog(
                     }
                 }
 
-                // Lock Position Toggle
-                Card(
-                    modifier = Modifier.clickable {
-                        state.lockPosition = !state.lockPosition
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (state.lockPosition) Color(0xFF10B981) else Color.White
-                    ),
-                    border = BorderStroke(
-                        2.dp,
-                        if (state.lockPosition) Color(0xFF10B981) else Color.Black.copy(alpha = 0.1f)
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                // Reposition hint. There is no lock toggle any more: whether the bar can be moved
+                // is decided by the long-press action alone, over on the Handler actions screen.
+                if (repositionOnLongPress) {
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        border = BorderStroke(2.dp, Color.Black.copy(alpha = 0.1f)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                     ) {
-                        Icon(
-                            imageVector = if (state.lockPosition) Icons.Default.Lock else Icons.Default.LockOpen,
-                            contentDescription = if (state.lockPosition) stringResource(R.string.locked) else stringResource(R.string.unlocked),
-                            tint = if (state.lockPosition) Color.White else Color(0xFF1F2937),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = if (state.lockPosition) stringResource(R.string.position_locked) else stringResource(R.string.unlock_to_reposition),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            color = if (state.lockPosition) Color.White else Color(0xFF1F2937),
-                            letterSpacing = 0.8.sp
-                        )
+                        Row(
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.OpenWith,
+                                contentDescription = null,
+                                tint = Color(0xFF1F2937),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.long_press_to_reposition),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp,
+                                color = Color(0xFF1F2937),
+                                letterSpacing = 0.8.sp
+                            )
+                        }
                     }
                 }
             }
@@ -543,17 +553,18 @@ fun ExpandedPreviewDialog(
 
                     Column {
                         Text(
-                            text = if (state.lockPosition) stringResource(R.string.test_mode) else stringResource(R.string.reposition_mode),
+                            text = stringResource(R.string.test_mode),
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
                             color = Color(0xFF1F2937)
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = if (state.lockPosition)
+                            text = if (repositionOnLongPress) {
+                                stringResource(R.string.reposition_mode_desc)
+                            } else {
                                 stringResource(R.string.test_mode_desc)
-                            else
-                                stringResource(R.string.reposition_mode_desc),
+                            },
                             fontSize = 12.sp,
                             color = Color(0xFF6B7280),
                             lineHeight = 16.sp

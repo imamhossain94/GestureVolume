@@ -92,7 +92,7 @@
     <string name="top_left">左上角</string>
     <string name="top_right">右上角</string>
     <string name="upgrade">升级</string>
-    <string name="unlock_all_features">解锁所有功能</string>
+    <string name="unlock_all_features">移除所有广告</string>
     <string name="unsaved_changes">未保存的更改</string>
     <string name="upgrade_to_pro">升级至 PRO 进阶版</string>
     <string name="vibrate_on_click">点击时震动</string>
