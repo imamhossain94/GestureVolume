@@ -94,6 +94,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        // Restart the service if the system killed it while the user still wants it running.
+        // Doing this from the foreground sidesteps the Android 12+ background-start restrictions.
+        viewModel.repairServiceIfNeeded(this)
         // Re-bind to running service if it exists (handles recents-clear scenario)
         viewModel.rebindToServiceIfRunning(this)
     }

@@ -274,4 +274,32 @@
     <string name="step_popup">4. Permissions: Ensure \"Display pop-up windows while running in the background\" is enabled.</string>
     <string name="troubleshoot_footer">For device-specific instructions, please visit dontkillmyapp.com</string>
     <string name="visit_website">Visit Website</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">Tap to manage overlay</string>
+    <string name="show">Show</string>
+    <string name="hide">Hide</string>
+    <string name="stop">Stop</string>
+    <string name="brightness_percent">Brightness %1$d%%</string>
+    <string name="brightness_needs_permission_short">Allow Modify system settings to control brightness</string>
+    <string name="auto_brightness_on">Adaptive brightness on</string>
+    <string name="auto_brightness_off">Adaptive brightness off</string>
+    <string name="action_increase_brightness">Increase brightness</string>
+    <string name="action_decrease_brightness">Decrease brightness</string>
+    <string name="action_toggle_auto_brightness">Auto brightness on/off</string>
+    <string name="write_settings_permission">Modify system settings</string>
+    <string name="write_settings_permission_desc">Lets the bar control screen brightness. Only needed for brightness actions.</string>
+    <string name="brightness_permission_title">Allow brightness control?</string>
+    <string name="brightness_permission_message">To change screen brightness, GestureVolume needs the Modify system settings permission. Adaptive brightness is turned off while you use it, and restored when you stop the service.</string>
+    <string name="edge_offset">Edge offset</string>
+    <string name="edge_offset_desc">Move the bar inward from the screen edge. Helps on curved screens and when gesture navigation is on.</string>
+    <string name="reset_position">Reset position</string>
+    <string name="drag_to_move_hint">Turn off Lock position, then press and hold the bar to drag it up or down.</string>
+    <string name="fix_battery_title">Battery optimization</string>
+    <string name="fix_battery_desc">Allow unrestricted battery use so Android does not stop the service.</string>
+    <string name="fix_battery_allowed">Unrestricted</string>
+    <string name="fix_autostart_title">Auto-start</string>
+    <string name="fix_autostart_desc">Open your device auto-start settings and allow GestureVolume.</string>
+    <string name="autostart_unavailable">Not available on this device</string>
+    <string name="open_settings">Open settings</string>
 </resources>

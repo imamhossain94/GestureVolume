@@ -274,4 +274,32 @@
     <string name="step_popup">4. الأذونات: تأكد من تمكين \"عرض النوافذ المنبثقة أثناء التشغيل في الخلفية\".</string>
     <string name="troubleshoot_footer">للحصول على تعليمات خاصة بالجهاز، يرجى زيارة الموقع dontkillmyapp.com</string>
     <string name="visit_website">زيارة الموقع</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">انقر لإدارة التراكب</string>
+    <string name="show">إظهار</string>
+    <string name="hide">إخفاء</string>
+    <string name="stop">إيقاف</string>
+    <string name="brightness_percent">السطوع %1$d%%</string>
+    <string name="brightness_needs_permission_short">اسمح بتعديل إعدادات النظام للتحكم في السطوع</string>
+    <string name="auto_brightness_on">السطوع التلقائي مفعّل</string>
+    <string name="auto_brightness_off">السطوع التلقائي معطّل</string>
+    <string name="action_increase_brightness">زيادة السطوع</string>
+    <string name="action_decrease_brightness">خفض السطوع</string>
+    <string name="action_toggle_auto_brightness">تشغيل/إيقاف السطوع التلقائي</string>
+    <string name="write_settings_permission">تعديل إعدادات النظام</string>
+    <string name="write_settings_permission_desc">يتيح للشريط التحكم في سطوع الشاشة. مطلوب فقط لإجراءات السطوع.</string>
+    <string name="brightness_permission_title">السماح بالتحكم في السطوع؟</string>
+    <string name="brightness_permission_message">لتغيير سطوع الشاشة، يحتاج التطبيق إلى إذن تعديل إعدادات النظام. سيتم إيقاف السطوع التلقائي أثناء الاستخدام، واستعادته عند إيقاف الخدمة.</string>
+    <string name="edge_offset">إزاحة الحافة</string>
+    <string name="edge_offset_desc">حرّك الشريط بعيدًا عن حافة الشاشة. مفيد على الشاشات المنحنية وعند تفعيل التنقل بالإيماءات.</string>
+    <string name="reset_position">إعادة تعيين الموضع</string>
+    <string name="drag_to_move_hint">أوقف قفل الموضع، ثم اضغط مطولًا على الشريط لسحبه لأعلى أو لأسفل.</string>
+    <string name="fix_battery_title">تحسين البطارية</string>
+    <string name="fix_battery_desc">اسمح باستخدام البطارية دون قيود حتى لا يوقف أندرويد الخدمة.</string>
+    <string name="fix_battery_allowed">بدون قيود</string>
+    <string name="fix_autostart_title">التشغيل التلقائي</string>
+    <string name="fix_autostart_desc">افتح إعدادات التشغيل التلقائي في جهازك واسمح للتطبيق.</string>
+    <string name="autostart_unavailable">غير متوفر على هذا الجهاز</string>
+    <string name="open_settings">فتح الإعدادات</string>
 </resources>

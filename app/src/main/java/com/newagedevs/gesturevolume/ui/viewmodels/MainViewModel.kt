@@ -22,6 +22,7 @@ import com.newagedevs.gesturevolume.helper.ApplovinAdsManager
 import com.newagedevs.gesturevolume.service.OverlayService
 import com.newagedevs.gesturevolume.service.OverlayServiceInterface
 import com.newagedevs.gesturevolume.utils.Constants
+import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.LockScreenUtil
 import com.newagedevs.gesturevolume.utils.NotificationUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -87,6 +88,17 @@ class MainViewModel @Inject constructor(
         )
     }
 
+    /**
+     * Which setting a pending brightness action belongs to.
+     *
+     * Typed rather than a boolean: the same brightness-permission gate is reachable from all five
+     * action slots, and a boolean "was it swipe up?" would silently write a tap action into a swipe
+     * preference — destroying a setting the user had already configured.
+     */
+    private enum class ActionSlot { SINGLE_TAP, DOUBLE_TAP, LONG_TAP, SWIPE_UP, SWIPE_DOWN }
+
+    private var pendingBrightnessAction: Pair<String, ActionSlot>? = null
+
     fun onEvent(event: MainEvent) {
         when (event) {
             is MainEvent.ToggleService -> toggleService(event.isRunning, event.context)
@@ -96,10 +108,15 @@ class MainViewModel @Inject constructor(
             is MainEvent.SetClickAction -> setClickAction(event.action, event.context)
             is MainEvent.SetDoubleClickAction -> setDoubleClickAction(event.action, event.context)
             is MainEvent.SetLongClickAction -> setLongClickAction(event.action, event.context)
-            is MainEvent.SetSwipeUpAction -> setSwipeUpAction(event.action)
-            is MainEvent.SetSwipeDownAction -> setSwipeDownAction(event.action)
+            is MainEvent.SetSwipeUpAction -> setSwipeUpAction(event.action, event.context)
+            is MainEvent.SetSwipeDownAction -> setSwipeDownAction(event.action, event.context)
             is MainEvent.UpdatePermissionsStatus -> updatePermissionsStatus(event.context)
             is MainEvent.SyncServiceState -> syncServiceState(event.context)
+            is MainEvent.WriteSettingsResult -> onWriteSettingsResult(event.context)
+            MainEvent.CancelPendingBrightnessAction -> {
+                pendingBrightnessAction = null
+                _state.value = _state.value.copy(pendingWriteSettingsRequest = false)
+            }
             MainEvent.ShowProDialog -> showProDialog()
         }
     }
@@ -114,8 +131,44 @@ class MainViewModel @Inject constructor(
 
         _state.value = _state.value.copy(
             hasOverlayPermission = hasOverlay,
-            hasNotificationPermission = hasNotification
+            hasNotificationPermission = hasNotification,
+            hasWriteSettingsPermission = Settings.System.canWrite(context)
         )
+    }
+
+    /**
+     * Gates an action that needs WRITE_SETTINGS.
+     *
+     * @return true when the caller should go ahead and persist the action.
+     */
+    private fun requireWriteSettings(action: String, slot: ActionSlot, context: Context): Boolean {
+        if (!HandlerActions.needsWriteSettings(action)) return true
+        if (Settings.System.canWrite(context)) return true
+
+        pendingBrightnessAction = action to slot
+        _state.value = _state.value.copy(pendingWriteSettingsRequest = true)
+        return false
+    }
+
+    /** Applies whatever the user was trying to set before we sent them to grant the permission. */
+    private fun onWriteSettingsResult(context: Context) {
+        updatePermissionsStatus(context)
+        _state.value = _state.value.copy(pendingWriteSettingsRequest = false)
+
+        val (action, slot) = pendingBrightnessAction ?: return
+        pendingBrightnessAction = null
+        if (!Settings.System.canWrite(context)) return
+
+        when (slot) {
+            ActionSlot.SINGLE_TAP -> setClickAction(action, context)
+            ActionSlot.DOUBLE_TAP -> setDoubleClickAction(action, context)
+            // Long press is Pro-gated, so it has to go back through the same check rather than
+            // writing the preference directly.
+            ActionSlot.LONG_TAP -> setLongClickAction(action, context)
+            ActionSlot.SWIPE_UP -> setSwipeUpAction(action, context)
+            ActionSlot.SWIPE_DOWN -> setSwipeDownAction(action, context)
+        }
+        sendUpdateToService(context)
     }
 
     private fun syncServiceState(context: Context) {
@@ -250,6 +303,20 @@ class MainViewModel @Inject constructor(
      * Called from MainActivity.onStart() to recover the binding after the app
      * was cleared from recents and reopened.
      */
+    /**
+     * If the user wants the overlay running but the system has killed the service, bring it back.
+     *
+     * Called while the app is in the foreground, which is exactly when starting a foreground
+     * service is unambiguously allowed — so this is the one repair path that cannot be refused
+     * by the Android 12+ background-start restrictions.
+     */
+    fun repairServiceIfNeeded(context: Context) {
+        if (!preference.isRunning()) return
+        if (isServiceRunning(context, OverlayService::class.java)) return
+        if (!Settings.canDrawOverlays(context)) return
+        startOverlayService(context)
+    }
+
     fun rebindToServiceIfRunning(context: Context) {
         if (preference.isRunning() && !isBound) {
             val actuallyRunning = isServiceRunning(context, OverlayService::class.java)
@@ -312,6 +379,7 @@ class MainViewModel @Inject constructor(
             lockScreenUtil.enableAdmin()
             return
         }
+        if (!requireWriteSettings(action, ActionSlot.SINGLE_TAP, context)) return
         preference.setHandlerSingleTapAction(action)
         _state.value = _state.value.copy(
             clickAction = action,
@@ -325,6 +393,7 @@ class MainViewModel @Inject constructor(
             lockScreenUtil.enableAdmin()
             return
         }
+        if (!requireWriteSettings(action, ActionSlot.DOUBLE_TAP, context)) return
         preference.setHandlerDoubleTapAction(action)
         _state.value = _state.value.copy(
             doubleClickAction = action,
@@ -342,6 +411,7 @@ class MainViewModel @Inject constructor(
             lockScreenUtil.enableAdmin()
             return
         }
+        if (!requireWriteSettings(action, ActionSlot.LONG_TAP, context)) return
         preference.setHandlerLongTapAction(action)
         _state.value = _state.value.copy(
             longClickAction = action,
@@ -349,7 +419,8 @@ class MainViewModel @Inject constructor(
         )
     }
 
-    private fun setSwipeUpAction(action: String) {
+    private fun setSwipeUpAction(action: String, context: Context) {
+        if (!requireWriteSettings(action, ActionSlot.SWIPE_UP, context)) return
         preference.setHandlerSwipeUpAction(action)
         _state.value = _state.value.copy(
             swipeUpAction = action,
@@ -357,7 +428,8 @@ class MainViewModel @Inject constructor(
         )
     }
 
-    private fun setSwipeDownAction(action: String) {
+    private fun setSwipeDownAction(action: String, context: Context) {
+        if (!requireWriteSettings(action, ActionSlot.SWIPE_DOWN, context)) return
         preference.setHandlerSwipeDownAction(action)
         _state.value = _state.value.copy(
             swipeDownAction = action,
@@ -373,31 +445,34 @@ class MainViewModel @Inject constructor(
 
     private fun getActionIcon(action: String): Int {
         return when (action) {
-            "None" -> R.drawable.ic_nothing
-            "Open volume UI" -> R.drawable.ic_vol_increase
-            "Mute" -> R.drawable.ic_mute
-            "Active Music Overlay" -> R.drawable.ic_music_ui
-            "Lock" -> R.drawable.ic_lock
-            "Hide Handler" -> R.drawable.ic_visibility_hide
-            "Open App" -> R.drawable.ic_app_open
+            HandlerActions.NONE -> R.drawable.ic_nothing
+            HandlerActions.OPEN_VOLUME_UI -> R.drawable.ic_vol_increase
+            HandlerActions.MUTE -> R.drawable.ic_mute
+            HandlerActions.ACTIVE_MUSIC_OVERLAY -> R.drawable.ic_music_ui
+            HandlerActions.LOCK -> R.drawable.ic_lock
+            HandlerActions.HIDE_HANDLER -> R.drawable.ic_visibility_hide
+            HandlerActions.OPEN_APP -> R.drawable.ic_app_open
+            HandlerActions.TOGGLE_AUTO_BRIGHTNESS -> R.drawable.ic_brightness_auto
             else -> R.drawable.ic_nothing
         }
     }
 
     private fun getSwipeUpIcon(action: String): Int {
         return when (action) {
-            "None" -> R.drawable.ic_nothing
-            "Increase volume" -> R.drawable.ic_vol_plus
-            "Increase volume and show UI" -> R.drawable.ic_vol_increase
+            HandlerActions.NONE -> R.drawable.ic_nothing
+            HandlerActions.INCREASE_VOLUME -> R.drawable.ic_vol_plus
+            HandlerActions.INCREASE_VOLUME_UI -> R.drawable.ic_vol_increase
+            HandlerActions.INCREASE_BRIGHTNESS -> R.drawable.ic_brightness_up
             else -> R.drawable.ic_nothing
         }
     }
 
     private fun getSwipeDownIcon(action: String): Int {
         return when (action) {
-            "None" -> R.drawable.ic_nothing
-            "Decrease volume" -> R.drawable.ic_vol_minus
-            "Decrease volume and show UI" -> R.drawable.ic_vol_decrease
+            HandlerActions.NONE -> R.drawable.ic_nothing
+            HandlerActions.DECREASE_VOLUME -> R.drawable.ic_vol_minus
+            HandlerActions.DECREASE_VOLUME_UI -> R.drawable.ic_vol_decrease
+            HandlerActions.DECREASE_BRIGHTNESS -> R.drawable.ic_brightness_down
             else -> R.drawable.ic_nothing
         }
     }

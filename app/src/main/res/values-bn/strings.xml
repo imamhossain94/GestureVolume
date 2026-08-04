@@ -274,4 +274,32 @@
     <string name="step_popup">4. অনুমতি: নিশ্চিত করুন \"পটভূমিতে চলার সময় পপ-আপ উইন্ডো প্রদর্শন করুন\" সক্ষম করা আছে।</string>
     <string name="troubleshoot_footer">ডিভাইস-নির্দিষ্ট নির্দেশাবলীর জন্য, অনুগ্রহ করে dontkillmyapp.com-এ যান</string>
     <string name="visit_website">ওয়েবসাইট ভিজিট করুন</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">ওভারলে পরিচালনা করতে ট্যাপ করুন</string>
+    <string name="show">দেখান</string>
+    <string name="hide">লুকান</string>
+    <string name="stop">বন্ধ</string>
+    <string name="brightness_percent">উজ্জ্বলতা %1$d%%</string>
+    <string name="brightness_needs_permission_short">উজ্জ্বলতা নিয়ন্ত্রণ করতে সিস্টেম সেটিংস পরিবর্তনের অনুমতি দিন</string>
+    <string name="auto_brightness_on">স্বয়ংক্রিয় উজ্জ্বলতা চালু</string>
+    <string name="auto_brightness_off">স্বয়ংক্রিয় উজ্জ্বলতা বন্ধ</string>
+    <string name="action_increase_brightness">উজ্জ্বলতা বাড়ান</string>
+    <string name="action_decrease_brightness">উজ্জ্বলতা কমান</string>
+    <string name="action_toggle_auto_brightness">স্বয়ংক্রিয় উজ্জ্বলতা চালু/বন্ধ</string>
+    <string name="write_settings_permission">সিস্টেম সেটিংস পরিবর্তন</string>
+    <string name="write_settings_permission_desc">বারটিকে স্ক্রিনের উজ্জ্বলতা নিয়ন্ত্রণ করতে দেয়। শুধু উজ্জ্বলতার অ্যাকশনের জন্য প্রয়োজন।</string>
+    <string name="brightness_permission_title">উজ্জ্বলতা নিয়ন্ত্রণের অনুমতি দেবেন?</string>
+    <string name="brightness_permission_message">স্ক্রিনের উজ্জ্বলতা পরিবর্তন করতে অ্যাপটির সিস্টেম সেটিংস পরিবর্তনের অনুমতি প্রয়োজন। ব্যবহারের সময় স্বয়ংক্রিয় উজ্জ্বলতা বন্ধ থাকবে এবং সার্ভিস বন্ধ করলে ফিরে আসবে।</string>
+    <string name="edge_offset">প্রান্ত থেকে দূরত্ব</string>
+    <string name="edge_offset_desc">বারটিকে স্ক্রিনের প্রান্ত থেকে ভেতরে সরান। বাঁকানো স্ক্রিন ও জেসচার নেভিগেশনে সাহায্য করে।</string>
+    <string name="reset_position">অবস্থান রিসেট</string>
+    <string name="drag_to_move_hint">অবস্থান লক বন্ধ করুন, তারপর বারটি চেপে ধরে উপরে বা নিচে টানুন।</string>
+    <string name="fix_battery_title">ব্যাটারি অপ্টিমাইজেশন</string>
+    <string name="fix_battery_desc">সীমাহীন ব্যাটারি ব্যবহারের অনুমতি দিন যাতে অ্যান্ড্রয়েড সার্ভিস বন্ধ না করে।</string>
+    <string name="fix_battery_allowed">সীমাহীন</string>
+    <string name="fix_autostart_title">অটো-স্টার্ট</string>
+    <string name="fix_autostart_desc">আপনার ডিভাইসের অটো-স্টার্ট সেটিংস খুলে অ্যাপটিকে অনুমতি দিন।</string>
+    <string name="autostart_unavailable">এই ডিভাইসে উপলব্ধ নয়</string>
+    <string name="open_settings">সেটিংস খুলুন</string>
 </resources>
