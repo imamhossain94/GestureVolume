@@ -294,7 +294,7 @@
     <string name="edge_offset">Randabstand</string>
     <string name="edge_offset_desc">Verschiebt die Leiste vom Bildschirmrand nach innen. Hilft bei gebogenen Displays und aktivierter Gestensteuerung.</string>
     <string name="reset_position">Position zurücksetzen</string>
-    <string name="drag_to_move_hint">Position entsperren, dann die Leiste gedrückt halten und nach oben oder unten ziehen.</string>
+    <string name="drag_to_move_hint">Position entsperren, dann die Leiste nach oben oder unten ziehen.</string>
     <string name="fix_battery_title">Akkuoptimierung</string>
     <string name="fix_battery_desc">Uneingeschränkte Akkunutzung erlauben, damit Android den Dienst nicht beendet.</string>
     <string name="fix_battery_allowed">Uneingeschränkt</string>

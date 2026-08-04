@@ -68,6 +68,9 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
 
     /** Saved so the drag cue can restore the icon it temporarily replaced. */
     private var iconBeforeDragCue: Drawable? = null
+
+    /** Preview-only inward offset from the screen edge. See [setEdgeMarginDp]. */
+    private var edgeMarginDp: Float = 0f
     private var iconVisibleBeforeDragCue: Boolean = true
     private var dragCueActive: Boolean = false
 
@@ -247,6 +250,24 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         viewGravityPosition = gravity
         updateLayoutParams()
         updateInsetsForGravity(gravity)
+        applyEdgeMargin()
+    }
+
+    /**
+     * Inward nudge from the screen edge, for the **previews only**.
+     *
+     * The live overlay must not use this: there the bar is the root view of a window sized exactly
+     * to it, so a translation would slide the drawing inside a stationary window and be clipped at
+     * its edge. The service offsets the window itself via `LayoutParams.x` instead.
+     */
+    fun setEdgeMarginDp(marginDp: Float) {
+        edgeMarginDp = marginDp
+        applyEdgeMargin()
+    }
+
+    private fun applyEdgeMargin() {
+        val px = dpToPx(edgeMarginDp)
+        translationX = if (viewGravityPosition == Gravity.START) px else -px
     }
 
     private fun updateInsetsForGravity(gravity: Int) {

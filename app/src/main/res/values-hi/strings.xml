@@ -294,7 +294,7 @@
     <string name="edge_offset">किनारे से दूरी</string>
     <string name="edge_offset_desc">बार को स्क्रीन के किनारे से भीतर ले जाएँ। घुमावदार स्क्रीन और जेस्चर नेविगेशन में मदद करता है।</string>
     <string name="reset_position">स्थिति रीसेट करें</string>
-    <string name="drag_to_move_hint">स्थिति लॉक बंद करें, फिर बार को दबाकर ऊपर या नीचे खींचें।</string>
+    <string name="drag_to_move_hint">स्थिति लॉक बंद करें, फिर बार को ऊपर या नीचे खींचें।</string>
     <string name="fix_battery_title">बैटरी अनुकूलन</string>
     <string name="fix_battery_desc">अप्रतिबंधित बैटरी उपयोग की अनुमति दें ताकि Android सेवा बंद न करे।</string>
     <string name="fix_battery_allowed">अप्रतिबंधित</string>

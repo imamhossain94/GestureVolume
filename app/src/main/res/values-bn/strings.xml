@@ -294,7 +294,7 @@
     <string name="edge_offset">প্রান্ত থেকে দূরত্ব</string>
     <string name="edge_offset_desc">বারটিকে স্ক্রিনের প্রান্ত থেকে ভেতরে সরান। বাঁকানো স্ক্রিন ও জেসচার নেভিগেশনে সাহায্য করে।</string>
     <string name="reset_position">অবস্থান রিসেট</string>
-    <string name="drag_to_move_hint">অবস্থান লক বন্ধ করুন, তারপর বারটি চেপে ধরে উপরে বা নিচে টানুন।</string>
+    <string name="drag_to_move_hint">অবস্থান লক বন্ধ করুন, তারপর বারটি উপরে বা নিচে টেনে সরান।</string>
     <string name="fix_battery_title">ব্যাটারি অপ্টিমাইজেশন</string>
     <string name="fix_battery_desc">সীমাহীন ব্যাটারি ব্যবহারের অনুমতি দিন যাতে অ্যান্ড্রয়েড সার্ভিস বন্ধ না করে।</string>
     <string name="fix_battery_allowed">সীমাহীন</string>

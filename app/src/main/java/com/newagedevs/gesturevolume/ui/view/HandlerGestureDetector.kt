@@ -46,9 +46,10 @@ class HandlerGestureDetector(
         fun onDoubleTap()
 
         /**
-         * Only invoked when the handler's position is **locked**. When the position is unlocked, a
-         * long press arms dragging instead; firing both would mean a user whose long-press action
-         * is "Lock" could never reposition the bar without locking their phone.
+         * Only invoked when the handler's position is **locked**. Unlocked, the bar is in
+         * reposition mode and a long press does nothing — firing the configured action there would
+         * mean a user whose long-press action is "Lock" could never move the bar without locking
+         * their phone.
          */
         fun onLongPress()
 
@@ -74,7 +75,7 @@ class HandlerGestureDetector(
         fun onDragEnd(moved: Boolean)
     }
 
-    private enum class State { IDLE, DOWN, ADJUSTING, DRAG_ARMED, DRAGGING, DEAD }
+    private enum class State { IDLE, DOWN, ADJUSTING, DRAGGING, DEAD }
 
     private companion object {
         /**
@@ -121,21 +122,12 @@ class HandlerGestureDetector(
 
     private val longPressRunnable = Runnable {
         if (state != State.DOWN) return@Runnable
-        if (host.isDragEnabled()) {
-            // Unlocked: a long press arms dragging and does nothing else.
-            state = State.DRAG_ARMED
-            dragAnchorRawY = lastRawY
-            dragOffsetPx = 0f
-            dragMoved = false
-            host.onDragCue(true)
-            // Captured here, at the same instant as the anchor. Recording it later, once the finger
-            // has already travelled a touch slop, would make the bar jump by that much on the
-            // first move.
-            host.onDragBegin()
-        } else {
-            state = State.DEAD
-            host.onLongPress()
-        }
+        // While unlocked the bar is in reposition mode, and holding still is just the prelude to a
+        // drag — firing the configured long-press action there would mean a user who set it to
+        // "Lock" could never move the bar without locking their phone.
+        if (host.isDragEnabled()) return@Runnable
+        state = State.DEAD
+        host.onLongPress()
     }
 
     /**
@@ -204,6 +196,19 @@ class HandlerGestureDetector(
                     // did) made diagonal swipes flicker between adjusting and doing nothing.
                     if (dy < dx) {
                         state = State.DEAD
+                    } else if (host.isDragEnabled()) {
+                        // Unlocked is "reposition mode": a plain vertical drag moves the bar, with
+                        // no long press first. The lock toggle is already the mode switch, and the
+                        // app's own copy promises "Drag handler to new position".
+                        state = State.DRAGGING
+                        // Anchor where the slop was crossed, not at the down point, so the bar does
+                        // not jump by a touch slop the moment dragging starts.
+                        dragAnchorRawY = rawY
+                        dragOffsetPx = 0f
+                        dragMoved = false
+                        lastRawY = rawY
+                        host.onDragCue(true)
+                        host.onDragBegin()
                     } else {
                         state = State.ADJUSTING
                         lastRawY = rawY
@@ -214,16 +219,6 @@ class HandlerGestureDetector(
             }
 
             State.ADJUSTING -> accumulate(event, index, offsetY, rawY)
-
-            State.DRAG_ARMED -> {
-                if (abs(rawY - dragAnchorRawY) > touchSlop) {
-                    state = State.DRAGGING
-                    dragOffsetPx = rawY - dragAnchorRawY
-                    dragMoved = true
-                    host.onDragUpdate(dragOffsetPx)
-                }
-                lastRawY = rawY
-            }
 
             State.DRAGGING -> {
                 dragOffsetPx = rawY - dragAnchorRawY
@@ -304,7 +299,7 @@ class HandlerGestureDetector(
         val offsetY = event.rawY - event.getY(0)
         val newRawY = event.getY(newIndex) + offsetY
         lastRawY = newRawY
-        if (state == State.DRAGGING || state == State.DRAG_ARMED) {
+        if (state == State.DRAGGING) {
             dragAnchorRawY = newRawY - dragOffsetPx
         }
     }
@@ -315,10 +310,6 @@ class HandlerGestureDetector(
         when (state) {
             State.DOWN -> handleTap()
             State.ADJUSTING -> host.onAdjustEnd()
-            State.DRAG_ARMED -> {
-                host.onDragCue(false)
-                host.onDragEnd(false)
-            }
             State.DRAGGING -> {
                 host.onDragCue(false)
                 host.onDragEnd(dragMoved)
@@ -343,10 +334,6 @@ class HandlerGestureDetector(
     private fun finishInFlight(commitDrag: Boolean) {
         when (state) {
             State.ADJUSTING -> host.onAdjustEnd()
-            State.DRAG_ARMED -> {
-                host.onDragCue(false)
-                host.onDragEnd(false)
-            }
             State.DRAGGING -> {
                 host.onDragCue(false)
                 host.onDragEnd(commitDrag && dragMoved)

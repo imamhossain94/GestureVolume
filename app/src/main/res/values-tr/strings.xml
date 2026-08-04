@@ -294,7 +294,7 @@
     <string name="edge_offset">Kenar boşluğu</string>
     <string name="edge_offset_desc">Çubuğu ekran kenarından içeri kaydırır. Kavisli ekranlarda ve hareketle gezinmede işe yarar.</string>
     <string name="reset_position">Konumu sıfırla</string>
-    <string name="drag_to_move_hint">Konum kilidini kapatın, ardından çubuğu basılı tutup yukarı veya aşağı sürükleyin.</string>
+    <string name="drag_to_move_hint">Konum kilidini kapatın, ardından çubuğu yukarı veya aşağı sürükleyin.</string>
     <string name="fix_battery_title">Pil optimizasyonu</string>
     <string name="fix_battery_desc">Android hizmeti durdurmasın diye sınırsız pil kullanımına izin verin.</string>
     <string name="fix_battery_allowed">Sınırsız</string>

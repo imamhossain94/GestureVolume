@@ -294,7 +294,7 @@
     <string name="edge_offset">Separación del borde</string>
     <string name="edge_offset_desc">Aleja la barra del borde de la pantalla. Ayuda en pantallas curvas y con la navegación por gestos.</string>
     <string name="reset_position">Restablecer posición</string>
-    <string name="drag_to_move_hint">Desactiva Bloquear posición y mantén pulsada la barra para arrastrarla arriba o abajo.</string>
+    <string name="drag_to_move_hint">Desactiva Bloquear posición y arrastra la barra hacia arriba o abajo.</string>
     <string name="fix_battery_title">Optimización de batería</string>
     <string name="fix_battery_desc">Permite el uso de batería sin restricciones para que Android no detenga el servicio.</string>
     <string name="fix_battery_allowed">Sin restricciones</string>

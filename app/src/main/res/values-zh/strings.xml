@@ -294,7 +294,7 @@
     <string name="edge_offset">边缘偏移</string>
     <string name="edge_offset_desc">将侧边条从屏幕边缘向内移动。适用于曲面屏和开启手势导航时。</string>
     <string name="reset_position">重置位置</string>
-    <string name="drag_to_move_hint">关闭“锁定位置”，然后长按侧边条即可上下拖动。</string>
+    <string name="drag_to_move_hint">关闭“锁定位置”，然后上下拖动侧边条即可移动。</string>
     <string name="fix_battery_title">电池优化</string>
     <string name="fix_battery_desc">允许无限制使用电池，以免系统停止该服务。</string>
     <string name="fix_battery_allowed">无限制</string>

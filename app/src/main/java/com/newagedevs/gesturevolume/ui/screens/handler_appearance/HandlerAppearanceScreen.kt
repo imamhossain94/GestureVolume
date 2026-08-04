@@ -258,6 +258,7 @@ fun HandlerAppearanceScreen(
             handler.setCenterIconVisible(currentState.showIcon)
             handler.setVibrateOnClick(currentState.vibrate)
             handler.setHandlerPositionLocked(currentState.lockPosition)
+            handler.setEdgeMarginDp(currentState.edgeMargin)
         }
     }
 
@@ -450,6 +451,7 @@ fun HandlerAppearanceScreen(
                 showIcon = currentState.showIcon,
                 enableVibration = currentState.vibrate,
                 positionFraction = currentState.positionFraction,
+                edgeMargin = currentState.edgeMargin,
                 backgroundImageURL = bgImage,
                 onHandlerCreated = { handlerViewRef = it }
             )

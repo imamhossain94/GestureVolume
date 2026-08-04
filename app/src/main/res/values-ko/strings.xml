@@ -294,7 +294,7 @@
     <string name="edge_offset">가장자리 간격</string>
     <string name="edge_offset_desc">바를 화면 가장자리에서 안쪽으로 옮깁니다. 곡면 화면과 제스처 탐색에 도움이 됩니다.</string>
     <string name="reset_position">위치 초기화</string>
-    <string name="drag_to_move_hint">위치 잠금을 끈 다음 바를 길게 눌러 위아래로 드래그하세요.</string>
+    <string name="drag_to_move_hint">위치 잠금을 끈 다음 바를 위아래로 드래그하세요.</string>
     <string name="fix_battery_title">배터리 최적화</string>
     <string name="fix_battery_desc">Android가 서비스를 중지하지 않도록 배터리 사용을 제한 없음으로 허용하세요.</string>
     <string name="fix_battery_allowed">제한 없음</string>

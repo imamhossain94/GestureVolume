@@ -294,7 +294,7 @@
     <string name="edge_offset">Décalage du bord</string>
     <string name="edge_offset_desc">Éloigne la barre du bord de l\'écran. Utile sur les écrans incurvés et avec la navigation par gestes.</string>
     <string name="reset_position">Réinitialiser la position</string>
-    <string name="drag_to_move_hint">Désactivez Verrouiller la position, puis maintenez la barre pour la faire glisser vers le haut ou le bas.</string>
+    <string name="drag_to_move_hint">Désactivez Verrouiller la position, puis faites glisser la barre vers le haut ou le bas.</string>
     <string name="fix_battery_title">Optimisation de la batterie</string>
     <string name="fix_battery_desc">Autorisez une utilisation illimitée de la batterie pour qu\'Android n\'arrête pas le service.</string>
     <string name="fix_battery_allowed">Sans restriction</string>

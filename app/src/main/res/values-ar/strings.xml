@@ -294,7 +294,7 @@
     <string name="edge_offset">إزاحة الحافة</string>
     <string name="edge_offset_desc">حرّك الشريط بعيدًا عن حافة الشاشة. مفيد على الشاشات المنحنية وعند تفعيل التنقل بالإيماءات.</string>
     <string name="reset_position">إعادة تعيين الموضع</string>
-    <string name="drag_to_move_hint">أوقف قفل الموضع، ثم اضغط مطولًا على الشريط لسحبه لأعلى أو لأسفل.</string>
+    <string name="drag_to_move_hint">أوقف قفل الموضع، ثم اسحب الشريط لأعلى أو لأسفل لتحريكه.</string>
     <string name="fix_battery_title">تحسين البطارية</string>
     <string name="fix_battery_desc">اسمح باستخدام البطارية دون قيود حتى لا يوقف أندرويد الخدمة.</string>
     <string name="fix_battery_allowed">بدون قيود</string>

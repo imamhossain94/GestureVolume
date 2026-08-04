@@ -294,7 +294,7 @@
     <string name="edge_offset">端からの距離</string>
     <string name="edge_offset_desc">バーを画面の端から内側へ移動します。曲面ディスプレイやジェスチャーナビゲーション使用時に有効です。</string>
     <string name="reset_position">位置をリセット</string>
-    <string name="drag_to_move_hint">位置のロックをオフにして、バーを長押ししながら上下にドラッグします。</string>
+    <string name="drag_to_move_hint">位置のロックをオフにして、バーを上下にドラッグします。</string>
     <string name="fix_battery_title">バッテリー最適化</string>
     <string name="fix_battery_desc">Android がサービスを停止しないよう、バッテリー使用を制限なしにします。</string>
     <string name="fix_battery_allowed">制限なし</string>
