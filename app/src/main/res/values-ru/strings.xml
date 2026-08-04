@@ -294,7 +294,7 @@
     <string name="edge_offset">Отступ от края</string>
     <string name="edge_offset_desc">Сдвигает полосу от края экрана внутрь. Помогает на изогнутых экранах и при жестовой навигации.</string>
     <string name="reset_position">Сбросить положение</string>
-    <string name="drag_to_move_hint">Отключите блокировку положения, затем нажмите и удерживайте полосу, чтобы перетащить её вверх или вниз.</string>
+    <string name="drag_to_move_hint">Отключите блокировку положения и перетащите полосу вверх или вниз.</string>
     <string name="fix_battery_title">Оптимизация батареи</string>
     <string name="fix_battery_desc">Разрешите неограниченное использование батареи, чтобы Android не останавливал службу.</string>
     <string name="fix_battery_allowed">Без ограничений</string>

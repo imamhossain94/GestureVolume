@@ -294,7 +294,7 @@
     <string name="edge_offset">Distanza dal bordo</string>
     <string name="edge_offset_desc">Sposta la barra verso l\'interno rispetto al bordo dello schermo. Utile su schermi curvi e con la navigazione a gesti.</string>
     <string name="reset_position">Reimposta posizione</string>
-    <string name="drag_to_move_hint">Disattiva Blocca posizione, poi tieni premuta la barra per trascinarla in alto o in basso.</string>
+    <string name="drag_to_move_hint">Disattiva Blocca posizione, poi trascina la barra in alto o in basso.</string>
     <string name="fix_battery_title">Ottimizzazione batteria</string>
     <string name="fix_battery_desc">Consenti un uso illimitato della batteria affinché Android non arresti il servizio.</string>
     <string name="fix_battery_allowed">Senza restrizioni</string>

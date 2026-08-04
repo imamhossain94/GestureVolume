@@ -294,7 +294,7 @@
     <string name="edge_offset">Distância da borda</string>
     <string name="edge_offset_desc">Afasta a barra da borda da tela. Ajuda em telas curvas e com a navegação por gestos.</string>
     <string name="reset_position">Redefinir posição</string>
-    <string name="drag_to_move_hint">Desative Bloquear posição e mantenha a barra pressionada para arrastá-la para cima ou para baixo.</string>
+    <string name="drag_to_move_hint">Desative Bloquear posição e arraste a barra para cima ou para baixo.</string>
     <string name="fix_battery_title">Otimização de bateria</string>
     <string name="fix_battery_desc">Permita uso irrestrito da bateria para que o Android não interrompa o serviço.</string>
     <string name="fix_battery_allowed">Irrestrito</string>

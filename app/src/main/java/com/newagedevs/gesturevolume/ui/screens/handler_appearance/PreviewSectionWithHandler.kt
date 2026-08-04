@@ -56,6 +56,7 @@ fun PreviewSectionWithHandler(
     showIcon: Boolean,
     enableVibration: Boolean,
     positionFraction: Float,
+    edgeMargin: Float,
     backgroundImageURL: String,
     onHandlerCreated: (HandlerView) -> Unit
 ) {
@@ -152,6 +153,7 @@ fun PreviewSectionWithHandler(
                                 setCenterIconVisible(showIcon)
                                 setHandlerPositionLocked(true)
                                 setVibrateOnClick(enableVibration)
+                                setEdgeMarginDp(edgeMargin)
                                 // No gesture detector: this small card is a static rendering of the
                                 // bar's appearance, not something the user interacts with.
 

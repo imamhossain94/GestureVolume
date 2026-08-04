@@ -294,7 +294,7 @@
     <string name="edge_offset">Edge offset</string>
     <string name="edge_offset_desc">Move the bar inward from the screen edge. Helps on curved screens and when gesture navigation is on.</string>
     <string name="reset_position">Reset position</string>
-    <string name="drag_to_move_hint">Turn off Lock position, then press and hold the bar to drag it up or down.</string>
+    <string name="drag_to_move_hint">Turn off Lock position, then drag the bar up or down to move it.</string>
     <string name="fix_battery_title">Battery optimization</string>
     <string name="fix_battery_desc">Allow unrestricted battery use so Android does not stop the service.</string>
     <string name="fix_battery_allowed">Unrestricted</string>

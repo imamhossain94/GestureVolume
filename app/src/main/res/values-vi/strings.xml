@@ -294,7 +294,7 @@
     <string name="edge_offset">Khoảng cách mép</string>
     <string name="edge_offset_desc">Dịch thanh vào trong khỏi mép màn hình. Hữu ích với màn hình cong và khi bật điều hướng cử chỉ.</string>
     <string name="reset_position">Đặt lại vị trí</string>
-    <string name="drag_to_move_hint">Tắt Khóa vị trí, rồi nhấn giữ thanh để kéo lên hoặc xuống.</string>
+    <string name="drag_to_move_hint">Tắt Khóa vị trí, rồi kéo thanh lên hoặc xuống để di chuyển.</string>
     <string name="fix_battery_title">Tối ưu hóa pin</string>
     <string name="fix_battery_desc">Cho phép dùng pin không giới hạn để Android không dừng dịch vụ.</string>
     <string name="fix_battery_allowed">Không giới hạn</string>

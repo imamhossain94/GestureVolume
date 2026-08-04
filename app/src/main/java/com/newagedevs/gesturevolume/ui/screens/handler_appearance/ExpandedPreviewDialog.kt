@@ -154,10 +154,11 @@ fun ExpandedPreviewDialog(
     LaunchedEffect(state.gravity, state.width, state.height, state.bgColor, state.bgAlpha,
         state.strokeColor, state.strokeWidth, state.strokeAlpha, state.cornerTL,
         state.cornerTR, state.cornerBL, state.cornerBR, state.iconRes, state.iconSize,
-        state.iconColor, state.showIcon, state.vibrate) {
+        state.iconColor, state.showIcon, state.vibrate, state.edgeMargin) {
         handlerViewRef?.apply {
             setViewDimensionsDp(state.width, state.height)
             setViewGravity(state.gravity)
+            setEdgeMarginDp(state.edgeMargin)
             setViewBackgroundColor(state.bgColor.toArgb(), state.bgAlpha)
             setCornerRadiiDp(state.cornerTL, state.cornerTR, state.cornerBL, state.cornerBR)
             setStrokeProperties(state.strokeColor.toArgb(), state.strokeWidth, state.strokeAlpha)
@@ -292,6 +293,7 @@ fun ExpandedPreviewDialog(
                             setCenterIconVisible(state.showIcon)
                             setHandlerPositionLocked(state.lockPosition)
                             setVibrateOnClick(state.vibrate)
+                            setEdgeMarginDp(state.edgeMargin)
                         }
 
                         val host = object : HandlerGestureDetector.Host {
