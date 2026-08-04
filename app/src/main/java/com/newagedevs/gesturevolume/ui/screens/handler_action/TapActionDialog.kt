@@ -39,11 +39,19 @@ fun TapActionDialog(
     title: String,
     currentAction: String,
     onDismiss: () -> Unit,
-    onSelect: (String) -> Unit
+    onSelect: (String) -> Unit,
+    /**
+     * Offers "Move handler". Long press only: repositioning needs a gesture the user holds, so it
+     * would be meaningless — and unusable — on a tap or double tap.
+     */
+    allowReposition: Boolean = false
 ) {
-    val actionOptions = remember {
-        listOf(
+    val actionOptions = remember(allowReposition) {
+        listOfNotNull(
             Triple(R.drawable.ic_nothing, HandlerActions.NONE, R.string.action_none),
+            if (allowReposition) {
+                Triple(R.drawable.ic_move, HandlerActions.REPOSITION, R.string.action_reposition)
+            } else null,
             Triple(R.drawable.ic_vol_increase, HandlerActions.OPEN_VOLUME_UI, R.string.action_open_volume_ui),
             Triple(R.drawable.ic_mute, HandlerActions.MUTE, R.string.action_mute),
             Triple(R.drawable.ic_mute, HandlerActions.MUTE_OR_UNMUTE, R.string.action_mute_unmute),

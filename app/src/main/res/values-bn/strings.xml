@@ -92,7 +92,7 @@
     <string name="top_left">উপরে বামে</string>
     <string name="top_right">উপরে ডানে</string>
     <string name="upgrade">আপগ্রেড</string>
-    <string name="unlock_all_features">সমস্ত বৈশিষ্ট্য আনলক করুন</string>
+    <string name="unlock_all_features">সব বিজ্ঞাপন সরান</string>
     <string name="unsaved_changes">অসংরক্ষিত পরিবর্তন</string>
     <string name="upgrade_to_pro">প্রো তে আপগ্রেড করুন</string>
     <string name="vibrate_on_click">ক্লিকে ভাইব্রেট করুন</string>

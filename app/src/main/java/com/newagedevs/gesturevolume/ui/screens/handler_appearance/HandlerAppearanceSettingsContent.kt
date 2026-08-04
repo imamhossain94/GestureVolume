@@ -56,23 +56,15 @@ fun HandlerAppearanceSettingsContent(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
-            SwitchControl(
-                label = stringResource(R.string.lock_position),
-                checked = state.lockPosition,
-                borderColor = Color(0xFF8B5CF6),
-                onCheckedChange = { state.lockPosition = it }
+            // There is no lock switch any more. Moving the bar takes a deliberate long press, and
+            // whether that long press moves it is the long-press action's business — one setting,
+            // in one place, instead of two that could contradict each other.
+            Text(
+                text = stringResource(R.string.drag_to_move_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 16.sp
             )
-
-            // Unlocking is the only way to reach drag mode, so the instructions belong right here.
-            if (!state.lockPosition) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.drag_to_move_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 16.sp
-                )
-            }
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 12.dp),

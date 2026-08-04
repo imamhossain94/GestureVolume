@@ -92,7 +92,7 @@
     <string name="top_left">왼쪽 상단</string>
     <string name="top_right">오른쪽 상단</string>
     <string name="upgrade">업그레이드</string>
-    <string name="unlock_all_features">모든 기능 잠금 해제</string>
+    <string name="unlock_all_features">모든 광고 제거</string>
     <string name="unsaved_changes">저장되지 않은 변경</string>
     <string name="upgrade_to_pro">PRO로 업그레이드</string>
     <string name="vibrate_on_click">클릭할 때 진동</string>

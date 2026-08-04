@@ -82,7 +82,6 @@ fun HandlerAppearanceScreen(
                 iconColor = preference.getHandlerIconColor(),
                 showIcon = preference.getHandlerShowIcon(),
                 vibrate = preference.getHandlerVibrateOnClick(),
-                lockPosition = preference.getHandlerLockPosition(),
                 edgeMargin = preference.getHandlerEdgeMarginDp(),
                 positionFraction = preference.getHandlerPositionFraction()
             )
@@ -108,7 +107,6 @@ fun HandlerAppearanceScreen(
             initialIconColor = Color(savedState.value.iconColor),
             initialShowIcon = savedState.value.showIcon,
             initialVibrate = savedState.value.vibrate,
-            initialLockPosition = savedState.value.lockPosition,
             initialEdgeMargin = savedState.value.edgeMargin,
             initialPositionFraction = savedState.value.positionFraction
         )
@@ -128,7 +126,6 @@ fun HandlerAppearanceScreen(
             when (presetId) {
                 "Default" -> {
                     state.gravity = Gravity.END
-                    state.lockPosition = true
                     state.width = 30f
                     state.height = 100f
                     state.bgColor = Color.White
@@ -144,14 +141,13 @@ fun HandlerAppearanceScreen(
                     state.iconRes = R.drawable.ic_vol_increase
                     state.iconSize = 18f
                     state.iconColor = Color.White
-                    state.showIcon = true
+                    state.showIcon = false
                     state.vibrate = false
                     state.edgeMargin = 0f
                     state.positionFraction = 0.5f
                 }
                 "Minimal" -> {
                     state.gravity = Gravity.END
-                    state.lockPosition = true
                     state.width = 10f
                     state.height = 100f
                     state.bgColor = Color.White
@@ -174,7 +170,6 @@ fun HandlerAppearanceScreen(
                 }
                 "Bold" -> {
                     state.gravity = Gravity.END
-                    state.lockPosition = true
                     state.width = 40f
                     state.height = 100f
                     state.bgColor = Color.White
@@ -197,7 +192,6 @@ fun HandlerAppearanceScreen(
                 }
                 "Night" -> {
                     state.gravity = Gravity.END
-                    state.lockPosition = true
                     state.width = 30f
                     state.height = 100f
                     state.bgColor = Color(0xFF1F2937)
@@ -220,7 +214,6 @@ fun HandlerAppearanceScreen(
                 }
                 "Ghost" -> {
                     state.gravity = Gravity.END
-                    state.lockPosition = true
                     state.width = 20f
                     state.height = 100f
                     state.bgColor = Color.White
@@ -257,7 +250,6 @@ fun HandlerAppearanceScreen(
             handler.setCenterIconColor(currentState.iconColor)
             handler.setCenterIconVisible(currentState.showIcon)
             handler.setVibrateOnClick(currentState.vibrate)
-            handler.setHandlerPositionLocked(currentState.lockPosition)
             handler.setEdgeMarginDp(currentState.edgeMargin)
         }
     }
@@ -280,7 +272,6 @@ fun HandlerAppearanceScreen(
         preference.setHandlerIconColor(state.iconColor.toArgb())
         preference.setHandlerShowIcon(state.showIcon)
         preference.setHandlerVibrateOnClick(state.vibrate)
-        preference.setHandlerLockPosition(state.lockPosition)
         preference.setHandlerEdgeMarginDp(state.edgeMargin)
         preference.setHandlerPositionFraction(state.positionFraction)
 
@@ -450,7 +441,6 @@ fun HandlerAppearanceScreen(
                 iconColor = Color(currentState.iconColor),
                 showIcon = currentState.showIcon,
                 enableVibration = currentState.vibrate,
-                positionFraction = currentState.positionFraction,
                 edgeMargin = currentState.edgeMargin,
                 backgroundImageURL = bgImage,
                 onHandlerCreated = { handlerViewRef = it }

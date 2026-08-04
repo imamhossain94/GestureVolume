@@ -12,6 +12,14 @@ import kotlin.math.abs
  * The one and only gesture engine for the floating handler, shared by the live overlay and the
  * in-app preview so the two cannot disagree.
  *
+ * The gesture vocabulary:
+ *
+ *  - **Vertical swipe** — always adjusts volume or brightness, never moves the bar.
+ *  - **Long press** — either arms drag-to-reposition (the default, see [Host.isLongPressReposition])
+ *    or fires the configured long-press action. One or the other, decided by that one setting, so
+ *    repositioning can never collide with another action.
+ *  - **Tap / double tap** — the configured tap actions.
+ *
  * Four invariants, each replacing a specific defect in the code this supersedes:
  *
  *  1. **Every vertical measurement is in screen space.** Window-relative `event.y` is useless here:
@@ -33,8 +41,12 @@ class HandlerGestureDetector(
 ) {
 
     interface Host {
-        /** Mirrors `!SharedPref.getHandlerLockPosition()`. Read live, every gesture. */
-        fun isDragEnabled(): Boolean
+        /**
+         * True when the long press should arm drag-to-reposition instead of firing an action —
+         * i.e. the user's long-press action is `HandlerActions.REPOSITION`. Read live, every
+         * gesture, so a change in settings takes effect without recreating the bar.
+         */
+        fun isLongPressReposition(): Boolean
 
         /**
          * True when a double-tap action is actually configured. When it is not — which is the
@@ -45,12 +57,7 @@ class HandlerGestureDetector(
         fun onTap()
         fun onDoubleTap()
 
-        /**
-         * Only invoked when the handler's position is **locked**. Unlocked, the bar is in
-         * reposition mode and a long press does nothing — firing the configured action there would
-         * mean a user whose long-press action is "Lock" could never move the bar without locking
-         * their phone.
-         */
+        /** The configured long-press action. Never called when [isLongPressReposition] is true. */
         fun onLongPress()
 
         /**
@@ -122,12 +129,24 @@ class HandlerGestureDetector(
 
     private val longPressRunnable = Runnable {
         if (state != State.DOWN) return@Runnable
-        // While unlocked the bar is in reposition mode, and holding still is just the prelude to a
-        // drag — firing the configured long-press action there would mean a user who set it to
-        // "Lock" could never move the bar without locking their phone.
-        if (host.isDragEnabled()) return@Runnable
-        state = State.DEAD
-        host.onLongPress()
+
+        // Long press is the *only* way into drag mode. Previously an unlocked bar entered it on any
+        // vertical swipe, which meant reposition and volume were competing for the same gesture and
+        // the user could only ever have one of them.
+        if (host.isLongPressReposition()) {
+            state = State.DRAGGING
+            // Anchor where the finger is right now, so the bar does not jump when it starts to
+            // follow. The finger is still within the touch slop of the down point at this stage.
+            dragAnchorRawY = lastRawY
+            dragOffsetPx = 0f
+            dragMoved = false
+            // Buzz first, then drag — the cue is what tells the user the bar is now theirs to move.
+            host.onDragCue(true)
+            host.onDragBegin()
+        } else {
+            state = State.DEAD
+            host.onLongPress()
+        }
     }
 
     /**
@@ -196,20 +215,9 @@ class HandlerGestureDetector(
                     // did) made diagonal swipes flicker between adjusting and doing nothing.
                     if (dy < dx) {
                         state = State.DEAD
-                    } else if (host.isDragEnabled()) {
-                        // Unlocked is "reposition mode": a plain vertical drag moves the bar, with
-                        // no long press first. The lock toggle is already the mode switch, and the
-                        // app's own copy promises "Drag handler to new position".
-                        state = State.DRAGGING
-                        // Anchor where the slop was crossed, not at the down point, so the bar does
-                        // not jump by a touch slop the moment dragging starts.
-                        dragAnchorRawY = rawY
-                        dragOffsetPx = 0f
-                        dragMoved = false
-                        lastRawY = rawY
-                        host.onDragCue(true)
-                        host.onDragBegin()
                     } else {
+                        // A plain vertical swipe is always the volume/brightness gesture. Moving
+                        // the bar takes a long press first, which is handled in longPressRunnable.
                         state = State.ADJUSTING
                         lastRawY = rawY
                         accumPx = 0f
@@ -222,7 +230,9 @@ class HandlerGestureDetector(
 
             State.DRAGGING -> {
                 dragOffsetPx = rawY - dragAnchorRawY
-                dragMoved = true
+                // Sub-pixel jitter from a finger resting still after the long press is not a move,
+                // and must not be persisted as a new position.
+                if (abs(dragOffsetPx) >= 1f) dragMoved = true
                 lastRawY = rawY
                 host.onDragUpdate(dragOffsetPx)
             }

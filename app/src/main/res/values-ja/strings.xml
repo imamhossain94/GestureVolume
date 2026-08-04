@@ -92,7 +92,7 @@
     <string name="top_left">左上</string>
     <string name="top_right">右上</string>
     <string name="upgrade">アップグレード</string>
-    <string name="unlock_all_features">すべての機能のロックを解除</string>
+    <string name="unlock_all_features">広告をすべて削除</string>
     <string name="unsaved_changes">保存されていない変更</string>
     <string name="upgrade_to_pro">PROにアップグレード</string>
     <string name="vibrate_on_click">クリック時にバイブレーション</string>

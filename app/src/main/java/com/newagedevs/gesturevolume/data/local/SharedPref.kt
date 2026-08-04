@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.core.graphics.toColorInt
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -64,7 +65,6 @@ class SharedPref @Inject constructor(
         const val HANDLER_ICON_COLOR = "handlerIconColor"
         const val HANDLER_SHOW_ICON = "handlerShowIcon"
         const val HANDLER_VIBRATE_ON_CLICK = "handlerVibrateOnClick"
-        const val HANDLER_LOCK_POSITION = "handlerLockPosition"
         const val HANDLER_POSITION_FRACTION = "handlerPositionFraction"
         const val HANDLER_EDGE_MARGIN = "handlerEdgeMarginDp"
         const val BRIGHTNESS_AUTO_WAS_ON = "brightnessAutoWasOn"
@@ -244,8 +244,13 @@ class SharedPref @Inject constructor(
         sharedPreferences.edit { putString(HANDLER_DOUBLE_TAP, value) }
     }
 
+    // Defaults to Reposition: moving the bar has to live on some gesture, and the long press is the
+    // only one that cannot be triggered by accident. Users who want something else on long press
+    // just pick it — that also switches repositioning off, which is the whole point of one setting
+    // owning the gesture.
     fun getHandlerLongTapAction(): String =
-        sharedPreferences.getString(HANDLER_LONG_TAP, "None") ?: "None"
+        sharedPreferences.getString(HANDLER_LONG_TAP, HandlerActions.REPOSITION)
+            ?: HandlerActions.REPOSITION
 
     fun setHandlerLongTapAction(value: String) {
         sharedPreferences.edit { putString(HANDLER_LONG_TAP, value) }
@@ -523,8 +528,10 @@ class SharedPref @Inject constructor(
         sharedPreferences.edit { putInt(HANDLER_ICON_COLOR, value) }
     }
 
+    // Off by default: the bar reads as a cleaner slab without a glyph in it, and the icon is
+    // decorative — nothing about the gestures depends on it. Users who want it turn it on.
     fun getHandlerShowIcon(): Boolean =
-        sharedPreferences.getBoolean(HANDLER_SHOW_ICON, true)
+        sharedPreferences.getBoolean(HANDLER_SHOW_ICON, false)
 
     fun setHandlerShowIcon(value: Boolean) {
         sharedPreferences.edit { putBoolean(HANDLER_SHOW_ICON, value) }
@@ -536,13 +543,6 @@ class SharedPref @Inject constructor(
 
     fun setHandlerVibrateOnClick(value: Boolean) {
         sharedPreferences.edit { putBoolean(HANDLER_VIBRATE_ON_CLICK, value) }
-    }
-
-    fun getHandlerLockPosition(): Boolean =
-        sharedPreferences.getBoolean(HANDLER_LOCK_POSITION, true)
-
-    fun setHandlerLockPosition(value: Boolean) {
-        sharedPreferences.edit { putBoolean(HANDLER_LOCK_POSITION, value) }
     }
 
     // Theme and Language
