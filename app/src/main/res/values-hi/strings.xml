@@ -274,4 +274,32 @@
     <string name="step_popup">4. अनुमतियाँ: सुनिश्चित करें कि \"पृष्ठभूमि में चलते समय पॉप-अप विंडो प्रदर्शित करें\" सक्षम है।</string>
     <string name="troubleshoot_footer">डिवाइस-विशिष्ट निर्देशों के लिए, कृपया dontkillmyapp.com पर जाएं</string>
     <string name="visit_website">बेवसाइट देखना</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">ओवरले प्रबंधित करने के लिए टैप करें</string>
+    <string name="show">दिखाएँ</string>
+    <string name="hide">छिपाएँ</string>
+    <string name="stop">बंद करें</string>
+    <string name="brightness_percent">चमक %1$d%%</string>
+    <string name="brightness_needs_permission_short">चमक नियंत्रित करने के लिए सिस्टम सेटिंग बदलने की अनुमति दें</string>
+    <string name="auto_brightness_on">अनुकूली चमक चालू</string>
+    <string name="auto_brightness_off">अनुकूली चमक बंद</string>
+    <string name="action_increase_brightness">चमक बढ़ाएँ</string>
+    <string name="action_decrease_brightness">चमक घटाएँ</string>
+    <string name="action_toggle_auto_brightness">स्वतः चमक चालू/बंद</string>
+    <string name="write_settings_permission">सिस्टम सेटिंग बदलें</string>
+    <string name="write_settings_permission_desc">बार को स्क्रीन की चमक नियंत्रित करने देता है। केवल चमक क्रियाओं के लिए आवश्यक।</string>
+    <string name="brightness_permission_title">चमक नियंत्रण की अनुमति दें?</string>
+    <string name="brightness_permission_message">स्क्रीन की चमक बदलने के लिए GestureVolume को सिस्टम सेटिंग बदलने की अनुमति चाहिए। उपयोग के दौरान अनुकूली चमक बंद रहेगी और सेवा रोकने पर वापस चालू हो जाएगी।</string>
+    <string name="edge_offset">किनारे से दूरी</string>
+    <string name="edge_offset_desc">बार को स्क्रीन के किनारे से भीतर ले जाएँ। घुमावदार स्क्रीन और जेस्चर नेविगेशन में मदद करता है।</string>
+    <string name="reset_position">स्थिति रीसेट करें</string>
+    <string name="drag_to_move_hint">स्थिति लॉक बंद करें, फिर बार को दबाकर ऊपर या नीचे खींचें।</string>
+    <string name="fix_battery_title">बैटरी अनुकूलन</string>
+    <string name="fix_battery_desc">अप्रतिबंधित बैटरी उपयोग की अनुमति दें ताकि Android सेवा बंद न करे।</string>
+    <string name="fix_battery_allowed">अप्रतिबंधित</string>
+    <string name="fix_autostart_title">ऑटो-स्टार्ट</string>
+    <string name="fix_autostart_desc">अपने डिवाइस की ऑटो-स्टार्ट सेटिंग खोलें और GestureVolume को अनुमति दें।</string>
+    <string name="autostart_unavailable">इस डिवाइस पर उपलब्ध नहीं</string>
+    <string name="open_settings">सेटिंग खोलें</string>
 </resources>

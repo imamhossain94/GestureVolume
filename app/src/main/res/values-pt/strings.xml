@@ -274,4 +274,32 @@
     <string name="step_popup">4. Permissões: Certifique-se de que \"Exibir janelas pop-up durante a execução em segundo plano\" esteja ativado.</string>
     <string name="troubleshoot_footer">Para obter instruções específicas do dispositivo, visite dontkillmyapp.com</string>
     <string name="visit_website">Visite o site</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">Toque para gerenciar a sobreposição</string>
+    <string name="show">Mostrar</string>
+    <string name="hide">Ocultar</string>
+    <string name="stop">Parar</string>
+    <string name="brightness_percent">Brilho %1$d%%</string>
+    <string name="brightness_needs_permission_short">Permita Modificar configurações do sistema para controlar o brilho</string>
+    <string name="auto_brightness_on">Brilho adaptativo ativado</string>
+    <string name="auto_brightness_off">Brilho adaptativo desativado</string>
+    <string name="action_increase_brightness">Aumentar brilho</string>
+    <string name="action_decrease_brightness">Diminuir brilho</string>
+    <string name="action_toggle_auto_brightness">Brilho automático liga/desliga</string>
+    <string name="write_settings_permission">Modificar configurações do sistema</string>
+    <string name="write_settings_permission_desc">Permite que a barra controle o brilho da tela. Necessário apenas para ações de brilho.</string>
+    <string name="brightness_permission_title">Permitir o controle do brilho?</string>
+    <string name="brightness_permission_message">Para alterar o brilho da tela, o GestureVolume precisa da permissão Modificar configurações do sistema. O brilho adaptativo é desativado enquanto você o usa e restaurado ao parar o serviço.</string>
+    <string name="edge_offset">Distância da borda</string>
+    <string name="edge_offset_desc">Afasta a barra da borda da tela. Ajuda em telas curvas e com a navegação por gestos.</string>
+    <string name="reset_position">Redefinir posição</string>
+    <string name="drag_to_move_hint">Desative Bloquear posição e mantenha a barra pressionada para arrastá-la para cima ou para baixo.</string>
+    <string name="fix_battery_title">Otimização de bateria</string>
+    <string name="fix_battery_desc">Permita uso irrestrito da bateria para que o Android não interrompa o serviço.</string>
+    <string name="fix_battery_allowed">Irrestrito</string>
+    <string name="fix_autostart_title">Inicialização automática</string>
+    <string name="fix_autostart_desc">Abra as configurações de inicialização automática do aparelho e permita o GestureVolume.</string>
+    <string name="autostart_unavailable">Não disponível neste aparelho</string>
+    <string name="open_settings">Abrir configurações</string>
 </resources>

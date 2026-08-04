@@ -11,6 +11,21 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
+    <!--
+      Optional. Only needed for the brightness swipe actions, and only requested at the moment the
+      user selects one - never at startup. The app works fully without it.
+    -->
+    <uses-permission
+        android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+
+    <!--
+      Note: REQUEST_IGNORE_BATTERY_OPTIMIZATIONS is deliberately NOT declared. The Troubleshoot
+      screen sends the user to the system battery-optimisation list instead of popping the direct
+      allow/deny dialog, which is the Play-policy-safe route for an app of this type - and declaring
+      a sensitive permission the app never exercises is exactly what gets a listing flagged.
+    -->
+
     <application
         android:name=".GestureApplication"
         android:allowBackup="true"
@@ -41,7 +56,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-                <action android:name="com.newagedevs.gesturevolume.RESTART_SERVICE" />
             </intent-filter>
         </receiver>
 
@@ -60,9 +74,14 @@
             </intent-filter>
         </receiver>
 
+        <!--
+          stopWithTask="false" keeps the overlay alive when the user swipes the app out of Recents,
+          which is the single most common way this service used to die.
+        -->
         <service
             android:name=".service.OverlayService"
             android:exported="false"
+            android:stopWithTask="false"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="This_ForegroundService_Provides_SystemWide_Controls_For_User_Interaction"/>

@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Sun with a half-filled core: the standard "automatic / adaptive brightness" glyph. -->
+    <path
+        android:pathData="M12,7a5,5 0,0 0,0 10z"
+        android:fillColor="#09244b" />
+    <path
+        android:pathData="M12,7a5,5 0,1 1,0 10a5,5 0,1 1,0 -10z"
+        android:strokeColor="#09244b"
+        android:strokeWidth="1.6" />
+    <path
+        android:pathData="M12,1.5L12,4 M12,20L12,22.5 M1.5,12L4,12 M20,12L22.5,12 M4.57,4.57L6.34,6.34 M17.66,17.66L19.43,19.43 M4.57,19.43L6.34,17.66 M17.66,6.34L19.43,4.57"
+        android:strokeColor="#09244b"
+        android:strokeWidth="2"
+        android:strokeLineCap="round" />
+</vector>

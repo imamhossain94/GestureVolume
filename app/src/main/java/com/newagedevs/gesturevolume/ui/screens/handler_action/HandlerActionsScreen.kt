@@ -1,7 +1,10 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
 import android.app.Activity
-import androidx.compose.foundation.BorderStroke
+import android.content.Intent
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
@@ -37,6 +41,68 @@ fun HandlerActionsScreen(
     var showLongClickActionDialog by remember { mutableStateOf(false) }
     var showSwipeUpDialog by remember { mutableStateOf(false) }
     var showSwipeDownDialog by remember { mutableStateOf(false) }
+    // Re-applies the action the user picked, once they come back from the system settings screen.
+    val writeSettingsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        viewModel.preference.setAppOpenAdPaused(false)
+        viewModel.onEvent(MainEvent.WriteSettingsResult(context))
+    }
+
+    // Asked only when a brightness action is actually chosen — never at startup.
+    if (state.pendingWriteSettingsRequest) {
+        AlertDialog(
+            onDismissRequest = {
+                viewModel.onEvent(MainEvent.CancelPendingBrightnessAction)
+            },
+            title = {
+                Text(
+                    text = stringResource(R.string.brightness_permission_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.brightness_permission_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val intent = Intent(
+                            Settings.ACTION_MANAGE_WRITE_SETTINGS,
+                            "package:${context.packageName}".toUri()
+                        )
+                        viewModel.preference.setAppOpenAdPaused(true)
+                        try {
+                            writeSettingsLauncher.launch(intent)
+                        } catch (_: Exception) {
+                            viewModel.preference.setAppOpenAdPaused(false)
+                            viewModel.onEvent(MainEvent.CancelPendingBrightnessAction)
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.open_settings))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = {
+                        viewModel.onEvent(MainEvent.CancelPendingBrightnessAction)
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(24.dp)
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -232,7 +298,7 @@ fun HandlerActionsScreen(
             isSwipeUp = true,
             onDismiss = { showSwipeUpDialog = false },
             onSelect = { action ->
-                viewModel.onEvent(MainEvent.SetSwipeUpAction(action))
+                viewModel.onEvent(MainEvent.SetSwipeUpAction(action, context))
                 showSwipeUpDialog = false
             }
         )
@@ -245,7 +311,7 @@ fun HandlerActionsScreen(
             isSwipeUp = false,
             onDismiss = { showSwipeDownDialog = false },
             onSelect = { action ->
-                viewModel.onEvent(MainEvent.SetSwipeDownAction(action))
+                viewModel.onEvent(MainEvent.SetSwipeDownAction(action, context))
                 showSwipeDownDialog = false
             }
         )

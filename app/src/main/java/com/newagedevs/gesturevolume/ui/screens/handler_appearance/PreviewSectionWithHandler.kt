@@ -32,6 +32,7 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.newagedevs.gesturevolume.service.HandlerGeometry
 import com.newagedevs.gesturevolume.ui.view.HandlerView
 
 
@@ -54,19 +55,23 @@ fun PreviewSectionWithHandler(
     iconColor: Color,
     showIcon: Boolean,
     enableVibration: Boolean,
+    positionFraction: Float,
     backgroundImageURL: String,
     onHandlerCreated: (HandlerView) -> Unit
 ) {
     val handlerViewRef = remember { androidx.compose.runtime.mutableStateOf<HandlerView?>(null) }
 
-    // Recenter handler when height changes
-    LaunchedEffect(handlerHeight) {
+    // Keep the preview showing where the bar actually sits, including after a drag.
+    LaunchedEffect(handlerHeight, positionFraction) {
         handlerViewRef.value?.post {
             val handler = handlerViewRef.value ?: return@post
             val parentHeight = (handler.parent as? ViewGroup)?.height ?: 0
-            val handlerViewHeight = handler.height
-            if (parentHeight > 0 && handlerViewHeight > 0) {
-                handler.setTranslationYPosition(((parentHeight - handlerViewHeight) / 2).toFloat())
+            if (parentHeight > 0 && handler.height > 0) {
+                handler.setTranslationYPosition(
+                    HandlerGeometry.fractionToY(
+                        positionFraction, parentHeight, handler.height
+                    ).toFloat()
+                )
             }
         }
     }
@@ -147,16 +152,16 @@ fun PreviewSectionWithHandler(
                                 setCenterIconVisible(showIcon)
                                 setHandlerPositionLocked(true)
                                 setVibrateOnClick(enableVibration)
-
-                                setHandlerClickListener(object : HandlerView.HandlerClickListener {
-                                    override fun onSingleClick() {}
-                                    override fun onDoubleClick() {}
-                                })
+                                // No gesture detector: this small card is a static rendering of the
+                                // bar's appearance, not something the user interacts with.
 
                                 post {
                                     val parentHeight = (parent as? ViewGroup)?.height ?: 0
-                                    val handlerHeight = height
-                                    setTranslationYPosition(((parentHeight - handlerHeight) / 2).toFloat())
+                                    setTranslationYPosition(
+                                        HandlerGeometry.fractionToY(
+                                            positionFraction, parentHeight, height
+                                        ).toFloat()
+                                    )
                                 }
                             }
 

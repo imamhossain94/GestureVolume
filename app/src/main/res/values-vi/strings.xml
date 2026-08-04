@@ -274,4 +274,32 @@
     <string name="step_popup">4. Quyền: Đảm bảo \"Hiển thị cửa sổ bật lên khi chạy ở chế độ nền\" được bật.</string>
     <string name="troubleshoot_footer">Để biết hướng dẫn dành riêng cho thiết bị, vui lòng truy cập Dontkillmyapp.com</string>
     <string name="visit_website">Truy cập trang web</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">Chạm để quản lý lớp phủ</string>
+    <string name="show">Hiện</string>
+    <string name="hide">Ẩn</string>
+    <string name="stop">Dừng</string>
+    <string name="brightness_percent">Độ sáng %1$d%%</string>
+    <string name="brightness_needs_permission_short">Cho phép Sửa đổi cài đặt hệ thống để điều chỉnh độ sáng</string>
+    <string name="auto_brightness_on">Độ sáng thích ứng đang bật</string>
+    <string name="auto_brightness_off">Độ sáng thích ứng đang tắt</string>
+    <string name="action_increase_brightness">Tăng độ sáng</string>
+    <string name="action_decrease_brightness">Giảm độ sáng</string>
+    <string name="action_toggle_auto_brightness">Bật/tắt độ sáng tự động</string>
+    <string name="write_settings_permission">Sửa đổi cài đặt hệ thống</string>
+    <string name="write_settings_permission_desc">Cho phép thanh điều chỉnh độ sáng màn hình. Chỉ cần cho các thao tác độ sáng.</string>
+    <string name="brightness_permission_title">Cho phép điều chỉnh độ sáng?</string>
+    <string name="brightness_permission_message">Để thay đổi độ sáng màn hình, GestureVolume cần quyền Sửa đổi cài đặt hệ thống. Độ sáng thích ứng sẽ tắt trong khi bạn dùng và được bật lại khi bạn dừng dịch vụ.</string>
+    <string name="edge_offset">Khoảng cách mép</string>
+    <string name="edge_offset_desc">Dịch thanh vào trong khỏi mép màn hình. Hữu ích với màn hình cong và khi bật điều hướng cử chỉ.</string>
+    <string name="reset_position">Đặt lại vị trí</string>
+    <string name="drag_to_move_hint">Tắt Khóa vị trí, rồi nhấn giữ thanh để kéo lên hoặc xuống.</string>
+    <string name="fix_battery_title">Tối ưu hóa pin</string>
+    <string name="fix_battery_desc">Cho phép dùng pin không giới hạn để Android không dừng dịch vụ.</string>
+    <string name="fix_battery_allowed">Không giới hạn</string>
+    <string name="fix_autostart_title">Tự khởi động</string>
+    <string name="fix_autostart_desc">Mở cài đặt tự khởi động của thiết bị và cho phép GestureVolume.</string>
+    <string name="autostart_unavailable">Không khả dụng trên thiết bị này</string>
+    <string name="open_settings">Mở cài đặt</string>
 </resources>

@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.HandlerActions
 
 @Composable
 fun TapActionDialog(
@@ -42,14 +43,15 @@ fun TapActionDialog(
 ) {
     val actionOptions = remember {
         listOf(
-            Triple(R.drawable.ic_nothing, "None", R.string.action_none),
-            Triple(R.drawable.ic_vol_increase, "Open volume UI", R.string.action_open_volume_ui),
-            Triple(R.drawable.ic_mute, "Mute", R.string.action_mute),
-            Triple(R.drawable.ic_mute, "Mute or Unmute", R.string.action_mute_unmute),
-            Triple(R.drawable.ic_music_ui, "Active Music Overlay", R.string.action_music_overlay),
-            Triple(R.drawable.ic_lock, "Lock", R.string.action_lock),
-            Triple(R.drawable.ic_visibility_hide, "Hide Handler", R.string.action_hide_handler),
-            Triple(R.drawable.ic_app_open, "Open App", R.string.action_open_app)
+            Triple(R.drawable.ic_nothing, HandlerActions.NONE, R.string.action_none),
+            Triple(R.drawable.ic_vol_increase, HandlerActions.OPEN_VOLUME_UI, R.string.action_open_volume_ui),
+            Triple(R.drawable.ic_mute, HandlerActions.MUTE, R.string.action_mute),
+            Triple(R.drawable.ic_mute, HandlerActions.MUTE_OR_UNMUTE, R.string.action_mute_unmute),
+            Triple(R.drawable.ic_brightness_auto, HandlerActions.TOGGLE_AUTO_BRIGHTNESS, R.string.action_toggle_auto_brightness),
+            Triple(R.drawable.ic_music_ui, HandlerActions.ACTIVE_MUSIC_OVERLAY, R.string.action_music_overlay),
+            Triple(R.drawable.ic_lock, HandlerActions.LOCK, R.string.action_lock),
+            Triple(R.drawable.ic_visibility_hide, HandlerActions.HIDE_HANDLER, R.string.action_hide_handler),
+            Triple(R.drawable.ic_app_open, HandlerActions.OPEN_APP, R.string.action_open_app)
         )
     }
 

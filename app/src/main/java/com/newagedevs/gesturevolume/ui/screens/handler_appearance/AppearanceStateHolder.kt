@@ -24,7 +24,11 @@ data class AppearanceState(
     val iconColor: Int,
     val showIcon: Boolean,
     val vibrate: Boolean,
-    val lockPosition: Boolean
+    val lockPosition: Boolean,
+    /** Inward nudge from the screen edge, for curved screens and gesture navigation. */
+    val edgeMargin: Float,
+    /** Vertical position of the bar's centre, 0..1 of the usable height. */
+    val positionFraction: Float
 )
 
 class AppearanceStateHolder(
@@ -45,7 +49,9 @@ class AppearanceStateHolder(
     initialIconColor: Color,
     initialShowIcon: Boolean,
     initialVibrate: Boolean,
-    initialLockPosition: Boolean
+    initialLockPosition: Boolean,
+    initialEdgeMargin: Float,
+    initialPositionFraction: Float
 ) {
     var gravity by mutableStateOf(initialGravity)
     var width by mutableStateOf(initialWidth)
@@ -68,11 +74,14 @@ class AppearanceStateHolder(
     var showIcon by mutableStateOf(initialShowIcon)
     var vibrate by mutableStateOf(initialVibrate)
     var lockPosition by mutableStateOf(initialLockPosition)
+    var edgeMargin by mutableStateOf(initialEdgeMargin)
+    var positionFraction by mutableStateOf(initialPositionFraction)
 
     fun toState(): AppearanceState = AppearanceState(
         gravity, width, height, bgColor.toArgb(), bgAlpha,
         strokeColor.toArgb(), strokeWidth, strokeAlpha,
         cornerTL, cornerTR, cornerBL, cornerBR,
-        iconRes, iconSize, iconColor.toArgb(), showIcon, vibrate, lockPosition
+        iconRes, iconSize, iconColor.toArgb(), showIcon, vibrate, lockPosition,
+        edgeMargin, positionFraction
     )
 }

@@ -82,7 +82,9 @@ fun HandlerAppearanceScreen(
                 iconColor = preference.getHandlerIconColor(),
                 showIcon = preference.getHandlerShowIcon(),
                 vibrate = preference.getHandlerVibrateOnClick(),
-                lockPosition = preference.getHandlerLockPosition()
+                lockPosition = preference.getHandlerLockPosition(),
+                edgeMargin = preference.getHandlerEdgeMarginDp(),
+                positionFraction = preference.getHandlerPositionFraction()
             )
         )
     }
@@ -106,11 +108,16 @@ fun HandlerAppearanceScreen(
             initialIconColor = Color(savedState.value.iconColor),
             initialShowIcon = savedState.value.showIcon,
             initialVibrate = savedState.value.vibrate,
-            initialLockPosition = savedState.value.lockPosition
+            initialLockPosition = savedState.value.lockPosition,
+            initialEdgeMargin = savedState.value.edgeMargin,
+            initialPositionFraction = savedState.value.positionFraction
         )
     }
 
     var bgImage by remember { mutableStateOf(viewModel.getNextBackground()) }
+
+    // Resolved in composable scope so it follows configuration changes.
+    val appearanceSavedMsg = stringResource(R.string.appearance_saved)
     
     // Automatically recomputes as nested properties change
     val currentState = state.toState()
@@ -139,6 +146,8 @@ fun HandlerAppearanceScreen(
                     state.iconColor = Color.White
                     state.showIcon = true
                     state.vibrate = false
+                    state.edgeMargin = 0f
+                    state.positionFraction = 0.5f
                 }
                 "Minimal" -> {
                     state.gravity = Gravity.END
@@ -160,6 +169,8 @@ fun HandlerAppearanceScreen(
                     state.iconColor = Color.White
                     state.showIcon = false
                     state.vibrate = false
+                    state.edgeMargin = 0f
+                    state.positionFraction = 0.5f
                 }
                 "Bold" -> {
                     state.gravity = Gravity.END
@@ -181,6 +192,8 @@ fun HandlerAppearanceScreen(
                     state.iconColor = Color.White
                     state.showIcon = true
                     state.vibrate = true
+                    state.edgeMargin = 0f
+                    state.positionFraction = 0.5f
                 }
                 "Night" -> {
                     state.gravity = Gravity.END
@@ -202,6 +215,8 @@ fun HandlerAppearanceScreen(
                     state.iconColor = Color(0xFF9CA3AF)
                     state.showIcon = true
                     state.vibrate = true
+                    state.edgeMargin = 0f
+                    state.positionFraction = 0.5f
                 }
                 "Ghost" -> {
                     state.gravity = Gravity.END
@@ -223,6 +238,8 @@ fun HandlerAppearanceScreen(
                     state.iconColor = Color.White
                     state.showIcon = false
                     state.vibrate = false
+                    state.edgeMargin = 0f
+                    state.positionFraction = 0.5f
                 }
             }
         }
@@ -263,6 +280,8 @@ fun HandlerAppearanceScreen(
         preference.setHandlerShowIcon(state.showIcon)
         preference.setHandlerVibrateOnClick(state.vibrate)
         preference.setHandlerLockPosition(state.lockPosition)
+        preference.setHandlerEdgeMarginDp(state.edgeMargin)
+        preference.setHandlerPositionFraction(state.positionFraction)
 
         if (state.cornerTL == state.cornerTR && state.cornerTR == state.cornerBL && state.cornerBL == state.cornerBR) {
             preference.setAllCornerRadii(state.cornerTL)
@@ -270,7 +289,7 @@ fun HandlerAppearanceScreen(
 
         savedState.value = currentState
         viewModel.sendUpdateToService(context)
-        viewModel.showToast(context.getString(R.string.appearance_saved))
+        viewModel.showToast(appearanceSavedMsg)
     }
 
     BackHandler(enabled = hasUnsavedChanges) {
@@ -430,6 +449,7 @@ fun HandlerAppearanceScreen(
                 iconColor = Color(currentState.iconColor),
                 showIcon = currentState.showIcon,
                 enableVibration = currentState.vibrate,
+                positionFraction = currentState.positionFraction,
                 backgroundImageURL = bgImage,
                 onHandlerCreated = { handlerViewRef = it }
             )
@@ -452,9 +472,9 @@ fun HandlerAppearanceScreen(
         ExpandedPreviewDialog(
             state = state,
             viewModel = viewModel,
-            translationY = preference.getHandlerTranslationY(),
             backgroundImageURL = bgImage,
             onShowIconPicker = { showIconPicker = true },
+            onPositionChanged = { state.positionFraction = it },
             onDismiss = { isExpandedPreview = false }
         )
     }
