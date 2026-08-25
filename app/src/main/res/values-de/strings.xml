@@ -92,7 +92,7 @@
     <string name="top_left">Oben Links</string>
     <string name="top_right">Oben Rechts</string>
     <string name="upgrade">UPGRADE</string>
-    <string name="unlock_all_features">Alle Funktionen freischalten</string>
+    <string name="unlock_all_features">Alle Werbung entfernen</string>
     <string name="unsaved_changes">Ungespeicherte Änderungen</string>
     <string name="upgrade_to_pro">Auf PRO upgraden</string>
     <string name="vibrate_on_click">Vibrieren bei Klick</string>
@@ -274,4 +274,32 @@
     <string name="step_popup">4. Berechtigungen: Stellen Sie sicher, dass „Popup-Fenster bei Ausführung im Hintergrund anzeigen“ aktiviert ist.</string>
     <string name="troubleshoot_footer">Für gerätespezifische Anweisungen besuchen Sie bitte dontkillmyapp.com</string>
     <string name="visit_website">Besuchen Sie die Website</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">Tippen, um das Overlay zu verwalten</string>
+    <string name="show">Anzeigen</string>
+    <string name="hide">Ausblenden</string>
+    <string name="stop">Beenden</string>
+    <string name="brightness_percent">Helligkeit %1$d%%</string>
+    <string name="brightness_needs_permission_short">Systemeinstellungen ändern erlauben, um die Helligkeit zu steuern</string>
+    <string name="auto_brightness_on">Adaptive Helligkeit ein</string>
+    <string name="auto_brightness_off">Adaptive Helligkeit aus</string>
+    <string name="action_increase_brightness">Helligkeit erhöhen</string>
+    <string name="action_decrease_brightness">Helligkeit verringern</string>
+    <string name="action_toggle_auto_brightness">Automatische Helligkeit ein/aus</string>
+    <string name="write_settings_permission">Systemeinstellungen ändern</string>
+    <string name="write_settings_permission_desc">Erlaubt der Leiste, die Bildschirmhelligkeit zu steuern. Nur für Helligkeitsaktionen nötig.</string>
+    <string name="brightness_permission_title">Helligkeitssteuerung erlauben?</string>
+    <string name="brightness_permission_message">Um die Bildschirmhelligkeit zu ändern, benötigt GestureVolume die Berechtigung Systemeinstellungen ändern. Die adaptive Helligkeit wird währenddessen deaktiviert und beim Beenden des Dienstes wiederhergestellt.</string>
+    <string name="edge_offset">Randabstand</string>
+    <string name="edge_offset_desc">Verschiebt die Leiste vom Bildschirmrand nach innen. Hilft bei gebogenen Displays und aktivierter Gestensteuerung.</string>
+    <string name="reset_position">Position zurücksetzen</string>
+    <string name="drag_to_move_hint">Position entsperren, dann die Leiste nach oben oder unten ziehen.</string>
+    <string name="fix_battery_title">Akkuoptimierung</string>
+    <string name="fix_battery_desc">Uneingeschränkte Akkunutzung erlauben, damit Android den Dienst nicht beendet.</string>
+    <string name="fix_battery_allowed">Uneingeschränkt</string>
+    <string name="fix_autostart_title">Autostart</string>
+    <string name="fix_autostart_desc">Öffne die Autostart-Einstellungen deines Geräts und erlaube GestureVolume.</string>
+    <string name="autostart_unavailable">Auf diesem Gerät nicht verfügbar</string>
+    <string name="open_settings">Einstellungen öffnen</string>
 </resources>

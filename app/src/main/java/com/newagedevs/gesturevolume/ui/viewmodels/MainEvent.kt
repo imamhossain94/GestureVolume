@@ -10,9 +10,16 @@ sealed class MainEvent {
     data class SetClickAction(val action: String, val context: Context) : MainEvent()
     data class SetDoubleClickAction(val action: String, val context: Context) : MainEvent()
     data class SetLongClickAction(val action: String, val context: Context) : MainEvent()
-    data class SetSwipeUpAction(val action: String) : MainEvent()
-    data class SetSwipeDownAction(val action: String) : MainEvent()
+    // Context is needed because the brightness swipe actions are gated on WRITE_SETTINGS.
+    data class SetSwipeUpAction(val action: String, val context: Context) : MainEvent()
+    data class SetSwipeDownAction(val action: String, val context: Context) : MainEvent()
     data class UpdatePermissionsStatus(val context: Context) : MainEvent()
     data class SyncServiceState(val context: Context) : MainEvent()
     object ShowProDialog : MainEvent()
+
+    /** The user came back from the "Modify system settings" screen. */
+    data class WriteSettingsResult(val context: Context) : MainEvent()
+
+    /** The user dismissed the brightness-permission rationale without granting. */
+    object CancelPendingBrightnessAction : MainEvent()
 }

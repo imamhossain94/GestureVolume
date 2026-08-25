@@ -92,7 +92,7 @@
     <string name="top_left">左上角</string>
     <string name="top_right">右上角</string>
     <string name="upgrade">升级</string>
-    <string name="unlock_all_features">解锁所有功能</string>
+    <string name="unlock_all_features">移除所有广告</string>
     <string name="unsaved_changes">未保存的更改</string>
     <string name="upgrade_to_pro">升级至 PRO 进阶版</string>
     <string name="vibrate_on_click">点击时震动</string>
@@ -274,4 +274,32 @@
     <string name="step_popup">4. 权限：确保启用“在后台运行时显示弹出窗口”。</string>
     <string name="troubleshoot_footer">有关特定于设备的说明，请访问 dontkillmyapp.com</string>
     <string name="visit_website">访问网站</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">点按以管理悬浮窗</string>
+    <string name="show">显示</string>
+    <string name="hide">隐藏</string>
+    <string name="stop">停止</string>
+    <string name="brightness_percent">亮度 %1$d%%</string>
+    <string name="brightness_needs_permission_short">请允许“修改系统设置”以控制亮度</string>
+    <string name="auto_brightness_on">自动亮度已开启</string>
+    <string name="auto_brightness_off">自动亮度已关闭</string>
+    <string name="action_increase_brightness">调高亮度</string>
+    <string name="action_decrease_brightness">调低亮度</string>
+    <string name="action_toggle_auto_brightness">开启/关闭自动亮度</string>
+    <string name="write_settings_permission">修改系统设置</string>
+    <string name="write_settings_permission_desc">允许侧边条控制屏幕亮度。仅亮度操作需要此权限。</string>
+    <string name="brightness_permission_title">允许控制亮度吗？</string>
+    <string name="brightness_permission_message">要更改屏幕亮度，GestureVolume 需要“修改系统设置”权限。使用期间会关闭自动亮度，停止服务后会自动恢复。</string>
+    <string name="edge_offset">边缘偏移</string>
+    <string name="edge_offset_desc">将侧边条从屏幕边缘向内移动。适用于曲面屏和开启手势导航时。</string>
+    <string name="reset_position">重置位置</string>
+    <string name="drag_to_move_hint">关闭“锁定位置”，然后上下拖动侧边条即可移动。</string>
+    <string name="fix_battery_title">电池优化</string>
+    <string name="fix_battery_desc">允许无限制使用电池，以免系统停止该服务。</string>
+    <string name="fix_battery_allowed">无限制</string>
+    <string name="fix_autostart_title">自启动</string>
+    <string name="fix_autostart_desc">打开设备的自启动设置并允许 GestureVolume。</string>
+    <string name="autostart_unavailable">此设备不支持</string>
+    <string name="open_settings">打开设置</string>
 </resources>

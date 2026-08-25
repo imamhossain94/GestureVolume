@@ -30,8 +30,8 @@ fun PermissionsStatusCard(
         modifier = modifier.clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (allPermissionsGranted) MaterialTheme.colorScheme.surfaceVariant 
-            else MaterialTheme.colorScheme.errorContainer
+            containerColor = if (allPermissionsGranted) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+            else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.65f)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {

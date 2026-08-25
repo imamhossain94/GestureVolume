@@ -92,7 +92,7 @@
     <string name="top_left">Arriba a la izquierda</string>
     <string name="top_right">Arriba a la derecha</string>
     <string name="upgrade">MEJORA</string>
-    <string name="unlock_all_features">Desbloquea todas las funciones</string>
+    <string name="unlock_all_features">Eliminar todos los anuncios</string>
     <string name="unsaved_changes">Cambios no guardados</string>
     <string name="upgrade_to_pro">Actualízate a Pro</string>
     <string name="vibrate_on_click">Vibrar al hacer clic</string>
@@ -274,4 +274,32 @@
     <string name="step_popup">4. Permisos: asegúrese de que \"Mostrar ventanas emergentes mientras se ejecuta en segundo plano\" esté habilitado.</string>
     <string name="troubleshoot_footer">Para obtener instrucciones específicas del dispositivo, visite dontkillmyapp.com</string>
     <string name="visit_website">Visitar sitio web</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">Toca para gestionar la superposición</string>
+    <string name="show">Mostrar</string>
+    <string name="hide">Ocultar</string>
+    <string name="stop">Detener</string>
+    <string name="brightness_percent">Brillo %1$d%%</string>
+    <string name="brightness_needs_permission_short">Permite Modificar ajustes del sistema para controlar el brillo</string>
+    <string name="auto_brightness_on">Brillo adaptativo activado</string>
+    <string name="auto_brightness_off">Brillo adaptativo desactivado</string>
+    <string name="action_increase_brightness">Aumentar brillo</string>
+    <string name="action_decrease_brightness">Reducir brillo</string>
+    <string name="action_toggle_auto_brightness">Brillo automático sí/no</string>
+    <string name="write_settings_permission">Modificar ajustes del sistema</string>
+    <string name="write_settings_permission_desc">Permite que la barra controle el brillo de la pantalla. Solo se necesita para las acciones de brillo.</string>
+    <string name="brightness_permission_title">¿Permitir el control del brillo?</string>
+    <string name="brightness_permission_message">Para cambiar el brillo de la pantalla, GestureVolume necesita el permiso Modificar ajustes del sistema. El brillo adaptativo se desactiva mientras lo usas y se restaura al detener el servicio.</string>
+    <string name="edge_offset">Separación del borde</string>
+    <string name="edge_offset_desc">Aleja la barra del borde de la pantalla. Ayuda en pantallas curvas y con la navegación por gestos.</string>
+    <string name="reset_position">Restablecer posición</string>
+    <string name="drag_to_move_hint">Desactiva Bloquear posición y arrastra la barra hacia arriba o abajo.</string>
+    <string name="fix_battery_title">Optimización de batería</string>
+    <string name="fix_battery_desc">Permite el uso de batería sin restricciones para que Android no detenga el servicio.</string>
+    <string name="fix_battery_allowed">Sin restricciones</string>
+    <string name="fix_autostart_title">Inicio automático</string>
+    <string name="fix_autostart_desc">Abre los ajustes de inicio automático de tu dispositivo y permite GestureVolume.</string>
+    <string name="autostart_unavailable">No disponible en este dispositivo</string>
+    <string name="open_settings">Abrir ajustes</string>
 </resources>

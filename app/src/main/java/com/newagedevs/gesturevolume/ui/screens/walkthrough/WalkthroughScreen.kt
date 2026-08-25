@@ -6,11 +6,11 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -32,15 +33,22 @@ import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.NotificationUtil
 import androidx.compose.ui.res.stringResource
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalAnimationApi::class)
+private const val WALKTHROUGH_PAGE_COUNT = 4
+
 @Composable
 fun WalkthroughScreen(
     viewModel: MainViewModel = hiltViewModel(),
     onComplete: () -> Unit
 ) {
     val context = LocalContext.current
-    var currentPage by remember { mutableStateOf(0) }
+    val pagerState = rememberPagerState(pageCount = { WALKTHROUGH_PAGE_COUNT })
+    val scope = rememberCoroutineScope()
+
+    fun goToPage(page: Int) {
+        scope.launch { pagerState.animateScrollToPage(page) }
+    }
 
     DisposableEffect(Unit) {
         viewModel.preference.setAppOpenAdPaused(true)
@@ -50,14 +58,14 @@ fun WalkthroughScreen(
     }
 
     val hasOverlayPermission = remember { mutableStateOf(Settings.canDrawOverlays(context)) }
-    val hasNotificationPermission = remember { 
+    val hasNotificationPermission = remember {
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 NotificationUtil(context).isPermissionGranted()
             } else {
                 true
             }
-        ) 
+        )
     }
 
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
@@ -67,7 +75,7 @@ fun WalkthroughScreen(
         viewModel.preference.setAppOpenAdPaused(false)
         hasOverlayPermission.value = Settings.canDrawOverlays(context)
         if (hasOverlayPermission.value) {
-            currentPage++
+            goToPage(pagerState.currentPage + 1)
         }
     }
 
@@ -75,133 +83,156 @@ fun WalkthroughScreen(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         hasNotificationPermission.value = isGranted
-        currentPage++
+        goToPage(pagerState.currentPage + 1)
     }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp)
-                .statusBarsPadding(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-
-            AnimatedContent(targetState = currentPage, label = "walkthrough") { page ->
-                when (page) {
-                    0 -> WalkthroughPage(
-                        title = stringResource(R.string.walkthrough_welcome_title),
-                        description = stringResource(R.string.walkthrough_welcome_desc),
-                        iconRes = R.drawable.ic_launcher_foreground
-                    )
-                    1 -> WalkthroughPage(
-                        title = stringResource(R.string.walkthrough_overlay_title),
-                        description = stringResource(R.string.walkthrough_overlay_desc),
-                        iconRes = R.drawable.ic_layer_group,
-                        isGranted = hasOverlayPermission.value
-                    )
-                    2 -> WalkthroughPage(
-                        title = stringResource(R.string.walkthrough_notifications_title),
-                        description = stringResource(R.string.walkthrough_notifications_desc),
-                        iconRes = R.drawable.ic_notification_unread_lines,
-                        isGranted = hasNotificationPermission.value
-                    )
-                    else -> WalkthroughPage(
-                        title = stringResource(R.string.walkthrough_all_set_title),
-                        description = stringResource(R.string.walkthrough_all_set_desc),
-                        iconRes = R.drawable.ic_smile_circle
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Page indicators
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(bottom = 32.dp)
-            ) {
-                for (i in 0..3) {
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .size(if (i == currentPage) 10.dp else 8.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (i == currentPage) MaterialTheme.colorScheme.primary 
-                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+        Box(modifier = Modifier.fillMaxSize()) {
+            // A little transparent color tint behind the content
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                Color.Transparent
                             )
+                        )
                     )
-                }
-            }
+            )
 
-            // Bottom button
-            Button(
-                onClick = {
-                    when (currentPage) {
-                        0 -> currentPage++
-                        1 -> {
-                            if (!hasOverlayPermission.value) {
-                                val intent = Intent(
-                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                    "package:${context.packageName}".toUri()
-                                )
-                                // Pause ads while the user is in the overlay permission screen
-                                viewModel.preference.setAppOpenAdPaused(true)
-                                overlayPermissionLauncher.launch(intent)
-                            } else {
-                                currentPage++
-                            }
-                        }
-                        2 -> {
-                            if (!hasNotificationPermission.value && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            } else {
-                                currentPage++
-                            }
-                        }
-                        else -> {
-                            viewModel.preference.setFirstLaunchCompleted()
-                            // Onboarding done — now safe to init ads + consent flow off the walkthrough.
-                            (context.applicationContext as? GestureApplication)?.initializeAdsIfNeeded()
-                            onComplete()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+                    .statusBarsPadding(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Swipeable pages
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) { page ->
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        when (page) {
+                            0 -> WalkthroughPage(
+                                title = stringResource(R.string.walkthrough_welcome_title),
+                                description = stringResource(R.string.walkthrough_welcome_desc),
+                                iconRes = R.drawable.ic_launcher_foreground
+                            )
+                            1 -> WalkthroughPage(
+                                title = stringResource(R.string.walkthrough_overlay_title),
+                                description = stringResource(R.string.walkthrough_overlay_desc),
+                                iconRes = R.drawable.ic_layer_group,
+                                isGranted = hasOverlayPermission.value
+                            )
+                            2 -> WalkthroughPage(
+                                title = stringResource(R.string.walkthrough_notifications_title),
+                                description = stringResource(R.string.walkthrough_notifications_desc),
+                                iconRes = R.drawable.ic_notification_unread_lines,
+                                isGranted = hasNotificationPermission.value
+                            )
+                            else -> WalkthroughPage(
+                                title = stringResource(R.string.walkthrough_all_set_title),
+                                description = stringResource(R.string.walkthrough_all_set_desc),
+                                iconRes = R.drawable.ic_smile_circle
+                            )
                         }
                     }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Text(
-                    text = when (currentPage) {
-                        0 -> stringResource(R.string.get_started)
-                        1 -> if (hasOverlayPermission.value) stringResource(R.string.next) else stringResource(R.string.grant_permission)
-                        2 -> if (hasNotificationPermission.value) stringResource(R.string.next) else stringResource(R.string.grant_permission)
-                        else -> stringResource(R.string.finish)
-                    },
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            
-            // Skip button for permissions
-            if (currentPage in 1..2) {
-                TextButton(
-                    onClick = { currentPage++ },
-                    modifier = Modifier.padding(top = 8.dp)
-                ) {
-                    Text(stringResource(R.string.skip_for_now), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-            } else {
-                Spacer(modifier = Modifier.height(56.dp)) // Maintain spacing
+
+                // Page indicators
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(bottom = 32.dp)
+                ) {
+                    for (i in 0 until WALKTHROUGH_PAGE_COUNT) {
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .size(if (i == pagerState.currentPage) 10.dp else 8.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (i == pagerState.currentPage) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                                )
+                        )
+                    }
+                }
+
+                // Bottom button
+                Button(
+                    onClick = {
+                        when (pagerState.currentPage) {
+                            0 -> goToPage(1)
+                            1 -> {
+                                if (!hasOverlayPermission.value) {
+                                    val intent = Intent(
+                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                        "package:${context.packageName}".toUri()
+                                    )
+                                    // Pause ads while the user is in the overlay permission screen
+                                    viewModel.preference.setAppOpenAdPaused(true)
+                                    overlayPermissionLauncher.launch(intent)
+                                } else {
+                                    goToPage(2)
+                                }
+                            }
+                            2 -> {
+                                if (!hasNotificationPermission.value && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                } else {
+                                    goToPage(3)
+                                }
+                            }
+                            else -> {
+                                viewModel.preference.setFirstLaunchCompleted()
+                                // Onboarding done — now safe to init ads + consent flow off the walkthrough.
+                                (context.applicationContext as? GestureApplication)?.initializeAdsIfNeeded()
+                                onComplete()
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text(
+                        text = when (pagerState.currentPage) {
+                            0 -> stringResource(R.string.get_started)
+                            1 -> if (hasOverlayPermission.value) stringResource(R.string.next) else stringResource(R.string.grant_permission)
+                            2 -> if (hasNotificationPermission.value) stringResource(R.string.next) else stringResource(R.string.grant_permission)
+                            else -> stringResource(R.string.finish)
+                        },
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Skip button for permissions
+                if (pagerState.currentPage in 1..2) {
+                    TextButton(
+                        onClick = { goToPage(pagerState.currentPage + 1) },
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(stringResource(R.string.skip_for_now), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(56.dp)) // Maintain spacing
+                }
             }
         }
     }

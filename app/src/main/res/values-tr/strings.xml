@@ -92,7 +92,7 @@
     <string name="top_left">Sol Üst</string>
     <string name="top_right">Sağ Üst</string>
     <string name="upgrade">GÜNCELLEME</string>
-    <string name="unlock_all_features">Tüm özelliklerin kilidini açın</string>
+    <string name="unlock_all_features">Tüm reklamları kaldır</string>
     <string name="unsaved_changes">Kaydedilmemiş Değişiklikler</string>
     <string name="upgrade_to_pro">Pro\'ya yükseltin</string>
     <string name="vibrate_on_click">Tıklandığında titret</string>
@@ -274,4 +274,32 @@
     <string name="step_popup">4. İzinler: \"Arka planda çalışırken açılır pencereleri görüntüle\" seçeneğinin etkinleştirildiğinden emin olun.</string>
     <string name="troubleshoot_footer">Cihaza özel talimatlar için lütfen dontkillmyapp.com adresini ziyaret edin.</string>
     <string name="visit_website">Web Sitesini Ziyaret Edin</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">Yer paylaşımını yönetmek için dokunun</string>
+    <string name="show">Göster</string>
+    <string name="hide">Gizle</string>
+    <string name="stop">Durdur</string>
+    <string name="brightness_percent">Parlaklık %1$d%%</string>
+    <string name="brightness_needs_permission_short">Parlaklığı denetlemek için Sistem ayarlarını değiştirme iznini verin</string>
+    <string name="auto_brightness_on">Uyarlanabilir parlaklık açık</string>
+    <string name="auto_brightness_off">Uyarlanabilir parlaklık kapalı</string>
+    <string name="action_increase_brightness">Parlaklığı artır</string>
+    <string name="action_decrease_brightness">Parlaklığı azalt</string>
+    <string name="action_toggle_auto_brightness">Otomatik parlaklık aç/kapat</string>
+    <string name="write_settings_permission">Sistem ayarlarını değiştirme</string>
+    <string name="write_settings_permission_desc">Çubuğun ekran parlaklığını denetlemesini sağlar. Yalnızca parlaklık eylemleri için gereklidir.</string>
+    <string name="brightness_permission_title">Parlaklık denetimine izin verilsin mi?</string>
+    <string name="brightness_permission_message">Ekran parlaklığını değiştirmek için GestureVolume, Sistem ayarlarını değiştirme iznine ihtiyaç duyar. Kullanım sırasında uyarlanabilir parlaklık kapatılır ve hizmeti durdurduğunuzda geri açılır.</string>
+    <string name="edge_offset">Kenar boşluğu</string>
+    <string name="edge_offset_desc">Çubuğu ekran kenarından içeri kaydırır. Kavisli ekranlarda ve hareketle gezinmede işe yarar.</string>
+    <string name="reset_position">Konumu sıfırla</string>
+    <string name="drag_to_move_hint">Konum kilidini kapatın, ardından çubuğu yukarı veya aşağı sürükleyin.</string>
+    <string name="fix_battery_title">Pil optimizasyonu</string>
+    <string name="fix_battery_desc">Android hizmeti durdurmasın diye sınırsız pil kullanımına izin verin.</string>
+    <string name="fix_battery_allowed">Sınırsız</string>
+    <string name="fix_autostart_title">Otomatik başlatma</string>
+    <string name="fix_autostart_desc">Cihazınızın otomatik başlatma ayarlarını açın ve GestureVolume uygulamasına izin verin.</string>
+    <string name="autostart_unavailable">Bu cihazda kullanılamıyor</string>
+    <string name="open_settings">Ayarları aç</string>
 </resources>

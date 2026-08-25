@@ -92,7 +92,7 @@
     <string name="top_left">Top Left</string>
     <string name="top_right">Top Right</string>
     <string name="upgrade">UPGRADE</string>
-    <string name="unlock_all_features">Unlock all features</string>
+    <string name="unlock_all_features">Remove all ads</string>
     <string name="unsaved_changes">Unsaved Changes</string>
     <string name="upgrade_to_pro">Upgrade to Pro</string>
     <string name="vibrate_on_click">Vibrate on click</string>
@@ -123,7 +123,7 @@
     <string name="gesture_actions">GESTURE ACTIONS</string>
     <string name="single_tap_desc">What happens on single tap</string>
     <string name="double_tap_desc">What happens on double tap</string>
-    <string name="long_press_desc">What happens on long press</string>
+    <string name="long_press_desc">Moves the handler by default</string>
     <string name="swipe_up_desc">What happens on swipe up</string>
     <string name="swipe_down_desc">What happens on swipe down</string>
     <string name="tap_gesture_settings">Tap &amp; gesture settings</string>
@@ -163,11 +163,12 @@
 
     <!-- Expanded Preview -->
     <string name="position_locked">POSITION LOCKED</string>
+    <string name="long_press_to_reposition">LONG PRESS TO MOVE</string>
     <string name="unlock_to_reposition">UNLOCK TO REPOSITION</string>
     <string name="test_mode">Test Mode</string>
     <string name="reposition_mode">Reposition Mode</string>
     <string name="test_mode_desc">Try swipes and taps</string>
-    <string name="reposition_mode_desc">Drag handler to new position</string>
+    <string name="reposition_mode_desc">Long press, then drag to move it</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">POSITION</string>
@@ -189,6 +190,7 @@
     <string name="action_lock">Lock</string>
     <string name="action_hide_handler">Hide Handler</string>
     <string name="action_open_app">Open App</string>
+    <string name="action_reposition">Move handler</string>
     <string name="action_increase_vol_ui">Increase volume and show UI</string>
     <string name="action_increase_vol">Increase volume</string>
     <string name="action_decrease_vol_ui">Decrease volume and show UI</string>
@@ -274,4 +276,32 @@
     <string name="step_popup">4. Permissions: Ensure \"Display pop-up windows while running in the background\" is enabled.</string>
     <string name="troubleshoot_footer">For device-specific instructions, please visit dontkillmyapp.com</string>
     <string name="visit_website">Visit Website</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">Tap to manage overlay</string>
+    <string name="show">Show</string>
+    <string name="hide">Hide</string>
+    <string name="stop">Stop</string>
+    <string name="brightness_percent">Brightness %1$d%%</string>
+    <string name="brightness_needs_permission_short">Allow Modify system settings to control brightness</string>
+    <string name="auto_brightness_on">Adaptive brightness on</string>
+    <string name="auto_brightness_off">Adaptive brightness off</string>
+    <string name="action_increase_brightness">Increase brightness</string>
+    <string name="action_decrease_brightness">Decrease brightness</string>
+    <string name="action_toggle_auto_brightness">Auto brightness on/off</string>
+    <string name="write_settings_permission">Modify system settings</string>
+    <string name="write_settings_permission_desc">Lets the bar control screen brightness. Only needed for brightness actions.</string>
+    <string name="brightness_permission_title">Allow brightness control?</string>
+    <string name="brightness_permission_message">To change screen brightness, GestureVolume needs the Modify system settings permission. Adaptive brightness is turned off while you use it, and restored when you stop the service.</string>
+    <string name="edge_offset">Edge offset</string>
+    <string name="edge_offset_desc">Move the bar inward from the screen edge. Helps on curved screens and when gesture navigation is on.</string>
+    <string name="reset_position">Reset position</string>
+    <string name="drag_to_move_hint">To move the bar: long press it, wait for the vibration, then drag up or down. Set the long press action to “Move handler” to enable this.</string>
+    <string name="fix_battery_title">Battery optimization</string>
+    <string name="fix_battery_desc">Allow unrestricted battery use so Android does not stop the service.</string>
+    <string name="fix_battery_allowed">Unrestricted</string>
+    <string name="fix_autostart_title">Auto-start</string>
+    <string name="fix_autostart_desc">Open your device auto-start settings and allow GestureVolume.</string>
+    <string name="autostart_unavailable">Not available on this device</string>
+    <string name="open_settings">Open settings</string>
 </resources>

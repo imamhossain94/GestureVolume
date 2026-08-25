@@ -10,10 +10,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.newagedevs.gesturevolume.R
 
@@ -52,12 +56,46 @@ fun HandlerAppearanceSettingsContent(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
-            SwitchControl(
-                label = stringResource(R.string.lock_position),
-                checked = state.lockPosition,
-                borderColor = Color(0xFF8B5CF6),
-                onCheckedChange = { state.lockPosition = it }
+            // There is no lock switch any more. Moving the bar takes a deliberate long press, and
+            // whether that long press moves it is the long-press action's business — one setting,
+            // in one place, instead of two that could contradict each other.
+            Text(
+                text = stringResource(R.string.drag_to_move_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 16.sp
             )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
+            SliderControl(
+                label = stringResource(R.string.edge_offset),
+                value = state.edgeMargin,
+                valueRange = 0f..48f,
+                valueDisplay = "${state.edgeMargin.toInt()}dp",
+                borderColor = Color(0xFF8B5CF6),
+                onValueChange = { state.edgeMargin = it }
+            )
+            Text(
+                text = stringResource(R.string.edge_offset_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 16.sp
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
+            // A way back for anyone who drags the bar somewhere awkward.
+            TextButton(
+                onClick = { state.positionFraction = 0.5f },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text(stringResource(R.string.reset_position))
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.BrightnessHigh
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
@@ -94,12 +95,16 @@ fun PermissionsScreen(
     var deviceAdminGranted by remember {
         mutableStateOf(LockScreenUtil(context).active())
     }
+    var writeSettingsGranted by remember {
+        mutableStateOf(Settings.System.canWrite(context))
+    }
 
     // Listen for lifecycle changes to update device admin status
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 deviceAdminGranted = LockScreenUtil(context).active()
+                writeSettingsGranted = Settings.System.canWrite(context)
                 viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
             }
         }
@@ -154,7 +159,7 @@ fun PermissionsScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer
+                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f)
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -244,6 +249,34 @@ fun PermissionsScreen(
                 modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
             )
 
+            // Modify system settings — only needed for the brightness actions.
+            PermissionCard(
+                title = stringResource(R.string.write_settings_permission),
+                description = stringResource(R.string.write_settings_permission_desc),
+                icon = Icons.Default.BrightnessHigh,
+                isGranted = writeSettingsGranted,
+                isOptional = true,
+                borderColor = if (writeSettingsGranted) {
+                    Color(0xFF10B981)
+                } else {
+                    Color(0xFF8B5CF6)
+                },
+                onRequestPermission = {
+                    val intent = Intent(
+                        Settings.ACTION_MANAGE_WRITE_SETTINGS,
+                        "package:${context.packageName}".toUri()
+                    )
+                    viewModel.preference.setAppOpenAdPaused(true)
+                    try {
+                        context.startActivity(intent)
+                    } catch (_: Exception) {
+                        viewModel.preference.setAppOpenAdPaused(false)
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Device Admin Permission
             PermissionCard(
                 title = stringResource(R.string.device_admin_permission),
@@ -282,7 +315,7 @@ fun PermissionsScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp),

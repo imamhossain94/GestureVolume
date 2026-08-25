@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.HandlerActions
 
 @Composable
 fun SwipeActionDialog(
@@ -42,15 +43,17 @@ fun SwipeActionDialog(
     val actionOptions = remember(isSwipeUp) {
         if (isSwipeUp) {
             listOf(
-                Triple(R.drawable.ic_nothing, "None", R.string.action_none),
-                Triple(R.drawable.ic_vol_increase, "Increase volume and show UI", R.string.action_increase_vol_ui),
-                Triple(R.drawable.ic_vol_plus, "Increase volume", R.string.action_increase_vol)
+                Triple(R.drawable.ic_nothing, HandlerActions.NONE, R.string.action_none),
+                Triple(R.drawable.ic_vol_increase, HandlerActions.INCREASE_VOLUME_UI, R.string.action_increase_vol_ui),
+                Triple(R.drawable.ic_vol_plus, HandlerActions.INCREASE_VOLUME, R.string.action_increase_vol),
+                Triple(R.drawable.ic_brightness_up, HandlerActions.INCREASE_BRIGHTNESS, R.string.action_increase_brightness)
             )
         } else {
             listOf(
-                Triple(R.drawable.ic_nothing, "None", R.string.action_none),
-                Triple(R.drawable.ic_vol_decrease, "Decrease volume and show UI", R.string.action_decrease_vol_ui),
-                Triple(R.drawable.ic_vol_minus, "Decrease volume", R.string.action_decrease_vol)
+                Triple(R.drawable.ic_nothing, HandlerActions.NONE, R.string.action_none),
+                Triple(R.drawable.ic_vol_decrease, HandlerActions.DECREASE_VOLUME_UI, R.string.action_decrease_vol_ui),
+                Triple(R.drawable.ic_vol_minus, HandlerActions.DECREASE_VOLUME, R.string.action_decrease_vol),
+                Triple(R.drawable.ic_brightness_down, HandlerActions.DECREASE_BRIGHTNESS, R.string.action_decrease_brightness)
             )
         }
     }

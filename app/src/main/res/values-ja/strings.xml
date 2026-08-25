@@ -92,7 +92,7 @@
     <string name="top_left">左上</string>
     <string name="top_right">右上</string>
     <string name="upgrade">アップグレード</string>
-    <string name="unlock_all_features">すべての機能のロックを解除</string>
+    <string name="unlock_all_features">広告をすべて削除</string>
     <string name="unsaved_changes">保存されていない変更</string>
     <string name="upgrade_to_pro">PROにアップグレード</string>
     <string name="vibrate_on_click">クリック時にバイブレーション</string>
@@ -274,4 +274,32 @@
     <string name="step_popup">4. 権限: [バックグラウンドでの実行中にポップアップ ウィンドウを表示する] が有効になっていることを確認します。</string>
     <string name="troubleshoot_footer">デバイス固有の手順については、dontkillmyapp.com をご覧ください。</string>
     <string name="visit_website">ウェブサイトにアクセス</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">タップしてオーバーレイを管理</string>
+    <string name="show">表示</string>
+    <string name="hide">非表示</string>
+    <string name="stop">停止</string>
+    <string name="brightness_percent">明るさ %1$d%%</string>
+    <string name="brightness_needs_permission_short">明るさを操作するには システム設定の変更 を許可してください</string>
+    <string name="auto_brightness_on">明るさの自動調節: オン</string>
+    <string name="auto_brightness_off">明るさの自動調節: オフ</string>
+    <string name="action_increase_brightness">明るさを上げる</string>
+    <string name="action_decrease_brightness">明るさを下げる</string>
+    <string name="action_toggle_auto_brightness">自動明るさのオン/オフ</string>
+    <string name="write_settings_permission">システム設定の変更</string>
+    <string name="write_settings_permission_desc">バーで画面の明るさを操作できるようにします。明るさの操作にのみ必要です。</string>
+    <string name="brightness_permission_title">明るさの操作を許可しますか？</string>
+    <string name="brightness_permission_message">画面の明るさを変更するには、システム設定の変更の権限が必要です。使用中は明るさの自動調節がオフになり、サービスを停止すると元に戻ります。</string>
+    <string name="edge_offset">端からの距離</string>
+    <string name="edge_offset_desc">バーを画面の端から内側へ移動します。曲面ディスプレイやジェスチャーナビゲーション使用時に有効です。</string>
+    <string name="reset_position">位置をリセット</string>
+    <string name="drag_to_move_hint">位置のロックをオフにして、バーを上下にドラッグします。</string>
+    <string name="fix_battery_title">バッテリー最適化</string>
+    <string name="fix_battery_desc">Android がサービスを停止しないよう、バッテリー使用を制限なしにします。</string>
+    <string name="fix_battery_allowed">制限なし</string>
+    <string name="fix_autostart_title">自動起動</string>
+    <string name="fix_autostart_desc">端末の自動起動設定を開き、GestureVolume を許可してください。</string>
+    <string name="autostart_unavailable">この端末では利用できません</string>
+    <string name="open_settings">設定を開く</string>
 </resources>

@@ -92,7 +92,7 @@
     <string name="top_left">En haut à gauche</string>
     <string name="top_right">En haut à droite</string>
     <string name="upgrade">MISE À NIVEAU</string>
-    <string name="unlock_all_features">Débloquez toutes les fonctionnalités</string>
+    <string name="unlock_all_features">Supprimer toutes les publicités</string>
     <string name="unsaved_changes">Modifications non enregistrées</string>
     <string name="upgrade_to_pro">Passer à Pro</string>
     <string name="vibrate_on_click">Vibrer au clic</string>
@@ -274,4 +274,32 @@
     <string name="step_popup">4. Autorisations : assurez-vous que « Afficher les fenêtres contextuelles lors de l\'exécution en arrière-plan » est activé.</string>
     <string name="troubleshoot_footer">Pour obtenir des instructions spécifiques à l\'appareil, veuillez visiter dontkillmyapp.com</string>
     <string name="visit_website">Visitez le site Web</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">Appuyez pour gérer la superposition</string>
+    <string name="show">Afficher</string>
+    <string name="hide">Masquer</string>
+    <string name="stop">Arrêter</string>
+    <string name="brightness_percent">Luminosité %1$d%%</string>
+    <string name="brightness_needs_permission_short">Autorisez Modifier les paramètres système pour régler la luminosité</string>
+    <string name="auto_brightness_on">Luminosité adaptative activée</string>
+    <string name="auto_brightness_off">Luminosité adaptative désactivée</string>
+    <string name="action_increase_brightness">Augmenter la luminosité</string>
+    <string name="action_decrease_brightness">Réduire la luminosité</string>
+    <string name="action_toggle_auto_brightness">Luminosité automatique oui/non</string>
+    <string name="write_settings_permission">Modifier les paramètres système</string>
+    <string name="write_settings_permission_desc">Permet à la barre de régler la luminosité de l\'écran. Nécessaire uniquement pour les actions de luminosité.</string>
+    <string name="brightness_permission_title">Autoriser le réglage de la luminosité ?</string>
+    <string name="brightness_permission_message">Pour modifier la luminosité, GestureVolume a besoin de l\'autorisation Modifier les paramètres système. La luminosité adaptative est désactivée pendant son utilisation, puis rétablie à l\'arrêt du service.</string>
+    <string name="edge_offset">Décalage du bord</string>
+    <string name="edge_offset_desc">Éloigne la barre du bord de l\'écran. Utile sur les écrans incurvés et avec la navigation par gestes.</string>
+    <string name="reset_position">Réinitialiser la position</string>
+    <string name="drag_to_move_hint">Désactivez Verrouiller la position, puis faites glisser la barre vers le haut ou le bas.</string>
+    <string name="fix_battery_title">Optimisation de la batterie</string>
+    <string name="fix_battery_desc">Autorisez une utilisation illimitée de la batterie pour qu\'Android n\'arrête pas le service.</string>
+    <string name="fix_battery_allowed">Sans restriction</string>
+    <string name="fix_autostart_title">Démarrage automatique</string>
+    <string name="fix_autostart_desc">Ouvrez les paramètres de démarrage automatique de votre appareil et autorisez GestureVolume.</string>
+    <string name="autostart_unavailable">Non disponible sur cet appareil</string>
+    <string name="open_settings">Ouvrir les paramètres</string>
 </resources>

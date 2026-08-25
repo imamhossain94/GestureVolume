@@ -10,14 +10,14 @@ plugins {
 
 android {
     namespace = "com.newagedevs.gesturevolume"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.newagedevs.gesturevolume"
         minSdk = 26
-        targetSdk = 36
-        versionCode = 27
-        versionName = "1.2.7"
+        targetSdk = 37
+        versionCode = 29
+        versionName = "1.2.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -41,10 +41,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
     }
 }
 

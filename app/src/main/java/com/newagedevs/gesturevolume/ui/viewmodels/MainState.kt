@@ -21,6 +21,14 @@ data class MainState(
     val swipeDownActionIcon: Int = R.drawable.ic_vol_increase,
     val hasOverlayPermission: Boolean = false,
     val hasNotificationPermission: Boolean = false,
+    val hasWriteSettingsPermission: Boolean = false,
+    /**
+     * True while a brightness action is waiting on WRITE_SETTINGS.
+     *
+     * Carried in state rather than through [MainEffect], because the effect channel has a single
+     * consumer — a second screen collecting it would swallow toasts intended for the first.
+     */
+    val pendingWriteSettingsRequest: Boolean = false,
     val theme: Int = 0,
     val language: String = "en"
 )

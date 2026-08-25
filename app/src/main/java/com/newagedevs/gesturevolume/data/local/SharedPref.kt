@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.core.graphics.toColorInt
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -64,7 +65,11 @@ class SharedPref @Inject constructor(
         const val HANDLER_ICON_COLOR = "handlerIconColor"
         const val HANDLER_SHOW_ICON = "handlerShowIcon"
         const val HANDLER_VIBRATE_ON_CLICK = "handlerVibrateOnClick"
-        const val HANDLER_LOCK_POSITION = "handlerLockPosition"
+        const val HANDLER_POSITION_FRACTION = "handlerPositionFraction"
+        const val HANDLER_EDGE_MARGIN = "handlerEdgeMarginDp"
+        const val BRIGHTNESS_AUTO_WAS_ON = "brightnessAutoWasOn"
+        const val LEGACY_TRANSLATION_Y_DEFAULT = 260f
+        const val DEFAULT_POSITION_FRACTION = 0.5f
         const val APP_LAUNCH_COUNT = "appLaunchCount"
         const val HAS_SHOWN_REVIEW = "hasShownReview"
         const val APP_OPEN_AD_PAUSED = "appOpenAdPaused"
@@ -142,11 +147,85 @@ class SharedPref @Inject constructor(
     }
 
     // Handler translation Y
+    //
+    // LEGACY. Superseded by handlerPositionFraction — a raw pixel offset cannot survive a rotation
+    // or a different screen size. Kept (and still written by nothing) for one release so that a
+    // rollback to 1.2.8 finds the old value intact.
     fun getHandlerTranslationY(): Float =
-        sharedPreferences.getFloat(HANDLER_TRANSLATION_Y, 260f)
+        sharedPreferences.getFloat(HANDLER_TRANSLATION_Y, LEGACY_TRANSLATION_Y_DEFAULT)
 
     fun setHandlerTranslationY(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_TRANSLATION_Y, value) }
+    }
+
+    /**
+     * Vertical position of the bar's **centre**, as a fraction (0..1) of the usable screen height.
+     *
+     * Stored as a fraction rather than pixels so the bar lands in the same visual place after a
+     * rotation, on a different screen size, and after the user changes the bar's height.
+     */
+    fun getHandlerPositionFraction(): Float =
+        sharedPreferences.getFloat(HANDLER_POSITION_FRACTION, DEFAULT_POSITION_FRACTION)
+            .coerceIn(0f, 1f)
+
+    fun setHandlerPositionFraction(value: Float) {
+        sharedPreferences.edit { putFloat(HANDLER_POSITION_FRACTION, value.coerceIn(0f, 1f)) }
+    }
+
+    fun hasHandlerPositionFraction(): Boolean =
+        sharedPreferences.contains(HANDLER_POSITION_FRACTION)
+
+    /**
+     * One-shot migration from the legacy pixel offset. Idempotent — safe to call on every geometry
+     * pass.
+     *
+     * The legacy value is converted for *every* upgrading install, not just those that had
+     * explicitly customised it. `handlerTranslationY` was only ever written by the in-app expanded
+     * preview, and only while the position was unlocked, so the overwhelming majority of users have
+     * no stored value at all — yet their bar has always been drawn at the 260px default. Treating
+     * "no stored value" as "new user, centre the bar" would move the bar for nearly everybody on
+     * update. Converting the effective value instead means nobody's bar moves.
+     *
+     * @param topInsetPx the legacy value is in *display* coordinates (it was authored by a Compose
+     *   dialog laid out edge to edge), while a window's `y` is relative to the usable frame, so the
+     *   top inset has to come off first.
+     */
+    fun migrateHandlerPositionFraction(
+        usableHeightPx: Int,
+        topInsetPx: Int,
+        barHeightPx: Int,
+        isPortrait: Boolean
+    ) {
+        if (hasHandlerPositionFraction()) return
+        if (usableHeightPx <= 0) return
+        // 260px was authored in portrait. Starting in landscape, leave the pref unwritten and let
+        // the next portrait pass do the conversion.
+        if (!isPortrait) return
+
+        val legacyUsableY = getHandlerTranslationY() - topInsetPx
+        setHandlerPositionFraction((legacyUsableY + barHeightPx / 2f) / usableHeightPx)
+    }
+
+    /**
+     * Inward nudge, in dp, from the usable screen edge.
+     *
+     * Curved-edge phones palm-reject touches on the extreme edge, and gesture navigation claims the
+     * left and right edges for the back gesture. Nudging the bar inward moves it clear of both.
+     * Defaults to 0 so no existing user's bar shifts on update.
+     */
+    fun getHandlerEdgeMarginDp(): Float =
+        sharedPreferences.getFloat(HANDLER_EDGE_MARGIN, 0f).coerceIn(0f, 48f)
+
+    fun setHandlerEdgeMarginDp(value: Float) {
+        sharedPreferences.edit { putFloat(HANDLER_EDGE_MARGIN, value.coerceIn(0f, 48f)) }
+    }
+
+    /** True when *we* turned adaptive brightness off, so we know it is ours to hand back. */
+    fun getBrightnessAutoWasOn(): Boolean =
+        sharedPreferences.getBoolean(BRIGHTNESS_AUTO_WAS_ON, false)
+
+    fun setBrightnessAutoWasOn(value: Boolean) {
+        sharedPreferences.edit { putBoolean(BRIGHTNESS_AUTO_WAS_ON, value) }
     }
 
     // Tap actions
@@ -165,8 +244,13 @@ class SharedPref @Inject constructor(
         sharedPreferences.edit { putString(HANDLER_DOUBLE_TAP, value) }
     }
 
+    // Defaults to Reposition: moving the bar has to live on some gesture, and the long press is the
+    // only one that cannot be triggered by accident. Users who want something else on long press
+    // just pick it — that also switches repositioning off, which is the whole point of one setting
+    // owning the gesture.
     fun getHandlerLongTapAction(): String =
-        sharedPreferences.getString(HANDLER_LONG_TAP, "None") ?: "None"
+        sharedPreferences.getString(HANDLER_LONG_TAP, HandlerActions.REPOSITION)
+            ?: HandlerActions.REPOSITION
 
     fun setHandlerLongTapAction(value: String) {
         sharedPreferences.edit { putString(HANDLER_LONG_TAP, value) }
@@ -181,9 +265,12 @@ class SharedPref @Inject constructor(
         sharedPreferences.edit { putString(HANDLER_SWIPE_UP, value) }
     }
 
+    // The default said "Increase..." for the swipe-DOWN slot, which showed the wrong row and the
+    // wrong icon in the picker. Correcting it is behaviour-neutral because the direction of a swipe
+    // comes from the gesture's sign, never from this string.
     fun getHandlerSwipeDownAction(): String =
-        sharedPreferences.getString(HANDLER_SWIPE_DOWN, "Increase volume and show UI")
-            ?: "Increase volume and show UI"
+        sharedPreferences.getString(HANDLER_SWIPE_DOWN, "Decrease volume and show UI")
+            ?: "Decrease volume and show UI"
 
     fun setHandlerSwipeDownAction(value: String) {
         sharedPreferences.edit { putString(HANDLER_SWIPE_DOWN, value) }
@@ -441,8 +528,10 @@ class SharedPref @Inject constructor(
         sharedPreferences.edit { putInt(HANDLER_ICON_COLOR, value) }
     }
 
+    // Off by default: the bar reads as a cleaner slab without a glyph in it, and the icon is
+    // decorative — nothing about the gestures depends on it. Users who want it turn it on.
     fun getHandlerShowIcon(): Boolean =
-        sharedPreferences.getBoolean(HANDLER_SHOW_ICON, true)
+        sharedPreferences.getBoolean(HANDLER_SHOW_ICON, false)
 
     fun setHandlerShowIcon(value: Boolean) {
         sharedPreferences.edit { putBoolean(HANDLER_SHOW_ICON, value) }
@@ -454,13 +543,6 @@ class SharedPref @Inject constructor(
 
     fun setHandlerVibrateOnClick(value: Boolean) {
         sharedPreferences.edit { putBoolean(HANDLER_VIBRATE_ON_CLICK, value) }
-    }
-
-    fun getHandlerLockPosition(): Boolean =
-        sharedPreferences.getBoolean(HANDLER_LOCK_POSITION, true)
-
-    fun setHandlerLockPosition(value: Boolean) {
-        sharedPreferences.edit { putBoolean(HANDLER_LOCK_POSITION, value) }
     }
 
     // Theme and Language

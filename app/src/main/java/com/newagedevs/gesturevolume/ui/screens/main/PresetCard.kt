@@ -55,7 +55,7 @@ fun PresetCard(
             .clickable(onClick = onClick)
             .border(borderWidth, borderColor, RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
     ) {
         Row(
             modifier = Modifier

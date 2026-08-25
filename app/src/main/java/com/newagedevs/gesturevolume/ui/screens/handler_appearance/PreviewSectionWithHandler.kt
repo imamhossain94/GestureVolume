@@ -32,6 +32,7 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.newagedevs.gesturevolume.service.HandlerGeometry
 import com.newagedevs.gesturevolume.ui.view.HandlerView
 
 
@@ -54,19 +55,31 @@ fun PreviewSectionWithHandler(
     iconColor: Color,
     showIcon: Boolean,
     enableVibration: Boolean,
+    edgeMargin: Float,
     backgroundImageURL: String,
     onHandlerCreated: (HandlerView) -> Unit
 ) {
     val handlerViewRef = remember { androidx.compose.runtime.mutableStateOf<HandlerView?>(null) }
 
-    // Recenter handler when height changes
+    /**
+     * This card is a *style* preview, so the bar sits centred no matter where it lives on screen.
+     * A 220dp card is nowhere near the shape of a phone, so honouring the stored position only
+     * pushed the bar into a corner and cropped it. The full-screen preview is where position is
+     * shown — and edited — to scale.
+     */
+    val centreOfCard = 0.5f
+
+    // Re-centre when the bar's height changes; its own translation does not follow a resize.
     LaunchedEffect(handlerHeight) {
         handlerViewRef.value?.post {
             val handler = handlerViewRef.value ?: return@post
             val parentHeight = (handler.parent as? ViewGroup)?.height ?: 0
-            val handlerViewHeight = handler.height
-            if (parentHeight > 0 && handlerViewHeight > 0) {
-                handler.setTranslationYPosition(((parentHeight - handlerViewHeight) / 2).toFloat())
+            if (parentHeight > 0 && handler.height > 0) {
+                handler.setTranslationYPosition(
+                    HandlerGeometry.fractionToY(
+                        centreOfCard, parentHeight, handler.height
+                    ).toFloat()
+                )
             }
         }
     }
@@ -145,18 +158,18 @@ fun PreviewSectionWithHandler(
                                 setCenterIcon(iconRes, iconSize, iconColor.toArgb())
                                 setCenterIconColor(iconColor.toArgb())
                                 setCenterIconVisible(showIcon)
-                                setHandlerPositionLocked(true)
                                 setVibrateOnClick(enableVibration)
-
-                                setHandlerClickListener(object : HandlerView.HandlerClickListener {
-                                    override fun onSingleClick() {}
-                                    override fun onDoubleClick() {}
-                                })
+                                setEdgeMarginDp(edgeMargin)
+                                // No gesture detector: this small card is a static rendering of the
+                                // bar's appearance, not something the user interacts with.
 
                                 post {
                                     val parentHeight = (parent as? ViewGroup)?.height ?: 0
-                                    val handlerHeight = height
-                                    setTranslationYPosition(((parentHeight - handlerHeight) / 2).toFloat())
+                                    setTranslationYPosition(
+                                        HandlerGeometry.fractionToY(
+                                            centreOfCard, parentHeight, height
+                                        ).toFloat()
+                                    )
                                 }
                             }
 

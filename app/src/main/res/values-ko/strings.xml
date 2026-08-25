@@ -92,7 +92,7 @@
     <string name="top_left">왼쪽 상단</string>
     <string name="top_right">오른쪽 상단</string>
     <string name="upgrade">업그레이드</string>
-    <string name="unlock_all_features">모든 기능 잠금 해제</string>
+    <string name="unlock_all_features">모든 광고 제거</string>
     <string name="unsaved_changes">저장되지 않은 변경</string>
     <string name="upgrade_to_pro">PRO로 업그레이드</string>
     <string name="vibrate_on_click">클릭할 때 진동</string>
@@ -274,4 +274,32 @@
     <string name="step_popup">4. 권한: \"백그라운드 실행 중 팝업 창 표시\"가 활성화되어 있는지 확인하세요.</string>
     <string name="troubleshoot_footer">기기별 지침을 보려면 dontkillmyapp.com을 방문하세요.</string>
     <string name="visit_website">웹사이트 방문</string>
+
+    <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
+    <string name="notification_tap_to_manage">탭하여 오버레이 관리</string>
+    <string name="show">표시</string>
+    <string name="hide">숨기기</string>
+    <string name="stop">중지</string>
+    <string name="brightness_percent">밝기 %1$d%%</string>
+    <string name="brightness_needs_permission_short">밝기를 조절하려면 시스템 설정 수정을 허용하세요</string>
+    <string name="auto_brightness_on">자동 밝기 켜짐</string>
+    <string name="auto_brightness_off">자동 밝기 꺼짐</string>
+    <string name="action_increase_brightness">밝기 높이기</string>
+    <string name="action_decrease_brightness">밝기 낮추기</string>
+    <string name="action_toggle_auto_brightness">자동 밝기 켜기/끄기</string>
+    <string name="write_settings_permission">시스템 설정 수정</string>
+    <string name="write_settings_permission_desc">바로 화면 밝기를 조절할 수 있게 합니다. 밝기 동작에만 필요합니다.</string>
+    <string name="brightness_permission_title">밝기 조절을 허용할까요?</string>
+    <string name="brightness_permission_message">화면 밝기를 변경하려면 시스템 설정 수정 권한이 필요합니다. 사용하는 동안 자동 밝기가 꺼지며, 서비스를 중지하면 다시 켜집니다.</string>
+    <string name="edge_offset">가장자리 간격</string>
+    <string name="edge_offset_desc">바를 화면 가장자리에서 안쪽으로 옮깁니다. 곡면 화면과 제스처 탐색에 도움이 됩니다.</string>
+    <string name="reset_position">위치 초기화</string>
+    <string name="drag_to_move_hint">위치 잠금을 끈 다음 바를 위아래로 드래그하세요.</string>
+    <string name="fix_battery_title">배터리 최적화</string>
+    <string name="fix_battery_desc">Android가 서비스를 중지하지 않도록 배터리 사용을 제한 없음으로 허용하세요.</string>
+    <string name="fix_battery_allowed">제한 없음</string>
+    <string name="fix_autostart_title">자동 실행</string>
+    <string name="fix_autostart_desc">기기의 자동 실행 설정을 열고 GestureVolume을 허용하세요.</string>
+    <string name="autostart_unavailable">이 기기에서는 사용할 수 없습니다</string>
+    <string name="open_settings">설정 열기</string>
 </resources>

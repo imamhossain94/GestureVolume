@@ -13,7 +13,6 @@ import android.view.*
 import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
-import kotlin.math.abs
 import com.newagedevs.gesturevolume.R
 
 class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
@@ -23,14 +22,8 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     }
 
     // ========== Touch Configuration (device-calibrated) ==========
-    private val touchSlop: Int = ViewConfiguration.get(context).scaledTouchSlop
-    private val doubleClickTimeDelta: Long = 300L
     private val pressAnimDuration: Long = 100L
-    private val pressAlpha: Float = 0.7f
-
-    // Gesture state machine
-    private enum class GestureState { IDLE, PRESSED, DRAGGING }
-    private var gestureState = GestureState.IDLE
+    private val dragCueAlpha: Float = 0.65f
 
     // ========== View properties with default values ==========
     private var viewWidth: Float = 50f
@@ -64,18 +57,21 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     private val centerIconView: ImageView
 
     // Behavior properties
-    private var positionLocked: Boolean = false
     private var vibrateOnClick: Boolean = false
 
-    // Touch tracking
-    private var lastRawY = 0f
-    private var actionDownPoint = PointF(0f, 0f)
-    private var touchDownTime = 0L
-    private var lastClickTime = 0L
+    /**
+     * The gesture engine. When set, it receives every touch. Callers that only need a static
+     * rendering of the bar (the small appearance preview) simply leave it null.
+     */
+    private var gestureDetector: HandlerGestureDetector? = null
 
-    // Delayed single-click handler
-    private val clickHandler = Handler(Looper.getMainLooper())
-    private var pendingSingleClick: Runnable? = null
+    /** Saved so the drag cue can restore the icon it temporarily replaced. */
+    private var iconBeforeDragCue: Drawable? = null
+
+    /** Preview-only inward offset from the screen edge. See [setEdgeMarginDp]. */
+    private var edgeMarginDp: Float = 0f
+    private var iconVisibleBeforeDragCue: Boolean = true
+    private var dragCueActive: Boolean = false
 
     init {
         // Accessibility defaults
@@ -106,26 +102,8 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         val subtitle: String? = null
     )
 
-    interface HandlerPositionChangeListener {
-        fun onVertical(rawY: Float)
-        fun onVertical(rawY: Int)
-    }
-
-    interface HandlerClickListener {
-        fun onSingleClick()
-        fun onDoubleClick()
-    }
-
-    private var handlerPositionChangeListener: HandlerPositionChangeListener? = null
-    private var handlerClickListener: HandlerClickListener? = null
-
-    fun setHandlerPositionChangeListener(listener: HandlerPositionChangeListener) {
-        handlerPositionChangeListener = listener
-    }
-
-    fun setHandlerClickListener(listener: HandlerClickListener) {
-        handlerClickListener = listener
-    }
+    // Tap and drag handling now lives in HandlerGestureDetector.Host, installed via
+    // setGestureDetector(). This view is responsible only for how the bar looks.
 
     // ========== Dimension Setters ==========
 
@@ -271,6 +249,24 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         viewGravityPosition = gravity
         updateLayoutParams()
         updateInsetsForGravity(gravity)
+        applyEdgeMargin()
+    }
+
+    /**
+     * Inward nudge from the screen edge, for the **previews only**.
+     *
+     * The live overlay must not use this: there the bar is the root view of a window sized exactly
+     * to it, so a translation would slide the drawing inside a stationary window and be clipped at
+     * its edge. The service offsets the window itself via `LayoutParams.x` instead.
+     */
+    fun setEdgeMarginDp(marginDp: Float) {
+        edgeMarginDp = marginDp
+        applyEdgeMargin()
+    }
+
+    private fun applyEdgeMargin() {
+        val px = dpToPx(edgeMarginDp)
+        translationX = if (viewGravityPosition == Gravity.START) px else -px
     }
 
     private fun updateInsetsForGravity(gravity: Int) {
@@ -288,12 +284,6 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     }
 
     // ========== Behavior Setters ==========
-
-    fun setHandlerPositionLocked(locked: Boolean) {
-        positionLocked = locked
-    }
-
-    fun getHandlerPositionLocked(): Boolean = positionLocked
 
     fun setVibrateOnClick(vibrate: Boolean) {
         vibrateOnClick = vibrate
@@ -358,116 +348,20 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         updateCenterIcon()
     }
 
-    // ========== Touch Handling (State Machine) ==========
+    // ========== Touch Handling ==========
+
+    /**
+     * Installs the gesture engine. Everything about tap / swipe / drag semantics lives in
+     * [HandlerGestureDetector], so the live overlay and the in-app preview behave identically.
+     */
+    fun setGestureDetector(detector: HandlerGestureDetector?) {
+        gestureDetector = detector
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                gestureState = GestureState.PRESSED
-                lastRawY = event.rawY
-                actionDownPoint = PointF(event.x, event.y)
-                touchDownTime = now()
-
-                // Visual press feedback
-                animate().alpha(pressAlpha).setDuration(pressAnimDuration).start()
-
-                return true
-            }
-
-            MotionEvent.ACTION_MOVE -> {
-                val dx = abs(event.x - actionDownPoint.x)
-                val dy = abs(event.y - actionDownPoint.y)
-
-                when (gestureState) {
-                    GestureState.PRESSED -> {
-                        // Transition to DRAGGING if finger moved beyond touch slop
-                        if (dx > touchSlop || dy > touchSlop) {
-                            gestureState = GestureState.DRAGGING
-                            // Release press animation since we're now dragging
-                            animate().alpha(1f).setDuration(pressAnimDuration).start()
-                        }
-                    }
-                    GestureState.DRAGGING -> {
-                        if (!positionLocked) {
-                            val deltaY = event.rawY - lastRawY
-                            translationY += deltaY
-                            lastRawY = event.rawY
-                            handlerPositionChangeListener?.onVertical(translationY)
-                        } else {
-                            val deltaY = event.rawY - lastRawY
-                            lastRawY = event.rawY
-                            handlerPositionChangeListener?.onVertical(deltaY.toInt())
-                        }
-                    }
-                    else -> { /* IDLE — shouldn't happen during MOVE */ }
-                }
-                return true
-            }
-
-            MotionEvent.ACTION_UP -> {
-                // Release press animation
-                animate().alpha(1f).setDuration(pressAnimDuration).start()
-
-                if (gestureState == GestureState.PRESSED) {
-                    // Finger didn't move beyond touch slop — this is a click
-                    val isTouchDuration = now() - touchDownTime < 500L
-                    if (isTouchDuration) {
-                        handleClick()
-                    }
-                }
-
-                gestureState = GestureState.IDLE
-                return true
-            }
-
-            MotionEvent.ACTION_CANCEL -> {
-                // Clean up: restore visual state, cancel pending clicks
-                animate().alpha(1f).setDuration(pressAnimDuration).start()
-                cancelPendingSingleClick()
-                gestureState = GestureState.IDLE
-                return true
-            }
-        }
-        return super.onTouchEvent(event)
-    }
-
-    private fun handleClick() {
-        val currentTime = now()
-
-        if (currentTime - lastClickTime < doubleClickTimeDelta) {
-            // Double click detected — cancel pending single click
-            cancelPendingSingleClick()
-            lastClickTime = 0L
-
-            if (vibrateOnClick) {
-                triggerHapticFeedback()
-            }
-
-            handlerClickListener?.onDoubleClick()
-        } else {
-            // Possible single click — defer to allow double-click window
-            lastClickTime = currentTime
-
-            pendingSingleClick = Runnable {
-                if (vibrateOnClick) {
-                    triggerHapticFeedback()
-                }
-
-                performClick()
-                handlerClickListener?.onSingleClick()
-                pendingSingleClick = null
-            }
-
-            clickHandler.postDelayed(pendingSingleClick!!, doubleClickTimeDelta)
-        }
-    }
-
-    private fun cancelPendingSingleClick() {
-        pendingSingleClick?.let {
-            clickHandler.removeCallbacks(it)
-            pendingSingleClick = null
-        }
+        val detector = gestureDetector ?: return super.onTouchEvent(event)
+        return detector.onTouchEvent(event) || super.onTouchEvent(event)
     }
 
     override fun performClick(): Boolean {
@@ -475,13 +369,62 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         return true
     }
 
-    private fun triggerHapticFeedback() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+    /**
+     * Shows that drag mode has armed.
+     *
+     * Deliberately expressed with alpha and an icon swap rather than a scale. In the live overlay
+     * this view *is* the root of a window sized exactly to the bar, so anything drawn outside those
+     * bounds — a scaled-up view, for instance — is clipped by the window surface and never seen.
+     */
+    fun setDragCue(active: Boolean) {
+        if (active) {
+            if (dragCueActive) return
+            dragCueActive = true
+            iconBeforeDragCue = centerIcon
+            iconVisibleBeforeDragCue = centerIconVisible
+            animate().alpha(dragCueAlpha).setDuration(pressAnimDuration).start()
+            ContextCompat.getDrawable(context, R.drawable.ic_move)?.let {
+                centerIcon = it
+                // Force the icon on for the duration of the cue: a user who hides the icon would
+                // otherwise get no visual confirmation that drag mode armed.
+                centerIconVisible = true
+                updateCenterIcon()
+            }
         } else {
-            @Suppress("DEPRECATION")
-            performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            if (!dragCueActive) return
+            dragCueActive = false
+            animate().alpha(1f).setDuration(pressAnimDuration).start()
+            centerIcon = iconBeforeDragCue
+            centerIconVisible = iconVisibleBeforeDragCue
+            iconBeforeDragCue = null
+            updateCenterIcon()
         }
+    }
+
+    /**
+     * Asks the system not to treat this strip as the back-gesture zone.
+     *
+     * This is the fix for the bar being unusable when gesture navigation is on: the left and right
+     * screen edges are exactly where the system watches for the back swipe, so without an exclusion
+     * the bar's own gestures are stolen. The platform caps exclusions at 200dp per edge, which the
+     * bar (100dp tall by default) sits comfortably within.
+     *
+     * Whether the window manager honours this for an overlay window is not guaranteed on every OEM
+     * skin, so it is a best-effort improvement layered on top of the edge-offset setting, which
+     * moves the bar clear of the gesture strip outright.
+     */
+    private fun refreshGestureExclusion() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
+        if (width <= 0 || height <= 0) {
+            systemGestureExclusionRects = emptyList()
+            return
+        }
+        systemGestureExclusionRects = listOf(Rect(0, 0, width, height))
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        refreshGestureExclusion()
     }
 
     // ========== Utility ==========
@@ -494,11 +437,9 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         )
     }
 
-    private fun now(): Long = SystemClock.elapsedRealtime()
-
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        cancelPendingSingleClick()
+        gestureDetector?.cancel()
         animate().cancel()
     }
 }
