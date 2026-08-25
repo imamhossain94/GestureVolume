@@ -1,0 +1,28 @@
+## Template for local.properties — copy to `local.properties` and fill in real values.
+##
+## local.properties is gitignored: it carries this machine's SDK path plus the AppLovin
+## credentials, and neither belongs in the repo. This file is the committed record of
+## WHICH keys a working checkout needs, so a fresh clone doesn't have to reverse-engineer
+## them out of a Gradle failure.
+##
+##   cp local.properties.example local.properties
+##
+## Every key below is required. There is no local.defaults.properties, and app/build.gradle.kts
+## declares no `secrets { }` block, so the secrets-gradle-plugin reads all of them straight out
+## of local.properties — a missing one fails the build rather than falling back.
+
+# Android SDK location. Written automatically by Android Studio on first open.
+# Windows paths may use forward slashes; backslashes must be escaped (C\:\Users\you\...).
+sdk.dir=/path/to/Android/Sdk
+
+# AppLovin MAX — dashboard: https://dash.applovin.com/  (Account → Keys)
+APPLOVIN_SDK_KEY=your-applovin-sdk-key
+
+# AppLovin MAX ad unit IDs — dashboard: MAX → Manage → Ad Units
+AD_UNIT_BANNER=your-banner-ad-unit-id
+AD_UNIT_INTERSTITIAL=your-interstitial-ad-unit-id
+AD_UNIT_NATIVE=your-native-ad-unit-id
+AD_UNIT_APP_OPEN=your-app-open-ad-unit-id
+
+# Google Play Billing product ID for the lifetime Pro unlock.
+PRODUCT_LIFETIME=your-lifetime-product-id

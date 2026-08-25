@@ -51,6 +51,16 @@ class GestureApplication : Application() {
         // Configure WebView early
         configureWebView()
 
+        // Stamp the install time before anything can clear the first-launch flag — AppOpenManager
+        // does exactly that on its first ON_START. This is what the post-install ad grace period
+        // counts from.
+        preferences.initInstallTimeIfNeeded()
+
+        if (BuildConfig.DEBUG && preferences.isInAdGracePeriod()) {
+            val minutes = preferences.getAdGraceRemainingMillis() / 60_000
+            Log.d("GestureApp", "Ad grace period active: $minutes minutes remaining")
+        }
+
         // Defer the ad SDK init — and therefore its consent/CMP prompt — until onboarding is
         // complete, so the consent sheet never covers the first-launch walkthrough. New users
         // trigger init from WalkthroughScreen.onComplete via initializeAdsIfNeeded(); returning

@@ -34,6 +34,7 @@ class SharedPref @Inject constructor(
         const val FIRST_LAUNCH = "firstLaunch"
 
         // Ad timing keys
+        const val FIRST_INSTALL_TIME = "firstInstallTime"
         const val LAST_APP_OPEN_AD_TIME = "lastAppOpenAdTime"
         const val LAST_INTERSTITIAL_AD_TIME = "lastInterstitialAdTime"
         const val LAST_ANY_AD_TIME = "lastAnyAdTime"
@@ -45,6 +46,14 @@ class SharedPref @Inject constructor(
         const val APP_OPEN_AD_COOLDOWN = 25 * 60 * 1000L // 25 minutes
         const val INTERSTITIAL_AD_COOLDOWN = 3 * 60 * 1000L // 3 minutes
         const val MIN_TIME_BETWEEN_ANY_ADS = 90 * 1000L // 90 seconds between any ad types
+
+        // Post-install grace period. Setup is the one stretch where a full-screen ad is most
+        // likely to cost us the user outright: they are bouncing in and out of system permission
+        // screens, placing the handler, and trying gestures, and every one of those returns is an
+        // ON_START that would otherwise qualify for an app-open ad. Two hours covers a setup
+        // session plus the "come back and finish it later" pass without meaningfully denting
+        // lifetime impressions.
+        const val AD_GRACE_PERIOD = 2 * 60 * 60 * 1000L // 2 hours from first launch
 
         // Cap interstitials per app session (in-memory; resets on process restart) so the
         // added screen-transition triggers can't stack up within one sitting.
@@ -291,6 +300,47 @@ class SharedPref @Inject constructor(
     private var sessionInterstitialCount = 0
 
     /**
+     * Stamps the moment this install first ran, which is what the ad grace period counts from.
+     * Idempotent — only the first call ever writes.
+     *
+     * Call this as early as possible in GestureApplication.onCreate, before anything can flip
+     * [isFirstLaunch]: AppOpenManager.shouldShowAd clears the first-launch flag on the very
+     * first ON_START, so a later stamp could not tell a new install from an upgrading one.
+     *
+     * Upgrading installs are stamped 0 rather than "now". They have already set the app up, so
+     * handing them two silent hours on every update would cost impressions and buy nothing.
+     */
+    fun initInstallTimeIfNeeded() {
+        if (sharedPreferences.contains(FIRST_INSTALL_TIME)) return
+        val stamp = if (isFirstLaunch()) System.currentTimeMillis() else 0L
+        sharedPreferences.edit { putLong(FIRST_INSTALL_TIME, stamp) }
+    }
+
+    /**
+     * True while the install is still inside its post-install grace period, during which no
+     * full-screen ad (app-open or interstitial) may be shown.
+     *
+     * Banner and native placements are deliberately unaffected — they sit inline in the layout and
+     * never take the screen away from someone mid-setup.
+     */
+    fun isInAdGracePeriod(): Boolean {
+        val installTime = sharedPreferences.getLong(FIRST_INSTALL_TIME, 0L)
+        if (installTime <= 0L) return false
+        val elapsed = System.currentTimeMillis() - installTime
+        // A backwards clock change (manual set, timezone-driven reset) yields a negative elapsed.
+        // Treat that as "still in grace" rather than trusting it, so the worst case is a few quiet
+        // hours instead of an ad landing in the middle of setup.
+        return elapsed < AD_GRACE_PERIOD
+    }
+
+    /** Milliseconds left in the grace period, or 0 once it has lapsed. For diagnostics. */
+    fun getAdGraceRemainingMillis(): Long {
+        val installTime = sharedPreferences.getLong(FIRST_INSTALL_TIME, 0L)
+        if (installTime <= 0L) return 0L
+        return (installTime + AD_GRACE_PERIOD - System.currentTimeMillis()).coerceAtLeast(0L)
+    }
+
+    /**
      * Save the time when an app open ad was shown
      * This also updates the "any ad" time to prevent interstitial ads immediately after
      */
@@ -327,6 +377,11 @@ class SharedPref @Inject constructor(
             return false
         }
 
+        // Nothing full-screen until the user has had a chance to finish setting up.
+        if (isInAdGracePeriod()) {
+            return false
+        }
+
         val currentTime = System.currentTimeMillis()
         val lastAppOpenAdTime = sharedPreferences.getLong(LAST_APP_OPEN_AD_TIME, -1L)
         val lastAnyAdTime = sharedPreferences.getLong(LAST_ANY_AD_TIME, -1L)
@@ -349,6 +404,11 @@ class SharedPref @Inject constructor(
      * 2. 90 seconds have passed since any ad (app open or interstitial)
      */
     fun shouldShowInterstitialAd(): Boolean {
+        // Nothing full-screen until the user has had a chance to finish setting up.
+        if (isInAdGracePeriod()) {
+            return false
+        }
+
         // Respect the per-session cap before anything else.
         if (sessionInterstitialCount >= MAX_INTERSTITIALS_PER_SESSION) {
             return false

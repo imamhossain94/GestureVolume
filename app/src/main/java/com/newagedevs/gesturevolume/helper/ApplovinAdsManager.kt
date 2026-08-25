@@ -3,6 +3,7 @@ package com.newagedevs.gesturevolume.helper
 import android.app.Activity
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import androidx.compose.animation.AnimatedVisibility
@@ -34,6 +35,7 @@ import com.applovin.mediation.nativeAds.MaxNativeAdListener
 import com.applovin.mediation.nativeAds.MaxNativeAdLoader
 import com.applovin.mediation.nativeAds.MaxNativeAdView
 import com.applovin.mediation.nativeAds.MaxNativeAdViewBinder
+import com.applovin.sdk.AppLovinSdk
 import com.applovin.sdk.AppLovinSdkUtils
 import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
@@ -55,6 +57,44 @@ class ApplovinAdsManager(
 
     init {
         preloadInterstitialAd()
+    }
+
+    private companion object {
+        const val SDK_READY_POLL_MS = 1000L
+        const val SDK_READY_MAX_ATTEMPTS = 30 // ~30s, then give up quietly
+    }
+
+    /**
+     * Runs [action] once the AppLovin SDK has finished initializing, or drops it if the SDK never
+     * comes up.
+     *
+     * SDK init is deliberately deferred until onboarding completes (see
+     * GestureApplication.initializeAdsIfNeeded) so the consent sheet cannot cover the walkthrough.
+     * MainActivity, however, builds this manager from onCreate on *every* launch — including the
+     * very first, while the SDK is still cold. Calling loadAd() in that window is fatal: MAX's
+     * mediation service dereferences state it only populates during init and takes the process
+     * down with an NPE. Every load in this class therefore goes through here.
+     */
+    private fun whenSdkReady(attempt: Int = 0, action: () -> Unit) {
+        if (context.isFinishing || context.isDestroyed) return
+
+        if (AppLovinSdk.getInstance(context).isInitialized) {
+            // An ad failing must never be able to take the app down with it.
+            try {
+                action()
+            } catch (e: Exception) {
+                Log.e("ApplovinAdsManager", "Ad load failed", e)
+            }
+            return
+        }
+
+        // Bounded poll. If the SDK never initializes — no network, a bad key, a user who is still
+        // mid-walkthrough — the app simply runs without ads instead of polling forever.
+        if (attempt >= SDK_READY_MAX_ATTEMPTS) return
+        Handler(Looper.getMainLooper()).postDelayed(
+            { whenSdkReady(attempt + 1, action) },
+            SDK_READY_POLL_MS
+        )
     }
 
     // Compose-compatible banner ad
@@ -83,7 +123,7 @@ class ApplovinAdsManager(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         AppLovinSdkUtils.dpToPx(ctx, heightDp)
                     )
-                    loadAd()
+                    whenSdkReady { loadAd() }
                 }
             },
             update = { adView ->
@@ -211,7 +251,7 @@ class ApplovinAdsManager(
             }
 
             nativeAdLoader = loader
-            loader.loadAd()
+            whenSdkReady { loader.loadAd() }
 
             onDispose {
                 nativeAd?.let { loader.destroy(it) }
@@ -275,10 +315,12 @@ class ApplovinAdsManager(
             return
         }
 
-        interstitialAd = MaxInterstitialAd(interstitialId).apply {
-            setListener(InterstitialAdsListener())
-            setRevenueListener { ad -> AdRevenueTracker.logAdRevenue(context, ad) }
-            loadAd()
+        whenSdkReady {
+            interstitialAd = MaxInterstitialAd(interstitialId).apply {
+                setListener(InterstitialAdsListener())
+                setRevenueListener { ad -> AdRevenueTracker.logAdRevenue(context, ad) }
+                loadAd()
+            }
         }
     }
 
