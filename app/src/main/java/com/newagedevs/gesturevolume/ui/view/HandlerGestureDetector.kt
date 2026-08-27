@@ -17,7 +17,8 @@ import kotlin.math.abs
  *  - **Vertical swipe** — always adjusts volume or brightness, never moves the bar.
  *  - **Long press** — either arms drag-to-reposition (the default, see [Host.isLongPressReposition])
  *    or fires the configured long-press action. One or the other, decided by that one setting, so
- *    repositioning can never collide with another action.
+ *    repositioning can never collide with another action. Once armed, the drag is free on both
+ *    axes: the bar follows the finger anywhere, and the host settles it against an edge on release.
  *  - **Tap / double tap** — the configured tap actions.
  *
  * Four invariants, each replacing a specific defect in the code this supersedes:
@@ -76,8 +77,13 @@ class HandlerGestureDetector(
 
         fun onDragBegin()
 
-        /** Cumulative offset in pixels from where the drag started. */
-        fun onDragUpdate(offsetPx: Float)
+        /**
+         * Cumulative offset in pixels from where the drag started, on both axes.
+         *
+         * Horizontal is reported so the bar can be carried across to the other edge; the host
+         * decides which edge it settles on when the drag ends.
+         */
+        fun onDragUpdate(offsetXPx: Float, offsetYPx: Float)
 
         fun onDragEnd(moved: Boolean)
     }
@@ -109,6 +115,7 @@ class HandlerGestureDetector(
 
     private var downRawX = 0f
     private var downRawY = 0f
+    private var lastRawX = 0f
     private var lastRawY = 0f
     private var downTime = 0L
 
@@ -119,7 +126,9 @@ class HandlerGestureDetector(
     private var pinnedDown = false
 
     // Drag-to-reposition
+    private var dragAnchorRawX = 0f
     private var dragAnchorRawY = 0f
+    private var dragOffsetXPx = 0f
     private var dragOffsetPx = 0f
     private var dragMoved = false
 
@@ -137,7 +146,9 @@ class HandlerGestureDetector(
             state = State.DRAGGING
             // Anchor where the finger is right now, so the bar does not jump when it starts to
             // follow. The finger is still within the touch slop of the down point at this stage.
+            dragAnchorRawX = lastRawX
             dragAnchorRawY = lastRawY
+            dragOffsetXPx = 0f
             dragOffsetPx = 0f
             dragMoved = false
             // Buzz first, then drag — the cue is what tells the user the bar is now theirs to move.
@@ -188,6 +199,7 @@ class HandlerGestureDetector(
         pointerId = event.getPointerId(0)
         downRawX = event.rawX
         downRawY = event.rawY
+        lastRawX = event.rawX
         lastRawY = event.rawY
         downTime = now()
         accumPx = 0f
@@ -202,12 +214,14 @@ class HandlerGestureDetector(
         // findPointerIndex returns -1 once the id is gone; getY(-1) throws.
         if (index < 0) return
 
+        val offsetX = event.rawX - event.getX(0)
         val offsetY = event.rawY - event.getY(0)
+        val rawX = event.getX(index) + offsetX
         val rawY = event.getY(index) + offsetY
 
         when (state) {
             State.DOWN -> {
-                val dx = abs(event.getX(index) + (event.rawX - event.getX(0)) - downRawX)
+                val dx = abs(rawX - downRawX)
                 val dy = abs(rawY - downRawY)
                 if (dx > touchSlop || dy > touchSlop) {
                     handler.removeCallbacks(longPressRunnable)
@@ -229,18 +243,26 @@ class HandlerGestureDetector(
             State.ADJUSTING -> accumulate(event, index, offsetY, rawY)
 
             State.DRAGGING -> {
+                dragOffsetXPx = rawX - dragAnchorRawX
                 dragOffsetPx = rawY - dragAnchorRawY
                 // Sub-pixel jitter from a finger resting still after the long press is not a move,
                 // and must not be persisted as a new position.
-                if (abs(dragOffsetPx) >= 1f) dragMoved = true
+                if (abs(dragOffsetPx) >= 1f || abs(dragOffsetXPx) >= 1f) dragMoved = true
+                lastRawX = rawX
                 lastRawY = rawY
-                host.onDragUpdate(dragOffsetPx)
+                host.onDragUpdate(dragOffsetXPx, dragOffsetPx)
             }
 
-            else -> lastRawY = rawY
+            else -> {
+                lastRawX = rawX
+                lastRawY = rawY
+            }
         }
 
-        if (state == State.DOWN) lastRawY = rawY
+        if (state == State.DOWN) {
+            lastRawX = rawX
+            lastRawY = rawY
+        }
     }
 
     /**

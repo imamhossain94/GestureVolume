@@ -467,6 +467,7 @@ fun HandlerAppearanceScreen(
             backgroundImageURL = bgImage,
             onShowIconPicker = { showIconPicker = true },
             onPositionChanged = { state.positionFraction = it },
+            onGravityChanged = { state.gravity = it },
             onDismiss = { isExpandedPreview = false }
         )
     }

@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.service
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -30,9 +31,11 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.animation.doOnEnd
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.newagedevs.gesturevolume.R
@@ -111,7 +114,17 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     // ---- drag-to-reposition state ----------------------------------------------------------
 
+    /**
+     * Where the bar sat when the drag began, in the absolute (`Gravity.LEFT`) space a drag runs in.
+     * Side gravity has no continuous horizontal axis to follow a finger along, so the window is
+     * converted to absolute coordinates for the duration of the drag and converted back when it
+     * settles — see [enterAbsoluteX] and [settleToSide].
+     */
+    private var dragStartX = 0
     private var dragStartY = 0
+
+    /** The settle-to-edge animation. Non-null only while it is running. */
+    private var snapAnimator: ValueAnimator? = null
 
     // ---- brightness indicator ---------------------------------------------------------------
 
@@ -126,6 +139,9 @@ class OverlayService : Service(), OverlayServiceInterface {
         private const val LEGACY_CHANNEL_ID = "Gesture Volume Channel ID"
         private const val NOTIFICATION_ID = 1
         private const val INDICATOR_VISIBLE_MS = 900L
+
+        /** Long enough to read as travel, short enough not to delay the next gesture. */
+        private const val SNAP_DURATION_MS = 180L
     }
 
     private var previousVolume: Int = 1
@@ -445,15 +461,123 @@ class OverlayService : Service(), OverlayServiceInterface {
         }
 
     /**
+     * Converts the handler window from side gravity to absolute `Gravity.LEFT` coordinates without
+     * moving it on screen, and returns the absolute x it now sits at.
+     *
+     * The window keeps side gravity at rest so that a settings change, a rotation, or a width
+     * change re-pins it to its edge for free. Only a drag needs the absolute axis.
+     *
+     * @param keepCurrentX true when the bar is already in absolute coordinates — mid-snap — and
+     *   should be caught where it is rather than recomputed from its stored side.
+     */
+    @SuppressLint("RtlHardcoded")
+    private fun enterAbsoluteX(keepCurrentX: Boolean = false): Int {
+        val params = handlerParams ?: return 0
+        val currentFrame = frame ?: return params.x
+        val x = if (keepCurrentX) params.x else HandlerGeometry.sideToX(
+            isLeft = preference.getHandlerPosition() == "Left",
+            usableWidth = currentFrame.usableWidth,
+            barWidth = params.width,
+            edgeMarginPx = dpToPx(preference.getHandlerEdgeMarginDp())
+        )
+        params.gravity = Gravity.TOP or Gravity.LEFT
+        params.x = x
+        updateHandlerLayout(params)
+        return x
+    }
+
+    /**
+     * Animates the bar to rest against [isLeft]'s edge, then hands the window back to side gravity.
+     *
+     * The bar's own left/right dress — the corner insets and icon alignment — flips immediately
+     * rather than on arrival, so a cross-screen drag reads as one movement instead of a slide
+     * followed by a costume change.
+     */
+    @SuppressLint("RtlHardcoded")
+    private fun settleToSide(isLeft: Boolean) {
+        val params = handlerParams ?: return
+        val currentFrame = frame ?: return
+
+        handlerView?.setViewGravity(if (isLeft) Gravity.START else Gravity.END)
+
+        val targetX = HandlerGeometry.sideToX(
+            isLeft = isLeft,
+            usableWidth = currentFrame.usableWidth,
+            barWidth = params.width,
+            edgeMarginPx = dpToPx(preference.getHandlerEdgeMarginDp())
+        )
+
+        // Same clear-then-cancel order as everywhere else: an in-flight animator's restore would
+        // otherwise re-pin the window to side gravity and leave params.x reading as an edge margin,
+        // which is the wrong start value for the animation being built below.
+        snapAnimator?.let { animator ->
+            snapAnimator = null
+            animator.cancel()
+        }
+        if (params.x == targetX) {
+            restoreSideGravity(isLeft)
+            return
+        }
+
+        snapAnimator = ValueAnimator.ofInt(params.x, targetX).apply {
+            duration = SNAP_DURATION_MS
+            interpolator = DecelerateInterpolator()
+            addUpdateListener { animation ->
+                val live = handlerParams ?: return@addUpdateListener
+                live.x = animation.animatedValue as Int
+                updateHandlerLayout(live)
+            }
+            // doOnEnd also runs when the animation is cancelled, so the identity guard is what
+            // separates a real arrival from a hand-off: onDragBegin and applyHandlerGeometry both
+            // clear the field before cancelling, precisely so this restore is skipped for them.
+            doOnEnd {
+                if (snapAnimator === this) {
+                    restoreSideGravity(isLeft)
+                    snapAnimator = null
+                }
+            }
+            start()
+        }
+    }
+
+    @SuppressLint("RtlHardcoded")
+    private fun restoreSideGravity(isLeft: Boolean) {
+        val params = handlerParams ?: return
+        params.gravity = Gravity.TOP or (if (isLeft) Gravity.LEFT else Gravity.RIGHT)
+        params.x = dpToPx(preference.getHandlerEdgeMarginDp())
+        updateHandlerLayout(params)
+    }
+
+    private fun updateHandlerLayout(params: WindowManager.LayoutParams) {
+        val view = handlerView ?: return
+        try {
+            windowManager?.updateViewLayout(view, params)
+        } catch (_: Exception) {
+            // Window went away mid-drag.
+        }
+    }
+
+    /**
      * Recomputes the handler's window position from the current display frame.
      *
      * Called on creation, on rotation, on display changes, and after settings are saved. This is
      * the only place that decides where the bar goes.
      */
+    @SuppressLint("RtlHardcoded")
     private fun applyHandlerGeometry() {
         val params = handlerParams ?: return
         val currentFrame = HandlerGeometry.read(this, windowManager) ?: return
         frame = currentFrame
+
+        // A rotation or a settings save while the bar is still flying to its edge: the animation is
+        // now working from a stale frame, and params.x below is only meaningful under side gravity.
+        // Cleared before cancel so the animator's own restore stands down — this block supersedes it.
+        snapAnimator?.let { animator ->
+            snapAnimator = null
+            animator.cancel()
+        }
+        params.gravity = Gravity.TOP or
+                (if (preference.getHandlerPosition() == "Left") Gravity.LEFT else Gravity.RIGHT)
 
         val barHeightPx = dpToPx(preference.getHandlerHeightDp())
 
@@ -490,6 +614,10 @@ class OverlayService : Service(), OverlayServiceInterface {
     }
 
     private fun hideHandlerView() {
+        snapAnimator?.let { animator ->
+            snapAnimator = null
+            animator.cancel()
+        }
         gestureDetector?.cancel()
         handlerView?.let { view ->
             try {
@@ -562,34 +690,53 @@ class OverlayService : Service(), OverlayServiceInterface {
         }
 
         override fun onDragBegin() {
+            // A drag started mid-snap takes over from it rather than fighting it for params.x, and
+            // picks the bar up exactly where it had flown to.
+            val resuming = snapAnimator != null
+            snapAnimator?.let { animator ->
+                // Cleared *before* cancel: doOnEnd runs on cancellation too, and its guard reads
+                // this field to tell a real finish from a hand-off like this one.
+                snapAnimator = null
+                animator.cancel()
+            }
             dragStartY = handlerParams?.y ?: 0
+            dragStartX = enterAbsoluteX(keepCurrentX = resuming)
         }
 
-        override fun onDragUpdate(offsetPx: Float) {
+        override fun onDragUpdate(offsetXPx: Float, offsetYPx: Float) {
             val params = handlerParams ?: return
-            val view = handlerView ?: return
             val currentFrame = frame ?: return
-            val barHeightPx = params.height
-            val maxY = (currentFrame.usableHeight - barHeightPx).coerceAtLeast(0)
+            val maxY = (currentFrame.usableHeight - params.height).coerceAtLeast(0)
+            val maxX = (currentFrame.usableWidth - params.width).coerceAtLeast(0)
 
             // The WINDOW is moved, not the view. This view is the root of a window sized exactly to
-            // the bar, so a translationY would just slide the drawing inside a stationary window
+            // the bar, so a translation would just slide the drawing inside a stationary window
             // and be clipped at its edge.
-            params.y = (dragStartY + offsetPx).roundToInt().coerceIn(0, maxY)
-            try {
-                windowManager?.updateViewLayout(view, params)
-            } catch (_: Exception) {
-                // Window went away mid-drag.
-            }
+            params.y = (dragStartY + offsetYPx).roundToInt().coerceIn(0, maxY)
+            params.x = (dragStartX + offsetXPx).roundToInt().coerceIn(0, maxX)
+            updateHandlerLayout(params)
         }
 
         override fun onDragEnd(moved: Boolean) {
-            if (!moved) return
             val params = handlerParams ?: return
             val currentFrame = frame ?: return
-            preference.setHandlerPositionFraction(
-                HandlerGeometry.yToFraction(params.y, currentFrame.usableHeight, params.height)
+
+            val isLeft = HandlerGeometry.xToIsLeft(
+                params.x, currentFrame.usableWidth, params.width
             )
+
+            if (moved) {
+                preference.setHandlerPositionFraction(
+                    HandlerGeometry.yToFraction(params.y, currentFrame.usableHeight, params.height)
+                )
+                preference.setHandlerPosition(if (isLeft) "Left" else "Right")
+            }
+
+            // Unconditional, even when nothing moved: onDragBegin has already converted the window
+            // to absolute coordinates, and leaving it that way would make the next
+            // applyHandlerGeometry() — which writes the edge margin into params.x — slam the bar
+            // against the left edge.
+            settleToSide(isLeft)
         }
     }
 
