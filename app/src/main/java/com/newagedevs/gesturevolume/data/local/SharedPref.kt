@@ -81,7 +81,24 @@ class SharedPref @Inject constructor(
         const val DEFAULT_POSITION_FRACTION = 0.5f
         const val APP_LAUNCH_COUNT = "appLaunchCount"
         const val HAS_SHOWN_REVIEW = "hasShownReview"
+        const val REVIEW_ASK_COUNT = "reviewAskCount"
+        const val REVIEW_LAST_ASK_TIME = "reviewLastAskTime"
+        const val REVIEW_LAST_ASK_VERSION = "reviewLastAskVersion"
         const val APP_OPEN_AD_PAUSED = "appOpenAdPaused"
+
+        // Free positioning. Stored per orientation: a single pair cannot serve both, because
+        // the usable frame swaps its axes on rotation and a bar parked bottom-left in portrait has
+        // no meaningful counterpart in landscape. Each orientation remembers where the user last
+        // put the bar *in that orientation*.
+        const val HANDLER_POS_X_PORTRAIT = "handlerPosXFractionPortrait"
+        const val HANDLER_POS_Y_PORTRAIT = "handlerPosYFractionPortrait"
+        const val HANDLER_POS_X_LANDSCAPE = "handlerPosXFractionLandscape"
+        const val HANDLER_POS_Y_LANDSCAPE = "handlerPosYFractionLandscape"
+
+        const val SNAP_TO_EDGES = "handlerSnapToEdges"
+        const val SHOW_NOTIFICATION_ACTIONS = "showNotificationActions"
+        const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
+        const val CONTEXT_MENU_ITEMS = "handlerContextMenuItems"
 
         const val THEME = "app_theme"
         const val LANGUAGE = "app_language"
@@ -103,6 +120,49 @@ class SharedPref @Inject constructor(
     }
     
     fun hasShownReview(): Boolean = sharedPreferences.getBoolean(HAS_SHOWN_REVIEW, false)
+
+    // ---- in-app review pacing ------------------------------------------------------------------
+
+    /** How many times the review flow has been requested, ever. */
+    fun getReviewAskCount(): Int = sharedPreferences.getInt(REVIEW_ASK_COUNT, 0)
+
+    /** When the review flow was last requested, as epoch millis. 0 when never. */
+    fun getReviewLastAskTime(): Long = sharedPreferences.getLong(REVIEW_LAST_ASK_TIME, 0L)
+
+    /** The `versionCode` the last ask happened on, so one release never asks twice. */
+    fun getReviewLastAskVersion(): Int = sharedPreferences.getInt(REVIEW_LAST_ASK_VERSION, 0)
+
+    fun recordReviewAsk(versionCode: Int, now: Long = System.currentTimeMillis()) {
+        sharedPreferences.edit {
+            putInt(REVIEW_ASK_COUNT, getReviewAskCount() + 1)
+            putLong(REVIEW_LAST_ASK_TIME, now)
+            putInt(REVIEW_LAST_ASK_VERSION, versionCode)
+        }
+    }
+
+    /**
+     * Folds the old single `hasShownReview` boolean into the counted scheme, once.
+     *
+     * Seeds the timestamp to *now* rather than to zero. Zero would read as "last asked in 1970",
+     * which clears the spacing gate instantly and would prompt every upgrading user on their next
+     * launch — the exact behaviour this rework exists to prevent.
+     */
+    fun migrateReviewState(now: Long = System.currentTimeMillis()) {
+        if (sharedPreferences.contains(REVIEW_ASK_COUNT)) return
+        if (!hasShownReview()) return
+        sharedPreferences.edit {
+            putInt(REVIEW_ASK_COUNT, 1)
+            putLong(REVIEW_LAST_ASK_TIME, now)
+            putInt(REVIEW_LAST_ASK_VERSION, 0)
+        }
+    }
+
+    /** Epoch millis of first launch. 0 when the install-time stamp has not been written yet. */
+    fun getFirstInstallTimeMillis(): Long = sharedPreferences.getLong(FIRST_INSTALL_TIME, 0L)
+
+    /** Epoch millis of the most recent ad of any kind. 0 when no ad has been shown. */
+    fun getLastAnyAdTimeMillis(): Long =
+        sharedPreferences.getLong(LAST_ANY_AD_TIME, -1L).coerceAtLeast(0L)
     
     fun setHasShownReview(value: Boolean) {
         sharedPreferences.edit { putBoolean(HAS_SHOWN_REVIEW, value) }
@@ -227,6 +287,133 @@ class SharedPref @Inject constructor(
 
     fun setHandlerEdgeMarginDp(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_EDGE_MARGIN, value.coerceIn(0f, 48f)) }
+    }
+
+    // ---- free positioning, per orientation --------------------------------------------------
+
+    private fun posXKey(isPortrait: Boolean) =
+        if (isPortrait) HANDLER_POS_X_PORTRAIT else HANDLER_POS_X_LANDSCAPE
+
+    private fun posYKey(isPortrait: Boolean) =
+        if (isPortrait) HANDLER_POS_Y_PORTRAIT else HANDLER_POS_Y_LANDSCAPE
+
+    /**
+     * Horizontal position of the bar's **centre**, as a fraction (0..1) of the usable width.
+     *
+     * 0f is flush with the left edge and 1f flush with the right, matching the clamping in
+     * [com.newagedevs.gesturevolume.service.HandlerGeometry.fractionToX] — so the two values a
+     * migrating user can have, "Left" and "Right", map exactly onto the ends of the range.
+     */
+    fun getHandlerPosXFraction(isPortrait: Boolean): Float =
+        sharedPreferences.getFloat(posXKey(isPortrait), 1f).coerceIn(0f, 1f)
+
+    fun setHandlerPosXFraction(isPortrait: Boolean, value: Float) {
+        sharedPreferences.edit { putFloat(posXKey(isPortrait), value.coerceIn(0f, 1f)) }
+    }
+
+    fun getHandlerPosYFraction(isPortrait: Boolean): Float =
+        sharedPreferences.getFloat(posYKey(isPortrait), DEFAULT_POSITION_FRACTION).coerceIn(0f, 1f)
+
+    fun setHandlerPosYFraction(isPortrait: Boolean, value: Float) {
+        sharedPreferences.edit { putFloat(posYKey(isPortrait), value.coerceIn(0f, 1f)) }
+    }
+
+    fun hasHandlerPosXFraction(isPortrait: Boolean): Boolean =
+        sharedPreferences.contains(posXKey(isPortrait))
+
+    fun hasHandlerPosYFraction(isPortrait: Boolean): Boolean =
+        sharedPreferences.contains(posYKey(isPortrait))
+
+    /**
+     * Forgets the stored horizontal position in both orientations, so the next geometry pass
+     * re-derives it from the Left/Right side setting and the edge margin.
+     *
+     * This is what keeps the appearance screen's side control meaningful once the bar can be
+     * dragged anywhere: without it, choosing "Left" would write a preference that nothing reads,
+     * and the bar would sit wherever it was last dropped while the setting claimed otherwise.
+     * The vertical position is deliberately left alone — the user picked a height, and changing
+     * which edge the bar hugs is no reason to throw it away.
+     */
+    fun clearHandlerPosXFraction() {
+        sharedPreferences.edit {
+            remove(HANDLER_POS_X_PORTRAIT)
+            remove(HANDLER_POS_X_LANDSCAPE)
+        }
+    }
+
+    /**
+     * Seeds this orientation's free position from the pre-free-drag settings, once.
+     *
+     * Runs per orientation rather than once globally: a user who has only ever held the phone
+     * upright must still get a sensible landscape placement the first time they turn it, and that
+     * placement is derived from the same side setting rather than left to a default that could
+     * drop the bar somewhere they never put it.
+     *
+     * @param xFraction where the old Left/Right side setting puts the bar's centre in this frame,
+     *   edge margin included — computed by the caller, which is the only place that knows the
+     *   frame and the bar's width.
+     */
+    fun migrateHandlerFreePosition(isPortrait: Boolean, xFraction: Float) {
+        if (!hasHandlerPosXFraction(isPortrait)) setHandlerPosXFraction(isPortrait, xFraction)
+        if (!hasHandlerPosYFraction(isPortrait)) {
+            setHandlerPosYFraction(isPortrait, getHandlerPositionFraction())
+        }
+    }
+
+    // ---- behaviour toggles --------------------------------------------------------------------
+
+    /**
+     * Whether a released drag settles against the nearest edge.
+     *
+     * Defaults off: free placement is the behaviour users asked for, and a bar that silently flies
+     * to an edge after being carefully positioned reads as the app ignoring the gesture.
+     */
+    fun getSnapToEdges(): Boolean = sharedPreferences.getBoolean(SNAP_TO_EDGES, false)
+
+    fun setSnapToEdges(value: Boolean) {
+        sharedPreferences.edit { putBoolean(SNAP_TO_EDGES, value) }
+    }
+
+    /**
+     * Whether the ongoing notification is shown at all, buttons included.
+     *
+     * Defaults off. A foreground service must have a notification, so "off" is the quietest the
+     * platform allows rather than true removal — see `startForegroundService`.
+     */
+    fun getShowNotificationActions(): Boolean =
+        sharedPreferences.getBoolean(SHOW_NOTIFICATION_ACTIONS, false)
+
+    fun setShowNotificationActions(value: Boolean) {
+        sharedPreferences.edit { putBoolean(SHOW_NOTIFICATION_ACTIONS, value) }
+    }
+
+    /**
+     * Whether the bar shows the volume level, as a percentage, while a swipe is adjusting it.
+     *
+     * On by default: the swipe changes something the user cannot otherwise see without the system
+     * volume panel, and the readout is only on screen during the gesture that asked for it.
+     */
+    fun getShowVolumePercent(): Boolean =
+        sharedPreferences.getBoolean(SHOW_VOLUME_PERCENT, true)
+
+    fun setShowVolumePercent(value: Boolean) {
+        sharedPreferences.edit { putBoolean(SHOW_VOLUME_PERCENT, value) }
+    }
+
+    // ---- long-press context menu ---------------------------------------------------------------
+
+    /**
+     * Which actions the long-press menu offers, as [HandlerActions] identifiers.
+     *
+     * A set rather than an ordered list: the menu renders in a fixed canonical order so that an
+     * entry does not move under the user's thumb between one long press and the next.
+     */
+    fun getContextMenuItems(): Set<String> =
+        sharedPreferences.getStringSet(CONTEXT_MENU_ITEMS, null)
+            ?: HandlerActions.DEFAULT_CONTEXT_MENU
+
+    fun setContextMenuItems(value: Set<String>) {
+        sharedPreferences.edit { putStringSet(CONTEXT_MENU_ITEMS, value) }
     }
 
     /** True when *we* turned adaptive brightness off, so we know it is ours to hand back. */

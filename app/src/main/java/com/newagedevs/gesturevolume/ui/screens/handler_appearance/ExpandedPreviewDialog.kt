@@ -382,6 +382,19 @@ fun ExpandedPreviewDialog(
                                 }
                             }
 
+                            /**
+                             * No menu in the preview.
+                             *
+                             * The preview exists to show what the bar *looks* like while the user
+                             * tunes its appearance, and it lives inside a dialog that already owns
+                             * the screen. Popping a second floating menu on top of that would sit
+                             * over the very controls being adjusted. Holding here still highlights
+                             * the bar and still drags it, which is the part worth previewing.
+                             */
+                            override fun onContextMenuOpen() = Unit
+
+                            override fun onContextMenuDismiss() = Unit
+
                             override fun onDragBegin() {
                                 dragStartY = handler.translationY
                                 dragStartX = layoutLeft() + handler.translationX

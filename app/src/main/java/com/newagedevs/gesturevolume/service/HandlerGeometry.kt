@@ -26,6 +26,12 @@ import kotlin.math.roundToInt
  *  2. **Insets are read, never assumed.** The usable frame excludes the system bars and the display
  *     cutout, so "the left edge" means the left edge of the area the user can actually touch,
  *     in every rotation.
+ *
+ *  3. **Horizontal is a fraction too, and it is stored per orientation.** Once the bar can sit
+ *     anywhere rather than against one of two edges, x needs the same rotation-proof treatment as
+ *     y — and it needs it separately for portrait and landscape, because the usable frame swaps
+ *     its axes on rotation and one stored pair cannot describe both. See
+ *     [com.newagedevs.gesturevolume.data.local.SharedPref.getHandlerPosXFraction].
  */
 object HandlerGeometry {
 
@@ -140,6 +146,28 @@ object HandlerGeometry {
         val maxX = (usableWidth - barWidth).coerceAtLeast(0)
         val x = if (isLeft) edgeMarginPx else usableWidth - barWidth - edgeMarginPx
         return x.coerceIn(0, maxX)
+    }
+
+    /**
+     * The horizontal twin of [fractionToY], with identical semantics: [fraction] locates the bar's
+     * **centre**, 0f flush left and 1f flush right.
+     *
+     * Same shape as the vertical conversion on purpose. Free positioning stores a pair of
+     * fractions, and a pair whose two halves round or clamp differently drifts diagonally — a few
+     * pixels per save, in one direction only, which is exactly the kind of bug that takes a
+     * fortnight of "it moved again" reports to pin down.
+     */
+    fun fractionToX(fraction: Float, usableWidth: Int, barWidth: Int): Int {
+        val maxX = (usableWidth - barWidth).coerceAtLeast(0)
+        return (fraction.coerceIn(0f, 1f) * usableWidth - barWidth / 2f)
+            .roundToInt()
+            .coerceIn(0, maxX)
+    }
+
+    /** The inverse of [fractionToX]. Call once when a drag ends, never per move frame. */
+    fun xToFraction(x: Int, usableWidth: Int, barWidth: Int): Float {
+        if (usableWidth <= 0) return 1f
+        return ((x + barWidth / 2f) / usableWidth).coerceIn(0f, 1f)
     }
 
     /**

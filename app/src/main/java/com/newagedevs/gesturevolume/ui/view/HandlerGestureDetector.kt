@@ -75,6 +75,20 @@ class HandlerGestureDetector(
         /** Drag mode armed or disarmed — for haptics and the visual cue. */
         fun onDragCue(active: Boolean)
 
+        /**
+         * The long press landed and the bar is being held still: offer the context menu.
+         *
+         * Fired alongside [onDragBegin], not instead of it. Holding arms both outcomes at once and
+         * the finger decides between them — stay put and the menu is the gesture, move and
+         * [onContextMenuDismiss] retracts it and the drag takes over. Waiting to see which one the
+         * user meant before showing anything would put a second delay on top of the long-press
+         * timeout, and the menu would arrive after the user had already given up on it.
+         */
+        fun onContextMenuOpen()
+
+        /** The held finger travelled far enough to mean a drag. Retract the menu. */
+        fun onContextMenuDismiss()
+
         fun onDragBegin()
 
         /**
@@ -132,6 +146,15 @@ class HandlerGestureDetector(
     private var dragOffsetPx = 0f
     private var dragMoved = false
 
+    /**
+     * Whether the menu offered at the start of this drag is still on screen.
+     *
+     * Separate from [dragMoved], which trips at a single pixel so that sub-pixel jitter is not
+     * persisted as a new position. Retracting the menu needs the much larger touch slop: a menu
+     * that vanished on a pixel of tremor would be unusable one-handed.
+     */
+    private var menuOpen = false
+
     // Tap / double-tap
     private var lastTapTime = 0L
     private var pendingTap: Runnable? = null
@@ -154,6 +177,8 @@ class HandlerGestureDetector(
             // Buzz first, then drag — the cue is what tells the user the bar is now theirs to move.
             host.onDragCue(true)
             host.onDragBegin()
+            menuOpen = true
+            host.onContextMenuOpen()
         } else {
             state = State.DEAD
             host.onLongPress()
@@ -186,6 +211,13 @@ class HandlerGestureDetector(
     fun cancel() {
         handler.removeCallbacks(longPressRunnable)
         cancelPendingTap()
+        // Before finishInFlight, which clears the drag: an open menu outlives the gesture by
+        // design — it is still on screen after the finger lifts — so nothing else would take it
+        // down, and it would sit there pointing at a bar that no longer exists.
+        if (menuOpen) {
+            menuOpen = false
+            host.onContextMenuDismiss()
+        }
         finishInFlight(commitDrag = false)
         state = State.IDLE
         pointerId = MotionEvent.INVALID_POINTER_ID
@@ -206,6 +238,7 @@ class HandlerGestureDetector(
         pinnedUp = false
         pinnedDown = false
         dragMoved = false
+        menuOpen = false
         handler.postDelayed(longPressRunnable, longPressTimeout)
     }
 
@@ -248,6 +281,10 @@ class HandlerGestureDetector(
                 // Sub-pixel jitter from a finger resting still after the long press is not a move,
                 // and must not be persisted as a new position.
                 if (abs(dragOffsetPx) >= 1f || abs(dragOffsetXPx) >= 1f) dragMoved = true
+                if (menuOpen && (abs(dragOffsetPx) > touchSlop || abs(dragOffsetXPx) > touchSlop)) {
+                    menuOpen = false
+                    host.onContextMenuDismiss()
+                }
                 lastRawX = rawX
                 lastRawY = rawY
                 host.onDragUpdate(dragOffsetXPx, dragOffsetPx)
@@ -328,10 +365,16 @@ class HandlerGestureDetector(
         }
 
         pointerId = event.getPointerId(newIndex)
+        val offsetX = event.rawX - event.getX(0)
         val offsetY = event.rawY - event.getY(0)
+        val newRawX = event.getX(newIndex) + offsetX
         val newRawY = event.getY(newIndex) + offsetY
+        lastRawX = newRawX
         lastRawY = newRawY
         if (state == State.DRAGGING) {
+            // Both axes, or the bar jumps horizontally the moment a resting palm becomes the
+            // tracked pointer — the same defect this re-anchoring exists to prevent vertically.
+            dragAnchorRawX = newRawX - dragOffsetXPx
             dragAnchorRawY = newRawY - dragOffsetPx
         }
     }

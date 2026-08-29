@@ -255,7 +255,17 @@ fun HandlerAppearanceScreen(
     }
 
     fun saveChanges() {
-        preference.setHandlerPosition(if (state.gravity == Gravity.START) "Left" else "Right")
+        val newSide = if (state.gravity == Gravity.START) "Left" else "Right"
+        // Choosing a side, or changing how far in from it the bar sits, is an explicit instruction
+        // about where the bar goes horizontally — so it overrides wherever the bar was last
+        // dragged. Only then, though: an unrelated colour change must not yank the bar back to an
+        // edge the user had deliberately moved it away from.
+        if (newSide != preference.getHandlerPosition() ||
+            state.edgeMargin != preference.getHandlerEdgeMarginDp()
+        ) {
+            preference.clearHandlerPosXFraction()
+        }
+        preference.setHandlerPosition(newSide)
         preference.setHandlerWidthDp(state.width)
         preference.setHandlerHeightDp(state.height)
         preference.setHandlerColor(state.bgColor.toArgb())

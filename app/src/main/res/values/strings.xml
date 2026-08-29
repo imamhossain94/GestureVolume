@@ -304,4 +304,32 @@
     <string name="fix_autostart_desc">Open your device auto-start settings and allow GestureVolume.</string>
     <string name="autostart_unavailable">Not available on this device</string>
     <string name="open_settings">Open settings</string>
+
+    <!-- Handler volume readout -->
+    <string name="volume_percent_short">%1$d%%</string>
+
+    <!-- Free positioning / snapping -->
+    <string name="snap_to_edges_title">Snap to screen edges</string>
+    <string name="snap_to_edges_desc">Release the handler and it settles against the nearest edge. Off by default, so you can place it anywhere.</string>
+
+    <!-- Notification -->
+    <string name="notification_actions_title">Show notification</string>
+    <string name="notification_actions_desc">Keep the ongoing notification and its Show, Hide and Stop buttons in the shade. Off hides it as far as Android allows — a foreground service always keeps one.</string>
+
+    <!-- Volume percent -->
+    <string name="show_volume_percent_title">Show volume percentage</string>
+    <string name="show_volume_percent_desc">Display the level on the handler while you swipe.</string>
+
+    <!-- Drag to hide -->
+    <string name="drag_here_to_hide">Drag here to hide</string>
+    <string name="handler_hidden_toast">Handler hidden. Turn it back on from the app or the notification.</string>
+
+    <!-- Long-press context menu -->
+    <string name="context_menu_title">Long-press menu</string>
+    <string name="context_menu_desc">Choose what appears when you press and hold the handler.</string>
+    <string name="context_menu_empty">No items selected. Press and hold will only move the handler.</string>
+    <string name="context_menu_section">Long-press menu items</string>
+    <string name="behaviour_section">Behaviour</string>
+    <string name="context_menu_count">%1$d selected</string>
+    <string name="context_menu_none">Off</string>
 </resources>

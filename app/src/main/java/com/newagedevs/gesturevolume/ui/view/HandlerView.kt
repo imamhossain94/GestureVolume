@@ -13,12 +13,16 @@ import android.view.*
 import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.widget.TextViewCompat
 import com.newagedevs.gesturevolume.R
 
 class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
 
     companion object {
         private const val DEFAULT_INSET: Float = 0f
+
+        /** Floor for the stroke while dragging, so a bar configured with no stroke still lights up. */
+        private const val HIGHLIGHT_STROKE_DP: Float = 2f
     }
 
     // ========== Touch Configuration (device-calibrated) ==========
@@ -56,6 +60,10 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     private var centerIconVisible: Boolean = true
     private val centerIconView: ImageView
 
+    /** Volume readout, shown in place of the icon while a swipe is adjusting. */
+    private val volumeLabelView: TextView
+    private var volumeLabelVisible: Boolean = false
+
     // Behavior properties
     private var vibrateOnClick: Boolean = false
 
@@ -89,6 +97,26 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
             scaleType = ImageView.ScaleType.CENTER_INSIDE
         }
         addView(centerIconView)
+
+        // Auto-sizing rather than a fixed sp: the bar is user-resizable down to a strip a couple
+        // of characters wide, and a fixed size would either clip "100%" on a narrow bar or look
+        // lost on a wide one.
+        volumeLabelView = TextView(context).apply {
+            layoutParams = LayoutParams(
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.CENTER
+            }
+            gravity = Gravity.CENTER
+            maxLines = 1
+            includeFontPadding = false
+            visibility = GONE
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                this, 8, 15, 1, TypedValue.COMPLEX_UNIT_SP
+            )
+        }
+        addView(volumeLabelView)
 
         updateViewAppearance()
     }
@@ -221,6 +249,12 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     }
 
     private fun updateCenterIcon() {
+        // The volume readout occupies the same centre slot. Guarding here rather than at each call
+        // site means no later appearance change can bring the icon back on top of the number.
+        if (volumeLabelVisible) {
+            centerIconView.visibility = GONE
+            return
+        }
         if (centerIconVisible && centerIcon != null) {
             centerIconView.visibility = VISIBLE
 
@@ -328,13 +362,24 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
             )
             setColor(bgColor)
 
-            val stColor = Color.argb(
-                strokeAlpha,
-                Color.red(strokeColor),
-                Color.green(strokeColor),
-                Color.blue(strokeColor)
-            )
-            setStroke(dpToPx(strokeWidth).toInt(), stColor)
+            if (dragCueActive) {
+                // Borrow the icon colour rather than picking one. The user chose it to read
+                // against their own background, so it is the one colour on hand that is
+                // guaranteed to be visible on this particular bar — a fixed accent would
+                // disappear on whichever background happened to match it.
+                setStroke(
+                    dpToPx(strokeWidth.coerceAtLeast(HIGHLIGHT_STROKE_DP)).toInt(),
+                    centerIconColor
+                )
+            } else {
+                val stColor = Color.argb(
+                    strokeAlpha,
+                    Color.red(strokeColor),
+                    Color.green(strokeColor),
+                    Color.blue(strokeColor)
+                )
+                setStroke(dpToPx(strokeWidth).toInt(), stColor)
+            }
         }
 
         background = InsetDrawable(
@@ -370,6 +415,26 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     }
 
     /**
+     * Shows the current volume as a percentage in the centre of the bar, replacing the icon.
+     *
+     * Pass null to clear it and hand the centre back to the icon.
+     */
+    fun setVolumePercent(percent: Int?) {
+        if (percent == null) {
+            if (!volumeLabelVisible) return
+            volumeLabelVisible = false
+            volumeLabelView.visibility = GONE
+            updateCenterIcon()
+            return
+        }
+        volumeLabelVisible = true
+        volumeLabelView.text = context.getString(R.string.volume_percent_short, percent)
+        volumeLabelView.setTextColor(centerIconColor)
+        volumeLabelView.visibility = VISIBLE
+        updateCenterIcon()
+    }
+
+    /**
      * Shows that drag mode has armed.
      *
      * Deliberately expressed with alpha and an icon swap rather than a scale. In the live overlay
@@ -382,6 +447,7 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
             dragCueActive = true
             iconBeforeDragCue = centerIcon
             iconVisibleBeforeDragCue = centerIconVisible
+            updateViewAppearance()
             animate().alpha(dragCueAlpha).setDuration(pressAnimDuration).start()
             ContextCompat.getDrawable(context, R.drawable.ic_move)?.let {
                 centerIcon = it
@@ -397,7 +463,7 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
             centerIcon = iconBeforeDragCue
             centerIconVisible = iconVisibleBeforeDragCue
             iconBeforeDragCue = null
-            updateCenterIcon()
+            updateViewAppearance()
         }
     }
 
