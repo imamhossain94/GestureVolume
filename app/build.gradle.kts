@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -8,6 +9,35 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
+/**
+ * Signing credentials, read from `local.properties` first and the environment second.
+ *
+ * `local.properties` is gitignored and already holds this project's other secrets, so the keystore
+ * password never reaches version control. The environment fallback is what lets CI sign without a
+ * local.properties file at all.
+ */
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
+fun signingSecret(name: String): String? =
+    localProperties.getProperty(name)?.takeIf { it.isNotBlank() }
+        ?: System.getenv(name)?.takeIf { it.isNotBlank() }
+
+val releaseStoreFile = signingSecret("RELEASE_STORE_FILE")
+val releaseStorePassword = signingSecret("RELEASE_STORE_PASSWORD")
+val releaseKeyAlias = signingSecret("RELEASE_KEY_ALIAS")
+val releaseKeyPassword = signingSecret("RELEASE_KEY_PASSWORD")
+
+// All four, or none. A half-configured signing config fails deep inside the packaging task with a
+// message that does not mention the missing property, so it is checked up front instead.
+val hasReleaseSigning = releaseStoreFile != null &&
+        releaseStorePassword != null &&
+        releaseKeyAlias != null &&
+        releaseKeyPassword != null &&
+        file(releaseStoreFile).exists()
+
 android {
     namespace = "com.newagedevs.gesturevolume"
     compileSdk = 37
@@ -16,10 +46,25 @@ android {
         applicationId = "com.newagedevs.gesturevolume"
         minSdk = 26
         targetSdk = 37
-        versionCode = 29
-        versionName = "1.2.9"
+        versionCode = 30
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+                // Both schemes: v2 is what Play requires, v1 keeps the artifact installable by
+                // anything still verifying the old way.
+                enableV1Signing = true
+                enableV2Signing = true
+            }
+        }
     }
 
     buildTypes {
@@ -30,6 +75,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Left unsigned when the credentials are absent rather than failing the build, so a
+            // clone without the keystore can still run assembleRelease to check that R8 passes.
+            signingConfig = if (hasReleaseSigning) signingConfigs.getByName("release") else null
         }
     }
 
