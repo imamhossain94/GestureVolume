@@ -3,9 +3,11 @@ package com.newagedevs.gesturevolume.data.local
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import androidx.core.graphics.toColorInt
 import com.newagedevs.gesturevolume.R
+import android.view.Gravity
+import androidx.compose.ui.graphics.toArgb
 import com.newagedevs.gesturevolume.utils.HandlerActions
+import com.newagedevs.gesturevolume.utils.HandlerPresets
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -79,6 +81,10 @@ class SharedPref @Inject constructor(
         const val BRIGHTNESS_AUTO_WAS_ON = "brightnessAutoWasOn"
         const val LEGACY_TRANSLATION_Y_DEFAULT = 260f
         const val DEFAULT_POSITION_FRACTION = 0.5f
+
+        /** The Default preset's side, as the string this preference stores. */
+        val DEFAULT_SIDE: String =
+            if (HandlerPresets.DEFAULT.gravity == Gravity.START) "Left" else "Right"
         const val APP_LAUNCH_COUNT = "appLaunchCount"
         const val HAS_SHOWN_REVIEW = "hasShownReview"
         const val REVIEW_ASK_COUNT = "reviewAskCount"
@@ -96,7 +102,6 @@ class SharedPref @Inject constructor(
         const val HANDLER_POS_Y_LANDSCAPE = "handlerPosYFractionLandscape"
 
         const val SNAP_TO_EDGES = "handlerSnapToEdges"
-        const val SHOW_NOTIFICATION_ACTIONS = "showNotificationActions"
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
         const val CONTEXT_MENU_ITEMS = "handlerContextMenuItems"
 
@@ -185,7 +190,7 @@ class SharedPref @Inject constructor(
 
     // Handler position
     fun getHandlerPosition(): String =
-        sharedPreferences.getString(HANDLER_POSITION, "Right") ?: "Right"
+        sharedPreferences.getString(HANDLER_POSITION, DEFAULT_SIDE) ?: DEFAULT_SIDE
 
     fun setHandlerPosition(value: String) {
         sharedPreferences.edit { putString(HANDLER_POSITION, value) }
@@ -193,7 +198,7 @@ class SharedPref @Inject constructor(
 
     // Handler color
     fun getHandlerColor(): Int =
-        sharedPreferences.getInt(HANDLER_COLOR, "#FFFFFF".toColorInt())
+        sharedPreferences.getInt(HANDLER_COLOR, HandlerPresets.DEFAULT.bgColor.toArgb())
 
     fun setHandlerColor(value: Int) {
         sharedPreferences.edit { putInt(HANDLER_COLOR, value) }
@@ -201,7 +206,7 @@ class SharedPref @Inject constructor(
 
     // Handler width in dp
     fun getHandlerWidthDp(): Float =
-        sharedPreferences.getFloat(HANDLER_WIDTH + "_dp", 30f)
+        sharedPreferences.getFloat(HANDLER_WIDTH + "_dp", HandlerPresets.DEFAULT.width)
 
     fun setHandlerWidthDp(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_WIDTH + "_dp", value) }
@@ -209,7 +214,7 @@ class SharedPref @Inject constructor(
 
     // Handler height in dp
     fun getHandlerHeightDp(): Float =
-        sharedPreferences.getFloat(HANDLER_HEIGHT, 100f)
+        sharedPreferences.getFloat(HANDLER_HEIGHT, HandlerPresets.DEFAULT.height)
 
     fun setHandlerHeightDp(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_HEIGHT, value) }
@@ -283,7 +288,7 @@ class SharedPref @Inject constructor(
      * Defaults to 0 so no existing user's bar shifts on update.
      */
     fun getHandlerEdgeMarginDp(): Float =
-        sharedPreferences.getFloat(HANDLER_EDGE_MARGIN, 0f).coerceIn(0f, 48f)
+        sharedPreferences.getFloat(HANDLER_EDGE_MARGIN, HandlerPresets.DEFAULT.edgeMargin).coerceIn(0f, 48f)
 
     fun setHandlerEdgeMarginDp(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_EDGE_MARGIN, value.coerceIn(0f, 48f)) }
@@ -372,19 +377,6 @@ class SharedPref @Inject constructor(
 
     fun setSnapToEdges(value: Boolean) {
         sharedPreferences.edit { putBoolean(SNAP_TO_EDGES, value) }
-    }
-
-    /**
-     * Whether the ongoing notification is shown at all, buttons included.
-     *
-     * Defaults off. A foreground service must have a notification, so "off" is the quietest the
-     * platform allows rather than true removal — see `startForegroundService`.
-     */
-    fun getShowNotificationActions(): Boolean =
-        sharedPreferences.getBoolean(SHOW_NOTIFICATION_ACTIONS, false)
-
-    fun setShowNotificationActions(value: Boolean) {
-        sharedPreferences.edit { putBoolean(SHOW_NOTIFICATION_ACTIONS, value) }
     }
 
     /**
@@ -664,7 +656,7 @@ class SharedPref @Inject constructor(
 
     // Background alpha
     fun getHandlerBackgroundAlpha(): Int =
-        sharedPreferences.getInt(HANDLER_BACKGROUND_ALPHA, 50)
+        sharedPreferences.getInt(HANDLER_BACKGROUND_ALPHA, HandlerPresets.DEFAULT.bgAlpha)
 
     fun setHandlerBackgroundAlpha(value: Int) {
         sharedPreferences.edit { putInt(HANDLER_BACKGROUND_ALPHA, value) }
@@ -672,21 +664,21 @@ class SharedPref @Inject constructor(
 
     // Stroke settings
     fun getHandlerStrokeColor(): Int =
-        sharedPreferences.getInt(HANDLER_STROKE_COLOR, 0xFFFFFFFF.toInt())
+        sharedPreferences.getInt(HANDLER_STROKE_COLOR, HandlerPresets.DEFAULT.strokeColor.toArgb())
 
     fun setHandlerStrokeColor(value: Int) {
         sharedPreferences.edit { putInt(HANDLER_STROKE_COLOR, value) }
     }
 
     fun getHandlerStrokeWidth(): Float =
-        sharedPreferences.getFloat(HANDLER_STROKE_WIDTH, 1f)
+        sharedPreferences.getFloat(HANDLER_STROKE_WIDTH, HandlerPresets.DEFAULT.strokeWidth)
 
     fun setHandlerStrokeWidth(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_STROKE_WIDTH, value) }
     }
 
     fun getHandlerStrokeAlpha(): Int =
-        sharedPreferences.getInt(HANDLER_STROKE_ALPHA, 200)
+        sharedPreferences.getInt(HANDLER_STROKE_ALPHA, HandlerPresets.DEFAULT.strokeAlpha)
 
     fun setHandlerStrokeAlpha(value: Int) {
         sharedPreferences.edit { putInt(HANDLER_STROKE_ALPHA, value) }
@@ -694,28 +686,28 @@ class SharedPref @Inject constructor(
 
     // Corner radius settings
     fun getHandlerCornerRadiusTL(): Float =
-        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_TL, 15f)
+        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_TL, HandlerPresets.DEFAULT.cornerRadius)
 
     fun setHandlerCornerRadiusTL(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_CORNER_RADIUS_TL, value) }
     }
 
     fun getHandlerCornerRadiusTR(): Float =
-        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_TR, 15f)
+        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_TR, HandlerPresets.DEFAULT.cornerRadius)
 
     fun setHandlerCornerRadiusTR(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_CORNER_RADIUS_TR, value) }
     }
 
     fun getHandlerCornerRadiusBL(): Float =
-        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_BL, 15f)
+        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_BL, HandlerPresets.DEFAULT.cornerRadius)
 
     fun setHandlerCornerRadiusBL(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_CORNER_RADIUS_BL, value) }
     }
 
     fun getHandlerCornerRadiusBR(): Float =
-        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_BR, 15f)
+        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_BR, HandlerPresets.DEFAULT.cornerRadius)
 
     fun setHandlerCornerRadiusBR(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_CORNER_RADIUS_BR, value) }
@@ -745,7 +737,7 @@ class SharedPref @Inject constructor(
         }
         // Migrate legacy Int-based storage to the name-based format (one-time, on first read).
         val legacyId = appContext.safeDrawableIdOrDefault(
-            sharedPreferences.getInt(HANDLER_ICON_RES, R.drawable.ic_vol_increase)
+            sharedPreferences.getInt(HANDLER_ICON_RES, HandlerPresets.DEFAULT.iconRes)
         )
         setHandlerIconRes(legacyId)
         return legacyId
@@ -762,14 +754,14 @@ class SharedPref @Inject constructor(
     }
 
     fun getHandlerIconSize(): Float =
-        sharedPreferences.getFloat(HANDLER_ICON_SIZE, 16f)
+        sharedPreferences.getFloat(HANDLER_ICON_SIZE, HandlerPresets.DEFAULT.iconSize)
 
     fun setHandlerIconSize(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_ICON_SIZE, value) }
     }
 
     fun getHandlerIconColor(): Int =
-        sharedPreferences.getInt(HANDLER_ICON_COLOR, 0xFFFFFFFF.toInt())
+        sharedPreferences.getInt(HANDLER_ICON_COLOR, HandlerPresets.DEFAULT.iconColor.toArgb())
 
     fun setHandlerIconColor(value: Int) {
         sharedPreferences.edit { putInt(HANDLER_ICON_COLOR, value) }
@@ -778,7 +770,7 @@ class SharedPref @Inject constructor(
     // Off by default: the bar reads as a cleaner slab without a glyph in it, and the icon is
     // decorative — nothing about the gestures depends on it. Users who want it turn it on.
     fun getHandlerShowIcon(): Boolean =
-        sharedPreferences.getBoolean(HANDLER_SHOW_ICON, false)
+        sharedPreferences.getBoolean(HANDLER_SHOW_ICON, HandlerPresets.DEFAULT.showIcon)
 
     fun setHandlerShowIcon(value: Boolean) {
         sharedPreferences.edit { putBoolean(HANDLER_SHOW_ICON, value) }
@@ -786,7 +778,7 @@ class SharedPref @Inject constructor(
 
     // Behavior settings
     fun getHandlerVibrateOnClick(): Boolean =
-        sharedPreferences.getBoolean(HANDLER_VIBRATE_ON_CLICK, true)
+        sharedPreferences.getBoolean(HANDLER_VIBRATE_ON_CLICK, HandlerPresets.DEFAULT.vibrate)
 
     fun setHandlerVibrateOnClick(value: Boolean) {
         sharedPreferences.edit { putBoolean(HANDLER_VIBRATE_ON_CLICK, value) }

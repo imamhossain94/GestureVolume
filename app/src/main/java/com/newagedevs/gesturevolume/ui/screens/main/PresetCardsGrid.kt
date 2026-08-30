@@ -17,6 +17,14 @@ import androidx.compose.ui.res.stringResource
 
 // Data class to hold preset configuration for preview
 private data class PresetConfig(
+    /**
+     * Stable, unlocalised key for [com.newagedevs.gesturevolume.utils.HandlerPresets.byId].
+     *
+     * The click used to navigate with `getString(nameRes)`, the *translated* name, which was then
+     * matched against English literals — so tapping a preset did nothing in any of the 14
+     * translated locales.
+     */
+    val id: String,
     val nameRes: Int,
     val subtitleRes: Int,
     val icon: ImageVector,
@@ -38,15 +46,15 @@ fun PresetCardsGrid(
 
     val presets = remember(primary, onSurface) {
         listOf(
-            PresetConfig(R.string.preset_default_title, R.string.preset_default_subtitle, Icons.Default.Settings,
+            PresetConfig("Default", R.string.preset_default_title, R.string.preset_default_subtitle, Icons.Default.Settings,
                 listOf(primary, primary), 22.dp, 10.dp, primary, 0.5f),
-            PresetConfig(R.string.preset_minimal_title, R.string.preset_minimal_subtitle, Icons.Default.LinearScale,
+            PresetConfig("Minimal", R.string.preset_minimal_title, R.string.preset_minimal_subtitle, Icons.Default.LinearScale,
                 listOf(primary, primary), 8.dp, 6.dp, onSurface, 0.4f),
-            PresetConfig(R.string.preset_bold_title, R.string.preset_bold_subtitle, Icons.Default.VerticalAlignCenter,
+            PresetConfig("Bold", R.string.preset_bold_title, R.string.preset_bold_subtitle, Icons.Default.VerticalAlignCenter,
                 listOf(primary, primary), 36.dp, 12.dp, primary, 0.85f),
-            PresetConfig(R.string.preset_night_title, R.string.preset_night_subtitle, Icons.Default.DarkMode,
+            PresetConfig("Night", R.string.preset_night_title, R.string.preset_night_subtitle, Icons.Default.DarkMode,
                 listOf(primary, primary), 22.dp, 10.dp, onSurface, 0.7f),
-            PresetConfig(R.string.preset_ghost_title, R.string.preset_ghost_subtitle, Icons.Default.HideSource,
+            PresetConfig("Ghost", R.string.preset_ghost_title, R.string.preset_ghost_subtitle, Icons.Default.HideSource,
                 listOf(primary, primary), 16.dp, 8.dp, onSurface, 0.1f)
         )
     }
@@ -68,7 +76,7 @@ fun PresetCardsGrid(
                     previewCorner = preset.previewCorner,
                     previewColor = preset.previewColor,
                     previewAlpha = preset.previewAlpha,
-                    onClick = { onNavigateToAppearance(context.getString(preset.nameRes)) }
+                    onClick = { onNavigateToAppearance(preset.id) }
                 )
             }
             presets[1].let { preset ->
@@ -82,7 +90,7 @@ fun PresetCardsGrid(
                     previewCorner = preset.previewCorner,
                     previewColor = preset.previewColor,
                     previewAlpha = preset.previewAlpha,
-                    onClick = { onNavigateToAppearance(context.getString(preset.nameRes)) }
+                    onClick = { onNavigateToAppearance(preset.id) }
                 )
             }
         }
@@ -103,7 +111,7 @@ fun PresetCardsGrid(
                     previewCorner = preset.previewCorner,
                     previewColor = preset.previewColor,
                     previewAlpha = preset.previewAlpha,
-                    onClick = { onNavigateToAppearance(context.getString(preset.nameRes)) }
+                    onClick = { onNavigateToAppearance(preset.id) }
                 )
             }
             presets[3].let { preset ->
@@ -117,7 +125,7 @@ fun PresetCardsGrid(
                     previewCorner = preset.previewCorner,
                     previewColor = preset.previewColor,
                     previewAlpha = preset.previewAlpha,
-                    onClick = { onNavigateToAppearance(context.getString(preset.nameRes)) }
+                    onClick = { onNavigateToAppearance(preset.id) }
                 )
             }
         }
@@ -138,7 +146,7 @@ fun PresetCardsGrid(
                     previewCorner = preset.previewCorner,
                     previewColor = preset.previewColor,
                     previewAlpha = preset.previewAlpha,
-                    onClick = { onNavigateToAppearance(context.getString(preset.nameRes)) }
+                    onClick = { onNavigateToAppearance(preset.id) }
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
