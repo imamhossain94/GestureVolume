@@ -53,12 +53,6 @@ fun MainNavigation(
     var showThemeDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
 
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) {
-        viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
-    }
-
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
@@ -81,9 +75,6 @@ fun MainNavigation(
                     // Pause ads while the user is in the overlay permission screen
                     viewModel.preference.setAppOpenAdPaused(true)
                     overlayPermissionLauncher.launch(intent)
-                }
-                is MainEffect.RequestNotificationPermission -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
                 is MainEffect.ShowThemeDialog -> showThemeDialog = true
                 is MainEffect.ShowLanguageDialog -> showLanguageDialog = true

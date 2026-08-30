@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Exibir sobre outros aplicativos</string>
     <string name="overlay_permission_desc">Obrigatório para mostrar a sobreposição do manipulador de volume na tela</string>
-    <string name="notification_permission">Postar notificações</string>
-    <string name="notification_permission_desc">Necessário para mostrar a notificação persistente quando o serviço está em execução</string>
     <string name="device_admin_permission">Administrador do dispositivo</string>
     <string name="device_admin_permission_desc">Opcional: permite que o manipulador bloqueie a tela do seu dispositivo quando configurado</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">Controle o volume do seu dispositivo com gestos simples na tela. Não há necessidade de alcançar os botões físicos.</string>
     <string name="walkthrough_overlay_title">Permissão de sobreposição</string>
     <string name="walkthrough_overlay_desc">Para mostrar o manipulador de volume sobre outros aplicativos, precisamos da permissão ‘Desenhar sobre outros aplicativos’.</string>
-    <string name="walkthrough_notifications_title">Notificações</string>
-    <string name="walkthrough_notifications_desc">Ative as notificações para que possamos manter o serviço de gestos funcionando perfeitamente em segundo plano.</string>
     <string name="walkthrough_all_set_title">Está tudo pronto!</string>
     <string name="walkthrough_all_set_desc">O volume do gesto está pronto para uso. Personalize a aparência e as ações na tela principal.</string>
     <string name="get_started">Comece</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">Visite o site</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">Toque para gerenciar a sobreposição</string>
     <string name="show">Mostrar</string>
     <string name="hide">Ocultar</string>
     <string name="stop">Parar</string>

@@ -50,6 +50,20 @@ object HandlerActions {
      */
     const val REPOSITION = "Reposition handler"
 
+    /**
+     * What the long-press menu offers before the user has chosen otherwise.
+     *
+     * Deliberately short. The menu opens on a gesture the user is holding, often one-handed, so
+     * four entries that can be hit without looking beat ten that need aiming. Everything else is
+     * one toggle away in settings.
+     */
+    val DEFAULT_CONTEXT_MENU: Set<String> = setOf(
+        OPEN_VOLUME_UI,
+        MUTE_OR_UNMUTE,
+        HIDE_HANDLER,
+        OPEN_APP
+    )
+
     /** True when this swipe identifier drives screen brightness rather than media volume. */
     fun isBrightnessSwipe(action: String): Boolean =
         action == INCREASE_BRIGHTNESS || action == DECREASE_BRIGHTNESS

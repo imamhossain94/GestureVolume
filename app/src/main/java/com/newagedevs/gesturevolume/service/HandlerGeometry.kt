@@ -11,8 +11,8 @@ import kotlin.math.roundToInt
 /**
  * The single source of truth for where the floating handler sits.
  *
- * Everything about the bar's placement flows through here — the drag position, the rotation
- * re-layout, and the curved-edge inset — so those three features cannot drift apart.
+ * Everything about the bar's placement flows through here — the drag position, the edge it snaps
+ * to, the rotation re-layout, and the curved-edge inset — so those features cannot drift apart.
  *
  * Two rules make this correct where the old code was not:
  *
@@ -26,6 +26,12 @@ import kotlin.math.roundToInt
  *  2. **Insets are read, never assumed.** The usable frame excludes the system bars and the display
  *     cutout, so "the left edge" means the left edge of the area the user can actually touch,
  *     in every rotation.
+ *
+ *  3. **Horizontal is a fraction too, and it is stored per orientation.** Once the bar can sit
+ *     anywhere rather than against one of two edges, x needs the same rotation-proof treatment as
+ *     y — and it needs it separately for portrait and landscape, because the usable frame swaps
+ *     its axes on rotation and one stored pair cannot describe both. See
+ *     [com.newagedevs.gesturevolume.data.local.SharedPref.getHandlerPosXFraction].
  */
 object HandlerGeometry {
 
@@ -126,6 +132,53 @@ object HandlerGeometry {
     fun yToFraction(y: Int, usableHeight: Int, barHeight: Int): Float {
         if (usableHeight <= 0) return DEFAULT_POSITION_FRACTION
         return ((y + barHeight / 2f) / usableHeight).coerceIn(0f, 1f)
+    }
+
+    /**
+     * Absolute window `x` — measured from the left edge of the *usable* frame — for a bar resting
+     * against one side, honouring the user's edge margin.
+     *
+     * Absolute coordinates, so the caller must be using `Gravity.LEFT`. The resting state uses
+     * side gravity with `x = edgeMargin` instead; this is for the drag and the snap animation,
+     * which need a single continuous axis to interpolate along.
+     */
+    fun sideToX(isLeft: Boolean, usableWidth: Int, barWidth: Int, edgeMarginPx: Int): Int {
+        val maxX = (usableWidth - barWidth).coerceAtLeast(0)
+        val x = if (isLeft) edgeMarginPx else usableWidth - barWidth - edgeMarginPx
+        return x.coerceIn(0, maxX)
+    }
+
+    /**
+     * The horizontal twin of [fractionToY], with identical semantics: [fraction] locates the bar's
+     * **centre**, 0f flush left and 1f flush right.
+     *
+     * Same shape as the vertical conversion on purpose. Free positioning stores a pair of
+     * fractions, and a pair whose two halves round or clamp differently drifts diagonally — a few
+     * pixels per save, in one direction only, which is exactly the kind of bug that takes a
+     * fortnight of "it moved again" reports to pin down.
+     */
+    fun fractionToX(fraction: Float, usableWidth: Int, barWidth: Int): Int {
+        val maxX = (usableWidth - barWidth).coerceAtLeast(0)
+        return (fraction.coerceIn(0f, 1f) * usableWidth - barWidth / 2f)
+            .roundToInt()
+            .coerceIn(0, maxX)
+    }
+
+    /** The inverse of [fractionToX]. Call once when a drag ends, never per move frame. */
+    fun xToFraction(x: Int, usableWidth: Int, barWidth: Int): Float {
+        if (usableWidth <= 0) return 1f
+        return ((x + barWidth / 2f) / usableWidth).coerceIn(0f, 1f)
+    }
+
+    /**
+     * Which edge a bar released at [x] belongs to: whichever one its *centre* is nearer.
+     *
+     * Centre rather than leading edge, so a wide bar dropped astride the midpoint snaps back to
+     * the side the user actually left most of it on.
+     */
+    fun xToIsLeft(x: Int, usableWidth: Int, barWidth: Int): Boolean {
+        if (usableWidth <= 0) return true
+        return (x + barWidth / 2f) < usableWidth / 2f
     }
 
     /** Matches [com.newagedevs.gesturevolume.data.local.SharedPref.getHandlerPositionFraction]. */

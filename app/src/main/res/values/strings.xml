@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Display over other apps</string>
     <string name="overlay_permission_desc">Required to show the volume handler overlay on your screen</string>
-    <string name="notification_permission">Post notifications</string>
-    <string name="notification_permission_desc">Required to show the persistent notification when service is running</string>
     <string name="device_admin_permission">Device administrator</string>
     <string name="device_admin_permission_desc">Optional: Allows the handler to lock your device screen when configured</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">Control your device\'s volume with simple on-screen gestures. No need to reach for the physical buttons.</string>
     <string name="walkthrough_overlay_title">Overlay Permission</string>
     <string name="walkthrough_overlay_desc">To show the volume handler on top of other apps, we need the \'Draw over other apps\' permission.</string>
-    <string name="walkthrough_notifications_title">Notifications</string>
-    <string name="walkthrough_notifications_desc">Opt-in to notifications so we can keep the gesture service running smoothly in the background.</string>
     <string name="walkthrough_all_set_title">You\'re all set!</string>
     <string name="walkthrough_all_set_desc">Gesture Volume is ready to use. Customize the appearance and actions in the main screen.</string>
     <string name="get_started">Get Started</string>
@@ -278,7 +274,6 @@
     <string name="visit_website">Visit Website</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">Tap to manage overlay</string>
     <string name="show">Show</string>
     <string name="hide">Hide</string>
     <string name="stop">Stop</string>
@@ -304,4 +299,31 @@
     <string name="fix_autostart_desc">Open your device auto-start settings and allow GestureVolume.</string>
     <string name="autostart_unavailable">Not available on this device</string>
     <string name="open_settings">Open settings</string>
+
+    <!-- Handler volume readout -->
+    <string name="volume_percent_short">%1$d%%</string>
+
+    <!-- Free positioning / snapping -->
+    <string name="snap_to_edges_title">Snap to screen edges</string>
+    <string name="snap_to_edges_desc">Release the handler and it settles against the nearest edge. Off by default, so you can place it anywhere.</string>
+
+    <!-- Notification -->
+    <string name="notification_service_active">Volume gestures are active</string>
+
+    <!-- Volume percent -->
+    <string name="show_volume_percent_title">Show volume percentage</string>
+    <string name="show_volume_percent_desc">Display the level on the handler while you swipe.</string>
+
+    <!-- Drag to hide -->
+    <string name="drag_here_to_hide">Drag here to hide</string>
+    <string name="handler_hidden_toast">Handler hidden. Open GestureVolume to bring it back.</string>
+
+    <!-- Long-press context menu -->
+    <string name="context_menu_title">Long-press menu</string>
+    <string name="context_menu_desc">Choose what appears when you press and hold the handler.</string>
+    <string name="context_menu_empty">No items selected. Press and hold will only move the handler.</string>
+    <string name="context_menu_section">Long-press menu items</string>
+    <string name="behaviour_section">Behaviour</string>
+    <string name="context_menu_count">%1$d selected</string>
+    <string name="context_menu_none">Off</string>
 </resources>

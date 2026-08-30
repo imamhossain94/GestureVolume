@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -17,9 +16,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
+import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.service.OverlayService
+import com.newagedevs.gesturevolume.utils.ReviewPrompter
 import com.newagedevs.gesturevolume.ui.theme.GestureVolumeTheme
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,9 +35,23 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val DEVICE_ADMIN_REQUEST_CODE = 3
+
+        /** Let the screen settle — and any app-open ad finish — before considering a prompt. */
+        private const val REVIEW_SETTLE_DELAY_MS = 2_500L
     }
 
     private val viewModel: MainViewModel by viewModels()
+
+    /**
+     * True from the moment a Play update is known to be pending until this Activity goes away.
+     *
+     * Both Play dialogs are system-owned and neither yields to the other, so the only way to stop
+     * them overlapping is to not ask for the second one.
+     */
+    private var updateFlowActive = false
+
+    private val reviewRunnable = Runnable { showInAppReviewIfNeeded() }
+    private val reviewHandler = android.os.Handler(android.os.Looper.getMainLooper())
 
     // Bumped in onConfigurationChanged to trigger recomposition with new locale strings
     private val configVersion = mutableIntStateOf(0)
@@ -47,7 +61,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             // Read configVersion so Compose recomposes when locale changes
@@ -84,9 +97,9 @@ class MainActivity : AppCompatActivity() {
         // Observe LiveData communicator
         viewModel.observeCommunicator(this)
 
-        // Increment launch count and check for review
+        // Launch count feeds the review pacing; the old boolean is folded in once.
         viewModel.preference.incrementAppLaunchCount()
-        showInAppReviewIfNeeded()
+        viewModel.preference.migrateReviewState()
 
         // Check for App Updates
         checkForAppUpdate()
@@ -110,6 +123,7 @@ class MainActivity : AppCompatActivity() {
         val appUpdateManager = AppUpdateManagerFactory.create(this)
         appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                updateFlowActive = true
                 appUpdateManager.startUpdateFlowForResult(
                     appUpdateInfo,
                     AppUpdateType.IMMEDIATE,
@@ -118,12 +132,22 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
+
+        // Deliberately delayed and deliberately not in onCreate. At launch this would land on top
+        // of the splash screen, the update check, and the app-open ad — which is what made the
+        // old prompt feel like it came out of nowhere. Waiting for a settled, still-open screen
+        // costs nothing and is the whole difference between a prompt and an ambush.
+        reviewHandler.removeCallbacks(reviewRunnable)
+        reviewHandler.postDelayed(reviewRunnable, REVIEW_SETTLE_DELAY_MS)
     }
 
     override fun onPause() {
         super.onPause()
         // Show handler when app goes to background — use Intent (works even if not bound)
         sendServiceCommand("show")
+        // Nothing half-scheduled outlives the foreground: a prompt that fires as the user is
+        // leaving lands on whatever they switched to.
+        reviewHandler.removeCallbacks(reviewRunnable)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -158,6 +182,7 @@ class MainActivity : AppCompatActivity() {
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
                 && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
             ) {
+                updateFlowActive = true
                 appUpdateManager.startUpdateFlowForResult(
                     appUpdateInfo,
                     AppUpdateType.IMMEDIATE,
@@ -169,22 +194,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showInAppReviewIfNeeded() {
-        if (viewModel.preference.hasShownReview()) return
+        if (isFinishing || isDestroyed) return
 
-        val launchCount = viewModel.preference.getAppLaunchCount()
-        
-        // Show review on 3rd, 10th, 20th launch etc if not shown
-        if (launchCount == 3 || launchCount == 10 || launchCount == 20) {
-            val manager = ReviewManagerFactory.create(this)
-            val request = manager.requestReviewFlow()
-            request.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val reviewInfo = task.result
-                    val flow = manager.launchReviewFlow(this, reviewInfo)
-                    flow.addOnCompleteListener {
-                        viewModel.preference.setHasShownReview(true)
-                    }
-                }
+        val versionCode = BuildConfig.VERSION_CODE
+        if (!ReviewPrompter.shouldAsk(
+                preference = viewModel.preference,
+                serviceRunning = viewModel.preference.isRunning(),
+                updateFlowActive = updateFlowActive,
+                versionCode = versionCode
+            )
+        ) return
+
+        val manager = ReviewManagerFactory.create(this)
+        manager.requestReviewFlow().addOnCompleteListener { task ->
+            if (!task.isSuccessful) return@addOnCompleteListener
+            // Re-checked: requestReviewFlow is asynchronous, and the user may have left in the
+            // meantime. launchReviewFlow on a dead Activity is the other way this looks broken.
+            if (isFinishing || isDestroyed) return@addOnCompleteListener
+
+            manager.launchReviewFlow(this, task.result).addOnCompleteListener {
+                // Recorded whichever way it went. Play does not report whether the sheet was
+                // actually shown — success here covers "displayed", "suppressed by quota" and
+                // "already rated" alike — so this counts attempts, not impressions. That is
+                // precisely why the budget is three and not one.
+                viewModel.preference.recordReviewAsk(versionCode)
             }
         }
     }

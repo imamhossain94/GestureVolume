@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">显示在其他应用之上</string>
     <string name="overlay_permission_desc">需要在屏幕上显示音量处理程序覆盖层</string>
-    <string name="notification_permission">发布通知</string>
-    <string name="notification_permission_desc">需要在服务运行时显示持久通知</string>
     <string name="device_admin_permission">设备管理员</string>
     <string name="device_admin_permission_desc">可选：允许处理程序在配置后锁定您的设备屏幕</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">通过简单的屏幕手势控制设备的音量。无需触碰物理按钮。</string>
     <string name="walkthrough_overlay_title">叠加权限</string>
     <string name="walkthrough_overlay_desc">要在其他应用程序之上显示音量处理程序，我们需要“在其他应用程序上绘制”权限。</string>
-    <string name="walkthrough_notifications_title">通知</string>
-    <string name="walkthrough_notifications_desc">选择接收通知，以便我们可以保持手势服务在后台顺利运行。</string>
     <string name="walkthrough_all_set_title">你都准备好了！</string>
     <string name="walkthrough_all_set_desc">手势音量即可使用。自定义主屏幕中的外观和操作。</string>
     <string name="get_started">开始使用</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">访问网站</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">点按以管理悬浮窗</string>
     <string name="show">显示</string>
     <string name="hide">隐藏</string>
     <string name="stop">停止</string>

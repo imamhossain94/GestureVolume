@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Anzeige über anderen Apps</string>
     <string name="overlay_permission_desc">Erforderlich, um das Volume-Handler-Overlay auf Ihrem Bildschirm anzuzeigen</string>
-    <string name="notification_permission">Benachrichtigungen veröffentlichen</string>
-    <string name="notification_permission_desc">Erforderlich, um die dauerhafte Benachrichtigung anzuzeigen, wenn der Dienst ausgeführt wird</string>
     <string name="device_admin_permission">Geräteadministrator</string>
     <string name="device_admin_permission_desc">Optional: Ermöglicht dem Handler, den Bildschirm Ihres Geräts zu sperren, wenn dies konfiguriert ist</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">Steuern Sie die Lautstärke Ihres Geräts mit einfachen Gesten auf dem Bildschirm. Sie müssen nicht nach den physischen Tasten greifen.</string>
     <string name="walkthrough_overlay_title">Overlay-Berechtigung</string>
     <string name="walkthrough_overlay_desc">Um den Volume-Handler über anderen Apps anzuzeigen, benötigen wir die Berechtigung „Über andere Apps zeichnen“.</string>
-    <string name="walkthrough_notifications_title">Benachrichtigungen</string>
-    <string name="walkthrough_notifications_desc">Aktivieren Sie Benachrichtigungen, damit der Gestendienst reibungslos im Hintergrund läuft.</string>
     <string name="walkthrough_all_set_title">Sie sind bereit!</string>
     <string name="walkthrough_all_set_desc">Gesture Volume ist einsatzbereit. Passen Sie das Erscheinungsbild und die Aktionen im Hauptbildschirm an.</string>
     <string name="get_started">Legen Sie los</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">Besuchen Sie die Website</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">Tippen, um das Overlay zu verwalten</string>
     <string name="show">Anzeigen</string>
     <string name="hide">Ausblenden</string>
     <string name="stop">Beenden</string>

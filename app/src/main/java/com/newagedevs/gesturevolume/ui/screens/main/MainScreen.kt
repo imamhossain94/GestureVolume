@@ -194,7 +194,6 @@ fun MainScreen(
                         .fillMaxWidth()
                         .height(100.dp),
                     hasOverlayPermission = state.hasOverlayPermission,
-                    hasNotificationPermission = state.hasNotificationPermission,
                     onClick = onNavigateToPermissions
                 )
 

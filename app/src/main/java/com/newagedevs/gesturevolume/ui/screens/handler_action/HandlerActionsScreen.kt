@@ -40,6 +40,14 @@ fun HandlerActionsScreen(
     var showLongClickActionDialog by remember { mutableStateOf(false) }
     var showSwipeUpDialog by remember { mutableStateOf(false) }
     var showSwipeDownDialog by remember { mutableStateOf(false) }
+    var showContextMenuDialog by remember { mutableStateOf(false) }
+
+    // Read once into local state rather than on every recomposition: these are plain SharedPref
+    // booleans with no observable wrapper, so the switch's own state is what drives the UI and the
+    // preference is written behind it.
+    var snapToEdges by remember { mutableStateOf(viewModel.preference.getSnapToEdges()) }
+    var showVolumePercent by remember { mutableStateOf(viewModel.preference.getShowVolumePercent()) }
+    var contextMenuItems by remember { mutableStateOf(viewModel.preference.getContextMenuItems()) }
     // Re-applies the action the user picked, once they come back from the system settings screen.
     val writeSettingsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -100,6 +108,18 @@ fun HandlerActionsScreen(
             },
             containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(24.dp)
+        )
+    }
+
+    if (showContextMenuDialog) {
+        ContextMenuItemsDialog(
+            selected = contextMenuItems,
+            onDismiss = { showContextMenuDialog = false },
+            onConfirm = { picked ->
+                contextMenuItems = picked
+                viewModel.preference.setContextMenuItems(picked)
+                showContextMenuDialog = false
+            }
         )
     }
 
@@ -212,6 +232,62 @@ fun HandlerActionsScreen(
                         showProBadge = false,
                         onClick = { showSwipeDownDialog = true }
                     )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Behaviour Section
+            SectionTitle(stringResource(R.string.behaviour_section), MaterialTheme.colorScheme.primary)
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    ActionSettingItem(
+                        label = stringResource(R.string.context_menu_section),
+                        description = stringResource(R.string.context_menu_desc),
+                        value = if (contextMenuItems.isEmpty()) {
+                            stringResource(R.string.context_menu_none)
+                        } else {
+                            stringResource(R.string.context_menu_count, contextMenuItems.size)
+                        },
+                        icon = R.drawable.ic_move,
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        showProBadge = false,
+                        onClick = { showContextMenuDialog = true }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SettingSwitchItem(
+                        title = stringResource(R.string.snap_to_edges_title),
+                        description = stringResource(R.string.snap_to_edges_desc),
+                        checked = snapToEdges,
+                        onCheckedChange = {
+                            snapToEdges = it
+                            viewModel.preference.setSnapToEdges(it)
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SettingSwitchItem(
+                        title = stringResource(R.string.show_volume_percent_title),
+                        description = stringResource(R.string.show_volume_percent_desc),
+                        checked = showVolumePercent,
+                        onCheckedChange = {
+                            showVolumePercent = it
+                            viewModel.preference.setShowVolumePercent(it)
+                        }
+                    )
+
                 }
             }
 

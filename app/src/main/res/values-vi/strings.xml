@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Hiển thị trên các ứng dụng khác</string>
     <string name="overlay_permission_desc">Bắt buộc phải hiển thị lớp phủ xử lý âm lượng trên màn hình của bạn</string>
-    <string name="notification_permission">Đăng thông báo</string>
-    <string name="notification_permission_desc">Bắt buộc phải hiển thị thông báo liên tục khi dịch vụ đang chạy</string>
     <string name="device_admin_permission">Quản trị viên thiết bị</string>
     <string name="device_admin_permission_desc">Tùy chọn: Cho phép trình xử lý khóa màn hình thiết bị của bạn khi được định cấu hình</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">Kiểm soát âm lượng của thiết bị bằng các cử chỉ đơn giản trên màn hình. Không cần phải chạm tới các nút vật lý.</string>
     <string name="walkthrough_overlay_title">Quyền lớp phủ</string>
     <string name="walkthrough_overlay_desc">Để hiển thị trình xử lý âm lượng lên trên các ứng dụng khác, chúng tôi cần có quyền \'Vẽ lên các ứng dụng khác\'.</string>
-    <string name="walkthrough_notifications_title">Thông báo</string>
-    <string name="walkthrough_notifications_desc">Chọn tham gia thông báo để chúng tôi có thể giữ cho dịch vụ cử chỉ chạy trơn tru trong nền.</string>
     <string name="walkthrough_all_set_title">Bạn đã hoàn tất!</string>
     <string name="walkthrough_all_set_desc">Khối lượng cử chỉ đã sẵn sàng để sử dụng. Tùy chỉnh giao diện và hành động trong màn hình chính.</string>
     <string name="get_started">Bắt đầu</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">Truy cập trang web</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">Chạm để quản lý lớp phủ</string>
     <string name="show">Hiện</string>
     <string name="hide">Ẩn</string>
     <string name="stop">Dừng</string>

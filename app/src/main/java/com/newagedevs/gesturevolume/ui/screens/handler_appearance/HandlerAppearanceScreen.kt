@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.HandlerPresets
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.ui.view.HandlerView
 import androidx.compose.ui.res.stringResource
@@ -122,119 +123,29 @@ fun HandlerAppearanceScreen(
     val hasUnsavedChanges = currentState != savedState.value
 
     LaunchedEffect(presetId) {
-        if (presetId != null) {
-            when (presetId) {
-                "Default" -> {
-                    state.gravity = Gravity.END
-                    state.width = 30f
-                    state.height = 100f
-                    state.bgColor = Color.White
-                    state.bgAlpha = 50
-                    state.strokeColor = Color.White
-                    state.strokeWidth = 1f
-                    state.strokeAlpha = 200
-                    state.cornerRadiusAll = 15f
-                    state.cornerTL = 15f
-                    state.cornerTR = 15f
-                    state.cornerBL = 15f
-                    state.cornerBR = 15f
-                    state.iconRes = R.drawable.ic_vol_increase
-                    state.iconSize = 18f
-                    state.iconColor = Color.White
-                    state.showIcon = false
-                    state.vibrate = false
-                    state.edgeMargin = 0f
-                    state.positionFraction = 0.5f
-                }
-                "Minimal" -> {
-                    state.gravity = Gravity.END
-                    state.width = 10f
-                    state.height = 100f
-                    state.bgColor = Color.White
-                    state.bgAlpha = 50
-                    state.strokeColor = Color.White
-                    state.strokeWidth = 1f
-                    state.strokeAlpha = 200
-                    state.cornerRadiusAll = 5f
-                    state.cornerTL = 5f
-                    state.cornerTR = 5f
-                    state.cornerBL = 5f
-                    state.cornerBR = 5f
-                    state.iconRes = R.drawable.ic_vol_increase
-                    state.iconSize = 18f
-                    state.iconColor = Color.White
-                    state.showIcon = false
-                    state.vibrate = false
-                    state.edgeMargin = 0f
-                    state.positionFraction = 0.5f
-                }
-                "Bold" -> {
-                    state.gravity = Gravity.END
-                    state.width = 40f
-                    state.height = 100f
-                    state.bgColor = Color.White
-                    state.bgAlpha = 50
-                    state.strokeColor = Color.White
-                    state.strokeWidth = 1f
-                    state.strokeAlpha = 255
-                    state.cornerRadiusAll = 15f
-                    state.cornerTL = 15f
-                    state.cornerTR = 15f
-                    state.cornerBL = 15f
-                    state.cornerBR = 15f
-                    state.iconRes = R.drawable.ic_move
-                    state.iconSize = 32f
-                    state.iconColor = Color.White
-                    state.showIcon = true
-                    state.vibrate = true
-                    state.edgeMargin = 0f
-                    state.positionFraction = 0.5f
-                }
-                "Night" -> {
-                    state.gravity = Gravity.END
-                    state.width = 30f
-                    state.height = 100f
-                    state.bgColor = Color(0xFF1F2937)
-                    state.bgAlpha = 230
-                    state.strokeColor = Color(0xFF374151)
-                    state.strokeWidth = 1f
-                    state.strokeAlpha = 200
-                    state.cornerRadiusAll = 15f
-                    state.cornerTL = 15f
-                    state.cornerTR = 15f
-                    state.cornerBL = 15f
-                    state.cornerBR = 15f
-                    state.iconRes = R.drawable.ic_vol_increase
-                    state.iconSize = 22f
-                    state.iconColor = Color(0xFF9CA3AF)
-                    state.showIcon = true
-                    state.vibrate = true
-                    state.edgeMargin = 0f
-                    state.positionFraction = 0.5f
-                }
-                "Ghost" -> {
-                    state.gravity = Gravity.END
-                    state.width = 20f
-                    state.height = 100f
-                    state.bgColor = Color.White
-                    state.bgAlpha = 5
-                    state.strokeColor = Color.White
-                    state.strokeWidth = 0.5f
-                    state.strokeAlpha = 5
-                    state.cornerRadiusAll = 12f
-                    state.cornerTL = 12f
-                    state.cornerTR = 12f
-                    state.cornerBL = 12f
-                    state.cornerBR = 12f
-                    state.iconRes = R.drawable.ic_vol_increase
-                    state.iconSize = 16f
-                    state.iconColor = Color.White
-                    state.showIcon = false
-                    state.vibrate = false
-                    state.edgeMargin = 0f
-                    state.positionFraction = 0.5f
-                }
-            }
+        // Values come from HandlerPresets rather than a when-block here, so the cards that offer
+        // these presets on the main screen can preview exactly what applying one will do.
+        HandlerPresets.byId(presetId)?.let { preset ->
+            state.gravity = preset.gravity
+            state.width = preset.width
+            state.height = preset.height
+            state.bgColor = preset.bgColor
+            state.bgAlpha = preset.bgAlpha
+            state.strokeColor = preset.strokeColor
+            state.strokeWidth = preset.strokeWidth
+            state.strokeAlpha = preset.strokeAlpha
+            state.cornerRadiusAll = preset.cornerRadius
+            state.cornerTL = preset.cornerRadius
+            state.cornerTR = preset.cornerRadius
+            state.cornerBL = preset.cornerRadius
+            state.cornerBR = preset.cornerRadius
+            state.iconRes = preset.iconRes
+            state.iconSize = preset.iconSize
+            state.iconColor = preset.iconColor
+            state.showIcon = preset.showIcon
+            state.vibrate = preset.vibrate
+            state.edgeMargin = preset.edgeMargin
+            state.positionFraction = preset.positionFraction
         }
     }
 
@@ -255,7 +166,17 @@ fun HandlerAppearanceScreen(
     }
 
     fun saveChanges() {
-        preference.setHandlerPosition(if (state.gravity == Gravity.START) "Left" else "Right")
+        val newSide = if (state.gravity == Gravity.START) "Left" else "Right"
+        // Choosing a side, or changing how far in from it the bar sits, is an explicit instruction
+        // about where the bar goes horizontally — so it overrides wherever the bar was last
+        // dragged. Only then, though: an unrelated colour change must not yank the bar back to an
+        // edge the user had deliberately moved it away from.
+        if (newSide != preference.getHandlerPosition() ||
+            state.edgeMargin != preference.getHandlerEdgeMarginDp()
+        ) {
+            preference.clearHandlerPosXFraction()
+        }
+        preference.setHandlerPosition(newSide)
         preference.setHandlerWidthDp(state.width)
         preference.setHandlerHeightDp(state.height)
         preference.setHandlerColor(state.bgColor.toArgb())
@@ -467,6 +388,7 @@ fun HandlerAppearanceScreen(
             backgroundImageURL = bgImage,
             onShowIconPicker = { showIconPicker = true },
             onPositionChanged = { state.positionFraction = it },
+            onGravityChanged = { state.gravity = it },
             onDismiss = { isExpandedPreview = false }
         )
     }

@@ -1,15 +1,17 @@
 ## Template for local.properties — copy to `local.properties` and fill in real values.
 ##
-## local.properties is gitignored: it carries this machine's SDK path plus the AppLovin
-## credentials, and neither belongs in the repo. This file is the committed record of
-## WHICH keys a working checkout needs, so a fresh clone doesn't have to reverse-engineer
-## them out of a Gradle failure.
+## local.properties is gitignored: it carries this machine's SDK path, the AppLovin
+## credentials, and the release keystore password, none of which belong in the repo. This
+## file is the committed record of WHICH keys a working checkout needs, so a fresh clone
+## doesn't have to reverse-engineer them out of a Gradle failure.
 ##
 ##   cp local.properties.example local.properties
 ##
-## Every key below is required. There is no local.defaults.properties, and app/build.gradle.kts
-## declares no `secrets { }` block, so the secrets-gradle-plugin reads all of them straight out
-## of local.properties — a missing one fails the build rather than falling back.
+## Everything above the signing section is required. There is no local.defaults.properties,
+## and app/build.gradle.kts declares no `secrets { }` block, so the secrets-gradle-plugin
+## reads those straight out of local.properties — a missing one fails the build rather than
+## falling back. The signing keys at the bottom are the exception: they are optional, and
+## what happens without them is described there.
 
 # Android SDK location. Written automatically by Android Studio on first open.
 # Windows paths may use forward slashes; backslashes must be escaped (C\:\Users\you\...).
@@ -26,3 +28,35 @@ AD_UNIT_APP_OPEN=your-app-open-ad-unit-id
 
 # Google Play Billing product ID for the lifetime Pro unlock.
 PRODUCT_LIFETIME=your-lifetime-product-id
+
+
+## ---------------------------------------------------------------------------------------
+## Release signing — OPTIONAL, and read directly by app/build.gradle.kts rather than by the
+## secrets plugin.
+##
+## Leave these out and `assembleRelease` / `bundleRelease` still work, producing an UNSIGNED
+## artifact. That is deliberate: a clone without the keystore can still run a release build
+## to check that R8 and resource shrinking pass. An unsigned AAB cannot be uploaded to Play.
+##
+## It is all four or none. Three out of four is treated as "not configured" and silently
+## produces an unsigned build, because a partial config otherwise fails deep inside the
+## packaging task with an error that never names the missing property.
+##
+## Each key also falls back to an environment variable of the same name, which is how CI
+## signs without a local.properties file at all. local.properties wins where both are set.
+##
+## NEVER commit the filled-in values, and keep the .jks itself outside the repo.
+## To recover the alias from an existing keystore (prompts for the password in your own
+## terminal, and prints nothing secret):
+##
+##   keytool -list -v -keystore /path/to/your.jks
+## ---------------------------------------------------------------------------------------
+
+# Absolute path to the upload keystore. Not a secret in itself, but machine-specific.
+RELEASE_STORE_FILE=/path/to/your/keystore.jks
+
+# Keystore password, the key's alias, and that key's own password. On a keystore created by
+# Android Studio the store and key passwords are often the same; they need not be.
+RELEASE_STORE_PASSWORD=your-keystore-password
+RELEASE_KEY_ALIAS=your-key-alias
+RELEASE_KEY_PASSWORD=your-key-password

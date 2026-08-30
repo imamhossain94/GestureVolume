@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">他のアプリの上に重ねて表示する</string>
     <string name="overlay_permission_desc">画面上にボリュームハンドラーオーバーレイを表示するために必要です</string>
-    <string name="notification_permission">通知を投稿する</string>
-    <string name="notification_permission_desc">サービスの実行中に永続的な通知を表示するために必要です</string>
     <string name="device_admin_permission">デバイス管理者</string>
     <string name="device_admin_permission_desc">オプション: 構成時にハンドラーがデバイス画面をロックできるようにします。</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">画面上の簡単なジェスチャーでデバイスの音量を制御します。物理的なボタンに手を伸ばす必要はありません。</string>
     <string name="walkthrough_overlay_title">オーバーレイ許可</string>
     <string name="walkthrough_overlay_desc">他のアプリの上にボリューム ハンドラーを表示するには、「他のアプリの上に描画」権限が必要です。</string>
-    <string name="walkthrough_notifications_title">通知</string>
-    <string name="walkthrough_notifications_desc">通知をオプトインすると、ジェスチャ サービスをバックグラウンドでスムーズに実行し続けることができます。</string>
     <string name="walkthrough_all_set_title">準備は完了です!</string>
     <string name="walkthrough_all_set_desc">ジェスチャーボリュームを使用する準備ができました。メイン画面の外観とアクションをカスタマイズします。</string>
     <string name="get_started">始めましょう</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">ウェブサイトにアクセス</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">タップしてオーバーレイを管理</string>
     <string name="show">表示</string>
     <string name="hide">非表示</string>
     <string name="stop">停止</string>

@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.AudioManager
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.view.Gravity
 import android.widget.FrameLayout
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -91,6 +92,8 @@ fun ExpandedPreviewDialog(
     onShowIconPicker: () -> Unit,
     /** A drag in the preview updates the draft state, so Apply/Discard still governs it. */
     onPositionChanged: (Float) -> Unit,
+    /** Dragging the bar past the midpoint switches sides, same as it does on the live overlay. */
+    onGravityChanged: (Int) -> Unit,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -300,6 +303,18 @@ fun ExpandedPreviewDialog(
                         val host = object : HandlerGestureDetector.Host {
                             private var dragStartY = 0f
 
+                            /**
+                             * Horizontal drag is tracked in the container's own coordinates, because
+                             * the bar's layout position jumps between the two edges when the side
+                             * changes while `translationX` does not.
+                             */
+                            private var dragStartX = 0f
+
+                            /** Left edge the bar is laid out at, for the side it is currently on. */
+                            private fun layoutLeft(): Float =
+                                if (state.gravity == Gravity.START) 0f
+                                else (container.width - handler.width).toFloat()
+
                             override fun isLongPressReposition(): Boolean =
                                 preference.getHandlerLongTapAction() == HandlerActions.REPOSITION
 
@@ -367,21 +382,52 @@ fun ExpandedPreviewDialog(
                                 }
                             }
 
+                            /**
+                             * No menu in the preview.
+                             *
+                             * The preview exists to show what the bar *looks* like while the user
+                             * tunes its appearance, and it lives inside a dialog that already owns
+                             * the screen. Popping a second floating menu on top of that would sit
+                             * over the very controls being adjusted. Holding here still highlights
+                             * the bar and still drags it, which is the part worth previewing.
+                             */
+                            override fun onContextMenuOpen() = Unit
+
+                            override fun onContextMenuDismiss() = Unit
+
                             override fun onDragBegin() {
                                 dragStartY = handler.translationY
+                                dragStartX = layoutLeft() + handler.translationX
                             }
 
-                            override fun onDragUpdate(offsetPx: Float) {
+                            override fun onDragUpdate(offsetXPx: Float, offsetYPx: Float) {
                                 val maxY = (container.height - handler.height).coerceAtLeast(0)
+                                val maxX = (container.width - handler.width).coerceAtLeast(0)
                                 handler.translationY =
-                                    (dragStartY + offsetPx).coerceIn(0f, maxY.toFloat())
+                                    (dragStartY + offsetYPx).coerceIn(0f, maxY.toFloat())
+                                handler.translationX =
+                                    (dragStartX + offsetXPx).coerceIn(0f, maxX.toFloat()) -
+                                            layoutLeft()
                             }
 
                             override fun onDragEnd(moved: Boolean) {
+                                val absoluteX = layoutLeft() + handler.translationX
+                                val isLeft = HandlerGeometry.xToIsLeft(
+                                    absoluteX.roundToInt(), container.width, handler.width
+                                )
+                                val gravity = if (isLeft) Gravity.START else Gravity.END
+
+                                // Re-pinned directly as well as through the state holder: when the
+                                // side has not actually changed, the state write is a no-op and the
+                                // gravity LaunchedEffect never fires, which would strand the bar at
+                                // whatever translationX the drag left behind.
+                                handler.setViewGravity(gravity)
+
                                 if (!moved) return
                                 // Routed through the appearance state holder rather than written
                                 // straight to preferences, so a drag obeys the same Apply/Discard
                                 // contract as every other setting on this screen.
+                                onGravityChanged(gravity)
                                 onPositionChanged(
                                     HandlerGeometry.yToFraction(
                                         handler.translationY.roundToInt(),
