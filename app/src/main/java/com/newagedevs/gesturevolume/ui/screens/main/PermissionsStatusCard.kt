@@ -21,10 +21,9 @@ import com.newagedevs.gesturevolume.R
 fun PermissionsStatusCard(
     modifier: Modifier = Modifier,
     hasOverlayPermission: Boolean,
-    hasNotificationPermission: Boolean,
     onClick: () -> Unit
 ) {
-    val allPermissionsGranted = hasOverlayPermission && hasNotificationPermission
+    val allPermissionsGranted = hasOverlayPermission
 
     Card(
         modifier = modifier.clickable(onClick = onClick),

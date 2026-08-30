@@ -47,9 +47,6 @@ fun HandlerActionsScreen(
     // preference is written behind it.
     var snapToEdges by remember { mutableStateOf(viewModel.preference.getSnapToEdges()) }
     var showVolumePercent by remember { mutableStateOf(viewModel.preference.getShowVolumePercent()) }
-    var showNotificationActions by remember {
-        mutableStateOf(viewModel.preference.getShowNotificationActions())
-    }
     var contextMenuItems by remember { mutableStateOf(viewModel.preference.getContextMenuItems()) }
     // Re-applies the action the user picked, once they come back from the system settings screen.
     val writeSettingsLauncher = rememberLauncherForActivityResult(
@@ -291,21 +288,6 @@ fun HandlerActionsScreen(
                         }
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    SettingSwitchItem(
-                        title = stringResource(R.string.notification_actions_title),
-                        description = stringResource(R.string.notification_actions_desc),
-                        checked = showNotificationActions,
-                        onCheckedChange = {
-                            showNotificationActions = it
-                            viewModel.preference.setShowNotificationActions(it)
-                            // The notification is already posted; only a service update rebuilds it.
-                            viewModel.sendUpdateToService(context)
-                        }
-                    )
                 }
             }
 

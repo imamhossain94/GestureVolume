@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.BrightnessHigh
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -62,7 +61,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.LockScreenUtil
-import com.newagedevs.gesturevolume.utils.NotificationUtil
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
@@ -87,11 +85,6 @@ fun PermissionsScreen(
     }
 
     var overlayPermissionGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
-    var notificationPermissionGranted by remember { mutableStateOf(
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            NotificationUtil(context).isPermissionGranted()
-        } else true
-    ) }
     var deviceAdminGranted by remember {
         mutableStateOf(LockScreenUtil(context).active())
     }
@@ -121,13 +114,6 @@ fun PermissionsScreen(
         // Resume app open ads now that the user has returned from the overlay permission screen
         viewModel.preference.setAppOpenAdPaused(false)
         overlayPermissionGranted = Settings.canDrawOverlays(context)
-        viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
-    }
-
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        notificationPermissionGranted = granted
         viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
     }
 
@@ -217,28 +203,6 @@ fun PermissionsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Notification Permission (Android 13+)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                PermissionCard(
-                    title = stringResource(R.string.notification_permission),
-                    description = stringResource(R.string.notification_permission_desc),
-                    icon = Icons.Default.Notifications,
-                    isGranted = notificationPermissionGranted,
-                    borderColor = if (notificationPermissionGranted) {
-                        Color(0xFF10B981)
-                    } else {
-                        Color(0xFFF97316)
-                    },
-                    onRequestPermission = {
-                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Optional Permissions Section
             Text(
                 text = stringResource(R.string.optional_permissions),
@@ -311,7 +275,7 @@ fun PermissionsScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // All Set Card
-            if (overlayPermissionGranted && notificationPermissionGranted) {
+            if (overlayPermissionGranted) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),

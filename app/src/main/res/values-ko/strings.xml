@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">다른 앱 위에 표시</string>
     <string name="overlay_permission_desc">화면에 볼륨 핸들러 오버레이를 표시하는 데 필요합니다.</string>
-    <string name="notification_permission">게시물 알림</string>
-    <string name="notification_permission_desc">서비스가 실행 중일 때 지속적인 알림을 표시하는 데 필요합니다.</string>
     <string name="device_admin_permission">장치 관리자</string>
     <string name="device_admin_permission_desc">선택 사항: 구성 시 핸들러가 장치 화면을 잠그도록 허용합니다.</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">간단한 화면 동작으로 기기의 볼륨을 제어하세요. 물리적 버튼에 손을 뻗을 필요가 없습니다.</string>
     <string name="walkthrough_overlay_title">오버레이 권한</string>
     <string name="walkthrough_overlay_desc">다른 앱 위에 볼륨 핸들러를 표시하려면 \'다른 앱 위에 그리기\' 권한이 필요합니다.</string>
-    <string name="walkthrough_notifications_title">알림</string>
-    <string name="walkthrough_notifications_desc">백그라운드에서 제스처 서비스를 원활하게 실행할 수 있도록 알림을 선택하세요.</string>
     <string name="walkthrough_all_set_title">모든 준비가 완료되었습니다.</string>
     <string name="walkthrough_all_set_desc">제스처 볼륨을 사용할 준비가 되었습니다. 메인 화면의 모양과 동작을 사용자 정의하세요.</string>
     <string name="get_started">시작하기</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">웹사이트 방문</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">탭하여 오버레이 관리</string>
     <string name="show">표시</string>
     <string name="hide">숨기기</string>
     <string name="stop">중지</string>

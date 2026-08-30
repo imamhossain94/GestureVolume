@@ -31,11 +31,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.newagedevs.gesturevolume.GestureApplication
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
-import com.newagedevs.gesturevolume.utils.NotificationUtil
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 
-private const val WALKTHROUGH_PAGE_COUNT = 4
+private const val WALKTHROUGH_PAGE_COUNT = 3
 
 @Composable
 fun WalkthroughScreen(
@@ -58,15 +57,6 @@ fun WalkthroughScreen(
     }
 
     val hasOverlayPermission = remember { mutableStateOf(Settings.canDrawOverlays(context)) }
-    val hasNotificationPermission = remember {
-        mutableStateOf(
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                NotificationUtil(context).isPermissionGranted()
-            } else {
-                true
-            }
-        )
-    }
 
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -77,13 +67,6 @@ fun WalkthroughScreen(
         if (hasOverlayPermission.value) {
             goToPage(pagerState.currentPage + 1)
         }
-    }
-
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        hasNotificationPermission.value = isGranted
-        goToPage(pagerState.currentPage + 1)
     }
 
     Surface(
@@ -135,12 +118,6 @@ fun WalkthroughScreen(
                                 iconRes = R.drawable.ic_layer_group,
                                 isGranted = hasOverlayPermission.value
                             )
-                            2 -> WalkthroughPage(
-                                title = stringResource(R.string.walkthrough_notifications_title),
-                                description = stringResource(R.string.walkthrough_notifications_desc),
-                                iconRes = R.drawable.ic_notification_unread_lines,
-                                isGranted = hasNotificationPermission.value
-                            )
                             else -> WalkthroughPage(
                                 title = stringResource(R.string.walkthrough_all_set_title),
                                 description = stringResource(R.string.walkthrough_all_set_desc),
@@ -187,13 +164,6 @@ fun WalkthroughScreen(
                                     goToPage(2)
                                 }
                             }
-                            2 -> {
-                                if (!hasNotificationPermission.value && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                } else {
-                                    goToPage(3)
-                                }
-                            }
                             else -> {
                                 viewModel.preference.setFirstLaunchCompleted()
                                 // Onboarding done — now safe to init ads + consent flow off the walkthrough.
@@ -214,7 +184,6 @@ fun WalkthroughScreen(
                         text = when (pagerState.currentPage) {
                             0 -> stringResource(R.string.get_started)
                             1 -> if (hasOverlayPermission.value) stringResource(R.string.next) else stringResource(R.string.grant_permission)
-                            2 -> if (hasNotificationPermission.value) stringResource(R.string.next) else stringResource(R.string.grant_permission)
                             else -> stringResource(R.string.finish)
                         },
                         fontSize = 16.sp,

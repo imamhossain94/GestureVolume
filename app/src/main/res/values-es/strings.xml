@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Mostrar sobre otras aplicaciones</string>
     <string name="overlay_permission_desc">Requerido para mostrar la superposición del controlador de volumen en su pantalla</string>
-    <string name="notification_permission">Publicar notificaciones</string>
-    <string name="notification_permission_desc">Requerido para mostrar la notificación persistente cuando el servicio se está ejecutando</string>
     <string name="device_admin_permission">Administrador de dispositivos</string>
     <string name="device_admin_permission_desc">Opcional: permite que el controlador bloquee la pantalla de su dispositivo cuando está configurado</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">Controla el volumen de tu dispositivo con simples gestos en pantalla. No es necesario alcanzar los botones físicos.</string>
     <string name="walkthrough_overlay_title">Permiso de superposición</string>
     <string name="walkthrough_overlay_desc">Para mostrar el controlador de volumen encima de otras aplicaciones, necesitamos el permiso \"Dibujar sobre otras aplicaciones\".</string>
-    <string name="walkthrough_notifications_title">Notificaciones</string>
-    <string name="walkthrough_notifications_desc">Suscríbase a las notificaciones para que podamos mantener el servicio de gestos funcionando sin problemas en segundo plano.</string>
     <string name="walkthrough_all_set_title">¡Estás listo!</string>
     <string name="walkthrough_all_set_desc">Gesture Volume está listo para usar. Personaliza la apariencia y las acciones en la pantalla principal.</string>
     <string name="get_started">Empezar</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">Visitar sitio web</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">Toca para gestionar la superposición</string>
     <string name="show">Mostrar</string>
     <string name="hide">Ocultar</string>
     <string name="stop">Detener</string>

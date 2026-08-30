@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">العرض على التطبيقات الأخرى</string>
     <string name="overlay_permission_desc">مطلوب لإظهار تراكب معالج الصوت على شاشتك</string>
-    <string name="notification_permission">نشر الإخطارات</string>
-    <string name="notification_permission_desc">مطلوب لإظهار الإخطار المستمر عند تشغيل الخدمة</string>
     <string name="device_admin_permission">مسؤول الجهاز</string>
     <string name="device_admin_permission_desc">اختياري: يسمح للمعالج بقفل شاشة جهازك عند تكوينه</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">تحكم في مستوى صوت جهازك بإيماءات بسيطة على الشاشة. لا حاجة للوصول إلى الأزرار المادية.</string>
     <string name="walkthrough_overlay_title">إذن التراكب</string>
     <string name="walkthrough_overlay_desc">لإظهار معالج مستوى الصوت أعلى التطبيقات الأخرى، نحتاج إلى إذن \"الرسم فوق التطبيقات الأخرى\".</string>
-    <string name="walkthrough_notifications_title">إشعارات</string>
-    <string name="walkthrough_notifications_desc">قم بالاشتراك في الإشعارات حتى نتمكن من الحفاظ على تشغيل خدمة الإيماءات بسلاسة في الخلفية.</string>
     <string name="walkthrough_all_set_title">أنت جاهز تمامًا!</string>
     <string name="walkthrough_all_set_desc">حجم الإيماءة جاهز للاستخدام. تخصيص المظهر والإجراءات في الشاشة الرئيسية.</string>
     <string name="get_started">ابدأ</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">زيارة الموقع</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">انقر لإدارة التراكب</string>
     <string name="show">إظهار</string>
     <string name="hide">إخفاء</string>
     <string name="stop">إيقاف</string>

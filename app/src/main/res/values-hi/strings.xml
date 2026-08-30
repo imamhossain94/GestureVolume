@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">अन्य ऐप्स पर प्रदर्शित करें</string>
     <string name="overlay_permission_desc">आपकी स्क्रीन पर वॉल्यूम हैंडलर ओवरले दिखाने के लिए आवश्यक है</string>
-    <string name="notification_permission">सूचनाएं पोस्ट करें</string>
-    <string name="notification_permission_desc">जब सेवा चल रही हो तो लगातार अधिसूचना दिखाना आवश्यक है</string>
     <string name="device_admin_permission">डिवाइस व्यवस्थापक</string>
     <string name="device_admin_permission_desc">वैकल्पिक: कॉन्फ़िगर होने पर हैंडलर को आपकी डिवाइस स्क्रीन को लॉक करने की अनुमति देता है</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">सरल ऑन-स्क्रीन इशारों से अपने डिवाइस का वॉल्यूम नियंत्रित करें। भौतिक बटनों तक पहुँचने की कोई आवश्यकता नहीं है।</string>
     <string name="walkthrough_overlay_title">ओवरले अनुमति</string>
     <string name="walkthrough_overlay_desc">अन्य ऐप्स के शीर्ष पर वॉल्यूम हैंडलर दिखाने के लिए, हमें \'अन्य ऐप्स पर ड्रा करें\' अनुमति की आवश्यकता है।</string>
-    <string name="walkthrough_notifications_title">सूचनाएं</string>
-    <string name="walkthrough_notifications_desc">सूचनाओं में ऑप्ट-इन करें ताकि हम जेस्चर सेवा को पृष्ठभूमि में सुचारू रूप से चालू रख सकें।</string>
     <string name="walkthrough_all_set_title">तुम सब सेट हो!</string>
     <string name="walkthrough_all_set_desc">जेस्चर वॉल्यूम उपयोग के लिए तैयार है। मुख्य स्क्रीन में उपस्थिति और क्रियाओं को अनुकूलित करें।</string>
     <string name="get_started">शुरू हो जाओ</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">बेवसाइट देखना</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">ओवरले प्रबंधित करने के लिए टैप करें</string>
     <string name="show">दिखाएँ</string>
     <string name="hide">छिपाएँ</string>
     <string name="stop">बंद करें</string>

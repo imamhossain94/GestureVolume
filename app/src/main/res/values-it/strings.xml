@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Visualizza su altre app</string>
     <string name="overlay_permission_desc">Necessario per mostrare la sovrapposizione del gestore del volume sullo schermo</string>
-    <string name="notification_permission">Pubblica notifiche</string>
-    <string name="notification_permission_desc">Necessario per mostrare la notifica persistente quando il servizio è in esecuzione</string>
     <string name="device_admin_permission">Amministratore del dispositivo</string>
     <string name="device_admin_permission_desc">Facoltativo: consente al gestore di bloccare lo schermo del dispositivo quando configurato</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">Controlla il volume del tuo dispositivo con semplici gesti sullo schermo. Non è necessario raggiungere i pulsanti fisici.</string>
     <string name="walkthrough_overlay_title">Autorizzazione di sovrapposizione</string>
     <string name="walkthrough_overlay_desc">Per mostrare il gestore del volume sopra altre app, abbiamo bisogno dell\'autorizzazione \"Disegna su altre app\".</string>
-    <string name="walkthrough_notifications_title">Notifiche</string>
-    <string name="walkthrough_notifications_desc">Attiva le notifiche in modo da poter mantenere il servizio gestuale perfettamente funzionante in background.</string>
     <string name="walkthrough_all_set_title">È tutto pronto!</string>
     <string name="walkthrough_all_set_desc">Gesture Volume è pronto per l\'uso. Personalizza l\'aspetto e le azioni nella schermata principale.</string>
     <string name="get_started">Inizia</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">Visita il sito web</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">Tocca per gestire la sovrapposizione</string>
     <string name="show">Mostra</string>
     <string name="hide">Nascondi</string>
     <string name="stop">Arresta</string>

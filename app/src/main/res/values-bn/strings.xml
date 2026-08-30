@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">অন্যান্য অ্যাপের উপরে প্রদর্শন করুন</string>
     <string name="overlay_permission_desc">আপনার স্ক্রিনে ভলিউম হ্যান্ডলার ওভারলে দেখানোর জন্য প্রয়োজন</string>
-    <string name="notification_permission">পোস্ট বিজ্ঞপ্তি</string>
-    <string name="notification_permission_desc">পরিষেবা চলাকালীন অবিরাম বিজ্ঞপ্তি দেখানোর জন্য প্রয়োজনীয়</string>
     <string name="device_admin_permission">ডিভাইস প্রশাসক</string>
     <string name="device_admin_permission_desc">ঐচ্ছিক: কনফিগার করা হলে হ্যান্ডলারকে আপনার ডিভাইসের স্ক্রীন লক করার অনুমতি দেয়</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">সহজ অন-স্ক্রীন অঙ্গভঙ্গি দিয়ে আপনার ডিভাইসের ভলিউম নিয়ন্ত্রণ করুন। শারীরিক বোতামগুলির জন্য পৌঁছানোর দরকার নেই।</string>
     <string name="walkthrough_overlay_title">ওভারলে অনুমতি</string>
     <string name="walkthrough_overlay_desc">অন্যান্য অ্যাপের উপরে ভলিউম হ্যান্ডলার দেখানোর জন্য, আমাদের \'অন্যান্য অ্যাপের উপর আঁকা\' অনুমতি প্রয়োজন।</string>
-    <string name="walkthrough_notifications_title">বিজ্ঞপ্তি</string>
-    <string name="walkthrough_notifications_desc">বিজ্ঞপ্তিগুলিতে অপ্ট-ইন করুন যাতে আমরা ব্যাকগ্রাউন্ডে ইঙ্গিত পরিষেবাটি মসৃণভাবে চলতে পারি৷</string>
     <string name="walkthrough_all_set_title">আপনি সব প্রস্তুত!</string>
     <string name="walkthrough_all_set_desc">অঙ্গভঙ্গি ভলিউম ব্যবহারের জন্য প্রস্তুত। প্রধান পর্দায় উপস্থিতি এবং কর্ম কাস্টমাইজ করুন.</string>
     <string name="get_started">শুরু করুন</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">ওয়েবসাইট ভিজিট করুন</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">ওভারলে পরিচালনা করতে ট্যাপ করুন</string>
     <string name="show">দেখান</string>
     <string name="hide">লুকান</string>
     <string name="stop">বন্ধ</string>

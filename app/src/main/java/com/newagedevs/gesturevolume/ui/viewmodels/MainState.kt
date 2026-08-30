@@ -20,7 +20,6 @@ data class MainState(
     val swipeDownAction: String = "Decrease volume and show UI",
     val swipeDownActionIcon: Int = R.drawable.ic_vol_increase,
     val hasOverlayPermission: Boolean = false,
-    val hasNotificationPermission: Boolean = false,
     val hasWriteSettingsPermission: Boolean = false,
     /**
      * True while a brightness action is waiting on WRITE_SETTINGS.

@@ -154,7 +154,6 @@ class OverlayService : Service(), OverlayServiceInterface {
         // v2 channel: low importance (silent, no heads-up). Bumped from the old id so existing
         // installs also move off the intrusive IMPORTANCE_HIGH channel.
         private const val CHANNEL_ID = "gesture_volume_service_v2"
-        private const val CHANNEL_ID_MIN = "gesture_volume_service_min"
         private const val LEGACY_CHANNEL_ID = "Gesture Volume Channel ID"
         private const val NOTIFICATION_ID = 1
         private const val INDICATOR_VISIBLE_MS = 900L
@@ -266,22 +265,6 @@ class OverlayService : Service(), OverlayServiceInterface {
         }
         manager.createNotificationChannel(channel)
 
-        // The quietest a foreground service's notification is allowed to be. Android will not let
-        // a foreground service run without one, so "hidden" here means IMPORTANCE_MIN: no status
-        // bar icon and collapsed to a single line at the bottom of the shade. A separate channel
-        // rather than a changed importance, because importance is the user's to change once a
-        // channel exists — the app cannot lower it afterwards.
-        val minChannel = NotificationChannel(
-            CHANNEL_ID_MIN,
-            "Overlay service (hidden)",
-            NotificationManager.IMPORTANCE_MIN
-        ).apply {
-            setShowBadge(false)
-            setSound(null, null)
-            enableVibration(false)
-            lockscreenVisibility = Notification.VISIBILITY_SECRET
-        }
-        manager.createNotificationChannel(minChannel)
         // Remove the old intrusive channel from app notification settings.
         try {
             manager.deleteNotificationChannel(LEGACY_CHANNEL_ID)
@@ -291,38 +274,27 @@ class OverlayService : Service(), OverlayServiceInterface {
     }
 
     private fun startForegroundService() {
-        // Off by default, and it governs the whole notification rather than just its buttons.
-        // Android will not run a foreground service without a notification, so switching this off
-        // cannot delete it outright — it moves it to an IMPORTANCE_MIN channel, which takes the
-        // status bar icon away and collapses it to one line at the bottom of the shade. That is
-        // as close to gone as the platform permits.
-        val visible = preference.getShowNotificationActions()
-
-        val builder = NotificationCompat.Builder(
-            this,
-            if (visible) CHANNEL_ID else CHANNEL_ID_MIN
-        )
+        // Android will not run a foreground service without a notification, so this cannot be
+        // removed outright. It is instead made unpostable: the app no longer declares
+        // POST_NOTIFICATIONS, and on Android 13+ an ungranted notification permission keeps a
+        // foreground service's notification out of the shade and the status bar entirely while
+        // the service keeps running. Verified on a physical Android 16 device — isForeground
+        // stays true with zero NotificationRecords.
+        //
+        // On Android 12 and below the permission does not exist and this notification is always
+        // visible, so it is written to be worth reading there rather than left blank: an empty
+        // ongoing notification is worse than an informative one.
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_gesture)
             .setContentTitle(getString(R.string.app_name))
-            .setPriority(
-                if (visible) NotificationCompat.PRIORITY_LOW else NotificationCompat.PRIORITY_MIN
-            )
+            .setContentText(getString(R.string.notification_service_active))
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .setAutoCancel(false)
             .setOngoing(true)
-            .setVisibility(
-                if (visible) NotificationCompat.VISIBILITY_PUBLIC
-                else NotificationCompat.VISIBILITY_SECRET
-            )
             .setShowWhen(false)
-
-        if (visible) {
-            builder
-                .addAction(R.drawable.ic_show, getString(R.string.show), getPendingIntent("show"))
-                .addAction(R.drawable.ic_hide, getString(R.string.hide), getPendingIntent("hide"))
-                .addAction(R.drawable.ic_power, getString(R.string.stop), getPendingIntent("stop"))
-        }
-
-        val notification = builder.build()
+            .setVisibility(NotificationCompat.VISIBILITY_SECRET)
+            .setContentIntent(getOpenAppIntent())
+            .build()
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -342,15 +314,25 @@ class OverlayService : Service(), OverlayServiceInterface {
         }
     }
 
-    private fun getPendingIntent(action: String): PendingIntent {
-        val intent = Intent(this, OverlayService::class.java).apply {
-            this.action = action
-        }
-        return PendingIntent.getService(
+    /**
+     * Opens the app from the notification.
+     *
+     * Replaces the three Show / Hide / Stop service actions. On the releases where this
+     * notification is visible at all it is a bare status line, and a single tap that lands
+     * somewhere useful beats three buttons on a notice most users only ever want gone. Everything
+     * those buttons did is in the app, one tap away.
+     *
+     * IMMUTABLE, unlike the mutable pending intents the actions needed: nothing fills anything in.
+     */
+    private fun getOpenAppIntent(): PendingIntent {
+        val intent = packageManager.getLaunchIntentForPackage(packageName)
+            ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+            ?: Intent()
+        return PendingIntent.getActivity(
             this,
-            action.hashCode(),
+            0,
             intent,
-            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
     }
 

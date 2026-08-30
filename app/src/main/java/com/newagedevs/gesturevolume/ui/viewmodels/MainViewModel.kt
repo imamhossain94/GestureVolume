@@ -24,7 +24,6 @@ import com.newagedevs.gesturevolume.service.OverlayServiceInterface
 import com.newagedevs.gesturevolume.utils.Constants
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.LockScreenUtil
-import com.newagedevs.gesturevolume.utils.NotificationUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -123,15 +122,9 @@ class MainViewModel @Inject constructor(
 
     private fun updatePermissionsStatus(context: Context) {
         val hasOverlay = Settings.canDrawOverlays(context)
-        val hasNotification = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            NotificationUtil(context).isPermissionGranted()
-        } else {
-            true
-        }
 
         _state.value = _state.value.copy(
             hasOverlayPermission = hasOverlay,
-            hasNotificationPermission = hasNotification,
             hasWriteSettingsPermission = Settings.System.canWrite(context)
         )
     }
@@ -194,19 +187,11 @@ class MainViewModel @Inject constructor(
     }
 
     private fun toggleService(isRunning: Boolean, context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (isRunning && !NotificationUtil(context).isPermissionGranted()) {
-                // Reset state before requesting permission
-                preference.setRunning(false)
-                _state.value = _state.value.copy(isRunning = false)
-
-                viewModelScope.launch {
-                    _effect.send(MainEffect.RequestNotificationPermission)
-                }
-                return
-            }
-        }
-
+        // No notification gate any more. The app posts no notifications of its own, and the
+        // foreground service's mandatory one is deliberately left unpostable — see
+        // OverlayService.startForegroundService. Asking for POST_NOTIFICATIONS and then refusing
+        // to start the overlay without it made the toggle silently fail for anyone who declined,
+        // over a notification they were never going to see.
         if (!Settings.canDrawOverlays(context)) {
             // Reset state before requesting permission
             preference.setRunning(false)

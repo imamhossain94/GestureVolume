@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Diğer uygulamaların üzerinde görüntüle</string>
     <string name="overlay_permission_desc">Birim işleyicisi katmanını ekranınızda göstermek için gereklidir</string>
-    <string name="notification_permission">Bildirim yayınlama</string>
-    <string name="notification_permission_desc">Hizmet çalışırken kalıcı bildirimin gösterilmesi için gereklidir</string>
     <string name="device_admin_permission">Cihaz yöneticisi</string>
     <string name="device_admin_permission_desc">İsteğe bağlı: Yapılandırıldığında işleyicinin cihazınızın ekranını kilitlemesine izin verir</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">Basit ekran hareketleriyle cihazınızın sesini kontrol edin. Fiziksel düğmelere ulaşmanıza gerek yok.</string>
     <string name="walkthrough_overlay_title">Yer Paylaşımı İzni</string>
     <string name="walkthrough_overlay_desc">Birim işleyicisini diğer uygulamaların üstünde göstermek için \'Diğer uygulamaların üzerine çizim yap\' iznine ihtiyacımız var.</string>
-    <string name="walkthrough_notifications_title">Bildirimler</string>
-    <string name="walkthrough_notifications_desc">Hareket hizmetinin arka planda sorunsuz çalışmasını sağlayabilmemiz için bildirimleri etkinleştirin.</string>
     <string name="walkthrough_all_set_title">Artık hazırsınız!</string>
     <string name="walkthrough_all_set_desc">Hareket Hacmi kullanıma hazır. Ana ekrandaki görünümü ve eylemleri özelleştirin.</string>
     <string name="get_started">Başlayın</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">Web Sitesini Ziyaret Edin</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">Yer paylaşımını yönetmek için dokunun</string>
     <string name="show">Göster</string>
     <string name="hide">Gizle</string>
     <string name="stop">Durdur</string>

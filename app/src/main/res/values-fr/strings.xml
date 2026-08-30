@@ -143,8 +143,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Afficher sur d\'autres applications</string>
     <string name="overlay_permission_desc">Obligatoire pour afficher la superposition du gestionnaire de volume sur votre écran</string>
-    <string name="notification_permission">Publier des notifications</string>
-    <string name="notification_permission_desc">Obligatoire pour afficher la notification persistante lorsque le service est en cours d\'exécution</string>
     <string name="device_admin_permission">Administrateur de l\'appareil</string>
     <string name="device_admin_permission_desc">Facultatif : permet au gestionnaire de verrouiller l\'écran de votre appareil lorsqu\'il est configuré</string>
 
@@ -153,8 +151,6 @@
     <string name="walkthrough_welcome_desc">Contrôlez le volume de votre appareil avec de simples gestes à l\'écran. Pas besoin d\'atteindre les boutons physiques.</string>
     <string name="walkthrough_overlay_title">Autorisation de superposition</string>
     <string name="walkthrough_overlay_desc">Pour afficher le gestionnaire de volume au-dessus d\'autres applications, nous avons besoin de l\'autorisation « Dessiner sur d\'autres applications ».</string>
-    <string name="walkthrough_notifications_title">Notifications</string>
-    <string name="walkthrough_notifications_desc">Inscrivez-vous aux notifications afin que nous puissions assurer le bon fonctionnement du service de gestes en arrière-plan.</string>
     <string name="walkthrough_all_set_title">Vous êtes prêt !</string>
     <string name="walkthrough_all_set_desc">Gesture Volume est prêt à être utilisé. Personnalisez l\'apparence et les actions sur l\'écran principal.</string>
     <string name="get_started">Commencer</string>
@@ -276,7 +272,6 @@
     <string name="visit_website">Visitez le site Web</string>
 
     <!-- 1.2.9: brightness control, edge offset, drag-to-move, service resilience -->
-    <string name="notification_tap_to_manage">Appuyez pour gérer la superposition</string>
     <string name="show">Afficher</string>
     <string name="hide">Masquer</string>
     <string name="stop">Arrêter</string>
