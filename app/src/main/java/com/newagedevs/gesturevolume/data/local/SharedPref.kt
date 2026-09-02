@@ -80,7 +80,16 @@ class SharedPref @Inject constructor(
         const val HANDLER_EDGE_MARGIN = "handlerEdgeMarginDp"
         const val BRIGHTNESS_AUTO_WAS_ON = "brightnessAutoWasOn"
         const val LEGACY_TRANSLATION_Y_DEFAULT = 260f
-        const val DEFAULT_POSITION_FRACTION = 0.5f
+        /**
+         * Where a fresh install puts the bar vertically: its centre an eighth of the way down.
+         *
+         * Paired with a horizontal default of 1f — flush right — this is the top-right corner,
+         * clear of the status bar but well above the middle, which is where a thumb reaches
+         * without stretching and where the bar is least likely to collide with a full-screen
+         * app's own controls. Centring it put it exactly where video players and games place
+         * their scrubbers.
+         */
+        const val DEFAULT_POSITION_FRACTION = 0.12f
 
         /** The Default preset's side, as the string this preference stores. */
         val DEFAULT_SIDE: String =
@@ -104,6 +113,9 @@ class SharedPref @Inject constructor(
         const val HANDLER_HIDDEN = "handlerHidden"
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
         const val CONTEXT_MENU_ITEMS = "handlerContextMenuItems"
+        const val HANDLER_SNAP_TO_EDGE = "handlerSnapToEdge"
+        const val SHOW_NOTIFICATION = "showServiceNotification"
+        const val ASKED_NOTIFICATION_PERMISSION = "askedNotificationPermission"
 
         const val THEME = "app_theme"
         const val LANGUAGE = "app_language"
@@ -272,6 +284,10 @@ class SharedPref @Inject constructor(
     ) {
         if (hasHandlerPositionFraction()) return
         if (usableHeightPx <= 0) return
+        // Nothing to migrate: this install never wrote the legacy pixel offset, so it is either
+        // brand new or one that has already been through this. Either way the answer is the
+        // current default, and converting an unwritten 260px would silently override it.
+        if (!sharedPreferences.contains(HANDLER_TRANSLATION_Y)) return
         // 260px was authored in portrait. Starting in landscape, leave the pref unwritten and let
         // the next portrait pass do the conversion.
         if (!isPortrait) return
@@ -391,6 +407,51 @@ class SharedPref @Inject constructor(
 
     fun setShowVolumePercent(value: Boolean) {
         sharedPreferences.edit { putBoolean(SHOW_VOLUME_PERCENT, value) }
+    }
+
+    /**
+     * Whether the bar flies to the nearer side when the finger lifts.
+     *
+     * On by default: a side bar that comes to rest against an edge is what almost everyone wants,
+     * and the alternative leaves it stranded wherever the drag happened to end. Switching it off
+     * gives free two-axis placement, and in *both* modes [getHandlerEdgeMarginDp] is the same
+     * promise — the closest the bar may ever come to the edge, which is also exactly where it
+     * parks when it snaps. One number, one meaning.
+     */
+    fun getHandlerSnapToEdge(): Boolean =
+        sharedPreferences.getBoolean(HANDLER_SNAP_TO_EDGE, true)
+
+    fun setHandlerSnapToEdge(value: Boolean) {
+        sharedPreferences.edit { putBoolean(HANDLER_SNAP_TO_EDGE, value) }
+    }
+
+    /**
+     * Whether the ongoing notification carries its Show/Hide, Settings and Stop buttons.
+     *
+     * On by default, and it is the only route back to a bar put away with "Hide handler" while
+     * the app is closed. Android will not run a foreground service without *some* notification, so
+     * switching this off does not delete it — it downgrades it to a silent minimum-importance row
+     * with no buttons and no status-bar icon. See `OverlayService.startForegroundService`.
+     */
+    fun getShowNotification(): Boolean =
+        sharedPreferences.getBoolean(SHOW_NOTIFICATION, true)
+
+    fun setShowNotification(value: Boolean) {
+        sharedPreferences.edit { putBoolean(SHOW_NOTIFICATION, value) }
+    }
+
+    /**
+     * Whether POST_NOTIFICATIONS has already been asked for once, unprompted.
+     *
+     * Android 13+ stops showing the system dialog after two refusals, so asking on every service
+     * start would just be a no-op that looks like a bug. Asked once when the user first switches
+     * the service on; after that the Permissions screen is the deliberate route.
+     */
+    fun hasAskedNotificationPermission(): Boolean =
+        sharedPreferences.getBoolean(ASKED_NOTIFICATION_PERMISSION, false)
+
+    fun setAskedNotificationPermission(value: Boolean) {
+        sharedPreferences.edit { putBoolean(ASKED_NOTIFICATION_PERMISSION, value) }
     }
 
     // ---- long-press context menu ---------------------------------------------------------------
@@ -794,5 +855,30 @@ class SharedPref @Inject constructor(
     fun getLanguage(): String = sharedPreferences.getString(LANGUAGE, "en") ?: "en"
     fun setLanguage(language: String) {
         sharedPreferences.edit { putString(LANGUAGE, language) }
+    }
+
+    /**
+     * Puts every setting back to its factory default.
+     *
+     * Two things deliberately survive, because neither is a *setting* the user chose and losing
+     * either would be a defect rather than a reset:
+     *
+     *  - **The Pro purchase.** A receipt is not a preference. Billing does re-sync from Play on
+     *    the next launch, but clearing it would drop the user into an ad-supported app they have
+     *    already paid to be rid of for however long that takes — and offline, indefinitely.
+     *  - **The first-install timestamp.** It only gates the post-install ad grace period, so
+     *    clearing it would hand out a fresh two ad-free hours for every tap of Reset.
+     *
+     * Everything else goes, first-launch flag included: the walkthrough is part of what a factory
+     * state looks like.
+     */
+    fun resetAll() {
+        val keptPro = isProFeatureActivated()
+        val keptInstallTime = getFirstInstallTimeMillis()
+        sharedPreferences.edit {
+            clear()
+            putBoolean(PRO_FEATURE_ACTIVATION, keptPro)
+            if (keptInstallTime > 0L) putLong(FIRST_INSTALL_TIME, keptInstallTime)
+        }
     }
 }

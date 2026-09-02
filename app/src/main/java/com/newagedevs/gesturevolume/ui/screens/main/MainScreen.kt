@@ -37,6 +37,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -49,6 +50,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.ui.theme.Surface
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
@@ -66,13 +70,26 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Update permissions status when screen appears
-    LaunchedEffect(Unit) {
-        viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
-        viewModel.onEvent(MainEvent.SyncServiceState(context))
+    // Resolved in composable scope so it follows a locale change.
+    val handlerShownMsg = stringResource(R.string.handler_shown_toast)
+
+    // On every return, not only on first composition. The bar can be hidden from its own
+    // long-press menu or from the notification while this screen sits in the background, and the
+    // "Handler is hidden" card is only useful if it is there when the user comes back looking for
+    // their missing bar.
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
+                viewModel.onEvent(MainEvent.SyncServiceState(context))
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     BackHandler {
@@ -188,12 +205,24 @@ fun MainScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // The route back from "Hide handler". Only while there is something to undo.
+                if (state.isRunning && state.isHandlerHidden) {
+                    HandlerHiddenCard(
+                        onShowHandler = {
+                            viewModel.onEvent(MainEvent.SetHandlerHidden(false, context))
+                            viewModel.showToast(handlerShownMsg)
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
                 // Permissions Card with Status
                 PermissionsStatusCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp),
                     hasOverlayPermission = state.hasOverlayPermission,
+                    missingPermissionCount = state.missingPermissionCount,
                     onClick = onNavigateToPermissions
                 )
 

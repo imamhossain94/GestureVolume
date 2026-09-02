@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.service.HandlerGeometry
 import com.newagedevs.gesturevolume.utils.HandlerPresets
 
 /**
@@ -39,12 +40,29 @@ fun HandlerAppearanceSettingsContent(
         // Position Section
         SectionTitle(stringResource(R.string.position_uppercase), Color(0xFF8B5CF6))
         CustomizationCard(borderColor = Color(0xFF8B5CF6)) {
-            // No Left/Right control any more, and no snap-to-edges switch either. The bar goes
-            // where it is dragged — both axes, always, with nothing to switch on first — and the
-            // edge offset below is the one thing that constrains it. A side picker on top of that
-            // could only ever disagree with where the bar actually is.
+            // No Left/Right picker. The bar goes where it is dragged, and which side it is
+            // "on" is a consequence of that rather than a setting — a picker on top could only
+            // ever disagree with where the bar actually is. The two controls below are the whole
+            // of horizontal placement: whether it returns to a side, and how far in that side is.
             Text(
                 text = stringResource(R.string.drag_to_move_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 16.sp
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
+            SwitchControl(
+                label = stringResource(R.string.snap_to_edge),
+                checked = state.snapToEdge,
+                borderColor = Color(0xFF8B5CF6),
+                onCheckedChange = { state.snapToEdge = it }
+            )
+            Text(
+                text = stringResource(R.string.snap_to_edge_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 16.sp
@@ -77,7 +95,9 @@ fun HandlerAppearanceSettingsContent(
             // the bar back in the middle of the height it is already lost behind is no rescue.
             TextButton(
                 onClick = {
-                    state.positionFraction = 0.5f
+                    // The same corner a fresh install starts in, so "Reset" and "new install"
+                    // cannot disagree about where the bar belongs.
+                    state.positionFraction = HandlerGeometry.DEFAULT_POSITION_FRACTION
                     state.posXFraction = DEFAULT_POS_X_FRACTION
                     state.gravity = if (DEFAULT_POS_X_FRACTION < 0.5f) Gravity.START else Gravity.END
                 },

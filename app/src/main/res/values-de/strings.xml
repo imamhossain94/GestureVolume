@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">Sperrbildschirm bei Klick mit der Device Policy Manager API</string>
-    <string name="device_admin_label">Gesture Volume Geräte-Admin</string>
     <string name="landscape_appearance_settings">ERSCHEINUNGSBILD (QUERFORMAT)</string>
     <string name="click_">Aktivieren Sie den Schalter und konfigurieren Sie Position und Aussehen des Handlers im Querformat.</string>
     <string name="configure">Konfigurieren</string>
@@ -49,7 +47,6 @@
     <string name="language">Sprache</string>
     <string name="lock_position">Position sperren</string>
     <string name="long_press_action">Aktion für langes Drücken</string>
-    <string name="minimize">Minimieren</string>
     <string name="more">MEHR</string>
     <string name="newagedevs">NewAgeDevs</string>
     <string name="nothing_to_restore">Nichts zum Wiederherstellen</string>
@@ -92,7 +89,6 @@
     <string name="top_left">Oben Links</string>
     <string name="top_right">Oben Rechts</string>
     <string name="upgrade">UPGRADE</string>
-    <string name="unlock_all_features">Alle Werbung entfernen</string>
     <string name="unsaved_changes">Ungespeicherte Änderungen</string>
     <string name="upgrade_to_pro">Auf PRO upgraden</string>
     <string name="vibrate_on_click">Vibrieren bei Klick</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Anzeige über anderen Apps</string>
     <string name="overlay_permission_desc">Erforderlich, um das Volume-Handler-Overlay auf Ihrem Bildschirm anzuzeigen</string>
-    <string name="device_admin_permission">Geräteadministrator</string>
-    <string name="device_admin_permission_desc">Optional: Ermöglicht dem Handler, den Bildschirm Ihres Geräts zu sperren, wenn dies konfiguriert ist</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">Willkommen bei Gesture Volume</string>
@@ -160,10 +154,7 @@
     <!-- Expanded Preview -->
     <string name="position_locked">POSITION GESPERRT</string>
     <string name="unlock_to_reposition">ENTSPERREN ZUM NEUPOSITIONIEREN</string>
-    <string name="test_mode">Testmodus</string>
     <string name="reposition_mode">Neupositionierungsmodus</string>
-    <string name="test_mode_desc">Versuchen Sie es mit Wischen und Tippen</string>
-    <string name="reposition_mode_desc">Ziehen Sie den Handler an die neue Position</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">POSITION</string>
@@ -258,7 +249,6 @@
     <string name="preset_ghost_subtitle">Fast unsichtbar</string>
 
     <!-- Missing Strings -->
-    <string name="preview">Vorschau</string>
     <string name="press_back_again_to_exit">Erneut tippen, um zu beenden</string>
     <string name="volume_gesture_handler">Handler für Lautstärkegesten</string>
     <string name="troubleshoot">Fehlerbehebung</string>
@@ -287,9 +277,9 @@
     <string name="brightness_permission_title">Helligkeitssteuerung erlauben?</string>
     <string name="brightness_permission_message">Um die Bildschirmhelligkeit zu ändern, benötigt GestureVolume die Berechtigung Systemeinstellungen ändern. Die adaptive Helligkeit wird währenddessen deaktiviert und beim Beenden des Dienstes wiederhergestellt.</string>
     <string name="edge_offset">Randabstand</string>
-    <string name="edge_offset_desc">Verschiebt die Leiste vom Bildschirmrand nach innen. Hilft bei gebogenen Displays und aktivierter Gestensteuerung.</string>
+    <string name="edge_offset_desc">Der kleinste Abstand, den die Leiste zum linken und rechten Rand hält – beim Ziehen und dort, wo sie beim Einrasten stehen bleibt. Hilft bei gebogenen Displays und aktivierter Gestensteuerung.</string>
     <string name="reset_position">Position zurücksetzen</string>
-    <string name="drag_to_move_hint">Position entsperren, dann die Leiste nach oben oder unten ziehen.</string>
+    <string name="drag_to_move_hint">So verschiebst du die Leiste: lange darauf drücken, die Vibration abwarten und dann ziehen. Setze die Aktion für langes Drücken auf „Leiste verschieben“, um das zu aktivieren.</string>
     <string name="fix_battery_title">Akkuoptimierung</string>
     <string name="fix_battery_desc">Uneingeschränkte Akkunutzung erlauben, damit Android den Dienst nicht beendet.</string>
     <string name="fix_battery_allowed">Uneingeschränkt</string>
@@ -297,4 +287,82 @@
     <string name="fix_autostart_desc">Öffne die Autostart-Einstellungen deines Geräts und erlaube GestureVolume.</string>
     <string name="autostart_unavailable">Auf diesem Gerät nicht verfügbar</string>
     <string name="open_settings">Einstellungen öffnen</string>
+    <string name="snap_to_edge">Am Rand einrasten</string>
+    <string name="snap_to_edge_desc">An: Die Leiste springt beim Loslassen zur näheren Seite und bleibt im unten eingestellten Randabstand stehen. Aus: Sie bleibt genau dort, wo du sie abgelegt hast. Die Höhe bestimmst du in beiden Fällen selbst.</string>
+    <string name="notification_channel_controls">Leisten-Steuerung</string>
+    <string name="notification_channel_controls_desc">Die dauerhafte Zeile mit Anzeigen/Ausblenden, Einstellungen und Stopp.</string>
+    <string name="notification_channel_minimal">Läuft im Hintergrund</string>
+    <string name="notification_channel_minimal_desc">Ein stiller Platzhalter, den Android verlangt, solange der Dienst läuft. Kein Symbol, keine Schaltflächen.</string>
+    <string name="notification_minimal_title">GestureVolume läuft</string>
+    <string name="show_notification_title">Benachrichtigungs-Steuerung</string>
+    <string name="show_notification_desc">Behalte Anzeigen, Einstellungen und Stopp in der Benachrichtigungsleiste. Nur so lässt sich eine ausgeblendete Leiste zurückholen, ohne die App zu öffnen.</string>
+    <string name="show_notification_off_hint">Aus: Android verlangt weiterhin einen stillen Platzhalter, solange der Dienst läuft. Tippe, um ihn in den Systemeinstellungen ganz auszublenden.</string>
+    <string name="open_notification_settings">System-Benachrichtigungseinstellungen</string>
+    <string name="notification_permission">Benachrichtigungen</string>
+    <string name="notification_permission_desc">Optional: zeigt die Leisten-Steuerung – Anzeigen, Einstellungen und Stopp – in der Benachrichtigungsleiste</string>
+    <string name="handler_hidden_card_title">Leiste ist ausgeblendet</string>
+    <string name="handler_hidden_card_desc">Du hast sie über das Menü beim langen Drücken ausgeblendet. Sie bleibt verborgen, bis du sie wieder einblendest.</string>
+    <string name="handler_hidden_card_action">Anzeigen</string>
+    <string name="handler_shown_toast">Die Leiste erscheint, sobald du die App verlässt.</string>
+    <string name="service_active">Dienst aktiv</string>
+    <string name="service_inactive">Dienst inaktiv</string>
+    <string name="tap_to_disable">Zum Deaktivieren tippen</string>
+    <string name="tap_to_enable">Zum Aktivieren tippen</string>
+    <string name="lock_permission_section">BILDSCHIRMSPERRE</string>
+    <string name="lock_accessibility_permission">Bildschirmsperre (Bedienungshilfe)</string>
+    <string name="lock_accessibility_permission_desc">Empfohlen: Lässt die Sperren-Aktion den Bildschirm so ausschalten wie die Ein-/Aus-Taste, damit dein Fingerabdruck das Telefon weiterhin entsperrt</string>
+    <string name="permission_turn_off">Deaktivieren</string>
+    <string name="action_reposition">Leiste verschieben</string>
+    <string name="volume_percent_short">%1$d%%</string>
+    <string name="context_menu_count">%1$d ausgewählt</string>
+    <string name="notification_service_active">Lautstärke-Gesten sind aktiv</string>
+    <string name="show_volume_percent_title">Lautstärke in Prozent anzeigen</string>
+    <string name="show_volume_percent_desc">Zeigt den Pegel während des Wischens auf der Leiste an.</string>
+    <string name="handler_hidden_toast">Leiste ausgeblendet. Öffne GestureVolume, um sie zurückzuholen.</string>
+    <string name="action_stop_service">Dienst beenden</string>
+    <string name="notification_handler_hidden">Leiste ausgeblendet – auf Anzeigen tippen, um sie zurückzuholen</string>
+    <string name="notification_action_show">Anzeigen</string>
+    <string name="notification_action_hide">Ausblenden</string>
+    <string name="notification_action_settings">Einstellungen</string>
+    <string name="notification_action_stop">Stopp</string>
+    <string name="lock_accessibility_label">Bildschirmsperre</string>
+    <string name="lock_accessibility_summary">Erlaubt der Sperren-Aktion, den Bildschirm auszuschalten.</string>
+    <string name="lock_accessibility_description">Erlaubt GestureVolume, den Bildschirm zu sperren, wenn du die Sperren-Aktion auf der schwebenden Leiste verwendest. Der Bildschirm wird genauso gesperrt wie mit der Ein-/Aus-Taste, dein Fingerabdruck entsperrt das Telefon also weiterhin. Dieser Dienst liest nichts auf deinem Bildschirm und führt keine andere Aktion aus.</string>
+    <string name="lock_permission_title">Bildschirm sperren</string>
+    <string name="lock_permission_message">GestureVolume braucht die Berechtigung, den Bildschirm zu sperren.\n\nDie Bedienungshilfe wird empfohlen: Sie sperrt den Bildschirm wie die Ein-/Aus-Taste, dein Fingerabdruck entsperrt das Telefon also weiterhin. Die Geräteverwaltung funktioniert ebenfalls, doch die meisten Telefone verlangen dann deine PIN statt den Fingerabdruck.</string>
+    <string name="lock_permission_accessibility">Bedienungshilfe verwenden</string>
+    <string name="lock_not_available">Erteile in den Einstellungen eine Sperr-Berechtigung, bevor du die Sperren-Aktion verwendest.</string>
+    <string name="context_menu_title">Menü bei langem Drücken</string>
+    <string name="context_menu_desc">Wähle, was erscheint, wenn du die Leiste gedrückt hältst.</string>
+    <string name="context_menu_empty">Nichts weiter ausgewählt. Langes Drücken verschiebt die Leiste und bietet „Leiste ausblenden“ an.</string>
+    <string name="context_menu_always">Immer sichtbar</string>
+    <string name="context_menu_section">Einträge im Menü bei langem Drücken</string>
+    <string name="behaviour_section">Verhalten</string>
+    <string name="lock_permission_menu_message">Du hast Sperren zum Menü beim langen Drücken hinzugefügt, aber noch kann nichts den Bildschirm sperren.\n\nDie Bedienungshilfe wird empfohlen: Sie sperrt den Bildschirm wie die Ein-/Aus-Taste, dein Fingerabdruck entsperrt das Telefon also weiterhin.</string>
+    <string name="notification_permission_needed_title">Benachrichtigungen sind deaktiviert</string>
+    <string name="notification_permission_needed_message">Die Steuerung ist an, aber Android lässt GestureVolume keine Benachrichtigungen posten – Anzeigen, Einstellungen und Stopp erscheinen also nicht in der Leiste.</string>
+    <string name="notification_permission_warning_inline">Benachrichtigungen sind für diese App blockiert. Zum Erlauben tippen.</string>
+    <string name="grant_permission_action">Erlauben</string>
+    <string name="not_now">Jetzt nicht</string>
+    <string name="help">Hilfe</string>
+    <string name="appearance_help_title">Die Vorschau nutzen</string>
+    <string name="appearance_help_move">Die Leiste verschieben\nLange drücken, die Vibration abwarten, dann ziehen. Sie bewegt sich genau wie auf deinem Startbildschirm, Einrasten und Randabstand eingeschlossen. Dafür muss die Aktion für langes Drücken auf „Leiste verschieben“ stehen.</string>
+    <string name="appearance_help_test">Die Gesten ausprobieren\nTippe, doppeltippe und wische auf der Leiste, um deine Einstellungen zu erleben. Lautstärke und Helligkeit ändern sich wirklich; Aktionen, die die App verlassen oder die echte Leiste betreffen, werden hier übersprungen.</string>
+    <string name="appearance_help_settings">Das Aussehen ändern\nZieh das Blatt nach oben oder tippe auf das Einstellungssymbol – für Farben, Größe, Ecken und Symbol. Nichts wird gespeichert, bis du auf Übernehmen tippst.</string>
+    <string name="appearance_help_apply">Übernehmen\nDas Häkchen erscheint, sobald sich etwas geändert hat, und wendet es auf die echte Leiste an.</string>
+    <string name="got_it">Alles klar</string>
+    <string name="settings_sheet">Darstellungseinstellungen</string>
+    <string name="remove_ads_support_developer">Alle Werbung entfernen und den Entwickler unterstützen</string>
+    <string name="reset_app">App zurücksetzen</string>
+    <string name="reset_app_title">Alles zurücksetzen?</string>
+    <string name="reset_app_message">Jede Einstellung geht auf ihren Standard zurück: Aussehen und Position der Leiste, alle Tipp- und Wischaktionen, das Menü beim langen Drücken, Design und Sprache. Die schwebende Leiste wird abgeschaltet und die Willkommensbildschirme kommen zurück.\n\nDein Pro-Kauf bleibt erhalten. Dies lässt sich nicht rückgängig machen.</string>
+    <string name="reset_app_confirm">Zurücksetzen</string>
+    <string name="reset_app_done">Alles wurde zurückgesetzt.</string>
+    <string name="permission_needed_lock">Du hast eine Aktion auf Sperren gesetzt. Ohne dies passiert beim Antippen nichts.</string>
+    <string name="permission_needed_notification">Die Benachrichtigungs-Steuerung ist an. Ohne dies erscheinen Anzeigen, Einstellungen und Stopp nicht.</string>
+    <string name="permission_needed_brightness">Du hast eine Helligkeitsaktion gesetzt. Ohne dies kann sie die Helligkeit nicht ändern.</string>
+    <string name="permission_action_required_one">1 Berechtigung braucht deine Aufmerksamkeit</string>
+    <string name="permission_action_required_many">%1$d Berechtigungen brauchen deine Aufmerksamkeit</string>
+    <string name="lock_unsupported_message">Den Bildschirm zu sperren erfordert Android 9 oder neuer. Dieses Telefon kann es nicht, daher meldet die Sperren-Aktion, dass sie nicht verfügbar ist.</string>
+    <string name="lock_unsupported_short">Erfordert Android 9 oder neuer</string>
 </resources>

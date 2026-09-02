@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">디바이스 어드민 API를 사용한 화면 잠금</string>
-    <string name="device_admin_label">제스처 볼륨 디바이스 관리자</string>
     <string name="landscape_appearance_settings">레이아웃 설정</string>
     <string name="click_">활성화를 누르고 크기 지정 및 중력 등을 설정하세요.</string>
     <string name="configure">설정</string>
@@ -49,7 +47,6 @@
     <string name="language">언어</string>
     <string name="lock_position">위치 고정</string>
     <string name="long_press_action">길게 누르기 동작</string>
-    <string name="minimize">최소화</string>
     <string name="more">더 보기</string>
     <string name="newagedevs">NewAgeDevs</string>
     <string name="nothing_to_restore">복원할 항목이 없습니다</string>
@@ -92,7 +89,6 @@
     <string name="top_left">왼쪽 상단</string>
     <string name="top_right">오른쪽 상단</string>
     <string name="upgrade">업그레이드</string>
-    <string name="unlock_all_features">모든 광고 제거</string>
     <string name="unsaved_changes">저장되지 않은 변경</string>
     <string name="upgrade_to_pro">PRO로 업그레이드</string>
     <string name="vibrate_on_click">클릭할 때 진동</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">다른 앱 위에 표시</string>
     <string name="overlay_permission_desc">화면에 볼륨 핸들러 오버레이를 표시하는 데 필요합니다.</string>
-    <string name="device_admin_permission">장치 관리자</string>
-    <string name="device_admin_permission_desc">선택 사항: 구성 시 핸들러가 장치 화면을 잠그도록 허용합니다.</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">제스처 볼륨에 오신 것을 환영합니다.</string>
@@ -160,10 +154,7 @@
     <!-- Expanded Preview -->
     <string name="position_locked">위치가 잠겼습니다.</string>
     <string name="unlock_to_reposition">잠금 해제하여 위치 변경</string>
-    <string name="test_mode">테스트 모드</string>
     <string name="reposition_mode">재배치 모드</string>
-    <string name="test_mode_desc">스와이프와 탭을 사용해 보세요.</string>
-    <string name="reposition_mode_desc">핸들러를 새 위치로 드래그</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">위치</string>
@@ -258,7 +249,6 @@
     <string name="preset_ghost_subtitle">거의 눈에 띄지 않음</string>
 
     <!-- Missing Strings -->
-    <string name="preview">미리보기</string>
     <string name="press_back_again_to_exit">뒤로 버튼을 다시 누르면 종료</string>
     <string name="volume_gesture_handler">볼륨 제스처 핸들러</string>
     <string name="troubleshoot">문제 해결</string>
@@ -286,10 +276,10 @@
     <string name="write_settings_permission_desc">바로 화면 밝기를 조절할 수 있게 합니다. 밝기 동작에만 필요합니다.</string>
     <string name="brightness_permission_title">밝기 조절을 허용할까요?</string>
     <string name="brightness_permission_message">화면 밝기를 변경하려면 시스템 설정 수정 권한이 필요합니다. 사용하는 동안 자동 밝기가 꺼지며, 서비스를 중지하면 다시 켜집니다.</string>
-    <string name="edge_offset">가장자리 간격</string>
-    <string name="edge_offset_desc">바를 화면 가장자리에서 안쪽으로 옮깁니다. 곡면 화면과 제스처 탐색에 도움이 됩니다.</string>
+    <string name="edge_offset">가장자리 거리</string>
+    <string name="edge_offset_desc">바가 좌우 가장자리로부터 유지하는 최소 간격입니다. 드래그하는 동안에도, 붙어서 멈추는 위치에도 같은 값이 적용됩니다. 곡면 화면과 제스처 내비게이션에서 유용합니다.</string>
     <string name="reset_position">위치 초기화</string>
-    <string name="drag_to_move_hint">위치 잠금을 끈 다음 바를 위아래로 드래그하세요.</string>
+    <string name="drag_to_move_hint">바를 옮기려면: 길게 누른 뒤 진동을 기다렸다가 끌어 주세요. 이 기능을 켜려면 길게 누르기 동작을 “핸들러 이동”으로 설정하세요.</string>
     <string name="fix_battery_title">배터리 최적화</string>
     <string name="fix_battery_desc">Android가 서비스를 중지하지 않도록 배터리 사용을 제한 없음으로 허용하세요.</string>
     <string name="fix_battery_allowed">제한 없음</string>
@@ -297,4 +287,82 @@
     <string name="fix_autostart_desc">기기의 자동 실행 설정을 열고 GestureVolume을 허용하세요.</string>
     <string name="autostart_unavailable">이 기기에서는 사용할 수 없습니다</string>
     <string name="open_settings">설정 열기</string>
+    <string name="snap_to_edge">가장자리에 붙이기</string>
+    <string name="snap_to_edge_desc">켜짐: 손을 떼면 바가 가까운 쪽 가장자리로 이동해 아래의 가장자리 거리에 멈춥니다. 꺼짐: 놓은 자리에 그대로 있습니다. 높이는 어느 쪽이든 자유입니다.</string>
+    <string name="notification_channel_controls">핸들러 컨트롤</string>
+    <string name="notification_channel_controls_desc">표시/숨기기, 설정, 중지가 있는 상시 알림입니다.</string>
+    <string name="notification_channel_minimal">조용히 실행 중</string>
+    <string name="notification_channel_minimal_desc">서비스가 실행되는 동안 Android가 요구하는 무음 자리표시자입니다. 아이콘도 버튼도 없습니다.</string>
+    <string name="notification_minimal_title">GestureVolume 실행 중</string>
+    <string name="show_notification_title">알림 컨트롤</string>
+    <string name="show_notification_desc">알림 패널에 표시, 설정, 중지를 유지합니다. 앱을 열지 않고 숨긴 바를 되돌릴 수 있는 유일한 방법입니다.</string>
+    <string name="show_notification_off_hint">꺼짐: 서비스가 실행되는 동안에도 Android는 무음 자리표시자를 요구합니다. 눌러서 시스템 설정에서 완전히 숨기세요.</string>
+    <string name="open_notification_settings">시스템 알림 설정</string>
+    <string name="notification_permission">알림</string>
+    <string name="notification_permission_desc">선택 사항: 알림 패널에 핸들러 컨트롤(표시, 설정, 중지)을 표시합니다</string>
+    <string name="handler_hidden_card_title">바가 숨겨져 있습니다</string>
+    <string name="handler_hidden_card_desc">길게 누르기 메뉴에서 숨겼습니다. 다시 표시할 때까지 숨겨진 상태로 유지됩니다.</string>
+    <string name="handler_hidden_card_action">표시</string>
+    <string name="handler_shown_toast">앱을 나가면 바가 나타납니다.</string>
+    <string name="service_active">서비스 실행 중</string>
+    <string name="service_inactive">서비스 중지됨</string>
+    <string name="tap_to_disable">눌러서 끄기</string>
+    <string name="tap_to_enable">눌러서 켜기</string>
+    <string name="lock_permission_section">화면 잠금</string>
+    <string name="lock_accessibility_permission">화면 잠금(접근성)</string>
+    <string name="lock_accessibility_permission_desc">권장: 잠금 동작이 전원 버튼과 동일하게 화면을 끄므로 지문으로 계속 잠금 해제할 수 있습니다</string>
+    <string name="permission_turn_off">끄기</string>
+    <string name="action_reposition">핸들러 이동</string>
+    <string name="volume_percent_short">%1$d%%</string>
+    <string name="context_menu_count">%1$d개 선택됨</string>
+    <string name="notification_service_active">볼륨 제스처가 활성화되어 있습니다</string>
+    <string name="show_volume_percent_title">볼륨 백분율 표시</string>
+    <string name="show_volume_percent_desc">스와이프하는 동안 바에 레벨을 표시합니다.</string>
+    <string name="handler_hidden_toast">바를 숨겼습니다. 되돌리려면 GestureVolume을 여세요.</string>
+    <string name="action_stop_service">서비스 중지</string>
+    <string name="notification_handler_hidden">바가 숨겨짐 — 표시를 누르면 되돌아옵니다</string>
+    <string name="notification_action_show">표시</string>
+    <string name="notification_action_hide">숨기기</string>
+    <string name="notification_action_settings">설정</string>
+    <string name="notification_action_stop">중지</string>
+    <string name="lock_accessibility_label">화면 잠금</string>
+    <string name="lock_accessibility_summary">잠금 동작이 화면을 끌 수 있게 합니다.</string>
+    <string name="lock_accessibility_description">플로팅 바에서 잠금 동작을 사용할 때 GestureVolume이 화면을 잠글 수 있도록 합니다. 전원 버튼과 똑같은 방식으로 잠그므로 지문으로 계속 잠금 해제할 수 있습니다. 이 서비스는 화면의 어떤 내용도 읽지 않으며 다른 동작도 수행하지 않습니다.</string>
+    <string name="lock_permission_title">화면 잠금</string>
+    <string name="lock_permission_message">화면을 잠그려면 GestureVolume에 권한이 필요합니다.\n\n접근성을 권장합니다. 전원 버튼과 같은 방식으로 화면을 잠그므로 지문으로 계속 잠금 해제할 수 있습니다. 기기 관리자도 동작하지만 대부분의 기기가 지문 대신 PIN을 요구합니다.</string>
+    <string name="lock_permission_accessibility">접근성 사용</string>
+    <string name="lock_not_available">잠금 동작을 사용하기 전에 설정에서 잠금 권한을 허용하세요.</string>
+    <string name="context_menu_title">길게 누르기 메뉴</string>
+    <string name="context_menu_desc">바를 길게 눌렀을 때 표시할 항목을 선택하세요.</string>
+    <string name="context_menu_empty">선택된 항목이 더 없습니다. 길게 누르면 바가 이동하고 “바 숨기기”가 표시됩니다.</string>
+    <string name="context_menu_always">항상 표시</string>
+    <string name="context_menu_section">길게 누르기 메뉴 항목</string>
+    <string name="behaviour_section">동작</string>
+    <string name="lock_permission_menu_message">길게 누르기 메뉴에 잠금을 추가했지만, 아직 화면을 잠글 수 있는 방법이 없습니다.\n\n접근성을 권장합니다. 전원 버튼과 같은 방식으로 화면을 잠그므로 지문으로 계속 잠금 해제할 수 있습니다.</string>
+    <string name="notification_permission_needed_title">알림이 꺼져 있습니다</string>
+    <string name="notification_permission_needed_message">컨트롤은 켜져 있지만 Android가 GestureVolume의 알림 게시를 허용하지 않고 있습니다. 그래서 표시, 설정, 중지가 알림 패널에 나타나지 않습니다.</string>
+    <string name="notification_permission_warning_inline">이 앱의 알림이 차단되어 있습니다. 눌러서 허용하세요.</string>
+    <string name="grant_permission_action">허용</string>
+    <string name="not_now">나중에</string>
+    <string name="help">도움말</string>
+    <string name="appearance_help_title">미리보기 사용법</string>
+    <string name="appearance_help_move">바 옮기기\n길게 누르고 진동을 기다린 뒤 끌어 주세요. 스냅과 가장자리 거리까지 홈 화면에서와 똑같이 움직입니다. 길게 누르기 동작이 “핸들러 이동”이어야 합니다.</string>
+    <string name="appearance_help_test">제스처 시험해 보기\n바를 탭, 더블 탭, 스와이프해 설정을 확인해 보세요. 볼륨과 밝기는 실제로 바뀝니다. 앱을 벗어나거나 실제 바를 건드리는 동작은 여기서 건너뜁니다.</string>
+    <string name="appearance_help_settings">모양 바꾸기\n색상, 크기, 모서리, 아이콘을 바꾸려면 시트를 위로 끌거나 설정 아이콘을 누르세요. 적용을 누르기 전까지는 아무것도 저장되지 않습니다.</string>
+    <string name="appearance_help_apply">적용\n무언가 바뀌면 체크 표시가 활성화되고, 실제 바에 반영합니다.</string>
+    <string name="got_it">확인</string>
+    <string name="settings_sheet">모양 설정</string>
+    <string name="remove_ads_support_developer">모든 광고를 없애고 개발자를 후원하세요</string>
+    <string name="reset_app">앱 초기화</string>
+    <string name="reset_app_title">전부 초기화할까요?</string>
+    <string name="reset_app_message">모든 설정이 기본값으로 돌아갑니다. 바의 모양과 위치, 모든 탭·스와이프 동작, 길게 누르기 메뉴, 테마와 언어가 포함됩니다. 플로팅 바는 꺼지고 시작 화면이 다시 나타납니다.\n\nPro 구매는 유지됩니다. 이 작업은 되돌릴 수 없습니다.</string>
+    <string name="reset_app_confirm">초기화</string>
+    <string name="reset_app_done">전부 초기화되었습니다.</string>
+    <string name="permission_needed_lock">동작을 잠금으로 설정했습니다. 이것이 없으면 눌러도 아무 일도 일어나지 않습니다.</string>
+    <string name="permission_needed_notification">알림 컨트롤이 켜져 있습니다. 이것이 없으면 표시, 설정, 중지가 나타나지 않습니다.</string>
+    <string name="permission_needed_brightness">밝기 동작을 설정했습니다. 이것이 없으면 밝기를 바꿀 수 없습니다.</string>
+    <string name="permission_action_required_one">권한 1개를 확인해야 합니다</string>
+    <string name="permission_action_required_many">권한 %1$d개를 확인해야 합니다</string>
+    <string name="lock_unsupported_message">화면 잠금에는 Android 9 이상이 필요합니다. 이 기기는 지원하지 않으므로 잠금 동작은 사용할 수 없다고 알립니다.</string>
+    <string name="lock_unsupported_short">Android 9 이상 필요</string>
 </resources>

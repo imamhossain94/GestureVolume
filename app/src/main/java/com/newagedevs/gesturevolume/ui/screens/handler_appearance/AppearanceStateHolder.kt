@@ -26,6 +26,8 @@ data class AppearanceState(
     val vibrate: Boolean,
     /** Inward nudge from the screen edge, for curved screens and gesture navigation. */
     val edgeMargin: Float,
+    /** Whether the bar flies to the nearer side when released. See SharedPref.getHandlerSnapToEdge. */
+    val snapToEdge: Boolean,
     /** Vertical position of the bar's centre, 0..1 of the usable height. */
     val positionFraction: Float,
     /**
@@ -58,6 +60,7 @@ class AppearanceStateHolder(
     initialShowIcon: Boolean,
     initialVibrate: Boolean,
     initialEdgeMargin: Float,
+    initialSnapToEdge: Boolean,
     initialPositionFraction: Float,
     initialPosXFraction: Float
 ) {
@@ -82,6 +85,7 @@ class AppearanceStateHolder(
     var showIcon by mutableStateOf(initialShowIcon)
     var vibrate by mutableStateOf(initialVibrate)
     var edgeMargin by mutableStateOf(initialEdgeMargin)
+    var snapToEdge by mutableStateOf(initialSnapToEdge)
     var positionFraction by mutableStateOf(initialPositionFraction)
     var posXFraction by mutableStateOf(initialPosXFraction)
 
@@ -90,6 +94,6 @@ class AppearanceStateHolder(
         strokeColor.toArgb(), strokeWidth, strokeAlpha,
         cornerTL, cornerTR, cornerBL, cornerBR,
         iconRes, iconSize, iconColor.toArgb(), showIcon, vibrate,
-        edgeMargin, positionFraction, posXFraction
+        edgeMargin, snapToEdge, positionFraction, posXFraction
     )
 }

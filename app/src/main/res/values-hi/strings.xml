@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">डिवाइस नीति प्रबंधक एपीआई के साथ क्लिक पर स्क्रीन लॉक करें</string>
-    <string name="device_admin_label">जेस्चर वॉल्यूम डिवाइस एडमिन</string>
     <string name="landscape_appearance_settings">लैंडस्केप उपस्थिति सेटिंग्स</string>
     <string name="click_">स्विच को सक्रिय करने के लिए चेक करें और लैंडस्केप स्क्रीन पर हैंडलर कॉन्फ़िगर करें।</string>
     <string name="configure">कॉन्फ़िगर करें</string>
@@ -49,7 +47,6 @@
     <string name="language">भाषा</string>
     <string name="lock_position">लॉक्ड स्थिति</string>
     <string name="long_press_action">लॉन्ग प्रेस क्रिया</string>
-    <string name="minimize">छोटा करें</string>
     <string name="more">और</string>
     <string name="newagedevs">NewAgeDevs</string>
     <string name="nothing_to_restore">पुनर्स्थापित करने के लिए कुछ नहीं</string>
@@ -92,7 +89,6 @@
     <string name="top_left">ऊपर बाएँ</string>
     <string name="top_right">ऊपर दाएँ</string>
     <string name="upgrade">अपग्रेड</string>
-    <string name="unlock_all_features">सभी विज्ञापन हटाएं</string>
     <string name="unsaved_changes">अनसेव किए गए बदलाव</string>
     <string name="upgrade_to_pro">प्रो में अपग्रेड करें</string>
     <string name="vibrate_on_click">क्लिक पर वाइब्रेट करें</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">अन्य ऐप्स पर प्रदर्शित करें</string>
     <string name="overlay_permission_desc">आपकी स्क्रीन पर वॉल्यूम हैंडलर ओवरले दिखाने के लिए आवश्यक है</string>
-    <string name="device_admin_permission">डिवाइस व्यवस्थापक</string>
-    <string name="device_admin_permission_desc">वैकल्पिक: कॉन्फ़िगर होने पर हैंडलर को आपकी डिवाइस स्क्रीन को लॉक करने की अनुमति देता है</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">जेस्चर वॉल्यूम में आपका स्वागत है</string>
@@ -160,10 +154,7 @@
     <!-- Expanded Preview -->
     <string name="position_locked">स्थिति बंद कर दी गई</string>
     <string name="unlock_to_reposition">स्थिति बदलने के लिए अनलॉक करें</string>
-    <string name="test_mode">परीक्षण मोड</string>
     <string name="reposition_mode">पुनर्स्थापन मोड</string>
-    <string name="test_mode_desc">स्वाइप और टैप आज़माएं</string>
-    <string name="reposition_mode_desc">हैंडलर को नई स्थिति पर खींचें</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">पद</string>
@@ -258,7 +249,6 @@
     <string name="preset_ghost_subtitle">लगभग अदृश्य</string>
 
     <!-- Missing Strings -->
-    <string name="preview">पूर्वावलोकन</string>
     <string name="press_back_again_to_exit">बाहर निकलने के लिए फिर से वापस दबाएं</string>
     <string name="volume_gesture_handler">वॉल्यूम जेस्चर हैंडलर</string>
     <string name="troubleshoot">समस्या निवारण</string>
@@ -287,9 +277,9 @@
     <string name="brightness_permission_title">चमक नियंत्रण की अनुमति दें?</string>
     <string name="brightness_permission_message">स्क्रीन की चमक बदलने के लिए GestureVolume को सिस्टम सेटिंग बदलने की अनुमति चाहिए। उपयोग के दौरान अनुकूली चमक बंद रहेगी और सेवा रोकने पर वापस चालू हो जाएगी।</string>
     <string name="edge_offset">किनारे से दूरी</string>
-    <string name="edge_offset_desc">बार को स्क्रीन के किनारे से भीतर ले जाएँ। घुमावदार स्क्रीन और जेस्चर नेविगेशन में मदद करता है।</string>
+    <string name="edge_offset_desc">बार बाएँ और दाएँ किनारों से जो न्यूनतम दूरी रखती है — खींचते समय भी, और टिकते समय जहाँ रुकती है वहाँ भी। घुमावदार स्क्रीन और जेस्चर नेविगेशन में मददगार।</string>
     <string name="reset_position">स्थिति रीसेट करें</string>
-    <string name="drag_to_move_hint">स्थिति लॉक बंद करें, फिर बार को ऊपर या नीचे खींचें।</string>
+    <string name="drag_to_move_hint">बार हिलाने के लिए: उसे देर तक दबाएँ, कंपन का इंतज़ार करें, फिर खींचें। इसे चालू करने के लिए लॉन्ग प्रेस क्रिया को “हैंडलर हिलाएँ” पर सेट करें।</string>
     <string name="fix_battery_title">बैटरी अनुकूलन</string>
     <string name="fix_battery_desc">अप्रतिबंधित बैटरी उपयोग की अनुमति दें ताकि Android सेवा बंद न करे।</string>
     <string name="fix_battery_allowed">अप्रतिबंधित</string>
@@ -297,4 +287,82 @@
     <string name="fix_autostart_desc">अपने डिवाइस की ऑटो-स्टार्ट सेटिंग खोलें और GestureVolume को अनुमति दें।</string>
     <string name="autostart_unavailable">इस डिवाइस पर उपलब्ध नहीं</string>
     <string name="open_settings">सेटिंग खोलें</string>
+    <string name="snap_to_edge">किनारे पर टिकाएँ</string>
+    <string name="snap_to_edge_desc">चालू: उंगली उठाते ही बार पास वाले किनारे पर चली जाती है और नीचे दी गई किनारा-दूरी पर रुकती है। बंद: जहाँ छोड़ा वहीं रहती है। ऊँचाई दोनों हाल में आपकी।</string>
+    <string name="notification_channel_controls">हैंडलर नियंत्रण</string>
+    <string name="notification_channel_controls_desc">दिखाएँ/छिपाएँ, सेटिंग्स और रोकें वाली स्थायी पंक्ति।</string>
+    <string name="notification_channel_minimal">चुपचाप चल रहा है</string>
+    <string name="notification_channel_minimal_desc">सेवा चलने के दौरान एंड्रॉयड द्वारा आवश्यक एक शांत प्लेसहोल्डर। न आइकन, न बटन।</string>
+    <string name="notification_minimal_title">GestureVolume चल रहा है</string>
+    <string name="show_notification_title">सूचना नियंत्रण</string>
+    <string name="show_notification_desc">सूचना पैनल में दिखाएँ, सेटिंग्स और रोकें रखें। ऐप खोले बिना छिपे हुए हैंडलर को वापस लाने का यही एकमात्र तरीका है।</string>
+    <string name="show_notification_off_hint">बंद: सेवा चलने के दौरान एंड्रॉयड को अब भी एक शांत प्लेसहोल्डर चाहिए। सिस्टम सेटिंग्स में पूरी तरह छिपाने के लिए टैप करें।</string>
+    <string name="open_notification_settings">सिस्टम सूचना सेटिंग्स</string>
+    <string name="notification_permission">सूचनाएँ</string>
+    <string name="notification_permission_desc">वैकल्पिक: सूचना पैनल में हैंडलर नियंत्रण — दिखाएँ, सेटिंग्स और रोकें — दिखाता है</string>
+    <string name="handler_hidden_card_title">हैंडलर छिपा हुआ है</string>
+    <string name="handler_hidden_card_desc">आपने इसे लॉन्ग-प्रेस मेन्यू से छिपाया था। जब तक आप दोबारा न दिखाएँ, यह छिपी रहेगी।</string>
+    <string name="handler_hidden_card_action">दिखाएँ</string>
+    <string name="handler_shown_toast">ऐप से बाहर निकलते ही हैंडलर दिखाई देगा।</string>
+    <string name="service_active">सेवा सक्रिय</string>
+    <string name="service_inactive">सेवा निष्क्रिय</string>
+    <string name="tap_to_disable">बंद करने के लिए टैप करें</string>
+    <string name="tap_to_enable">चालू करने के लिए टैप करें</string>
+    <string name="lock_permission_section">स्क्रीन लॉक</string>
+    <string name="lock_accessibility_permission">स्क्रीन लॉक (एक्सेसिबिलिटी)</string>
+    <string name="lock_accessibility_permission_desc">अनुशंसित: लॉक क्रिया को पावर बटन की तरह स्क्रीन बंद करने देता है, ताकि आपका फ़िंगरप्रिंट फ़ोन खोलता रहे</string>
+    <string name="permission_turn_off">बंद करें</string>
+    <string name="action_reposition">हैंडलर हिलाएँ</string>
+    <string name="volume_percent_short">%1$d%%</string>
+    <string name="context_menu_count">%1$d चुने गए</string>
+    <string name="notification_service_active">वॉल्यूम जेस्चर सक्रिय हैं</string>
+    <string name="show_volume_percent_title">वॉल्यूम प्रतिशत दिखाएँ</string>
+    <string name="show_volume_percent_desc">स्वाइप करते समय बार पर स्तर दिखाएँ।</string>
+    <string name="handler_hidden_toast">हैंडलर छिपा दिया गया। वापस लाने के लिए GestureVolume खोलें।</string>
+    <string name="action_stop_service">सेवा रोकें</string>
+    <string name="notification_handler_hidden">हैंडलर छिपा है — वापस लाने के लिए दिखाएँ दबाएँ</string>
+    <string name="notification_action_show">दिखाएँ</string>
+    <string name="notification_action_hide">छिपाएँ</string>
+    <string name="notification_action_settings">सेटिंग्स</string>
+    <string name="notification_action_stop">रोकें</string>
+    <string name="lock_accessibility_label">स्क्रीन लॉक</string>
+    <string name="lock_accessibility_summary">लॉक क्रिया को स्क्रीन बंद करने देता है।</string>
+    <string name="lock_accessibility_description">फ़्लोटिंग बार पर लॉक क्रिया इस्तेमाल करने पर GestureVolume को स्क्रीन लॉक करने देता है। यह स्क्रीन को ठीक वैसे ही लॉक करता है जैसे पावर बटन करता है, इसलिए आपका फ़िंगरप्रिंट फ़ोन खोलता रहता है। यह सेवा आपकी स्क्रीन पर कुछ नहीं पढ़ती और कोई अन्य कार्य नहीं करती।</string>
+    <string name="lock_permission_title">स्क्रीन लॉक करना</string>
+    <string name="lock_permission_message">स्क्रीन लॉक करने के लिए GestureVolume को अनुमति चाहिए।\n\nएक्सेसिबिलिटी की सलाह दी जाती है: यह स्क्रीन को पावर बटन की तरह लॉक करता है, इसलिए आपका फ़िंगरप्रिंट फ़ोन खोलता रहता है। डिवाइस एडमिन भी काम करता है, पर ज़्यादातर फ़ोन तब फ़िंगरप्रिंट के बजाय PIN माँगते हैं।</string>
+    <string name="lock_permission_accessibility">एक्सेसिबिलिटी इस्तेमाल करें</string>
+    <string name="lock_not_available">लॉक क्रिया इस्तेमाल करने से पहले सेटिंग्स में लॉक अनुमति दें।</string>
+    <string name="context_menu_title">लॉन्ग-प्रेस मेन्यू</string>
+    <string name="context_menu_desc">चुनें कि हैंडलर को देर तक दबाने पर क्या दिखे।</string>
+    <string name="context_menu_empty">और कुछ नहीं चुना गया। देर तक दबाने पर हैंडलर हिलेगा और “हैंडलर छिपाएँ” दिखेगा।</string>
+    <string name="context_menu_always">हमेशा दिखता है</string>
+    <string name="context_menu_section">लॉन्ग-प्रेस मेन्यू आइटम</string>
+    <string name="behaviour_section">व्यवहार</string>
+    <string name="lock_permission_menu_message">आपने लॉन्ग-प्रेस मेन्यू में लॉक जोड़ा है, पर अभी कुछ भी स्क्रीन लॉक नहीं कर सकता।\n\nएक्सेसिबिलिटी की सलाह दी जाती है: यह स्क्रीन को पावर बटन की तरह लॉक करता है, इसलिए आपका फ़िंगरप्रिंट फ़ोन खोलता रहता है।</string>
+    <string name="notification_permission_needed_title">सूचनाएँ बंद हैं</string>
+    <string name="notification_permission_needed_message">नियंत्रण चालू हैं, पर एंड्रॉयड GestureVolume को सूचनाएँ दिखाने नहीं दे रहा — इसलिए दिखाएँ, सेटिंग्स और रोकें पैनल में नहीं आएँगे।</string>
+    <string name="notification_permission_warning_inline">इस ऐप के लिए सूचनाएँ अवरुद्ध हैं। अनुमति देने के लिए टैप करें।</string>
+    <string name="grant_permission_action">अनुमति दें</string>
+    <string name="not_now">अभी नहीं</string>
+    <string name="help">सहायता</string>
+    <string name="appearance_help_title">प्रीव्यू का उपयोग</string>
+    <string name="appearance_help_move">बार हिलाना\nदेर तक दबाएँ, कंपन का इंतज़ार करें, फिर खींचें। यह ठीक वैसे ही चलती है जैसे आपकी होम स्क्रीन पर चलेगी — स्नैपिंग और किनारा-दूरी सहित। इसके लिए लॉन्ग प्रेस क्रिया “हैंडलर हिलाएँ” होनी चाहिए।</string>
+    <string name="appearance_help_test">जेस्चर आज़माना\nअपनी सेटिंग्स महसूस करने के लिए बार पर टैप, डबल टैप और स्वाइप करें। वॉल्यूम और ब्राइटनेस सचमुच बदलते हैं; जो क्रियाएँ ऐप से बाहर ले जाती हैं या असली बार को छूती हैं, वे यहाँ छोड़ दी जाती हैं।</string>
+    <string name="appearance_help_settings">रूप बदलना\nरंग, आकार, कोने और आइकन के लिए शीट को ऊपर खींचें, या सेटिंग्स आइकन पर टैप करें। लागू करें दबाने तक कुछ भी सहेजा नहीं जाता।</string>
+    <string name="appearance_help_apply">लागू करें\nकुछ बदलते ही टिक सक्रिय हो जाता है और उसे असली बार पर लागू करता है।</string>
+    <string name="got_it">समझ गया</string>
+    <string name="settings_sheet">रूप सेटिंग्स</string>
+    <string name="remove_ads_support_developer">सभी विज्ञापन हटाएँ और डेवलपर का समर्थन करें</string>
+    <string name="reset_app">ऐप रीसेट करें</string>
+    <string name="reset_app_title">सब कुछ रीसेट करें?</string>
+    <string name="reset_app_message">हर सेटिंग अपने डिफ़ॉल्ट पर लौट जाएगी: हैंडलर का रूप और स्थिति, सभी टैप और स्वाइप क्रियाएँ, लॉन्ग-प्रेस मेन्यू, थीम और भाषा। फ़्लोटिंग बार बंद हो जाएगा और स्वागत स्क्रीन वापस आ जाएँगी।\n\nआपकी प्रो खरीद सुरक्षित रहती है। इसे पूर्ववत नहीं किया जा सकता।</string>
+    <string name="reset_app_confirm">रीसेट करें</string>
+    <string name="reset_app_done">सब कुछ रीसेट कर दिया गया।</string>
+    <string name="permission_needed_lock">आपने एक क्रिया को लॉक पर सेट किया है। इसके बिना, उसे टैप करने पर कुछ नहीं होगा।</string>
+    <string name="permission_needed_notification">सूचना नियंत्रण चालू हैं। इसके बिना दिखाएँ, सेटिंग्स और रोकें नहीं दिखेंगे।</string>
+    <string name="permission_needed_brightness">आपने एक ब्राइटनेस क्रिया सेट की है। इसके बिना यह ब्राइटनेस नहीं बदल सकती।</string>
+    <string name="permission_action_required_one">1 अनुमति पर ध्यान दें</string>
+    <string name="permission_action_required_many">%1$d अनुमतियों पर ध्यान दें</string>
+    <string name="lock_unsupported_message">स्क्रीन लॉक करने के लिए एंड्रॉयड 9 या नया चाहिए। यह फ़ोन ऐसा नहीं कर सकता, इसलिए लॉक क्रिया बताएगी कि वह उपलब्ध नहीं है।</string>
+    <string name="lock_unsupported_short">एंड्रॉयड 9 या नया चाहिए</string>
 </resources>

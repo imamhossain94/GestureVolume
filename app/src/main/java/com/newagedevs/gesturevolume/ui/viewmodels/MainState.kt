@@ -1,23 +1,43 @@
 package com.newagedevs.gesturevolume.ui.viewmodels
 
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.HandlerActions
 
 data class MainState(
     val isRunning: Boolean = false,
     val isProActivated: Boolean = false,
-    val color: Int = 0,
     val clickAction: String = "Open volume UI",
     val clickActionIcon: Int = R.drawable.ic_vol_increase,
-    val doubleClickAction: String = "Mute",
-    val doubleClickActionIcon: Int = R.drawable.ic_mute,
-    val longClickAction: String = "Active Music Overlay",
-    val longClickActionIcon: Int = R.drawable.ic_music_ui,
+    // These match the SharedPref defaults they are immediately overwritten with. They used to
+    // name different actions entirely, which meant the first frame after launch advertised
+    // settings the user did not have.
+    val doubleClickAction: String = HandlerActions.NONE,
+    val doubleClickActionIcon: Int = R.drawable.ic_nothing,
+    val longClickAction: String = HandlerActions.REPOSITION,
+    val longClickActionIcon: Int = R.drawable.ic_move,
     val swipeUpAction: String = "Increase volume and show UI",
     val swipeUpActionIcon: Int = R.drawable.ic_vol_increase,
     val swipeDownAction: String = "Decrease volume and show UI",
     val swipeDownActionIcon: Int = R.drawable.ic_vol_increase,
     val hasOverlayPermission: Boolean = false,
     val hasWriteSettingsPermission: Boolean = false,
+    /**
+     * How many permissions the user's own configuration has made necessary but which are not
+     * granted — see [com.newagedevs.gesturevolume.utils.PermissionNeeds].
+     *
+     * On the main screen so the Permissions card can say something is wrong without the user
+     * having to open it and compare every row against what they set elsewhere.
+     */
+    val missingPermissionCount: Int = 0,
+    /**
+     * True when the user has put the bar away with "Hide handler".
+     *
+     * In state, not just in SharedPref, because the app is the second route back from it — the
+     * notification being the first — and a route back has to be visible to be a route. While the
+     * app is in the foreground the bar is hidden regardless, so its absence tells the user
+     * nothing.
+     */
+    val isHandlerHidden: Boolean = false,
     /**
      * True while a brightness action is waiting on WRITE_SETTINGS.
      *

@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">Verrouiller l\'écran au clic avec l\'API Device Policy Manager</string>
-    <string name="device_admin_label">Administrateur de périphérique de volume gestuel</string>
     <string name="landscape_appearance_settings">PARAMÈTRES D’APPARENCE DU PAYSAGE</string>
     <string name="click_">Cochez le commutateur sur actif et configurez la gravité, la taille, l\'épaisseur et la position du gestionnaire sur l\'écran paysage.</string>
     <string name="configure">Configurer</string>
@@ -49,7 +47,6 @@
     <string name="language">Langue</string>
     <string name="lock_position">Position de verrouillage</string>
     <string name="long_press_action">Action de pression longue</string>
-    <string name="minimize">MINIMISER</string>
     <string name="more">PLUS</string>
     <string name="newagedevs">NouvelAgeDevs</string>
     <string name="nothing_to_restore">Rien à restaurer</string>
@@ -92,7 +89,6 @@
     <string name="top_left">En haut à gauche</string>
     <string name="top_right">En haut à droite</string>
     <string name="upgrade">MISE À NIVEAU</string>
-    <string name="unlock_all_features">Supprimer toutes les publicités</string>
     <string name="unsaved_changes">Modifications non enregistrées</string>
     <string name="upgrade_to_pro">Passer à Pro</string>
     <string name="vibrate_on_click">Vibrer au clic</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Afficher sur d\'autres applications</string>
     <string name="overlay_permission_desc">Obligatoire pour afficher la superposition du gestionnaire de volume sur votre écran</string>
-    <string name="device_admin_permission">Administrateur de l\'appareil</string>
-    <string name="device_admin_permission_desc">Facultatif : permet au gestionnaire de verrouiller l\'écran de votre appareil lorsqu\'il est configuré</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">Bienvenue dans Gesture Volume</string>
@@ -160,10 +154,7 @@
     <!-- Expanded Preview -->
     <string name="position_locked">POSITION VERROUILLÉE</string>
     <string name="unlock_to_reposition">DÉVERROUILLER POUR REPOSITIONNER</string>
-    <string name="test_mode">Mode Test</string>
     <string name="reposition_mode">Mode de repositionnement</string>
-    <string name="test_mode_desc">Essayez les balayages et les tapotements</string>
-    <string name="reposition_mode_desc">Faites glisser le gestionnaire vers une nouvelle position</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">POSITION</string>
@@ -258,7 +249,6 @@
     <string name="preset_ghost_subtitle">Presque invisible</string>
 
     <!-- Missing Strings -->
-    <string name="preview">Aperçu</string>
     <string name="press_back_again_to_exit">Appuyez à nouveau pour quitter</string>
     <string name="volume_gesture_handler">Gestionnaire de gestes de volume</string>
     <string name="troubleshoot">Dépannage</string>
@@ -286,10 +276,10 @@
     <string name="write_settings_permission_desc">Permet à la barre de régler la luminosité de l\'écran. Nécessaire uniquement pour les actions de luminosité.</string>
     <string name="brightness_permission_title">Autoriser le réglage de la luminosité ?</string>
     <string name="brightness_permission_message">Pour modifier la luminosité, GestureVolume a besoin de l\'autorisation Modifier les paramètres système. La luminosité adaptative est désactivée pendant son utilisation, puis rétablie à l\'arrêt du service.</string>
-    <string name="edge_offset">Décalage du bord</string>
-    <string name="edge_offset_desc">Éloigne la barre du bord de l\'écran. Utile sur les écrans incurvés et avec la navigation par gestes.</string>
+    <string name="edge_offset">Distance au bord</string>
+    <string name="edge_offset_desc">L\'écart minimal que la barre conserve avec les bords gauche et droit – pendant le glissement, et là où elle se pose en s\'aimantant. Utile sur les écrans incurvés et avec la navigation par gestes.</string>
     <string name="reset_position">Réinitialiser la position</string>
-    <string name="drag_to_move_hint">Désactivez Verrouiller la position, puis faites glisser la barre vers le haut ou le bas.</string>
+    <string name="drag_to_move_hint">Pour déplacer la barre : appuyez longuement, attendez la vibration, puis faites-la glisser. Réglez l\'action d\'appui long sur « Déplacer la barre » pour l\'activer.</string>
     <string name="fix_battery_title">Optimisation de la batterie</string>
     <string name="fix_battery_desc">Autorisez une utilisation illimitée de la batterie pour qu\'Android n\'arrête pas le service.</string>
     <string name="fix_battery_allowed">Sans restriction</string>
@@ -297,4 +287,82 @@
     <string name="fix_autostart_desc">Ouvrez les paramètres de démarrage automatique de votre appareil et autorisez GestureVolume.</string>
     <string name="autostart_unavailable">Non disponible sur cet appareil</string>
     <string name="open_settings">Ouvrir les paramètres</string>
+    <string name="snap_to_edge">Aimanter au bord</string>
+    <string name="snap_to_edge_desc">Activé : la barre rejoint le côté le plus proche quand vous relâchez et s\'arrête à la distance du bord ci-dessous. Désactivé : elle reste exactement où vous l\'avez lâchée. La hauteur reste la vôtre dans les deux cas.</string>
+    <string name="notification_channel_controls">Commandes de la barre</string>
+    <string name="notification_channel_controls_desc">La ligne permanente avec Afficher/Masquer, Réglages et Arrêter.</string>
+    <string name="notification_channel_minimal">Fonctionne en silence</string>
+    <string name="notification_channel_minimal_desc">Un espace réservé silencieux qu\'Android exige pendant que le service tourne. Sans icône ni boutons.</string>
+    <string name="notification_minimal_title">GestureVolume est actif</string>
+    <string name="show_notification_title">Commandes dans la notification</string>
+    <string name="show_notification_desc">Gardez Afficher, Réglages et Arrêter dans le volet des notifications. C\'est le seul moyen de retrouver une barre masquée sans ouvrir l\'application.</string>
+    <string name="show_notification_off_hint">Désactivé : Android exige toujours un espace réservé silencieux pendant que le service tourne. Touchez pour le masquer complètement dans les réglages système.</string>
+    <string name="open_notification_settings">Réglages de notification système</string>
+    <string name="notification_permission">Notifications</string>
+    <string name="notification_permission_desc">Facultatif : affiche les commandes de la barre – Afficher, Réglages et Arrêter – dans le volet des notifications</string>
+    <string name="handler_hidden_card_title">La barre est masquée</string>
+    <string name="handler_hidden_card_desc">Vous l\'avez masquée depuis le menu d\'appui long. Elle restera masquée jusqu\'à ce que vous la réaffichiez.</string>
+    <string name="handler_hidden_card_action">Afficher</string>
+    <string name="handler_shown_toast">La barre apparaîtra dès que vous quitterez l\'application.</string>
+    <string name="service_active">Service actif</string>
+    <string name="service_inactive">Service inactif</string>
+    <string name="tap_to_disable">Touchez pour désactiver</string>
+    <string name="tap_to_enable">Touchez pour activer</string>
+    <string name="lock_permission_section">VERROUILLAGE DE L\'ÉCRAN</string>
+    <string name="lock_accessibility_permission">Verrouillage de l\'écran (accessibilité)</string>
+    <string name="lock_accessibility_permission_desc">Recommandé : permet à l\'action Verrouiller d\'éteindre l\'écran comme le bouton d\'alimentation, afin que votre empreinte déverrouille toujours le téléphone</string>
+    <string name="permission_turn_off">Désactiver</string>
+    <string name="action_reposition">Déplacer la barre</string>
+    <string name="volume_percent_short">%1$d%%</string>
+    <string name="context_menu_count">%1$d sélectionnés</string>
+    <string name="notification_service_active">Les gestes de volume sont actifs</string>
+    <string name="show_volume_percent_title">Afficher le pourcentage de volume</string>
+    <string name="show_volume_percent_desc">Affiche le niveau sur la barre pendant que vous glissez.</string>
+    <string name="handler_hidden_toast">Barre masquée. Ouvrez GestureVolume pour la récupérer.</string>
+    <string name="action_stop_service">Arrêter le service</string>
+    <string name="notification_handler_hidden">Barre masquée – touchez Afficher pour la récupérer</string>
+    <string name="notification_action_show">Afficher</string>
+    <string name="notification_action_hide">Masquer</string>
+    <string name="notification_action_settings">Réglages</string>
+    <string name="notification_action_stop">Arrêter</string>
+    <string name="lock_accessibility_label">Verrouillage de l\'écran</string>
+    <string name="lock_accessibility_summary">Permet à l\'action Verrouiller d\'éteindre l\'écran.</string>
+    <string name="lock_accessibility_description">Permet à GestureVolume de verrouiller l\'écran lorsque vous utilisez l\'action Verrouiller sur la barre flottante. L\'écran est verrouillé exactement comme avec le bouton d\'alimentation, votre empreinte déverrouille donc toujours le téléphone. Ce service ne lit rien sur votre écran et n\'effectue aucune autre action.</string>
+    <string name="lock_permission_title">Verrouiller l\'écran</string>
+    <string name="lock_permission_message">GestureVolume a besoin d\'une autorisation pour verrouiller l\'écran.\n\nL\'accessibilité est recommandée : elle verrouille l\'écran comme le bouton d\'alimentation, votre empreinte déverrouille donc toujours le téléphone. L\'administrateur d\'appareil fonctionne aussi, mais la plupart des téléphones demandent alors votre code PIN au lieu de l\'empreinte.</string>
+    <string name="lock_permission_accessibility">Utiliser l\'accessibilité</string>
+    <string name="lock_not_available">Accordez une autorisation de verrouillage dans les Réglages avant d\'utiliser l\'action Verrouiller.</string>
+    <string name="context_menu_title">Menu d\'appui long</string>
+    <string name="context_menu_desc">Choisissez ce qui apparaît lorsque vous maintenez la barre appuyée.</string>
+    <string name="context_menu_empty">Rien d\'autre n\'est sélectionné. L\'appui long déplacera la barre et proposera « Masquer la barre ».</string>
+    <string name="context_menu_always">Toujours affiché</string>
+    <string name="context_menu_section">Éléments du menu d\'appui long</string>
+    <string name="behaviour_section">Comportement</string>
+    <string name="lock_permission_menu_message">Vous avez ajouté Verrouiller au menu d\'appui long, mais rien ne peut encore verrouiller l\'écran.\n\nL\'accessibilité est recommandée : elle verrouille l\'écran comme le bouton d\'alimentation, votre empreinte déverrouille donc toujours le téléphone.</string>
+    <string name="notification_permission_needed_title">Les notifications sont désactivées</string>
+    <string name="notification_permission_needed_message">Les commandes sont activées, mais Android n\'autorise pas GestureVolume à publier des notifications – Afficher, Réglages et Arrêter n\'apparaîtront donc pas dans le volet.</string>
+    <string name="notification_permission_warning_inline">Les notifications sont bloquées pour cette application. Touchez pour les autoriser.</string>
+    <string name="grant_permission_action">Autoriser</string>
+    <string name="not_now">Pas maintenant</string>
+    <string name="help">Aide</string>
+    <string name="appearance_help_title">Utiliser l\'aperçu</string>
+    <string name="appearance_help_move">Déplacer la barre\nAppuyez longuement, attendez la vibration, puis faites glisser. Elle bouge exactement comme sur votre écran d\'accueil, aimantation et distance au bord comprises. Cela nécessite que l\'action d\'appui long soit « Déplacer la barre ».</string>
+    <string name="appearance_help_test">Essayer les gestes\nTouchez, double-touchez et glissez sur la barre pour éprouver vos réglages. Le volume et la luminosité changent réellement ; les actions qui quittent l\'application ou touchent la barre réelle sont ignorées ici.</string>
+    <string name="appearance_help_settings">Changer son apparence\nFaites glisser la feuille vers le haut, ou touchez l\'icône de réglages, pour les couleurs, la taille, les coins et l\'icône. Rien n\'est enregistré tant que vous n\'avez pas touché Appliquer.</string>
+    <string name="appearance_help_apply">Appliquer\nLa coche apparaît dès que quelque chose a changé et l\'applique à la barre réelle.</string>
+    <string name="got_it">J\'ai compris</string>
+    <string name="settings_sheet">Réglages d\'apparence</string>
+    <string name="remove_ads_support_developer">Supprimez toutes les publicités et soutenez le développeur</string>
+    <string name="reset_app">Réinitialiser l\'application</string>
+    <string name="reset_app_title">Tout réinitialiser ?</string>
+    <string name="reset_app_message">Chaque réglage revient à sa valeur par défaut : l\'apparence et la position de la barre, toutes les actions de toucher et de glissement, le menu d\'appui long, le thème et la langue. La barre flottante est désactivée et les écrans de bienvenue reviennent.\n\nVotre achat Pro est conservé. Cette action est irréversible.</string>
+    <string name="reset_app_confirm">Réinitialiser</string>
+    <string name="reset_app_done">Tout a été réinitialisé.</string>
+    <string name="permission_needed_lock">Vous avez attribué une action à Verrouiller. Sans cela, la toucher ne fait rien.</string>
+    <string name="permission_needed_notification">Les commandes de notification sont activées. Sans cela, Afficher, Réglages et Arrêter n\'apparaîtront pas.</string>
+    <string name="permission_needed_brightness">Vous avez attribué une action de luminosité. Sans cela, elle ne peut pas changer la luminosité.</string>
+    <string name="permission_action_required_one">1 autorisation demande votre attention</string>
+    <string name="permission_action_required_many">%1$d autorisations demandent votre attention</string>
+    <string name="lock_unsupported_message">Verrouiller l\'écran nécessite Android 9 ou une version plus récente. Ce téléphone ne le peut pas, l\'action Verrouiller signalera donc qu\'elle est indisponible.</string>
+    <string name="lock_unsupported_short">Nécessite Android 9 ou une version plus récente</string>
 </resources>

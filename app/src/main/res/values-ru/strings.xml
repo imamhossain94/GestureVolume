@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">Блокировка экрана при нажатии с помощью API диспетчера политик устройств</string>
-    <string name="device_admin_label">Администратор устройства громкости жестов</string>
     <string name="landscape_appearance_settings">НАСТРОЙКИ ВИДА ЛАНДШАФТА</string>
     <string name="click_">Установите переключатель в активное положение и настройте гравитацию, размер, толщину и положение манипулятора на горизонтальном экране.</string>
     <string name="configure">Настроить</string>
@@ -49,7 +47,6 @@
     <string name="language">Язык</string>
     <string name="lock_position">Положение блокировки</string>
     <string name="long_press_action">Длительное нажатие</string>
-    <string name="minimize">МИНИМИЗИРОВАТЬ</string>
     <string name="more">БОЛЕЕ</string>
     <string name="newagedevs">НьюЭйджДевс</string>
     <string name="nothing_to_restore">Нечего восстанавливать</string>
@@ -92,7 +89,6 @@
     <string name="top_left">Вверху слева</string>
     <string name="top_right">Вверху справа</string>
     <string name="upgrade">ОБНОВЛЕНИЕ</string>
-    <string name="unlock_all_features">Убрать всю рекламу</string>
     <string name="unsaved_changes">Несохраненные изменения</string>
     <string name="upgrade_to_pro">Обновите до Pro</string>
     <string name="vibrate_on_click">Вибрация при нажатии</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Отображать поверх других приложений</string>
     <string name="overlay_permission_desc">Требуется для отображения наложения обработчика громкости на экране.</string>
-    <string name="device_admin_permission">Администратор устройства</string>
-    <string name="device_admin_permission_desc">Необязательно: позволяет обработчику блокировать экран вашего устройства при настройке.</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">Добро пожаловать в объем жестов</string>
@@ -160,10 +154,7 @@
     <!-- Expanded Preview -->
     <string name="position_locked">ПОЛОЖЕНИЕ ЗАБЛОКИРОВАНО</string>
     <string name="unlock_to_reposition">РАЗБЛОКИРОВАТЬ ДЛЯ ПЕРЕМЕЩЕНИЯ</string>
-    <string name="test_mode">Тестовый режим</string>
     <string name="reposition_mode">Режим изменения положения</string>
-    <string name="test_mode_desc">Попробуйте провести пальцем по экрану и нажать</string>
-    <string name="reposition_mode_desc">Перетащите обработчик в новое положение</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">ПОЗИЦИЯ</string>
@@ -258,7 +249,6 @@
     <string name="preset_ghost_subtitle">Почти невидимый</string>
 
     <!-- Missing Strings -->
-    <string name="preview">Предварительный просмотр</string>
     <string name="press_back_again_to_exit">Нажмите назад еще раз, чтобы выйти</string>
     <string name="volume_gesture_handler">Обработчик жестов громкости</string>
     <string name="troubleshoot">Поиск неисправностей</string>
@@ -287,9 +277,9 @@
     <string name="brightness_permission_title">Разрешить управление яркостью?</string>
     <string name="brightness_permission_message">Чтобы менять яркость экрана, приложению нужно разрешение на изменение системных настроек. Адаптивная яркость отключается на время использования и восстанавливается при остановке службы.</string>
     <string name="edge_offset">Отступ от края</string>
-    <string name="edge_offset_desc">Сдвигает полосу от края экрана внутрь. Помогает на изогнутых экранах и при жестовой навигации.</string>
+    <string name="edge_offset_desc">Наименьший зазор, который полоса сохраняет от левого и правого краёв — и при перетаскивании, и там, где она останавливается при прилипании. Помогает на изогнутых экранах и при жестовой навигации.</string>
     <string name="reset_position">Сбросить положение</string>
-    <string name="drag_to_move_hint">Отключите блокировку положения и перетащите полосу вверх или вниз.</string>
+    <string name="drag_to_move_hint">Чтобы переместить полосу: нажмите и удерживайте, дождитесь вибрации, затем тяните. Чтобы включить это, задайте действию долгого нажатия значение «Переместить полосу».</string>
     <string name="fix_battery_title">Оптимизация батареи</string>
     <string name="fix_battery_desc">Разрешите неограниченное использование батареи, чтобы Android не останавливал службу.</string>
     <string name="fix_battery_allowed">Без ограничений</string>
@@ -297,4 +287,82 @@
     <string name="fix_autostart_desc">Откройте настройки автозапуска устройства и разрешите GestureVolume.</string>
     <string name="autostart_unavailable">Недоступно на этом устройстве</string>
     <string name="open_settings">Открыть настройки</string>
+    <string name="snap_to_edge">Прилипание к краю</string>
+    <string name="snap_to_edge_desc">Вкл.: полоса перелетает к ближайшему краю, как только вы отпустите палец, и останавливается на заданном ниже расстоянии. Выкл.: остаётся ровно там, где вы её оставили. Высота в любом случае за вами.</string>
+    <string name="notification_channel_controls">Управление полосой</string>
+    <string name="notification_channel_controls_desc">Постоянная строка с кнопками «Показать/Скрыть», «Настройки» и «Остановить».</string>
+    <string name="notification_channel_minimal">Работает тихо</string>
+    <string name="notification_channel_minimal_desc">Беззвучная заглушка, которую Android требует, пока служба работает. Без значка и кнопок.</string>
+    <string name="notification_minimal_title">GestureVolume работает</string>
+    <string name="show_notification_title">Кнопки в уведомлении</string>
+    <string name="show_notification_desc">Оставьте «Показать», «Настройки» и «Остановить» в панели уведомлений. Это единственный способ вернуть скрытую полосу, не открывая приложение.</string>
+    <string name="show_notification_off_hint">Выкл.: Android всё равно требует беззвучную заглушку, пока служба работает. Нажмите, чтобы полностью скрыть её в настройках системы.</string>
+    <string name="open_notification_settings">Системные настройки уведомлений</string>
+    <string name="notification_permission">Уведомления</string>
+    <string name="notification_permission_desc">Необязательно: показывает управление полосой — «Показать», «Настройки» и «Остановить» — в панели уведомлений</string>
+    <string name="handler_hidden_card_title">Полоса скрыта</string>
+    <string name="handler_hidden_card_desc">Вы скрыли её через меню долгого нажатия. Она останется скрытой, пока вы не покажете её снова.</string>
+    <string name="handler_hidden_card_action">Показать</string>
+    <string name="handler_shown_toast">Полоса появится, когда вы выйдете из приложения.</string>
+    <string name="service_active">Служба активна</string>
+    <string name="service_inactive">Служба выключена</string>
+    <string name="tap_to_disable">Нажмите, чтобы выключить</string>
+    <string name="tap_to_enable">Нажмите, чтобы включить</string>
+    <string name="lock_permission_section">БЛОКИРОВКА ЭКРАНА</string>
+    <string name="lock_accessibility_permission">Блокировка экрана (спец. возможности)</string>
+    <string name="lock_accessibility_permission_desc">Рекомендуется: позволяет действию «Блокировка» гасить экран так же, как кнопка питания, поэтому отпечаток по-прежнему разблокирует телефон</string>
+    <string name="permission_turn_off">Отключить</string>
+    <string name="action_reposition">Переместить полосу</string>
+    <string name="volume_percent_short">%1$d%%</string>
+    <string name="context_menu_count">Выбрано: %1$d</string>
+    <string name="notification_service_active">Жесты громкости активны</string>
+    <string name="show_volume_percent_title">Показывать громкость в процентах</string>
+    <string name="show_volume_percent_desc">Показывает уровень на полосе во время свайпа.</string>
+    <string name="handler_hidden_toast">Полоса скрыта. Откройте GestureVolume, чтобы вернуть её.</string>
+    <string name="action_stop_service">Остановить службу</string>
+    <string name="notification_handler_hidden">Полоса скрыта — нажмите «Показать», чтобы вернуть её</string>
+    <string name="notification_action_show">Показать</string>
+    <string name="notification_action_hide">Скрыть</string>
+    <string name="notification_action_settings">Настройки</string>
+    <string name="notification_action_stop">Остановить</string>
+    <string name="lock_accessibility_label">Блокировка экрана</string>
+    <string name="lock_accessibility_summary">Позволяет действию «Блокировка» гасить экран.</string>
+    <string name="lock_accessibility_description">Позволяет GestureVolume блокировать экран, когда вы используете действие «Блокировка» на плавающей полосе. Экран блокируется точно так же, как кнопкой питания, поэтому отпечаток по-прежнему разблокирует телефон. Эта служба ничего не считывает с экрана и не выполняет никаких других действий.</string>
+    <string name="lock_permission_title">Блокировка экрана</string>
+    <string name="lock_permission_message">GestureVolume нужно разрешение, чтобы блокировать экран.\n\nРекомендуются спец. возможности: они блокируют экран так же, как кнопка питания, поэтому отпечаток по-прежнему разблокирует телефон. Администратор устройства тоже работает, но большинство телефонов затем требуют PIN-код вместо отпечатка.</string>
+    <string name="lock_permission_accessibility">Спец. возможности</string>
+    <string name="lock_not_available">Прежде чем использовать действие «Блокировка», выдайте разрешение на блокировку в настройках.</string>
+    <string name="context_menu_title">Меню долгого нажатия</string>
+    <string name="context_menu_desc">Выберите, что появляется при долгом нажатии на полосу.</string>
+    <string name="context_menu_empty">Больше ничего не выбрано. Долгое нажатие будет перемещать полосу и предлагать «Скрыть полосу».</string>
+    <string name="context_menu_always">Показывается всегда</string>
+    <string name="context_menu_section">Пункты меню долгого нажатия</string>
+    <string name="behaviour_section">Поведение</string>
+    <string name="lock_permission_menu_message">Вы добавили «Блокировку» в меню долгого нажатия, но пока ничто не может заблокировать экран.\n\nРекомендуются спец. возможности: они блокируют экран так же, как кнопка питания, поэтому отпечаток по-прежнему разблокирует телефон.</string>
+    <string name="notification_permission_needed_title">Уведомления отключены</string>
+    <string name="notification_permission_needed_message">Кнопки включены, но Android не разрешает GestureVolume показывать уведомления — поэтому «Показать», «Настройки» и «Остановить» не появятся в панели.</string>
+    <string name="notification_permission_warning_inline">Уведомления для этого приложения заблокированы. Нажмите, чтобы разрешить.</string>
+    <string name="grant_permission_action">Разрешить</string>
+    <string name="not_now">Не сейчас</string>
+    <string name="help">Справка</string>
+    <string name="appearance_help_title">Как пользоваться предпросмотром</string>
+    <string name="appearance_help_move">Перемещение полосы\nНажмите и удерживайте, дождитесь вибрации, затем тяните. Она движется точно так же, как будет двигаться на домашнем экране, включая прилипание и отступ от края. Для этого действию долгого нажатия нужно значение «Переместить полосу».</string>
+    <string name="appearance_help_test">Проверка жестов\nНажимайте, нажимайте дважды и проводите по полосе, чтобы проверить настройки. Громкость и яркость меняются по-настоящему; действия, которые уводят из приложения или затрагивают реальную полосу, здесь пропускаются.</string>
+    <string name="appearance_help_settings">Изменить внешний вид\nПотяните панель вверх или нажмите значок настроек — цвета, размер, углы и значок. Ничего не сохраняется, пока вы не нажмёте «Применить».</string>
+    <string name="appearance_help_apply">Применить\nГалочка становится активной, как только что-то изменилось, и применяет это к реальной полосе.</string>
+    <string name="got_it">Понятно</string>
+    <string name="settings_sheet">Настройки внешнего вида</string>
+    <string name="remove_ads_support_developer">Уберите всю рекламу и поддержите разработчика</string>
+    <string name="reset_app">Сбросить приложение</string>
+    <string name="reset_app_title">Сбросить всё?</string>
+    <string name="reset_app_message">Все настройки вернутся к значениям по умолчанию: вид и положение полосы, все действия нажатий и свайпов, меню долгого нажатия, тема и язык. Плавающая полоса будет выключена, а приветственные экраны вернутся.\n\nВаша покупка Pro сохраняется. Это действие нельзя отменить.</string>
+    <string name="reset_app_confirm">Сбросить</string>
+    <string name="reset_app_done">Всё сброшено.</string>
+    <string name="permission_needed_lock">Вы назначили действие «Блокировка». Без этого нажатие ничего не сделает.</string>
+    <string name="permission_needed_notification">Кнопки в уведомлении включены. Без этого «Показать», «Настройки» и «Остановить» не появятся.</string>
+    <string name="permission_needed_brightness">Вы назначили действие яркости. Без этого оно не сможет менять яркость.</string>
+    <string name="permission_action_required_one">1 разрешение требует внимания</string>
+    <string name="permission_action_required_many">Разрешений требует внимания: %1$d</string>
+    <string name="lock_unsupported_message">Для блокировки экрана нужен Android 9 или новее. Этот телефон так не умеет, поэтому действие «Блокировка» сообщит, что оно недоступно.</string>
+    <string name="lock_unsupported_short">Требуется Android 9 или новее</string>
 </resources>

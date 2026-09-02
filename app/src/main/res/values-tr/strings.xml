@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">Device Policy Manager API ile tıklandığında ekranı kilitleyin</string>
-    <string name="device_admin_label">Hareket Sesi Cihaz Yöneticisi</string>
     <string name="landscape_appearance_settings">MANZARA GÖRÜNÜM AYARLARI</string>
     <string name="click_">Anahtarı aktif hale getirin ve işleyicinin yer çekimini, boyutunu, kalınlığını ve konumunu yatay ekranda yapılandırın.</string>
     <string name="configure">Yapılandır</string>
@@ -49,7 +47,6 @@
     <string name="language">Dil</string>
     <string name="lock_position">Kilit konumu</string>
     <string name="long_press_action">Uzun basma eylemi</string>
-    <string name="minimize">EN AZA İNDİR</string>
     <string name="more">DAHA</string>
     <string name="newagedevs">NewAgeDev\'ler</string>
     <string name="nothing_to_restore">Geri yüklenecek bir şey yok</string>
@@ -92,7 +89,6 @@
     <string name="top_left">Sol Üst</string>
     <string name="top_right">Sağ Üst</string>
     <string name="upgrade">GÜNCELLEME</string>
-    <string name="unlock_all_features">Tüm reklamları kaldır</string>
     <string name="unsaved_changes">Kaydedilmemiş Değişiklikler</string>
     <string name="upgrade_to_pro">Pro\'ya yükseltin</string>
     <string name="vibrate_on_click">Tıklandığında titret</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Diğer uygulamaların üzerinde görüntüle</string>
     <string name="overlay_permission_desc">Birim işleyicisi katmanını ekranınızda göstermek için gereklidir</string>
-    <string name="device_admin_permission">Cihaz yöneticisi</string>
-    <string name="device_admin_permission_desc">İsteğe bağlı: Yapılandırıldığında işleyicinin cihazınızın ekranını kilitlemesine izin verir</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">Gesture Volume\'a hoş geldiniz</string>
@@ -160,10 +154,7 @@
     <!-- Expanded Preview -->
     <string name="position_locked">KONUM KİLİTLİ</string>
     <string name="unlock_to_reposition">YENİDEN KONUMLANDIRMANIN KİLİDİNİ AÇ</string>
-    <string name="test_mode">Test Modu</string>
     <string name="reposition_mode">Yeniden Konumlandırma Modu</string>
-    <string name="test_mode_desc">Kaydırmayı ve dokunmayı deneyin</string>
-    <string name="reposition_mode_desc">İşleyiciyi yeni konuma sürükleyin</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">KONUM</string>
@@ -258,7 +249,6 @@
     <string name="preset_ghost_subtitle">Neredeyse görünmez</string>
 
     <!-- Missing Strings -->
-    <string name="preview">Önizleme</string>
     <string name="press_back_again_to_exit">Çıkmak için tekrar geri tuşuna basın</string>
     <string name="volume_gesture_handler">Ses seviyesi hareketi işleyicisi</string>
     <string name="troubleshoot">Sorun giderme</string>
@@ -286,10 +276,10 @@
     <string name="write_settings_permission_desc">Çubuğun ekran parlaklığını denetlemesini sağlar. Yalnızca parlaklık eylemleri için gereklidir.</string>
     <string name="brightness_permission_title">Parlaklık denetimine izin verilsin mi?</string>
     <string name="brightness_permission_message">Ekran parlaklığını değiştirmek için GestureVolume, Sistem ayarlarını değiştirme iznine ihtiyaç duyar. Kullanım sırasında uyarlanabilir parlaklık kapatılır ve hizmeti durdurduğunuzda geri açılır.</string>
-    <string name="edge_offset">Kenar boşluğu</string>
-    <string name="edge_offset_desc">Çubuğu ekran kenarından içeri kaydırır. Kavisli ekranlarda ve hareketle gezinmede işe yarar.</string>
+    <string name="edge_offset">Kenar mesafesi</string>
+    <string name="edge_offset_desc">Çubuğun sol ve sağ kenarlardan koruduğu en küçük boşluk: hem sürüklerken hem de yapıştığında durduğu yerde. Kavisli ekranlarda ve hareketle gezinmede işe yarar.</string>
     <string name="reset_position">Konumu sıfırla</string>
-    <string name="drag_to_move_hint">Konum kilidini kapatın, ardından çubuğu yukarı veya aşağı sürükleyin.</string>
+    <string name="drag_to_move_hint">Çubuğu taşımak için: uzun basın, titreşimi bekleyin, sonra sürükleyin. Bunu etkinleştirmek için uzun basma eylemini “Çubuğu taşı” olarak ayarlayın.</string>
     <string name="fix_battery_title">Pil optimizasyonu</string>
     <string name="fix_battery_desc">Android hizmeti durdurmasın diye sınırsız pil kullanımına izin verin.</string>
     <string name="fix_battery_allowed">Sınırsız</string>
@@ -297,4 +287,82 @@
     <string name="fix_autostart_desc">Cihazınızın otomatik başlatma ayarlarını açın ve GestureVolume uygulamasına izin verin.</string>
     <string name="autostart_unavailable">Bu cihazda kullanılamıyor</string>
     <string name="open_settings">Ayarları aç</string>
+    <string name="snap_to_edge">Kenara yapış</string>
+    <string name="snap_to_edge_desc">Açık: parmağınızı kaldırdığınızda çubuk en yakın kenara uçar ve aşağıdaki kenar mesafesinde durur. Kapalı: bıraktığınız yerde kalır. Yükseklik her iki durumda da sizin.</string>
+    <string name="notification_channel_controls">Çubuk denetimleri</string>
+    <string name="notification_channel_controls_desc">Göster/Gizle, Ayarlar ve Durdur düğmelerini taşıyan kalıcı satır.</string>
+    <string name="notification_channel_minimal">Sessizce çalışıyor</string>
+    <string name="notification_channel_minimal_desc">Servis çalışırken Android\'in zorunlu kıldığı sessiz bir yer tutucu. Simge yok, düğme yok.</string>
+    <string name="notification_minimal_title">GestureVolume çalışıyor</string>
+    <string name="show_notification_title">Bildirim denetimleri</string>
+    <string name="show_notification_desc">Bildirim panelinde Göster, Ayarlar ve Durdur düğmelerini tutun. Uygulamayı açmadan gizlenmiş çubuğu geri getirmenin tek yolu budur.</string>
+    <string name="show_notification_off_hint">Kapalı: servis çalışırken Android yine de sessiz bir yer tutucu ister. Sistem ayarlarında tamamen gizlemek için dokunun.</string>
+    <string name="open_notification_settings">Sistem bildirim ayarları</string>
+    <string name="notification_permission">Bildirimler</string>
+    <string name="notification_permission_desc">İsteğe bağlı: çubuk denetimlerini (Göster, Ayarlar ve Durdur) bildirim panelinde gösterir</string>
+    <string name="handler_hidden_card_title">Çubuk gizli</string>
+    <string name="handler_hidden_card_desc">Uzun basma menüsünden gizlediniz. Yeniden gösterene kadar gizli kalacak.</string>
+    <string name="handler_hidden_card_action">Göster</string>
+    <string name="handler_shown_toast">Uygulamadan çıktığınızda çubuk görünecek.</string>
+    <string name="service_active">Servis etkin</string>
+    <string name="service_inactive">Servis kapalı</string>
+    <string name="tap_to_disable">Kapatmak için dokunun</string>
+    <string name="tap_to_enable">Açmak için dokunun</string>
+    <string name="lock_permission_section">EKRAN KİLİDİ</string>
+    <string name="lock_accessibility_permission">Ekran kilidi (erişilebilirlik)</string>
+    <string name="lock_accessibility_permission_desc">Önerilir: Kilitle eylemi ekranı güç düğmesiyle aynı şekilde kapatır, böylece parmak iziniz telefonu açmaya devam eder</string>
+    <string name="permission_turn_off">Kapat</string>
+    <string name="action_reposition">Çubuğu taşı</string>
+    <string name="volume_percent_short">%1$d%%</string>
+    <string name="context_menu_count">%1$d seçili</string>
+    <string name="notification_service_active">Ses hareketleri etkin</string>
+    <string name="show_volume_percent_title">Ses yüzdesini göster</string>
+    <string name="show_volume_percent_desc">Kaydırırken seviyeyi çubuğun üzerinde gösterir.</string>
+    <string name="handler_hidden_toast">Çubuk gizlendi. Geri getirmek için GestureVolume\'ü açın.</string>
+    <string name="action_stop_service">Servisi durdur</string>
+    <string name="notification_handler_hidden">Çubuk gizli — geri getirmek için Göster\'e dokunun</string>
+    <string name="notification_action_show">Göster</string>
+    <string name="notification_action_hide">Gizle</string>
+    <string name="notification_action_settings">Ayarlar</string>
+    <string name="notification_action_stop">Durdur</string>
+    <string name="lock_accessibility_label">Ekran kilidi</string>
+    <string name="lock_accessibility_summary">Kilitle eyleminin ekranı kapatmasına izin verir.</string>
+    <string name="lock_accessibility_description">Yüzen çubuktaki Kilitle eylemini kullandığınızda GestureVolume\'ün ekranı kilitlemesine izin verir. Ekranı tam olarak güç düğmesiyle aynı şekilde kilitler, böylece parmak iziniz telefonu açmaya devam eder. Bu servis ekranınızdaki hiçbir şeyi okumaz ve başka hiçbir işlem yapmaz.</string>
+    <string name="lock_permission_title">Ekranı kilitleme</string>
+    <string name="lock_permission_message">GestureVolume\'ün ekranı kilitlemek için izne ihtiyacı var.\n\nErişilebilirlik önerilir: ekranı güç düğmesiyle aynı şekilde kilitler, böylece parmak iziniz telefonu açmaya devam eder. Cihaz yöneticisi de çalışır, ancak çoğu telefon sonrasında parmak izi yerine PIN ister.</string>
+    <string name="lock_permission_accessibility">Erişilebilirliği kullan</string>
+    <string name="lock_not_available">Kilitle eylemini kullanmadan önce Ayarlar\'dan bir kilit izni verin.</string>
+    <string name="context_menu_title">Uzun basma menüsü</string>
+    <string name="context_menu_desc">Çubuğa uzun bastığınızda neyin görüneceğini seçin.</string>
+    <string name="context_menu_empty">Başka bir şey seçili değil. Uzun basmak çubuğu taşır ve “Çubuğu gizle” seçeneğini sunar.</string>
+    <string name="context_menu_always">Her zaman görünür</string>
+    <string name="context_menu_section">Uzun basma menüsü öğeleri</string>
+    <string name="behaviour_section">Davranış</string>
+    <string name="lock_permission_menu_message">Uzun basma menüsüne Kilitle\'yi eklediniz, ancak henüz ekranı kilitleyebilecek bir şey yok.\n\nErişilebilirlik önerilir: ekranı güç düğmesiyle aynı şekilde kilitler, böylece parmak iziniz telefonu açmaya devam eder.</string>
+    <string name="notification_permission_needed_title">Bildirimler kapalı</string>
+    <string name="notification_permission_needed_message">Denetimler açık, ancak Android GestureVolume\'ün bildirim göndermesine izin vermiyor — bu yüzden Göster, Ayarlar ve Durdur panelde görünmeyecek.</string>
+    <string name="notification_permission_warning_inline">Bu uygulama için bildirimler engellendi. İzin vermek için dokunun.</string>
+    <string name="grant_permission_action">İzin ver</string>
+    <string name="not_now">Şimdi değil</string>
+    <string name="help">Yardım</string>
+    <string name="appearance_help_title">Önizlemeyi kullanma</string>
+    <string name="appearance_help_move">Çubuğu taşıma\nUzun basın, titreşimi bekleyin, sonra sürükleyin. Yapışma ve kenar mesafesi dâhil, ana ekranınızdaki gibi hareket eder. Bunun için uzun basma eyleminin “Çubuğu taşı” olması gerekir.</string>
+    <string name="appearance_help_test">Hareketleri deneme\nAyarlarınızı hissetmek için çubuğa dokunun, çift dokunun ve kaydırın. Ses ve parlaklık gerçekten değişir; uygulamadan çıkan veya gerçek çubuğa dokunan eylemler burada atlanır.</string>
+    <string name="appearance_help_settings">Görünümünü değiştirme\nRenkler, boyut, köşeler ve simge için sayfayı yukarı sürükleyin ya da ayarlar simgesine dokunun. Uygula\'ya dokunana kadar hiçbir şey kaydedilmez.</string>
+    <string name="appearance_help_apply">Uygula\nBir şey değiştiği anda onay işareti etkinleşir ve bunu gerçek çubuğa uygular.</string>
+    <string name="got_it">Anladım</string>
+    <string name="settings_sheet">Görünüm ayarları</string>
+    <string name="remove_ads_support_developer">Tüm reklamları kaldırın ve geliştiriciyi destekleyin</string>
+    <string name="reset_app">Uygulamayı sıfırla</string>
+    <string name="reset_app_title">Her şey sıfırlansın mı?</string>
+    <string name="reset_app_message">Her ayar varsayılanına döner: çubuğun görünümü ve konumu, tüm dokunma ve kaydırma eylemleri, uzun basma menüsü, tema ve dil. Yüzen çubuk kapatılır ve karşılama ekranları geri gelir.\n\nPro satın alımınız korunur. Bu işlem geri alınamaz.</string>
+    <string name="reset_app_confirm">Sıfırla</string>
+    <string name="reset_app_done">Her şey sıfırlandı.</string>
+    <string name="permission_needed_lock">Bir eylemi Kilitle olarak ayarladınız. Bu olmadan dokunmak hiçbir şey yapmaz.</string>
+    <string name="permission_needed_notification">Bildirim denetimleri açık. Bu olmadan Göster, Ayarlar ve Durdur görünmez.</string>
+    <string name="permission_needed_brightness">Bir parlaklık eylemi ayarladınız. Bu olmadan parlaklığı değiştiremez.</string>
+    <string name="permission_action_required_one">1 izin ilginizi bekliyor</string>
+    <string name="permission_action_required_many">%1$d izin ilginizi bekliyor</string>
+    <string name="lock_unsupported_message">Ekranı kilitlemek için Android 9 veya üzeri gerekir. Bu telefon bunu yapamaz, bu yüzden Kilitle eylemi kullanılamadığını bildirir.</string>
+    <string name="lock_unsupported_short">Android 9 veya üzeri gerekir</string>
 </resources>

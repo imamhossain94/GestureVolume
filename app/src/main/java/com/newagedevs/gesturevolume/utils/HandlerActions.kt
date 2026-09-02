@@ -70,6 +70,7 @@ object HandlerActions {
         OPEN_VOLUME_UI,
         MUTE_OR_UNMUTE,
         HIDE_HANDLER,
+        STOP_SERVICE,
         OPEN_APP
     )
 

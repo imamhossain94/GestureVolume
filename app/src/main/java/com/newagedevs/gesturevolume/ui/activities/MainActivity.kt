@@ -34,8 +34,6 @@ import com.google.android.play.core.review.ReviewManagerFactory
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        const val DEVICE_ADMIN_REQUEST_CODE = 3
-
         /** Let the screen settle — and any app-open ad finish — before considering a prompt. */
         private const val REVIEW_SETTLE_DELAY_MS = 2_500L
     }

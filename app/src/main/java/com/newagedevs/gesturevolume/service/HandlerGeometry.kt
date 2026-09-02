@@ -170,6 +170,18 @@ object HandlerGeometry {
     }
 
     /**
+     * Where a bar released at [x] comes to rest when snapping is on: flush against the nearer
+     * side, at exactly [edgeMarginPx] from it.
+     *
+     * Deliberately expressed as [sideToX] of [xToIsLeft] rather than as its own arithmetic. The
+     * resting place of a snapped bar and the seed position of a migrating install are the same
+     * question — "where does this side put the bar?" — and answering it twice is how the two
+     * drift apart by a pixel or two and start an argument on every rotation.
+     */
+    fun snapX(x: Int, usableWidth: Int, barWidth: Int, edgeMarginPx: Int): Int =
+        sideToX(xToIsLeft(x, usableWidth, barWidth), usableWidth, barWidth, edgeMarginPx)
+
+    /**
      * The horizontal twin of [fractionToY], with identical semantics: [fraction] locates the bar's
      * **centre**, 0f flush left and 1f flush right.
      *
@@ -204,5 +216,5 @@ object HandlerGeometry {
     }
 
     /** Matches [com.newagedevs.gesturevolume.data.local.SharedPref.getHandlerPositionFraction]. */
-    const val DEFAULT_POSITION_FRACTION = 0.5f
+    const val DEFAULT_POSITION_FRACTION = 0.12f
 }
