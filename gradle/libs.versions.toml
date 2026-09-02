@@ -1,5 +1,5 @@
 [versions]
-agp = "9.3.2"
+agp = "9.2.0"
 coilNetworkOkhttp = "3.6.0"
 coreSplashscreen = "1.2.0"
 appcompat = "1.8.0"
@@ -41,7 +41,7 @@ inmobiAdapter = "11.4.1.2"
 mintegralAdapter = "17.1.81.0"
 picasso = "2.71828"
 recyclerview = "1.4.0"
-vungleAdapter = "7.7.7.1"
+vungleAdapter = "7.7.8.0"
 facebookAdapter = "6.22.0.0"
 unityadsAdapter = "4.20.0.0"
 
