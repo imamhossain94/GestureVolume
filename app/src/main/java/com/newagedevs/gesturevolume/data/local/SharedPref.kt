@@ -558,11 +558,20 @@ class SharedPref @Inject constructor(
     }
 
     /**
-     * True while the install is still inside its post-install grace period, during which no
-     * full-screen ad (app-open or interstitial) may be shown.
+     * True while the install is still inside its post-install grace period.
      *
-     * Banner and native placements are deliberately unaffected — they sit inline in the layout and
-     * never take the screen away from someone mid-setup.
+     * What the grace period actually protects is *setup*: the stretch where the user is bouncing
+     * in and out of system permission screens, placing the bar and trying gestures. An ad that
+     * takes the screen during that is the one most likely to cost us the user outright.
+     *
+     * So it blocks the two things that interrupt: **app-open ads entirely**, and **interstitials
+     * at screen transitions**. It does not block the interstitial at
+     * [shouldShowServiceStartInterstitial], which fires at the moment setup *finishes* rather
+     * than in the middle of it.
+     *
+     * Banner and native placements are unaffected throughout — they sit inline in the layout and
+     * never take the screen away from anyone. During grace they are the only ads running, which
+     * is the point: revenue continues, interruption does not.
      */
     fun isInAdGracePeriod(): Boolean {
         val installTime = sharedPreferences.getLong(FIRST_INSTALL_TIME, 0L)
@@ -639,14 +648,18 @@ class SharedPref @Inject constructor(
     }
 
     /**
-     * Check if interstitial ad should be shown
-     * Returns true if:
-     * 1. 90 seconds have passed since last interstitial ad
-     * 2. 90 seconds have passed since any ad (app open or interstitial)
+     * Whether an interstitial may be shown at an ordinary break point — a screen transition.
+     *
+     * Returns true when the per-session cap has room, three minutes have passed since the last
+     * interstitial, ninety seconds since any ad, and the install is out of its grace period.
+     *
+     * @param allowDuringGrace lets one specific caller through the grace period — see
+     *   [shouldShowServiceStartInterstitial]. Every other cooldown still applies, so this cannot
+     *   turn into an unlimited hole in the policy.
      */
-    fun shouldShowInterstitialAd(): Boolean {
-        // Nothing full-screen until the user has had a chance to finish setting up.
-        if (isInAdGracePeriod()) {
+    fun shouldShowInterstitialAd(allowDuringGrace: Boolean = false): Boolean {
+        // Nothing full-screen mid-setup, unless this is the ad that marks setup finishing.
+        if (!allowDuringGrace && isInAdGracePeriod()) {
             return false
         }
 
@@ -669,6 +682,22 @@ class SharedPref @Inject constructor(
 
         return interstitialCooldownPassed && anyAdCooldownPassed
     }
+
+    /**
+     * The one full-screen ad the grace period allows: the user has just switched the service on
+     * and the handler is up.
+     *
+     * This is the completion of setup rather than an interruption of it — the user has finished
+     * configuring, the thing they installed the app for now works, and they are at a natural stop.
+     * Blocking it was costing the single best-placed impression of the install's first two hours
+     * for no retention benefit, since the moment is one the user chose.
+     *
+     * Every other guard still holds: the per-session cap, the three-minute interstitial cooldown
+     * and the ninety seconds between any two ads. In practice that means once per service start,
+     * and not twice if the user flips the switch back and forth.
+     */
+    fun shouldShowServiceStartInterstitial(): Boolean =
+        shouldShowInterstitialAd(allowDuringGrace = true)
 
     /**
      * Get time remaining until next app open ad can be shown (in seconds)

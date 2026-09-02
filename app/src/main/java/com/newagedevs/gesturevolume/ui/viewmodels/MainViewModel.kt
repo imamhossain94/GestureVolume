@@ -95,6 +95,7 @@ class MainViewModel @Inject constructor(
 
     private var pendingBrightnessAction: Pair<String, ActionSlot>? = null
 
+
     fun onEvent(event: MainEvent) {
         when (event) {
             is MainEvent.ToggleService -> toggleService(event.isRunning, event.context)
@@ -283,9 +284,11 @@ class MainViewModel @Inject constructor(
             preference.setHandlerHidden(false)
             _state.value = _state.value.copy(isHandlerHidden = false)
             maybeAskForNotificationPermission(context)
-            // Show interstitial ad with cooldown check
-            maybeShowInterstitialAd()
-            startOverlayService(context)
+            // The interstitial is requested here but shown when the service actually connects.
+            // It used to be shown on this line — before the service had started — so it landed
+            // while the user was still waiting to find out whether the thing had worked, and it
+            // fired just as readily when the start then failed.
+            startOverlayService(context, announceWithAd = true)
         } else {
             stopOverlayService(context)
         }
@@ -314,10 +317,12 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * Show an interstitial at a natural transition (service start, opening Appearance/Actions),
-     * gated by SharedPref cooldowns + the per-session cap. Interstitial is by far the
-     * top-earning format ($3.10 eCPM) yet it fired only on service-toggle before, so it barely
-     * showed; adding a few genuine break points lifts revenue while the caps protect retention.
+     * Show an interstitial at an ordinary transition — opening Appearance or Actions — gated by
+     * the SharedPref cooldowns, the per-session cap and the post-install grace period.
+     *
+     * Interstitial is by far the top-earning format ($3.10 eCPM) yet it fired only on the service
+     * toggle before, so it barely showed; a few genuine break points lift revenue while the caps
+     * protect retention.
      */
     fun maybeShowInterstitialAd() {
         if (_state.value.isProActivated) return
@@ -328,7 +333,30 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun startOverlayService(context: Context) {
+    /**
+     * The service has started and the handler is ready: show the one interstitial that is allowed
+     * during the post-install grace period.
+     *
+     * Separate from [maybeShowInterstitialAd] rather than a boolean on it, so the exception to the
+     * grace period is visible at the call site and cannot spread to the transition placements by
+     * someone passing the wrong argument.
+     */
+    private fun maybeShowServiceStartInterstitial() {
+        if (_state.value.isProActivated) return
+        if (preference.shouldShowServiceStartInterstitial()) {
+            adsManager?.showInterstitialAd(
+                loaded = { preference.saveInterstitialAdTime() }
+            )
+        }
+    }
+
+    /**
+     * @param announceWithAd true only when the user just switched the service on themselves. The
+     *   silent repair path calls this too, and a system-killed service quietly coming back is not
+     *   a moment to show anybody an ad. Carried as a parameter rather than a field so a bind that
+     *   never connects cannot leave it armed for the next caller.
+     */
+    private fun startOverlayService(context: Context, announceWithAd: Boolean = false) {
         val service = Intent(context, OverlayService::class.java)
         
         try {
@@ -344,6 +372,9 @@ class MainViewModel @Inject constructor(
             override fun onServiceConnected(name: ComponentName, service: IBinder) {
                 overlayService = (service as OverlayService.LocalBinder).instance()
                 isBound = true
+                // The service is bound and the handler is configured and ready, which is the
+                // moment setup is finished — the one full-screen ad the grace period allows.
+                if (announceWithAd) maybeShowServiceStartInterstitial()
             }
 
             override fun onServiceDisconnected(name: ComponentName) {
