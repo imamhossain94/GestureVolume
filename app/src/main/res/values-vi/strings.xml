@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">Khóa màn hình khi nhấp chuột bằng API Trình quản lý chính sách thiết bị</string>
-    <string name="device_admin_label">Quản trị viên thiết bị khối lượng cử chỉ</string>
     <string name="landscape_appearance_settings">CÀI ĐẶT XUẤT HIỆN CẢNH QUAN</string>
     <string name="click_">Kiểm tra công tắc để hoạt động và định cấu hình trọng lực, kích thước, độ dày và vị trí của bộ xử lý trên màn hình ngang.</string>
     <string name="configure">Cấu hình</string>
@@ -49,7 +47,6 @@
     <string name="language">Ngôn ngữ</string>
     <string name="lock_position">Vị trí khóa</string>
     <string name="long_press_action">Hành động nhấn và giữ</string>
-    <string name="minimize">TỐI THIỂU</string>
     <string name="more">HƠN</string>
     <string name="newagedevs">NewAgeDevs</string>
     <string name="nothing_to_restore">Không có gì để khôi phục</string>
@@ -92,7 +89,6 @@
     <string name="top_left">Trên cùng bên trái</string>
     <string name="top_right">Trên cùng bên phải</string>
     <string name="upgrade">NÂNG CẤP</string>
-    <string name="unlock_all_features">Xóa tất cả quảng cáo</string>
     <string name="unsaved_changes">Những thay đổi chưa được lưu</string>
     <string name="upgrade_to_pro">Nâng cấp lên Pro</string>
     <string name="vibrate_on_click">Rung khi nhấp chuột</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Hiển thị trên các ứng dụng khác</string>
     <string name="overlay_permission_desc">Bắt buộc phải hiển thị lớp phủ xử lý âm lượng trên màn hình của bạn</string>
-    <string name="device_admin_permission">Quản trị viên thiết bị</string>
-    <string name="device_admin_permission_desc">Tùy chọn: Cho phép trình xử lý khóa màn hình thiết bị của bạn khi được định cấu hình</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">Chào mừng đến với Khối lượng cử chỉ</string>
@@ -160,10 +154,7 @@
     <!-- Expanded Preview -->
     <string name="position_locked">VỊ TRÍ KHÓA</string>
     <string name="unlock_to_reposition">MỞ KHÓA ĐỂ ĐỔI VỊ TRÍ</string>
-    <string name="test_mode">Chế độ kiểm tra</string>
     <string name="reposition_mode">Chế độ định vị lại</string>
-    <string name="test_mode_desc">Hãy thử vuốt và chạm</string>
-    <string name="reposition_mode_desc">Kéo trình xử lý đến vị trí mới</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">CHỨC VỤ</string>
@@ -258,7 +249,6 @@
     <string name="preset_ghost_subtitle">Gần như vô hình</string>
 
     <!-- Missing Strings -->
-    <string name="preview">Xem trước</string>
     <string name="press_back_again_to_exit">Nhấn lại lần nữa để thoát</string>
     <string name="volume_gesture_handler">Trình xử lý cử chỉ âm lượng</string>
     <string name="troubleshoot">Khắc phục sự cố</string>
@@ -286,10 +276,10 @@
     <string name="write_settings_permission_desc">Cho phép thanh điều chỉnh độ sáng màn hình. Chỉ cần cho các thao tác độ sáng.</string>
     <string name="brightness_permission_title">Cho phép điều chỉnh độ sáng?</string>
     <string name="brightness_permission_message">Để thay đổi độ sáng màn hình, GestureVolume cần quyền Sửa đổi cài đặt hệ thống. Độ sáng thích ứng sẽ tắt trong khi bạn dùng và được bật lại khi bạn dừng dịch vụ.</string>
-    <string name="edge_offset">Khoảng cách mép</string>
-    <string name="edge_offset_desc">Dịch thanh vào trong khỏi mép màn hình. Hữu ích với màn hình cong và khi bật điều hướng cử chỉ.</string>
+    <string name="edge_offset">Khoảng cách cạnh</string>
+    <string name="edge_offset_desc">Khoảng hở nhỏ nhất mà thanh giữ với cạnh trái và phải — khi bạn kéo, và cả nơi nó dừng khi bám vào cạnh. Hữu ích với màn hình cong và điều hướng bằng cử chỉ.</string>
     <string name="reset_position">Đặt lại vị trí</string>
-    <string name="drag_to_move_hint">Tắt Khóa vị trí, rồi kéo thanh lên hoặc xuống để di chuyển.</string>
+    <string name="drag_to_move_hint">Để di chuyển thanh: nhấn giữ, đợi rung, rồi kéo. Đặt hành động nhấn giữ thành “Di chuyển thanh” để bật tính năng này.</string>
     <string name="fix_battery_title">Tối ưu hóa pin</string>
     <string name="fix_battery_desc">Cho phép dùng pin không giới hạn để Android không dừng dịch vụ.</string>
     <string name="fix_battery_allowed">Không giới hạn</string>
@@ -297,4 +287,82 @@
     <string name="fix_autostart_desc">Mở cài đặt tự khởi động của thiết bị và cho phép GestureVolume.</string>
     <string name="autostart_unavailable">Không khả dụng trên thiết bị này</string>
     <string name="open_settings">Mở cài đặt</string>
+    <string name="snap_to_edge">Bám vào cạnh</string>
+    <string name="snap_to_edge_desc">Bật: thanh sẽ bay về cạnh gần nhất khi bạn thả tay và dừng ở khoảng cách cạnh bên dưới. Tắt: thanh ở nguyên chỗ bạn thả. Chiều cao luôn do bạn quyết định.</string>
+    <string name="notification_channel_controls">Điều khiển thanh</string>
+    <string name="notification_channel_controls_desc">Dòng thông báo thường trực với Hiện/Ẩn, Cài đặt và Dừng.</string>
+    <string name="notification_channel_minimal">Đang chạy im lặng</string>
+    <string name="notification_channel_minimal_desc">Một chỗ giữ chỗ im lặng mà Android yêu cầu khi dịch vụ đang chạy. Không biểu tượng, không nút.</string>
+    <string name="notification_minimal_title">GestureVolume đang chạy</string>
+    <string name="show_notification_title">Điều khiển trên thông báo</string>
+    <string name="show_notification_desc">Giữ Hiện, Cài đặt và Dừng trong bảng thông báo. Đây là cách duy nhất để lấy lại thanh đã ẩn mà không cần mở ứng dụng.</string>
+    <string name="show_notification_off_hint">Tắt: Android vẫn yêu cầu một chỗ giữ chỗ im lặng khi dịch vụ đang chạy. Chạm để ẩn hoàn toàn trong cài đặt hệ thống.</string>
+    <string name="open_notification_settings">Cài đặt thông báo hệ thống</string>
+    <string name="notification_permission">Thông báo</string>
+    <string name="notification_permission_desc">Tùy chọn: hiển thị các điều khiển thanh — Hiện, Cài đặt và Dừng — trong bảng thông báo</string>
+    <string name="handler_hidden_card_title">Thanh đang bị ẩn</string>
+    <string name="handler_hidden_card_desc">Bạn đã ẩn nó từ menu nhấn giữ. Nó sẽ vẫn ẩn cho đến khi bạn hiện lại.</string>
+    <string name="handler_hidden_card_action">Hiện</string>
+    <string name="handler_shown_toast">Thanh sẽ xuất hiện khi bạn rời ứng dụng.</string>
+    <string name="service_active">Dịch vụ đang chạy</string>
+    <string name="service_inactive">Dịch vụ đã tắt</string>
+    <string name="tap_to_disable">Chạm để tắt</string>
+    <string name="tap_to_enable">Chạm để bật</string>
+    <string name="lock_permission_section">KHÓA MÀN HÌNH</string>
+    <string name="lock_accessibility_permission">Khóa màn hình (trợ năng)</string>
+    <string name="lock_accessibility_permission_desc">Khuyến nghị: cho phép hành động Khóa tắt màn hình giống như nút nguồn, nên vân tay vẫn mở khóa được điện thoại</string>
+    <string name="permission_turn_off">Tắt</string>
+    <string name="action_reposition">Di chuyển thanh</string>
+    <string name="volume_percent_short">%1$d%%</string>
+    <string name="context_menu_count">Đã chọn %1$d</string>
+    <string name="notification_service_active">Cử chỉ âm lượng đang hoạt động</string>
+    <string name="show_volume_percent_title">Hiện phần trăm âm lượng</string>
+    <string name="show_volume_percent_desc">Hiển thị mức trên thanh khi bạn vuốt.</string>
+    <string name="handler_hidden_toast">Đã ẩn thanh. Mở GestureVolume để lấy lại.</string>
+    <string name="action_stop_service">Dừng dịch vụ</string>
+    <string name="notification_handler_hidden">Thanh đang ẩn — chạm Hiện để lấy lại</string>
+    <string name="notification_action_show">Hiện</string>
+    <string name="notification_action_hide">Ẩn</string>
+    <string name="notification_action_settings">Cài đặt</string>
+    <string name="notification_action_stop">Dừng</string>
+    <string name="lock_accessibility_label">Khóa màn hình</string>
+    <string name="lock_accessibility_summary">Cho phép hành động Khóa tắt màn hình.</string>
+    <string name="lock_accessibility_description">Cho phép GestureVolume khóa màn hình khi bạn dùng hành động Khóa trên thanh nổi. Nó khóa màn hình giống hệt nút nguồn, nên vân tay vẫn mở khóa được điện thoại. Dịch vụ này không đọc bất cứ thứ gì trên màn hình và không thực hiện hành động nào khác.</string>
+    <string name="lock_permission_title">Khóa màn hình</string>
+    <string name="lock_permission_message">GestureVolume cần quyền để khóa màn hình.\n\nNên chọn trợ năng: nó khóa màn hình giống nút nguồn, nên vân tay vẫn mở khóa được điện thoại. Quản trị thiết bị cũng dùng được, nhưng phần lớn điện thoại sẽ đòi mã PIN thay vì vân tay.</string>
+    <string name="lock_permission_accessibility">Dùng trợ năng</string>
+    <string name="lock_not_available">Hãy cấp quyền khóa trong Cài đặt trước khi dùng hành động Khóa.</string>
+    <string name="context_menu_title">Menu nhấn giữ</string>
+    <string name="context_menu_desc">Chọn những gì xuất hiện khi bạn nhấn giữ thanh.</string>
+    <string name="context_menu_empty">Không còn mục nào được chọn. Nhấn giữ sẽ di chuyển thanh và hiện “Ẩn thanh”.</string>
+    <string name="context_menu_always">Luôn hiển thị</string>
+    <string name="context_menu_section">Mục trong menu nhấn giữ</string>
+    <string name="behaviour_section">Hành vi</string>
+    <string name="lock_permission_menu_message">Bạn đã thêm Khóa vào menu nhấn giữ, nhưng chưa có gì khóa được màn hình.\n\nNên chọn trợ năng: nó khóa màn hình giống nút nguồn, nên vân tay vẫn mở khóa được điện thoại.</string>
+    <string name="notification_permission_needed_title">Thông báo đang tắt</string>
+    <string name="notification_permission_needed_message">Các điều khiển đã bật, nhưng Android không cho phép GestureVolume gửi thông báo — nên Hiện, Cài đặt và Dừng sẽ không xuất hiện trong bảng thông báo.</string>
+    <string name="notification_permission_warning_inline">Thông báo đang bị chặn với ứng dụng này. Chạm để cho phép.</string>
+    <string name="grant_permission_action">Cho phép</string>
+    <string name="not_now">Để sau</string>
+    <string name="help">Trợ giúp</string>
+    <string name="appearance_help_title">Dùng bản xem trước</string>
+    <string name="appearance_help_move">Di chuyển thanh\nNhấn giữ, đợi rung, rồi kéo. Nó di chuyển đúng như trên màn hình chính, gồm cả bám cạnh và khoảng cách cạnh. Cần đặt hành động nhấn giữ thành “Di chuyển thanh”.</string>
+    <string name="appearance_help_test">Thử các cử chỉ\nChạm, chạm hai lần và vuốt trên thanh để cảm nhận thiết lập của bạn. Âm lượng và độ sáng thay đổi thật; những hành động rời ứng dụng hoặc tác động lên thanh thật sẽ được bỏ qua ở đây.</string>
+    <string name="appearance_help_settings">Đổi giao diện\nKéo tấm lên, hoặc chạm biểu tượng cài đặt, để chỉnh màu, kích thước, góc bo và biểu tượng. Không có gì được lưu cho đến khi bạn chạm Áp dụng.</string>
+    <string name="appearance_help_apply">Áp dụng\nDấu tích sáng lên ngay khi có thay đổi, và áp dụng nó cho thanh thật.</string>
+    <string name="got_it">Đã hiểu</string>
+    <string name="settings_sheet">Cài đặt giao diện</string>
+    <string name="remove_ads_support_developer">Gỡ mọi quảng cáo và ủng hộ nhà phát triển</string>
+    <string name="reset_app">Đặt lại ứng dụng</string>
+    <string name="reset_app_title">Đặt lại tất cả?</string>
+    <string name="reset_app_message">Mọi thiết lập trở về mặc định: giao diện và vị trí của thanh, tất cả hành động chạm và vuốt, menu nhấn giữ, chủ đề và ngôn ngữ. Thanh nổi sẽ tắt và các màn hình chào mừng quay lại.\n\nGiao dịch mua Pro của bạn được giữ nguyên. Không thể hoàn tác.</string>
+    <string name="reset_app_confirm">Đặt lại</string>
+    <string name="reset_app_done">Đã đặt lại tất cả.</string>
+    <string name="permission_needed_lock">Bạn đã đặt một hành động là Khóa. Không có quyền này, chạm vào nó sẽ không có tác dụng.</string>
+    <string name="permission_needed_notification">Điều khiển trên thông báo đang bật. Không có quyền này, Hiện, Cài đặt và Dừng sẽ không xuất hiện.</string>
+    <string name="permission_needed_brightness">Bạn đã đặt một hành động độ sáng. Không có quyền này, nó không thể đổi độ sáng.</string>
+    <string name="permission_action_required_one">1 quyền cần bạn xử lý</string>
+    <string name="permission_action_required_many">%1$d quyền cần bạn xử lý</string>
+    <string name="lock_unsupported_message">Khóa màn hình cần Android 9 trở lên. Điện thoại này không hỗ trợ, nên hành động Khóa sẽ báo là không khả dụng.</string>
+    <string name="lock_unsupported_short">Cần Android 9 trở lên</string>
 </resources>

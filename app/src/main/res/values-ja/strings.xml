@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">Device Policy Manager API を使ったクリックで画面ロック</string>
-    <string name="device_admin_label">ジェスチャーボリュームデバイス管理者</string>
     <string name="landscape_appearance_settings">ランドスケープ外観設定</string>
     <string name="click_">スイッチをオンにして、横画面でのハンドラーの位置やサイズを設定します。</string>
     <string name="configure">設定</string>
@@ -49,7 +47,6 @@
     <string name="language">言語</string>
     <string name="lock_position">位置をロックする</string>
     <string name="long_press_action">長押しアクション</string>
-    <string name="minimize">最小化</string>
     <string name="more">さらに表示</string>
     <string name="newagedevs">NewAgeDevs</string>
     <string name="nothing_to_restore">復元するものはありません</string>
@@ -92,7 +89,6 @@
     <string name="top_left">左上</string>
     <string name="top_right">右上</string>
     <string name="upgrade">アップグレード</string>
-    <string name="unlock_all_features">広告をすべて削除</string>
     <string name="unsaved_changes">保存されていない変更</string>
     <string name="upgrade_to_pro">PROにアップグレード</string>
     <string name="vibrate_on_click">クリック時にバイブレーション</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">他のアプリの上に重ねて表示する</string>
     <string name="overlay_permission_desc">画面上にボリュームハンドラーオーバーレイを表示するために必要です</string>
-    <string name="device_admin_permission">デバイス管理者</string>
-    <string name="device_admin_permission_desc">オプション: 構成時にハンドラーがデバイス画面をロックできるようにします。</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">ジェスチャーボリュームへようこそ</string>
@@ -160,10 +154,7 @@
     <!-- Expanded Preview -->
     <string name="position_locked">位置がロックされました</string>
     <string name="unlock_to_reposition">ロックを解除して位置を変更します</string>
-    <string name="test_mode">テストモード</string>
     <string name="reposition_mode">再配置モード</string>
-    <string name="test_mode_desc">スワイプとタップを試してください</string>
-    <string name="reposition_mode_desc">ハンドラーを新しい位置にドラッグします</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">位置</string>
@@ -258,7 +249,6 @@
     <string name="preset_ghost_subtitle">ほとんど見えない</string>
 
     <!-- Missing Strings -->
-    <string name="preview">プレビュー</string>
     <string name="press_back_again_to_exit">もう一度戻るボタンを押して終了</string>
     <string name="volume_gesture_handler">ボリュームジェスチャハンドラー</string>
     <string name="troubleshoot">トラブルシューティング</string>
@@ -287,9 +277,9 @@
     <string name="brightness_permission_title">明るさの操作を許可しますか？</string>
     <string name="brightness_permission_message">画面の明るさを変更するには、システム設定の変更の権限が必要です。使用中は明るさの自動調節がオフになり、サービスを停止すると元に戻ります。</string>
     <string name="edge_offset">端からの距離</string>
-    <string name="edge_offset_desc">バーを画面の端から内側へ移動します。曲面ディスプレイやジェスチャーナビゲーション使用時に有効です。</string>
+    <string name="edge_offset_desc">バーが左右の端から保つ最小の間隔です。ドラッグ中も、スナップして止まる位置も同じ値になります。曲面ディスプレイやジェスチャーナビゲーションで役立ちます。</string>
     <string name="reset_position">位置をリセット</string>
-    <string name="drag_to_move_hint">位置のロックをオフにして、バーを上下にドラッグします。</string>
+    <string name="drag_to_move_hint">バーを動かすには: 長押しして振動を待ち、そのままドラッグします。長押しの動作を「ハンドラーを移動」に設定すると有効になります。</string>
     <string name="fix_battery_title">バッテリー最適化</string>
     <string name="fix_battery_desc">Android がサービスを停止しないよう、バッテリー使用を制限なしにします。</string>
     <string name="fix_battery_allowed">制限なし</string>
@@ -297,4 +287,82 @@
     <string name="fix_autostart_desc">端末の自動起動設定を開き、GestureVolume を許可してください。</string>
     <string name="autostart_unavailable">この端末では利用できません</string>
     <string name="open_settings">設定を開く</string>
+    <string name="snap_to_edge">端にスナップ</string>
+    <string name="snap_to_edge_desc">オン: 指を離すとバーが近い方の端に移動し、下の端からの距離で止まります。オフ: 離した位置にそのまま留まります。高さはどちらでも自由です。</string>
+    <string name="notification_channel_controls">ハンドラーの操作</string>
+    <string name="notification_channel_controls_desc">表示/非表示、設定、停止を備えた常時表示の通知です。</string>
+    <string name="notification_channel_minimal">待機中</string>
+    <string name="notification_channel_minimal_desc">サービス実行中に Android が要求する無音のプレースホルダーです。アイコンもボタンもありません。</string>
+    <string name="notification_minimal_title">GestureVolume は実行中です</string>
+    <string name="show_notification_title">通知の操作ボタン</string>
+    <string name="show_notification_desc">通知パネルに「表示」「設定」「停止」を残します。アプリを開かずに隠したバーを戻せる唯一の方法です。</string>
+    <string name="show_notification_off_hint">オフ: サービス実行中も Android は無音のプレースホルダーを要求します。タップするとシステム設定で完全に非表示にできます。</string>
+    <string name="open_notification_settings">システムの通知設定</string>
+    <string name="notification_permission">通知</string>
+    <string name="notification_permission_desc">任意: 通知パネルにハンドラーの操作（表示・設定・停止）を表示します</string>
+    <string name="handler_hidden_card_title">バーは非表示です</string>
+    <string name="handler_hidden_card_desc">長押しメニューから非表示にしました。もう一度表示するまで隠れたままです。</string>
+    <string name="handler_hidden_card_action">表示</string>
+    <string name="handler_shown_toast">アプリを離れるとバーが表示されます。</string>
+    <string name="service_active">サービス動作中</string>
+    <string name="service_inactive">サービス停止中</string>
+    <string name="tap_to_disable">タップして停止</string>
+    <string name="tap_to_enable">タップして開始</string>
+    <string name="lock_permission_section">画面ロック</string>
+    <string name="lock_accessibility_permission">画面ロック（ユーザー補助）</string>
+    <string name="lock_accessibility_permission_desc">推奨: ロック操作が電源ボタンと同じように画面を消せるようになり、指紋でそのまま解除できます</string>
+    <string name="permission_turn_off">オフにする</string>
+    <string name="action_reposition">ハンドラーを移動</string>
+    <string name="volume_percent_short">%1$d%%</string>
+    <string name="context_menu_count">%1$d 件選択中</string>
+    <string name="notification_service_active">音量ジェスチャーは有効です</string>
+    <string name="show_volume_percent_title">音量をパーセントで表示</string>
+    <string name="show_volume_percent_desc">スワイプ中にバー上へレベルを表示します。</string>
+    <string name="handler_hidden_toast">バーを非表示にしました。戻すには GestureVolume を開いてください。</string>
+    <string name="action_stop_service">サービスを停止</string>
+    <string name="notification_handler_hidden">バーは非表示です — 「表示」をタップすると戻ります</string>
+    <string name="notification_action_show">表示</string>
+    <string name="notification_action_hide">非表示</string>
+    <string name="notification_action_settings">設定</string>
+    <string name="notification_action_stop">停止</string>
+    <string name="lock_accessibility_label">画面ロック</string>
+    <string name="lock_accessibility_summary">ロック操作で画面を消せるようにします。</string>
+    <string name="lock_accessibility_description">フローティングバーでロック操作を使ったときに GestureVolume が画面をロックできるようにします。電源ボタンとまったく同じ方法でロックするため、指紋でそのまま解除できます。このサービスは画面上の内容を一切読み取らず、他の操作も行いません。</string>
+    <string name="lock_permission_title">画面のロックについて</string>
+    <string name="lock_permission_message">画面をロックするには GestureVolume に権限が必要です。\n\nユーザー補助を推奨します。電源ボタンと同じ方法で画面をロックするため、指紋でそのまま解除できます。デバイス管理者でも動作しますが、多くの端末では指紋ではなく PIN を求められます。</string>
+    <string name="lock_permission_accessibility">ユーザー補助を使う</string>
+    <string name="lock_not_available">ロック操作を使う前に、設定でロックの権限を許可してください。</string>
+    <string name="context_menu_title">長押しメニュー</string>
+    <string name="context_menu_desc">バーを長押ししたときに表示される項目を選びます。</string>
+    <string name="context_menu_empty">他に選択された項目はありません。長押しするとバーが移動し、「バーを非表示」が表示されます。</string>
+    <string name="context_menu_always">常に表示</string>
+    <string name="context_menu_section">長押しメニューの項目</string>
+    <string name="behaviour_section">動作</string>
+    <string name="lock_permission_menu_message">長押しメニューにロックを追加しましたが、まだ画面をロックできる手段がありません。\n\nユーザー補助を推奨します。電源ボタンと同じ方法で画面をロックするため、指紋でそのまま解除できます。</string>
+    <string name="notification_permission_needed_title">通知がオフになっています</string>
+    <string name="notification_permission_needed_message">操作ボタンはオンですが、Android が GestureVolume の通知を許可していません。そのため「表示」「設定」「停止」は通知パネルに出ません。</string>
+    <string name="notification_permission_warning_inline">このアプリの通知はブロックされています。タップして許可してください。</string>
+    <string name="grant_permission_action">許可</string>
+    <string name="not_now">後で</string>
+    <string name="help">ヘルプ</string>
+    <string name="appearance_help_title">プレビューの使い方</string>
+    <string name="appearance_help_move">バーを動かす\n長押しして振動を待ち、そのままドラッグします。スナップや端からの距離も含め、ホーム画面での動きとまったく同じです。長押しの動作が「ハンドラーを移動」である必要があります。</string>
+    <string name="appearance_help_test">ジェスチャーを試す\nバーをタップ、ダブルタップ、スワイプして設定を確かめられます。音量と明るさは実際に変わります。アプリを離れる操作や実際のバーに触れる操作は、ここでは実行されません。</string>
+    <string name="appearance_help_settings">見た目を変える\nシートを上にドラッグするか、設定アイコンをタップすると、色・大きさ・角・アイコンを変更できます。「適用」を押すまで何も保存されません。</string>
+    <string name="appearance_help_apply">適用\n何かを変更するとチェックが有効になり、実際のバーに反映します。</string>
+    <string name="got_it">了解</string>
+    <string name="settings_sheet">外観設定</string>
+    <string name="remove_ads_support_developer">広告をすべて削除して開発者を支援</string>
+    <string name="reset_app">アプリをリセット</string>
+    <string name="reset_app_title">すべてリセットしますか？</string>
+    <string name="reset_app_message">すべての設定が既定値に戻ります。バーの見た目と位置、タップとスワイプの全アクション、長押しメニュー、テーマ、言語です。フローティングバーはオフになり、ようこそ画面が再び表示されます。\n\nPro の購入は保持されます。この操作は取り消せません。</string>
+    <string name="reset_app_confirm">リセット</string>
+    <string name="reset_app_done">すべてリセットしました。</string>
+    <string name="permission_needed_lock">アクションにロックを設定しています。これがないと、タップしても何も起きません。</string>
+    <string name="permission_needed_notification">通知の操作ボタンがオンです。これがないと「表示」「設定」「停止」は表示されません。</string>
+    <string name="permission_needed_brightness">明るさのアクションを設定しています。これがないと明るさを変更できません。</string>
+    <string name="permission_action_required_one">1 件の権限に対応が必要です</string>
+    <string name="permission_action_required_many">%1$d 件の権限に対応が必要です</string>
+    <string name="lock_unsupported_message">画面のロックには Android 9 以降が必要です。この端末では実行できないため、ロック操作は利用できない旨を表示します。</string>
+    <string name="lock_unsupported_short">Android 9 以降が必要です</string>
 </resources>

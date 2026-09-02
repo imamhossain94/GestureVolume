@@ -67,7 +67,7 @@ object HandlerPresets {
             strokeColor = Color.White, strokeWidth = 1f, strokeAlpha = 200,
             cornerRadius = 15f,
             iconRes = R.drawable.ic_vol_increase, iconSize = 18f, iconColor = Color.White,
-            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.5f
+            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.12f
         ),
         Preset(
             id = "Minimal",
@@ -79,7 +79,7 @@ object HandlerPresets {
             strokeColor = Color.White, strokeWidth = 1f, strokeAlpha = 200,
             cornerRadius = 5f,
             iconRes = R.drawable.ic_vol_increase, iconSize = 18f, iconColor = Color.White,
-            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.5f
+            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.12f
         ),
         Preset(
             id = "Bold",
@@ -91,7 +91,7 @@ object HandlerPresets {
             strokeColor = Color.White, strokeWidth = 1f, strokeAlpha = 255,
             cornerRadius = 15f,
             iconRes = R.drawable.ic_move, iconSize = 32f, iconColor = Color.White,
-            showIcon = true, vibrate = true, edgeMargin = 0f, positionFraction = 0.5f
+            showIcon = true, vibrate = true, edgeMargin = 0f, positionFraction = 0.12f
         ),
         Preset(
             id = "Night",
@@ -103,7 +103,7 @@ object HandlerPresets {
             strokeColor = Color(0xFF374151), strokeWidth = 1f, strokeAlpha = 200,
             cornerRadius = 15f,
             iconRes = R.drawable.ic_vol_increase, iconSize = 22f, iconColor = Color(0xFF9CA3AF),
-            showIcon = true, vibrate = true, edgeMargin = 0f, positionFraction = 0.5f
+            showIcon = true, vibrate = true, edgeMargin = 0f, positionFraction = 0.12f
         ),
         Preset(
             id = "Ghost",
@@ -115,7 +115,7 @@ object HandlerPresets {
             strokeColor = Color.White, strokeWidth = 0.5f, strokeAlpha = 5,
             cornerRadius = 12f,
             iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
-            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.5f
+            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.12f
         )
     )
 

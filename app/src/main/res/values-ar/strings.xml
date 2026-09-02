@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">قفل الشاشة عند النقر باستخدام Device Policy Manager API</string>
-    <string name="device_admin_label">مشرف جهاز Gesture Volume</string>
     <string name="landscape_appearance_settings">إعدادات المظهر الأفقي</string>
     <string name="click_">تحقق من المفتاح لتنشيط وتكوين مؤشر الشاشة</string>
     <string name="configure">تكوين</string>
@@ -49,7 +47,6 @@
     <string name="language">اللغة</string>
     <string name="lock_position">قفل الموضع</string>
     <string name="long_press_action">إجراء الضغط المطول</string>
-    <string name="minimize">تصغير</string>
     <string name="more">المزيد</string>
     <string name="newagedevs">NewAgeDevs</string>
     <string name="nothing_to_restore">لا شيء لاستعادته</string>
@@ -92,7 +89,6 @@
     <string name="top_left">أعلى اليسار</string>
     <string name="top_right">أعلى اليمين</string>
     <string name="upgrade">ترقية</string>
-    <string name="unlock_all_features">إزالة جميع الإعلانات</string>
     <string name="unsaved_changes">تغييرات غير محفوظة</string>
     <string name="upgrade_to_pro">الترقية إلى برو</string>
     <string name="vibrate_on_click">اهتزاز عند النقر</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">العرض على التطبيقات الأخرى</string>
     <string name="overlay_permission_desc">مطلوب لإظهار تراكب معالج الصوت على شاشتك</string>
-    <string name="device_admin_permission">مسؤول الجهاز</string>
-    <string name="device_admin_permission_desc">اختياري: يسمح للمعالج بقفل شاشة جهازك عند تكوينه</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">مرحبًا بك في حجم الإيماءة</string>
@@ -160,10 +154,7 @@
     <!-- Expanded Preview -->
     <string name="position_locked">الموقف مغلق</string>
     <string name="unlock_to_reposition">فتح للتغيير</string>
-    <string name="test_mode">وضع الاختبار</string>
     <string name="reposition_mode">وضع إعادة الوضع</string>
-    <string name="test_mode_desc">حاول الضربات الشديدة والصنابير</string>
-    <string name="reposition_mode_desc">اسحب المعالج إلى الموضع الجديد</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">موضع</string>
@@ -258,7 +249,6 @@
     <string name="preset_ghost_subtitle">غير مرئية تقريبا</string>
 
     <!-- Missing Strings -->
-    <string name="preview">معاينة</string>
     <string name="press_back_again_to_exit">اضغط على زر الرجوع مرة أخرى للخروج</string>
     <string name="volume_gesture_handler">معالج إيماءة مستوى الصوت</string>
     <string name="troubleshoot">استكشاف الأخطاء وإصلاحها</string>
@@ -286,10 +276,10 @@
     <string name="write_settings_permission_desc">يتيح للشريط التحكم في سطوع الشاشة. مطلوب فقط لإجراءات السطوع.</string>
     <string name="brightness_permission_title">السماح بالتحكم في السطوع؟</string>
     <string name="brightness_permission_message">لتغيير سطوع الشاشة، يحتاج التطبيق إلى إذن تعديل إعدادات النظام. سيتم إيقاف السطوع التلقائي أثناء الاستخدام، واستعادته عند إيقاف الخدمة.</string>
-    <string name="edge_offset">إزاحة الحافة</string>
-    <string name="edge_offset_desc">حرّك الشريط بعيدًا عن حافة الشاشة. مفيد على الشاشات المنحنية وعند تفعيل التنقل بالإيماءات.</string>
+    <string name="edge_offset">المسافة من الحافة</string>
+    <string name="edge_offset_desc">أصغر مسافة يحافظ عليها الشريط من الحافتين اليسرى واليمنى — أثناء السحب، وحيث يستقر عند المحاذاة. مفيد للشاشات المنحنية وعند تفعيل التنقل بالإيماءات.</string>
     <string name="reset_position">إعادة تعيين الموضع</string>
-    <string name="drag_to_move_hint">أوقف قفل الموضع، ثم اسحب الشريط لأعلى أو لأسفل لتحريكه.</string>
+    <string name="drag_to_move_hint">لتحريك الشريط: اضغط عليه مطوّلًا، وانتظر الاهتزاز، ثم اسحبه. اضبط إجراء الضغط المطوّل على «تحريك الشريط» لتفعيل ذلك.</string>
     <string name="fix_battery_title">تحسين البطارية</string>
     <string name="fix_battery_desc">اسمح باستخدام البطارية دون قيود حتى لا يوقف أندرويد الخدمة.</string>
     <string name="fix_battery_allowed">بدون قيود</string>
@@ -297,4 +287,82 @@
     <string name="fix_autostart_desc">افتح إعدادات التشغيل التلقائي في جهازك واسمح للتطبيق.</string>
     <string name="autostart_unavailable">غير متوفر على هذا الجهاز</string>
     <string name="open_settings">فتح الإعدادات</string>
+    <string name="snap_to_edge">المحاذاة إلى الحافة</string>
+    <string name="snap_to_edge_desc">مفعّل: ينتقل الشريط إلى الجانب الأقرب عند رفع إصبعك ويستقر على مسافة الحافة أدناه. معطّل: يبقى في المكان الذي تركته فيه. الارتفاع يبقى من اختيارك في الحالتين.</string>
+    <string name="notification_channel_controls">أدوات التحكم بالشريط</string>
+    <string name="notification_channel_controls_desc">الإشعار الدائم الذي يحتوي على إظهار/إخفاء والإعدادات والإيقاف.</string>
+    <string name="notification_channel_minimal">يعمل بهدوء</string>
+    <string name="notification_channel_minimal_desc">عنصر نائب صامت يطلبه أندرويد أثناء تشغيل الخدمة. بلا أيقونة وبلا أزرار.</string>
+    <string name="notification_minimal_title">‏GestureVolume قيد التشغيل</string>
+    <string name="show_notification_title">أزرار الإشعار</string>
+    <string name="show_notification_desc">أبقِ أزرار «إظهار» و«الإعدادات» و«إيقاف» في لوحة الإشعارات. هذه هي الطريقة الوحيدة لإعادة الشريط بعد إخفائه دون فتح التطبيق.</string>
+    <string name="show_notification_off_hint">معطّل: يظل أندرويد يتطلب عنصرًا نائبًا صامتًا أثناء تشغيل الخدمة. اضغط لإخفائه تمامًا من إعدادات النظام.</string>
+    <string name="open_notification_settings">إعدادات إشعارات النظام</string>
+    <string name="notification_permission">الإشعارات</string>
+    <string name="notification_permission_desc">اختياري: يعرض أزرار التحكم بالشريط — إظهار والإعدادات وإيقاف — في لوحة الإشعارات</string>
+    <string name="handler_hidden_card_title">الشريط مخفي</string>
+    <string name="handler_hidden_card_desc">أخفيته من قائمة الضغط المطوّل. سيبقى مخفيًا حتى تُظهره مجددًا.</string>
+    <string name="handler_hidden_card_action">إظهار</string>
+    <string name="handler_shown_toast">سيظهر الشريط عند مغادرتك للتطبيق.</string>
+    <string name="service_active">الخدمة نشطة</string>
+    <string name="service_inactive">الخدمة متوقفة</string>
+    <string name="tap_to_disable">اضغط للإيقاف</string>
+    <string name="tap_to_enable">اضغط للتشغيل</string>
+    <string name="lock_permission_section">قفل الشاشة</string>
+    <string name="lock_accessibility_permission">قفل الشاشة (إمكانية الوصول)</string>
+    <string name="lock_accessibility_permission_desc">موصى به: يتيح لإجراء «القفل» إطفاء الشاشة تمامًا كزر الطاقة، فتظل بصمتك تفتح الهاتف</string>
+    <string name="permission_turn_off">إيقاف</string>
+    <string name="action_reposition">تحريك الشريط</string>
+    <string name="volume_percent_short">%1$d%%</string>
+    <string name="context_menu_count">%1$d محدد</string>
+    <string name="notification_service_active">إيماءات الصوت نشطة</string>
+    <string name="show_volume_percent_title">إظهار نسبة الصوت</string>
+    <string name="show_volume_percent_desc">اعرض المستوى على الشريط أثناء التمرير.</string>
+    <string name="handler_hidden_toast">تم إخفاء الشريط. افتح GestureVolume لإعادته.</string>
+    <string name="action_stop_service">إيقاف الخدمة</string>
+    <string name="notification_handler_hidden">الشريط مخفي — اضغط «إظهار» لإعادته</string>
+    <string name="notification_action_show">إظهار</string>
+    <string name="notification_action_hide">إخفاء</string>
+    <string name="notification_action_settings">الإعدادات</string>
+    <string name="notification_action_stop">إيقاف</string>
+    <string name="lock_accessibility_label">قفل الشاشة</string>
+    <string name="lock_accessibility_summary">يتيح لإجراء «القفل» إطفاء الشاشة.</string>
+    <string name="lock_accessibility_description">يسمح لـ GestureVolume بقفل الشاشة عند استخدام إجراء «القفل» على الشريط العائم. يقفل الشاشة تمامًا كما يفعل زر الطاقة، فتظل بصمتك تفتح الهاتف. لا تقرأ هذه الخدمة أي شيء على شاشتك ولا تنفّذ أي إجراء آخر.</string>
+    <string name="lock_permission_title">قفل الشاشة</string>
+    <string name="lock_permission_message">يحتاج GestureVolume إلى إذن لقفل الشاشة.\n\nيُنصح بخيار إمكانية الوصول: فهو يقفل الشاشة كما يفعل زر الطاقة، فتظل بصمتك تفتح الهاتف. يعمل مسؤول الجهاز أيضًا، لكن معظم الهواتف تطلب حينها رمز PIN بدلًا من البصمة.</string>
+    <string name="lock_permission_accessibility">استخدام إمكانية الوصول</string>
+    <string name="lock_not_available">امنح إذن قفل من الإعدادات قبل استخدام إجراء «القفل».</string>
+    <string name="context_menu_title">قائمة الضغط المطوّل</string>
+    <string name="context_menu_desc">اختر ما يظهر عند الضغط المطوّل على الشريط.</string>
+    <string name="context_menu_empty">لم يُحدَّد شيء آخر. سيؤدي الضغط المطوّل إلى تحريك الشريط مع إتاحة «إخفاء الشريط».</string>
+    <string name="context_menu_always">يظهر دائمًا</string>
+    <string name="context_menu_section">عناصر قائمة الضغط المطوّل</string>
+    <string name="behaviour_section">السلوك</string>
+    <string name="lock_permission_menu_message">أضفت «القفل» إلى قائمة الضغط المطوّل، لكن لا شيء يستطيع قفل الشاشة بعد.\n\nيُنصح بخيار إمكانية الوصول: فهو يقفل الشاشة كما يفعل زر الطاقة، فتظل بصمتك تفتح الهاتف.</string>
+    <string name="notification_permission_needed_title">الإشعارات معطّلة</string>
+    <string name="notification_permission_needed_message">أدوات التحكم مفعّلة، لكن أندرويد لا يسمح لـ GestureVolume بعرض الإشعارات — لذا لن تظهر أزرار «إظهار» و«الإعدادات» و«إيقاف» في لوحة الإشعارات.</string>
+    <string name="notification_permission_warning_inline">الإشعارات محظورة لهذا التطبيق. اضغط للسماح بها.</string>
+    <string name="grant_permission_action">سماح</string>
+    <string name="not_now">ليس الآن</string>
+    <string name="help">مساعدة</string>
+    <string name="appearance_help_title">استخدام المعاينة</string>
+    <string name="appearance_help_move">تحريك الشريط\nاضغط عليه مطوّلًا، وانتظر الاهتزاز، ثم اسحبه. يتحرك تمامًا كما سيتحرك على شاشتك الرئيسية، بما في ذلك المحاذاة ومسافة الحافة. يتطلب ذلك ضبط إجراء الضغط المطوّل على «تحريك الشريط».</string>
+    <string name="appearance_help_test">تجربة الإيماءات\nانقر ونقرًا مزدوجًا ومرّر على الشريط لتجربة إعداداتك. الصوت والسطوع يتغيران فعليًا؛ أما الإجراءات التي تغادر التطبيق أو تمسّ الشريط الحي فتُتجاهل هنا.</string>
+    <string name="appearance_help_settings">تغيير مظهره\nاسحب اللوحة لأعلى، أو اضغط أيقونة الإعدادات، للألوان والحجم والزوايا والأيقونة. لا يُحفظ شيء حتى تضغط «تطبيق».</string>
+    <string name="appearance_help_apply">التطبيق\nتظهر علامة الصح بمجرد تغيير أي شيء، وتطبّقه على الشريط الحي.</string>
+    <string name="got_it">فهمت</string>
+    <string name="settings_sheet">إعدادات المظهر</string>
+    <string name="remove_ads_support_developer">أزل كل الإعلانات وادعم المطوّر</string>
+    <string name="reset_app">إعادة ضبط التطبيق</string>
+    <string name="reset_app_title">إعادة ضبط كل شيء؟</string>
+    <string name="reset_app_message">يعود كل إعداد إلى قيمته الافتراضية: شكل الشريط وموضعه، وكل إجراءات النقر والتمرير، وقائمة الضغط المطوّل، والمظهر واللغة. سيتم إيقاف الشريط العائم وستعود شاشات الترحيب.\n\nيُحتفظ بشرائك للنسخة المدفوعة. لا يمكن التراجع عن هذا.</string>
+    <string name="reset_app_confirm">إعادة الضبط</string>
+    <string name="reset_app_done">تمت إعادة ضبط كل شيء.</string>
+    <string name="permission_needed_lock">لقد عيّنت إجراءً على «القفل». بدون هذا، لن يفعل الضغط عليه شيئًا.</string>
+    <string name="permission_needed_notification">أزرار الإشعار مفعّلة. بدون هذا، لن تظهر «إظهار» و«الإعدادات» و«إيقاف».</string>
+    <string name="permission_needed_brightness">لقد عيّنت إجراء سطوع. بدون هذا، لن يتمكن من تغيير السطوع.</string>
+    <string name="permission_action_required_one">إذن واحد يحتاج انتباهك</string>
+    <string name="permission_action_required_many">%1$d أذونات تحتاج انتباهك</string>
+    <string name="lock_unsupported_message">يتطلب قفل الشاشة أندرويد 9 أو أحدث. هذا الهاتف لا يدعمه، لذا سيبلّغ إجراء «القفل» بأنه غير متاح.</string>
+    <string name="lock_unsupported_short">يتطلب أندرويد 9 أو أحدث</string>
 </resources>

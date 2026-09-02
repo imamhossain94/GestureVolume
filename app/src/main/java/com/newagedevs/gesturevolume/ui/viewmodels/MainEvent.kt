@@ -4,9 +4,6 @@ import android.content.Context
 
 sealed class MainEvent {
     data class ToggleService(val isRunning: Boolean, val context: Context) : MainEvent()
-    data class SetServiceRunning(val isRunning: Boolean) : MainEvent()
-    data class SetGravity(val gravity: String) : MainEvent()
-    data class SetColor(val color: Int) : MainEvent()
     data class SetClickAction(val action: String, val context: Context) : MainEvent()
     data class SetDoubleClickAction(val action: String, val context: Context) : MainEvent()
     data class SetLongClickAction(val action: String, val context: Context) : MainEvent()
@@ -22,4 +19,10 @@ sealed class MainEvent {
 
     /** The user dismissed the brightness-permission rationale without granting. */
     object CancelPendingBrightnessAction : MainEvent()
+
+    /** Show or hide the bar deliberately, from the app rather than from the notification. */
+    data class SetHandlerHidden(val hidden: Boolean, val context: Context) : MainEvent()
+
+    /** Wipe every setting back to factory defaults. Confirmed in the UI before it gets here. */
+    data class ResetAllSettings(val context: Context) : MainEvent()
 }

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -43,6 +44,12 @@ fun PermissionCard(
     isGranted: Boolean,
     borderColor: Color,
     isOptional: Boolean = false,
+    /**
+     * Why this ungranted permission matters *to this user right now* — set when their own
+     * configuration has made an optional permission necessary. Null when there is nothing
+     * outstanding, and ignored once the permission is granted.
+     */
+    warning: String? = null,
     onRequestPermission: () -> Unit,
     onDisablePermission: (() -> Unit)? = null
 ) {
@@ -113,6 +120,36 @@ fun PermissionCard(
                         tint = MaterialTheme.colorScheme.primary, // Unified primary
                         modifier = Modifier.size(24.dp)
                     )
+                }
+            }
+
+            // Above the button, not below it: the reason to press something belongs before the
+            // thing to press.
+            if (!isGranted && warning != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = warning,
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
                 }
             }
 

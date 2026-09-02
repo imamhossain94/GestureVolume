@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">Schermata di blocco al clic con l\'API Device Policy Manager</string>
-    <string name="device_admin_label">Gesto Volume Amministrazione dispositivo</string>
     <string name="landscape_appearance_settings">IMPOSTAZIONI DELL\'ASPETTO DEL PAESAGGIO</string>
     <string name="click_">Seleziona l\'interruttore su attivo e configura la gravità, le dimensioni, lo spessore e la posizione del gestore sullo schermo orizzontale.</string>
     <string name="configure">Configura</string>
@@ -49,7 +47,6 @@
     <string name="language">Lingua</string>
     <string name="lock_position">Posizione di blocco</string>
     <string name="long_press_action">Azione di pressione prolungata</string>
-    <string name="minimize">MINIMIZZARE</string>
     <string name="more">DI PIÙ</string>
     <string name="newagedevs">NewAgeDev</string>
     <string name="nothing_to_restore">Niente da ripristinare</string>
@@ -92,7 +89,6 @@
     <string name="top_left">In alto a sinistra</string>
     <string name="top_right">In alto a destra</string>
     <string name="upgrade">AGGIORNAMENTO</string>
-    <string name="unlock_all_features">Rimuovi tutti gli annunci</string>
     <string name="unsaved_changes">Modifiche non salvate</string>
     <string name="upgrade_to_pro">Passa a Pro</string>
     <string name="vibrate_on_click">Vibra al clic</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Visualizza su altre app</string>
     <string name="overlay_permission_desc">Necessario per mostrare la sovrapposizione del gestore del volume sullo schermo</string>
-    <string name="device_admin_permission">Amministratore del dispositivo</string>
-    <string name="device_admin_permission_desc">Facoltativo: consente al gestore di bloccare lo schermo del dispositivo quando configurato</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">Benvenuti nel volume dei gesti</string>
@@ -160,10 +154,7 @@
     <!-- Expanded Preview -->
     <string name="position_locked">POSIZIONE BLOCCATA</string>
     <string name="unlock_to_reposition">SBLOCCA PER RIPOSIZIONARE</string>
-    <string name="test_mode">Test Mode</string>
     <string name="reposition_mode">Modalità di riposizionamento</string>
-    <string name="test_mode_desc">Prova i passaggi e i tocchi</string>
-    <string name="reposition_mode_desc">Trascina il gestore nella nuova posizione</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">POSIZIONE</string>
@@ -258,7 +249,6 @@
     <string name="preset_ghost_subtitle">Quasi invisibile</string>
 
     <!-- Missing Strings -->
-    <string name="preview">Anteprima</string>
     <string name="press_back_again_to_exit">Premi nuovamente indietro per uscire</string>
     <string name="volume_gesture_handler">Gestore dei gesti del volume</string>
     <string name="troubleshoot">Risoluzione dei problemi</string>
@@ -287,9 +277,9 @@
     <string name="brightness_permission_title">Consentire il controllo della luminosità?</string>
     <string name="brightness_permission_message">Per modificare la luminosità, GestureVolume richiede l\'autorizzazione Modifica impostazioni di sistema. La luminosità adattiva viene disattivata durante l\'uso e ripristinata quando arresti il servizio.</string>
     <string name="edge_offset">Distanza dal bordo</string>
-    <string name="edge_offset_desc">Sposta la barra verso l\'interno rispetto al bordo dello schermo. Utile su schermi curvi e con la navigazione a gesti.</string>
+    <string name="edge_offset_desc">La distanza minima che la barra mantiene dai bordi sinistro e destro: mentre la trascini e dove si ferma quando si aggancia. Utile su schermi curvi e con la navigazione a gesti.</string>
     <string name="reset_position">Reimposta posizione</string>
-    <string name="drag_to_move_hint">Disattiva Blocca posizione, poi trascina la barra in alto o in basso.</string>
+    <string name="drag_to_move_hint">Per spostare la barra: tienila premuta, attendi la vibrazione, poi trascinala. Imposta l\'azione di pressione prolungata su «Sposta barra» per abilitarlo.</string>
     <string name="fix_battery_title">Ottimizzazione batteria</string>
     <string name="fix_battery_desc">Consenti un uso illimitato della batteria affinché Android non arresti il servizio.</string>
     <string name="fix_battery_allowed">Senza restrizioni</string>
@@ -297,4 +287,82 @@
     <string name="fix_autostart_desc">Apri le impostazioni di avvio automatico del dispositivo e consenti GestureVolume.</string>
     <string name="autostart_unavailable">Non disponibile su questo dispositivo</string>
     <string name="open_settings">Apri impostazioni</string>
+    <string name="snap_to_edge">Aggancia al bordo</string>
+    <string name="snap_to_edge_desc">Attivo: la barra vola verso il lato più vicino quando la rilasci e si ferma alla distanza dal bordo indicata sotto. Disattivo: resta esattamente dove l\'hai lasciata. L\'altezza è sempre tua.</string>
+    <string name="notification_channel_controls">Controlli della barra</string>
+    <string name="notification_channel_controls_desc">La riga permanente con Mostra/Nascondi, Impostazioni e Arresta.</string>
+    <string name="notification_channel_minimal">In esecuzione silenziosa</string>
+    <string name="notification_channel_minimal_desc">Un segnaposto silenzioso richiesto da Android mentre il servizio è attivo. Senza icona né pulsanti.</string>
+    <string name="notification_minimal_title">GestureVolume è in esecuzione</string>
+    <string name="show_notification_title">Controlli nella notifica</string>
+    <string name="show_notification_desc">Mantieni Mostra, Impostazioni e Arresta nel pannello delle notifiche. È l\'unico modo per far tornare una barra nascosta senza aprire l\'app.</string>
+    <string name="show_notification_off_hint">Disattivo: Android richiede comunque un segnaposto silenzioso mentre il servizio è attivo. Tocca per nasconderlo del tutto nelle impostazioni di sistema.</string>
+    <string name="open_notification_settings">Impostazioni notifiche di sistema</string>
+    <string name="notification_permission">Notifiche</string>
+    <string name="notification_permission_desc">Facoltativo: mostra i controlli della barra – Mostra, Impostazioni e Arresta – nel pannello delle notifiche</string>
+    <string name="handler_hidden_card_title">La barra è nascosta</string>
+    <string name="handler_hidden_card_desc">L\'hai nascosta dal menu di pressione prolungata. Resterà nascosta finché non la mostri di nuovo.</string>
+    <string name="handler_hidden_card_action">Mostra</string>
+    <string name="handler_shown_toast">La barra apparirà quando esci dall\'app.</string>
+    <string name="service_active">Servizio attivo</string>
+    <string name="service_inactive">Servizio inattivo</string>
+    <string name="tap_to_disable">Tocca per disattivare</string>
+    <string name="tap_to_enable">Tocca per attivare</string>
+    <string name="lock_permission_section">BLOCCO SCHERMO</string>
+    <string name="lock_accessibility_permission">Blocco schermo (accessibilità)</string>
+    <string name="lock_accessibility_permission_desc">Consigliato: consente all\'azione Blocca di spegnere lo schermo come il tasto di accensione, così la tua impronta continua a sbloccare il telefono</string>
+    <string name="permission_turn_off">Disattiva</string>
+    <string name="action_reposition">Sposta barra</string>
+    <string name="volume_percent_short">%1$d%%</string>
+    <string name="context_menu_count">%1$d selezionati</string>
+    <string name="notification_service_active">I gesti del volume sono attivi</string>
+    <string name="show_volume_percent_title">Mostra la percentuale del volume</string>
+    <string name="show_volume_percent_desc">Mostra il livello sulla barra mentre scorri.</string>
+    <string name="handler_hidden_toast">Barra nascosta. Apri GestureVolume per farla tornare.</string>
+    <string name="action_stop_service">Arresta servizio</string>
+    <string name="notification_handler_hidden">Barra nascosta: tocca Mostra per farla tornare</string>
+    <string name="notification_action_show">Mostra</string>
+    <string name="notification_action_hide">Nascondi</string>
+    <string name="notification_action_settings">Impostazioni</string>
+    <string name="notification_action_stop">Arresta</string>
+    <string name="lock_accessibility_label">Blocco schermo</string>
+    <string name="lock_accessibility_summary">Consente all\'azione Blocca di spegnere lo schermo.</string>
+    <string name="lock_accessibility_description">Consente a GestureVolume di bloccare lo schermo quando usi l\'azione Blocca sulla barra flottante. Blocca lo schermo esattamente come il tasto di accensione, quindi la tua impronta continua a sbloccare il telefono. Questo servizio non legge nulla sullo schermo e non compie altre azioni.</string>
+    <string name="lock_permission_title">Bloccare lo schermo</string>
+    <string name="lock_permission_message">GestureVolume ha bisogno del permesso per bloccare lo schermo.\n\nÈ consigliata l\'accessibilità: blocca lo schermo come il tasto di accensione, quindi la tua impronta continua a sbloccare il telefono. Anche l\'amministratore dispositivo funziona, ma la maggior parte dei telefoni chiede poi il PIN invece dell\'impronta.</string>
+    <string name="lock_permission_accessibility">Usa accessibilità</string>
+    <string name="lock_not_available">Concedi un permesso di blocco nelle Impostazioni prima di usare l\'azione Blocca.</string>
+    <string name="context_menu_title">Menu a pressione prolungata</string>
+    <string name="context_menu_desc">Scegli cosa appare quando tieni premuta la barra.</string>
+    <string name="context_menu_empty">Nient\'altro selezionato. La pressione prolungata sposterà la barra e offrirà «Nascondi barra».</string>
+    <string name="context_menu_always">Sempre visibile</string>
+    <string name="context_menu_section">Voci del menu a pressione prolungata</string>
+    <string name="behaviour_section">Comportamento</string>
+    <string name="lock_permission_menu_message">Hai aggiunto Blocca al menu a pressione prolungata, ma per ora nulla può bloccare lo schermo.\n\nÈ consigliata l\'accessibilità: blocca lo schermo come il tasto di accensione, quindi la tua impronta continua a sbloccare il telefono.</string>
+    <string name="notification_permission_needed_title">Le notifiche sono disattivate</string>
+    <string name="notification_permission_needed_message">I controlli sono attivi, ma Android non consente a GestureVolume di pubblicare notifiche: Mostra, Impostazioni e Arresta non compariranno nel pannello.</string>
+    <string name="notification_permission_warning_inline">Le notifiche sono bloccate per questa app. Tocca per consentirle.</string>
+    <string name="grant_permission_action">Consenti</string>
+    <string name="not_now">Non ora</string>
+    <string name="help">Aiuto</string>
+    <string name="appearance_help_title">Usare l\'anteprima</string>
+    <string name="appearance_help_move">Spostare la barra\nTieni premuto, attendi la vibrazione, poi trascina. Si muove esattamente come farà nella tua schermata Home, aggancio e distanza dal bordo inclusi. Richiede che l\'azione di pressione prolungata sia «Sposta barra».</string>
+    <string name="appearance_help_test">Provare i gesti\nTocca, tocca due volte e scorri sulla barra per sentire le tue impostazioni. Volume e luminosità cambiano davvero; le azioni che escono dall\'app o toccano la barra reale vengono saltate qui.</string>
+    <string name="appearance_help_settings">Cambiarne l\'aspetto\nTrascina il foglio verso l\'alto, o tocca l\'icona delle impostazioni, per colori, dimensioni, angoli e icona. Nulla viene salvato finché non tocchi Applica.</string>
+    <string name="appearance_help_apply">Applica\nIl segno di spunta compare non appena qualcosa cambia e lo applica alla barra reale.</string>
+    <string name="got_it">Ho capito</string>
+    <string name="settings_sheet">Impostazioni aspetto</string>
+    <string name="remove_ads_support_developer">Rimuovi tutta la pubblicità e sostieni lo sviluppatore</string>
+    <string name="reset_app">Reimposta l\'app</string>
+    <string name="reset_app_title">Reimpostare tutto?</string>
+    <string name="reset_app_message">Ogni impostazione torna al valore predefinito: aspetto e posizione della barra, tutte le azioni di tocco e scorrimento, il menu a pressione prolungata, il tema e la lingua. La barra flottante viene spenta e le schermate di benvenuto tornano.\n\nIl tuo acquisto Pro viene mantenuto. Questa azione è irreversibile.</string>
+    <string name="reset_app_confirm">Reimposta</string>
+    <string name="reset_app_done">Tutto è stato reimpostato.</string>
+    <string name="permission_needed_lock">Hai impostato un\'azione su Blocca. Senza questo, toccarla non fa nulla.</string>
+    <string name="permission_needed_notification">I controlli nella notifica sono attivi. Senza questo, Mostra, Impostazioni e Arresta non compariranno.</string>
+    <string name="permission_needed_brightness">Hai impostato un\'azione di luminosità. Senza questo, non può cambiare la luminosità.</string>
+    <string name="permission_action_required_one">1 permesso richiede la tua attenzione</string>
+    <string name="permission_action_required_many">%1$d permessi richiedono la tua attenzione</string>
+    <string name="lock_unsupported_message">Bloccare lo schermo richiede Android 9 o successivo. Questo telefono non può farlo, quindi l\'azione Blocca segnalerà di non essere disponibile.</string>
+    <string name="lock_unsupported_short">Richiede Android 9 o successivo</string>
 </resources>

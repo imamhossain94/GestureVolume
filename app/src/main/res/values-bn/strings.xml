@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">ডিভাইস পলিসি ম্যানেজার এপিআই দিয়ে ক্লিকে স্ক্রিন লক করুন</string>
-    <string name="device_admin_label">জেসচার ভলিউম ডিভাইস অ্যাডমিন</string>
     <string name="landscape_appearance_settings">ল্যান্ডস্কেপ অ্যাপিয়ারেন্স সেটিংস</string>
     <string name="click_">সুইচটি চেক করুন এবং ল্যান্ডস্কেপ স্ক্রিনে হ্যান্ডলারের গ্র্যাভিটি, আকার এবং অবস্থান কনফিগার করুন।</string>
     <string name="configure">কনফিগার করুন</string>
@@ -49,7 +47,6 @@
     <string name="language">ভাষা</string>
     <string name="lock_position">লক অবস্থা</string>
     <string name="long_press_action">লং প্রেস অ্যাকশন</string>
-    <string name="minimize">ছোট করুন</string>
     <string name="more">আরও</string>
     <string name="newagedevs">NewAgeDevs</string>
     <string name="nothing_to_restore">পুনরুদ্ধার করার কিছু নেই</string>
@@ -92,7 +89,6 @@
     <string name="top_left">উপরে বামে</string>
     <string name="top_right">উপরে ডানে</string>
     <string name="upgrade">আপগ্রেড</string>
-    <string name="unlock_all_features">সব বিজ্ঞাপন সরান</string>
     <string name="unsaved_changes">অসংরক্ষিত পরিবর্তন</string>
     <string name="upgrade_to_pro">প্রো তে আপগ্রেড করুন</string>
     <string name="vibrate_on_click">ক্লিকে ভাইব্রেট করুন</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">অন্যান্য অ্যাপের উপরে প্রদর্শন করুন</string>
     <string name="overlay_permission_desc">আপনার স্ক্রিনে ভলিউম হ্যান্ডলার ওভারলে দেখানোর জন্য প্রয়োজন</string>
-    <string name="device_admin_permission">ডিভাইস প্রশাসক</string>
-    <string name="device_admin_permission_desc">ঐচ্ছিক: কনফিগার করা হলে হ্যান্ডলারকে আপনার ডিভাইসের স্ক্রীন লক করার অনুমতি দেয়</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">জেসচার ভলিউমে স্বাগতম</string>
@@ -160,10 +154,7 @@
     <!-- Expanded Preview -->
     <string name="position_locked">অবস্থান লক করা</string>
     <string name="unlock_to_reposition">অবস্থান আনলক করুন</string>
-    <string name="test_mode">পরীক্ষা মোড</string>
     <string name="reposition_mode">রিপজিশন মোড</string>
-    <string name="test_mode_desc">সোয়াইপ এবং ট্যাপ চেষ্টা করুন</string>
-    <string name="reposition_mode_desc">হ্যান্ডলারকে নতুন অবস্থানে টেনে আনুন</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">অবস্থান</string>
@@ -258,7 +249,6 @@
     <string name="preset_ghost_subtitle">প্রায় অদৃশ্য</string>
 
     <!-- Missing Strings -->
-    <string name="preview">প্রিভিউ</string>
     <string name="press_back_again_to_exit">প্রস্থান করতে আবার ব্যাক চাপুন</string>
     <string name="volume_gesture_handler">ভলিউম অঙ্গভঙ্গি হ্যান্ডলার</string>
     <string name="troubleshoot">সমস্যা সমাধান</string>
@@ -287,9 +277,9 @@
     <string name="brightness_permission_title">উজ্জ্বলতা নিয়ন্ত্রণের অনুমতি দেবেন?</string>
     <string name="brightness_permission_message">স্ক্রিনের উজ্জ্বলতা পরিবর্তন করতে অ্যাপটির সিস্টেম সেটিংস পরিবর্তনের অনুমতি প্রয়োজন। ব্যবহারের সময় স্বয়ংক্রিয় উজ্জ্বলতা বন্ধ থাকবে এবং সার্ভিস বন্ধ করলে ফিরে আসবে।</string>
     <string name="edge_offset">প্রান্ত থেকে দূরত্ব</string>
-    <string name="edge_offset_desc">বারটিকে স্ক্রিনের প্রান্ত থেকে ভেতরে সরান। বাঁকানো স্ক্রিন ও জেসচার নেভিগেশনে সাহায্য করে।</string>
+    <string name="edge_offset_desc">বারটি বাঁ ও ডান প্রান্ত থেকে যে সর্বনিম্ন ফাঁক রাখে — টেনে নেওয়ার সময়ও, আর আটকানোর সময় যেখানে থামে সেখানেও। বাঁকানো স্ক্রিন ও জেসচার নেভিগেশনে কাজে লাগে।</string>
     <string name="reset_position">অবস্থান রিসেট</string>
-    <string name="drag_to_move_hint">অবস্থান লক বন্ধ করুন, তারপর বারটি উপরে বা নিচে টেনে সরান।</string>
+    <string name="drag_to_move_hint">বার সরাতে: এটি চেপে ধরুন, কম্পন অনুভব করুন, তারপর টেনে নিন। এটি চালু করতে লং প্রেস অ্যাকশন “হ্যান্ডলার সরান” করে দিন।</string>
     <string name="fix_battery_title">ব্যাটারি অপ্টিমাইজেশন</string>
     <string name="fix_battery_desc">সীমাহীন ব্যাটারি ব্যবহারের অনুমতি দিন যাতে অ্যান্ড্রয়েড সার্ভিস বন্ধ না করে।</string>
     <string name="fix_battery_allowed">সীমাহীন</string>
@@ -297,4 +287,82 @@
     <string name="fix_autostart_desc">আপনার ডিভাইসের অটো-স্টার্ট সেটিংস খুলে অ্যাপটিকে অনুমতি দিন।</string>
     <string name="autostart_unavailable">এই ডিভাইসে উপলব্ধ নয়</string>
     <string name="open_settings">সেটিংস খুলুন</string>
+    <string name="snap_to_edge">প্রান্তে আটকান</string>
+    <string name="snap_to_edge_desc">চালু: আঙুল তুললে বারটি কাছের পাশে চলে গিয়ে নিচের প্রান্ত-দূরত্বে থামে। বন্ধ: যেখানে ছেড়েছেন ঠিক সেখানেই থাকে। উচ্চতা দুই ক্ষেত্রেই আপনার নিয়ন্ত্রণে।</string>
+    <string name="notification_channel_controls">হ্যান্ডলার নিয়ন্ত্রণ</string>
+    <string name="notification_channel_controls_desc">দেখান/লুকান, সেটিংস ও বন্ধ বোতামসহ চলমান সারিটি।</string>
+    <string name="notification_channel_minimal">নীরবে চলছে</string>
+    <string name="notification_channel_minimal_desc">সার্ভিস চলাকালীন অ্যান্ড্রয়েডের প্রয়োজনীয় একটি নীরব প্লেসহোল্ডার। কোনো আইকন বা বোতাম নেই।</string>
+    <string name="notification_minimal_title">GestureVolume চালু আছে</string>
+    <string name="show_notification_title">নোটিফিকেশন নিয়ন্ত্রণ</string>
+    <string name="show_notification_desc">নোটিফিকেশন প্যানেলে দেখান, সেটিংস ও বন্ধ বোতাম রাখুন। অ্যাপ না খুলে লুকানো হ্যান্ডলার ফিরিয়ে আনার এটিই একমাত্র উপায়।</string>
+    <string name="show_notification_off_hint">বন্ধ: সার্ভিস চলাকালীন অ্যান্ড্রয়েড এখনো একটি নীরব প্লেসহোল্ডার চায়। সিস্টেম সেটিংসে সম্পূর্ণ লুকাতে ট্যাপ করুন।</string>
+    <string name="open_notification_settings">সিস্টেম নোটিফিকেশন সেটিংস</string>
+    <string name="notification_permission">নোটিফিকেশন</string>
+    <string name="notification_permission_desc">ঐচ্ছিক: নোটিফিকেশন প্যানেলে হ্যান্ডলার নিয়ন্ত্রণ — দেখান, সেটিংস ও বন্ধ — দেখায়</string>
+    <string name="handler_hidden_card_title">হ্যান্ডলার লুকানো আছে</string>
+    <string name="handler_hidden_card_desc">আপনি লং-প্রেস মেনু থেকে এটি লুকিয়েছেন। আবার দেখানোর আগ পর্যন্ত এটি লুকানো থাকবে।</string>
+    <string name="handler_hidden_card_action">দেখান</string>
+    <string name="handler_shown_toast">অ্যাপ থেকে বের হলে হ্যান্ডলারটি দেখা যাবে।</string>
+    <string name="service_active">সার্ভিস চালু</string>
+    <string name="service_inactive">সার্ভিস বন্ধ</string>
+    <string name="tap_to_disable">বন্ধ করতে ট্যাপ করুন</string>
+    <string name="tap_to_enable">চালু করতে ট্যাপ করুন</string>
+    <string name="lock_permission_section">স্ক্রিন লক</string>
+    <string name="lock_accessibility_permission">স্ক্রিন লক (অ্যাক্সেসিবিলিটি)</string>
+    <string name="lock_accessibility_permission_desc">প্রস্তাবিত: লক অ্যাকশনটিকে পাওয়ার বোতামের মতোই স্ক্রিন বন্ধ করতে দেয়, ফলে আঙুলের ছাপ দিয়েই ফোন খোলা যায়</string>
+    <string name="permission_turn_off">বন্ধ করুন</string>
+    <string name="action_reposition">হ্যান্ডলার সরান</string>
+    <string name="volume_percent_short">%1$d%%</string>
+    <string name="context_menu_count">%1$dটি নির্বাচিত</string>
+    <string name="notification_service_active">ভলিউম জেসচার সক্রিয়</string>
+    <string name="show_volume_percent_title">ভলিউম শতাংশ দেখান</string>
+    <string name="show_volume_percent_desc">সোয়াইপ করার সময় বারের উপর মাত্রা দেখান।</string>
+    <string name="handler_hidden_toast">হ্যান্ডলার লুকানো হয়েছে। ফিরিয়ে আনতে GestureVolume খুলুন।</string>
+    <string name="action_stop_service">সার্ভিস বন্ধ করুন</string>
+    <string name="notification_handler_hidden">হ্যান্ডলার লুকানো — ফিরিয়ে আনতে দেখান চাপুন</string>
+    <string name="notification_action_show">দেখান</string>
+    <string name="notification_action_hide">লুকান</string>
+    <string name="notification_action_settings">সেটিংস</string>
+    <string name="notification_action_stop">বন্ধ</string>
+    <string name="lock_accessibility_label">স্ক্রিন লক</string>
+    <string name="lock_accessibility_summary">লক অ্যাকশনটিকে স্ক্রিন বন্ধ করতে দেয়।</string>
+    <string name="lock_accessibility_description">ভাসমান বারে লক অ্যাকশন ব্যবহার করলে GestureVolume-কে স্ক্রিন লক করতে দেয়। এটি পাওয়ার বোতামের মতোই স্ক্রিন লক করে, তাই আঙুলের ছাপ দিয়েই ফোন খোলা যায়। এই সার্ভিস আপনার স্ক্রিনের কিছুই পড়ে না এবং অন্য কোনো কাজ করে না।</string>
+    <string name="lock_permission_title">স্ক্রিন লক করা</string>
+    <string name="lock_permission_message">স্ক্রিন লক করতে GestureVolume-এর অনুমতি প্রয়োজন।\n\nঅ্যাক্সেসিবিলিটি সুপারিশ করা হয়: এটি পাওয়ার বোতামের মতোই স্ক্রিন লক করে, তাই আঙুলের ছাপ দিয়েই ফোন খোলা যায়। ডিভাইস অ্যাডমিনও কাজ করে, তবে বেশিরভাগ ফোন তখন আঙুলের ছাপের বদলে PIN চায়।</string>
+    <string name="lock_permission_accessibility">অ্যাক্সেসিবিলিটি ব্যবহার করুন</string>
+    <string name="lock_not_available">লক অ্যাকশন ব্যবহারের আগে সেটিংসে একটি লক অনুমতি দিন।</string>
+    <string name="context_menu_title">লং-প্রেস মেনু</string>
+    <string name="context_menu_desc">হ্যান্ডলার চেপে ধরলে কী দেখা যাবে তা বেছে নিন।</string>
+    <string name="context_menu_empty">আর কিছু নির্বাচিত নেই। চেপে ধরলে হ্যান্ডলার সরবে এবং “হ্যান্ডলার লুকান” দেখাবে।</string>
+    <string name="context_menu_always">সবসময় দেখানো হয়</string>
+    <string name="context_menu_section">লং-প্রেস মেনুর আইটেম</string>
+    <string name="behaviour_section">আচরণ</string>
+    <string name="lock_permission_menu_message">আপনি লং-প্রেস মেনুতে লক যোগ করেছেন, কিন্তু এখনো কিছুই স্ক্রিন লক করতে পারে না।\n\nঅ্যাক্সেসিবিলিটি সুপারিশ করা হয়: এটি পাওয়ার বোতামের মতোই স্ক্রিন লক করে, তাই আঙুলের ছাপ দিয়েই ফোন খোলা যায়।</string>
+    <string name="notification_permission_needed_title">নোটিফিকেশন বন্ধ আছে</string>
+    <string name="notification_permission_needed_message">নিয়ন্ত্রণগুলো চালু আছে, কিন্তু অ্যান্ড্রয়েড GestureVolume-কে নোটিফিকেশন দেখাতে দিচ্ছে না — তাই দেখান, সেটিংস ও বন্ধ বোতাম প্যানেলে আসবে না।</string>
+    <string name="notification_permission_warning_inline">এই অ্যাপের জন্য নোটিফিকেশন ব্লক করা আছে। অনুমতি দিতে ট্যাপ করুন।</string>
+    <string name="grant_permission_action">অনুমতি দিন</string>
+    <string name="not_now">এখন নয়</string>
+    <string name="help">সহায়তা</string>
+    <string name="appearance_help_title">প্রিভিউ ব্যবহার</string>
+    <string name="appearance_help_move">বার সরানো\nচেপে ধরুন, কম্পন অনুভব করুন, তারপর টানুন। এটি হোম স্ক্রিনে যেমন নড়বে ঠিক তেমনই নড়ে — স্ন্যাপিং ও প্রান্ত-দূরত্বসহ। এর জন্য লং প্রেস অ্যাকশন “হ্যান্ডলার সরান” হতে হবে।</string>
+    <string name="appearance_help_test">জেসচার পরখ করা\nবারে ট্যাপ, ডাবল ট্যাপ ও সোয়াইপ করে আপনার সেটিংস অনুভব করুন। ভলিউম ও উজ্জ্বলতা সত্যিই বদলায়; যেসব অ্যাকশন অ্যাপ ছেড়ে যায় বা লাইভ ওভারলে স্পর্শ করে সেগুলো এখানে বাদ দেওয়া হয়।</string>
+    <string name="appearance_help_settings">চেহারা বদলানো\nরং, আকার, কোণ ও আইকনের জন্য শিটটি উপরে টানুন বা সেটিংস আইকনে ট্যাপ করুন। প্রয়োগ না চাপা পর্যন্ত কিছুই সংরক্ষিত হয় না।</string>
+    <string name="appearance_help_apply">প্রয়োগ\nকিছু বদলালেই টিক চিহ্নটি সক্রিয় হয় এবং তা লাইভ বারে প্রয়োগ করে।</string>
+    <string name="got_it">বুঝেছি</string>
+    <string name="settings_sheet">চেহারার সেটিংস</string>
+    <string name="remove_ads_support_developer">সব বিজ্ঞাপন সরান ও ডেভেলপারকে সহায়তা করুন</string>
+    <string name="reset_app">অ্যাপ রিসেট করুন</string>
+    <string name="reset_app_title">সবকিছু রিসেট করবেন?</string>
+    <string name="reset_app_message">প্রতিটি সেটিং ডিফল্টে ফিরে যাবে: হ্যান্ডলারের চেহারা ও অবস্থান, সব ট্যাপ ও সোয়াইপ অ্যাকশন, লং-প্রেস মেনু, থিম ও ভাষা। ভাসমান বারটি বন্ধ হবে এবং স্বাগত স্ক্রিনগুলো ফিরে আসবে।\n\nআপনার প্রো ক্রয় অক্ষুণ্ণ থাকবে। এটি ফেরানো যাবে না।</string>
+    <string name="reset_app_confirm">রিসেট</string>
+    <string name="reset_app_done">সবকিছু রিসেট করা হয়েছে।</string>
+    <string name="permission_needed_lock">আপনি একটি অ্যাকশন লক-এ সেট করেছেন। এটি ছাড়া, সেটিতে ট্যাপ করলে কিছুই হবে না।</string>
+    <string name="permission_needed_notification">নোটিফিকেশন নিয়ন্ত্রণ চালু আছে। এটি ছাড়া দেখান, সেটিংস ও বন্ধ দেখা যাবে না।</string>
+    <string name="permission_needed_brightness">আপনি একটি উজ্জ্বলতা অ্যাকশন সেট করেছেন। এটি ছাড়া উজ্জ্বলতা বদলাতে পারবে না।</string>
+    <string name="permission_action_required_one">১টি অনুমতির প্রতি নজর দিন</string>
+    <string name="permission_action_required_many">%1$dটি অনুমতির প্রতি নজর দিন</string>
+    <string name="lock_unsupported_message">স্ক্রিন লক করতে অ্যান্ড্রয়েড ৯ বা নতুন সংস্করণ লাগে। এই ফোনে তা সম্ভব নয়, তাই লক অ্যাকশন জানাবে যে এটি অनुপলব্ধ।</string>
+    <string name="lock_unsupported_short">অ্যান্ড্রয়েড ৯ বা নতুন প্রয়োজন</string>
 </resources>

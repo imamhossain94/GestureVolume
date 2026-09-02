@@ -15,14 +15,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
+import com.newagedevs.gesturevolume.utils.HandlerActions
 
 /**
  * Picks which actions the long-press menu offers.
  *
  * Multi-select rather than a single choice: the menu is a list, and the question is which rows it
- * contains. Selecting none is allowed and meaningful — it turns the menu off entirely, leaving the
- * long press to do nothing but reposition, which is exactly how the bar behaved before the menu
- * existed. The empty state says so rather than treating it as a mistake.
+ * contains. Selecting none is allowed and meaningful — it strips the menu back to the one entry
+ * that cannot be removed, leaving the long press to do little but reposition, which is close to
+ * how the bar behaved before the menu existed.
+ *
+ * That one entry is "Hide handler", shown checked and not switchable. Since the floating ✕ that
+ * used to appear mid-drag was removed, this menu is the only way to put the bar away from the bar
+ * itself, and a picker that let the user delete their last route out would be a trap.
  */
 @Composable
 fun ContextMenuItemsDialog(
@@ -53,12 +58,13 @@ fun ContextMenuItemsDialog(
                 Spacer(Modifier.height(12.dp))
 
                 HandlerActionCatalog.CONTEXT_MENU_CANDIDATES.forEach { entry ->
-                    val checked = entry.action in working
+                    val pinned = entry.action in HandlerActions.ALWAYS_IN_CONTEXT_MENU
+                    val checked = pinned || entry.action in working
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .clickable {
+                            .clickable(enabled = !pinned) {
                                 working = if (checked) {
                                     working - entry.action
                                 } else {
@@ -75,19 +81,28 @@ fun ContextMenuItemsDialog(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(Modifier.width(12.dp))
-                        Text(
-                            text = stringResource(entry.labelRes),
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(entry.labelRes),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            if (pinned) {
+                                Text(
+                                    text = stringResource(R.string.context_menu_always),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                         Checkbox(
                             checked = checked,
-                            onCheckedChange = null
+                            onCheckedChange = null,
+                            enabled = !pinned
                         )
                     }
                 }
 
-                if (working.isEmpty()) {
+                if (working.none { it !in HandlerActions.ALWAYS_IN_CONTEXT_MENU }) {
                     Spacer(Modifier.height(8.dp))
                     Text(
                         text = stringResource(R.string.context_menu_empty),

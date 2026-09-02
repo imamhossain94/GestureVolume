@@ -11,8 +11,8 @@ import kotlin.math.roundToInt
 /**
  * The single source of truth for where the floating handler sits.
  *
- * Everything about the bar's placement flows through here — the drag position, the edge it snaps
- * to, the rotation re-layout, and the curved-edge inset — so those features cannot drift apart.
+ * Everything about the bar's placement flows through here — the drag position, the edge-offset
+ * clamp, the rotation re-layout and the curved-edge inset — so those features cannot drift apart.
  *
  * Two rules make this correct where the old code was not:
  *
@@ -138,15 +138,48 @@ object HandlerGeometry {
      * Absolute window `x` — measured from the left edge of the *usable* frame — for a bar resting
      * against one side, honouring the user's edge margin.
      *
-     * Absolute coordinates, so the caller must be using `Gravity.LEFT`. The resting state uses
-     * side gravity with `x = edgeMargin` instead; this is for the drag and the snap animation,
-     * which need a single continuous axis to interpolate along.
+     * Absolute coordinates, so the caller must be using `Gravity.LEFT`. Used to seed a free
+     * position for an install that only ever had a Left/Right side to its name.
      */
     fun sideToX(isLeft: Boolean, usableWidth: Int, barWidth: Int, edgeMarginPx: Int): Int {
         val maxX = (usableWidth - barWidth).coerceAtLeast(0)
         val x = if (isLeft) edgeMarginPx else usableWidth - barWidth - edgeMarginPx
         return x.coerceIn(0, maxX)
     }
+
+    /**
+     * Holds [x] to the band the edge margin allows: never closer than [edgeMarginPx] to either
+     * side of the usable frame.
+     *
+     * This is what makes "Edge offset" mean one thing everywhere. It used to apply only where the
+     * bar came to rest against a side, so a bar dragged into open screen ignored it and a bar
+     * pushed to the edge sat on the gesture strip the setting exists to avoid. Now the same clamp
+     * runs on every drag frame, on every rest, and on every rotation, so the gap the user asked
+     * for is the gap they always get — and pushing the bar at a side parks it exactly there,
+     * which is the whole of what edge snapping used to be for.
+     *
+     * A margin too large for the frame (a wide bar on a narrow screen) would invert the band and
+     * make `coerceIn` throw, so the bar is centred in that case rather than the setting winning an
+     * argument it cannot usefully win.
+     */
+    fun clampX(x: Int, usableWidth: Int, barWidth: Int, edgeMarginPx: Int): Int {
+        val maxX = (usableWidth - barWidth).coerceAtLeast(0)
+        val margin = edgeMarginPx.coerceAtLeast(0)
+        if (margin * 2 > maxX) return maxX / 2
+        return x.coerceIn(margin, maxX - margin)
+    }
+
+    /**
+     * Where a bar released at [x] comes to rest when snapping is on: flush against the nearer
+     * side, at exactly [edgeMarginPx] from it.
+     *
+     * Deliberately expressed as [sideToX] of [xToIsLeft] rather than as its own arithmetic. The
+     * resting place of a snapped bar and the seed position of a migrating install are the same
+     * question — "where does this side put the bar?" — and answering it twice is how the two
+     * drift apart by a pixel or two and start an argument on every rotation.
+     */
+    fun snapX(x: Int, usableWidth: Int, barWidth: Int, edgeMarginPx: Int): Int =
+        sideToX(xToIsLeft(x, usableWidth, barWidth), usableWidth, barWidth, edgeMarginPx)
 
     /**
      * The horizontal twin of [fractionToY], with identical semantics: [fraction] locates the bar's
@@ -171,10 +204,11 @@ object HandlerGeometry {
     }
 
     /**
-     * Which edge a bar released at [x] belongs to: whichever one its *centre* is nearer.
+     * Which side a bar sitting at [x] belongs to: whichever one its *centre* is nearer.
      *
-     * Centre rather than leading edge, so a wide bar dropped astride the midpoint snaps back to
-     * the side the user actually left most of it on.
+     * Centre rather than leading edge, so a wide bar dropped astride the midpoint is dressed for
+     * the side the user actually left most of it on. Nothing moves the bar as a result — this only
+     * decides which way its flat edge and icon face.
      */
     fun xToIsLeft(x: Int, usableWidth: Int, barWidth: Int): Boolean {
         if (usableWidth <= 0) return true
@@ -182,5 +216,5 @@ object HandlerGeometry {
     }
 
     /** Matches [com.newagedevs.gesturevolume.data.local.SharedPref.getHandlerPositionFraction]. */
-    const val DEFAULT_POSITION_FRACTION = 0.5f
+    const val DEFAULT_POSITION_FRACTION = 0.12f
 }

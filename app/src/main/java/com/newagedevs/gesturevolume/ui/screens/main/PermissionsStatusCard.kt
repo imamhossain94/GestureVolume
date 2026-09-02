@@ -21,9 +21,15 @@ import com.newagedevs.gesturevolume.R
 fun PermissionsStatusCard(
     modifier: Modifier = Modifier,
     hasOverlayPermission: Boolean,
+    /**
+     * Permissions the user's configuration needs but has not granted, the required overlay
+     * included. Non-zero turns this card into a warning even when the app is technically running:
+     * a Lock action that silently does nothing is not "all permissions granted".
+     */
+    missingPermissionCount: Int = 0,
     onClick: () -> Unit
 ) {
-    val allPermissionsGranted = hasOverlayPermission
+    val allPermissionsGranted = hasOverlayPermission && missingPermissionCount == 0
 
     Card(
         modifier = modifier.clickable(onClick = onClick),
@@ -56,8 +62,18 @@ fun PermissionsStatusCard(
                     else MaterialTheme.colorScheme.onErrorContainer
                 )
                 Text(
-                    text = if (allPermissionsGranted) stringResource(R.string.all_permissions_granted) else stringResource(R.string.action_required),
+                    text = when {
+                        allPermissionsGranted -> stringResource(R.string.all_permissions_granted)
+                        // Naming the count is the difference between a card the user opens and
+                        // one they learn to ignore.
+                        missingPermissionCount == 1 ->
+                            stringResource(R.string.permission_action_required_one)
+                        missingPermissionCount > 1 ->
+                            stringResource(R.string.permission_action_required_many, missingPermissionCount)
+                        else -> stringResource(R.string.action_required)
+                    },
                     fontSize = 13.sp,
+                    lineHeight = 18.sp,
                     color = if (allPermissionsGranted) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.7f)
                     else MaterialTheme.colorScheme.onErrorContainer.copy(alpha=0.8f)
                 )

@@ -33,19 +33,16 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
-import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.animation.doOnEnd
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.SharedPref
-import com.newagedevs.gesturevolume.data.model.UnlockCondition
 import com.newagedevs.gesturevolume.livedata.LiveDataManager
 import com.newagedevs.gesturevolume.ui.view.HandlerGestureDetector
 import com.newagedevs.gesturevolume.ui.view.HandlerView
@@ -120,23 +117,30 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     // ---- drag-to-reposition state ----------------------------------------------------------
 
-    /**
-     * Where the bar sat when the drag began, in the absolute (`Gravity.LEFT`) space a drag runs in.
-     * Side gravity has no continuous horizontal axis to follow a finger along, so the window is
-     * converted to absolute coordinates for the duration of the drag and converted back when it
-     * settles — see [enterAbsoluteX] and [settleToSide].
-     */
+    /** Where the bar sat when the drag began, in the window's absolute (`Gravity.LEFT`) space. */
     private var dragStartX = 0
     private var dragStartY = 0
 
-    /** The settle-to-edge animation. Non-null only while it is running. */
+    /** The edge offset in pixels, read once per drag rather than on every move frame. */
+    private var dragEdgeMarginPx = 0
+
+    /** Whether this drag ends by flying to the nearer side. Read once, at the start of the drag. */
+    private var dragSnapToEdge = true
+
+    /**
+     * The in-flight snap animation, so a second drag begun before the first has landed cancels it
+     * rather than fighting it for the window's x.
+     */
     private var snapAnimator: ValueAnimator? = null
 
-    // ---- drag-to-hide target -----------------------------------------------------------------
-
-    private var dismissTargetView: View? = null
-    private var dismissTargetIcon: ImageView? = null
-    private var dismissTargetArmed = false
+    /**
+     * Which side the bar is currently dressed for, or null when it has not been decided yet.
+     *
+     * Cached so the dressing is only re-applied when it actually changes. `setViewGravity`
+     * rebuilds the background drawable and requests a layout pass; running it on every move frame
+     * of a drag is a new GradientDrawable per frame.
+     */
+    private var handlerDressedLeft: Boolean? = null
 
     // ---- long-press context menu ---------------------------------------------------------------
 
@@ -154,12 +158,24 @@ class OverlayService : Service(), OverlayServiceInterface {
         // v2 channel: low importance (silent, no heads-up). Bumped from the old id so existing
         // installs also move off the intrusive IMPORTANCE_HIGH channel.
         private const val CHANNEL_ID = "gesture_volume_service_v2"
+
+        /**
+         * The channel used when the user has switched the notification off.
+         *
+         * A foreground service must post *something* — there is no API that lets one run without a
+         * notification — so "off" is served by moving it to its own IMPORTANCE_MIN channel instead.
+         * At minimum importance the system drops the status-bar icon and files the row at the
+         * bottom of the shade, which is as close to absent as a foreground service is allowed to
+         * get. Separate from [CHANNEL_ID] rather than a mutated copy of it: a channel's importance
+         * is fixed once created, so one channel cannot be both.
+         */
+        private const val CHANNEL_MINIMAL_ID = "gesture_volume_service_min"
         private const val LEGACY_CHANNEL_ID = "Gesture Volume Channel ID"
         private const val NOTIFICATION_ID = 1
         private const val INDICATOR_VISIBLE_MS = 900L
 
-        /** Long enough to read as travel, short enough not to delay the next gesture. */
-        private const val SNAP_DURATION_MS = 180L
+        /** Long enough to read as movement, short enough not to delay the next gesture. */
+        private const val ANIM_DURATION_MS = 180L
 
         /** How long the level lingers on the bar after the last step of a swipe. */
         private const val VOLUME_PERCENT_VISIBLE_MS = 700L
@@ -169,22 +185,6 @@ class OverlayService : Service(), OverlayServiceInterface {
         private val MENU_STROKE = Color.argb(38, 255, 255, 255)
         private val MENU_ON_SURFACE = Color.argb(240, 255, 255, 255)
 
-        private val DISMISS_SURFACE_IDLE = Color.argb(235, 32, 32, 36)
-        private val DISMISS_SURFACE_ARMED = Color.argb(245, 200, 48, 48)
-        private val DISMISS_STROKE_IDLE = Color.argb(46, 255, 255, 255)
-        private val DISMISS_STROKE_ARMED = Color.argb(120, 255, 255, 255)
-        private val DISMISS_ICON_IDLE = Color.argb(190, 255, 255, 255)
-
-        private const val DISMISS_TARGET_DP = 56f
-        private const val DISMISS_TARGET_MARGIN_DP = 48f
-
-        /**
-         * How close the bar's centre must come to the catcher's to be released into it.
-         *
-         * Comfortably wider than the catcher itself: the finger is over the bar, not the target,
-         * so the user is aiming something they cannot fully see the edges of.
-         */
-        private const val DISMISS_TARGET_REACH_DP = 76f
     }
 
     private var previousVolume: Int = 1
@@ -256,14 +256,27 @@ class OverlayService : Service(), OverlayServiceInterface {
         // service alive, but it should sit quietly in the bar without sound or heads-up.
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Overlay service",
+            getString(R.string.notification_channel_controls),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
+            description = getString(R.string.notification_channel_controls_desc)
             setShowBadge(false)
             setSound(null, null)
             enableVibration(false)
         }
         manager.createNotificationChannel(channel)
+
+        val minimal = NotificationChannel(
+            CHANNEL_MINIMAL_ID,
+            getString(R.string.notification_channel_minimal),
+            NotificationManager.IMPORTANCE_MIN
+        ).apply {
+            description = getString(R.string.notification_channel_minimal_desc)
+            setShowBadge(false)
+            setSound(null, null)
+            enableVibration(false)
+        }
+        manager.createNotificationChannel(minimal)
 
         // Remove the old intrusive channel from app notification settings.
         try {
@@ -274,29 +287,8 @@ class OverlayService : Service(), OverlayServiceInterface {
     }
 
     private fun startForegroundService() {
-        // Android will not run a foreground service without a notification, so this cannot be
-        // removed outright. It is instead made unpostable: the app no longer declares
-        // POST_NOTIFICATIONS, and on Android 13+ an ungranted notification permission keeps a
-        // foreground service's notification out of the shade and the status bar entirely while
-        // the service keeps running. Verified on a physical Android 16 device — isForeground
-        // stays true with zero NotificationRecords.
-        //
-        // On Android 12 and below the permission does not exist and this notification is always
-        // visible, so it is written to be worth reading there rather than left blank: an empty
-        // ongoing notification is worse than an informative one.
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_gesture)
-            .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.notification_service_active))
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setAutoCancel(false)
-            .setOngoing(true)
-            .setShowWhen(false)
-            .setVisibility(NotificationCompat.VISIBILITY_SECRET)
-            .setContentIntent(getOpenAppIntent())
-            .build()
-
         try {
+            val notification = buildNotification()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 startForeground(
                     NOTIFICATION_ID,
@@ -315,14 +307,93 @@ class OverlayService : Service(), OverlayServiceInterface {
     }
 
     /**
-     * Opens the app from the notification.
+     * The ongoing notification, in whichever of its two forms the user has asked for.
      *
-     * Replaces the three Show / Hide / Stop service actions. On the releases where this
-     * notification is visible at all it is a bare status line, and a single tap that lands
-     * somewhere useful beats three buttons on a notice most users only ever want gone. Everything
-     * those buttons did is in the app, one tap away.
+     * **On** — the default — it is the app's remote control: Show/Hide, Settings and Stop, none of
+     * which need the app opened. That matters more than it sounds, because a bar put away with
+     * "Hide handler" stays away until something explicitly shows it, and while the app is in the
+     * foreground the bar is hidden anyway. Without this row the only route back would be the
+     * Handler-hidden card on the main screen.
      *
-     * IMMUTABLE, unlike the mutable pending intents the actions needed: nothing fills anything in.
+     * **Off** — the same service, re-posted on [CHANNEL_MINIMAL_ID] with no buttons and no detail.
+     * Android has no way to run a foreground service with no notification at all, so this is the
+     * honest version of "hide it": minimum importance, which costs it the status-bar icon and puts
+     * it at the bottom of the shade. The user can finish the job from the channel's own system
+     * settings, which the Permissions screen links to.
+     */
+    private fun buildNotification(): Notification {
+        val hidden = preference.isHandlerHidden()
+
+        if (!preference.getShowNotification()) {
+            return NotificationCompat.Builder(this, CHANNEL_MINIMAL_ID)
+                .setSmallIcon(R.drawable.ic_gesture)
+                .setContentTitle(getString(R.string.notification_minimal_title))
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setSilent(true)
+                .setAutoCancel(false)
+                .setOngoing(true)
+                .setShowWhen(false)
+                .setVisibility(NotificationCompat.VISIBILITY_SECRET)
+                .setContentIntent(getOpenAppIntent())
+                .build()
+        }
+
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_gesture)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(
+                getString(
+                    if (hidden) R.string.notification_handler_hidden
+                    else R.string.notification_service_active
+                )
+            )
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setAutoCancel(false)
+            .setOngoing(true)
+            .setShowWhen(false)
+            .setVisibility(NotificationCompat.VISIBILITY_SECRET)
+            .setContentIntent(getOpenAppIntent())
+            // Show or Hide, never both: they are the same button in two states, and a notification
+            // offering the one that is already true wastes a third of the row.
+            .addAction(
+                if (hidden) R.drawable.ic_show else R.drawable.ic_visibility_hide,
+                getString(if (hidden) R.string.notification_action_show else R.string.notification_action_hide),
+                getServiceIntent(if (hidden) "user_show" else "user_hide")
+            )
+            .addAction(
+                R.drawable.ic_app_open,
+                getString(R.string.notification_action_settings),
+                getOpenAppIntent()
+            )
+            .addAction(
+                R.drawable.ic_x_close,
+                getString(R.string.notification_action_stop),
+                getServiceIntent("stop")
+            )
+            .build()
+    }
+
+    /**
+     * A command to this service, as a pending intent for a notification button.
+     *
+     * The request code is derived from the action so that Show and Stop get separate
+     * PendingIntents. With a shared request code, `FLAG_UPDATE_CURRENT` makes the second one
+     * overwrite the first's extras and both buttons run whichever action was built last.
+     */
+    private fun getServiceIntent(action: String): PendingIntent {
+        val intent = Intent(this, OverlayService::class.java).setAction(action)
+        return PendingIntent.getService(
+            this,
+            action.hashCode(),
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+    }
+
+    /**
+     * Opens the app from the notification — both from its body and from the Settings button.
+     *
+     * IMMUTABLE: nothing fills anything in.
      */
     private fun getOpenAppIntent(): PendingIntent {
         val intent = packageManager.getLaunchIntentForPackage(packageName)
@@ -378,23 +449,23 @@ class OverlayService : Service(), OverlayServiceInterface {
         intent?.action?.let { action ->
             LiveDataManager.sendCommand(action)
             when (action) {
-                "show" -> {
-                    shouldFinish = false
-                    createOverlayHandler()
-                }
-                "hide" -> {
-                    hideOverlayView()
-                    hideHandlerView()
-                }
-                "stop" -> {
-                    shouldFinish = true
-                    preference.setRunning(false)
-                    hideOverlayView()
-                    hideHandlerView()
-                    restoreAutoBrightnessIfOurs()
-                    stopForegroundAndSelf()
-                }
+                // "show"/"hide" are the *transient* pair: the app sends them as it comes to the
+                // foreground and leaves again, and the boot/update receiver sends "show" too.
+                // None of that is the user asking for the bar, so neither touches the hidden
+                // state — otherwise closing the app would resurrect a bar put away on purpose.
+                "show" -> show()
+                "hide" -> hide()
+                // The deliberate pair, from the notification's buttons. These are the user
+                // speaking, so they do change it.
+                "user_show" -> showByUser()
+                "user_hide" -> hideByUser()
+                "stop" -> stopServiceEntirely()
                 "update" -> update()
+                // Notification-only. "update" tears the handler window down and rebuilds it, which
+                // while the app is in the foreground pops the bar up over the very screen the
+                // setting was changed on. Toggling the notification has nothing to do with the
+                // bar, so it gets its own command.
+                "refresh_notification" -> startForegroundService()
             }
         } ?: run {
             // Service started without action (including a START_STICKY relaunch): show the handler.
@@ -415,7 +486,19 @@ class OverlayService : Service(), OverlayServiceInterface {
     // Handler window
     // =============================================================================================
 
+    /**
+     * Builds the handler window, unless the user has put the bar away.
+     *
+     * The hidden state is a *preference*, not just the absence of a window, because almost
+     * everything that touches this service ends up here: a settings save rebuilds the handler, a
+     * `START_STICKY` relaunch recreates it, and so does the restart after the task is swiped out
+     * of Recents. Without somewhere durable to record "the user hid this", every one of those
+     * brought the bar back on its own — which is exactly the "it reappears by itself" report.
+     * Only an explicit Show — from the app, from the notification, or from the service command —
+     * clears it.
+     */
     private fun createOverlayHandler() {
+        if (preference.isHandlerHidden()) return
         if (handlerView == null) {
             val handlerPosition = preference.getHandlerPosition()
             val handlerWidth = preference.getHandlerWidthDp()
@@ -442,6 +525,7 @@ class OverlayService : Service(), OverlayServiceInterface {
 
             val layoutParams = buildHandlerParams(handlerWidth, handlerHeight)
 
+            handlerDressedLeft = handlerPosition == "Left"
             val view = HandlerView(this).apply {
                 setViewGravity(if (handlerPosition == "Left") Gravity.START else Gravity.END)
                 setViewDimensionsDp(handlerWidth, handlerHeight)
@@ -524,67 +608,71 @@ class OverlayService : Service(), OverlayServiceInterface {
         }
 
     /**
-     * Animates the bar to rest against [isLeft]'s edge, then persists where it landed.
+     * Flies the bar to the nearer side and parks it exactly on the edge offset.
      *
-     * Only runs when the user has switched snapping on. The window is in absolute coordinates
-     * either way, so this is purely a horizontal glide — there is no gravity to hand back.
-     *
-     * The bar's own left/right dress — the corner insets and icon alignment — flips immediately
-     * rather than on arrival, so a cross-screen drag reads as one movement instead of a slide
-     * followed by a costume change.
+     * Animated rather than teleported, and the position is persisted only when it lands: a
+     * fraction written per frame would put ~10 writes through SharedPreferences per drag, and one
+     * written up front would be a lie for the length of the animation — which is precisely when a
+     * rotation is most likely to arrive and read it.
      */
-    private fun snapToEdge(isLeft: Boolean) {
+    private fun snapToNearestEdge() {
         val params = handlerParams ?: return
         val currentFrame = frame ?: return
-
-        handlerView?.setViewGravity(if (isLeft) Gravity.START else Gravity.END)
-
-        val targetX = HandlerGeometry.sideToX(
-            isLeft = isLeft,
-            usableWidth = currentFrame.usableWidth,
-            barWidth = params.width,
-            edgeMarginPx = dpToPx(preference.getHandlerEdgeMarginDp())
+        val target = HandlerGeometry.snapX(
+            params.x,
+            currentFrame.usableWidth,
+            params.width,
+            dragEdgeMarginPx
         )
-
-        // Same clear-then-cancel order as everywhere else: an in-flight animator's completion
-        // block would otherwise persist a position this one is about to supersede.
-        snapAnimator?.let { animator ->
-            snapAnimator = null
-            animator.cancel()
-        }
-        if (params.x == targetX) {
+        if (target == params.x) {
             persistPosition()
             return
         }
 
-        snapAnimator = ValueAnimator.ofInt(params.x, targetX).apply {
-            duration = SNAP_DURATION_MS
+        cancelSnap()
+        val from = params.x
+        snapAnimator = ValueAnimator.ofInt(from, target).apply {
+            duration = ANIM_DURATION_MS
             interpolator = DecelerateInterpolator()
             addUpdateListener { animation ->
+                // Re-read every frame: the window can be torn down mid-animation by a settings
+                // save, a rotation, or "Hide handler" from the menu that opened on the same press.
                 val live = handlerParams ?: return@addUpdateListener
                 live.x = animation.animatedValue as Int
                 updateHandlerLayout(live)
             }
-            // doOnEnd also runs when the animation is cancelled, so the identity guard is what
-            // separates a real arrival from a hand-off: onDragBegin and applyHandlerGeometry both
-            // clear the field before cancelling, precisely so this save is skipped for them.
-            doOnEnd {
-                if (snapAnimator === this) {
-                    snapAnimator = null
-                    persistPosition()
+            addListener(object : android.animation.AnimatorListenerAdapter() {
+                private var cancelled = false
+
+                override fun onAnimationCancel(animation: android.animation.Animator) {
+                    cancelled = true
                 }
-            }
+
+                // `cancel()` delivers onAnimationEnd as well, so without the flag an interrupted
+                // snap would write the position it happened to have been passing through — either
+                // as a new drag begins, or as the window is being torn down. Neither is a place
+                // the user put the bar.
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    snapAnimator = null
+                    if (!cancelled) persistPosition()
+                }
+            })
             start()
         }
+    }
+
+    private fun cancelSnap() {
+        snapAnimator?.cancel()
+        snapAnimator = null
     }
 
     /**
      * Writes the bar's current place into this orientation's stored fractions.
      *
      * Per orientation, because portrait and landscape keep independent positions — see
-     * [com.newagedevs.gesturevolume.data.local.SharedPref.getHandlerPosXFraction]. The legacy
-     * Left/Right setting is kept in step as well, so the appearance screen's side control still
-     * describes where the bar actually is after a drag.
+     * [com.newagedevs.gesturevolume.data.local.SharedPref.getHandlerPosXFraction]. The Left/Right
+     * value is kept in step as well; it is no longer a setting the user picks, only a record of
+     * which side the bar is nearer, which is what decides the way its flat edge faces.
      */
     private fun persistPosition() {
         val params = handlerParams ?: return
@@ -608,6 +696,18 @@ class OverlayService : Service(), OverlayServiceInterface {
         )
     }
 
+    /**
+     * Points the bar's flat edge and icon at the nearer screen edge.
+     *
+     * Idempotent by design: `setViewGravity` rebuilds the background drawable and requests a
+     * layout, so this is guarded rather than called blindly from the per-frame drag path.
+     */
+    private fun dressHandlerFor(isLeft: Boolean) {
+        if (handlerDressedLeft == isLeft) return
+        handlerDressedLeft = isLeft
+        handlerView?.setViewGravity(if (isLeft) Gravity.START else Gravity.END)
+    }
+
     private fun updateHandlerLayout(params: WindowManager.LayoutParams) {
         val view = handlerView ?: return
         try {
@@ -628,14 +728,6 @@ class OverlayService : Service(), OverlayServiceInterface {
         val params = handlerParams ?: return
         val currentFrame = HandlerGeometry.read(this, windowManager) ?: return
         frame = currentFrame
-
-        // A rotation or a settings save while the bar is still flying to its edge: the animation
-        // is now working from a stale frame. Cleared before cancel so the animator's own save
-        // stands down — this block supersedes it.
-        snapAnimator?.let { animator ->
-            snapAnimator = null
-            animator.cancel()
-        }
 
         val barHeightPx = dpToPx(preference.getHandlerHeightDp())
         val barWidthPx = dpToPx(preference.getHandlerWidthDp())
@@ -667,11 +759,24 @@ class OverlayService : Service(), OverlayServiceInterface {
             )
         }
 
-        params.x = HandlerGeometry.fractionToX(
+        // Clamped as well as converted: the edge offset can have been raised since the bar was
+        // last put down, and it is a promise about the gap on both sides rather than only a
+        // starting position.
+        val edgeMarginPx = dpToPx(preference.getHandlerEdgeMarginDp())
+        val storedX = HandlerGeometry.fractionToX(
             preference.getHandlerPosXFraction(isPortrait),
             currentFrame.usableWidth,
             barWidthPx
         )
+        // With snapping on, a placement pass parks the bar rather than merely clamping it. The
+        // stored fraction is still the source of truth for *which side* — this only removes the
+        // drift a rotation would otherwise introduce, where a bar flush against a 1080px-wide
+        // frame reappears a proportional distance into a 2400px-wide one.
+        params.x = if (preference.getHandlerSnapToEdge()) {
+            HandlerGeometry.snapX(storedX, currentFrame.usableWidth, barWidthPx, edgeMarginPx)
+        } else {
+            HandlerGeometry.clampX(storedX, currentFrame.usableWidth, barWidthPx, edgeMarginPx)
+        }
         params.y = HandlerGeometry.fractionToY(
             preference.getHandlerPosYFraction(isPortrait),
             currentFrame.usableHeight,
@@ -679,13 +784,7 @@ class OverlayService : Service(), OverlayServiceInterface {
         )
 
         // Which way the bar dresses follows where it ended up, not a stored side.
-        handlerView?.setViewGravity(
-            if (HandlerGeometry.xToIsLeft(params.x, currentFrame.usableWidth, barWidthPx)) {
-                Gravity.START
-            } else {
-                Gravity.END
-            }
-        )
+        dressHandlerFor(HandlerGeometry.xToIsLeft(params.x, currentFrame.usableWidth, barWidthPx))
 
         val view = handlerView ?: return
         if (view.isAttachedToWindow) {
@@ -698,13 +797,10 @@ class OverlayService : Service(), OverlayServiceInterface {
     }
 
     private fun hideHandlerView() {
-        snapAnimator?.let { animator ->
-            snapAnimator = null
-            animator.cancel()
-        }
-        // Both windows are anchored to a bar that is about to stop existing, and the pending
-        // clear would fire against a view that is gone.
-        hideDismissTarget()
+        // The menu is anchored to a bar that is about to stop existing, and the pending clear
+        // would fire against a view that is gone. The snap animation is in the same position: its
+        // frame callback writes into handlerParams, which is about to be null.
+        cancelSnap()
         hideContextMenu()
         mainHandler.removeCallbacks(clearVolumePercentRunnable)
         gestureDetector?.cancel()
@@ -718,6 +814,9 @@ class OverlayService : Service(), OverlayServiceInterface {
         handlerView = null
         handlerParams = null
         gestureDetector = null
+        // The next bar is a new view with its own dressing; a stale cache here would skip the
+        // setViewGravity that gives it one.
+        handlerDressedLeft = null
     }
 
     // =============================================================================================
@@ -779,68 +878,54 @@ class OverlayService : Service(), OverlayServiceInterface {
         }
 
         override fun onDragBegin() {
-            // A drag started mid-snap takes over from it rather than fighting it for params.x, and
-            // picks the bar up exactly where it had flown to.
-            snapAnimator?.let { animator ->
-                // Cleared *before* cancel: doOnEnd runs on cancellation too, and its guard reads
-                // this field to tell a real finish from a hand-off like this one.
-                snapAnimator = null
-                animator.cancel()
-            }
+            cancelSnap()
             val params = handlerParams
             dragStartX = params?.x ?: 0
             dragStartY = params?.y ?: 0
+            dragEdgeMarginPx = dpToPx(preference.getHandlerEdgeMarginDp())
+            dragSnapToEdge = preference.getHandlerSnapToEdge()
         }
 
         override fun onDragUpdate(offsetXPx: Float, offsetYPx: Float) {
             val params = handlerParams ?: return
             val currentFrame = frame ?: return
             val maxY = (currentFrame.usableHeight - params.height).coerceAtLeast(0)
-            val maxX = (currentFrame.usableWidth - params.width).coerceAtLeast(0)
 
             // The WINDOW is moved, not the view. This view is the root of a window sized exactly to
             // the bar, so a translation would just slide the drawing inside a stationary window
             // and be clipped at its edge.
             params.y = (dragStartY + offsetYPx).roundToInt().coerceIn(0, maxY)
-            params.x = (dragStartX + offsetXPx).roundToInt().coerceIn(0, maxX)
+            // Horizontal is clamped by the edge offset rather than by the bare frame, so the
+            // finger cannot push the bar into the gesture strip the setting exists to keep it out
+            // of — and a bar shoved at a side comes to rest exactly on that offset.
+            params.x = HandlerGeometry.clampX(
+                (dragStartX + offsetXPx).roundToInt(),
+                currentFrame.usableWidth,
+                params.width,
+                dragEdgeMarginPx
+            )
             updateHandlerLayout(params)
-            updateDismissTargetState(params, currentFrame)
+
+            // Dressed for the nearer side *during* the drag, not on release: carrying the bar
+            // across the screen and having it change costume only once the finger lifts reads as
+            // a second, unasked-for movement.
+            dressHandlerFor(
+                HandlerGeometry.xToIsLeft(params.x, currentFrame.usableWidth, params.width)
+            )
         }
 
+        /**
+         * Where the bar comes to rest.
+         *
+         * Vertically it always stays exactly where it was let go. Horizontally that depends on one
+         * setting: with "Snap to edge" on it flies to the nearer side and parks at the edge offset;
+         * with it off it stays put, held only by the same offset that clamped every frame of the
+         * drag. Either way the offset is the one number involved, which is what stops the two modes
+         * from meaning different things by "the edge".
+         */
         override fun onDragEnd(moved: Boolean) {
-            val params = handlerParams ?: return
-            val currentFrame = frame ?: return
-
-            val dismissing = moved && isOverDismissTarget(params, currentFrame)
-            hideDismissTarget()
-
-            if (dismissing) {
-                // Posted off the input stack for the same reason the tap actions are: this tears
-                // down the very window whose gesture is still being dispatched.
-                mainHandler.post {
-                    hideHandlerView()
-                    showIndicatorMessage(getString(R.string.handler_hidden_toast))
-                }
-                return
-            }
-
             if (!moved) return
-
-            if (preference.getSnapToEdges()) {
-                snapToEdge(
-                    HandlerGeometry.xToIsLeft(params.x, currentFrame.usableWidth, params.width)
-                )
-            } else {
-                // Free placement: the bar stays exactly where it was let go. Only its dress
-                // follows, so the flat edge still faces the nearer screen edge.
-                handlerView?.setViewGravity(
-                    if (HandlerGeometry.xToIsLeft(
-                            params.x, currentFrame.usableWidth, params.width
-                        )
-                    ) Gravity.START else Gravity.END
-                )
-                persistPosition()
-            }
+            if (dragSnapToEdge) snapToNearestEdge() else persistPosition()
         }
 
         override fun onContextMenuOpen() {
@@ -848,13 +933,10 @@ class OverlayService : Service(), OverlayServiceInterface {
         }
 
         override fun onContextMenuDismiss() {
-            // The finger has committed to a drag. Retract the menu and put the catcher up in its
-            // place — showing the catcher on the hold itself would clutter the screen for the
-            // majority of long presses, which are menu picks that never move.
-            mainHandler.post {
-                hideContextMenu()
-                showDismissTarget()
-            }
+            // The finger has committed to a drag, so the menu it was also offered gets out of the
+            // way. Nothing takes its place: hiding the bar is a menu entry, not a target that has
+            // to sit on screen covering whatever the user is dragging over.
+            mainHandler.post { hideContextMenu() }
         }
     }
 
@@ -1014,169 +1096,6 @@ class OverlayService : Service(), OverlayServiceInterface {
         }
         indicatorView = null
         indicatorLabel = null
-    }
-
-    // =============================================================================================
-    // Drag-to-hide target
-    // =============================================================================================
-
-    /**
-     * The catcher that appears at the bottom of the screen while the bar is being dragged.
-     *
-     * A separate window rather than something drawn into the handler: the handler's window is
-     * sized exactly to the bar, so anything outside those few dp is clipped away unseen.
-     */
-    private fun showDismissTarget() {
-        val wm = windowManager ?: return
-        if (dismissTargetView != null) return
-
-        val density = resources.displayMetrics.density
-        val diameter = (DISMISS_TARGET_DP * density).toInt()
-        val iconSize = (22 * density).toInt()
-
-        val icon = ImageView(this).apply {
-            layoutParams = FrameLayout.LayoutParams(iconSize, iconSize).apply {
-                gravity = Gravity.CENTER
-            }
-            scaleType = ImageView.ScaleType.FIT_CENTER
-            setImageDrawable(
-                ContextCompat.getDrawable(this@OverlayService, R.drawable.ic_x_close)
-                    ?.mutate()
-                    ?.let {
-                        DrawableCompat.wrap(it)
-                            .apply { DrawableCompat.setTint(this, DISMISS_ICON_IDLE) }
-                    }
-            )
-        }
-
-        val circle = FrameLayout(this).apply {
-            layoutParams = FrameLayout.LayoutParams(diameter, diameter).apply {
-                gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-                bottomMargin = (DISMISS_TARGET_MARGIN_DP * density).toInt()
-            }
-            background = GradientDrawable().apply {
-                shape = GradientDrawable.OVAL
-                setColor(DISMISS_SURFACE_IDLE)
-                setStroke((1.5f * density).toInt(), DISMISS_STROKE_IDLE)
-            }
-            elevation = 10 * density
-            addView(icon)
-        }
-
-        val container = FrameLayout(this).apply { addView(circle) }
-
-        val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    // NOT_TOUCHABLE matters: the drag in progress belongs to the handler window,
-                    // and a target that accepted touches would steal the pointer stream the
-                    // moment the finger passed over it.
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                // Same inset treatment as the handler, so both are measured in the same frame and
-                // the hit test below compares like with like.
-                setFitInsetsTypes(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
-                setFitInsetsSides(
-                    WindowInsets.Side.LEFT or WindowInsets.Side.TOP or
-                            WindowInsets.Side.RIGHT or WindowInsets.Side.BOTTOM
-                )
-                isFitInsetsIgnoringVisibility = true
-            }
-        }
-
-        try {
-            wm.addView(container, params)
-        } catch (e: Exception) {
-            android.util.Log.e("OverlayService", "dismiss target addView failed", e)
-            return
-        }
-        dismissTargetView = container
-        dismissTargetIcon = icon
-        dismissTargetArmed = false
-
-        // Rises into place rather than blinking on, which at the bottom edge of a screen the user
-        // is already dragging across is the difference between a target and a flicker.
-        circle.alpha = 0f
-        circle.translationY = 12 * density
-        circle.animate().alpha(1f).translationY(0f)
-            .setDuration(SNAP_DURATION_MS)
-            .setInterpolator(DecelerateInterpolator())
-            .start()
-    }
-
-    /** Centre of the catcher, in the same usable-frame coordinates as the handler's `x`/`y`. */
-    private fun dismissTargetCentre(currentFrame: HandlerGeometry.Frame): PointF {
-        val density = currentFrame.density
-        val radius = DISMISS_TARGET_DP * density / 2f
-        return PointF(
-            currentFrame.usableWidth / 2f,
-            currentFrame.usableHeight - (DISMISS_TARGET_MARGIN_DP * density) - radius
-        )
-    }
-
-    private fun isOverDismissTarget(
-        params: WindowManager.LayoutParams,
-        currentFrame: HandlerGeometry.Frame
-    ): Boolean {
-        if (dismissTargetView == null) return false
-        val centre = dismissTargetCentre(currentFrame)
-        val barCentreX = params.x + params.width / 2f
-        val barCentreY = params.y + params.height / 2f
-        val dx = barCentreX - centre.x
-        val dy = barCentreY - centre.y
-        val reach = DISMISS_TARGET_REACH_DP * currentFrame.density
-        return (dx * dx + dy * dy) <= reach * reach
-    }
-
-    /** Grows and brightens the catcher once the bar is close enough to be released into it. */
-    private fun updateDismissTargetState(
-        params: WindowManager.LayoutParams,
-        currentFrame: HandlerGeometry.Frame
-    ) {
-        val armed = isOverDismissTarget(params, currentFrame)
-        if (armed == dismissTargetArmed) return
-        dismissTargetArmed = armed
-        val circle = (dismissTargetView as? ViewGroup)?.getChildAt(0) ?: return
-        circle.animate()
-            .scaleX(if (armed) 1.18f else 1f)
-            .scaleY(if (armed) 1.18f else 1f)
-            .setDuration(SNAP_DURATION_MS)
-            .setInterpolator(DecelerateInterpolator())
-            .start()
-        (circle.background as? GradientDrawable)?.apply {
-            setColor(if (armed) DISMISS_SURFACE_ARMED else DISMISS_SURFACE_IDLE)
-            setStroke(
-                (1.5f * resources.displayMetrics.density).toInt(),
-                if (armed) DISMISS_STROKE_ARMED else DISMISS_STROKE_IDLE
-            )
-        }
-        dismissTargetIcon?.setColorFilter(if (armed) Color.WHITE else DISMISS_ICON_IDLE)
-        if (armed && preference.getHandlerVibrateOnClick()) {
-            // One short tick as the bar crosses into the target: the finger is over the bar, not
-            // the catcher, so touch is the sense that can confirm the drop will land.
-            vibratorService?.vibrate(
-                VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE)
-            )
-        }
-    }
-
-    private fun hideDismissTarget() {
-        dismissTargetView?.let { view ->
-            try {
-                windowManager?.removeView(view)
-            } catch (_: Exception) {
-                // Already gone.
-            }
-        }
-        dismissTargetView = null
-        dismissTargetIcon = null
-        dismissTargetArmed = false
     }
 
     // =============================================================================================
@@ -1342,7 +1261,7 @@ class OverlayService : Service(), OverlayServiceInterface {
             card.scaleY = 0.85f
             card.alpha = 0f
             card.animate().scaleX(1f).scaleY(1f).alpha(1f)
-                .setDuration(SNAP_DURATION_MS)
+                .setDuration(ANIM_DURATION_MS)
                 .setInterpolator(DecelerateInterpolator())
                 .start()
         }
@@ -1397,8 +1316,18 @@ class OverlayService : Service(), OverlayServiceInterface {
                 hideHandlerView()
                 createOverlayView()
             }
-            HandlerActions.LOCK -> lockScreenUtil?.lockScreen()
-            HandlerActions.HIDE_HANDLER -> hideHandlerView()
+            HandlerActions.LOCK -> {
+                // Neither lock route granted. Silence here read as the bar being broken; the
+                // permission can be revoked from system settings long after the action was set.
+                if (lockScreenUtil?.lockScreen() != true) {
+                    showIndicatorMessage(getString(R.string.lock_not_available))
+                }
+            }
+            HandlerActions.HIDE_HANDLER -> {
+                hideByUser()
+                showIndicatorMessage(getString(R.string.handler_hidden_toast))
+            }
+            HandlerActions.STOP_SERVICE -> stopServiceEntirely()
             HandlerActions.OPEN_APP -> openApp()
         }
     }
@@ -1576,20 +1505,13 @@ class OverlayService : Service(), OverlayServiceInterface {
         val shouldClick = isTouchLength && isTouchDuration
 
         if (shouldClick) {
-            val currentTime = now()
-            lastClickTime = if (currentTime - lastClickTime < doubleClickTimeDelta) {
-                if (UnlockCondition.DOUBLE_TAP.displayText == "Double tap to unlock") {
-                    hideOverlayView()
-                    createOverlayHandler()
-                }
-                0
-            } else {
-                if (UnlockCondition.TAP.displayText == "Tap to unlock") {
-                    hideOverlayView()
-                    createOverlayHandler()
-                }
-                currentTime
-            }
+            // Both branches used to be guarded by a comparison of an enum's own literal against
+            // itself — `UnlockCondition.TAP.displayText == "Tap to unlock"` — which is true by
+            // construction. The unlock condition was never a setting, so the guards only obscured
+            // the fact that any tap dismisses the overlay. That is the behaviour, stated plainly.
+            hideOverlayView()
+            createOverlayHandler()
+            lastClickTime = now()
         }
         return false
     }
@@ -1617,6 +1539,34 @@ class OverlayService : Service(), OverlayServiceInterface {
     override fun hide() {
         hideOverlayView()
         hideHandlerView()
+    }
+
+    /** The user asked for the bar back: clear the hidden state, then show it. */
+    private fun showByUser() {
+        preference.setHandlerHidden(false)
+        show()
+        // The notification's first button swaps between Show and Hide, so it is reposted whenever
+        // which one applies changes. Same id, so this replaces it rather than adding a second.
+        startForegroundService()
+    }
+
+    /** The user put the bar away: it stays away until they say otherwise. */
+    private fun hideByUser() {
+        preference.setHandlerHidden(true)
+        hide()
+        startForegroundService()
+    }
+
+    private fun stopServiceEntirely() {
+        shouldFinish = true
+        preference.setRunning(false)
+        // Stopping is not hiding: the bar should be there again the next time the service is
+        // started, or the user would turn it on and get nothing.
+        preference.setHandlerHidden(false)
+        hideOverlayView()
+        hideHandlerView()
+        restoreAutoBrightnessIfOurs()
+        stopForegroundAndSelf()
     }
 
     override fun update() {

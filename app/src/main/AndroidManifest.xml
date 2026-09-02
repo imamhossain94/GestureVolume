@@ -11,6 +11,17 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <!--
+      Android 13+. The foreground service's notification is the app's remote control: Show/Hide,
+      Settings and Stop, and the only route back to a bar put away with "Hide handler" while the
+      app is closed. Without this permission that notification is silently withheld from the shade
+      on 13+, so the controls exist and nobody can reach them.
+
+      Asked for once, when the user first switches the service on, and never blocking: declining it
+      costs the notification, not the app.
+    -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!--
       Optional. Only needed for the brightness swipe actions, and only requested at the moment the
       user selects one - never at startup. The app works fully without it.
     -->
@@ -58,20 +69,28 @@
             </intent-filter>
         </receiver>
 
-        <receiver
-            android:name=".service.DeviceAdmin"
-            android:description="@string/device_description"
-            android:label="@string/device_admin_label"
-            android:permission="android.permission.BIND_DEVICE_ADMIN"
-            android:exported="true">
-            <meta-data
-                android:name="android.app.device_admin"
-                android:resource="@xml/device_admin" />
+        <!--
+          The biometric-friendly half of the Lock action. See LockAccessibilityService: it
+          subscribes to no events and reads no window content, and exists only so that
+          performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN) is reachable - the lock the power button
+          performs, which the fingerprint sensor will still unlock, rather than Device Admin's
+          policy lock that demands a PIN.
 
+          exported="true" is required: the system binds this from outside the app, and
+          BIND_ACCESSIBILITY_SERVICE is what stops anything else from doing so.
+        -->
+        <service
+            android:name=".service.LockAccessibilityService"
+            android:exported="true"
+            android:label="@string/lock_accessibility_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
-                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+                <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
-        </receiver>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/lock_accessibility_service" />
+        </service>
 
         <!--
           stopWithTask="false" keeps the overlay alive when the user swipes the app out of Recents,

@@ -180,6 +180,13 @@ fun NavigationDrawerContent(
                     label = stringResource(R.string.about),
                     onClick = { onMenuItemClick("About") }
                 )
+
+                NavigationDrawerItem(
+                    icon = R.drawable.ic_reset,
+                    label = stringResource(R.string.reset_app),
+                    tint = MaterialTheme.colorScheme.error,
+                    onClick = { onMenuItemClick("Reset") }
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -232,8 +239,9 @@ private fun PremiumNavigationItem(
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = stringResource(R.string.unlock_all_features),
+                    text = stringResource(R.string.remove_ads_support_developer),
                     fontSize = 13.sp,
+                    lineHeight = 17.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
             }
@@ -263,6 +271,8 @@ private fun NavigationDrawerItem(
     icon: Int,
     label: String,
     badge: String? = null,
+    /** Overrides the icon and label colour. Used by the one destructive row. */
+    tint: Color? = null,
     onClick: () -> Unit
 ) {
     Surface(
@@ -282,7 +292,7 @@ private fun NavigationDrawerItem(
                 painter = painterResource(id = icon),
                 contentDescription = label,
                 modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = tint ?: MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -291,7 +301,7 @@ private fun NavigationDrawerItem(
                 text = label,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = tint ?: MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
 

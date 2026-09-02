@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">Lock screen on click with Device Policy Manager API</string>
-    <string name="device_admin_label">Gesture Volume Device Admin</string>
     <string name="landscape_appearance_settings">LANDSCAPE APPEARANCE SETTINGS</string>
     <string name="click_">Check the switch to active and configure the gravity, size, thickness, and position of the handler on the landscape screen.</string>
     <string name="configure">Configure</string>
@@ -49,7 +47,6 @@
     <string name="language">Language</string>
     <string name="lock_position">Lock position</string>
     <string name="long_press_action">Long press action</string>
-    <string name="minimize">MINIMIZE</string>
     <string name="more">MORE</string>
     <string name="newagedevs">NewAgeDevs</string>
     <string name="nothing_to_restore">Nothing to restore</string>
@@ -92,7 +89,6 @@
     <string name="top_left">Top Left</string>
     <string name="top_right">Top Right</string>
     <string name="upgrade">UPGRADE</string>
-    <string name="unlock_all_features">Remove all ads</string>
     <string name="unsaved_changes">Unsaved Changes</string>
     <string name="upgrade_to_pro">Upgrade to Pro</string>
     <string name="vibrate_on_click">Vibrate on click</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Display over other apps</string>
     <string name="overlay_permission_desc">Required to show the volume handler overlay on your screen</string>
-    <string name="device_admin_permission">Device administrator</string>
-    <string name="device_admin_permission_desc">Optional: Allows the handler to lock your device screen when configured</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">Welcome to Gesture Volume</string>
@@ -159,12 +153,8 @@
 
     <!-- Expanded Preview -->
     <string name="position_locked">POSITION LOCKED</string>
-    <string name="long_press_to_reposition">LONG PRESS TO MOVE</string>
     <string name="unlock_to_reposition">UNLOCK TO REPOSITION</string>
-    <string name="test_mode">Test Mode</string>
     <string name="reposition_mode">Reposition Mode</string>
-    <string name="test_mode_desc">Try swipes and taps</string>
-    <string name="reposition_mode_desc">Long press, then drag to move it</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">POSITION</string>
@@ -260,7 +250,6 @@
     <string name="preset_ghost_subtitle">Almost invisible</string>
 
     <!-- Missing Strings -->
-    <string name="preview">Preview</string>
     <string name="press_back_again_to_exit">Press back again to exit</string>
     <string name="volume_gesture_handler">Volume gesture handler</string>
     <string name="troubleshoot">Troubleshooting</string>
@@ -288,10 +277,10 @@
     <string name="write_settings_permission_desc">Lets the bar control screen brightness. Only needed for brightness actions.</string>
     <string name="brightness_permission_title">Allow brightness control?</string>
     <string name="brightness_permission_message">To change screen brightness, GestureVolume needs the Modify system settings permission. Adaptive brightness is turned off while you use it, and restored when you stop the service.</string>
-    <string name="edge_offset">Edge offset</string>
-    <string name="edge_offset_desc">Move the bar inward from the screen edge. Helps on curved screens and when gesture navigation is on.</string>
+    <string name="edge_offset">Edge distance</string>
+    <string name="edge_offset_desc">The smallest gap the bar keeps from the left and right edges — while you drag it, and where it parks when it snaps. Helps on curved screens and when gesture navigation is on.</string>
     <string name="reset_position">Reset position</string>
-    <string name="drag_to_move_hint">To move the bar: long press it, wait for the vibration, then drag up or down. Set the long press action to “Move handler” to enable this.</string>
+    <string name="drag_to_move_hint">To move the bar: long press it, wait for the vibration, then drag it. Set the long press action to “Move handler” to enable this.</string>
     <string name="fix_battery_title">Battery optimization</string>
     <string name="fix_battery_desc">Allow unrestricted battery use so Android does not stop the service.</string>
     <string name="fix_battery_allowed">Unrestricted</string>
@@ -304,8 +293,6 @@
     <string name="volume_percent_short">%1$d%%</string>
 
     <!-- Free positioning / snapping -->
-    <string name="snap_to_edges_title">Snap to screen edges</string>
-    <string name="snap_to_edges_desc">Release the handler and it settles against the nearest edge. Off by default, so you can place it anywhere.</string>
 
     <!-- Notification -->
     <string name="notification_service_active">Volume gestures are active</string>
@@ -315,15 +302,99 @@
     <string name="show_volume_percent_desc">Display the level on the handler while you swipe.</string>
 
     <!-- Drag to hide -->
-    <string name="drag_here_to_hide">Drag here to hide</string>
     <string name="handler_hidden_toast">Handler hidden. Open GestureVolume to bring it back.</string>
+
+    <!-- Stop-service action, offered in the long-press menu alongside Hide handler. -->
+    <string name="action_stop_service">Stop service</string>
+
+    <!-- Notification: buttons and the line that says which state the handler is in. -->
+    <string name="notification_handler_hidden">Handler hidden — tap Show to bring it back</string>
+    <string name="notification_action_show">Show</string>
+    <string name="notification_action_hide">Hide</string>
+    <string name="notification_action_settings">Settings</string>
+    <string name="notification_action_stop">Stop</string>
+
+    <!-- Lock action: choosing how the screen gets locked. -->
+    <string name="lock_accessibility_label">Screen lock</string>
+    <string name="lock_accessibility_summary">Lets the Lock action turn the screen off.</string>
+    <string name="lock_accessibility_description">Allows GestureVolume to lock the screen when you use the Lock action on the floating bar. It locks the screen the same way the power button does, so your fingerprint still unlocks the phone. This service reads nothing on your screen and performs no other action.</string>
+    <string name="lock_permission_title">Locking the screen</string>
+    <string name="lock_permission_message">GestureVolume needs permission to lock the screen.
+
+Accessibility is recommended: it locks the screen the way the power button does, so your fingerprint still unlocks the phone. Device admin also works, but most phones then ask for your PIN instead of your fingerprint.</string>
+    <string name="lock_permission_accessibility">Use accessibility</string>
+    <string name="lock_not_available">Grant a lock permission in Settings before using the Lock action.</string>
 
     <!-- Long-press context menu -->
     <string name="context_menu_title">Long-press menu</string>
     <string name="context_menu_desc">Choose what appears when you press and hold the handler.</string>
-    <string name="context_menu_empty">No items selected. Press and hold will only move the handler.</string>
+    <string name="context_menu_empty">Nothing else selected. Press and hold will move the handler and offer Hide handler.</string>
+    <string name="context_menu_always">Always shown</string>
     <string name="context_menu_section">Long-press menu items</string>
     <string name="behaviour_section">Behaviour</string>
     <string name="context_menu_count">%1$d selected</string>
-    <string name="context_menu_none">Off</string>
+    <string name="snap_to_edge">Snap to edge</string>
+    <string name="snap_to_edge_desc">On: the bar flies to the nearer side when you let go and parks at the edge distance below. Off: it stays exactly where you dropped it. Height is always yours either way.</string>
+
+    <string name="notification_channel_controls">Handler controls</string>
+    <string name="notification_channel_controls_desc">The ongoing row with Show/Hide, Settings and Stop.</string>
+    <string name="notification_channel_minimal">Running quietly</string>
+    <string name="notification_channel_minimal_desc">A silent placeholder Android requires while the service runs. No icon, no buttons.</string>
+    <string name="notification_minimal_title">GestureVolume is running</string>
+
+    <string name="show_notification_title">Notification controls</string>
+    <string name="show_notification_desc">Keep Show, Settings and Stop in the notification shade. It is the only way to bring the handler back once you hide it without opening the app.</string>
+    <string name="show_notification_off_hint">Off: Android still requires a silent placeholder while the service runs. Tap to hide it completely in system settings.</string>
+    <string name="open_notification_settings">System notification settings</string>
+
+    <string name="notification_permission">Notifications</string>
+    <string name="notification_permission_desc">Optional: shows the handler controls — Show, Settings and Stop — in the notification shade</string>
+
+    <string name="handler_hidden_card_title">Handler is hidden</string>
+    <string name="handler_hidden_card_desc">You hid it from the long-press menu. It will stay hidden until you show it again.</string>
+    <string name="handler_hidden_card_action">Show handler</string>
+    <string name="handler_shown_toast">Handler will appear when you leave the app.</string>
+
+    <string name="service_active">Service active</string>
+    <string name="service_inactive">Service inactive</string>
+    <string name="tap_to_disable">Tap to disable</string>
+    <string name="tap_to_enable">Tap to enable</string>
+
+    <string name="lock_permission_section">SCREEN LOCK</string>
+    <string name="lock_accessibility_permission">Screen lock (accessibility)</string>
+    <string name="lock_accessibility_permission_desc">Recommended: lets the Lock action turn the screen off the same way the power button does, so your fingerprint still unlocks the phone</string>
+    <string name="permission_turn_off">Turn off</string>
+    <!-- Lock / notification warnings raised at the moment an action is chosen -->
+    <string name="lock_permission_menu_message">You added Lock to the long-press menu, but nothing can lock the screen yet.\n\nAccessibility is recommended: it locks the screen the way the power button does, so your fingerprint still unlocks the phone.</string>
+    <string name="notification_permission_needed_title">Notifications are turned off</string>
+    <string name="notification_permission_needed_message">The controls are on, but Android is not allowing GestureVolume to post notifications — so Show, Settings and Stop will not appear in the shade.</string>
+    <string name="notification_permission_warning_inline">Notifications are blocked for this app. Tap to allow them.</string>
+    <string name="grant_permission_action">Allow</string>
+    <string name="not_now">Not now</string>
+
+    <!-- Appearance screen chrome -->
+    <string name="help">Help</string>
+    <string name="appearance_help_title">Using the preview</string>
+    <string name="appearance_help_move">Move the bar\nLong press it, wait for the vibration, then drag. It moves exactly as it will on your home screen, snapping and edge distance included. This needs the long press action set to “Move handler”.</string>
+    <string name="appearance_help_test">Try the gestures\nTap, double tap and swipe the bar to feel your settings. Volume and brightness really change; actions that leave the app or touch the live overlay are skipped here.</string>
+    <string name="appearance_help_settings">Change how it looks\nDrag the sheet up, or tap the settings icon, for colours, size, corners and icon. Nothing is written until you tap Apply.</string>
+    <string name="appearance_help_apply">Apply\nThe tick appears once something has changed, and applies it to the live bar.</string>
+    <string name="got_it">Got it</string>
+    <string name="settings_sheet">Appearance settings</string>
+
+    <!-- Drawer: premium + reset -->
+    <string name="remove_ads_support_developer">Remove all ads and support the developer</string>
+    <string name="reset_app">Reset app</string>
+    <string name="reset_app_title">Reset everything?</string>
+    <string name="reset_app_message">Every setting goes back to its default: the handler\'s look and position, all tap and swipe actions, the long-press menu, the theme and the language. The floating bar is switched off and the welcome screens come back.\n\nYour Pro purchase is kept. This cannot be undone.</string>
+    <string name="reset_app_confirm">Reset</string>
+    <string name="reset_app_done">Everything has been reset.</string>
+    <!-- "You configured a feature that needs this" banners on the permission cards -->
+    <string name="permission_needed_lock">You have set an action to Lock. Without this, tapping it does nothing.</string>
+    <string name="permission_needed_notification">Notification controls are on. Without this, Show, Settings and Stop will not appear.</string>
+    <string name="permission_needed_brightness">You have set a brightness action. Without this, it cannot change the brightness.</string>
+    <string name="permission_action_required_one">1 permission needs your attention</string>
+    <string name="permission_action_required_many">%1$d permissions need your attention</string>
+    <string name="lock_unsupported_message">Locking the screen needs Android 9 or newer. This phone cannot do it, so the Lock action will report that it is unavailable.</string>
+    <string name="lock_unsupported_short">Needs Android 9 or newer</string>
 </resources>

@@ -6,7 +6,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import com.newagedevs.gesturevolume.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -39,16 +42,22 @@ fun ServiceControlCard(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = if (isRunning) "Service Active" else "Service Inactive",
+                text = stringResource(
+                    if (isRunning) R.string.service_active else R.string.service_inactive
+                ),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = if (isRunning) "Tap to disable" else "Tap to enable",
+                text = stringResource(
+                    if (isRunning) R.string.tap_to_disable else R.string.tap_to_enable
+                ),
                 fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center
             )
         }
     }

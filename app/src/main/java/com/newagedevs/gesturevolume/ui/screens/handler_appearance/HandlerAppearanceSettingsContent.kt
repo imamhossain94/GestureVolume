@@ -1,9 +1,7 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
 import android.view.Gravity
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,6 +18,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.service.HandlerGeometry
+import com.newagedevs.gesturevolume.utils.HandlerPresets
+
+/**
+ * Where "Reset position" puts the bar horizontally: flush with the default preset's side.
+ *
+ * Read from [HandlerPresets] rather than from the preference's own default, which is derived from
+ * exactly the same place — one definition of "the side the app starts on", not two.
+ */
+private val DEFAULT_POS_X_FRACTION: Float =
+    if (HandlerPresets.DEFAULT.gravity == Gravity.START) 0f else 1f
 
 @Composable
 fun HandlerAppearanceSettingsContent(
@@ -31,36 +40,29 @@ fun HandlerAppearanceSettingsContent(
         // Position Section
         SectionTitle(stringResource(R.string.position_uppercase), Color(0xFF8B5CF6))
         CustomizationCard(borderColor = Color(0xFF8B5CF6)) {
-            LabeledControl(label = stringResource(R.string.gravity)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    SelectableButton(
-                        text = stringResource(R.string.left),
-                        selected = state.gravity == Gravity.START,
-                        borderColor = Color(0xFF8B5CF6),
-                        onClick = { state.gravity = Gravity.START },
-                        modifier = Modifier.weight(1f)
-                    )
-                    SelectableButton(
-                        text = stringResource(R.string.right),
-                        selected = state.gravity == Gravity.END,
-                        borderColor = Color(0xFF8B5CF6),
-                        onClick = { state.gravity = Gravity.END },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
+            // No Left/Right picker. The bar goes where it is dragged, and which side it is
+            // "on" is a consequence of that rather than a setting — a picker on top could only
+            // ever disagree with where the bar actually is. The two controls below are the whole
+            // of horizontal placement: whether it returns to a side, and how far in that side is.
+            Text(
+                text = stringResource(R.string.drag_to_move_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 16.sp
+            )
+
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
-            // There is no lock switch any more. Moving the bar takes a deliberate long press, and
-            // whether that long press moves it is the long-press action's business — one setting,
-            // in one place, instead of two that could contradict each other.
+            SwitchControl(
+                label = stringResource(R.string.snap_to_edge),
+                checked = state.snapToEdge,
+                borderColor = Color(0xFF8B5CF6),
+                onCheckedChange = { state.snapToEdge = it }
+            )
             Text(
-                text = stringResource(R.string.drag_to_move_hint),
+                text = stringResource(R.string.snap_to_edge_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 16.sp
@@ -89,9 +91,16 @@ fun HandlerAppearanceSettingsContent(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
-            // A way back for anyone who drags the bar somewhere awkward.
+            // A way back for anyone who drags the bar somewhere awkward. Both axes now — putting
+            // the bar back in the middle of the height it is already lost behind is no rescue.
             TextButton(
-                onClick = { state.positionFraction = 0.5f },
+                onClick = {
+                    // The same corner a fresh install starts in, so "Reset" and "new install"
+                    // cannot disagree about where the bar belongs.
+                    state.positionFraction = HandlerGeometry.DEFAULT_POSITION_FRACTION
+                    state.posXFraction = DEFAULT_POS_X_FRACTION
+                    state.gravity = if (DEFAULT_POS_X_FRACTION < 0.5f) Gravity.START else Gravity.END
+                },
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Text(stringResource(R.string.reset_position))

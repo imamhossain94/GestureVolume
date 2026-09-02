@@ -6,9 +6,11 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
@@ -22,8 +24,10 @@ import com.newagedevs.gesturevolume.helper.ApplovinAdsManager
 import com.newagedevs.gesturevolume.service.OverlayService
 import com.newagedevs.gesturevolume.service.OverlayServiceInterface
 import com.newagedevs.gesturevolume.utils.Constants
+import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.LockScreenUtil
+import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -64,24 +68,17 @@ class MainViewModel @Inject constructor(
         _state.value = _state.value.copy(
             isRunning = preference.isRunning(),
             isProActivated = preference.isProFeatureActivated(),
-            gravity = preference.getHandlerPosition(),
-            translationY = preference.getHandlerTranslationY(),
-            color = preference.getHandlerColor(),
             clickAction = preference.getHandlerSingleTapAction(),
             doubleClickAction = preference.getHandlerDoubleTapAction(),
             longClickAction = preference.getHandlerLongTapAction(),
             swipeUpAction = preference.getHandlerSwipeUpAction(),
             swipeDownAction = preference.getHandlerSwipeDownAction(),
-            gravityIcon = when (preference.getHandlerPosition()) {
-                "Left" -> R.drawable.ic_align_left
-                "Right" -> R.drawable.ic_align_right
-                else -> R.drawable.ic_align_right
-            },
             clickActionIcon = getActionIcon(preference.getHandlerSingleTapAction()),
             doubleClickActionIcon = getActionIcon(preference.getHandlerDoubleTapAction()),
             longClickActionIcon = getActionIcon(preference.getHandlerLongTapAction()),
             swipeUpActionIcon = getSwipeUpIcon(preference.getHandlerSwipeUpAction()),
             swipeDownActionIcon = getSwipeDownIcon(preference.getHandlerSwipeDownAction()),
+            isHandlerHidden = preference.isHandlerHidden(),
             theme = preference.getTheme(),
             language = preference.getLanguage()
         )
@@ -98,12 +95,10 @@ class MainViewModel @Inject constructor(
 
     private var pendingBrightnessAction: Pair<String, ActionSlot>? = null
 
+
     fun onEvent(event: MainEvent) {
         when (event) {
             is MainEvent.ToggleService -> toggleService(event.isRunning, event.context)
-            is MainEvent.SetServiceRunning -> setServiceRunning(event.isRunning)
-            is MainEvent.SetGravity -> setGravity(event.gravity)
-            is MainEvent.SetColor -> setColor(event.color)
             is MainEvent.SetClickAction -> setClickAction(event.action, event.context)
             is MainEvent.SetDoubleClickAction -> setDoubleClickAction(event.action, event.context)
             is MainEvent.SetLongClickAction -> setLongClickAction(event.action, event.context)
@@ -116,17 +111,51 @@ class MainViewModel @Inject constructor(
                 pendingBrightnessAction = null
                 _state.value = _state.value.copy(pendingWriteSettingsRequest = false)
             }
+            is MainEvent.SetHandlerHidden -> setHandlerHidden(event.hidden, event.context)
+            is MainEvent.ResetAllSettings -> resetAllSettings(event.context)
             MainEvent.ShowProDialog -> showProDialog()
         }
     }
 
     private fun updatePermissionsStatus(context: Context) {
         val hasOverlay = Settings.canDrawOverlays(context)
+        val needs = PermissionNeeds.read(context, preference)
 
         _state.value = _state.value.copy(
             hasOverlayPermission = hasOverlay,
-            hasWriteSettingsPermission = Settings.System.canWrite(context)
+            hasWriteSettingsPermission = Settings.System.canWrite(context),
+            missingPermissionCount = needs.missingCount,
+            // Refreshed here because this runs on every ON_RESUME, and the bar can be hidden from
+            // the overlay's own menu or the notification while the app sits in the background.
+            isHandlerHidden = preference.isHandlerHidden()
         )
+    }
+
+    /**
+     * Shows or hides the bar deliberately, from inside the app.
+     *
+     * Un-hiding does **not** send `user_show`. That command builds the handler window there and
+     * then, and the app deliberately keeps the bar out of the way while it is in the foreground —
+     * so the bar would pop up over the screen the user just tapped, contradicting the message
+     * telling them it will be back when they leave. Clearing the preference is enough: the `show`
+     * the Activity already sends from `onPause` puts the bar back on the way out.
+     *
+     * Hiding, by contrast, has to reach the service, since there may be a window to take down.
+     *
+     * Either way the notification is re-posted, because its first button swaps between Show and
+     * Hide and only the service can replace it.
+     */
+    private fun setHandlerHidden(hidden: Boolean, context: Context) {
+        preference.setHandlerHidden(hidden)
+        _state.value = _state.value.copy(isHandlerHidden = hidden)
+        if (!preference.isRunning()) return
+        val intent = Intent(context, OverlayService::class.java)
+            .setAction(if (hidden) "user_hide" else "refresh_notification")
+        try {
+            context.startService(intent)
+        } catch (_: Exception) {
+            // Service not running; the preference above is still the durable answer.
+        }
     }
 
     /**
@@ -141,6 +170,47 @@ class MainViewModel @Inject constructor(
         pendingBrightnessAction = action to slot
         _state.value = _state.value.copy(pendingWriteSettingsRequest = true)
         return false
+    }
+
+    /**
+     * Notices that the Lock action has been chosen with no way to actually lock, and asks.
+     *
+     * Called *after* the action is saved, not instead of saving it. The previous code returned
+     * early and launched the Device Admin prompt, which meant the user's choice was thrown away:
+     * they granted admin, came back, and the action was still whatever it had been before. Now the
+     * setting is theirs either way and the permission is a separate question.
+     */
+    private fun requireLockPermission(action: String, context: Context) {
+        if (action != HandlerActions.LOCK) return
+        if (LockScreenUtil(context).canLock()) return
+        _state.value = _state.value.copy(pendingLockPermissionRequest = true)
+    }
+
+    /** The user accepted the prompt: off to the accessibility list to switch the service on. */
+    fun onLockPermissionChoice(context: Context) {
+        _state.value = _state.value.copy(pendingLockPermissionRequest = false)
+        val util = LockScreenUtil(context)
+        if (!util.accessibilitySupported()) return
+        preference.setAppOpenAdPaused(true)
+        util.openAccessibilitySettings()
+    }
+
+    /**
+     * Raises the lock-permission prompt when [actions] contains Lock and nothing can lock.
+     *
+     * Public because the long-press menu picker chooses actions too, and choosing Lock there used
+     * to save silently — the entry appeared in the menu, and tapping it on the bar did nothing but
+     * show a message long after the moment the user could have connected it to what they had just
+     * set. The tap-action pickers reach the same prompt through [requireLockPermission].
+     */
+    fun checkLockPermission(actions: Set<String>, context: Context) {
+        if (HandlerActions.LOCK !in actions) return
+        if (LockScreenUtil(context).canLock()) return
+        _state.value = _state.value.copy(pendingLockPermissionRequest = true)
+    }
+
+    fun cancelLockPermissionRequest() {
+        _state.value = _state.value.copy(pendingLockPermissionRequest = false)
     }
 
     /** Applies whatever the user was trying to set before we sent them to grant the permission. */
@@ -187,11 +257,9 @@ class MainViewModel @Inject constructor(
     }
 
     private fun toggleService(isRunning: Boolean, context: Context) {
-        // No notification gate any more. The app posts no notifications of its own, and the
-        // foreground service's mandatory one is deliberately left unpostable — see
-        // OverlayService.startForegroundService. Asking for POST_NOTIFICATIONS and then refusing
-        // to start the overlay without it made the toggle silently fail for anyone who declined,
-        // over a notification they were never going to see.
+        // Overlay permission is the only hard gate. The notification permission is asked for
+        // separately, below, and never blocks: the old code refused to start the service at all
+        // when POST_NOTIFICATIONS was declined, which made the toggle fail silently.
         if (!Settings.canDrawOverlays(context)) {
             // Reset state before requesting permission
             preference.setRunning(false)
@@ -209,19 +277,52 @@ class MainViewModel @Inject constructor(
         _state.value = _state.value.copy(isRunning = isRunning)
 
         if (isRunning) {
-            // Show interstitial ad with cooldown check
-            maybeShowInterstitialAd()
-            startOverlayService(context)
+            // Switching the service on is an explicit request for the bar, so it overrides a
+            // previous "Hide handler". Without this the toggle would go green and nothing would
+            // appear — the service starts with no action, which is the path that deliberately
+            // leaves a hidden bar hidden.
+            preference.setHandlerHidden(false)
+            _state.value = _state.value.copy(isHandlerHidden = false)
+            maybeAskForNotificationPermission(context)
+            // The interstitial is requested here but shown when the service actually connects.
+            // It used to be shown on this line — before the service had started — so it landed
+            // while the user was still waiting to find out whether the thing had worked, and it
+            // fired just as readily when the start then failed.
+            startOverlayService(context, announceWithAd = true)
         } else {
             stopOverlayService(context)
         }
     }
 
     /**
-     * Show an interstitial at a natural transition (service start, opening Appearance/Actions),
-     * gated by SharedPref cooldowns + the per-session cap. Interstitial is by far the
-     * top-earning format ($3.10 eCPM) yet it fired only on service-toggle before, so it barely
-     * showed; adding a few genuine break points lifts revenue while the caps protect retention.
+     * Asks for POST_NOTIFICATIONS the first time the service is switched on, and never again.
+     *
+     * Android 13+ stops showing the dialog after two refusals, so repeating the request on every
+     * start would be a no-op that reads as a bug. Skipped entirely when the user has already
+     * turned the notification off in settings — there would be nothing to post.
+     */
+    private fun maybeAskForNotificationPermission(context: Context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        if (!preference.getShowNotification()) return
+        if (preference.hasAskedNotificationPermission()) return
+        if (
+            ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) return
+
+        preference.setAskedNotificationPermission(true)
+        viewModelScope.launch { _effect.send(MainEffect.RequestNotificationPermission) }
+    }
+
+    /**
+     * Show an interstitial at an ordinary transition — opening Appearance or Actions — gated by
+     * the SharedPref cooldowns, the per-session cap and the post-install grace period.
+     *
+     * Interstitial is by far the top-earning format ($3.10 eCPM) yet it fired only on the service
+     * toggle before, so it barely showed; a few genuine break points lift revenue while the caps
+     * protect retention.
      */
     fun maybeShowInterstitialAd() {
         if (_state.value.isProActivated) return
@@ -232,12 +333,30 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun setServiceRunning(isRunning: Boolean) {
-        preference.setRunning(isRunning)
-        _state.value = _state.value.copy(isRunning = isRunning)
+    /**
+     * The service has started and the handler is ready: show the one interstitial that is allowed
+     * during the post-install grace period.
+     *
+     * Separate from [maybeShowInterstitialAd] rather than a boolean on it, so the exception to the
+     * grace period is visible at the call site and cannot spread to the transition placements by
+     * someone passing the wrong argument.
+     */
+    private fun maybeShowServiceStartInterstitial() {
+        if (_state.value.isProActivated) return
+        if (preference.shouldShowServiceStartInterstitial()) {
+            adsManager?.showInterstitialAd(
+                loaded = { preference.saveInterstitialAdTime() }
+            )
+        }
     }
 
-    private fun startOverlayService(context: Context) {
+    /**
+     * @param announceWithAd true only when the user just switched the service on themselves. The
+     *   silent repair path calls this too, and a system-killed service quietly coming back is not
+     *   a moment to show anybody an ad. Carried as a parameter rather than a field so a bind that
+     *   never connects cannot leave it armed for the next caller.
+     */
+    private fun startOverlayService(context: Context, announceWithAd: Boolean = false) {
         val service = Intent(context, OverlayService::class.java)
         
         try {
@@ -253,6 +372,9 @@ class MainViewModel @Inject constructor(
             override fun onServiceConnected(name: ComponentName, service: IBinder) {
                 overlayService = (service as OverlayService.LocalBinder).instance()
                 isBound = true
+                // The service is bound and the handler is configured and ready, which is the
+                // moment setup is finished — the one full-screen ad the grace period allows.
+                if (announceWithAd) maybeShowServiceStartInterstitial()
             }
 
             override fun onServiceDisconnected(name: ComponentName) {
@@ -341,29 +463,48 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun setGravity(gravity: String) {
-        preference.setHandlerPosition(gravity)
-        val icon = when (gravity) {
-            "Left" -> R.drawable.ic_align_left
-            "Right" -> R.drawable.ic_align_right
-            else -> R.drawable.ic_align_right
-        }
-        _state.value = _state.value.copy(gravity = gravity, gravityIcon = icon)
+    /**
+     * Factory-resets the app: every setting back to default, the overlay stopped, the UI in step.
+     *
+     * The service is stopped *before* the wipe rather than after. `resetAll` clears `isRunning`,
+     * and a stop issued after that reads a preference that already says the service is off — so
+     * the overlay would be left running with no record of it and no switch showing it.
+     */
+    private fun resetAllSettings(context: Context) {
+        stopOverlayService(context)
+        overlayService?.shouldFinish = true
+        preference.resetAll()
+        initializeData()
+        _state.value = _state.value.copy(
+            isRunning = false,
+            isHandlerHidden = false,
+            pendingWriteSettingsRequest = false,
+            pendingLockPermissionRequest = false
+        )
     }
 
-    private fun setColor(color: Int) {
-        preference.setHandlerColor(color)
-        _state.value = _state.value.copy(color = color)
+    /**
+     * Re-posts the ongoing notification, and nothing else.
+     *
+     * Deliberately not [sendUpdateToService], which rebuilds the handler window: the bar is hidden
+     * while the app is in the foreground, so a rebuild would make it appear on top of the settings
+     * screen the moment the switch was flipped.
+     */
+    fun refreshServiceNotification(context: Context) {
+        if (!preference.isRunning()) return
+        val intent = Intent(context, OverlayService::class.java)
+            .setAction("refresh_notification")
+        try {
+            context.startService(intent)
+        } catch (_: Exception) {
+            // Service not running; the preference is already written either way.
+        }
     }
 
     private fun setClickAction(action: String, context: Context) {
-        val lockScreenUtil = LockScreenUtil(context)
-        if (action == "Lock" && !lockScreenUtil.active()) {
-            lockScreenUtil.enableAdmin()
-            return
-        }
         if (!requireWriteSettings(action, ActionSlot.SINGLE_TAP, context)) return
         preference.setHandlerSingleTapAction(action)
+        requireLockPermission(action, context)
         _state.value = _state.value.copy(
             clickAction = action,
             clickActionIcon = getActionIcon(action)
@@ -371,13 +512,9 @@ class MainViewModel @Inject constructor(
     }
 
     private fun setDoubleClickAction(action: String, context: Context) {
-        val lockScreenUtil = LockScreenUtil(context)
-        if (action == "Lock" && !lockScreenUtil.active()) {
-            lockScreenUtil.enableAdmin()
-            return
-        }
         if (!requireWriteSettings(action, ActionSlot.DOUBLE_TAP, context)) return
         preference.setHandlerDoubleTapAction(action)
+        requireLockPermission(action, context)
         _state.value = _state.value.copy(
             doubleClickAction = action,
             doubleClickActionIcon = getActionIcon(action)
@@ -385,13 +522,9 @@ class MainViewModel @Inject constructor(
     }
 
     private fun setLongClickAction(action: String, context: Context) {
-        val lockScreenUtil = LockScreenUtil(context)
-        if (action == "Lock" && !lockScreenUtil.active()) {
-            lockScreenUtil.enableAdmin()
-            return
-        }
         if (!requireWriteSettings(action, ActionSlot.LONG_TAP, context)) return
         preference.setHandlerLongTapAction(action)
+        requireLockPermission(action, context)
         _state.value = _state.value.copy(
             longClickAction = action,
             longClickActionIcon = getActionIcon(action)
@@ -422,20 +555,14 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun getActionIcon(action: String): Int {
-        return when (action) {
-            HandlerActions.NONE -> R.drawable.ic_nothing
-            HandlerActions.OPEN_VOLUME_UI -> R.drawable.ic_vol_increase
-            HandlerActions.MUTE -> R.drawable.ic_mute
-            HandlerActions.ACTIVE_MUSIC_OVERLAY -> R.drawable.ic_music_ui
-            HandlerActions.LOCK -> R.drawable.ic_lock
-            HandlerActions.HIDE_HANDLER -> R.drawable.ic_visibility_hide
-            HandlerActions.OPEN_APP -> R.drawable.ic_app_open
-            HandlerActions.TOGGLE_AUTO_BRIGHTNESS -> R.drawable.ic_brightness_auto
-            HandlerActions.REPOSITION -> R.drawable.ic_move
-            else -> R.drawable.ic_nothing
-        }
-    }
+    /**
+     * One lookup, from the same catalog the dialogs and the overlay menu read.
+     *
+     * This used to be a `when` listing every action by hand, which meant "Mute or Unmute" — never
+     * in the list — showed the do-nothing icon on the main screen for as long as it has existed.
+     */
+    private fun getActionIcon(action: String): Int =
+        HandlerActionCatalog.entryFor(action)?.iconRes ?: R.drawable.ic_nothing
 
     private fun getSwipeUpIcon(action: String): Int {
         return when (action) {
@@ -481,6 +608,9 @@ class MainViewModel @Inject constructor(
             }
             "Troubleshoot" -> viewModelScope.launch {
                 _effect.send(MainEffect.NavigateToTroubleshoot)
+            }
+            "Reset" -> viewModelScope.launch {
+                _effect.send(MainEffect.ConfirmResetApp)
             }
         }
     }
@@ -589,9 +719,15 @@ class MainViewModel @Inject constructor(
                     // Handle stop command - stop the service
                     stopOverlayService(activity)
                     preference.setRunning(false)
-                    _state.value = _state.value.copy(isRunning = false)
+                    _state.value = _state.value.copy(isRunning = false, isHandlerHidden = false)
                     overlayService?.shouldFinish = true
                 }
+                // The notification's first button, pressed while the app is open behind it. The
+                // service has already acted; this is only the app hearing about it, so that the
+                // "Handler is hidden" card appears and disappears in step rather than waiting for
+                // the next ON_RESUME.
+                "user_hide" -> _state.value = _state.value.copy(isHandlerHidden = true)
+                "user_show" -> _state.value = _state.value.copy(isHandlerHidden = false)
                 else -> {
 
                 }

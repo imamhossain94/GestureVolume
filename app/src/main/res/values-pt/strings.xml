@@ -2,8 +2,6 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="device_description">Bloquear tela ao clicar com a API Device Policy Manager</string>
-    <string name="device_admin_label">Administrador de dispositivo de volume de gestos</string>
     <string name="landscape_appearance_settings">CONFIGURAÇÕES DE APARÊNCIA DE PAISAGEM</string>
     <string name="click_">Verifique a chave para ativo e configure a gravidade, tamanho, espessura e posição do manipulador na tela paisagem.</string>
     <string name="configure">Configurar</string>
@@ -49,7 +47,6 @@
     <string name="language">Linguagem</string>
     <string name="lock_position">Posição de bloqueio</string>
     <string name="long_press_action">Ação de pressão longa</string>
-    <string name="minimize">MINIMIZAR</string>
     <string name="more">MAIS</string>
     <string name="newagedevs">NewAgeDevs</string>
     <string name="nothing_to_restore">Nada para restaurar</string>
@@ -92,7 +89,6 @@
     <string name="top_left">Canto superior esquerdo</string>
     <string name="top_right">Canto superior direito</string>
     <string name="upgrade">ATUALIZAR</string>
-    <string name="unlock_all_features">Remover todos os anúncios</string>
     <string name="unsaved_changes">Alterações não salvas</string>
     <string name="upgrade_to_pro">Atualizar para Pro</string>
     <string name="vibrate_on_click">Vibrar ao clicar</string>
@@ -143,8 +139,6 @@
     <!-- Permissions -->
     <string name="overlay_permission">Exibir sobre outros aplicativos</string>
     <string name="overlay_permission_desc">Obrigatório para mostrar a sobreposição do manipulador de volume na tela</string>
-    <string name="device_admin_permission">Administrador do dispositivo</string>
-    <string name="device_admin_permission_desc">Opcional: permite que o manipulador bloqueie a tela do seu dispositivo quando configurado</string>
 
     <!-- Walkthrough -->
     <string name="walkthrough_welcome_title">Bem-vindo ao Volume de gestos</string>
@@ -160,10 +154,7 @@
     <!-- Expanded Preview -->
     <string name="position_locked">POSIÇÃO BLOQUEADA</string>
     <string name="unlock_to_reposition">DESBLOQUEAR PARA REPOSICIONAR</string>
-    <string name="test_mode">Modo de teste</string>
     <string name="reposition_mode">Modo de reposição</string>
-    <string name="test_mode_desc">Experimente deslizar e tocar</string>
-    <string name="reposition_mode_desc">Arraste o manipulador para a nova posição</string>
 
     <!-- Appearance Settings Content -->
     <string name="position_uppercase">POSIÇÃO</string>
@@ -258,7 +249,6 @@
     <string name="preset_ghost_subtitle">Quase invisível</string>
 
     <!-- Missing Strings -->
-    <string name="preview">Visualização</string>
     <string name="press_back_again_to_exit">Pressione voltar novamente para sair</string>
     <string name="volume_gesture_handler">Manipulador de gestos de volume</string>
     <string name="troubleshoot">Solução de problemas</string>
@@ -287,9 +277,9 @@
     <string name="brightness_permission_title">Permitir o controle do brilho?</string>
     <string name="brightness_permission_message">Para alterar o brilho da tela, o GestureVolume precisa da permissão Modificar configurações do sistema. O brilho adaptativo é desativado enquanto você o usa e restaurado ao parar o serviço.</string>
     <string name="edge_offset">Distância da borda</string>
-    <string name="edge_offset_desc">Afasta a barra da borda da tela. Ajuda em telas curvas e com a navegação por gestos.</string>
+    <string name="edge_offset_desc">A menor distância que a barra mantém das bordas esquerda e direita — enquanto você arrasta e onde ela para ao encaixar. Ajuda em telas curvas e com a navegação por gestos.</string>
     <string name="reset_position">Redefinir posição</string>
-    <string name="drag_to_move_hint">Desative Bloquear posição e arraste a barra para cima ou para baixo.</string>
+    <string name="drag_to_move_hint">Para mover a barra: pressione e segure, aguarde a vibração e arraste. Defina a ação de pressão longa como “Mover barra” para ativar isso.</string>
     <string name="fix_battery_title">Otimização de bateria</string>
     <string name="fix_battery_desc">Permita uso irrestrito da bateria para que o Android não interrompa o serviço.</string>
     <string name="fix_battery_allowed">Irrestrito</string>
@@ -297,4 +287,82 @@
     <string name="fix_autostart_desc">Abra as configurações de inicialização automática do aparelho e permita o GestureVolume.</string>
     <string name="autostart_unavailable">Não disponível neste aparelho</string>
     <string name="open_settings">Abrir configurações</string>
+    <string name="snap_to_edge">Encaixar na borda</string>
+    <string name="snap_to_edge_desc">Ligado: a barra voa para o lado mais próximo ao soltar e para na distância da borda abaixo. Desligado: fica exatamente onde você soltou. A altura é sempre sua.</string>
+    <string name="notification_channel_controls">Controles da barra</string>
+    <string name="notification_channel_controls_desc">A linha permanente com Mostrar/Ocultar, Configurações e Parar.</string>
+    <string name="notification_channel_minimal">Executando em silêncio</string>
+    <string name="notification_channel_minimal_desc">Um espaço reservado silencioso exigido pelo Android enquanto o serviço roda. Sem ícone nem botões.</string>
+    <string name="notification_minimal_title">GestureVolume está em execução</string>
+    <string name="show_notification_title">Controles na notificação</string>
+    <string name="show_notification_desc">Mantenha Mostrar, Configurações e Parar no painel de notificações. É a única forma de trazer de volta uma barra oculta sem abrir o app.</string>
+    <string name="show_notification_off_hint">Desligado: o Android ainda exige um espaço reservado silencioso enquanto o serviço roda. Toque para ocultá-lo por completo nas configurações do sistema.</string>
+    <string name="open_notification_settings">Configurações de notificação do sistema</string>
+    <string name="notification_permission">Notificações</string>
+    <string name="notification_permission_desc">Opcional: mostra os controles da barra — Mostrar, Configurações e Parar — no painel de notificações</string>
+    <string name="handler_hidden_card_title">A barra está oculta</string>
+    <string name="handler_hidden_card_desc">Você a ocultou pelo menu de pressão longa. Ela ficará oculta até você mostrá-la novamente.</string>
+    <string name="handler_hidden_card_action">Mostrar</string>
+    <string name="handler_shown_toast">A barra aparecerá quando você sair do app.</string>
+    <string name="service_active">Serviço ativo</string>
+    <string name="service_inactive">Serviço inativo</string>
+    <string name="tap_to_disable">Toque para desativar</string>
+    <string name="tap_to_enable">Toque para ativar</string>
+    <string name="lock_permission_section">BLOQUEIO DE TELA</string>
+    <string name="lock_accessibility_permission">Bloqueio de tela (acessibilidade)</string>
+    <string name="lock_accessibility_permission_desc">Recomendado: permite que a ação Bloquear desligue a tela como o botão liga/desliga, para que sua digital continue desbloqueando o telefone</string>
+    <string name="permission_turn_off">Desativar</string>
+    <string name="action_reposition">Mover barra</string>
+    <string name="volume_percent_short">%1$d%%</string>
+    <string name="context_menu_count">%1$d selecionados</string>
+    <string name="notification_service_active">Os gestos de volume estão ativos</string>
+    <string name="show_volume_percent_title">Mostrar porcentagem do volume</string>
+    <string name="show_volume_percent_desc">Mostra o nível na barra enquanto você desliza.</string>
+    <string name="handler_hidden_toast">Barra oculta. Abra o GestureVolume para trazê-la de volta.</string>
+    <string name="action_stop_service">Parar serviço</string>
+    <string name="notification_handler_hidden">Barra oculta — toque em Mostrar para trazê-la de volta</string>
+    <string name="notification_action_show">Mostrar</string>
+    <string name="notification_action_hide">Ocultar</string>
+    <string name="notification_action_settings">Configurações</string>
+    <string name="notification_action_stop">Parar</string>
+    <string name="lock_accessibility_label">Bloqueio de tela</string>
+    <string name="lock_accessibility_summary">Permite que a ação Bloquear desligue a tela.</string>
+    <string name="lock_accessibility_description">Permite que o GestureVolume bloqueie a tela quando você usa a ação Bloquear na barra flutuante. Ele bloqueia a tela do mesmo jeito que o botão liga/desliga, então sua digital continua desbloqueando o telefone. Este serviço não lê nada na sua tela e não executa nenhuma outra ação.</string>
+    <string name="lock_permission_title">Bloquear a tela</string>
+    <string name="lock_permission_message">O GestureVolume precisa de permissão para bloquear a tela.\n\nA acessibilidade é recomendada: ela bloqueia a tela como o botão liga/desliga, então sua digital continua desbloqueando o telefone. O administrador do dispositivo também funciona, mas a maioria dos telefones passa a pedir seu PIN em vez da digital.</string>
+    <string name="lock_permission_accessibility">Usar acessibilidade</string>
+    <string name="lock_not_available">Conceda uma permissão de bloqueio nas Configurações antes de usar a ação Bloquear.</string>
+    <string name="context_menu_title">Menu de pressão longa</string>
+    <string name="context_menu_desc">Escolha o que aparece quando você mantém a barra pressionada.</string>
+    <string name="context_menu_empty">Nada mais selecionado. Pressionar e segurar moverá a barra e oferecerá “Ocultar barra”.</string>
+    <string name="context_menu_always">Sempre visível</string>
+    <string name="context_menu_section">Itens do menu de pressão longa</string>
+    <string name="behaviour_section">Comportamento</string>
+    <string name="lock_permission_menu_message">Você adicionou Bloquear ao menu de pressão longa, mas ainda nada consegue bloquear a tela.\n\nA acessibilidade é recomendada: ela bloqueia a tela como o botão liga/desliga, então sua digital continua desbloqueando o telefone.</string>
+    <string name="notification_permission_needed_title">As notificações estão desativadas</string>
+    <string name="notification_permission_needed_message">Os controles estão ligados, mas o Android não está permitindo que o GestureVolume publique notificações — então Mostrar, Configurações e Parar não aparecerão no painel.</string>
+    <string name="notification_permission_warning_inline">As notificações estão bloqueadas para este app. Toque para permitir.</string>
+    <string name="grant_permission_action">Permitir</string>
+    <string name="not_now">Agora não</string>
+    <string name="help">Ajuda</string>
+    <string name="appearance_help_title">Usando a prévia</string>
+    <string name="appearance_help_move">Mover a barra\nPressione e segure, aguarde a vibração e arraste. Ela se move exatamente como na sua tela inicial, encaixe e distância da borda incluídos. Requer que a ação de pressão longa seja “Mover barra”.</string>
+    <string name="appearance_help_test">Testar os gestos\nToque, toque duas vezes e deslize na barra para sentir seus ajustes. Volume e brilho mudam de verdade; ações que saem do app ou mexem na barra real são ignoradas aqui.</string>
+    <string name="appearance_help_settings">Mudar a aparência\nArraste a folha para cima, ou toque no ícone de configurações, para cores, tamanho, cantos e ícone. Nada é salvo até você tocar em Aplicar.</string>
+    <string name="appearance_help_apply">Aplicar\nO visto aparece assim que algo muda e o aplica à barra real.</string>
+    <string name="got_it">Entendi</string>
+    <string name="settings_sheet">Configurações de aparência</string>
+    <string name="remove_ads_support_developer">Remova todos os anúncios e apoie o desenvolvedor</string>
+    <string name="reset_app">Redefinir o app</string>
+    <string name="reset_app_title">Redefinir tudo?</string>
+    <string name="reset_app_message">Cada configuração volta ao padrão: a aparência e a posição da barra, todas as ações de toque e deslize, o menu de pressão longa, o tema e o idioma. A barra flutuante é desligada e as telas de boas-vindas voltam.\n\nSua compra Pro é mantida. Isso não pode ser desfeito.</string>
+    <string name="reset_app_confirm">Redefinir</string>
+    <string name="reset_app_done">Tudo foi redefinido.</string>
+    <string name="permission_needed_lock">Você definiu uma ação como Bloquear. Sem isso, tocá-la não faz nada.</string>
+    <string name="permission_needed_notification">Os controles da notificação estão ligados. Sem isso, Mostrar, Configurações e Parar não aparecerão.</string>
+    <string name="permission_needed_brightness">Você definiu uma ação de brilho. Sem isso, ela não pode alterar o brilho.</string>
+    <string name="permission_action_required_one">1 permissão precisa da sua atenção</string>
+    <string name="permission_action_required_many">%1$d permissões precisam da sua atenção</string>
+    <string name="lock_unsupported_message">Bloquear a tela exige Android 9 ou mais recente. Este telefone não consegue, então a ação Bloquear informará que está indisponível.</string>
+    <string name="lock_unsupported_short">Requer Android 9 ou mais recente</string>
 </resources>

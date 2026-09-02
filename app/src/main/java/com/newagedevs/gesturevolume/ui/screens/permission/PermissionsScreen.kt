@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.BrightnessHigh
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -44,7 +45,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,8 +61,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.LockScreenUtil
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import androidx.compose.ui.res.stringResource
 import com.newagedevs.gesturevolume.R
 
@@ -75,8 +74,6 @@ fun PermissionsScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val coroutineScope = rememberCoroutineScope()
-
     DisposableEffect(Unit) {
         viewModel.preference.setAppOpenAdPaused(true)
         onDispose {
@@ -84,20 +81,30 @@ fun PermissionsScreen(
         }
     }
 
+    val lockScreenUtil = remember { LockScreenUtil(context) }
+
     var overlayPermissionGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
-    var deviceAdminGranted by remember {
-        mutableStateOf(LockScreenUtil(context).active())
-    }
-    var writeSettingsGranted by remember {
-        mutableStateOf(Settings.System.canWrite(context))
+    var accessibilityGranted by remember { mutableStateOf(lockScreenUtil.accessibilityActive()) }
+    var writeSettingsGranted by remember { mutableStateOf(Settings.System.canWrite(context)) }
+    var notificationsGranted by remember {
+        mutableStateOf(PermissionNeeds.hasNotificationPermission(context))
     }
 
-    // Listen for lifecycle changes to update device admin status
+    // Which of the optional permissions this user's own configuration has made necessary. Read
+    // as state so it re-reads on resume alongside everything else — an action changed on the
+    // Actions screen has to be reflected here the moment the user comes back.
+    var needs by remember { mutableStateOf(PermissionNeeds.read(context, viewModel.preference)) }
+
+    // Everything on this screen is granted outside the app, so the only honest moment to re-read
+    // it is when the user comes back.
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                deviceAdminGranted = LockScreenUtil(context).active()
+                overlayPermissionGranted = Settings.canDrawOverlays(context)
+                accessibilityGranted = lockScreenUtil.accessibilityActive()
                 writeSettingsGranted = Settings.System.canWrite(context)
+                notificationsGranted = PermissionNeeds.hasNotificationPermission(context)
+                needs = PermissionNeeds.read(context, viewModel.preference)
                 viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
             }
         }
@@ -105,6 +112,26 @@ fun PermissionsScreen(
 
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        notificationsGranted = granted
+        // Denied twice, Android stops showing the dialog and the request returns instantly. The
+        // app notification settings are then the only route, so send the user there rather than
+        // leaving a button that appears to do nothing.
+        if (!granted) {
+            viewModel.preference.setAppOpenAdPaused(true)
+            try {
+                context.startActivity(
+                    Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                        .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                )
+            } catch (_: Exception) {
+                viewModel.preference.setAppOpenAdPaused(false)
+            }
         }
     }
 
@@ -220,6 +247,9 @@ fun PermissionsScreen(
                 icon = Icons.Default.BrightnessHigh,
                 isGranted = writeSettingsGranted,
                 isOptional = true,
+                warning = if (needs.writeSettingsMissing) {
+                    stringResource(R.string.permission_needed_brightness)
+                } else null,
                 borderColor = if (writeSettingsGranted) {
                     Color(0xFF10B981)
                 } else {
@@ -241,35 +271,60 @@ fun PermissionsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Device Admin Permission
+            // Notifications — the shade row carrying Show, Settings and Stop. Optional in the
+            // strict sense: the service runs without it. It is, however, the only way to bring
+            // back a bar hidden from the long-press menu without opening the app.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                PermissionCard(
+                    title = stringResource(R.string.notification_permission),
+                    description = stringResource(R.string.notification_permission_desc),
+                    icon = Icons.Default.Notifications,
+                    isGranted = notificationsGranted,
+                    isOptional = true,
+                    warning = if (needs.notificationMissing) {
+                        stringResource(R.string.permission_needed_notification)
+                    } else null,
+                    borderColor = if (notificationsGranted) {
+                        Color(0xFF10B981)
+                    } else {
+                        Color(0xFF8B5CF6)
+                    },
+                    onRequestPermission = {
+                        notificationPermissionLauncher.launch(
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Screen lock. One route now: accessibility locks the screen the way the power button
+            // does, so the fingerprint sensor still opens the phone. Device Admin, which locked it
+            // the way a corporate policy does and left most phones demanding a PIN, is gone.
             PermissionCard(
-                title = stringResource(R.string.device_admin_permission),
-                description = stringResource(R.string.device_admin_permission_desc),
+                title = stringResource(R.string.lock_accessibility_permission),
+                description = if (lockScreenUtil.accessibilitySupported()) {
+                    stringResource(R.string.lock_accessibility_permission_desc)
+                } else {
+                    stringResource(R.string.lock_unsupported_short)
+                },
                 icon = Icons.Default.Lock,
-                isGranted = deviceAdminGranted,
+                isGranted = accessibilityGranted,
                 isOptional = true,
-                borderColor = if (deviceAdminGranted) {
+                warning = if (needs.lockMissing && lockScreenUtil.accessibilitySupported()) {
+                    stringResource(R.string.permission_needed_lock)
+                } else null,
+                borderColor = if (accessibilityGranted) {
                     Color(0xFF10B981)
                 } else {
                     Color(0xFF8B5CF6)
                 },
                 onRequestPermission = {
-                    val lockScreenUtil = LockScreenUtil(context)
-                    if (!lockScreenUtil.active()) {
-                        lockScreenUtil.enableAdmin()
-                    }
-                },
-                onDisablePermission = if (deviceAdminGranted) {
-                    {
-                        coroutineScope.launch {
-                            val lockScreenUtil = LockScreenUtil(context)
-                            lockScreenUtil.disableAdmin()
-                            delay(500)
-                            deviceAdminGranted = lockScreenUtil.active()
-                            viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
-                        }
-                    }
-                } else null
+                    if (!lockScreenUtil.accessibilitySupported()) return@PermissionCard
+                    viewModel.preference.setAppOpenAdPaused(true)
+                    lockScreenUtil.openAccessibilitySettings()
+                }
             )
 
             Spacer(modifier = Modifier.height(32.dp))

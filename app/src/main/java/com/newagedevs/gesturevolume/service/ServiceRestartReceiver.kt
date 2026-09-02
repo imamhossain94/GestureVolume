@@ -36,6 +36,8 @@ class ServiceRestartReceiver : BroadcastReceiver() {
 
         if (!preference.isRunning()) return
 
+        // "show" is the transient command, which respects a bar the user has put away with
+        // "Hide handler" - a reboot is not them asking for it back. See OverlayService.
         val serviceIntent = Intent(context, OverlayService::class.java).apply {
             action = "show"
         }

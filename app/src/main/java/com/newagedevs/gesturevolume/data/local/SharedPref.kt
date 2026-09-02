@@ -80,7 +80,16 @@ class SharedPref @Inject constructor(
         const val HANDLER_EDGE_MARGIN = "handlerEdgeMarginDp"
         const val BRIGHTNESS_AUTO_WAS_ON = "brightnessAutoWasOn"
         const val LEGACY_TRANSLATION_Y_DEFAULT = 260f
-        const val DEFAULT_POSITION_FRACTION = 0.5f
+        /**
+         * Where a fresh install puts the bar vertically: its centre an eighth of the way down.
+         *
+         * Paired with a horizontal default of 1f — flush right — this is the top-right corner,
+         * clear of the status bar but well above the middle, which is where a thumb reaches
+         * without stretching and where the bar is least likely to collide with a full-screen
+         * app's own controls. Centring it put it exactly where video players and games place
+         * their scrubbers.
+         */
+        const val DEFAULT_POSITION_FRACTION = 0.12f
 
         /** The Default preset's side, as the string this preference stores. */
         val DEFAULT_SIDE: String =
@@ -101,9 +110,12 @@ class SharedPref @Inject constructor(
         const val HANDLER_POS_X_LANDSCAPE = "handlerPosXFractionLandscape"
         const val HANDLER_POS_Y_LANDSCAPE = "handlerPosYFractionLandscape"
 
-        const val SNAP_TO_EDGES = "handlerSnapToEdges"
+        const val HANDLER_HIDDEN = "handlerHidden"
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
         const val CONTEXT_MENU_ITEMS = "handlerContextMenuItems"
+        const val HANDLER_SNAP_TO_EDGE = "handlerSnapToEdge"
+        const val SHOW_NOTIFICATION = "showServiceNotification"
+        const val ASKED_NOTIFICATION_PERMISSION = "askedNotificationPermission"
 
         const val THEME = "app_theme"
         const val LANGUAGE = "app_language"
@@ -272,6 +284,10 @@ class SharedPref @Inject constructor(
     ) {
         if (hasHandlerPositionFraction()) return
         if (usableHeightPx <= 0) return
+        // Nothing to migrate: this install never wrote the legacy pixel offset, so it is either
+        // brand new or one that has already been through this. Either way the answer is the
+        // current default, and converting an unwritten 260px would silently override it.
+        if (!sharedPreferences.contains(HANDLER_TRANSLATION_Y)) return
         // 260px was authored in portrait. Starting in landscape, leave the pref unwritten and let
         // the next portrait pass do the conversion.
         if (!isPortrait) return
@@ -331,13 +347,11 @@ class SharedPref @Inject constructor(
 
     /**
      * Forgets the stored horizontal position in both orientations, so the next geometry pass
-     * re-derives it from the Left/Right side setting and the edge margin.
+     * re-derives it from the default side and the edge offset.
      *
-     * This is what keeps the appearance screen's side control meaningful once the bar can be
-     * dragged anywhere: without it, choosing "Left" would write a preference that nothing reads,
-     * and the bar would sit wherever it was last dropped while the setting claimed otherwise.
-     * The vertical position is deliberately left alone — the user picked a height, and changing
-     * which edge the bar hugs is no reason to throw it away.
+     * Reached only from "Reset position", which is the one route back for a bar dragged somewhere
+     * awkward — behind a game's on-screen controls, or off under a rounded corner. Both
+     * orientations, because the bar the user cannot reach may not be the one they are looking at.
      */
     fun clearHandlerPosXFraction() {
         sharedPreferences.edit {
@@ -368,15 +382,18 @@ class SharedPref @Inject constructor(
     // ---- behaviour toggles --------------------------------------------------------------------
 
     /**
-     * Whether a released drag settles against the nearest edge.
+     * Whether the user has put the bar away with "Hide handler".
      *
-     * Defaults off: free placement is the behaviour users asked for, and a bar that silently flies
-     * to an edge after being carefully positioned reads as the app ignoring the gesture.
+     * Durable rather than "there is no handler window right now", because a rebuild is the normal
+     * consequence of almost anything: saving a setting, a `START_STICKY` relaunch, a reboot, the
+     * task being swiped out of Recents. Each of those used to bring a hidden bar back on its own.
+     * Only an explicit Show clears this, and stopping the service clears it too — a service that
+     * is off has nothing to hide, and the bar must be there when it is switched on again.
      */
-    fun getSnapToEdges(): Boolean = sharedPreferences.getBoolean(SNAP_TO_EDGES, false)
+    fun isHandlerHidden(): Boolean = sharedPreferences.getBoolean(HANDLER_HIDDEN, false)
 
-    fun setSnapToEdges(value: Boolean) {
-        sharedPreferences.edit { putBoolean(SNAP_TO_EDGES, value) }
+    fun setHandlerHidden(value: Boolean) {
+        sharedPreferences.edit { putBoolean(HANDLER_HIDDEN, value) }
     }
 
     /**
@@ -390,6 +407,51 @@ class SharedPref @Inject constructor(
 
     fun setShowVolumePercent(value: Boolean) {
         sharedPreferences.edit { putBoolean(SHOW_VOLUME_PERCENT, value) }
+    }
+
+    /**
+     * Whether the bar flies to the nearer side when the finger lifts.
+     *
+     * On by default: a side bar that comes to rest against an edge is what almost everyone wants,
+     * and the alternative leaves it stranded wherever the drag happened to end. Switching it off
+     * gives free two-axis placement, and in *both* modes [getHandlerEdgeMarginDp] is the same
+     * promise — the closest the bar may ever come to the edge, which is also exactly where it
+     * parks when it snaps. One number, one meaning.
+     */
+    fun getHandlerSnapToEdge(): Boolean =
+        sharedPreferences.getBoolean(HANDLER_SNAP_TO_EDGE, true)
+
+    fun setHandlerSnapToEdge(value: Boolean) {
+        sharedPreferences.edit { putBoolean(HANDLER_SNAP_TO_EDGE, value) }
+    }
+
+    /**
+     * Whether the ongoing notification carries its Show/Hide, Settings and Stop buttons.
+     *
+     * On by default, and it is the only route back to a bar put away with "Hide handler" while
+     * the app is closed. Android will not run a foreground service without *some* notification, so
+     * switching this off does not delete it — it downgrades it to a silent minimum-importance row
+     * with no buttons and no status-bar icon. See `OverlayService.startForegroundService`.
+     */
+    fun getShowNotification(): Boolean =
+        sharedPreferences.getBoolean(SHOW_NOTIFICATION, true)
+
+    fun setShowNotification(value: Boolean) {
+        sharedPreferences.edit { putBoolean(SHOW_NOTIFICATION, value) }
+    }
+
+    /**
+     * Whether POST_NOTIFICATIONS has already been asked for once, unprompted.
+     *
+     * Android 13+ stops showing the system dialog after two refusals, so asking on every service
+     * start would just be a no-op that looks like a bug. Asked once when the user first switches
+     * the service on; after that the Permissions screen is the deliberate route.
+     */
+    fun hasAskedNotificationPermission(): Boolean =
+        sharedPreferences.getBoolean(ASKED_NOTIFICATION_PERMISSION, false)
+
+    fun setAskedNotificationPermission(value: Boolean) {
+        sharedPreferences.edit { putBoolean(ASKED_NOTIFICATION_PERMISSION, value) }
     }
 
     // ---- long-press context menu ---------------------------------------------------------------
@@ -496,11 +558,20 @@ class SharedPref @Inject constructor(
     }
 
     /**
-     * True while the install is still inside its post-install grace period, during which no
-     * full-screen ad (app-open or interstitial) may be shown.
+     * True while the install is still inside its post-install grace period.
      *
-     * Banner and native placements are deliberately unaffected — they sit inline in the layout and
-     * never take the screen away from someone mid-setup.
+     * What the grace period actually protects is *setup*: the stretch where the user is bouncing
+     * in and out of system permission screens, placing the bar and trying gestures. An ad that
+     * takes the screen during that is the one most likely to cost us the user outright.
+     *
+     * So it blocks the two things that interrupt: **app-open ads entirely**, and **interstitials
+     * at screen transitions**. It does not block the interstitial at
+     * [shouldShowServiceStartInterstitial], which fires at the moment setup *finishes* rather
+     * than in the middle of it.
+     *
+     * Banner and native placements are unaffected throughout — they sit inline in the layout and
+     * never take the screen away from anyone. During grace they are the only ads running, which
+     * is the point: revenue continues, interruption does not.
      */
     fun isInAdGracePeriod(): Boolean {
         val installTime = sharedPreferences.getLong(FIRST_INSTALL_TIME, 0L)
@@ -577,14 +648,18 @@ class SharedPref @Inject constructor(
     }
 
     /**
-     * Check if interstitial ad should be shown
-     * Returns true if:
-     * 1. 90 seconds have passed since last interstitial ad
-     * 2. 90 seconds have passed since any ad (app open or interstitial)
+     * Whether an interstitial may be shown at an ordinary break point — a screen transition.
+     *
+     * Returns true when the per-session cap has room, three minutes have passed since the last
+     * interstitial, ninety seconds since any ad, and the install is out of its grace period.
+     *
+     * @param allowDuringGrace lets one specific caller through the grace period — see
+     *   [shouldShowServiceStartInterstitial]. Every other cooldown still applies, so this cannot
+     *   turn into an unlimited hole in the policy.
      */
-    fun shouldShowInterstitialAd(): Boolean {
-        // Nothing full-screen until the user has had a chance to finish setting up.
-        if (isInAdGracePeriod()) {
+    fun shouldShowInterstitialAd(allowDuringGrace: Boolean = false): Boolean {
+        // Nothing full-screen mid-setup, unless this is the ad that marks setup finishing.
+        if (!allowDuringGrace && isInAdGracePeriod()) {
             return false
         }
 
@@ -607,6 +682,22 @@ class SharedPref @Inject constructor(
 
         return interstitialCooldownPassed && anyAdCooldownPassed
     }
+
+    /**
+     * The one full-screen ad the grace period allows: the user has just switched the service on
+     * and the handler is up.
+     *
+     * This is the completion of setup rather than an interruption of it — the user has finished
+     * configuring, the thing they installed the app for now works, and they are at a natural stop.
+     * Blocking it was costing the single best-placed impression of the install's first two hours
+     * for no retention benefit, since the moment is one the user chose.
+     *
+     * Every other guard still holds: the per-session cap, the three-minute interstitial cooldown
+     * and the ninety seconds between any two ads. In practice that means once per service start,
+     * and not twice if the user flips the switch back and forth.
+     */
+    fun shouldShowServiceStartInterstitial(): Boolean =
+        shouldShowInterstitialAd(allowDuringGrace = true)
 
     /**
      * Get time remaining until next app open ad can be shown (in seconds)
@@ -793,5 +884,30 @@ class SharedPref @Inject constructor(
     fun getLanguage(): String = sharedPreferences.getString(LANGUAGE, "en") ?: "en"
     fun setLanguage(language: String) {
         sharedPreferences.edit { putString(LANGUAGE, language) }
+    }
+
+    /**
+     * Puts every setting back to its factory default.
+     *
+     * Two things deliberately survive, because neither is a *setting* the user chose and losing
+     * either would be a defect rather than a reset:
+     *
+     *  - **The Pro purchase.** A receipt is not a preference. Billing does re-sync from Play on
+     *    the next launch, but clearing it would drop the user into an ad-supported app they have
+     *    already paid to be rid of for however long that takes — and offline, indefinitely.
+     *  - **The first-install timestamp.** It only gates the post-install ad grace period, so
+     *    clearing it would hand out a fresh two ad-free hours for every tap of Reset.
+     *
+     * Everything else goes, first-launch flag included: the walkthrough is part of what a factory
+     * state looks like.
+     */
+    fun resetAll() {
+        val keptPro = isProFeatureActivated()
+        val keptInstallTime = getFirstInstallTimeMillis()
+        sharedPreferences.edit {
+            clear()
+            putBoolean(PRO_FEATURE_ACTIVATION, keptPro)
+            if (keptInstallTime > 0L) putLong(FIRST_INSTALL_TIME, keptInstallTime)
+        }
     }
 }

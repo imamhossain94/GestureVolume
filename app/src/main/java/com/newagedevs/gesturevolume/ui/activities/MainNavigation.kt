@@ -8,6 +8,17 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.newagedevs.gesturevolume.R
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -52,6 +63,9 @@ fun MainNavigation(
 
     var showThemeDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var showResetDialog by remember { mutableStateOf(false) }
+
+    val resetDoneMsg = stringResource(R.string.reset_app_done)
 
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -60,6 +74,13 @@ fun MainNavigation(
         viewModel.preference.setAppOpenAdPaused(false)
         viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
     }
+
+    // Nothing depends on the answer: granted, the notification's Show/Settings/Stop row appears;
+    // declined, the service runs exactly as before and the app is the only route back to a hidden
+    // bar. Never gate the overlay on this.
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -76,6 +97,14 @@ fun MainNavigation(
                     viewModel.preference.setAppOpenAdPaused(true)
                     overlayPermissionLauncher.launch(intent)
                 }
+                is MainEffect.RequestNotificationPermission -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        notificationPermissionLauncher.launch(
+                            android.Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    }
+                }
+                is MainEffect.ConfirmResetApp -> showResetDialog = true
                 is MainEffect.ShowThemeDialog -> showThemeDialog = true
                 is MainEffect.ShowLanguageDialog -> showLanguageDialog = true
                 is MainEffect.NavigateToTroubleshoot -> navController.navigate("troubleshoot")
@@ -84,9 +113,19 @@ fun MainNavigation(
         }
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .navigationBarsPadding()) {
+    // The appearance screen is a preview of the whole display, so it draws under the navigation
+    // bar and manages that inset itself; every other screen keeps the blanket padding. Applied by
+    // route rather than by giving each screen its own insets, which would be seven places to get
+    // right instead of one exception.
+    val currentRoute by navController.currentBackStackEntryAsState()
+    val drawsBehindNavBar =
+        currentRoute?.destination?.route?.startsWith("appearance") == true
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .then(if (drawsBehindNavBar) Modifier else Modifier.navigationBarsPadding())
+    ) {
         // Main content
         Box(modifier = Modifier.weight(1f)) {
             NavHost(
@@ -182,6 +221,62 @@ fun MainNavigation(
                     )
                 }
             }
+        }
+
+        if (showResetDialog) {
+            AlertDialog(
+                onDismissRequest = { showResetDialog = false },
+                title = {
+                    Text(
+                        text = stringResource(R.string.reset_app_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(R.string.reset_app_message),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showResetDialog = false
+                            viewModel.onEvent(MainEvent.ResetAllSettings(context))
+                            // The locale is not ours to reset through SharedPref alone: AppCompat
+                            // keeps its own copy, and clearing only the preference would leave the
+                            // app in a language the settings no longer claim.
+                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
+                            viewModel.showToast(resetDoneMsg)
+                            // Back to the walkthrough, because that is now genuinely where a
+                            // freshly reset install stands - and leaving the user on a settings
+                            // screen showing values that were just wiped is its own small lie.
+                            navController.navigate("walkthrough") {
+                                popUpTo(navController.graph.id) { inclusive = true }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.reset_app_confirm))
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = { showResetDialog = false },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(24.dp)
+            )
         }
 
         if (showThemeDialog) {

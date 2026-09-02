@@ -1,9 +1,15 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.content.ContextCompat
+import com.newagedevs.gesturevolume.utils.HandlerActions
 import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,13 +24,40 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import androidx.compose.ui.res.stringResource
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
+import com.newagedevs.gesturevolume.utils.LockScreenUtil
+
+/** Whether Android currently lets this app post notifications. Always true below Android 13. */
+private fun hasNotificationPermission(context: android.content.Context): Boolean =
+    Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+/** The fallback route once the system prompt has been exhausted. */
+private fun openAppNotificationSettings(context: android.content.Context, viewModel: MainViewModel) {
+    viewModel.preference.setAppOpenAdPaused(true)
+    try {
+        context.startActivity(
+            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        )
+    } catch (_: Exception) {
+        viewModel.preference.setAppOpenAdPaused(false)
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,6 +66,7 @@ fun HandlerActionsScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val state by viewModel.state.collectAsState()
 
     var showClickActionDialog by remember { mutableStateOf(false) }
@@ -45,15 +79,165 @@ fun HandlerActionsScreen(
     // Read once into local state rather than on every recomposition: these are plain SharedPref
     // booleans with no observable wrapper, so the switch's own state is what drives the UI and the
     // preference is written behind it.
-    var snapToEdges by remember { mutableStateOf(viewModel.preference.getSnapToEdges()) }
     var showVolumePercent by remember { mutableStateOf(viewModel.preference.getShowVolumePercent()) }
     var contextMenuItems by remember { mutableStateOf(viewModel.preference.getContextMenuItems()) }
+    var showNotification by remember { mutableStateOf(viewModel.preference.getShowNotification()) }
+    var notificationsAllowed by remember { mutableStateOf(hasNotificationPermission(context)) }
+    var showNotificationWarning by remember { mutableStateOf(false) }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        notificationsAllowed = granted
+        if (!granted) openAppNotificationSettings(context, viewModel)
+    }
+
+    /**
+     * Asks, or sends the user to system settings when asking is no longer possible.
+     *
+     * After two refusals Android stops showing the dialog and the request returns immediately —
+     * a button that appears to do nothing. The launcher's callback covers that case too, so this
+     * is correct whether the prompt is still available or not.
+     */
+    fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            openAppNotificationSettings(context, viewModel)
+        }
+    }
+
+    // Coming back from a system screen this screen sent the user to — the accessibility list for
+    // the Lock action, or the notification channel settings — has to lift the app-open ad pause
+    // those set. Without this the pause was set and never cleared, silencing app-open ads for the
+    // rest of the install.
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.preference.setAppOpenAdPaused(false)
+                notificationsAllowed = hasNotificationPermission(context)
+                viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     // Re-applies the action the user picked, once they come back from the system settings screen.
     val writeSettingsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
         viewModel.preference.setAppOpenAdPaused(false)
         viewModel.onEvent(MainEvent.WriteSettingsResult(context))
+    }
+
+    // Asked only when the Lock action is chosen with neither lock route granted. The action is
+    // already saved by this point; this is about how the screen gets locked, not whether the
+    // setting sticks.
+    if (state.pendingLockPermissionRequest) {
+        val accessibilitySupported = remember { LockScreenUtil(context).accessibilitySupported() }
+        val lockRequestFromMenu = HandlerActions.LOCK in contextMenuItems &&
+                state.clickAction != HandlerActions.LOCK &&
+                state.doubleClickAction != HandlerActions.LOCK &&
+                state.longClickAction != HandlerActions.LOCK
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelLockPermissionRequest() },
+            title = {
+                Text(
+                    text = stringResource(R.string.lock_permission_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(
+                        when {
+                            // Android 8 has no GLOBAL_ACTION_LOCK_SCREEN and Device Admin is gone,
+                            // so there is nothing to offer — only something to explain.
+                            !accessibilitySupported -> R.string.lock_unsupported_message
+                            // Naming the menu matters: the tap pickers close onto the row they
+                            // just changed, so the context is on screen. The menu picker closes
+                            // onto a count, and "you added Lock to the long-press menu" is the
+                            // only thing that connects this dialog to what the user just did.
+                            lockRequestFromMenu -> R.string.lock_permission_menu_message
+                            else -> R.string.lock_permission_message
+                        }
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                if (accessibilitySupported) {
+                    Button(
+                        onClick = { viewModel.onLockPermissionChoice(context) },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.lock_permission_accessibility))
+                    }
+                } else {
+                    Button(
+                        onClick = { viewModel.cancelLockPermissionRequest() },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.got_it))
+                    }
+                }
+            },
+            dismissButton = {
+                if (accessibilitySupported) {
+                    OutlinedButton(
+                        onClick = { viewModel.cancelLockPermissionRequest() },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.not_now))
+                    }
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(24.dp)
+        )
+    }
+
+    if (showNotificationWarning) {
+        AlertDialog(
+            onDismissRequest = { showNotificationWarning = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.notification_permission_needed_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.notification_permission_needed_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showNotificationWarning = false
+                        requestNotificationPermission()
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.grant_permission_action))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showNotificationWarning = false },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.not_now))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(24.dp)
+        )
     }
 
     // Asked only when a brightness action is actually chosen — never at startup.
@@ -119,6 +303,10 @@ fun HandlerActionsScreen(
                 contextMenuItems = picked
                 viewModel.preference.setContextMenuItems(picked)
                 showContextMenuDialog = false
+                // Asked here, at Apply, rather than left for the user to discover on the bar. The
+                // choice is already saved either way; this is only about whether the entry they
+                // just added can do anything when they tap it.
+                viewModel.checkLockPermission(picked, context)
             }
         )
     }
@@ -249,29 +437,16 @@ fun HandlerActionsScreen(
                     ActionSettingItem(
                         label = stringResource(R.string.context_menu_section),
                         description = stringResource(R.string.context_menu_desc),
-                        value = if (contextMenuItems.isEmpty()) {
-                            stringResource(R.string.context_menu_none)
-                        } else {
-                            stringResource(R.string.context_menu_count, contextMenuItems.size)
-                        },
+                        // Counted through the catalog, so the summary matches the menu the user
+                        // will actually see — pinned entries included.
+                        value = stringResource(
+                            R.string.context_menu_count,
+                            HandlerActionCatalog.contextMenuEntries(contextMenuItems).size
+                        ),
                         icon = R.drawable.ic_move,
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = { showContextMenuDialog = true }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    SettingSwitchItem(
-                        title = stringResource(R.string.snap_to_edges_title),
-                        description = stringResource(R.string.snap_to_edges_desc),
-                        checked = snapToEdges,
-                        onCheckedChange = {
-                            snapToEdges = it
-                            viewModel.preference.setSnapToEdges(it)
-                        }
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -288,6 +463,87 @@ fun HandlerActionsScreen(
                         }
                     )
 
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SettingSwitchItem(
+                        title = stringResource(R.string.show_notification_title),
+                        description = stringResource(R.string.show_notification_desc),
+                        checked = showNotification,
+                        onCheckedChange = {
+                            showNotification = it
+                            viewModel.preference.setShowNotification(it)
+                            // The service owns the notification, so it is the only thing that can
+                            // re-post it on the other channel. Notification only: a full update
+                            // would rebuild the handler and pop it up over this screen.
+                            viewModel.refreshServiceNotification(context)
+                            // Switching the controls on while Android is blocking notifications
+                            // produces nothing at all, with no hint as to why. Say so at the
+                            // moment the switch is flipped.
+                            if (it && !notificationsAllowed) showNotificationWarning = true
+                        }
+                    )
+
+                    // And keep saying so afterwards, because the dialog above is dismissible and
+                    // the permission can be revoked from system settings long after this switch
+                    // was last touched.
+                    if (showNotification && !notificationsAllowed) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { requestNotificationPermission() },
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = stringResource(R.string.notification_permission_warning_inline),
+                                    fontSize = 13.sp,
+                                    lineHeight = 18.sp,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
+                    }
+
+                    // Only once the switch is off is there anything left to explain: Android will
+                    // not run a foreground service with no notification at all, so the last step
+                    // belongs to the system's own channel settings.
+                    if (!showNotification) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextButton(
+                            onClick = {
+                                viewModel.preference.setAppOpenAdPaused(true)
+                                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                try {
+                                    context.startActivity(intent)
+                                } catch (_: Exception) {
+                                    viewModel.preference.setAppOpenAdPaused(false)
+                                }
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.show_notification_off_hint),
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Start,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                 }
             }
 
