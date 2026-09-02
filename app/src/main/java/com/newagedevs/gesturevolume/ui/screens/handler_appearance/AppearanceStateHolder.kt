@@ -27,7 +27,16 @@ data class AppearanceState(
     /** Inward nudge from the screen edge, for curved screens and gesture navigation. */
     val edgeMargin: Float,
     /** Vertical position of the bar's centre, 0..1 of the usable height. */
-    val positionFraction: Float
+    val positionFraction: Float,
+    /**
+     * Horizontal position of the bar's centre, 0..1 of the usable width.
+     *
+     * Here for the same reason the vertical one is: the preview lets the bar be dragged, and what
+     * the user does there has to be a thing the Apply/Discard contract can carry. Without it the
+     * preview drag was horizontally decorative — the bar followed the finger, snapped back to a
+     * side on release, and the live overlay never heard about any of it.
+     */
+    val posXFraction: Float
 )
 
 class AppearanceStateHolder(
@@ -49,7 +58,8 @@ class AppearanceStateHolder(
     initialShowIcon: Boolean,
     initialVibrate: Boolean,
     initialEdgeMargin: Float,
-    initialPositionFraction: Float
+    initialPositionFraction: Float,
+    initialPosXFraction: Float
 ) {
     var gravity by mutableStateOf(initialGravity)
     var width by mutableStateOf(initialWidth)
@@ -73,12 +83,13 @@ class AppearanceStateHolder(
     var vibrate by mutableStateOf(initialVibrate)
     var edgeMargin by mutableStateOf(initialEdgeMargin)
     var positionFraction by mutableStateOf(initialPositionFraction)
+    var posXFraction by mutableStateOf(initialPosXFraction)
 
     fun toState(): AppearanceState = AppearanceState(
         gravity, width, height, bgColor.toArgb(), bgAlpha,
         strokeColor.toArgb(), strokeWidth, strokeAlpha,
         cornerTL, cornerTR, cornerBL, cornerBR,
         iconRes, iconSize, iconColor.toArgb(), showIcon, vibrate,
-        edgeMargin, positionFraction
+        edgeMargin, positionFraction, posXFraction
     )
 }

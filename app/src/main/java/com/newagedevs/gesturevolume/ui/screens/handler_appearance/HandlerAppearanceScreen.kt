@@ -37,6 +37,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import android.content.res.Configuration
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,6 +58,10 @@ fun HandlerAppearanceScreen(
 ) {
     val context = LocalContext.current
     val preference = remember { viewModel.preference }
+
+    // The stored position is per orientation — see SharedPref.getHandlerPosXFraction — so this
+    // screen edits whichever pair matches the way the phone is being held right now.
+    val isPortrait = LocalConfiguration.current.orientation != Configuration.ORIENTATION_LANDSCAPE
 
     var handlerViewRef by remember { mutableStateOf<HandlerView?>(null) }
     var isExpandedPreview by remember { mutableStateOf(false) }
@@ -84,7 +90,8 @@ fun HandlerAppearanceScreen(
                 showIcon = preference.getHandlerShowIcon(),
                 vibrate = preference.getHandlerVibrateOnClick(),
                 edgeMargin = preference.getHandlerEdgeMarginDp(),
-                positionFraction = preference.getHandlerPositionFraction()
+                positionFraction = preference.getHandlerPosYFraction(isPortrait),
+                posXFraction = preference.getHandlerPosXFraction(isPortrait)
             )
         )
     }
@@ -109,7 +116,8 @@ fun HandlerAppearanceScreen(
             initialShowIcon = savedState.value.showIcon,
             initialVibrate = savedState.value.vibrate,
             initialEdgeMargin = savedState.value.edgeMargin,
-            initialPositionFraction = savedState.value.positionFraction
+            initialPositionFraction = savedState.value.positionFraction,
+            initialPosXFraction = savedState.value.posXFraction
         )
     }
 
@@ -125,8 +133,10 @@ fun HandlerAppearanceScreen(
     LaunchedEffect(presetId) {
         // Values come from HandlerPresets rather than a when-block here, so the cards that offer
         // these presets on the main screen can preview exactly what applying one will do.
+        // A preset is an appearance, not a placement. It deliberately leaves gravity and both
+        // position fractions alone: the bar is dragged where the user wants it, and picking
+        // "Night" to change the colour should not also throw that away.
         HandlerPresets.byId(presetId)?.let { preset ->
-            state.gravity = preset.gravity
             state.width = preset.width
             state.height = preset.height
             state.bgColor = preset.bgColor
@@ -145,7 +155,6 @@ fun HandlerAppearanceScreen(
             state.showIcon = preset.showIcon
             state.vibrate = preset.vibrate
             state.edgeMargin = preset.edgeMargin
-            state.positionFraction = preset.positionFraction
         }
     }
 
@@ -166,17 +175,9 @@ fun HandlerAppearanceScreen(
     }
 
     fun saveChanges() {
-        val newSide = if (state.gravity == Gravity.START) "Left" else "Right"
-        // Choosing a side, or changing how far in from it the bar sits, is an explicit instruction
-        // about where the bar goes horizontally — so it overrides wherever the bar was last
-        // dragged. Only then, though: an unrelated colour change must not yank the bar back to an
-        // edge the user had deliberately moved it away from.
-        if (newSide != preference.getHandlerPosition() ||
-            state.edgeMargin != preference.getHandlerEdgeMarginDp()
-        ) {
-            preference.clearHandlerPosXFraction()
-        }
-        preference.setHandlerPosition(newSide)
+        // A record of which side the bar is nearer, not a setting: it decides which way the flat
+        // edge and the icon face. Where the bar actually sits is the two fractions below.
+        preference.setHandlerPosition(if (state.gravity == Gravity.START) "Left" else "Right")
         preference.setHandlerWidthDp(state.width)
         preference.setHandlerHeightDp(state.height)
         preference.setHandlerColor(state.bgColor.toArgb())
@@ -194,7 +195,21 @@ fun HandlerAppearanceScreen(
         preference.setHandlerShowIcon(state.showIcon)
         preference.setHandlerVibrateOnClick(state.vibrate)
         preference.setHandlerEdgeMarginDp(state.edgeMargin)
-        preference.setHandlerPositionFraction(state.positionFraction)
+
+        // Position is written only when this screen actually changed it — a preview drag or Reset
+        // position. Two reasons. It goes to the per-orientation pair the overlay really reads,
+        // which is why dragging the bar in the preview never used to reach the live overlay: the
+        // legacy single fraction below is read once, at migration, and moves nothing on its own.
+        // And writing it unconditionally would let a colour change undo a drag: the bar is
+        // reachable while this screen sits in the background, so the values loaded when it opened
+        // can be stale by the time Apply is pressed.
+        if (state.positionFraction != savedState.value.positionFraction) {
+            preference.setHandlerPosYFraction(isPortrait, state.positionFraction)
+            preference.setHandlerPositionFraction(state.positionFraction)
+        }
+        if (state.posXFraction != savedState.value.posXFraction) {
+            preference.setHandlerPosXFraction(isPortrait, state.posXFraction)
+        }
 
         if (state.cornerTL == state.cornerTR && state.cornerTR == state.cornerBL && state.cornerBL == state.cornerBR) {
             preference.setAllCornerRadii(state.cornerTL)
@@ -388,6 +403,7 @@ fun HandlerAppearanceScreen(
             backgroundImageURL = bgImage,
             onShowIconPicker = { showIconPicker = true },
             onPositionChanged = { state.positionFraction = it },
+            onHorizontalPositionChanged = { state.posXFraction = it },
             onGravityChanged = { state.gravity = it },
             onDismiss = { isExpandedPreview = false }
         )

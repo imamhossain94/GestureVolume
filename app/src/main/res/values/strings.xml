@@ -289,9 +289,9 @@
     <string name="brightness_permission_title">Allow brightness control?</string>
     <string name="brightness_permission_message">To change screen brightness, GestureVolume needs the Modify system settings permission. Adaptive brightness is turned off while you use it, and restored when you stop the service.</string>
     <string name="edge_offset">Edge offset</string>
-    <string name="edge_offset_desc">Move the bar inward from the screen edge. Helps on curved screens and when gesture navigation is on.</string>
+    <string name="edge_offset_desc">The smallest gap the bar keeps from the left and right edges, however far you drag it. Helps on curved screens and when gesture navigation is on.</string>
     <string name="reset_position">Reset position</string>
-    <string name="drag_to_move_hint">To move the bar: long press it, wait for the vibration, then drag up or down. Set the long press action to “Move handler” to enable this.</string>
+    <string name="drag_to_move_hint">To move the bar: long press it, wait for the vibration, then drag it anywhere on screen. It stays where you let go. Set the long press action to “Move handler” to enable this.</string>
     <string name="fix_battery_title">Battery optimization</string>
     <string name="fix_battery_desc">Allow unrestricted battery use so Android does not stop the service.</string>
     <string name="fix_battery_allowed">Unrestricted</string>
@@ -304,8 +304,6 @@
     <string name="volume_percent_short">%1$d%%</string>
 
     <!-- Free positioning / snapping -->
-    <string name="snap_to_edges_title">Snap to screen edges</string>
-    <string name="snap_to_edges_desc">Release the handler and it settles against the nearest edge. Off by default, so you can place it anywhere.</string>
 
     <!-- Notification -->
     <string name="notification_service_active">Volume gestures are active</string>
@@ -315,15 +313,37 @@
     <string name="show_volume_percent_desc">Display the level on the handler while you swipe.</string>
 
     <!-- Drag to hide -->
-    <string name="drag_here_to_hide">Drag here to hide</string>
     <string name="handler_hidden_toast">Handler hidden. Open GestureVolume to bring it back.</string>
+
+    <!-- Stop-service action, offered in the long-press menu alongside Hide handler. -->
+    <string name="action_stop_service">Stop service</string>
+
+    <!-- Notification: buttons and the line that says which state the handler is in. -->
+    <string name="notification_handler_hidden">Handler hidden — tap Show to bring it back</string>
+    <string name="notification_action_show">Show</string>
+    <string name="notification_action_hide">Hide</string>
+    <string name="notification_action_settings">Settings</string>
+    <string name="notification_action_stop">Stop</string>
+
+    <!-- Lock action: choosing how the screen gets locked. -->
+    <string name="lock_accessibility_label">Screen lock</string>
+    <string name="lock_accessibility_summary">Lets the Lock action turn the screen off.</string>
+    <string name="lock_accessibility_description">Allows GestureVolume to lock the screen when you use the Lock action on the floating bar. It locks the screen the same way the power button does, so your fingerprint still unlocks the phone. This service reads nothing on your screen and performs no other action.</string>
+    <string name="lock_permission_title">Locking the screen</string>
+    <string name="lock_permission_message">GestureVolume needs permission to lock the screen.
+
+Accessibility is recommended: it locks the screen the way the power button does, so your fingerprint still unlocks the phone. Device admin also works, but most phones then ask for your PIN instead of your fingerprint.</string>
+    <string name="lock_permission_message_admin_only">GestureVolume needs device admin permission to lock the screen.</string>
+    <string name="lock_permission_accessibility">Use accessibility</string>
+    <string name="lock_permission_device_admin">Use device admin</string>
+    <string name="lock_not_available">Grant a lock permission in Settings before using the Lock action.</string>
 
     <!-- Long-press context menu -->
     <string name="context_menu_title">Long-press menu</string>
     <string name="context_menu_desc">Choose what appears when you press and hold the handler.</string>
-    <string name="context_menu_empty">No items selected. Press and hold will only move the handler.</string>
+    <string name="context_menu_empty">Nothing else selected. Press and hold will move the handler and offer Hide handler.</string>
+    <string name="context_menu_always">Always shown</string>
     <string name="context_menu_section">Long-press menu items</string>
     <string name="behaviour_section">Behaviour</string>
     <string name="context_menu_count">%1$d selected</string>
-    <string name="context_menu_none">Off</string>
 </resources>

@@ -74,6 +74,29 @@
         </receiver>
 
         <!--
+          The biometric-friendly half of the Lock action. See LockAccessibilityService: it
+          subscribes to no events and reads no window content, and exists only so that
+          performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN) is reachable - the lock the power button
+          performs, which the fingerprint sensor will still unlock, rather than Device Admin's
+          policy lock that demands a PIN.
+
+          exported="true" is required: the system binds this from outside the app, and
+          BIND_ACCESSIBILITY_SERVICE is what stops anything else from doing so.
+        -->
+        <service
+            android:name=".service.LockAccessibilityService"
+            android:exported="true"
+            android:label="@string/lock_accessibility_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/lock_accessibility_service" />
+        </service>
+
+        <!--
           stopWithTask="false" keeps the overlay alive when the user swipes the app out of Recents,
           which is the single most common way this service used to die.
         -->

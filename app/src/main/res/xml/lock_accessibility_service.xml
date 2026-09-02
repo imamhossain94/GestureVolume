@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Deliberately the narrowest configuration an accessibility service can have.
+
+  accessibilityEventTypes is omitted entirely, which subscribes the service to no events at all
+  (there is no "typeNone" flag - absence is how you say it), and neither canRetrieveWindowContent
+  nor canPerformGestures is requested: the service never reads the screen and never touches it. The
+  one capability it uses is performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN), which needs nothing
+  declared here beyond being a connected service. Keeping it this narrow is both the right thing
+  to do and what makes the Play Console accessibility declaration defensible.
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:canPerformGestures="false"
+    android:canRetrieveWindowContent="false"
+    android:description="@string/lock_accessibility_description"
+    android:notificationTimeout="0"
+    android:summary="@string/lock_accessibility_summary" />

@@ -101,7 +101,7 @@ class SharedPref @Inject constructor(
         const val HANDLER_POS_X_LANDSCAPE = "handlerPosXFractionLandscape"
         const val HANDLER_POS_Y_LANDSCAPE = "handlerPosYFractionLandscape"
 
-        const val SNAP_TO_EDGES = "handlerSnapToEdges"
+        const val HANDLER_HIDDEN = "handlerHidden"
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
         const val CONTEXT_MENU_ITEMS = "handlerContextMenuItems"
 
@@ -331,13 +331,11 @@ class SharedPref @Inject constructor(
 
     /**
      * Forgets the stored horizontal position in both orientations, so the next geometry pass
-     * re-derives it from the Left/Right side setting and the edge margin.
+     * re-derives it from the default side and the edge offset.
      *
-     * This is what keeps the appearance screen's side control meaningful once the bar can be
-     * dragged anywhere: without it, choosing "Left" would write a preference that nothing reads,
-     * and the bar would sit wherever it was last dropped while the setting claimed otherwise.
-     * The vertical position is deliberately left alone — the user picked a height, and changing
-     * which edge the bar hugs is no reason to throw it away.
+     * Reached only from "Reset position", which is the one route back for a bar dragged somewhere
+     * awkward — behind a game's on-screen controls, or off under a rounded corner. Both
+     * orientations, because the bar the user cannot reach may not be the one they are looking at.
      */
     fun clearHandlerPosXFraction() {
         sharedPreferences.edit {
@@ -368,15 +366,18 @@ class SharedPref @Inject constructor(
     // ---- behaviour toggles --------------------------------------------------------------------
 
     /**
-     * Whether a released drag settles against the nearest edge.
+     * Whether the user has put the bar away with "Hide handler".
      *
-     * Defaults off: free placement is the behaviour users asked for, and a bar that silently flies
-     * to an edge after being carefully positioned reads as the app ignoring the gesture.
+     * Durable rather than "there is no handler window right now", because a rebuild is the normal
+     * consequence of almost anything: saving a setting, a `START_STICKY` relaunch, a reboot, the
+     * task being swiped out of Recents. Each of those used to bring a hidden bar back on its own.
+     * Only an explicit Show clears this, and stopping the service clears it too — a service that
+     * is off has nothing to hide, and the bar must be there when it is switched on again.
      */
-    fun getSnapToEdges(): Boolean = sharedPreferences.getBoolean(SNAP_TO_EDGES, false)
+    fun isHandlerHidden(): Boolean = sharedPreferences.getBoolean(HANDLER_HIDDEN, false)
 
-    fun setSnapToEdges(value: Boolean) {
-        sharedPreferences.edit { putBoolean(SNAP_TO_EDGES, value) }
+    fun setHandlerHidden(value: Boolean) {
+        sharedPreferences.edit { putBoolean(HANDLER_HIDDEN, value) }
     }
 
     /**

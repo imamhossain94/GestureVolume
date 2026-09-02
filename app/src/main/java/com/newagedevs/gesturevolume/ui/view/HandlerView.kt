@@ -78,6 +78,15 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
 
     /** Preview-only inward offset from the screen edge. See [setEdgeMarginDp]. */
     private var edgeMarginDp: Float = 0f
+
+    /**
+     * Absolute left offset within the parent, when the bar is being placed freely.
+     *
+     * Null means "rest against the side [viewGravityPosition] names, nudged in by the edge
+     * margin" — the small static preview. Non-null means the expanded preview, where the bar goes
+     * wherever it was dragged and the margin is enforced by the drag's own clamp instead.
+     */
+    private var freeX: Float? = null
     private var iconVisibleBeforeDragCue: Boolean = true
     private var dragCueActive: Boolean = false
 
@@ -298,7 +307,35 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         applyEdgeMargin()
     }
 
+    /**
+     * Absolute left offset within the parent, for the free-placement preview.
+     *
+     * Expressed as a translation on top of wherever gravity laid the bar out, rather than as a
+     * layout position, because the bar flips between START and END gravity as it is carried across
+     * the screen — and a value measured against a side that changes mid-drag is a value that jumps.
+     * [freeTranslationX] converts back, so the caller only ever deals in absolute pixels.
+     */
+    fun setFreeTranslationX(x: Float) {
+        freeX = x
+        applyEdgeMargin()
+    }
+
+    /** Where the bar's left edge currently sits within its parent, in absolute pixels. */
+    fun freeTranslationX(): Float = freeX ?: (layoutLeftInParent() + translationX)
+
+    /** The left edge gravity lays this view out at, for the side it is currently on. */
+    private fun layoutLeftInParent(): Float {
+        if (viewGravityPosition == Gravity.START) return 0f
+        val parentWidth = (parent as? ViewGroup)?.width ?: return 0f
+        return (parentWidth - width).toFloat()
+    }
+
     private fun applyEdgeMargin() {
+        val absolute = freeX
+        if (absolute != null) {
+            translationX = absolute - layoutLeftInParent()
+            return
+        }
         val px = dpToPx(edgeMarginDp)
         translationX = if (viewGravityPosition == Gravity.START) px else -px
     }
@@ -491,6 +528,10 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
         refreshGestureExclusion()
+        // Re-derived every layout pass, not only when it is set. A gravity flip or a width change
+        // moves where the bar is laid out, and a translation measured against the old position
+        // would put it a bar's width off for one frame — which, mid-drag, is a visible stutter.
+        applyEdgeMargin()
     }
 
     // ========== Utility ==========

@@ -25,6 +25,8 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import androidx.compose.ui.res.stringResource
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
+import com.newagedevs.gesturevolume.utils.LockScreenUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +47,6 @@ fun HandlerActionsScreen(
     // Read once into local state rather than on every recomposition: these are plain SharedPref
     // booleans with no observable wrapper, so the switch's own state is what drives the UI and the
     // preference is written behind it.
-    var snapToEdges by remember { mutableStateOf(viewModel.preference.getSnapToEdges()) }
     var showVolumePercent by remember { mutableStateOf(viewModel.preference.getShowVolumePercent()) }
     var contextMenuItems by remember { mutableStateOf(viewModel.preference.getContextMenuItems()) }
     // Re-applies the action the user picked, once they come back from the system settings screen.
@@ -54,6 +55,69 @@ fun HandlerActionsScreen(
     ) {
         viewModel.preference.setAppOpenAdPaused(false)
         viewModel.onEvent(MainEvent.WriteSettingsResult(context))
+    }
+
+    // Asked only when the Lock action is chosen with neither lock route granted. The action is
+    // already saved by this point; this is about how the screen gets locked, not whether the
+    // setting sticks.
+    if (state.pendingLockPermissionRequest) {
+        val accessibilitySupported = remember { LockScreenUtil(context).accessibilitySupported() }
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelLockPermissionRequest() },
+            title = {
+                Text(
+                    text = stringResource(R.string.lock_permission_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(
+                        if (accessibilitySupported) R.string.lock_permission_message
+                        else R.string.lock_permission_message_admin_only
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.onLockPermissionChoice(accessibilitySupported, context)
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        stringResource(
+                            if (accessibilitySupported) R.string.lock_permission_accessibility
+                            else R.string.lock_permission_device_admin
+                        )
+                    )
+                }
+            },
+            dismissButton = {
+                // The old route stays one tap away rather than being removed: it is what existing
+                // installs already granted, and it is the only route below Android 9.
+                if (accessibilitySupported) {
+                    OutlinedButton(
+                        onClick = { viewModel.onLockPermissionChoice(false, context) },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.lock_permission_device_admin))
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = { viewModel.cancelLockPermissionRequest() },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(24.dp)
+        )
     }
 
     // Asked only when a brightness action is actually chosen — never at startup.
@@ -249,29 +313,16 @@ fun HandlerActionsScreen(
                     ActionSettingItem(
                         label = stringResource(R.string.context_menu_section),
                         description = stringResource(R.string.context_menu_desc),
-                        value = if (contextMenuItems.isEmpty()) {
-                            stringResource(R.string.context_menu_none)
-                        } else {
-                            stringResource(R.string.context_menu_count, contextMenuItems.size)
-                        },
+                        // Counted through the catalog, so the summary matches the menu the user
+                        // will actually see — pinned entries included.
+                        value = stringResource(
+                            R.string.context_menu_count,
+                            HandlerActionCatalog.contextMenuEntries(contextMenuItems).size
+                        ),
                         icon = R.drawable.ic_move,
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = { showContextMenuDialog = true }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    SettingSwitchItem(
-                        title = stringResource(R.string.snap_to_edges_title),
-                        description = stringResource(R.string.snap_to_edges_desc),
-                        checked = snapToEdges,
-                        onCheckedChange = {
-                            snapToEdges = it
-                            viewModel.preference.setSnapToEdges(it)
-                        }
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))

@@ -5,10 +5,7 @@ import com.newagedevs.gesturevolume.R
 data class MainState(
     val isRunning: Boolean = false,
     val isProActivated: Boolean = false,
-    val gravity: String = "Right",
-    val gravityIcon: Int = R.drawable.ic_align_right,
     val color: Int = 0,
-    val translationY: Float = 260f,
     val clickAction: String = "Open volume UI",
     val clickActionIcon: Int = R.drawable.ic_vol_increase,
     val doubleClickAction: String = "Mute",
@@ -28,6 +25,8 @@ data class MainState(
      * consumer — a second screen collecting it would swallow toasts intended for the first.
      */
     val pendingWriteSettingsRequest: Boolean = false,
+    /** True while the Lock action is waiting on a lock route the user has not granted yet. */
+    val pendingLockPermissionRequest: Boolean = false,
     val theme: Int = 0,
     val language: String = "en"
 )

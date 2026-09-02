@@ -92,7 +92,9 @@ fun ExpandedPreviewDialog(
     onShowIconPicker: () -> Unit,
     /** A drag in the preview updates the draft state, so Apply/Discard still governs it. */
     onPositionChanged: (Float) -> Unit,
-    /** Dragging the bar past the midpoint switches sides, same as it does on the live overlay. */
+    /** The horizontal half of the same thing. The bar is placed freely here, exactly as it is live. */
+    onHorizontalPositionChanged: (Float) -> Unit,
+    /** Which side the bar's flat edge faces — decided by where it ended up, not chosen. */
     onGravityChanged: (Int) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -139,18 +141,22 @@ fun ExpandedPreviewDialog(
         preference.getHandlerLongTapAction() == HandlerActions.REPOSITION
     }
 
-    // Keep the preview in step with a position changed from elsewhere — Reset position, or a preset.
-    LaunchedEffect(state.positionFraction, state.height) {
+    // Keep the preview in step with a position changed from elsewhere — Reset position, mostly.
+    LaunchedEffect(state.positionFraction, state.posXFraction, state.height, state.width) {
         val handler = handlerViewRef ?: return@LaunchedEffect
         handler.post {
-            val parentHeight = (handler.parent as? android.view.ViewGroup)?.height ?: 0
-            if (parentHeight > 0 && handler.height > 0) {
-                handler.setTranslationYPosition(
-                    HandlerGeometry.fractionToY(
-                        state.positionFraction, parentHeight, handler.height
-                    ).toFloat()
-                )
-            }
+            val parent = handler.parent as? android.view.ViewGroup ?: return@post
+            if (parent.height <= 0 || handler.height <= 0) return@post
+            handler.setTranslationYPosition(
+                HandlerGeometry.fractionToY(
+                    state.positionFraction, parent.height, handler.height
+                ).toFloat()
+            )
+            handler.setFreeTranslationX(
+                HandlerGeometry.fractionToX(
+                    state.posXFraction, parent.width, handler.width
+                ).toFloat()
+            )
         }
     }
 
@@ -218,9 +224,13 @@ fun ExpandedPreviewDialog(
                     viewModel.showToast(brightnessPermissionMsg)
                 }
             }
+            // Everything that acts on the live overlay or leaves the app. Listed rather than left
+            // to the else branch, which reports an unrecognised identifier — a real bug worth
+            // seeing, and not what a perfectly valid action outside the preview's remit is.
             HandlerActions.ACTIVE_MUSIC_OVERLAY,
             HandlerActions.LOCK,
             HandlerActions.HIDE_HANDLER,
+            HandlerActions.STOP_SERVICE,
             HandlerActions.OPEN_APP -> {
                 viewModel.showToast(actionNotAvailableMsg)
             }
@@ -302,18 +312,14 @@ fun ExpandedPreviewDialog(
 
                         val host = object : HandlerGestureDetector.Host {
                             private var dragStartY = 0f
-
-                            /**
-                             * Horizontal drag is tracked in the container's own coordinates, because
-                             * the bar's layout position jumps between the two edges when the side
-                             * changes while `translationX` does not.
-                             */
                             private var dragStartX = 0f
 
-                            /** Left edge the bar is laid out at, for the side it is currently on. */
-                            private fun layoutLeft(): Float =
-                                if (state.gravity == Gravity.START) 0f
-                                else (container.width - handler.width).toFloat()
+                            /**
+                             * Which side the bar is dressed for, so the dressing is only redone
+                             * when it changes. `setViewGravity` rebuilds the background drawable
+                             * and requests a layout — not something to do on every move frame.
+                             */
+                            private var dressedLeft: Boolean? = null
 
                             override fun isLongPressReposition(): Boolean =
                                 preference.getHandlerLongTapAction() == HandlerActions.REPOSITION
@@ -397,37 +403,52 @@ fun ExpandedPreviewDialog(
 
                             override fun onDragBegin() {
                                 dragStartY = handler.translationY
-                                dragStartX = layoutLeft() + handler.translationX
+                                dragStartX = handler.freeTranslationX()
+                                dressedLeft = state.gravity == Gravity.START
                             }
 
                             override fun onDragUpdate(offsetXPx: Float, offsetYPx: Float) {
                                 val maxY = (container.height - handler.height).coerceAtLeast(0)
-                                val maxX = (container.width - handler.width).coerceAtLeast(0)
                                 handler.translationY =
                                     (dragStartY + offsetYPx).coerceIn(0f, maxY.toFloat())
-                                handler.translationX =
-                                    (dragStartX + offsetXPx).coerceIn(0f, maxX.toFloat()) -
-                                            layoutLeft()
+                                // The same edge-offset clamp the live overlay uses, so what the
+                                // preview shows is what the bar will do.
+                                val x = HandlerGeometry.clampX(
+                                    (dragStartX + offsetXPx).roundToInt(),
+                                    container.width,
+                                    handler.width,
+                                    (state.edgeMargin * ctx.resources.displayMetrics.density)
+                                        .roundToInt()
+                                )
+                                handler.setFreeTranslationX(x.toFloat())
+                                // Dressed for the nearer side during the drag, matching the live
+                                // bar.
+                                val isLeft =
+                                    HandlerGeometry.xToIsLeft(x, container.width, handler.width)
+                                if (dressedLeft != isLeft) {
+                                    dressedLeft = isLeft
+                                    handler.setViewGravity(
+                                        if (isLeft) Gravity.START else Gravity.END
+                                    )
+                                }
                             }
 
                             override fun onDragEnd(moved: Boolean) {
-                                val absoluteX = layoutLeft() + handler.translationX
-                                val isLeft = HandlerGeometry.xToIsLeft(
-                                    absoluteX.roundToInt(), container.width, handler.width
-                                )
-                                val gravity = if (isLeft) Gravity.START else Gravity.END
-
-                                // Re-pinned directly as well as through the state holder: when the
-                                // side has not actually changed, the state write is a no-op and the
-                                // gravity LaunchedEffect never fires, which would strand the bar at
-                                // whatever translationX the drag left behind.
-                                handler.setViewGravity(gravity)
-
                                 if (!moved) return
+                                val x = handler.freeTranslationX().roundToInt()
                                 // Routed through the appearance state holder rather than written
                                 // straight to preferences, so a drag obeys the same Apply/Discard
                                 // contract as every other setting on this screen.
-                                onGravityChanged(gravity)
+                                onGravityChanged(
+                                    if (HandlerGeometry.xToIsLeft(x, container.width, handler.width)) {
+                                        Gravity.START
+                                    } else {
+                                        Gravity.END
+                                    }
+                                )
+                                onHorizontalPositionChanged(
+                                    HandlerGeometry.xToFraction(x, container.width, handler.width)
+                                )
                                 onPositionChanged(
                                     HandlerGeometry.yToFraction(
                                         handler.translationY.roundToInt(),
@@ -446,6 +467,11 @@ fun ExpandedPreviewDialog(
                             handler.setTranslationYPosition(
                                 HandlerGeometry.fractionToY(
                                     state.positionFraction, container.height, handler.height
+                                ).toFloat()
+                            )
+                            handler.setFreeTranslationX(
+                                HandlerGeometry.fractionToX(
+                                    state.posXFraction, container.width, handler.width
                                 ).toFloat()
                             )
                         }

@@ -37,6 +37,15 @@ object HandlerActions {
     const val HIDE_HANDLER = "Hide Handler"
     const val OPEN_APP = "Open App"
 
+    /**
+     * NEW in 1.3.2. Stops the service outright, rather than only putting the bar away.
+     *
+     * Added alongside [HIDE_HANDLER] because the long-press menu is now the only route out of the
+     * overlay — the floating ✕ that used to appear mid-drag is gone — and "put it away for now"
+     * and "turn it off" are different intentions that were sharing one entry.
+     */
+    const val STOP_SERVICE = "Stop service"
+
     /** NEW in 1.2.9. Assignable to single/double/long tap. Requires WRITE_SETTINGS. */
     const val TOGGLE_AUTO_BRIGHTNESS = "Toggle auto brightness"
 
@@ -63,6 +72,16 @@ object HandlerActions {
         HIDE_HANDLER,
         OPEN_APP
     )
+
+    /**
+     * Menu entries the user cannot end up without.
+     *
+     * Hiding the bar is now reachable only from this menu, so an install whose menu has been
+     * pruned down to colours-and-volume would have no way to put the overlay away at all. These
+     * are added back to whatever the user selected rather than made unselectable, so the picker
+     * stays a plain list of switches.
+     */
+    val ALWAYS_IN_CONTEXT_MENU: Set<String> = setOf(HIDE_HANDLER)
 
     /** True when this swipe identifier drives screen brightness rather than media volume. */
     fun isBrightnessSwipe(action: String): Boolean =

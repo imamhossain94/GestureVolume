@@ -5,7 +5,6 @@ import android.content.Context
 sealed class MainEvent {
     data class ToggleService(val isRunning: Boolean, val context: Context) : MainEvent()
     data class SetServiceRunning(val isRunning: Boolean) : MainEvent()
-    data class SetGravity(val gravity: String) : MainEvent()
     data class SetColor(val color: Int) : MainEvent()
     data class SetClickAction(val action: String, val context: Context) : MainEvent()
     data class SetDoubleClickAction(val action: String, val context: Context) : MainEvent()

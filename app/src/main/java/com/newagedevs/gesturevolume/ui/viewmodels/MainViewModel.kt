@@ -22,6 +22,7 @@ import com.newagedevs.gesturevolume.helper.ApplovinAdsManager
 import com.newagedevs.gesturevolume.service.OverlayService
 import com.newagedevs.gesturevolume.service.OverlayServiceInterface
 import com.newagedevs.gesturevolume.utils.Constants
+import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.LockScreenUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -64,19 +65,12 @@ class MainViewModel @Inject constructor(
         _state.value = _state.value.copy(
             isRunning = preference.isRunning(),
             isProActivated = preference.isProFeatureActivated(),
-            gravity = preference.getHandlerPosition(),
-            translationY = preference.getHandlerTranslationY(),
             color = preference.getHandlerColor(),
             clickAction = preference.getHandlerSingleTapAction(),
             doubleClickAction = preference.getHandlerDoubleTapAction(),
             longClickAction = preference.getHandlerLongTapAction(),
             swipeUpAction = preference.getHandlerSwipeUpAction(),
             swipeDownAction = preference.getHandlerSwipeDownAction(),
-            gravityIcon = when (preference.getHandlerPosition()) {
-                "Left" -> R.drawable.ic_align_left
-                "Right" -> R.drawable.ic_align_right
-                else -> R.drawable.ic_align_right
-            },
             clickActionIcon = getActionIcon(preference.getHandlerSingleTapAction()),
             doubleClickActionIcon = getActionIcon(preference.getHandlerDoubleTapAction()),
             longClickActionIcon = getActionIcon(preference.getHandlerLongTapAction()),
@@ -102,7 +96,6 @@ class MainViewModel @Inject constructor(
         when (event) {
             is MainEvent.ToggleService -> toggleService(event.isRunning, event.context)
             is MainEvent.SetServiceRunning -> setServiceRunning(event.isRunning)
-            is MainEvent.SetGravity -> setGravity(event.gravity)
             is MainEvent.SetColor -> setColor(event.color)
             is MainEvent.SetClickAction -> setClickAction(event.action, event.context)
             is MainEvent.SetDoubleClickAction -> setDoubleClickAction(event.action, event.context)
@@ -141,6 +134,41 @@ class MainViewModel @Inject constructor(
         pendingBrightnessAction = action to slot
         _state.value = _state.value.copy(pendingWriteSettingsRequest = true)
         return false
+    }
+
+    /**
+     * Notices that the Lock action has been chosen with no way to actually lock, and asks.
+     *
+     * Called *after* the action is saved, not instead of saving it. The previous code returned
+     * early and launched the Device Admin prompt, which meant the user's choice was thrown away:
+     * they granted admin, came back, and the action was still whatever it had been before. Now the
+     * setting is theirs either way and the permission is a separate question.
+     */
+    private fun requireLockPermission(action: String, context: Context) {
+        if (action != HandlerActions.LOCK) return
+        if (LockScreenUtil(context).canLock()) return
+        _state.value = _state.value.copy(pendingLockPermissionRequest = true)
+    }
+
+    /**
+     * The user picked a lock route from the dialog.
+     *
+     * @param useAccessibility true for the biometric-friendly accessibility route, false for
+     *   Device Admin. Below API 28 only the latter exists — see [LockScreenUtil].
+     */
+    fun onLockPermissionChoice(useAccessibility: Boolean, context: Context) {
+        _state.value = _state.value.copy(pendingLockPermissionRequest = false)
+        val util = LockScreenUtil(context)
+        if (useAccessibility && util.accessibilitySupported()) {
+            preference.setAppOpenAdPaused(true)
+            util.openAccessibilitySettings()
+        } else {
+            util.enableAdmin()
+        }
+    }
+
+    fun cancelLockPermissionRequest() {
+        _state.value = _state.value.copy(pendingLockPermissionRequest = false)
     }
 
     /** Applies whatever the user was trying to set before we sent them to grant the permission. */
@@ -209,6 +237,11 @@ class MainViewModel @Inject constructor(
         _state.value = _state.value.copy(isRunning = isRunning)
 
         if (isRunning) {
+            // Switching the service on is an explicit request for the bar, so it overrides a
+            // previous "Hide handler". Without this the toggle would go green and nothing would
+            // appear — the service starts with no action, which is the path that deliberately
+            // leaves a hidden bar hidden.
+            preference.setHandlerHidden(false)
             // Show interstitial ad with cooldown check
             maybeShowInterstitialAd()
             startOverlayService(context)
@@ -341,29 +374,15 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun setGravity(gravity: String) {
-        preference.setHandlerPosition(gravity)
-        val icon = when (gravity) {
-            "Left" -> R.drawable.ic_align_left
-            "Right" -> R.drawable.ic_align_right
-            else -> R.drawable.ic_align_right
-        }
-        _state.value = _state.value.copy(gravity = gravity, gravityIcon = icon)
-    }
-
     private fun setColor(color: Int) {
         preference.setHandlerColor(color)
         _state.value = _state.value.copy(color = color)
     }
 
     private fun setClickAction(action: String, context: Context) {
-        val lockScreenUtil = LockScreenUtil(context)
-        if (action == "Lock" && !lockScreenUtil.active()) {
-            lockScreenUtil.enableAdmin()
-            return
-        }
         if (!requireWriteSettings(action, ActionSlot.SINGLE_TAP, context)) return
         preference.setHandlerSingleTapAction(action)
+        requireLockPermission(action, context)
         _state.value = _state.value.copy(
             clickAction = action,
             clickActionIcon = getActionIcon(action)
@@ -371,13 +390,9 @@ class MainViewModel @Inject constructor(
     }
 
     private fun setDoubleClickAction(action: String, context: Context) {
-        val lockScreenUtil = LockScreenUtil(context)
-        if (action == "Lock" && !lockScreenUtil.active()) {
-            lockScreenUtil.enableAdmin()
-            return
-        }
         if (!requireWriteSettings(action, ActionSlot.DOUBLE_TAP, context)) return
         preference.setHandlerDoubleTapAction(action)
+        requireLockPermission(action, context)
         _state.value = _state.value.copy(
             doubleClickAction = action,
             doubleClickActionIcon = getActionIcon(action)
@@ -385,13 +400,9 @@ class MainViewModel @Inject constructor(
     }
 
     private fun setLongClickAction(action: String, context: Context) {
-        val lockScreenUtil = LockScreenUtil(context)
-        if (action == "Lock" && !lockScreenUtil.active()) {
-            lockScreenUtil.enableAdmin()
-            return
-        }
         if (!requireWriteSettings(action, ActionSlot.LONG_TAP, context)) return
         preference.setHandlerLongTapAction(action)
+        requireLockPermission(action, context)
         _state.value = _state.value.copy(
             longClickAction = action,
             longClickActionIcon = getActionIcon(action)
@@ -422,20 +433,14 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun getActionIcon(action: String): Int {
-        return when (action) {
-            HandlerActions.NONE -> R.drawable.ic_nothing
-            HandlerActions.OPEN_VOLUME_UI -> R.drawable.ic_vol_increase
-            HandlerActions.MUTE -> R.drawable.ic_mute
-            HandlerActions.ACTIVE_MUSIC_OVERLAY -> R.drawable.ic_music_ui
-            HandlerActions.LOCK -> R.drawable.ic_lock
-            HandlerActions.HIDE_HANDLER -> R.drawable.ic_visibility_hide
-            HandlerActions.OPEN_APP -> R.drawable.ic_app_open
-            HandlerActions.TOGGLE_AUTO_BRIGHTNESS -> R.drawable.ic_brightness_auto
-            HandlerActions.REPOSITION -> R.drawable.ic_move
-            else -> R.drawable.ic_nothing
-        }
-    }
+    /**
+     * One lookup, from the same catalog the dialogs and the overlay menu read.
+     *
+     * This used to be a `when` listing every action by hand, which meant "Mute or Unmute" — never
+     * in the list — showed the do-nothing icon on the main screen for as long as it has existed.
+     */
+    private fun getActionIcon(action: String): Int =
+        HandlerActionCatalog.entryFor(action)?.iconRes ?: R.drawable.ic_nothing
 
     private fun getSwipeUpIcon(action: String): Int {
         return when (action) {
