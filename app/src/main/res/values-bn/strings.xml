@@ -173,7 +173,6 @@
     <string name="action_mute">নিঃশব্দ</string>
     <string name="action_mute_unmute">মিউট বা আনমিউট</string>
     <string name="action_music_overlay">সক্রিয় সঙ্গীত ওভারলে</string>
-    <string name="action_lock">তালা</string>
     <string name="action_hide_handler">হ্যান্ডলার লুকান</string>
     <string name="action_open_app">অ্যাপ খুলুন</string>
     <string name="action_increase_vol_ui">ভলিউম বাড়ান এবং UI দেখান</string>
@@ -308,9 +307,6 @@
     <string name="service_inactive">সার্ভিস বন্ধ</string>
     <string name="tap_to_disable">বন্ধ করতে ট্যাপ করুন</string>
     <string name="tap_to_enable">চালু করতে ট্যাপ করুন</string>
-    <string name="lock_permission_section">স্ক্রিন লক</string>
-    <string name="lock_accessibility_permission">স্ক্রিন লক (অ্যাক্সেসিবিলিটি)</string>
-    <string name="lock_accessibility_permission_desc">প্রস্তাবিত: লক অ্যাকশনটিকে পাওয়ার বোতামের মতোই স্ক্রিন বন্ধ করতে দেয়, ফলে আঙুলের ছাপ দিয়েই ফোন খোলা যায়</string>
     <string name="permission_turn_off">বন্ধ করুন</string>
     <string name="action_reposition">হ্যান্ডলার সরান</string>
     <string name="volume_percent_short">%1$d%%</string>
@@ -325,20 +321,12 @@
     <string name="notification_action_hide">লুকান</string>
     <string name="notification_action_settings">সেটিংস</string>
     <string name="notification_action_stop">বন্ধ</string>
-    <string name="lock_accessibility_label">স্ক্রিন লক</string>
-    <string name="lock_accessibility_summary">লক অ্যাকশনটিকে স্ক্রিন বন্ধ করতে দেয়।</string>
-    <string name="lock_accessibility_description">ভাসমান বারে লক অ্যাকশন ব্যবহার করলে GestureVolume-কে স্ক্রিন লক করতে দেয়। এটি পাওয়ার বোতামের মতোই স্ক্রিন লক করে, তাই আঙুলের ছাপ দিয়েই ফোন খোলা যায়। এই সার্ভিস আপনার স্ক্রিনের কিছুই পড়ে না এবং অন্য কোনো কাজ করে না।</string>
-    <string name="lock_permission_title">স্ক্রিন লক করা</string>
-    <string name="lock_permission_message">স্ক্রিন লক করতে GestureVolume-এর অনুমতি প্রয়োজন।\n\nঅ্যাক্সেসিবিলিটি সুপারিশ করা হয়: এটি পাওয়ার বোতামের মতোই স্ক্রিন লক করে, তাই আঙুলের ছাপ দিয়েই ফোন খোলা যায়। ডিভাইস অ্যাডমিনও কাজ করে, তবে বেশিরভাগ ফোন তখন আঙুলের ছাপের বদলে PIN চায়।</string>
-    <string name="lock_permission_accessibility">অ্যাক্সেসিবিলিটি ব্যবহার করুন</string>
-    <string name="lock_not_available">লক অ্যাকশন ব্যবহারের আগে সেটিংসে একটি লক অনুমতি দিন।</string>
     <string name="context_menu_title">লং-প্রেস মেনু</string>
     <string name="context_menu_desc">হ্যান্ডলার চেপে ধরলে কী দেখা যাবে তা বেছে নিন।</string>
     <string name="context_menu_empty">আর কিছু নির্বাচিত নেই। চেপে ধরলে হ্যান্ডলার সরবে এবং “হ্যান্ডলার লুকান” দেখাবে।</string>
     <string name="context_menu_always">সবসময় দেখানো হয়</string>
     <string name="context_menu_section">লং-প্রেস মেনুর আইটেম</string>
     <string name="behaviour_section">আচরণ</string>
-    <string name="lock_permission_menu_message">আপনি লং-প্রেস মেনুতে লক যোগ করেছেন, কিন্তু এখনো কিছুই স্ক্রিন লক করতে পারে না।\n\nঅ্যাক্সেসিবিলিটি সুপারিশ করা হয়: এটি পাওয়ার বোতামের মতোই স্ক্রিন লক করে, তাই আঙুলের ছাপ দিয়েই ফোন খোলা যায়।</string>
     <string name="notification_permission_needed_title">নোটিফিকেশন বন্ধ আছে</string>
     <string name="notification_permission_needed_message">নিয়ন্ত্রণগুলো চালু আছে, কিন্তু অ্যান্ড্রয়েড GestureVolume-কে নোটিফিকেশন দেখাতে দিচ্ছে না — তাই দেখান, সেটিংস ও বন্ধ বোতাম প্যানেলে আসবে না।</string>
     <string name="notification_permission_warning_inline">এই অ্যাপের জন্য নোটিফিকেশন ব্লক করা আছে। অনুমতি দিতে ট্যাপ করুন।</string>
@@ -358,11 +346,8 @@
     <string name="reset_app_message">প্রতিটি সেটিং ডিফল্টে ফিরে যাবে: হ্যান্ডলারের চেহারা ও অবস্থান, সব ট্যাপ ও সোয়াইপ অ্যাকশন, লং-প্রেস মেনু, থিম ও ভাষা। ভাসমান বারটি বন্ধ হবে এবং স্বাগত স্ক্রিনগুলো ফিরে আসবে।\n\nআপনার প্রো ক্রয় অক্ষুণ্ণ থাকবে। এটি ফেরানো যাবে না।</string>
     <string name="reset_app_confirm">রিসেট</string>
     <string name="reset_app_done">সবকিছু রিসেট করা হয়েছে।</string>
-    <string name="permission_needed_lock">আপনি একটি অ্যাকশন লক-এ সেট করেছেন। এটি ছাড়া, সেটিতে ট্যাপ করলে কিছুই হবে না।</string>
     <string name="permission_needed_notification">নোটিফিকেশন নিয়ন্ত্রণ চালু আছে। এটি ছাড়া দেখান, সেটিংস ও বন্ধ দেখা যাবে না।</string>
     <string name="permission_needed_brightness">আপনি একটি উজ্জ্বলতা অ্যাকশন সেট করেছেন। এটি ছাড়া উজ্জ্বলতা বদলাতে পারবে না।</string>
     <string name="permission_action_required_one">১টি অনুমতির প্রতি নজর দিন</string>
     <string name="permission_action_required_many">%1$dটি অনুমতির প্রতি নজর দিন</string>
-    <string name="lock_unsupported_message">স্ক্রিন লক করতে অ্যান্ড্রয়েড ৯ বা নতুন সংস্করণ লাগে। এই ফোনে তা সম্ভব নয়, তাই লক অ্যাকশন জানাবে যে এটি অनुপলব্ধ।</string>
-    <string name="lock_unsupported_short">অ্যান্ড্রয়েড ৯ বা নতুন প্রয়োজন</string>
 </resources>

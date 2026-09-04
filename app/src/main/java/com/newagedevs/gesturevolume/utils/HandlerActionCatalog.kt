@@ -37,7 +37,6 @@ object HandlerActionCatalog {
         Entry(HandlerActions.MUTE_OR_UNMUTE, R.drawable.ic_mute, R.string.action_mute_unmute),
         Entry(HandlerActions.TOGGLE_AUTO_BRIGHTNESS, R.drawable.ic_brightness_auto, R.string.action_toggle_auto_brightness),
         Entry(HandlerActions.ACTIVE_MUSIC_OVERLAY, R.drawable.ic_music_ui, R.string.action_music_overlay),
-        Entry(HandlerActions.LOCK, R.drawable.ic_lock, R.string.action_lock),
         Entry(HandlerActions.HIDE_HANDLER, R.drawable.ic_visibility_hide, R.string.action_hide_handler),
         Entry(HandlerActions.STOP_SERVICE, R.drawable.ic_power, R.string.action_stop_service),
         Entry(HandlerActions.OPEN_APP, R.drawable.ic_app_open, R.string.action_open_app)

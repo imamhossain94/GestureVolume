@@ -173,7 +173,6 @@
     <string name="action_mute">Muet</string>
     <string name="action_mute_unmute">Désactiver ou réactiver le son</string>
     <string name="action_music_overlay">Superposition de musique active</string>
-    <string name="action_lock">Verrouillage</string>
     <string name="action_hide_handler">Masquer le gestionnaire</string>
     <string name="action_open_app">Ouvrir l\'application</string>
     <string name="action_increase_vol_ui">Augmenter le volume et afficher l\'interface utilisateur</string>
@@ -308,9 +307,6 @@
     <string name="service_inactive">Service inactif</string>
     <string name="tap_to_disable">Touchez pour désactiver</string>
     <string name="tap_to_enable">Touchez pour activer</string>
-    <string name="lock_permission_section">VERROUILLAGE DE L\'ÉCRAN</string>
-    <string name="lock_accessibility_permission">Verrouillage de l\'écran (accessibilité)</string>
-    <string name="lock_accessibility_permission_desc">Recommandé : permet à l\'action Verrouiller d\'éteindre l\'écran comme le bouton d\'alimentation, afin que votre empreinte déverrouille toujours le téléphone</string>
     <string name="permission_turn_off">Désactiver</string>
     <string name="action_reposition">Déplacer la barre</string>
     <string name="volume_percent_short">%1$d%%</string>
@@ -325,20 +321,12 @@
     <string name="notification_action_hide">Masquer</string>
     <string name="notification_action_settings">Réglages</string>
     <string name="notification_action_stop">Arrêter</string>
-    <string name="lock_accessibility_label">Verrouillage de l\'écran</string>
-    <string name="lock_accessibility_summary">Permet à l\'action Verrouiller d\'éteindre l\'écran.</string>
-    <string name="lock_accessibility_description">Permet à GestureVolume de verrouiller l\'écran lorsque vous utilisez l\'action Verrouiller sur la barre flottante. L\'écran est verrouillé exactement comme avec le bouton d\'alimentation, votre empreinte déverrouille donc toujours le téléphone. Ce service ne lit rien sur votre écran et n\'effectue aucune autre action.</string>
-    <string name="lock_permission_title">Verrouiller l\'écran</string>
-    <string name="lock_permission_message">GestureVolume a besoin d\'une autorisation pour verrouiller l\'écran.\n\nL\'accessibilité est recommandée : elle verrouille l\'écran comme le bouton d\'alimentation, votre empreinte déverrouille donc toujours le téléphone. L\'administrateur d\'appareil fonctionne aussi, mais la plupart des téléphones demandent alors votre code PIN au lieu de l\'empreinte.</string>
-    <string name="lock_permission_accessibility">Utiliser l\'accessibilité</string>
-    <string name="lock_not_available">Accordez une autorisation de verrouillage dans les Réglages avant d\'utiliser l\'action Verrouiller.</string>
     <string name="context_menu_title">Menu d\'appui long</string>
     <string name="context_menu_desc">Choisissez ce qui apparaît lorsque vous maintenez la barre appuyée.</string>
     <string name="context_menu_empty">Rien d\'autre n\'est sélectionné. L\'appui long déplacera la barre et proposera « Masquer la barre ».</string>
     <string name="context_menu_always">Toujours affiché</string>
     <string name="context_menu_section">Éléments du menu d\'appui long</string>
     <string name="behaviour_section">Comportement</string>
-    <string name="lock_permission_menu_message">Vous avez ajouté Verrouiller au menu d\'appui long, mais rien ne peut encore verrouiller l\'écran.\n\nL\'accessibilité est recommandée : elle verrouille l\'écran comme le bouton d\'alimentation, votre empreinte déverrouille donc toujours le téléphone.</string>
     <string name="notification_permission_needed_title">Les notifications sont désactivées</string>
     <string name="notification_permission_needed_message">Les commandes sont activées, mais Android n\'autorise pas GestureVolume à publier des notifications – Afficher, Réglages et Arrêter n\'apparaîtront donc pas dans le volet.</string>
     <string name="notification_permission_warning_inline">Les notifications sont bloquées pour cette application. Touchez pour les autoriser.</string>
@@ -358,11 +346,8 @@
     <string name="reset_app_message">Chaque réglage revient à sa valeur par défaut : l\'apparence et la position de la barre, toutes les actions de toucher et de glissement, le menu d\'appui long, le thème et la langue. La barre flottante est désactivée et les écrans de bienvenue reviennent.\n\nVotre achat Pro est conservé. Cette action est irréversible.</string>
     <string name="reset_app_confirm">Réinitialiser</string>
     <string name="reset_app_done">Tout a été réinitialisé.</string>
-    <string name="permission_needed_lock">Vous avez attribué une action à Verrouiller. Sans cela, la toucher ne fait rien.</string>
     <string name="permission_needed_notification">Les commandes de notification sont activées. Sans cela, Afficher, Réglages et Arrêter n\'apparaîtront pas.</string>
     <string name="permission_needed_brightness">Vous avez attribué une action de luminosité. Sans cela, elle ne peut pas changer la luminosité.</string>
     <string name="permission_action_required_one">1 autorisation demande votre attention</string>
     <string name="permission_action_required_many">%1$d autorisations demandent votre attention</string>
-    <string name="lock_unsupported_message">Verrouiller l\'écran nécessite Android 9 ou une version plus récente. Ce téléphone ne le peut pas, l\'action Verrouiller signalera donc qu\'elle est indisponible.</string>
-    <string name="lock_unsupported_short">Nécessite Android 9 ou une version plus récente</string>
 </resources>

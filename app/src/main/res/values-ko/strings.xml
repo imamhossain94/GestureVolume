@@ -173,7 +173,6 @@
     <string name="action_mute">무음</string>
     <string name="action_mute_unmute">음소거 또는 음소거 해제</string>
     <string name="action_music_overlay">활성 음악 오버레이</string>
-    <string name="action_lock">잠그다</string>
     <string name="action_hide_handler">핸들러 숨기기</string>
     <string name="action_open_app">앱 열기</string>
     <string name="action_increase_vol_ui">볼륨을 높이고 UI를 표시합니다.</string>
@@ -308,9 +307,6 @@
     <string name="service_inactive">서비스 중지됨</string>
     <string name="tap_to_disable">눌러서 끄기</string>
     <string name="tap_to_enable">눌러서 켜기</string>
-    <string name="lock_permission_section">화면 잠금</string>
-    <string name="lock_accessibility_permission">화면 잠금(접근성)</string>
-    <string name="lock_accessibility_permission_desc">권장: 잠금 동작이 전원 버튼과 동일하게 화면을 끄므로 지문으로 계속 잠금 해제할 수 있습니다</string>
     <string name="permission_turn_off">끄기</string>
     <string name="action_reposition">핸들러 이동</string>
     <string name="volume_percent_short">%1$d%%</string>
@@ -325,20 +321,12 @@
     <string name="notification_action_hide">숨기기</string>
     <string name="notification_action_settings">설정</string>
     <string name="notification_action_stop">중지</string>
-    <string name="lock_accessibility_label">화면 잠금</string>
-    <string name="lock_accessibility_summary">잠금 동작이 화면을 끌 수 있게 합니다.</string>
-    <string name="lock_accessibility_description">플로팅 바에서 잠금 동작을 사용할 때 GestureVolume이 화면을 잠글 수 있도록 합니다. 전원 버튼과 똑같은 방식으로 잠그므로 지문으로 계속 잠금 해제할 수 있습니다. 이 서비스는 화면의 어떤 내용도 읽지 않으며 다른 동작도 수행하지 않습니다.</string>
-    <string name="lock_permission_title">화면 잠금</string>
-    <string name="lock_permission_message">화면을 잠그려면 GestureVolume에 권한이 필요합니다.\n\n접근성을 권장합니다. 전원 버튼과 같은 방식으로 화면을 잠그므로 지문으로 계속 잠금 해제할 수 있습니다. 기기 관리자도 동작하지만 대부분의 기기가 지문 대신 PIN을 요구합니다.</string>
-    <string name="lock_permission_accessibility">접근성 사용</string>
-    <string name="lock_not_available">잠금 동작을 사용하기 전에 설정에서 잠금 권한을 허용하세요.</string>
     <string name="context_menu_title">길게 누르기 메뉴</string>
     <string name="context_menu_desc">바를 길게 눌렀을 때 표시할 항목을 선택하세요.</string>
     <string name="context_menu_empty">선택된 항목이 더 없습니다. 길게 누르면 바가 이동하고 “바 숨기기”가 표시됩니다.</string>
     <string name="context_menu_always">항상 표시</string>
     <string name="context_menu_section">길게 누르기 메뉴 항목</string>
     <string name="behaviour_section">동작</string>
-    <string name="lock_permission_menu_message">길게 누르기 메뉴에 잠금을 추가했지만, 아직 화면을 잠글 수 있는 방법이 없습니다.\n\n접근성을 권장합니다. 전원 버튼과 같은 방식으로 화면을 잠그므로 지문으로 계속 잠금 해제할 수 있습니다.</string>
     <string name="notification_permission_needed_title">알림이 꺼져 있습니다</string>
     <string name="notification_permission_needed_message">컨트롤은 켜져 있지만 Android가 GestureVolume의 알림 게시를 허용하지 않고 있습니다. 그래서 표시, 설정, 중지가 알림 패널에 나타나지 않습니다.</string>
     <string name="notification_permission_warning_inline">이 앱의 알림이 차단되어 있습니다. 눌러서 허용하세요.</string>
@@ -358,11 +346,8 @@
     <string name="reset_app_message">모든 설정이 기본값으로 돌아갑니다. 바의 모양과 위치, 모든 탭·스와이프 동작, 길게 누르기 메뉴, 테마와 언어가 포함됩니다. 플로팅 바는 꺼지고 시작 화면이 다시 나타납니다.\n\nPro 구매는 유지됩니다. 이 작업은 되돌릴 수 없습니다.</string>
     <string name="reset_app_confirm">초기화</string>
     <string name="reset_app_done">전부 초기화되었습니다.</string>
-    <string name="permission_needed_lock">동작을 잠금으로 설정했습니다. 이것이 없으면 눌러도 아무 일도 일어나지 않습니다.</string>
     <string name="permission_needed_notification">알림 컨트롤이 켜져 있습니다. 이것이 없으면 표시, 설정, 중지가 나타나지 않습니다.</string>
     <string name="permission_needed_brightness">밝기 동작을 설정했습니다. 이것이 없으면 밝기를 바꿀 수 없습니다.</string>
     <string name="permission_action_required_one">권한 1개를 확인해야 합니다</string>
     <string name="permission_action_required_many">권한 %1$d개를 확인해야 합니다</string>
-    <string name="lock_unsupported_message">화면 잠금에는 Android 9 이상이 필요합니다. 이 기기는 지원하지 않으므로 잠금 동작은 사용할 수 없다고 알립니다.</string>
-    <string name="lock_unsupported_short">Android 9 이상 필요</string>
 </resources>

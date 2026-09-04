@@ -173,7 +173,6 @@
     <string name="action_mute">Немой</string>
     <string name="action_mute_unmute">Отключить или включить звук</string>
     <string name="action_music_overlay">Наложение активной музыки</string>
-    <string name="action_lock">Замок</string>
     <string name="action_hide_handler">Скрыть обработчик</string>
     <string name="action_open_app">Открыть приложение</string>
     <string name="action_increase_vol_ui">Увеличьте громкость и отобразите пользовательский интерфейс</string>
@@ -308,9 +307,6 @@
     <string name="service_inactive">Служба выключена</string>
     <string name="tap_to_disable">Нажмите, чтобы выключить</string>
     <string name="tap_to_enable">Нажмите, чтобы включить</string>
-    <string name="lock_permission_section">БЛОКИРОВКА ЭКРАНА</string>
-    <string name="lock_accessibility_permission">Блокировка экрана (спец. возможности)</string>
-    <string name="lock_accessibility_permission_desc">Рекомендуется: позволяет действию «Блокировка» гасить экран так же, как кнопка питания, поэтому отпечаток по-прежнему разблокирует телефон</string>
     <string name="permission_turn_off">Отключить</string>
     <string name="action_reposition">Переместить полосу</string>
     <string name="volume_percent_short">%1$d%%</string>
@@ -325,20 +321,12 @@
     <string name="notification_action_hide">Скрыть</string>
     <string name="notification_action_settings">Настройки</string>
     <string name="notification_action_stop">Остановить</string>
-    <string name="lock_accessibility_label">Блокировка экрана</string>
-    <string name="lock_accessibility_summary">Позволяет действию «Блокировка» гасить экран.</string>
-    <string name="lock_accessibility_description">Позволяет GestureVolume блокировать экран, когда вы используете действие «Блокировка» на плавающей полосе. Экран блокируется точно так же, как кнопкой питания, поэтому отпечаток по-прежнему разблокирует телефон. Эта служба ничего не считывает с экрана и не выполняет никаких других действий.</string>
-    <string name="lock_permission_title">Блокировка экрана</string>
-    <string name="lock_permission_message">GestureVolume нужно разрешение, чтобы блокировать экран.\n\nРекомендуются спец. возможности: они блокируют экран так же, как кнопка питания, поэтому отпечаток по-прежнему разблокирует телефон. Администратор устройства тоже работает, но большинство телефонов затем требуют PIN-код вместо отпечатка.</string>
-    <string name="lock_permission_accessibility">Спец. возможности</string>
-    <string name="lock_not_available">Прежде чем использовать действие «Блокировка», выдайте разрешение на блокировку в настройках.</string>
     <string name="context_menu_title">Меню долгого нажатия</string>
     <string name="context_menu_desc">Выберите, что появляется при долгом нажатии на полосу.</string>
     <string name="context_menu_empty">Больше ничего не выбрано. Долгое нажатие будет перемещать полосу и предлагать «Скрыть полосу».</string>
     <string name="context_menu_always">Показывается всегда</string>
     <string name="context_menu_section">Пункты меню долгого нажатия</string>
     <string name="behaviour_section">Поведение</string>
-    <string name="lock_permission_menu_message">Вы добавили «Блокировку» в меню долгого нажатия, но пока ничто не может заблокировать экран.\n\nРекомендуются спец. возможности: они блокируют экран так же, как кнопка питания, поэтому отпечаток по-прежнему разблокирует телефон.</string>
     <string name="notification_permission_needed_title">Уведомления отключены</string>
     <string name="notification_permission_needed_message">Кнопки включены, но Android не разрешает GestureVolume показывать уведомления — поэтому «Показать», «Настройки» и «Остановить» не появятся в панели.</string>
     <string name="notification_permission_warning_inline">Уведомления для этого приложения заблокированы. Нажмите, чтобы разрешить.</string>
@@ -358,11 +346,8 @@
     <string name="reset_app_message">Все настройки вернутся к значениям по умолчанию: вид и положение полосы, все действия нажатий и свайпов, меню долгого нажатия, тема и язык. Плавающая полоса будет выключена, а приветственные экраны вернутся.\n\nВаша покупка Pro сохраняется. Это действие нельзя отменить.</string>
     <string name="reset_app_confirm">Сбросить</string>
     <string name="reset_app_done">Всё сброшено.</string>
-    <string name="permission_needed_lock">Вы назначили действие «Блокировка». Без этого нажатие ничего не сделает.</string>
     <string name="permission_needed_notification">Кнопки в уведомлении включены. Без этого «Показать», «Настройки» и «Остановить» не появятся.</string>
     <string name="permission_needed_brightness">Вы назначили действие яркости. Без этого оно не сможет менять яркость.</string>
     <string name="permission_action_required_one">1 разрешение требует внимания</string>
     <string name="permission_action_required_many">Разрешений требует внимания: %1$d</string>
-    <string name="lock_unsupported_message">Для блокировки экрана нужен Android 9 или новее. Этот телефон так не умеет, поэтому действие «Блокировка» сообщит, что оно недоступно.</string>
-    <string name="lock_unsupported_short">Требуется Android 9 или новее</string>
 </resources>

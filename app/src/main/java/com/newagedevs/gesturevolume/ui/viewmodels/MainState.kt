@@ -45,8 +45,6 @@ data class MainState(
      * consumer — a second screen collecting it would swallow toasts intended for the first.
      */
     val pendingWriteSettingsRequest: Boolean = false,
-    /** True while the Lock action is waiting on a lock route the user has not granted yet. */
-    val pendingLockPermissionRequest: Boolean = false,
     val theme: Int = 0,
     val language: String = "en"
 )

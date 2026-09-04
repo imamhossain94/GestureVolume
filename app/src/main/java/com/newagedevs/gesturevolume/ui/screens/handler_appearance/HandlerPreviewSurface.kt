@@ -47,7 +47,7 @@ import kotlin.math.roundToInt
  * [HandlerGestureDetector], the same edge clamp, the same snap - and every change is routed back
  * through the appearance state, so Apply/Discard still governs it.
  *
- * Gestures that would act on the live overlay or leave the app (Lock, Hide, Stop, Open app, the
+ * Gestures that would act on the live overlay or leave the app (Hide, Stop, Open app, the
  * music overlay) report that they are unavailable rather than firing: this is a rehearsal, and a
  * rehearsal that locks the phone is not one.
  */
@@ -189,7 +189,6 @@ fun HandlerPreviewSurface(
             // to the else branch, which reports an unrecognised identifier — a real bug worth
             // seeing, and not what a perfectly valid action outside the preview's remit is.
             HandlerActions.ACTIVE_MUSIC_OVERLAY,
-            HandlerActions.LOCK,
             HandlerActions.HIDE_HANDLER,
             HandlerActions.STOP_SERVICE,
             HandlerActions.OPEN_APP -> {

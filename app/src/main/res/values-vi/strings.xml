@@ -173,7 +173,6 @@
     <string name="action_mute">Tắt tiếng</string>
     <string name="action_mute_unmute">Tắt tiếng hoặc bật tiếng</string>
     <string name="action_music_overlay">Lớp phủ âm nhạc hoạt động</string>
-    <string name="action_lock">Khóa</string>
     <string name="action_hide_handler">Ẩn trình xử lý</string>
     <string name="action_open_app">Mở ứng dụng</string>
     <string name="action_increase_vol_ui">Tăng âm lượng và hiển thị giao diện người dùng</string>
@@ -308,9 +307,6 @@
     <string name="service_inactive">Dịch vụ đã tắt</string>
     <string name="tap_to_disable">Chạm để tắt</string>
     <string name="tap_to_enable">Chạm để bật</string>
-    <string name="lock_permission_section">KHÓA MÀN HÌNH</string>
-    <string name="lock_accessibility_permission">Khóa màn hình (trợ năng)</string>
-    <string name="lock_accessibility_permission_desc">Khuyến nghị: cho phép hành động Khóa tắt màn hình giống như nút nguồn, nên vân tay vẫn mở khóa được điện thoại</string>
     <string name="permission_turn_off">Tắt</string>
     <string name="action_reposition">Di chuyển thanh</string>
     <string name="volume_percent_short">%1$d%%</string>
@@ -325,20 +321,12 @@
     <string name="notification_action_hide">Ẩn</string>
     <string name="notification_action_settings">Cài đặt</string>
     <string name="notification_action_stop">Dừng</string>
-    <string name="lock_accessibility_label">Khóa màn hình</string>
-    <string name="lock_accessibility_summary">Cho phép hành động Khóa tắt màn hình.</string>
-    <string name="lock_accessibility_description">Cho phép GestureVolume khóa màn hình khi bạn dùng hành động Khóa trên thanh nổi. Nó khóa màn hình giống hệt nút nguồn, nên vân tay vẫn mở khóa được điện thoại. Dịch vụ này không đọc bất cứ thứ gì trên màn hình và không thực hiện hành động nào khác.</string>
-    <string name="lock_permission_title">Khóa màn hình</string>
-    <string name="lock_permission_message">GestureVolume cần quyền để khóa màn hình.\n\nNên chọn trợ năng: nó khóa màn hình giống nút nguồn, nên vân tay vẫn mở khóa được điện thoại. Quản trị thiết bị cũng dùng được, nhưng phần lớn điện thoại sẽ đòi mã PIN thay vì vân tay.</string>
-    <string name="lock_permission_accessibility">Dùng trợ năng</string>
-    <string name="lock_not_available">Hãy cấp quyền khóa trong Cài đặt trước khi dùng hành động Khóa.</string>
     <string name="context_menu_title">Menu nhấn giữ</string>
     <string name="context_menu_desc">Chọn những gì xuất hiện khi bạn nhấn giữ thanh.</string>
     <string name="context_menu_empty">Không còn mục nào được chọn. Nhấn giữ sẽ di chuyển thanh và hiện “Ẩn thanh”.</string>
     <string name="context_menu_always">Luôn hiển thị</string>
     <string name="context_menu_section">Mục trong menu nhấn giữ</string>
     <string name="behaviour_section">Hành vi</string>
-    <string name="lock_permission_menu_message">Bạn đã thêm Khóa vào menu nhấn giữ, nhưng chưa có gì khóa được màn hình.\n\nNên chọn trợ năng: nó khóa màn hình giống nút nguồn, nên vân tay vẫn mở khóa được điện thoại.</string>
     <string name="notification_permission_needed_title">Thông báo đang tắt</string>
     <string name="notification_permission_needed_message">Các điều khiển đã bật, nhưng Android không cho phép GestureVolume gửi thông báo — nên Hiện, Cài đặt và Dừng sẽ không xuất hiện trong bảng thông báo.</string>
     <string name="notification_permission_warning_inline">Thông báo đang bị chặn với ứng dụng này. Chạm để cho phép.</string>
@@ -358,11 +346,8 @@
     <string name="reset_app_message">Mọi thiết lập trở về mặc định: giao diện và vị trí của thanh, tất cả hành động chạm và vuốt, menu nhấn giữ, chủ đề và ngôn ngữ. Thanh nổi sẽ tắt và các màn hình chào mừng quay lại.\n\nGiao dịch mua Pro của bạn được giữ nguyên. Không thể hoàn tác.</string>
     <string name="reset_app_confirm">Đặt lại</string>
     <string name="reset_app_done">Đã đặt lại tất cả.</string>
-    <string name="permission_needed_lock">Bạn đã đặt một hành động là Khóa. Không có quyền này, chạm vào nó sẽ không có tác dụng.</string>
     <string name="permission_needed_notification">Điều khiển trên thông báo đang bật. Không có quyền này, Hiện, Cài đặt và Dừng sẽ không xuất hiện.</string>
     <string name="permission_needed_brightness">Bạn đã đặt một hành động độ sáng. Không có quyền này, nó không thể đổi độ sáng.</string>
     <string name="permission_action_required_one">1 quyền cần bạn xử lý</string>
     <string name="permission_action_required_many">%1$d quyền cần bạn xử lý</string>
-    <string name="lock_unsupported_message">Khóa màn hình cần Android 9 trở lên. Điện thoại này không hỗ trợ, nên hành động Khóa sẽ báo là không khả dụng.</string>
-    <string name="lock_unsupported_short">Cần Android 9 trở lên</string>
 </resources>

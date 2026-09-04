@@ -464,6 +464,7 @@ class SharedPref @Inject constructor(
      */
     fun getContextMenuItems(): Set<String> =
         sharedPreferences.getStringSet(CONTEXT_MENU_ITEMS, null)
+            ?.let { HandlerActions.sanitize(it) }
             ?: HandlerActions.DEFAULT_CONTEXT_MENU
 
     fun setContextMenuItems(value: Set<String>) {
@@ -480,15 +481,19 @@ class SharedPref @Inject constructor(
 
     // Tap actions
     fun getHandlerSingleTapAction(): String =
-        sharedPreferences.getString(HANDLER_SINGLE_TAP, "Open volume UI")
-            ?: "Open volume UI"
+        HandlerActions.sanitize(
+            sharedPreferences.getString(HANDLER_SINGLE_TAP, "Open volume UI")
+                ?: "Open volume UI"
+        )
 
     fun setHandlerSingleTapAction(value: String) {
         sharedPreferences.edit { putString(HANDLER_SINGLE_TAP, value) }
     }
 
     fun getHandlerDoubleTapAction(): String =
-        sharedPreferences.getString(HANDLER_DOUBLE_TAP, "None") ?: "None"
+        HandlerActions.sanitize(
+            sharedPreferences.getString(HANDLER_DOUBLE_TAP, "None") ?: "None"
+        )
 
     fun setHandlerDoubleTapAction(value: String) {
         sharedPreferences.edit { putString(HANDLER_DOUBLE_TAP, value) }
@@ -499,8 +504,10 @@ class SharedPref @Inject constructor(
     // just pick it — that also switches repositioning off, which is the whole point of one setting
     // owning the gesture.
     fun getHandlerLongTapAction(): String =
-        sharedPreferences.getString(HANDLER_LONG_TAP, HandlerActions.REPOSITION)
-            ?: HandlerActions.REPOSITION
+        HandlerActions.sanitize(
+            sharedPreferences.getString(HANDLER_LONG_TAP, HandlerActions.REPOSITION)
+                ?: HandlerActions.REPOSITION
+        )
 
     fun setHandlerLongTapAction(value: String) {
         sharedPreferences.edit { putString(HANDLER_LONG_TAP, value) }
@@ -564,14 +571,12 @@ class SharedPref @Inject constructor(
      * in and out of system permission screens, placing the bar and trying gestures. An ad that
      * takes the screen during that is the one most likely to cost us the user outright.
      *
-     * So it blocks the two things that interrupt: **app-open ads entirely**, and **interstitials
-     * at screen transitions**. It does not block the interstitial at
-     * [shouldShowServiceStartInterstitial], which fires at the moment setup *finishes* rather
-     * than in the middle of it.
+     * So it blocks every ad that can take the screen: **app-open ads and interstitials alike,
+     * with no exceptions**. Nothing full-screen runs in the first two hours of an install.
      *
-     * Banner and native placements are unaffected throughout — they sit inline in the layout and
-     * never take the screen away from anyone. During grace they are the only ads running, which
-     * is the point: revenue continues, interruption does not.
+     * Native placements are unaffected — they sit inline in the layout and never take the screen
+     * away from anyone. During grace they are the only ads running, which is the point: revenue
+     * continues, interruption does not.
      */
     fun isInAdGracePeriod(): Boolean {
         val installTime = sharedPreferences.getLong(FIRST_INSTALL_TIME, 0L)
@@ -648,18 +653,20 @@ class SharedPref @Inject constructor(
     }
 
     /**
-     * Whether an interstitial may be shown at an ordinary break point — a screen transition.
+     * Whether an interstitial may be shown at all right now.
      *
-     * Returns true when the per-session cap has room, three minutes have passed since the last
-     * interstitial, ninety seconds since any ad, and the install is out of its grace period.
+     * Returns true when the install is out of its grace period, the per-session cap has room,
+     * three minutes have passed since the last interstitial and ninety seconds since any ad.
      *
-     * @param allowDuringGrace lets one specific caller through the grace period — see
-     *   [shouldShowServiceStartInterstitial]. Every other cooldown still applies, so this cannot
-     *   turn into an unlimited hole in the policy.
+     * The grace period has no exceptions. It previously let the service-start interstitial
+     * through on the reasoning that finishing setup is a natural stop rather than an
+     * interruption — but the whole point of the first two hours is that nothing takes the screen,
+     * and one full-screen ad is exactly what the user remembers from a first session. Native
+     * placements carry the revenue during grace.
      */
-    fun shouldShowInterstitialAd(allowDuringGrace: Boolean = false): Boolean {
-        // Nothing full-screen mid-setup, unless this is the ad that marks setup finishing.
-        if (!allowDuringGrace && isInAdGracePeriod()) {
+    fun shouldShowInterstitialAd(): Boolean {
+        // Nothing full-screen mid-setup. No exceptions.
+        if (isInAdGracePeriod()) {
             return false
         }
 
@@ -682,22 +689,6 @@ class SharedPref @Inject constructor(
 
         return interstitialCooldownPassed && anyAdCooldownPassed
     }
-
-    /**
-     * The one full-screen ad the grace period allows: the user has just switched the service on
-     * and the handler is up.
-     *
-     * This is the completion of setup rather than an interruption of it — the user has finished
-     * configuring, the thing they installed the app for now works, and they are at a natural stop.
-     * Blocking it was costing the single best-placed impression of the install's first two hours
-     * for no retention benefit, since the moment is one the user chose.
-     *
-     * Every other guard still holds: the per-session cap, the three-minute interstitial cooldown
-     * and the ninety seconds between any two ads. In practice that means once per service start,
-     * and not twice if the user flips the switch back and forth.
-     */
-    fun shouldShowServiceStartInterstitial(): Boolean =
-        shouldShowInterstitialAd(allowDuringGrace = true)
 
     /**
      * Get time remaining until next app open ad can be shown (in seconds)

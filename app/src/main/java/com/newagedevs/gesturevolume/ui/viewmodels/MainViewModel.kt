@@ -26,7 +26,6 @@ import com.newagedevs.gesturevolume.service.OverlayServiceInterface
 import com.newagedevs.gesturevolume.utils.Constants
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.HandlerActions
-import com.newagedevs.gesturevolume.utils.LockScreenUtil
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -172,47 +171,6 @@ class MainViewModel @Inject constructor(
         return false
     }
 
-    /**
-     * Notices that the Lock action has been chosen with no way to actually lock, and asks.
-     *
-     * Called *after* the action is saved, not instead of saving it. The previous code returned
-     * early and launched the Device Admin prompt, which meant the user's choice was thrown away:
-     * they granted admin, came back, and the action was still whatever it had been before. Now the
-     * setting is theirs either way and the permission is a separate question.
-     */
-    private fun requireLockPermission(action: String, context: Context) {
-        if (action != HandlerActions.LOCK) return
-        if (LockScreenUtil(context).canLock()) return
-        _state.value = _state.value.copy(pendingLockPermissionRequest = true)
-    }
-
-    /** The user accepted the prompt: off to the accessibility list to switch the service on. */
-    fun onLockPermissionChoice(context: Context) {
-        _state.value = _state.value.copy(pendingLockPermissionRequest = false)
-        val util = LockScreenUtil(context)
-        if (!util.accessibilitySupported()) return
-        preference.setAppOpenAdPaused(true)
-        util.openAccessibilitySettings()
-    }
-
-    /**
-     * Raises the lock-permission prompt when [actions] contains Lock and nothing can lock.
-     *
-     * Public because the long-press menu picker chooses actions too, and choosing Lock there used
-     * to save silently — the entry appeared in the menu, and tapping it on the bar did nothing but
-     * show a message long after the moment the user could have connected it to what they had just
-     * set. The tap-action pickers reach the same prompt through [requireLockPermission].
-     */
-    fun checkLockPermission(actions: Set<String>, context: Context) {
-        if (HandlerActions.LOCK !in actions) return
-        if (LockScreenUtil(context).canLock()) return
-        _state.value = _state.value.copy(pendingLockPermissionRequest = true)
-    }
-
-    fun cancelLockPermissionRequest() {
-        _state.value = _state.value.copy(pendingLockPermissionRequest = false)
-    }
-
     /** Applies whatever the user was trying to set before we sent them to grant the permission. */
     private fun onWriteSettingsResult(context: Context) {
         updatePermissionsStatus(context)
@@ -317,33 +275,17 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * Show an interstitial at an ordinary transition — opening Appearance or Actions — gated by
-     * the SharedPref cooldowns, the per-session cap and the post-install grace period.
+     * Show an interstitial at a break point — a screen transition, or the moment the user switches
+     * the service on — gated by the SharedPref cooldowns, the per-session cap and the post-install
+     * grace period.
      *
      * Interstitial is by far the top-earning format ($3.10 eCPM) yet it fired only on the service
      * toggle before, so it barely showed; a few genuine break points lift revenue while the caps
-     * protect retention.
+     * protect retention. During the grace period it does not fire at all, service start included.
      */
     fun maybeShowInterstitialAd() {
         if (_state.value.isProActivated) return
         if (preference.shouldShowInterstitialAd()) {
-            adsManager?.showInterstitialAd(
-                loaded = { preference.saveInterstitialAdTime() }
-            )
-        }
-    }
-
-    /**
-     * The service has started and the handler is ready: show the one interstitial that is allowed
-     * during the post-install grace period.
-     *
-     * Separate from [maybeShowInterstitialAd] rather than a boolean on it, so the exception to the
-     * grace period is visible at the call site and cannot spread to the transition placements by
-     * someone passing the wrong argument.
-     */
-    private fun maybeShowServiceStartInterstitial() {
-        if (_state.value.isProActivated) return
-        if (preference.shouldShowServiceStartInterstitial()) {
             adsManager?.showInterstitialAd(
                 loaded = { preference.saveInterstitialAdTime() }
             )
@@ -374,7 +316,7 @@ class MainViewModel @Inject constructor(
                 isBound = true
                 // The service is bound and the handler is configured and ready, which is the
                 // moment setup is finished — the one full-screen ad the grace period allows.
-                if (announceWithAd) maybeShowServiceStartInterstitial()
+                if (announceWithAd) maybeShowInterstitialAd()
             }
 
             override fun onServiceDisconnected(name: ComponentName) {
@@ -478,8 +420,7 @@ class MainViewModel @Inject constructor(
         _state.value = _state.value.copy(
             isRunning = false,
             isHandlerHidden = false,
-            pendingWriteSettingsRequest = false,
-            pendingLockPermissionRequest = false
+            pendingWriteSettingsRequest = false
         )
     }
 
@@ -504,7 +445,6 @@ class MainViewModel @Inject constructor(
     private fun setClickAction(action: String, context: Context) {
         if (!requireWriteSettings(action, ActionSlot.SINGLE_TAP, context)) return
         preference.setHandlerSingleTapAction(action)
-        requireLockPermission(action, context)
         _state.value = _state.value.copy(
             clickAction = action,
             clickActionIcon = getActionIcon(action)
@@ -514,7 +454,6 @@ class MainViewModel @Inject constructor(
     private fun setDoubleClickAction(action: String, context: Context) {
         if (!requireWriteSettings(action, ActionSlot.DOUBLE_TAP, context)) return
         preference.setHandlerDoubleTapAction(action)
-        requireLockPermission(action, context)
         _state.value = _state.value.copy(
             doubleClickAction = action,
             doubleClickActionIcon = getActionIcon(action)
@@ -524,7 +463,6 @@ class MainViewModel @Inject constructor(
     private fun setLongClickAction(action: String, context: Context) {
         if (!requireWriteSettings(action, ActionSlot.LONG_TAP, context)) return
         preference.setHandlerLongTapAction(action)
-        requireLockPermission(action, context)
         _state.value = _state.value.copy(
             longClickAction = action,
             longClickActionIcon = getActionIcon(action)

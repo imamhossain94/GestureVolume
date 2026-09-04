@@ -49,7 +49,6 @@ import com.newagedevs.gesturevolume.ui.view.HandlerView
 import com.newagedevs.gesturevolume.utils.BrightnessController
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.HandlerActions
-import com.newagedevs.gesturevolume.utils.LockScreenUtil
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -98,7 +97,6 @@ class OverlayService : Service(), OverlayServiceInterface {
     private var windowManager: WindowManager? = null
     private var audioManager: AudioManager? = null
     private var vibratorService: Vibrator? = null
-    private var lockScreenUtil: LockScreenUtil? = null
     private var brightness: BrightnessController? = null
 
     /** The display frame the handler was last placed into. Refreshed on every geometry pass. */
@@ -233,7 +231,6 @@ class OverlayService : Service(), OverlayServiceInterface {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         vibratorService = getSystemService(Vibrator::class.java)
-        lockScreenUtil = LockScreenUtil(this)
         brightness = BrightnessController(this)
 
         (getSystemService(DISPLAY_SERVICE) as? DisplayManager)
@@ -1315,13 +1312,6 @@ class OverlayService : Service(), OverlayServiceInterface {
             HandlerActions.ACTIVE_MUSIC_OVERLAY -> {
                 hideHandlerView()
                 createOverlayView()
-            }
-            HandlerActions.LOCK -> {
-                // Neither lock route granted. Silence here read as the bar being broken; the
-                // permission can be revoked from system settings long after the action was set.
-                if (lockScreenUtil?.lockScreen() != true) {
-                    showIndicatorMessage(getString(R.string.lock_not_available))
-                }
             }
             HandlerActions.HIDE_HANDLER -> {
                 hideByUser()

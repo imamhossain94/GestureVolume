@@ -12,23 +12,21 @@ import com.newagedevs.gesturevolume.data.local.SharedPref
  * Which optional permissions the user's own configuration has made necessary.
  *
  * Every one of these is optional in the abstract and required in practice the moment the user
- * chooses the feature behind it — and that is the gap this closes. Picking Lock, or switching the
- * notification controls on, used to succeed quietly and then do nothing, with the explanation
- * living on a screen the user had no reason to visit. Now the same answer is computed in one
- * place and shown in two: on the Permissions card on the main screen, and on the individual
- * permission cards inside.
+ * chooses the feature behind it — and that is the gap this closes. Putting a brightness action on
+ * a swipe, or switching the notification controls on, used to succeed quietly and then do nothing,
+ * with the explanation living on a screen the user had no reason to visit. Now the same answer is
+ * computed in one place and shown in two: on the Permissions card on the main screen, and on the
+ * individual permission cards inside.
  *
- * One place rather than two, because the interesting cases are combinations — Lock on a long
- * press *and* in the menu, brightness on a swipe *and* on a double tap — and two implementations
- * of that would disagree the first time an action moved.
+ * One place rather than two, because the interesting cases are combinations — brightness on a
+ * swipe *and* on a double tap, in the menu *and* on a tap — and two implementations of that would
+ * disagree the first time an action moved.
  */
 object PermissionNeeds {
 
     data class Needs(
         /** Required outright. Without it there is no floating bar at all. */
         val overlayMissing: Boolean,
-        /** The Lock action is configured somewhere and nothing can lock the screen. */
-        val lockMissing: Boolean,
         /** The notification controls are on and Android is refusing to post them. */
         val notificationMissing: Boolean,
         /** A brightness action is configured and WRITE_SETTINGS has not been granted. */
@@ -37,7 +35,7 @@ object PermissionNeeds {
         /** How many things need attention, for a card that has one line to say it in. */
         val missingCount: Int
             get() = listOf(
-                overlayMissing, lockMissing, notificationMissing, writeSettingsMissing
+                overlayMissing, notificationMissing, writeSettingsMissing
             ).count { it }
 
         val anyMissing: Boolean get() = missingCount > 0
@@ -64,13 +62,11 @@ object PermissionNeeds {
             .contextMenuEntries(preference.getContextMenuItems())
             .map { it.action }
 
-        val lockConfigured = HandlerActions.LOCK in tapActions || HandlerActions.LOCK in menuActions
         val brightnessConfigured = (tapActions + swipeActions + menuActions)
             .any { HandlerActions.needsWriteSettings(it) }
 
         return Needs(
             overlayMissing = !Settings.canDrawOverlays(context),
-            lockMissing = lockConfigured && !LockScreenUtil(context).canLock(),
             notificationMissing = preference.getShowNotification() &&
                     !hasNotificationPermission(context),
             writeSettingsMissing = brightnessConfigured && !Settings.System.canWrite(context)

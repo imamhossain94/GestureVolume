@@ -33,7 +33,6 @@ object HandlerActions {
     const val MUTE = "Mute"
     const val MUTE_OR_UNMUTE = "Mute or Unmute"
     const val ACTIVE_MUSIC_OVERLAY = "Active Music Overlay"
-    const val LOCK = "Lock"
     const val HIDE_HANDLER = "Hide Handler"
     const val OPEN_APP = "Open App"
 
@@ -83,6 +82,34 @@ object HandlerActions {
      * stays a plain list of switches.
      */
     val ALWAYS_IN_CONTEXT_MENU: Set<String> = setOf(HIDE_HANDLER)
+
+    /**
+     * Retired in 1.3.4, when the accessibility service that performed it was removed.
+     *
+     * The only route to a locked screen was `performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)` on a
+     * bound [android.accessibilityservice.AccessibilityService], and shipping one made this app
+     * subject to Play's Accessibility API policy — a policy written for apps whose *core*
+     * functionality serves people with disabilities, which one optional action out of eleven is
+     * not. Device Admin, the other route, was dropped earlier for taking the user's fingerprint
+     * unlock away. With neither route left, the action is gone rather than present and inert.
+     *
+     * The identifier stays here because it is still written in the preferences of every install
+     * that used it. [sanitize] is what reads those back out; nothing else should reference it.
+     */
+    private const val RETIRED_LOCK = "Lock"
+
+    /**
+     * Maps a stored action identifier onto one this build still understands.
+     *
+     * Applied on read in [com.newagedevs.gesturevolume.data.local.SharedPref] rather than as a
+     * one-shot migration, because the preferences are also restored from cloud backup: a migration
+     * that ran once at upgrade would miss an install that received "Lock" from a device where it
+     * still existed. Reading defensively costs a string comparison and cannot be outrun.
+     */
+    fun sanitize(action: String): String = if (action == RETIRED_LOCK) NONE else action
+
+    /** The set form, for the long-press menu's stored selection. */
+    fun sanitize(actions: Set<String>): Set<String> = actions - RETIRED_LOCK
 
     /** True when this swipe identifier drives screen brightness rather than media volume. */
     fun isBrightnessSwipe(action: String): Boolean =
