@@ -738,6 +738,13 @@ class OverlayService : Service(), OverlayServiceInterface {
      */
     @SuppressLint("RtlHardcoded")
     private fun applyHandlerGeometry() {
+        // The context menu is placed against the bar's x, y and the frame — all three of which this
+        // function is about to rewrite. A menu left open across a rotation is anchored to geometry
+        // that no longer exists, so it hangs in the wrong place over the user's app. Closing it
+        // here rather than in the callers covers both routes in: onConfigurationChanged and the
+        // DisplayManager listener, so an OEM build that drops one of them still behaves.
+        hideContextMenu()
+
         val params = handlerParams ?: return
         val currentFrame = HandlerGeometry.read(this, windowManager) ?: return
         frame = currentFrame
