@@ -81,6 +81,7 @@ fun HandlerActionsScreen(
     // preference is written behind it.
     var showVolumePercent by remember { mutableStateOf(viewModel.preference.getShowVolumePercent()) }
     var volumeStreamMode by remember { mutableStateOf(viewModel.preference.getVolumeStreamMode()) }
+    var edgeSwipeMenu by remember { mutableStateOf(viewModel.preference.getHandlerEdgeSwipeMenu()) }
     var showVolumeStreamDialog by remember { mutableStateOf(false) }
     var contextMenuItems by remember { mutableStateOf(viewModel.preference.getContextMenuItems()) }
     var showNotification by remember { mutableStateOf(viewModel.preference.getShowNotification()) }
@@ -387,6 +388,22 @@ fun HandlerActionsScreen(
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = { showContextMenuDialog = true }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SettingSwitchItem(
+                        title = stringResource(R.string.edge_swipe_menu_title),
+                        description = stringResource(R.string.edge_swipe_menu_desc),
+                        checked = edgeSwipeMenu,
+                        onCheckedChange = {
+                            edgeSwipeMenu = it
+                            // No service round-trip: the overlay reads this preference live, at
+                            // the moment a horizontal swipe is classified.
+                            viewModel.preference.setHandlerEdgeSwipeMenu(it)
+                        }
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))

@@ -370,4 +370,7 @@
     <string name="collapse_section">সংকুচিত</string>
     <string name="per_corner">প্রতিটি কোণা आলাদাভাবে</string>
     <string name="per_corner_mixed">মিশ্র</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">মেনু খুলতে ভিতরের দিকে সোয়াইপ</string>
+    <string name="edge_swipe_menu_desc">মেনু খুলতে বার থেকে স্ক্রিনের মাঝের দিকে সোয়াইপ করুন। ডিফল্টভাবে বন্ধ, কারণ সিস্টেমের ব্যাক অঙ্গভঙ্গিও একইভাবে করা হয়।</string>
 </resources>

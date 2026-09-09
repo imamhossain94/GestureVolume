@@ -370,4 +370,7 @@
     <string name="collapse_section">Zuklappen</string>
     <string name="per_corner">Ecken einzeln einstellen</string>
     <string name="per_corner_mixed">Gemischt</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">Nach innen wischen öffnet das Menü</string>
+    <string name="edge_swipe_menu_desc">Wische von der Leiste zur Bildschirmmitte, um das Aktionsmenü zu öffnen. Standardmäßig aus, weil die Zurück-Geste des Systems genauso ausgeführt wird.</string>
 </resources>

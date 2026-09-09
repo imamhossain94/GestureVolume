@@ -370,4 +370,7 @@
     <string name="collapse_section">طي</string>
     <string name="per_corner">ضبط الزوايا كلاً على حدة</string>
     <string name="per_corner_mixed">مختلط</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">التمرير للداخل لفتح القائمة</string>
+    <string name="edge_swipe_menu_desc">مرر من الشريط نحو منتصف الشاشة لفتح قائمة الإجراءات. معطل افتراضيا، لأن إيماءة الرجوع في النظام تنفذ بالطريقة نفسها.</string>
 </resources>

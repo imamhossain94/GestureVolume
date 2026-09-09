@@ -346,6 +346,22 @@ fun HandlerPreviewSurface(
                              * over the very controls being adjusted. Holding here still highlights
                              * the bar and still drags it, which is the part worth previewing.
                              */
+                            /**
+                             * The preview has no inward swipe, for the same reason it has no
+                             * context menu: it lives inside a sheet that already owns the screen,
+                             * and a floating menu would sit over the very controls being adjusted.
+                             * This gesture's entire payload IS that menu, so stubbing the menu
+                             * necessarily stubs the gesture.
+                             *
+                             * Returning 0 means the detector never enters its tracking state here,
+                             * so the preview's horizontal branch is line-for-line what it has
+                             * always been - a stub that changes nothing, not one that hides
+                             * something.
+                             */
+                            override fun edgeSwipeInwardSign(): Int = 0
+
+                            override fun onEdgeSwipe() = Unit
+
                             override fun onContextMenuOpen() = Unit
 
                             override fun onContextMenuDismiss() = Unit

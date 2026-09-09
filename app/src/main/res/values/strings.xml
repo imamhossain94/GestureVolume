@@ -398,4 +398,7 @@
     <string name="collapse_section">Collapse</string>
     <string name="per_corner">Set corners individually</string>
     <string name="per_corner_mixed">Mixed</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">Swipe in to open menu</string>
+    <string name="edge_swipe_menu_desc">Swipe from the bar toward the middle of the screen to open the actions menu. Off by default, because this is also how the system Back gesture is performed.</string>
 </resources>

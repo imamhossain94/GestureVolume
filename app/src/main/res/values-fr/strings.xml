@@ -370,4 +370,7 @@
     <string name="collapse_section">Réduire</string>
     <string name="per_corner">Régler chaque coin</string>
     <string name="per_corner_mixed">Mixte</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">Balayer vers l’intérieur ouvre le menu</string>
+    <string name="edge_swipe_menu_desc">Balaye depuis la barre vers le centre de l’écran pour ouvrir le menu d’actions. Désactivé par défaut, car le geste Retour du système se fait de la même manière.</string>
 </resources>

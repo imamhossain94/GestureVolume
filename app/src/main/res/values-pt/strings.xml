@@ -370,4 +370,7 @@
     <string name="collapse_section">Recolher</string>
     <string name="per_corner">Definir cada canto</string>
     <string name="per_corner_mixed">Misto</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">Deslizar para dentro abre o menu</string>
+    <string name="edge_swipe_menu_desc">Desliza da barra para o centro do ecrã para abrir o menu de ações. Desativado por predefinição, porque o gesto Voltar do sistema é feito da mesma forma.</string>
 </resources>

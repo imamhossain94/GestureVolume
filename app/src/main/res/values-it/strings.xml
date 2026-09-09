@@ -370,4 +370,7 @@
     <string name="collapse_section">Comprimi</string>
     <string name="per_corner">Imposta ogni angolo</string>
     <string name="per_corner_mixed">Misto</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">Scorri verso l’interno per aprire il menu</string>
+    <string name="edge_swipe_menu_desc">Scorri dalla barra verso il centro dello schermo per aprire il menu delle azioni. Disattivato per impostazione predefinita, perché il gesto Indietro del sistema si esegue allo stesso modo.</string>
 </resources>

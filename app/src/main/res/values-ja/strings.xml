@@ -370,4 +370,7 @@
     <string name="collapse_section">折りたたむ</string>
     <string name="per_corner">角を個別に設定</string>
     <string name="per_corner_mixed">混在</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">内側へスワイプでメニューを開く</string>
+    <string name="edge_swipe_menu_desc">バーから画面中央に向かってスワイプすると操作メニューが開きます。システムの戻る操作と同じ動きのため、初期状態ではオフです。</string>
 </resources>

@@ -370,4 +370,7 @@
     <string name="collapse_section">Свернуть</string>
     <string name="per_corner">Настроить каждый угол</string>
     <string name="per_corner_mixed">Смешанно</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">Свайп внутрь открывает меню</string>
+    <string name="edge_swipe_menu_desc">Проведите от полосы к центру экрана, чтобы открыть меню действий. По умолчанию выключено, потому что системный жест Назад выполняется так же.</string>
 </resources>

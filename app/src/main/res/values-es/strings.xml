@@ -370,4 +370,7 @@
     <string name="collapse_section">Contraer</string>
     <string name="per_corner">Ajustar cada esquina</string>
     <string name="per_corner_mixed">Mixto</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">Deslizar hacia dentro abre el menú</string>
+    <string name="edge_swipe_menu_desc">Desliza desde la barra hacia el centro de la pantalla para abrir el menú de acciones. Desactivado de forma predeterminada, porque el gesto Atrás del sistema se hace igual.</string>
 </resources>

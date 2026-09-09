@@ -114,6 +114,7 @@ class SharedPref @Inject constructor(
         const val HANDLER_HIDDEN = "handlerHidden"
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
         const val VOLUME_STREAM_MODE = "handlerVolumeStreamMode"
+        const val HANDLER_EDGE_SWIPE_MENU = "handlerEdgeSwipeMenu"
 
         /**
          * Prefix for the pre-mute level, keyed per framework stream type.
@@ -436,6 +437,28 @@ class SharedPref @Inject constructor(
 
     fun setVolumeStreamMode(value: String) {
         sharedPreferences.edit { putString(VOLUME_STREAM_MODE, VolumeStreamMode.sanitize(value)) }
+    }
+
+    /**
+     * Whether swiping inward from the bar opens the context menu.
+     *
+     * **Off by default, and that is a deliberate decision about the Play listing, not timidity.**
+     * The default bar ships flush against the screen edge — `HandlerPresets.DEFAULT` uses
+     * `edgeMargin = 0f` with `Gravity.END`, and snap-to-edge defaults on — which is exactly the
+     * strip every Android user has been trained to swipe inward on to go back. The bar already asks
+     * the system not to treat its own bounds as the back-gesture zone, so today a Back attempt that
+     * lands on the bar quietly does nothing and the user retries an inch inboard: a forgiving miss.
+     * Binding an action to that same swipe turns the miss into a menu thrown over the app they were
+     * reading.
+     *
+     * No threshold fixes this, because the two gestures are not merely similar — they are the same
+     * shape. Only opting in does, which is why this exists rather than a sensitivity slider.
+     */
+    fun getHandlerEdgeSwipeMenu(): Boolean =
+        sharedPreferences.getBoolean(HANDLER_EDGE_SWIPE_MENU, false)
+
+    fun setHandlerEdgeSwipeMenu(value: Boolean) {
+        sharedPreferences.edit { putBoolean(HANDLER_EDGE_SWIPE_MENU, value) }
     }
 
     /**

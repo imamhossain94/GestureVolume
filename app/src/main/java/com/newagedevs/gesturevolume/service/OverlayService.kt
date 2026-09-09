@@ -948,6 +948,32 @@ class OverlayService : Service(), OverlayServiceInterface {
             if (dragSnapToEdge) snapToNearestEdge() else persistPosition()
         }
 
+        override fun edgeSwipeInwardSign(): Int {
+            if (!preference.getHandlerEdgeSwipeMenu()) return 0
+            val params = handlerParams
+            val currentFrame = frame
+            // The same expression applyHandlerGeometry, onDragUpdate and persistPosition already
+            // use, so "which way is inward" and "which way does the flat edge face" are one
+            // decision and cannot drift apart. Deliberately NOT getHandlerPosition(), which is
+            // written only when a drag or a snap ends and is therefore stale mid-drag and after a
+            // rotation. xToIsLeft decides by the bar's centre, so a bar parked mid-screen still
+            // gets a definite answer, and it is the answer its visible dressing already gives.
+            val isLeft = if (params != null && currentFrame != null) {
+                HandlerGeometry.xToIsLeft(params.x, currentFrame.usableWidth, params.width)
+            } else {
+                handlerDressedLeft != false
+            }
+            return if (isLeft) 1 else -1
+        }
+
+        override fun onEdgeSwipe() {
+            // Posted for the reason the note above this host gives: adding a window from inside
+            // the touch stream is what that warning is about. Character-identical to
+            // onContextMenuOpen below, deliberately - showContextMenu's own guards then make a
+            // repeat swipe idempotent and an emptied menu inert, so neither is reimplemented here.
+            mainHandler.post { showContextMenu() }
+        }
+
         override fun onContextMenuOpen() {
             mainHandler.post { showContextMenu() }
         }

@@ -370,4 +370,7 @@
     <string name="collapse_section">Thu gọn</string>
     <string name="per_corner">Đặt từng góc riêng</string>
     <string name="per_corner_mixed">Hỗn hợp</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">Vuốt vào trong để mở menu</string>
+    <string name="edge_swipe_menu_desc">Vuốt từ thanh về phía giữa màn hình để mở menu thao tác. Mặc định tắt, vì cử chỉ Quay lại của hệ thống cũng được thực hiện theo cách này.</string>
 </resources>

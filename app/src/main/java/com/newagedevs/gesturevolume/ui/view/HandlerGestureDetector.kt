@@ -20,6 +20,8 @@ import kotlin.math.abs
  *    repositioning can never collide with another action. Once armed, the drag is free on both
  *    axes: the bar follows the finger anywhere, and the host settles it against an edge on release.
  *  - **Tap / double tap** — the configured tap actions.
+ *  - **Inward horizontal swipe** — opens the context menu, when switched on. Off by default; see
+ *    the note on the deferred qualification below.
  *
  * Four invariants, each replacing a specific defect in the code this supersedes:
  *
@@ -35,6 +37,31 @@ import kotlin.math.abs
  *  4. **`ACTION_CANCEL` is terminal and is handled.** Gesture navigation and palm rejection steal
  *     the pointer stream by cancelling it. The old code ignored `ACTION_CANCEL`, leaving its
  *     long-press flag stuck on, which swallowed the *next* tap.
+ *
+ * **Why the inward swipe qualifies twice, and why that is not a second axis decision.**
+ *
+ * The axis is still latched once, on one event, at one line, by the same `dy < dx`. What happens
+ * afterwards inside `EDGE_TRACKING` is not "which axis is this?" but "has this travelled far enough,
+ * and straight enough, to have meant anything?" — a magnitude question inside an axis that is
+ * already decided, and a monotonic one: it arms once and there is no path back out.
+ *
+ * The defect invariant 1's comment records was diagonal swipes *flickering* between adjusting and
+ * doing nothing. Flicker needs a cycle. A one-way latch has none, so that defect is structurally
+ * unreachable here rather than merely unlikely.
+ *
+ * The second test exists because the first one is decided on the worst evidence in the gesture. The
+ * gate at the slop crossing is an OR, so the losing axis may be anywhere below slop when the axis is
+ * chosen: `dx = 9`, `dy = 7` is 38 degrees off horizontal — an ordinary volume swipe — and it
+ * latches horizontal. On a bar mounted at the side that is not a rare case, because a thumb pivoting
+ * at the base of the hand rolls inward before it travels up. Before this gesture existed such a
+ * swipe cost the user nothing: it went `DEAD`, silently, and they swiped again. Binding an action to
+ * the horizontal branch is what would turn that forgiving miss into a wrong action, so the action is
+ * withheld until 24dp of travel (three times the slop, three times the lever arm on the angle) at a
+ * ratio of 2:1 — 26.565 degrees off horizontal, leaving an 18.4-degree band on each side where
+ * nothing happens at all.
+ *
+ * Folding that test back into the axis branch would put it back on 8dp of evidence. It would look
+ * like a simplification and it would be a regression.
  */
 class HandlerGestureDetector(
     context: Context,
@@ -100,9 +127,34 @@ class HandlerGestureDetector(
         fun onDragUpdate(offsetXPx: Float, offsetYPx: Float)
 
         fun onDragEnd(moved: Boolean)
+
+        /**
+         * Which direction counts as "inward" right now, or `0` when the inward-swipe gesture is
+         * switched off.
+         *
+         * Read live, at the moment a horizontal swipe is classified, exactly as
+         * [isLongPressReposition] and [isDoubleTapArmed] are — so switching the gesture on or off,
+         * or dragging the bar to the other edge, takes effect without recreating the bar.
+         *
+         * Returning `0` is what makes the whole feature inert: the detector never enters its
+         * tracking state, and the horizontal branch behaves exactly as it did before this gesture
+         * existed.
+         */
+        fun edgeSwipeInwardSign(): Int
+
+        /**
+         * An inward swipe qualified.
+         *
+         * Fired once, the instant the swipe passes its distance and ratio test, never on lift — so
+         * the user sees the result while the finger is still moving, which is what makes it feel
+         * like a pull rather than a delayed tap.
+         *
+         * The host owns getting anything that touches windows off the input stack.
+         */
+        fun onEdgeSwipe()
     }
 
-    private enum class State { IDLE, DOWN, ADJUSTING, DRAGGING, DEAD }
+    private enum class State { IDLE, DOWN, ADJUSTING, DRAGGING, EDGE_TRACKING, DEAD }
 
     private companion object {
         /**
@@ -115,10 +167,42 @@ class HandlerGestureDetector(
 
         /** Never let a step get so small that jitter can trigger it. */
         const val MIN_STEP_DP = 4f
+
+        /**
+         * How far an inward swipe must travel before it is allowed to fire.
+         *
+         * Three times the usual 8dp touch slop, and that multiple is the whole point. The axis is
+         * latched at the slop crossing, on the shortest and noisiest travel in the gesture: at 8dp
+         * the losing axis may sit anywhere below slop, so dx=9/dy=7 — a stroke 38 degrees off
+         * horizontal, which is an ordinary volume swipe — already latches horizontal. Re-testing at
+         * 24dp gives the angle three times the lever arm, so the same sampling jitter is about a
+         * degree of error instead of nearly four.
+         *
+         * It is also 16% of [SWEEP_DP], so it reads as a flick rather than a stroke, and just under
+         * the 30dp default bar width, so on a default bar the whole qualifying travel is still over
+         * the bar.
+         */
+        const val EDGE_TRIGGER_DP = 24f
+
+        /**
+         * How much more horizontal than vertical an inward swipe must be.
+         *
+         * 2:1 is atan(0.5) = 26.565 degrees off horizontal, so the gesture claims a 53-degree cone
+         * on each side and leaves an 18.4-degree band between that cone and the vertical boundary
+         * where nothing at all happens. That band is deliberate: it is the margin a curving thumb
+         * arc lands in, and every degree of it was already silent before this gesture existed.
+         */
+        const val EDGE_RATIO = 2f
     }
 
     private val density = context.resources.displayMetrics.density
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+
+    /**
+     * [EDGE_TRIGGER_DP] in pixels, floored at three times the device's own slop so the lever-arm
+     * argument survives an OEM that ships an unusually large [ViewConfiguration.getScaledTouchSlop].
+     */
+    private val edgeTriggerPx = maxOf(EDGE_TRIGGER_DP * density, touchSlop * 3f)
     private val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
     private val doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout().toLong()
 
@@ -154,6 +238,16 @@ class HandlerGestureDetector(
      * that vanished on a pixel of tremor would be unusable one-handed.
      */
     private var menuOpen = false
+
+    /**
+     * Which horizontal direction counts as "inward" for this gesture: `+1` rightward, `-1`
+     * leftward, `0` when the gesture is switched off.
+     *
+     * Latched once, at the axis decision, and never re-read while the finger is down — the bar can
+     * be carried across the screen by a drag, and a sign that changed mid-gesture would reverse the
+     * meaning of a swipe already in flight.
+     */
+    private var edgeInwardSign = 0
 
     // Tap / double-tap
     private var lastTapTime = 0L
@@ -239,6 +333,7 @@ class HandlerGestureDetector(
         pinnedDown = false
         dragMoved = false
         menuOpen = false
+        edgeInwardSign = 0
         handler.postDelayed(longPressRunnable, longPressTimeout)
     }
 
@@ -261,7 +356,15 @@ class HandlerGestureDetector(
                     // The axis is decided once, here. Re-deciding on every event (as the old code
                     // did) made diagonal swipes flicker between adjusting and doing nothing.
                     if (dy < dx) {
-                        state = State.DEAD
+                        // Horizontal. Whether that is the inward-swipe gesture or nothing at all is
+                        // decided here, once, from the host's live setting — but whether it has
+                        // travelled far enough to MEAN anything is deferred to EDGE_TRACKING. The
+                        // predicate above is untouched, so the vertical branch below is unchanged
+                        // and not one degree is taken from the volume swipe.
+                        edgeInwardSign = host.edgeSwipeInwardSign()
+                        val inward = edgeInwardSign != 0 &&
+                            (rawX - downRawX) * edgeInwardSign > 0f
+                        state = if (inward) State.EDGE_TRACKING else State.DEAD
                     } else {
                         // A plain vertical swipe is always the volume/brightness gesture. Moving
                         // the bar takes a long press first, which is handled in longPressRunnable.
@@ -271,6 +374,21 @@ class HandlerGestureDetector(
                         host.onAdjustBegin(if (rawY < downRawY) 1 else -1)
                     }
                 }
+            }
+
+            State.EDGE_TRACKING -> {
+                // The deferred qualification, and the reason this state exists. Measured
+                // cumulatively from the DOWN point, like the axis gate, on the same reconstructed
+                // screen coordinates. Monotonic: it arms once and never un-arms.
+                val edx = abs(rawX - downRawX)
+                val edy = abs(rawY - downRawY)
+                if (edx >= edgeTriggerPx && edx >= EDGE_RATIO * edy) {
+                    // Set before the host call so a re-entrant host cannot arm twice.
+                    state = State.DEAD
+                    host.onEdgeSwipe()
+                }
+                lastRawX = rawX
+                lastRawY = rawY
             }
 
             State.ADJUSTING -> accumulate(event, index, offsetY, rawY)
@@ -376,6 +494,16 @@ class HandlerGestureDetector(
             // tracked pointer — the same defect this re-anchoring exists to prevent vertically.
             dragAnchorRawX = newRawX - dragOffsetXPx
             dragAnchorRawY = newRawY - dragOffsetPx
+        }
+        if (state == State.EDGE_TRACKING) {
+            // The opposite remedy to the drag's, for the same hazard, and for a stated reason.
+            // downRawX is deliberately never re-anchored here, so a resting palm becoming the
+            // tracked pointer makes the measured travel jump instantly to the distance between the
+            // palm and the original touch — on a curved edge, easily past both thresholds, firing
+            // the action from a palm. A drag re-anchors because the bar is already visibly
+            // following the finger and must not leap; an edge swipe has emitted nothing yet, so
+            // abandoning it costs the user only a re-swipe.
+            state = State.DEAD
         }
     }
 

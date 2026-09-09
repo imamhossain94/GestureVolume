@@ -370,4 +370,7 @@
     <string name="collapse_section">Daralt</string>
     <string name="per_corner">Köşeleri ayrı ayrı ayarla</string>
     <string name="per_corner_mixed">Karışık</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">İçeri kaydırarak menüyü aç</string>
+    <string name="edge_swipe_menu_desc">İşlem menüsünü açmak için çubuktan ekranın ortasına doğru kaydırın. Varsayılan olarak kapalıdır, çünkü sistemin Geri hareketi de aynı şekilde yapılır.</string>
 </resources>

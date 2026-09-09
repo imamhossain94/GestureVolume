@@ -370,4 +370,7 @@
     <string name="collapse_section">收起</string>
     <string name="per_corner">单独设置各个角</string>
     <string name="per_corner_mixed">混合</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">向内滑动打开菜单</string>
+    <string name="edge_swipe_menu_desc">从悬浮条向屏幕中间滑动即可打开操作菜单。默认关闭，因为系统的返回手势也是这样操作的。</string>
 </resources>
