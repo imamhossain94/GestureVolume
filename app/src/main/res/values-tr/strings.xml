@@ -173,7 +173,6 @@
     <string name="action_mute">Sesini kapatmak</string>
     <string name="action_mute_unmute">Sesi Kapat veya Sesi Aç</string>
     <string name="action_music_overlay">Aktif Müzik Yer Paylaşımı</string>
-    <string name="action_lock">Kilit</string>
     <string name="action_hide_handler">İşleyiciyi Gizle</string>
     <string name="action_open_app">Uygulamayı Aç</string>
     <string name="action_increase_vol_ui">Sesi artırın ve kullanıcı arayüzünü gösterin</string>
@@ -308,9 +307,6 @@
     <string name="service_inactive">Servis kapalı</string>
     <string name="tap_to_disable">Kapatmak için dokunun</string>
     <string name="tap_to_enable">Açmak için dokunun</string>
-    <string name="lock_permission_section">EKRAN KİLİDİ</string>
-    <string name="lock_accessibility_permission">Ekran kilidi (erişilebilirlik)</string>
-    <string name="lock_accessibility_permission_desc">Önerilir: Kilitle eylemi ekranı güç düğmesiyle aynı şekilde kapatır, böylece parmak iziniz telefonu açmaya devam eder</string>
     <string name="permission_turn_off">Kapat</string>
     <string name="action_reposition">Çubuğu taşı</string>
     <string name="volume_percent_short">%1$d%%</string>
@@ -325,20 +321,12 @@
     <string name="notification_action_hide">Gizle</string>
     <string name="notification_action_settings">Ayarlar</string>
     <string name="notification_action_stop">Durdur</string>
-    <string name="lock_accessibility_label">Ekran kilidi</string>
-    <string name="lock_accessibility_summary">Kilitle eyleminin ekranı kapatmasına izin verir.</string>
-    <string name="lock_accessibility_description">Yüzen çubuktaki Kilitle eylemini kullandığınızda GestureVolume\'ün ekranı kilitlemesine izin verir. Ekranı tam olarak güç düğmesiyle aynı şekilde kilitler, böylece parmak iziniz telefonu açmaya devam eder. Bu servis ekranınızdaki hiçbir şeyi okumaz ve başka hiçbir işlem yapmaz.</string>
-    <string name="lock_permission_title">Ekranı kilitleme</string>
-    <string name="lock_permission_message">GestureVolume\'ün ekranı kilitlemek için izne ihtiyacı var.\n\nErişilebilirlik önerilir: ekranı güç düğmesiyle aynı şekilde kilitler, böylece parmak iziniz telefonu açmaya devam eder. Cihaz yöneticisi de çalışır, ancak çoğu telefon sonrasında parmak izi yerine PIN ister.</string>
-    <string name="lock_permission_accessibility">Erişilebilirliği kullan</string>
-    <string name="lock_not_available">Kilitle eylemini kullanmadan önce Ayarlar\'dan bir kilit izni verin.</string>
     <string name="context_menu_title">Uzun basma menüsü</string>
     <string name="context_menu_desc">Çubuğa uzun bastığınızda neyin görüneceğini seçin.</string>
     <string name="context_menu_empty">Başka bir şey seçili değil. Uzun basmak çubuğu taşır ve “Çubuğu gizle” seçeneğini sunar.</string>
     <string name="context_menu_always">Her zaman görünür</string>
     <string name="context_menu_section">Uzun basma menüsü öğeleri</string>
     <string name="behaviour_section">Davranış</string>
-    <string name="lock_permission_menu_message">Uzun basma menüsüne Kilitle\'yi eklediniz, ancak henüz ekranı kilitleyebilecek bir şey yok.\n\nErişilebilirlik önerilir: ekranı güç düğmesiyle aynı şekilde kilitler, böylece parmak iziniz telefonu açmaya devam eder.</string>
     <string name="notification_permission_needed_title">Bildirimler kapalı</string>
     <string name="notification_permission_needed_message">Denetimler açık, ancak Android GestureVolume\'ün bildirim göndermesine izin vermiyor — bu yüzden Göster, Ayarlar ve Durdur panelde görünmeyecek.</string>
     <string name="notification_permission_warning_inline">Bu uygulama için bildirimler engellendi. İzin vermek için dokunun.</string>
@@ -358,11 +346,8 @@
     <string name="reset_app_message">Her ayar varsayılanına döner: çubuğun görünümü ve konumu, tüm dokunma ve kaydırma eylemleri, uzun basma menüsü, tema ve dil. Yüzen çubuk kapatılır ve karşılama ekranları geri gelir.\n\nPro satın alımınız korunur. Bu işlem geri alınamaz.</string>
     <string name="reset_app_confirm">Sıfırla</string>
     <string name="reset_app_done">Her şey sıfırlandı.</string>
-    <string name="permission_needed_lock">Bir eylemi Kilitle olarak ayarladınız. Bu olmadan dokunmak hiçbir şey yapmaz.</string>
     <string name="permission_needed_notification">Bildirim denetimleri açık. Bu olmadan Göster, Ayarlar ve Durdur görünmez.</string>
     <string name="permission_needed_brightness">Bir parlaklık eylemi ayarladınız. Bu olmadan parlaklığı değiştiremez.</string>
     <string name="permission_action_required_one">1 izin ilginizi bekliyor</string>
     <string name="permission_action_required_many">%1$d izin ilginizi bekliyor</string>
-    <string name="lock_unsupported_message">Ekranı kilitlemek için Android 9 veya üzeri gerekir. Bu telefon bunu yapamaz, bu yüzden Kilitle eylemi kullanılamadığını bildirir.</string>
-    <string name="lock_unsupported_short">Android 9 veya üzeri gerekir</string>
 </resources>

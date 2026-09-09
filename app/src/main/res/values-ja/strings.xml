@@ -173,7 +173,6 @@
     <string name="action_mute">ミュート</string>
     <string name="action_mute_unmute">ミュートまたはミュート解除</string>
     <string name="action_music_overlay">アクティブミュージックオーバーレイ</string>
-    <string name="action_lock">ロック</string>
     <string name="action_hide_handler">ハンドラーを非表示にする</string>
     <string name="action_open_app">アプリを開く</string>
     <string name="action_increase_vol_ui">音量を上げて UI を表示する</string>
@@ -308,9 +307,6 @@
     <string name="service_inactive">サービス停止中</string>
     <string name="tap_to_disable">タップして停止</string>
     <string name="tap_to_enable">タップして開始</string>
-    <string name="lock_permission_section">画面ロック</string>
-    <string name="lock_accessibility_permission">画面ロック（ユーザー補助）</string>
-    <string name="lock_accessibility_permission_desc">推奨: ロック操作が電源ボタンと同じように画面を消せるようになり、指紋でそのまま解除できます</string>
     <string name="permission_turn_off">オフにする</string>
     <string name="action_reposition">ハンドラーを移動</string>
     <string name="volume_percent_short">%1$d%%</string>
@@ -325,20 +321,12 @@
     <string name="notification_action_hide">非表示</string>
     <string name="notification_action_settings">設定</string>
     <string name="notification_action_stop">停止</string>
-    <string name="lock_accessibility_label">画面ロック</string>
-    <string name="lock_accessibility_summary">ロック操作で画面を消せるようにします。</string>
-    <string name="lock_accessibility_description">フローティングバーでロック操作を使ったときに GestureVolume が画面をロックできるようにします。電源ボタンとまったく同じ方法でロックするため、指紋でそのまま解除できます。このサービスは画面上の内容を一切読み取らず、他の操作も行いません。</string>
-    <string name="lock_permission_title">画面のロックについて</string>
-    <string name="lock_permission_message">画面をロックするには GestureVolume に権限が必要です。\n\nユーザー補助を推奨します。電源ボタンと同じ方法で画面をロックするため、指紋でそのまま解除できます。デバイス管理者でも動作しますが、多くの端末では指紋ではなく PIN を求められます。</string>
-    <string name="lock_permission_accessibility">ユーザー補助を使う</string>
-    <string name="lock_not_available">ロック操作を使う前に、設定でロックの権限を許可してください。</string>
     <string name="context_menu_title">長押しメニュー</string>
     <string name="context_menu_desc">バーを長押ししたときに表示される項目を選びます。</string>
     <string name="context_menu_empty">他に選択された項目はありません。長押しするとバーが移動し、「バーを非表示」が表示されます。</string>
     <string name="context_menu_always">常に表示</string>
     <string name="context_menu_section">長押しメニューの項目</string>
     <string name="behaviour_section">動作</string>
-    <string name="lock_permission_menu_message">長押しメニューにロックを追加しましたが、まだ画面をロックできる手段がありません。\n\nユーザー補助を推奨します。電源ボタンと同じ方法で画面をロックするため、指紋でそのまま解除できます。</string>
     <string name="notification_permission_needed_title">通知がオフになっています</string>
     <string name="notification_permission_needed_message">操作ボタンはオンですが、Android が GestureVolume の通知を許可していません。そのため「表示」「設定」「停止」は通知パネルに出ません。</string>
     <string name="notification_permission_warning_inline">このアプリの通知はブロックされています。タップして許可してください。</string>
@@ -358,11 +346,8 @@
     <string name="reset_app_message">すべての設定が既定値に戻ります。バーの見た目と位置、タップとスワイプの全アクション、長押しメニュー、テーマ、言語です。フローティングバーはオフになり、ようこそ画面が再び表示されます。\n\nPro の購入は保持されます。この操作は取り消せません。</string>
     <string name="reset_app_confirm">リセット</string>
     <string name="reset_app_done">すべてリセットしました。</string>
-    <string name="permission_needed_lock">アクションにロックを設定しています。これがないと、タップしても何も起きません。</string>
     <string name="permission_needed_notification">通知の操作ボタンがオンです。これがないと「表示」「設定」「停止」は表示されません。</string>
     <string name="permission_needed_brightness">明るさのアクションを設定しています。これがないと明るさを変更できません。</string>
     <string name="permission_action_required_one">1 件の権限に対応が必要です</string>
     <string name="permission_action_required_many">%1$d 件の権限に対応が必要です</string>
-    <string name="lock_unsupported_message">画面のロックには Android 9 以降が必要です。この端末では実行できないため、ロック操作は利用できない旨を表示します。</string>
-    <string name="lock_unsupported_short">Android 9 以降が必要です</string>
 </resources>

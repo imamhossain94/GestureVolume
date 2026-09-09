@@ -173,7 +173,6 @@
     <string name="action_mute">Muto</string>
     <string name="action_mute_unmute">Disattiva o Attiva audio</string>
     <string name="action_music_overlay">Sovrapposizione musicale attiva</string>
-    <string name="action_lock">Serratura</string>
     <string name="action_hide_handler">Nascondi gestore</string>
     <string name="action_open_app">Apri l\'app</string>
     <string name="action_increase_vol_ui">Aumenta il volume e mostra l\'interfaccia utente</string>
@@ -308,9 +307,6 @@
     <string name="service_inactive">Servizio inattivo</string>
     <string name="tap_to_disable">Tocca per disattivare</string>
     <string name="tap_to_enable">Tocca per attivare</string>
-    <string name="lock_permission_section">BLOCCO SCHERMO</string>
-    <string name="lock_accessibility_permission">Blocco schermo (accessibilità)</string>
-    <string name="lock_accessibility_permission_desc">Consigliato: consente all\'azione Blocca di spegnere lo schermo come il tasto di accensione, così la tua impronta continua a sbloccare il telefono</string>
     <string name="permission_turn_off">Disattiva</string>
     <string name="action_reposition">Sposta barra</string>
     <string name="volume_percent_short">%1$d%%</string>
@@ -325,20 +321,12 @@
     <string name="notification_action_hide">Nascondi</string>
     <string name="notification_action_settings">Impostazioni</string>
     <string name="notification_action_stop">Arresta</string>
-    <string name="lock_accessibility_label">Blocco schermo</string>
-    <string name="lock_accessibility_summary">Consente all\'azione Blocca di spegnere lo schermo.</string>
-    <string name="lock_accessibility_description">Consente a GestureVolume di bloccare lo schermo quando usi l\'azione Blocca sulla barra flottante. Blocca lo schermo esattamente come il tasto di accensione, quindi la tua impronta continua a sbloccare il telefono. Questo servizio non legge nulla sullo schermo e non compie altre azioni.</string>
-    <string name="lock_permission_title">Bloccare lo schermo</string>
-    <string name="lock_permission_message">GestureVolume ha bisogno del permesso per bloccare lo schermo.\n\nÈ consigliata l\'accessibilità: blocca lo schermo come il tasto di accensione, quindi la tua impronta continua a sbloccare il telefono. Anche l\'amministratore dispositivo funziona, ma la maggior parte dei telefoni chiede poi il PIN invece dell\'impronta.</string>
-    <string name="lock_permission_accessibility">Usa accessibilità</string>
-    <string name="lock_not_available">Concedi un permesso di blocco nelle Impostazioni prima di usare l\'azione Blocca.</string>
     <string name="context_menu_title">Menu a pressione prolungata</string>
     <string name="context_menu_desc">Scegli cosa appare quando tieni premuta la barra.</string>
     <string name="context_menu_empty">Nient\'altro selezionato. La pressione prolungata sposterà la barra e offrirà «Nascondi barra».</string>
     <string name="context_menu_always">Sempre visibile</string>
     <string name="context_menu_section">Voci del menu a pressione prolungata</string>
     <string name="behaviour_section">Comportamento</string>
-    <string name="lock_permission_menu_message">Hai aggiunto Blocca al menu a pressione prolungata, ma per ora nulla può bloccare lo schermo.\n\nÈ consigliata l\'accessibilità: blocca lo schermo come il tasto di accensione, quindi la tua impronta continua a sbloccare il telefono.</string>
     <string name="notification_permission_needed_title">Le notifiche sono disattivate</string>
     <string name="notification_permission_needed_message">I controlli sono attivi, ma Android non consente a GestureVolume di pubblicare notifiche: Mostra, Impostazioni e Arresta non compariranno nel pannello.</string>
     <string name="notification_permission_warning_inline">Le notifiche sono bloccate per questa app. Tocca per consentirle.</string>
@@ -358,11 +346,8 @@
     <string name="reset_app_message">Ogni impostazione torna al valore predefinito: aspetto e posizione della barra, tutte le azioni di tocco e scorrimento, il menu a pressione prolungata, il tema e la lingua. La barra flottante viene spenta e le schermate di benvenuto tornano.\n\nIl tuo acquisto Pro viene mantenuto. Questa azione è irreversibile.</string>
     <string name="reset_app_confirm">Reimposta</string>
     <string name="reset_app_done">Tutto è stato reimpostato.</string>
-    <string name="permission_needed_lock">Hai impostato un\'azione su Blocca. Senza questo, toccarla non fa nulla.</string>
     <string name="permission_needed_notification">I controlli nella notifica sono attivi. Senza questo, Mostra, Impostazioni e Arresta non compariranno.</string>
     <string name="permission_needed_brightness">Hai impostato un\'azione di luminosità. Senza questo, non può cambiare la luminosità.</string>
     <string name="permission_action_required_one">1 permesso richiede la tua attenzione</string>
     <string name="permission_action_required_many">%1$d permessi richiedono la tua attenzione</string>
-    <string name="lock_unsupported_message">Bloccare lo schermo richiede Android 9 o successivo. Questo telefono non può farlo, quindi l\'azione Blocca segnalerà di non essere disponibile.</string>
-    <string name="lock_unsupported_short">Richiede Android 9 o successivo</string>
 </resources>

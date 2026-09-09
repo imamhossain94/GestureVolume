@@ -173,7 +173,6 @@
     <string name="action_mute">Silenciar</string>
     <string name="action_mute_unmute">Silenciar o activar el silencio</string>
     <string name="action_music_overlay">Superposición de música activa</string>
-    <string name="action_lock">Cerrar</string>
     <string name="action_hide_handler">Ocultar controlador</string>
     <string name="action_open_app">Abrir aplicación</string>
     <string name="action_increase_vol_ui">Aumentar el volumen y mostrar la interfaz de usuario</string>
@@ -308,9 +307,6 @@
     <string name="service_inactive">Servicio inactivo</string>
     <string name="tap_to_disable">Toca para desactivar</string>
     <string name="tap_to_enable">Toca para activar</string>
-    <string name="lock_permission_section">BLOQUEO DE PANTALLA</string>
-    <string name="lock_accessibility_permission">Bloqueo de pantalla (accesibilidad)</string>
-    <string name="lock_accessibility_permission_desc">Recomendado: permite que la acción Bloquear apague la pantalla igual que el botón de encendido, de modo que tu huella siga desbloqueando el teléfono</string>
     <string name="permission_turn_off">Desactivar</string>
     <string name="action_reposition">Mover barra</string>
     <string name="volume_percent_short">%1$d%%</string>
@@ -325,20 +321,12 @@
     <string name="notification_action_hide">Ocultar</string>
     <string name="notification_action_settings">Ajustes</string>
     <string name="notification_action_stop">Detener</string>
-    <string name="lock_accessibility_label">Bloqueo de pantalla</string>
-    <string name="lock_accessibility_summary">Permite que la acción Bloquear apague la pantalla.</string>
-    <string name="lock_accessibility_description">Permite que GestureVolume bloquee la pantalla cuando usas la acción Bloquear en la barra flotante. Bloquea la pantalla igual que el botón de encendido, así que tu huella sigue desbloqueando el teléfono. Este servicio no lee nada de tu pantalla ni realiza ninguna otra acción.</string>
-    <string name="lock_permission_title">Bloquear la pantalla</string>
-    <string name="lock_permission_message">GestureVolume necesita permiso para bloquear la pantalla.\n\nSe recomienda accesibilidad: bloquea la pantalla como el botón de encendido, así que tu huella sigue desbloqueando el teléfono. El administrador de dispositivos también funciona, pero la mayoría de los teléfonos piden entonces tu PIN en lugar de la huella.</string>
-    <string name="lock_permission_accessibility">Usar accesibilidad</string>
-    <string name="lock_not_available">Concede un permiso de bloqueo en Ajustes antes de usar la acción Bloquear.</string>
     <string name="context_menu_title">Menú de pulsación larga</string>
     <string name="context_menu_desc">Elige qué aparece cuando mantienes pulsada la barra.</string>
     <string name="context_menu_empty">No hay nada más seleccionado. Mantener pulsado moverá la barra y ofrecerá «Ocultar barra».</string>
     <string name="context_menu_always">Siempre visible</string>
     <string name="context_menu_section">Elementos del menú de pulsación larga</string>
     <string name="behaviour_section">Comportamiento</string>
-    <string name="lock_permission_menu_message">Has añadido Bloquear al menú de pulsación larga, pero todavía nada puede bloquear la pantalla.\n\nSe recomienda accesibilidad: bloquea la pantalla como el botón de encendido, así que tu huella sigue desbloqueando el teléfono.</string>
     <string name="notification_permission_needed_title">Las notificaciones están desactivadas</string>
     <string name="notification_permission_needed_message">Los controles están activados, pero Android no permite que GestureVolume publique notificaciones, así que Mostrar, Ajustes y Detener no aparecerán en el panel.</string>
     <string name="notification_permission_warning_inline">Las notificaciones están bloqueadas para esta app. Toca para permitirlas.</string>
@@ -358,11 +346,8 @@
     <string name="reset_app_message">Cada ajuste vuelve a su valor predeterminado: el aspecto y la posición de la barra, todas las acciones de toque y deslizamiento, el menú de pulsación larga, el tema y el idioma. La barra flotante se apaga y vuelven las pantallas de bienvenida.\n\nTu compra Pro se conserva. Esto no se puede deshacer.</string>
     <string name="reset_app_confirm">Restablecer</string>
     <string name="reset_app_done">Todo se ha restablecido.</string>
-    <string name="permission_needed_lock">Has asignado una acción a Bloquear. Sin esto, tocarla no hace nada.</string>
     <string name="permission_needed_notification">Los controles de notificación están activados. Sin esto, Mostrar, Ajustes y Detener no aparecerán.</string>
     <string name="permission_needed_brightness">Has asignado una acción de brillo. Sin esto, no puede cambiar el brillo.</string>
     <string name="permission_action_required_one">1 permiso necesita tu atención</string>
     <string name="permission_action_required_many">%1$d permisos necesitan tu atención</string>
-    <string name="lock_unsupported_message">Bloquear la pantalla requiere Android 9 o posterior. Este teléfono no puede hacerlo, así que la acción Bloquear informará de que no está disponible.</string>
-    <string name="lock_unsupported_short">Requiere Android 9 o posterior</string>
 </resources>

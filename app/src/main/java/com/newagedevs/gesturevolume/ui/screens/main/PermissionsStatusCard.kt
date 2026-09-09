@@ -24,7 +24,7 @@ fun PermissionsStatusCard(
     /**
      * Permissions the user's configuration needs but has not granted, the required overlay
      * included. Non-zero turns this card into a warning even when the app is technically running:
-     * a Lock action that silently does nothing is not "all permissions granted".
+     * a brightness action that silently does nothing is not "all permissions granted".
      */
     missingPermissionCount: Int = 0,
     onClick: () -> Unit

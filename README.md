@@ -53,7 +53,7 @@ You can find it on the **main** branch.
 - Fully customize the gesture handler appearance.
 - Multi-language support (14+ languages including English, Arabic, Bangla, Hindi, Japanese, Korean, Chinese, German, Spanish, French, Italian, Portuguese, Russian, Turkish, and Vietnamese).
 - Add click actions to the gesture area.
-- Lock the screen using a gesture-handler click.
+- Adjust screen brightness from the same bar.
 - Assign separate actions to:
     - Upper-half swipe
     - Lower-half swipe
@@ -62,11 +62,18 @@ You can find it on the **main** branch.
 
 ## 🔏 Permissions Used
 
-- `READ_EXTERNAL_STORAGE`
 - `SYSTEM_ALERT_WINDOW`
 - `FOREGROUND_SERVICE`
+- `FOREGROUND_SERVICE_SPECIAL_USE`
+- `POST_NOTIFICATIONS`
+- `WRITE_SETTINGS` (optional — only for the brightness actions)
+- `VIBRATE`
 - `WAKE_LOCK`
 - `RECEIVE_BOOT_COMPLETED`
+- `INTERNET`
+
+No `AccessibilityService` and no Device Admin: the app reads nothing on your screen
+and holds no privileged device policy.
 
 ---
 

@@ -28,7 +28,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BrightnessHigh
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -60,7 +59,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
-import com.newagedevs.gesturevolume.utils.LockScreenUtil
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import androidx.compose.ui.res.stringResource
 import com.newagedevs.gesturevolume.R
@@ -81,10 +79,7 @@ fun PermissionsScreen(
         }
     }
 
-    val lockScreenUtil = remember { LockScreenUtil(context) }
-
     var overlayPermissionGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
-    var accessibilityGranted by remember { mutableStateOf(lockScreenUtil.accessibilityActive()) }
     var writeSettingsGranted by remember { mutableStateOf(Settings.System.canWrite(context)) }
     var notificationsGranted by remember {
         mutableStateOf(PermissionNeeds.hasNotificationPermission(context))
@@ -101,7 +96,6 @@ fun PermissionsScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 overlayPermissionGranted = Settings.canDrawOverlays(context)
-                accessibilityGranted = lockScreenUtil.accessibilityActive()
                 writeSettingsGranted = Settings.System.canWrite(context)
                 notificationsGranted = PermissionNeeds.hasNotificationPermission(context)
                 needs = PermissionNeeds.read(context, viewModel.preference)
@@ -269,12 +263,12 @@ fun PermissionsScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Notifications — the shade row carrying Show, Settings and Stop. Optional in the
             // strict sense: the service runs without it. It is, however, the only way to bring
             // back a bar hidden from the long-press menu without opening the app.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Spacer(modifier = Modifier.height(16.dp))
+
                 PermissionCard(
                     title = stringResource(R.string.notification_permission),
                     description = stringResource(R.string.notification_permission_desc),
@@ -295,37 +289,7 @@ fun PermissionsScreen(
                         )
                     }
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
-
-            // Screen lock. One route now: accessibility locks the screen the way the power button
-            // does, so the fingerprint sensor still opens the phone. Device Admin, which locked it
-            // the way a corporate policy does and left most phones demanding a PIN, is gone.
-            PermissionCard(
-                title = stringResource(R.string.lock_accessibility_permission),
-                description = if (lockScreenUtil.accessibilitySupported()) {
-                    stringResource(R.string.lock_accessibility_permission_desc)
-                } else {
-                    stringResource(R.string.lock_unsupported_short)
-                },
-                icon = Icons.Default.Lock,
-                isGranted = accessibilityGranted,
-                isOptional = true,
-                warning = if (needs.lockMissing && lockScreenUtil.accessibilitySupported()) {
-                    stringResource(R.string.permission_needed_lock)
-                } else null,
-                borderColor = if (accessibilityGranted) {
-                    Color(0xFF10B981)
-                } else {
-                    Color(0xFF8B5CF6)
-                },
-                onRequestPermission = {
-                    if (!lockScreenUtil.accessibilitySupported()) return@PermissionCard
-                    viewModel.preference.setAppOpenAdPaused(true)
-                    lockScreenUtil.openAccessibilitySettings()
-                }
-            )
 
             Spacer(modifier = Modifier.height(32.dp))
 

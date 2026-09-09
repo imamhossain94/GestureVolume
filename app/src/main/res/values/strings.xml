@@ -173,7 +173,6 @@
     <string name="action_mute">Mute</string>
     <string name="action_mute_unmute">Mute or Unmute</string>
     <string name="action_music_overlay">Active Music Overlay</string>
-    <string name="action_lock">Lock</string>
     <string name="action_hide_handler">Hide Handler</string>
     <string name="action_open_app">Open App</string>
     <string name="action_reposition">Move handler</string>
@@ -314,17 +313,6 @@
     <string name="notification_action_settings">Settings</string>
     <string name="notification_action_stop">Stop</string>
 
-    <!-- Lock action: choosing how the screen gets locked. -->
-    <string name="lock_accessibility_label">Screen lock</string>
-    <string name="lock_accessibility_summary">Lets the Lock action turn the screen off.</string>
-    <string name="lock_accessibility_description">Allows GestureVolume to lock the screen when you use the Lock action on the floating bar. It locks the screen the same way the power button does, so your fingerprint still unlocks the phone. This service reads nothing on your screen and performs no other action.</string>
-    <string name="lock_permission_title">Locking the screen</string>
-    <string name="lock_permission_message">GestureVolume needs permission to lock the screen.
-
-Accessibility is recommended: it locks the screen the way the power button does, so your fingerprint still unlocks the phone. Device admin also works, but most phones then ask for your PIN instead of your fingerprint.</string>
-    <string name="lock_permission_accessibility">Use accessibility</string>
-    <string name="lock_not_available">Grant a lock permission in Settings before using the Lock action.</string>
-
     <!-- Long-press context menu -->
     <string name="context_menu_title">Long-press menu</string>
     <string name="context_menu_desc">Choose what appears when you press and hold the handler.</string>
@@ -360,12 +348,8 @@ Accessibility is recommended: it locks the screen the way the power button does,
     <string name="tap_to_disable">Tap to disable</string>
     <string name="tap_to_enable">Tap to enable</string>
 
-    <string name="lock_permission_section">SCREEN LOCK</string>
-    <string name="lock_accessibility_permission">Screen lock (accessibility)</string>
-    <string name="lock_accessibility_permission_desc">Recommended: lets the Lock action turn the screen off the same way the power button does, so your fingerprint still unlocks the phone</string>
     <string name="permission_turn_off">Turn off</string>
-    <!-- Lock / notification warnings raised at the moment an action is chosen -->
-    <string name="lock_permission_menu_message">You added Lock to the long-press menu, but nothing can lock the screen yet.\n\nAccessibility is recommended: it locks the screen the way the power button does, so your fingerprint still unlocks the phone.</string>
+    <!-- Warnings raised at the moment an action is chosen -->
     <string name="notification_permission_needed_title">Notifications are turned off</string>
     <string name="notification_permission_needed_message">The controls are on, but Android is not allowing GestureVolume to post notifications — so Show, Settings and Stop will not appear in the shade.</string>
     <string name="notification_permission_warning_inline">Notifications are blocked for this app. Tap to allow them.</string>
@@ -390,11 +374,8 @@ Accessibility is recommended: it locks the screen the way the power button does,
     <string name="reset_app_confirm">Reset</string>
     <string name="reset_app_done">Everything has been reset.</string>
     <!-- "You configured a feature that needs this" banners on the permission cards -->
-    <string name="permission_needed_lock">You have set an action to Lock. Without this, tapping it does nothing.</string>
     <string name="permission_needed_notification">Notification controls are on. Without this, Show, Settings and Stop will not appear.</string>
     <string name="permission_needed_brightness">You have set a brightness action. Without this, it cannot change the brightness.</string>
     <string name="permission_action_required_one">1 permission needs your attention</string>
     <string name="permission_action_required_many">%1$d permissions need your attention</string>
-    <string name="lock_unsupported_message">Locking the screen needs Android 9 or newer. This phone cannot do it, so the Lock action will report that it is unavailable.</string>
-    <string name="lock_unsupported_short">Needs Android 9 or newer</string>
 </resources>

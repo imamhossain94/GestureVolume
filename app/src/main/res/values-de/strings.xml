@@ -173,7 +173,6 @@
     <string name="action_mute">Stumm</string>
     <string name="action_mute_unmute">Stummschalten oder Stummschaltung aufheben</string>
     <string name="action_music_overlay">Aktive Musiküberlagerung</string>
-    <string name="action_lock">Sperren</string>
     <string name="action_hide_handler">Handler ausblenden</string>
     <string name="action_open_app">App öffnen</string>
     <string name="action_increase_vol_ui">Erhöhen Sie die Lautstärke und zeigen Sie die Benutzeroberfläche an</string>
@@ -308,9 +307,6 @@
     <string name="service_inactive">Dienst inaktiv</string>
     <string name="tap_to_disable">Zum Deaktivieren tippen</string>
     <string name="tap_to_enable">Zum Aktivieren tippen</string>
-    <string name="lock_permission_section">BILDSCHIRMSPERRE</string>
-    <string name="lock_accessibility_permission">Bildschirmsperre (Bedienungshilfe)</string>
-    <string name="lock_accessibility_permission_desc">Empfohlen: Lässt die Sperren-Aktion den Bildschirm so ausschalten wie die Ein-/Aus-Taste, damit dein Fingerabdruck das Telefon weiterhin entsperrt</string>
     <string name="permission_turn_off">Deaktivieren</string>
     <string name="action_reposition">Leiste verschieben</string>
     <string name="volume_percent_short">%1$d%%</string>
@@ -325,20 +321,12 @@
     <string name="notification_action_hide">Ausblenden</string>
     <string name="notification_action_settings">Einstellungen</string>
     <string name="notification_action_stop">Stopp</string>
-    <string name="lock_accessibility_label">Bildschirmsperre</string>
-    <string name="lock_accessibility_summary">Erlaubt der Sperren-Aktion, den Bildschirm auszuschalten.</string>
-    <string name="lock_accessibility_description">Erlaubt GestureVolume, den Bildschirm zu sperren, wenn du die Sperren-Aktion auf der schwebenden Leiste verwendest. Der Bildschirm wird genauso gesperrt wie mit der Ein-/Aus-Taste, dein Fingerabdruck entsperrt das Telefon also weiterhin. Dieser Dienst liest nichts auf deinem Bildschirm und führt keine andere Aktion aus.</string>
-    <string name="lock_permission_title">Bildschirm sperren</string>
-    <string name="lock_permission_message">GestureVolume braucht die Berechtigung, den Bildschirm zu sperren.\n\nDie Bedienungshilfe wird empfohlen: Sie sperrt den Bildschirm wie die Ein-/Aus-Taste, dein Fingerabdruck entsperrt das Telefon also weiterhin. Die Geräteverwaltung funktioniert ebenfalls, doch die meisten Telefone verlangen dann deine PIN statt den Fingerabdruck.</string>
-    <string name="lock_permission_accessibility">Bedienungshilfe verwenden</string>
-    <string name="lock_not_available">Erteile in den Einstellungen eine Sperr-Berechtigung, bevor du die Sperren-Aktion verwendest.</string>
     <string name="context_menu_title">Menü bei langem Drücken</string>
     <string name="context_menu_desc">Wähle, was erscheint, wenn du die Leiste gedrückt hältst.</string>
     <string name="context_menu_empty">Nichts weiter ausgewählt. Langes Drücken verschiebt die Leiste und bietet „Leiste ausblenden“ an.</string>
     <string name="context_menu_always">Immer sichtbar</string>
     <string name="context_menu_section">Einträge im Menü bei langem Drücken</string>
     <string name="behaviour_section">Verhalten</string>
-    <string name="lock_permission_menu_message">Du hast Sperren zum Menü beim langen Drücken hinzugefügt, aber noch kann nichts den Bildschirm sperren.\n\nDie Bedienungshilfe wird empfohlen: Sie sperrt den Bildschirm wie die Ein-/Aus-Taste, dein Fingerabdruck entsperrt das Telefon also weiterhin.</string>
     <string name="notification_permission_needed_title">Benachrichtigungen sind deaktiviert</string>
     <string name="notification_permission_needed_message">Die Steuerung ist an, aber Android lässt GestureVolume keine Benachrichtigungen posten – Anzeigen, Einstellungen und Stopp erscheinen also nicht in der Leiste.</string>
     <string name="notification_permission_warning_inline">Benachrichtigungen sind für diese App blockiert. Zum Erlauben tippen.</string>
@@ -358,11 +346,8 @@
     <string name="reset_app_message">Jede Einstellung geht auf ihren Standard zurück: Aussehen und Position der Leiste, alle Tipp- und Wischaktionen, das Menü beim langen Drücken, Design und Sprache. Die schwebende Leiste wird abgeschaltet und die Willkommensbildschirme kommen zurück.\n\nDein Pro-Kauf bleibt erhalten. Dies lässt sich nicht rückgängig machen.</string>
     <string name="reset_app_confirm">Zurücksetzen</string>
     <string name="reset_app_done">Alles wurde zurückgesetzt.</string>
-    <string name="permission_needed_lock">Du hast eine Aktion auf Sperren gesetzt. Ohne dies passiert beim Antippen nichts.</string>
     <string name="permission_needed_notification">Die Benachrichtigungs-Steuerung ist an. Ohne dies erscheinen Anzeigen, Einstellungen und Stopp nicht.</string>
     <string name="permission_needed_brightness">Du hast eine Helligkeitsaktion gesetzt. Ohne dies kann sie die Helligkeit nicht ändern.</string>
     <string name="permission_action_required_one">1 Berechtigung braucht deine Aufmerksamkeit</string>
     <string name="permission_action_required_many">%1$d Berechtigungen brauchen deine Aufmerksamkeit</string>
-    <string name="lock_unsupported_message">Den Bildschirm zu sperren erfordert Android 9 oder neuer. Dieses Telefon kann es nicht, daher meldet die Sperren-Aktion, dass sie nicht verfügbar ist.</string>
-    <string name="lock_unsupported_short">Erfordert Android 9 oder neuer</string>
 </resources>

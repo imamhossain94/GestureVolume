@@ -36,7 +36,6 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import androidx.compose.ui.res.stringResource
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
-import com.newagedevs.gesturevolume.utils.LockScreenUtil
 
 /** Whether Android currently lets this app post notifications. Always true below Android 13. */
 private fun hasNotificationPermission(context: android.content.Context): Boolean =
@@ -107,10 +106,9 @@ fun HandlerActionsScreen(
         }
     }
 
-    // Coming back from a system screen this screen sent the user to — the accessibility list for
-    // the Lock action, or the notification channel settings — has to lift the app-open ad pause
-    // those set. Without this the pause was set and never cleared, silencing app-open ads for the
-    // rest of the install.
+    // Coming back from a system screen this screen sent the user to — the notification channel
+    // settings, or the WRITE_SETTINGS grant — has to lift the app-open ad pause those set. Without
+    // this the pause was set and never cleared, silencing app-open ads for the rest of the install.
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -128,75 +126,6 @@ fun HandlerActionsScreen(
     ) {
         viewModel.preference.setAppOpenAdPaused(false)
         viewModel.onEvent(MainEvent.WriteSettingsResult(context))
-    }
-
-    // Asked only when the Lock action is chosen with neither lock route granted. The action is
-    // already saved by this point; this is about how the screen gets locked, not whether the
-    // setting sticks.
-    if (state.pendingLockPermissionRequest) {
-        val accessibilitySupported = remember { LockScreenUtil(context).accessibilitySupported() }
-        val lockRequestFromMenu = HandlerActions.LOCK in contextMenuItems &&
-                state.clickAction != HandlerActions.LOCK &&
-                state.doubleClickAction != HandlerActions.LOCK &&
-                state.longClickAction != HandlerActions.LOCK
-        AlertDialog(
-            onDismissRequest = { viewModel.cancelLockPermissionRequest() },
-            title = {
-                Text(
-                    text = stringResource(R.string.lock_permission_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(
-                        when {
-                            // Android 8 has no GLOBAL_ACTION_LOCK_SCREEN and Device Admin is gone,
-                            // so there is nothing to offer — only something to explain.
-                            !accessibilitySupported -> R.string.lock_unsupported_message
-                            // Naming the menu matters: the tap pickers close onto the row they
-                            // just changed, so the context is on screen. The menu picker closes
-                            // onto a count, and "you added Lock to the long-press menu" is the
-                            // only thing that connects this dialog to what the user just did.
-                            lockRequestFromMenu -> R.string.lock_permission_menu_message
-                            else -> R.string.lock_permission_message
-                        }
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            confirmButton = {
-                if (accessibilitySupported) {
-                    Button(
-                        onClick = { viewModel.onLockPermissionChoice(context) },
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(stringResource(R.string.lock_permission_accessibility))
-                    }
-                } else {
-                    Button(
-                        onClick = { viewModel.cancelLockPermissionRequest() },
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(stringResource(R.string.got_it))
-                    }
-                }
-            },
-            dismissButton = {
-                if (accessibilitySupported) {
-                    OutlinedButton(
-                        onClick = { viewModel.cancelLockPermissionRequest() },
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(stringResource(R.string.not_now))
-                    }
-                }
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(24.dp)
-        )
     }
 
     if (showNotificationWarning) {
@@ -303,10 +232,6 @@ fun HandlerActionsScreen(
                 contextMenuItems = picked
                 viewModel.preference.setContextMenuItems(picked)
                 showContextMenuDialog = false
-                // Asked here, at Apply, rather than left for the user to discover on the bar. The
-                // choice is already saved either way; this is only about whether the entry they
-                // just added can do anything when they tap it.
-                viewModel.checkLockPermission(picked, context)
             }
         )
     }

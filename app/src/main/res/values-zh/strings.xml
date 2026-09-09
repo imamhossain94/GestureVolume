@@ -173,7 +173,6 @@
     <string name="action_mute">沉默的</string>
     <string name="action_mute_unmute">静音或取消静音</string>
     <string name="action_music_overlay">活跃音乐叠加</string>
-    <string name="action_lock">锁</string>
     <string name="action_hide_handler">隐藏处理程序</string>
     <string name="action_open_app">打开应用程序</string>
     <string name="action_increase_vol_ui">增加音量并显示 UI</string>
@@ -308,9 +307,6 @@
     <string name="service_inactive">服务未启用</string>
     <string name="tap_to_disable">点按以停用</string>
     <string name="tap_to_enable">点按以启用</string>
-    <string name="lock_permission_section">屏幕锁定</string>
-    <string name="lock_accessibility_permission">屏幕锁定（无障碍）</string>
-    <string name="lock_accessibility_permission_desc">推荐：让锁定操作像电源键一样关闭屏幕，指纹依然可以解锁手机</string>
     <string name="permission_turn_off">关闭</string>
     <string name="action_reposition">移动滑条</string>
     <string name="volume_percent_short">%1$d%%</string>
@@ -325,20 +321,12 @@
     <string name="notification_action_hide">隐藏</string>
     <string name="notification_action_settings">设置</string>
     <string name="notification_action_stop">停止</string>
-    <string name="lock_accessibility_label">屏幕锁定</string>
-    <string name="lock_accessibility_summary">允许锁定操作关闭屏幕。</string>
-    <string name="lock_accessibility_description">允许 GestureVolume 在你使用悬浮条上的锁定操作时锁屏。它锁屏的方式与电源键完全相同，因此指纹仍可解锁手机。此服务不会读取屏幕上的任何内容，也不执行其他任何操作。</string>
-    <string name="lock_permission_title">锁定屏幕</string>
-    <string name="lock_permission_message">GestureVolume 需要权限才能锁屏。\n\n推荐使用无障碍：它锁屏的方式与电源键相同，指纹依然可以解锁手机。设备管理员同样可行，但多数手机随后会要求 PIN 而不是指纹。</string>
-    <string name="lock_permission_accessibility">使用无障碍</string>
-    <string name="lock_not_available">使用锁定操作前，请先在设置中授予锁屏权限。</string>
     <string name="context_menu_title">长按菜单</string>
     <string name="context_menu_desc">选择长按滑条时显示哪些项目。</string>
     <string name="context_menu_empty">未选择其他项目。长按将移动滑条并提供“隐藏滑条”。</string>
     <string name="context_menu_always">始终显示</string>
     <string name="context_menu_section">长按菜单项</string>
     <string name="behaviour_section">行为</string>
-    <string name="lock_permission_menu_message">你已把“锁定”加入长按菜单，但目前还没有任何方式可以锁屏。\n\n推荐使用无障碍：它锁屏的方式与电源键相同，指纹依然可以解锁手机。</string>
     <string name="notification_permission_needed_title">通知已关闭</string>
     <string name="notification_permission_needed_message">控制已开启，但 Android 不允许 GestureVolume 发送通知 — 因此显示、设置和停止不会出现在通知面板中。</string>
     <string name="notification_permission_warning_inline">此应用的通知已被阻止。点按以允许。</string>
@@ -358,11 +346,8 @@
     <string name="reset_app_message">所有设置都会恢复默认：滑条的外观和位置、全部点按和滑动操作、长按菜单、主题和语言。悬浮滑条会被关闭，欢迎页面会重新出现。\n\n你的 Pro 购买会保留。此操作无法撤销。</string>
     <string name="reset_app_confirm">重置</string>
     <string name="reset_app_done">已重置所有内容。</string>
-    <string name="permission_needed_lock">你已将某个操作设为锁定。没有此权限，点按它不会有任何反应。</string>
     <string name="permission_needed_notification">通知栏控制已开启。没有此权限，显示、设置和停止都不会出现。</string>
     <string name="permission_needed_brightness">你已设置亮度操作。没有此权限，它无法改变亮度。</string>
     <string name="permission_action_required_one">1 项权限需要处理</string>
     <string name="permission_action_required_many">%1$d 项权限需要处理</string>
-    <string name="lock_unsupported_message">锁屏需要 Android 9 或更高版本。此手机无法做到，因此锁定操作会提示不可用。</string>
-    <string name="lock_unsupported_short">需要 Android 9 或更高版本</string>
 </resources>

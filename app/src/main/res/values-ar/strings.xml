@@ -173,7 +173,6 @@
     <string name="action_mute">صامت</string>
     <string name="action_mute_unmute">كتم الصوت أو إلغاء كتم الصوت</string>
     <string name="action_music_overlay">تراكب الموسيقى النشطة</string>
-    <string name="action_lock">قفل</string>
     <string name="action_hide_handler">إخفاء المعالج</string>
     <string name="action_open_app">افتح التطبيق</string>
     <string name="action_increase_vol_ui">زيادة مستوى الصوت وإظهار واجهة المستخدم</string>
@@ -308,9 +307,6 @@
     <string name="service_inactive">الخدمة متوقفة</string>
     <string name="tap_to_disable">اضغط للإيقاف</string>
     <string name="tap_to_enable">اضغط للتشغيل</string>
-    <string name="lock_permission_section">قفل الشاشة</string>
-    <string name="lock_accessibility_permission">قفل الشاشة (إمكانية الوصول)</string>
-    <string name="lock_accessibility_permission_desc">موصى به: يتيح لإجراء «القفل» إطفاء الشاشة تمامًا كزر الطاقة، فتظل بصمتك تفتح الهاتف</string>
     <string name="permission_turn_off">إيقاف</string>
     <string name="action_reposition">تحريك الشريط</string>
     <string name="volume_percent_short">%1$d%%</string>
@@ -325,20 +321,12 @@
     <string name="notification_action_hide">إخفاء</string>
     <string name="notification_action_settings">الإعدادات</string>
     <string name="notification_action_stop">إيقاف</string>
-    <string name="lock_accessibility_label">قفل الشاشة</string>
-    <string name="lock_accessibility_summary">يتيح لإجراء «القفل» إطفاء الشاشة.</string>
-    <string name="lock_accessibility_description">يسمح لـ GestureVolume بقفل الشاشة عند استخدام إجراء «القفل» على الشريط العائم. يقفل الشاشة تمامًا كما يفعل زر الطاقة، فتظل بصمتك تفتح الهاتف. لا تقرأ هذه الخدمة أي شيء على شاشتك ولا تنفّذ أي إجراء آخر.</string>
-    <string name="lock_permission_title">قفل الشاشة</string>
-    <string name="lock_permission_message">يحتاج GestureVolume إلى إذن لقفل الشاشة.\n\nيُنصح بخيار إمكانية الوصول: فهو يقفل الشاشة كما يفعل زر الطاقة، فتظل بصمتك تفتح الهاتف. يعمل مسؤول الجهاز أيضًا، لكن معظم الهواتف تطلب حينها رمز PIN بدلًا من البصمة.</string>
-    <string name="lock_permission_accessibility">استخدام إمكانية الوصول</string>
-    <string name="lock_not_available">امنح إذن قفل من الإعدادات قبل استخدام إجراء «القفل».</string>
     <string name="context_menu_title">قائمة الضغط المطوّل</string>
     <string name="context_menu_desc">اختر ما يظهر عند الضغط المطوّل على الشريط.</string>
     <string name="context_menu_empty">لم يُحدَّد شيء آخر. سيؤدي الضغط المطوّل إلى تحريك الشريط مع إتاحة «إخفاء الشريط».</string>
     <string name="context_menu_always">يظهر دائمًا</string>
     <string name="context_menu_section">عناصر قائمة الضغط المطوّل</string>
     <string name="behaviour_section">السلوك</string>
-    <string name="lock_permission_menu_message">أضفت «القفل» إلى قائمة الضغط المطوّل، لكن لا شيء يستطيع قفل الشاشة بعد.\n\nيُنصح بخيار إمكانية الوصول: فهو يقفل الشاشة كما يفعل زر الطاقة، فتظل بصمتك تفتح الهاتف.</string>
     <string name="notification_permission_needed_title">الإشعارات معطّلة</string>
     <string name="notification_permission_needed_message">أدوات التحكم مفعّلة، لكن أندرويد لا يسمح لـ GestureVolume بعرض الإشعارات — لذا لن تظهر أزرار «إظهار» و«الإعدادات» و«إيقاف» في لوحة الإشعارات.</string>
     <string name="notification_permission_warning_inline">الإشعارات محظورة لهذا التطبيق. اضغط للسماح بها.</string>
@@ -358,11 +346,8 @@
     <string name="reset_app_message">يعود كل إعداد إلى قيمته الافتراضية: شكل الشريط وموضعه، وكل إجراءات النقر والتمرير، وقائمة الضغط المطوّل، والمظهر واللغة. سيتم إيقاف الشريط العائم وستعود شاشات الترحيب.\n\nيُحتفظ بشرائك للنسخة المدفوعة. لا يمكن التراجع عن هذا.</string>
     <string name="reset_app_confirm">إعادة الضبط</string>
     <string name="reset_app_done">تمت إعادة ضبط كل شيء.</string>
-    <string name="permission_needed_lock">لقد عيّنت إجراءً على «القفل». بدون هذا، لن يفعل الضغط عليه شيئًا.</string>
     <string name="permission_needed_notification">أزرار الإشعار مفعّلة. بدون هذا، لن تظهر «إظهار» و«الإعدادات» و«إيقاف».</string>
     <string name="permission_needed_brightness">لقد عيّنت إجراء سطوع. بدون هذا، لن يتمكن من تغيير السطوع.</string>
     <string name="permission_action_required_one">إذن واحد يحتاج انتباهك</string>
     <string name="permission_action_required_many">%1$d أذونات تحتاج انتباهك</string>
-    <string name="lock_unsupported_message">يتطلب قفل الشاشة أندرويد 9 أو أحدث. هذا الهاتف لا يدعمه، لذا سيبلّغ إجراء «القفل» بأنه غير متاح.</string>
-    <string name="lock_unsupported_short">يتطلب أندرويد 9 أو أحدث</string>
 </resources>
