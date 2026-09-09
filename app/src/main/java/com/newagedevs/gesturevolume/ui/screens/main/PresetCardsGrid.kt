@@ -55,7 +55,9 @@ fun PresetCardsGrid(
             PresetConfig("Night", R.string.preset_night_title, R.string.preset_night_subtitle, Icons.Default.DarkMode,
                 listOf(primary, primary), 22.dp, 10.dp, onSurface, 0.7f),
             PresetConfig("Ghost", R.string.preset_ghost_title, R.string.preset_ghost_subtitle, Icons.Default.HideSource,
-                listOf(primary, primary), 16.dp, 8.dp, onSurface, 0.1f)
+                listOf(primary, primary), 16.dp, 8.dp, onSurface, 0.1f),
+            PresetConfig("Edge", R.string.preset_edge_title, R.string.preset_edge_subtitle, Icons.Default.DragHandle,
+                listOf(primary, primary), 8.dp, 4.dp, onSurface, 0.6f)
         )
     }
 
@@ -149,7 +151,20 @@ fun PresetCardsGrid(
                     onClick = { onNavigateToAppearance(preset.id) }
                 )
             }
-            Spacer(modifier = Modifier.weight(1f))
+            presets[5].let { preset ->
+                PresetCard(
+                    modifier = Modifier.weight(1f),
+                    title = stringResource(preset.nameRes),
+                    subtitle = stringResource(preset.subtitleRes),
+                    icon = preset.icon,
+                    gradientColors = preset.gradientColors,
+                    previewWidth = preset.previewWidth,
+                    previewCorner = preset.previewCorner,
+                    previewColor = preset.previewColor,
+                    previewAlpha = preset.previewAlpha,
+                    onClick = { onNavigateToAppearance(preset.id) }
+                )
+            }
         }
     }
 }

@@ -373,4 +373,7 @@
     <!-- 1.3.5: inward edge swipe -->
     <string name="edge_swipe_menu_title">안쪽으로 쒸어 메뉴 열기</string>
     <string name="edge_swipe_menu_desc">바에서 화면 가운데 쪽으로 쒸어 작업 메뉴를 엽니다. 시스템 뒤로 가기 제스처와 동작이 같아 기본값은 꺼짐입니다.</string>
+    <!-- 1.3.5: edge preset -->
+    <string name="preset_edge_title">가장자리</string>
+    <string name="preset_edge_subtitle">가장자리에 붙는 얇은 바</string>
 </resources>

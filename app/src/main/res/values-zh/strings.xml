@@ -373,4 +373,7 @@
     <!-- 1.3.5: inward edge swipe -->
     <string name="edge_swipe_menu_title">向内滑动打开菜单</string>
     <string name="edge_swipe_menu_desc">从悬浮条向屏幕中间滑动即可打开操作菜单。默认关闭，因为系统的返回手势也是这样操作的。</string>
+    <!-- 1.3.5: edge preset -->
+    <string name="preset_edge_title">边缘</string>
+    <string name="preset_edge_subtitle">紧贴侧边的细长条</string>
 </resources>

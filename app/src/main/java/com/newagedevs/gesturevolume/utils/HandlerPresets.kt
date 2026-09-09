@@ -106,6 +106,35 @@ object HandlerPresets {
             showIcon = true, vibrate = true, edgeMargin = 0f, positionFraction = 0.12f
         ),
         Preset(
+            /**
+             * The slim edge-handle look: a thin translucent pill, flush to the side.
+             *
+             * Deliberately NOT named after the OEM whose edge panel it resembles. The shape is not
+             * anyone's property, but the brand name is, and a preset label is exactly the kind of
+             * incidental trademark use that draws a complaint against a listing.
+             *
+             * Distinct from Minimal, which is the same 10dp width but a full 100dp tall, dark, and
+             * carries a visible stroke. This one is shorter, lighter, and sits lower down the
+             * screen where a thumb rests rather than up near the status bar. The corner radius is
+             * exactly half the width, which is what makes it a true pill rather than a rounded
+             * rectangle.
+             *
+             * It keeps a faint stroke despite the original having none: a white fill at this alpha
+             * disappears entirely against a white app, and a handle you cannot find is not minimal,
+             * it is broken.
+             */
+            id = "Edge",
+            nameRes = R.string.preset_edge_title,
+            subtitleRes = R.string.preset_edge_subtitle,
+            gravity = Gravity.END,
+            width = 10f, height = 70f,
+            bgColor = Color.White, bgAlpha = 153,
+            strokeColor = PREVIEW_ON_SURFACE, strokeWidth = 1f, strokeAlpha = 40,
+            cornerRadius = 5f,
+            iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
+            showIcon = false, vibrate = true, edgeMargin = 0f, positionFraction = 0.35f
+        ),
+        Preset(
             id = "Ghost",
             nameRes = R.string.preset_ghost_title,
             subtitleRes = R.string.preset_ghost_subtitle,
