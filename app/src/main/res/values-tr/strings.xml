@@ -350,4 +350,24 @@
     <string name="permission_needed_brightness">Bir parlaklık eylemi ayarladınız. Bu olmadan parlaklığı değiştiremez.</string>
     <string name="permission_action_required_one">1 izin ilginizi bekliyor</string>
     <string name="permission_action_required_many">%1$d izin ilginizi bekliyor</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">Ses kanalı</string>
+    <string name="volume_stream_desc">Çubuğun hangi sesi değiştireceğini seçin.</string>
+    <string name="volume_stream_dialog_title">Hangi ses?</string>
+    <string name="volume_stream_media_only">Yalnızca medya</string>
+    <string name="volume_stream_media_only_desc">Çubuk, arama sırasında bile her zaman medya sesini değiştirir.</string>
+    <string name="volume_stream_follow_playback">Oynatmayı izle</string>
+    <string name="volume_stream_follow_playback_desc">Arama, çalan telefon veya alarma göre uyarlanır. Aksi halde medya sesini değiştirir.</string>
+    <string name="volume_stream_match_keys">Ses tuşları gibi</string>
+    <string name="volume_stream_match_keys_desc">Ses tuşları gibi davranır; hiçbir şey çalmıyorken zil sesini de değiştirir. Çubuk zil sesini tamamen susturmaz.</string>
+    <string name="volume_stream_media">Medya</string>
+    <string name="volume_stream_call">Arama</string>
+    <string name="volume_stream_alarm">Alarm</string>
+    <string name="volume_stream_ring">Zil sesi</string>
+    <string name="volume_fixed_short">Bu cihazın sesi sabittir</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">Genişlet</string>
+    <string name="collapse_section">Daralt</string>
+    <string name="per_corner">Köşeleri ayrı ayrı ayarla</string>
+    <string name="per_corner_mixed">Karışık</string>
 </resources>

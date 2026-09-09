@@ -350,4 +350,24 @@
     <string name="permission_needed_brightness">Has asignado una acción de brillo. Sin esto, no puede cambiar el brillo.</string>
     <string name="permission_action_required_one">1 permiso necesita tu atención</string>
     <string name="permission_action_required_many">%1$d permisos necesitan tu atención</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">Canal de volumen</string>
+    <string name="volume_stream_desc">Elige qué volumen cambia la barra.</string>
+    <string name="volume_stream_dialog_title">¿Qué volumen?</string>
+    <string name="volume_stream_media_only">Solo multimedia</string>
+    <string name="volume_stream_media_only_desc">La barra siempre cambia el volumen multimedia, incluso durante una llamada.</string>
+    <string name="volume_stream_follow_playback">Seguir la reproducción</string>
+    <string name="volume_stream_follow_playback_desc">Se adapta a una llamada, un teléfono sonando o una alarma. En otro caso cambia el volumen multimedia.</string>
+    <string name="volume_stream_match_keys">Igual que los botones</string>
+    <string name="volume_stream_match_keys_desc">Se comporta como los botones de volumen, incluido el cambio del volumen del tono cuando no suena nada. La barra no silenciará el tono por completo.</string>
+    <string name="volume_stream_media">Multimedia</string>
+    <string name="volume_stream_call">Llamada</string>
+    <string name="volume_stream_alarm">Alarma</string>
+    <string name="volume_stream_ring">Tono</string>
+    <string name="volume_fixed_short">Este dispositivo tiene un volumen fijo</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">Expandir</string>
+    <string name="collapse_section">Contraer</string>
+    <string name="per_corner">Ajustar cada esquina</string>
+    <string name="per_corner_mixed">Mixto</string>
 </resources>

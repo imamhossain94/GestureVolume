@@ -350,4 +350,24 @@
     <string name="permission_needed_brightness">आपने एक ब्राइटनेस क्रिया सेट की है। इसके बिना यह ब्राइटनेस नहीं बदल सकती।</string>
     <string name="permission_action_required_one">1 अनुमति पर ध्यान दें</string>
     <string name="permission_action_required_many">%1$d अनुमतियों पर ध्यान दें</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">वॉल्यूम स्ट्रीम</string>
+    <string name="volume_stream_desc">चुनें कि बार कौनसा वॉल्यूम बदले।</string>
+    <string name="volume_stream_dialog_title">कौनसा वॉल्यूम?</string>
+    <string name="volume_stream_media_only">केवल मीडिया</string>
+    <string name="volume_stream_media_only_desc">कॉल के दौरान भी बार हमेशा मीडिया वॉल्यूम बदलता है।</string>
+    <string name="volume_stream_follow_playback">प्लेबैक का पालन करें</string>
+    <string name="volume_stream_follow_playback_desc">कॉल, बजते फ़ोन या अलार्म के अनुसार बदलता है। अन्यथा मीडिया वॉल्यूम बदलता है।</string>
+    <string name="volume_stream_match_keys">वॉल्यूम बटन जैसा</string>
+    <string name="volume_stream_match_keys_desc">वॉल्यूम बटन की तरह काम करता है, जब कुछ नहीं चल रहा हो तो रिंगटोन वॉल्यूम भी। बार रिंगटोन को पूरी तरह बंद नहीं करेगा।</string>
+    <string name="volume_stream_media">मीडिया</string>
+    <string name="volume_stream_call">कॉल</string>
+    <string name="volume_stream_alarm">अलार्म</string>
+    <string name="volume_stream_ring">रिंगटोन</string>
+    <string name="volume_fixed_short">इस डिवाइस का वॉल्यूम फ़िक्स है</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">फैलाएँ</string>
+    <string name="collapse_section">समेटें</string>
+    <string name="per_corner">हर कोना अलग से सेट करें</string>
+    <string name="per_corner_mixed">मिश्रित</string>
 </resources>

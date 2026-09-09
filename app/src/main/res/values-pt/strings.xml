@@ -350,4 +350,24 @@
     <string name="permission_needed_brightness">Você definiu uma ação de brilho. Sem isso, ela não pode alterar o brilho.</string>
     <string name="permission_action_required_one">1 permissão precisa da sua atenção</string>
     <string name="permission_action_required_many">%1$d permissões precisam da sua atenção</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">Canal de volume</string>
+    <string name="volume_stream_desc">Escolhe qual volume a barra altera.</string>
+    <string name="volume_stream_dialog_title">Qual volume?</string>
+    <string name="volume_stream_media_only">Apenas multimédia</string>
+    <string name="volume_stream_media_only_desc">A barra altera sempre o volume de multimédia, mesmo durante uma chamada.</string>
+    <string name="volume_stream_follow_playback">Seguir a reprodução</string>
+    <string name="volume_stream_follow_playback_desc">Adapta-se a uma chamada, a um telefone a tocar ou a um alarme. Caso contrário altera o volume de multimédia.</string>
+    <string name="volume_stream_match_keys">Igual aos botões de volume</string>
+    <string name="volume_stream_match_keys_desc">Comporta-se como os botões de volume, incluindo alterar o volume do toque quando nada está a tocar. A barra não silencia o toque por completo.</string>
+    <string name="volume_stream_media">Multimédia</string>
+    <string name="volume_stream_call">Chamada</string>
+    <string name="volume_stream_alarm">Alarme</string>
+    <string name="volume_stream_ring">Toque</string>
+    <string name="volume_fixed_short">Este dispositivo tem volume fixo</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">Expandir</string>
+    <string name="collapse_section">Recolher</string>
+    <string name="per_corner">Definir cada canto</string>
+    <string name="per_corner_mixed">Misto</string>
 </resources>

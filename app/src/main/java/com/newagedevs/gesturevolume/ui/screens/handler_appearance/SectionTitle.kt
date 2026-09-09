@@ -12,11 +12,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * @param color ignored — kept so the many existing call sites still compile while the screen
+ *   moves to a single themed accent.
+ * @param modifier defaults to exactly the padding this composable has always applied, so every
+ *   call site that does not pass one renders byte-identically. [AppearanceSection] passes a
+ *   `weight` so the title shares its header row with a summary and a chevron.
+ */
 @Composable
-fun SectionTitle(text: String, color: Color) { // color param ignored for unified theme
+fun SectionTitle(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier.padding(bottom = 16.dp, start = 4.dp),
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
+        modifier = modifier
     ) {
         Text(
             text = text,

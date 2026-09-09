@@ -350,4 +350,24 @@
     <string name="permission_needed_brightness">밝기 동작을 설정했습니다. 이것이 없으면 밝기를 바꿀 수 없습니다.</string>
     <string name="permission_action_required_one">권한 1개를 확인해야 합니다</string>
     <string name="permission_action_required_many">권한 %1$d개를 확인해야 합니다</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">볼륨 종류</string>
+    <string name="volume_stream_desc">바가 변경할 볼륨을 선택하세요.</string>
+    <string name="volume_stream_dialog_title">어느 볼륨을 바꿀까요?</string>
+    <string name="volume_stream_media_only">미디어만</string>
+    <string name="volume_stream_media_only_desc">통화 중에도 항상 미디어 볼륨을 변경합니다.</string>
+    <string name="volume_stream_follow_playback">재생에 맞춤</string>
+    <string name="volume_stream_follow_playback_desc">통화, 벨소리, 알람에 맞춰 바뀝니다. 그 외에는 미디어 볼륨을 변경합니다.</string>
+    <string name="volume_stream_match_keys">볼륨 버튼과 동일</string>
+    <string name="volume_stream_match_keys_desc">볼륨 버튼처럼 동작하며, 재생 중이 아닐 때는 벨소리 볼륨도 바꿉니다. 바로 벨소리를 완전히 끕 수는 없습니다.</string>
+    <string name="volume_stream_media">미디어</string>
+    <string name="volume_stream_call">통화</string>
+    <string name="volume_stream_alarm">알람</string>
+    <string name="volume_stream_ring">벨소리</string>
+    <string name="volume_fixed_short">이 기기는 볼륨이 고정되어 있습니다</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">펼치기</string>
+    <string name="collapse_section">접기</string>
+    <string name="per_corner">모서리 개별 설정</string>
+    <string name="per_corner_mixed">혼합</string>
 </resources>

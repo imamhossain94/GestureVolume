@@ -350,4 +350,24 @@
     <string name="permission_needed_brightness">Вы назначили действие яркости. Без этого оно не сможет менять яркость.</string>
     <string name="permission_action_required_one">1 разрешение требует внимания</string>
     <string name="permission_action_required_many">Разрешений требует внимания: %1$d</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">Канал громкости</string>
+    <string name="volume_stream_desc">Выберите, какую громкость меняет полоса.</string>
+    <string name="volume_stream_dialog_title">Какая громкость?</string>
+    <string name="volume_stream_media_only">Только медиа</string>
+    <string name="volume_stream_media_only_desc">Полоса всегда меняет громкость медиа, даже во время звонка.</string>
+    <string name="volume_stream_follow_playback">Следовать за воспроизведением</string>
+    <string name="volume_stream_follow_playback_desc">Подстраивается под звонок, входящий вызов или будильник. Иначе меняет громкость медиа.</string>
+    <string name="volume_stream_match_keys">Как кнопки громкости</string>
+    <string name="volume_stream_match_keys_desc">Работает как кнопки громкости, включая громкость звонка, когда ничего не играет. Полоса не отключает звонок полностью.</string>
+    <string name="volume_stream_media">Медиа</string>
+    <string name="volume_stream_call">Звонок</string>
+    <string name="volume_stream_alarm">Будильник</string>
+    <string name="volume_stream_ring">Рингтон</string>
+    <string name="volume_fixed_short">На этом устройстве фиксированная громкость</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">Развернуть</string>
+    <string name="collapse_section">Свернуть</string>
+    <string name="per_corner">Настроить каждый угол</string>
+    <string name="per_corner_mixed">Смешанно</string>
 </resources>

@@ -350,4 +350,24 @@
     <string name="permission_needed_brightness">لقد عيّنت إجراء سطوع. بدون هذا، لن يتمكن من تغيير السطوع.</string>
     <string name="permission_action_required_one">إذن واحد يحتاج انتباهك</string>
     <string name="permission_action_required_many">%1$d أذونات تحتاج انتباهك</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">مسار الصوت</string>
+    <string name="volume_stream_desc">اختر مستوى الصوت الذي يغيره الشريط.</string>
+    <string name="volume_stream_dialog_title">أي مستوى صوت؟</string>
+    <string name="volume_stream_media_only">الوسائط فقط</string>
+    <string name="volume_stream_media_only_desc">يغير الشريط دائمًا صوت الوسائط، حتى أثناء المكالمة.</string>
+    <string name="volume_stream_follow_playback">متابعة التشغيل</string>
+    <string name="volume_stream_follow_playback_desc">يتكيف مع المكالمة أو الرنين أو المنبه، وإلا فإنه يغير صوت الوسائط.</string>
+    <string name="volume_stream_match_keys">مطابقة أزرار الصوت</string>
+    <string name="volume_stream_match_keys_desc">يعمل مثل أزرار الصوت، بما في ذلك تغيير صوت الرنين عندما لا يوجد تشغيل. لن يكتم الشريط الرنين تمامًا.</string>
+    <string name="volume_stream_media">الوسائط</string>
+    <string name="volume_stream_call">مكالمة</string>
+    <string name="volume_stream_alarm">منبه</string>
+    <string name="volume_stream_ring">نغمة الرنين</string>
+    <string name="volume_fixed_short">هذا الجهاز ذو مستوى صوت ثابت</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">توسيع</string>
+    <string name="collapse_section">طي</string>
+    <string name="per_corner">ضبط الزوايا كلاً على حدة</string>
+    <string name="per_corner_mixed">مختلط</string>
 </resources>

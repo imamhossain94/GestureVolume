@@ -350,4 +350,24 @@
     <string name="permission_needed_brightness">明るさのアクションを設定しています。これがないと明るさを変更できません。</string>
     <string name="permission_action_required_one">1 件の権限に対応が必要です</string>
     <string name="permission_action_required_many">%1$d 件の権限に対応が必要です</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">音量の種類</string>
+    <string name="volume_stream_desc">バーが変更する音量を選びます。</string>
+    <string name="volume_stream_dialog_title">どの音量？</string>
+    <string name="volume_stream_media_only">メディアのみ</string>
+    <string name="volume_stream_media_only_desc">通話中でも常にメディア音量を変更します。</string>
+    <string name="volume_stream_follow_playback">再生に合わせる</string>
+    <string name="volume_stream_follow_playback_desc">通話、着信、アラームに合わせて切り替わります。それ以外はメディア音量を変更します。</string>
+    <string name="volume_stream_match_keys">音量ボタンと同じ</string>
+    <string name="volume_stream_match_keys_desc">音量ボタンと同じ動作で、何も再生していないときは着信音量も変更します。バーから着信音を完全に消すことはできません。</string>
+    <string name="volume_stream_media">メディア</string>
+    <string name="volume_stream_call">通話</string>
+    <string name="volume_stream_alarm">アラーム</string>
+    <string name="volume_stream_ring">着信音</string>
+    <string name="volume_fixed_short">この端末は音量が固定されています</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">展開</string>
+    <string name="collapse_section">折りたたむ</string>
+    <string name="per_corner">角を個別に設定</string>
+    <string name="per_corner_mixed">混在</string>
 </resources>

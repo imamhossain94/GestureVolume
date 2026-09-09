@@ -35,6 +35,7 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import androidx.compose.ui.res.stringResource
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.AudioStreamCatalog
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 
 /** Whether Android currently lets this app post notifications. Always true below Android 13. */
@@ -79,6 +80,8 @@ fun HandlerActionsScreen(
     // booleans with no observable wrapper, so the switch's own state is what drives the UI and the
     // preference is written behind it.
     var showVolumePercent by remember { mutableStateOf(viewModel.preference.getShowVolumePercent()) }
+    var volumeStreamMode by remember { mutableStateOf(viewModel.preference.getVolumeStreamMode()) }
+    var showVolumeStreamDialog by remember { mutableStateOf(false) }
     var contextMenuItems by remember { mutableStateOf(viewModel.preference.getContextMenuItems()) }
     var showNotification by remember { mutableStateOf(viewModel.preference.getShowNotification()) }
     var notificationsAllowed by remember { mutableStateOf(hasNotificationPermission(context)) }
@@ -221,6 +224,18 @@ fun HandlerActionsScreen(
             },
             containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(24.dp)
+        )
+    }
+
+    if (showVolumeStreamDialog) {
+        VolumeStreamDialog(
+            selected = volumeStreamMode,
+            onDismiss = { showVolumeStreamDialog = false },
+            onConfirm = { picked ->
+                volumeStreamMode = picked
+                viewModel.preference.setVolumeStreamMode(picked)
+                showVolumeStreamDialog = false
+            }
         )
     }
 
@@ -372,6 +387,20 @@ fun HandlerActionsScreen(
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = { showContextMenuDialog = true }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    ActionSettingItem(
+                        label = stringResource(R.string.volume_stream_title),
+                        description = stringResource(R.string.volume_stream_desc),
+                        value = stringResource(AudioStreamCatalog.labelForMode(volumeStreamMode)),
+                        icon = R.drawable.ic_music_ui,
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        showProBadge = false,
+                        onClick = { showVolumeStreamDialog = true }
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))

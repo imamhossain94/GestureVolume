@@ -8,6 +8,7 @@ import android.view.Gravity
 import androidx.compose.ui.graphics.toArgb
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.HandlerPresets
+import com.newagedevs.gesturevolume.utils.VolumeStreamMode
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -112,6 +113,15 @@ class SharedPref @Inject constructor(
 
         const val HANDLER_HIDDEN = "handlerHidden"
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
+        const val VOLUME_STREAM_MODE = "handlerVolumeStreamMode"
+
+        /**
+         * Prefix for the pre-mute level, keyed per framework stream type.
+         *
+         * Per stream, because muting media and muting the ringer are different acts with different
+         * levels to come back to.
+         */
+        const val PRE_MUTE_LEVEL_PREFIX = "handlerPreMuteLevel_"
         const val CONTEXT_MENU_ITEMS = "handlerContextMenuItems"
         const val HANDLER_SNAP_TO_EDGE = "handlerSnapToEdge"
         const val SHOW_NOTIFICATION = "showServiceNotification"
@@ -407,6 +417,40 @@ class SharedPref @Inject constructor(
 
     fun setShowVolumePercent(value: Boolean) {
         sharedPreferences.edit { putBoolean(SHOW_VOLUME_PERCENT, value) }
+    }
+
+    /**
+     * How hard the bar should try to follow the audio the device is actually playing.
+     *
+     * Defaults to [VolumeStreamMode.FOLLOW_PLAYBACK] rather than the strictly-compatible
+     * [VolumeStreamMode.MEDIA_ONLY]: a swipe during a call moving media volume is plainly wrong and
+     * worth fixing for everyone, while making an *idle* swipe change the ringer would silently
+     * change what the bar does for every existing install — so that half stays opt-in.
+     *
+     * Sanitised on read like every other identifier-valued preference here, because `allowBackup`
+     * means a value written by a future build can arrive from a cloud restore on an older one.
+     */
+    fun getVolumeStreamMode(): String = VolumeStreamMode.sanitize(
+        sharedPreferences.getString(VOLUME_STREAM_MODE, VolumeStreamMode.FOLLOW_PLAYBACK)
+    )
+
+    fun setVolumeStreamMode(value: String) {
+        sharedPreferences.edit { putString(VOLUME_STREAM_MODE, VolumeStreamMode.sanitize(value)) }
+    }
+
+    /**
+     * The level a stream was at before the bar muted it, or -1 when there is no memory.
+     *
+     * Persisted rather than held in the service, which is what it replaces. The old field was an
+     * `Int` on [com.newagedevs.gesturevolume.service.OverlayService] initialised to 1, so it was
+     * reset by every settings save — saving rebuilds the handler — and by every `START_STICKY`
+     * relaunch. Unmuting then jumped to a level the user never chose.
+     */
+    fun getPreMuteLevel(stream: Int): Int =
+        sharedPreferences.getInt(PRE_MUTE_LEVEL_PREFIX + stream, -1)
+
+    fun setPreMuteLevel(stream: Int, level: Int) {
+        sharedPreferences.edit { putInt(PRE_MUTE_LEVEL_PREFIX + stream, level) }
     }
 
     /**

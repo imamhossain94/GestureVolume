@@ -350,4 +350,24 @@
     <string name="permission_needed_brightness">Vous avez attribué une action de luminosité. Sans cela, elle ne peut pas changer la luminosité.</string>
     <string name="permission_action_required_one">1 autorisation demande votre attention</string>
     <string name="permission_action_required_many">%1$d autorisations demandent votre attention</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">Canal de volume</string>
+    <string name="volume_stream_desc">Choisis le volume que la barre modifie.</string>
+    <string name="volume_stream_dialog_title">Quel volume ?</string>
+    <string name="volume_stream_media_only">Médias uniquement</string>
+    <string name="volume_stream_media_only_desc">La barre modifie toujours le volume multimédia, même pendant un appel.</string>
+    <string name="volume_stream_follow_playback">Suivre la lecture</string>
+    <string name="volume_stream_follow_playback_desc">S’adapte à un appel, à une sonnerie ou à une alarme. Sinon, modifie le volume multimédia.</string>
+    <string name="volume_stream_match_keys">Comme les touches de volume</string>
+    <string name="volume_stream_match_keys_desc">Se comporte comme les touches de volume, y compris pour la sonnerie quand rien ne joue. La barre ne coupera pas complètement la sonnerie.</string>
+    <string name="volume_stream_media">Médias</string>
+    <string name="volume_stream_call">Appel</string>
+    <string name="volume_stream_alarm">Alarme</string>
+    <string name="volume_stream_ring">Sonnerie</string>
+    <string name="volume_fixed_short">Cet appareil a un volume fixe</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">Développer</string>
+    <string name="collapse_section">Réduire</string>
+    <string name="per_corner">Régler chaque coin</string>
+    <string name="per_corner_mixed">Mixte</string>
 </resources>

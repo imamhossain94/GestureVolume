@@ -350,4 +350,24 @@
     <string name="permission_needed_brightness">Hai impostato un\'azione di luminosità. Senza questo, non può cambiare la luminosità.</string>
     <string name="permission_action_required_one">1 permesso richiede la tua attenzione</string>
     <string name="permission_action_required_many">%1$d permessi richiedono la tua attenzione</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">Canale del volume</string>
+    <string name="volume_stream_desc">Scegli quale volume modifica la barra.</string>
+    <string name="volume_stream_dialog_title">Quale volume?</string>
+    <string name="volume_stream_media_only">Solo multimedia</string>
+    <string name="volume_stream_media_only_desc">La barra cambia sempre il volume multimediale, anche durante una chiamata.</string>
+    <string name="volume_stream_follow_playback">Segui la riproduzione</string>
+    <string name="volume_stream_follow_playback_desc">Si adatta a una chiamata, a un telefono che squilla o a una sveglia. Altrimenti cambia il volume multimediale.</string>
+    <string name="volume_stream_match_keys">Come i tasti del volume</string>
+    <string name="volume_stream_match_keys_desc">Si comporta come i tasti del volume, inclusa la suoneria quando non cè riproduzione. La barra non silenzierà del tutto la suoneria.</string>
+    <string name="volume_stream_media">Multimedia</string>
+    <string name="volume_stream_call">Chiamata</string>
+    <string name="volume_stream_alarm">Sveglia</string>
+    <string name="volume_stream_ring">Suoneria</string>
+    <string name="volume_fixed_short">Questo dispositivo ha un volume fisso</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">Espandi</string>
+    <string name="collapse_section">Comprimi</string>
+    <string name="per_corner">Imposta ogni angolo</string>
+    <string name="per_corner_mixed">Misto</string>
 </resources>

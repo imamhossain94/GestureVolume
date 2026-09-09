@@ -350,4 +350,24 @@
     <string name="permission_needed_brightness">Du hast eine Helligkeitsaktion gesetzt. Ohne dies kann sie die Helligkeit nicht ändern.</string>
     <string name="permission_action_required_one">1 Berechtigung braucht deine Aufmerksamkeit</string>
     <string name="permission_action_required_many">%1$d Berechtigungen brauchen deine Aufmerksamkeit</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">Lautstärke-Kanal</string>
+    <string name="volume_stream_desc">Wähle, welche Lautstärke die Leiste ändert.</string>
+    <string name="volume_stream_dialog_title">Welche Lautstärke?</string>
+    <string name="volume_stream_media_only">Nur Medien</string>
+    <string name="volume_stream_media_only_desc">Die Leiste ändert immer die Medienlautstärke, auch während eines Anrufs.</string>
+    <string name="volume_stream_follow_playback">Wiedergabe folgen</string>
+    <string name="volume_stream_follow_playback_desc">Passt sich an Anruf, Klingeln oder Wecker an. Sonst wird die Medienlautstärke geändert.</string>
+    <string name="volume_stream_match_keys">Wie die Lautstärketasten</string>
+    <string name="volume_stream_match_keys_desc">Verhält sich wie die Lautstärketasten und ändert auch die Klingeltonlautstärke, wenn nichts läuft. Die Leiste schaltet den Klingelton nicht vollständig stumm.</string>
+    <string name="volume_stream_media">Medien</string>
+    <string name="volume_stream_call">Anruf</string>
+    <string name="volume_stream_alarm">Wecker</string>
+    <string name="volume_stream_ring">Klingelton</string>
+    <string name="volume_fixed_short">Dieses Gerät hat eine feste Lautstärke</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">Aufklappen</string>
+    <string name="collapse_section">Zuklappen</string>
+    <string name="per_corner">Ecken einzeln einstellen</string>
+    <string name="per_corner_mixed">Gemischt</string>
 </resources>

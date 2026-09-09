@@ -46,9 +46,12 @@ import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.livedata.LiveDataManager
 import com.newagedevs.gesturevolume.ui.view.HandlerGestureDetector
 import com.newagedevs.gesturevolume.ui.view.HandlerView
+import com.newagedevs.gesturevolume.utils.AudioStreamCatalog
+import com.newagedevs.gesturevolume.utils.AudioStreamResolver
 import com.newagedevs.gesturevolume.utils.BrightnessController
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.HandlerActions
+import com.newagedevs.gesturevolume.utils.VolumeController
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -98,6 +101,7 @@ class OverlayService : Service(), OverlayServiceInterface {
     private var audioManager: AudioManager? = null
     private var vibratorService: Vibrator? = null
     private var brightness: BrightnessController? = null
+    private var volume: VolumeController? = null
 
     /** The display frame the handler was last placed into. Refreshed on every geometry pass. */
     private var frame: HandlerGeometry.Frame? = null
@@ -109,6 +113,14 @@ class OverlayService : Service(), OverlayServiceInterface {
     private var adjustIsBrightness = false
     private var adjustShowsUi = false
     private var adjustEnabled = false
+
+    /**
+     * The stream this swipe is driving, resolved once when the gesture is latched.
+     *
+     * Held for the whole gesture rather than re-resolved per step: a track ending mid-swipe would
+     * otherwise move the user's finger onto a different stream halfway through.
+     */
+    private var adjustResolution: VolumeController.Resolution? = null
 
     /** Direction the latched swipe settings belong to: `+1` up, `-1` down, `0` nothing resolved. */
     private var adjustDirection = 0
@@ -185,8 +197,6 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     }
 
-    private var previousVolume: Int = 1
-
     // ---- music-overlay touch state (the separate full-screen overlay feature) ---------------
 
     private val touchMoveFactor: Long by lazy { (20 * resources.displayMetrics.density).toLong() }
@@ -232,6 +242,7 @@ class OverlayService : Service(), OverlayServiceInterface {
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         vibratorService = getSystemService(Vibrator::class.java)
         brightness = BrightnessController(this)
+        volume = VolumeController(this).also { it.start() }
 
         (getSystemService(DISPLAY_SERVICE) as? DisplayManager)
             ?.registerDisplayListener(displayListener, mainHandler)
@@ -418,6 +429,11 @@ class OverlayService : Service(), OverlayServiceInterface {
 
         // Hand adaptive brightness back if we were the one who turned it off.
         restoreAutoBrightnessIfOurs()
+
+        // Unregistering is mandatory, not tidy: a live AudioPlaybackCallback is held by
+        // AudioService and would outlive the service that created it.
+        volume?.stop()
+        volume = null
 
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
@@ -972,25 +988,26 @@ class OverlayService : Service(), OverlayServiceInterface {
                 preference.setBrightnessAutoWasOn(true)
             }
             gestureDetector?.setStepCount(controller.stepCount)
+            adjustResolution = null
         } else {
-            val steps = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
-            gestureDetector?.setStepCount(steps)
+            // Resolved once, here, and held for the gesture. The step count comes from the stream
+            // that was actually chosen: a call has far fewer indices than media, and sizing the
+            // sweep to media's range would make a call swipe feel broken.
+            val resolution = volume?.resolve(preference.getVolumeStreamMode())
+            adjustResolution = resolution
+            gestureDetector?.setStepCount(resolution?.stepCount ?: 15)
         }
     }
 
     private fun stepVolume(direction: Int): Boolean {
-        val manager = audioManager ?: return false
-        val max = manager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-        val before = manager.getStreamVolume(AudioManager.STREAM_MUSIC)
-        val target = (before + direction).coerceIn(0, max)
-        if (target == before) return false
+        val controller = volume ?: return false
+        val resolution = adjustResolution ?: controller.media().also { adjustResolution = it }
 
-        manager.setStreamVolume(
-            AudioManager.STREAM_MUSIC,
-            target,
-            if (adjustShowsUi) AudioManager.FLAG_SHOW_UI else 0
-        )
-        showVolumePercentOnHandler(target, max)
+        val percent = controller.step(resolution, direction, adjustShowsUi) ?: return false
+
+        // A negative percentage is the opaque-route sentinel: the level moved, but its true value
+        // is on a stream this app cannot read, so there is no honest number to show.
+        if (percent >= 0) showVolumePercentOnHandler(percent, resolution)
         return true
     }
 
@@ -1001,13 +1018,21 @@ class OverlayService : Service(), OverlayServiceInterface {
      * whereas keeping it permanently accurate would mean listening for every volume change the
      * rest of the system makes — hardware keys, other apps — for a readout nobody is looking at.
      */
-    private fun showVolumePercentOnHandler(volume: Int, max: Int) {
+    private fun showVolumePercentOnHandler(percent: Int, resolution: VolumeController.Resolution) {
         if (!preference.getShowVolumePercent()) return
-        if (max <= 0) return
         val view = handlerView ?: return
         mainHandler.removeCallbacks(clearVolumePercentRunnable)
-        view.setVolumePercent((volume * 100f / max).roundToInt())
+        view.setVolumePercent(percent)
         mainHandler.postDelayed(clearVolumePercentRunnable, VOLUME_PERCENT_VISIBLE_MS)
+
+        // Naming the stream only when it is not the familiar one. Media is what the bar has always
+        // done and what it still does most of the time, so labelling every swipe "Media" would be
+        // noise; a swipe that lands on the call or alarm stream is the surprising case and is the
+        // one worth explaining — especially when the system panel is switched off and this readout
+        // is the only feedback there is.
+        if (resolution.stream != AudioStreamResolver.STREAM_MUSIC) {
+            showIndicatorMessage(getString(AudioStreamCatalog.labelFor(resolution.stream)))
+        }
     }
 
     private fun stepBrightness(direction: Int): Boolean {
@@ -1291,21 +1316,29 @@ class OverlayService : Service(), OverlayServiceInterface {
         when (action) {
             HandlerActions.NONE -> {}
             HandlerActions.OPEN_VOLUME_UI -> {
-                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+                volume?.let { it.panel(it.resolve(preference.getVolumeStreamMode())) }
             }
             HandlerActions.MUTE -> {
-                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-                audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
+                volume?.let { controller ->
+                    val resolution = controller.resolve(preference.getVolumeStreamMode())
+                    controller.mute(resolution)?.let { previous ->
+                        preference.setPreMuteLevel(resolution.stream, previous)
+                    }
+                }
             }
             HandlerActions.MUTE_OR_UNMUTE -> {
-                val currentVolume = audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 0
-                audioManager?.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-
-                if (currentVolume > 0) {
-                    previousVolume = currentVolume
-                    audioManager?.adjustVolume(AudioManager.ADJUST_MUTE, 0)
-                } else {
-                    audioManager?.setStreamVolume(AudioManager.STREAM_MUSIC, previousVolume, 0)
+                volume?.let { controller ->
+                    val resolution = controller.resolve(preference.getVolumeStreamMode())
+                    // Asking the controller whether it is muted, rather than comparing an index to
+                    // zero: several streams have a non-zero floor, so "index > 0" is not the same
+                    // question as "can the user hear it".
+                    if (controller.isMuted(resolution)) {
+                        controller.unmute(resolution, preference.getPreMuteLevel(resolution.stream))
+                    } else {
+                        controller.mute(resolution)?.let { previous ->
+                            preference.setPreMuteLevel(resolution.stream, previous)
+                        }
+                    }
                 }
             }
             HandlerActions.TOGGLE_AUTO_BRIGHTNESS -> toggleAutoBrightness()
