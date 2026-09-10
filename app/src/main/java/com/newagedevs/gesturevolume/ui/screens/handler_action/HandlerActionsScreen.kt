@@ -1,42 +1,81 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.core.content.ContextCompat
-import com.newagedevs.gesturevolume.utils.HandlerActions
-import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.data.local.QuickSliderStore
+import com.newagedevs.gesturevolume.service.OverlayRuntime
+import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
+import com.newagedevs.gesturevolume.ui.components.DndAccessDialog
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
-import androidx.compose.ui.res.stringResource
-import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.ui.screens.quick_slider.sliderTargetLabel
+import com.newagedevs.gesturevolume.utils.ActionIcon
 import com.newagedevs.gesturevolume.utils.AudioStreamCatalog
+import com.newagedevs.gesturevolume.utils.DeviceToggles
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
+import com.newagedevs.gesturevolume.utils.OverlayHostMode
 
 /** Whether Android currently lets this app post notifications. Always true below Android 13. */
 private fun hasNotificationPermission(context: android.content.Context): Boolean =
@@ -59,11 +98,22 @@ private fun openAppNotificationSettings(context: android.content.Context, viewMo
     }
 }
 
+/** Starts a system settings screen, pausing the app-open ad for the round trip. */
+private fun openSystemScreen(context: android.content.Context, viewModel: MainViewModel, intent: Intent) {
+    viewModel.preference.setAppOpenAdPaused(true)
+    try {
+        context.startActivity(intent)
+    } catch (_: Exception) {
+        viewModel.preference.setAppOpenAdPaused(false)
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HandlerActionsScreen(
     viewModel: MainViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onOpenQuickSlider: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -71,22 +121,31 @@ fun HandlerActionsScreen(
 
     var showClickActionDialog by remember { mutableStateOf(false) }
     var showDoubleClickActionDialog by remember { mutableStateOf(false) }
+    var showTripleClickActionDialog by remember { mutableStateOf(false) }
     var showLongClickActionDialog by remember { mutableStateOf(false) }
     var showSwipeUpDialog by remember { mutableStateOf(false) }
     var showSwipeDownDialog by remember { mutableStateOf(false) }
+    var showSwipeInDialog by remember { mutableStateOf(false) }
+    var showSwipeOutDialog by remember { mutableStateOf(false) }
     var showContextMenuDialog by remember { mutableStateOf(false) }
+
+    // Summary of the slider's own screen, so the row says what a long swipe will actually do
+    // rather than only that the feature exists. Refreshed on resume below, because the screen
+    // that changes these is a separate destination and writes straight through to preferences.
+    var sliderOpenWith by remember { mutableStateOf(viewModel.preference.slider.getOpenWith()) }
+    var sliderTarget by remember { mutableStateOf(viewModel.preference.slider.getTarget()) }
 
     // Read once into local state rather than on every recomposition: these are plain SharedPref
     // booleans with no observable wrapper, so the switch's own state is what drives the UI and the
     // preference is written behind it.
     var showVolumePercent by remember { mutableStateOf(viewModel.preference.getShowVolumePercent()) }
     var volumeStreamMode by remember { mutableStateOf(viewModel.preference.getVolumeStreamMode()) }
-    var edgeSwipeMenu by remember { mutableStateOf(viewModel.preference.getHandlerEdgeSwipeMenu()) }
     var showVolumeStreamDialog by remember { mutableStateOf(false) }
     var contextMenuItems by remember { mutableStateOf(viewModel.preference.getContextMenuItems()) }
     var showNotification by remember { mutableStateOf(viewModel.preference.getShowNotification()) }
     var notificationsAllowed by remember { mutableStateOf(hasNotificationPermission(context)) }
     var showNotificationWarning by remember { mutableStateOf(false) }
+    var showHostDisclosure by remember { mutableStateOf(false) }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -111,13 +170,16 @@ fun HandlerActionsScreen(
     }
 
     // Coming back from a system screen this screen sent the user to — the notification channel
-    // settings, or the WRITE_SETTINGS grant — has to lift the app-open ad pause those set. Without
-    // this the pause was set and never cleared, silencing app-open ads for the rest of the install.
+    // settings, the WRITE_SETTINGS grant, the accessibility list — has to lift the app-open ad
+    // pause those set. Without this the pause was set and never cleared, silencing app-open ads
+    // for the rest of the install.
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.preference.setAppOpenAdPaused(false)
                 notificationsAllowed = hasNotificationPermission(context)
+                sliderOpenWith = viewModel.preference.slider.getOpenWith()
+                sliderTarget = viewModel.preference.slider.getTarget()
                 viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
             }
         }
@@ -228,6 +290,31 @@ fun HandlerActionsScreen(
         )
     }
 
+    // The action is already saved; this only asks the user to switch the service on. Shown for a
+    // system action chosen while the service is off, and for "run without a notification".
+    if (state.showAccessibilityPrompt || showHostDisclosure) {
+        AccessibilityDisclosureDialog(
+            onAccept = {
+                showHostDisclosure = false
+                viewModel.openAccessibilitySettings()
+            },
+            onDismiss = {
+                showHostDisclosure = false
+                viewModel.onEvent(MainEvent.DismissAccessibilityPrompt)
+            }
+        )
+    }
+
+    if (state.showDndPrompt) {
+        DndAccessDialog(
+            onAccept = {
+                viewModel.onEvent(MainEvent.DismissDndPrompt)
+                openSystemScreen(context, viewModel, DeviceToggles(context).dndAccessIntent())
+            },
+            onDismiss = { viewModel.onEvent(MainEvent.DismissDndPrompt) }
+        )
+    }
+
     if (showVolumeStreamDialog) {
         VolumeStreamDialog(
             selected = volumeStreamMode,
@@ -248,6 +335,8 @@ fun HandlerActionsScreen(
                 contextMenuItems = picked
                 viewModel.preference.setContextMenuItems(picked)
                 showContextMenuDialog = false
+                // A system action added to the menu needs the service just as one on a tap does.
+                viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
             }
         )
     }
@@ -288,37 +377,43 @@ fun HandlerActionsScreen(
                     ActionSettingItem(
                         label = stringResource(R.string.single_tap_action),
                         description = stringResource(R.string.single_tap_desc),
-                        value = state.clickAction,
+                        value = actionLabel(state.clickAction),
                         icon = state.clickActionIcon,
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = { showClickActionDialog = true }
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                    Spacer(modifier = Modifier.height(16.dp))
+                    RowDivider()
 
                     ActionSettingItem(
                         label = stringResource(R.string.double_tap_action),
                         description = stringResource(R.string.double_tap_desc),
-                        value = state.doubleClickAction,
+                        value = actionLabel(state.doubleClickAction),
                         icon = state.doubleClickActionIcon,
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
-                        onClick = {
-                            showDoubleClickActionDialog = true
-                        }
+                        onClick = { showDoubleClickActionDialog = true }
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                    Spacer(modifier = Modifier.height(16.dp))
+                    RowDivider()
+
+                    ActionSettingItem(
+                        label = stringResource(R.string.triple_tap_action),
+                        description = stringResource(R.string.triple_tap_desc),
+                        value = actionLabel(state.tripleClickAction),
+                        icon = state.tripleClickActionIcon,
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        showProBadge = false,
+                        onClick = { showTripleClickActionDialog = true }
+                    )
+
+                    RowDivider()
 
                     ActionSettingItem(
                         label = stringResource(R.string.long_press_action),
                         description = stringResource(R.string.long_press_desc),
-                        value = state.longClickAction,
+                        value = actionLabel(state.longClickAction),
                         icon = state.longClickActionIcon,
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
@@ -348,9 +443,7 @@ fun HandlerActionsScreen(
                         onClick = { showSwipeUpDialog = true }
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                    Spacer(modifier = Modifier.height(16.dp))
+                    RowDivider()
 
                     ActionSettingItem(
                         label = stringResource(R.string.swipe_down_action),
@@ -360,6 +453,49 @@ fun HandlerActionsScreen(
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = { showSwipeDownDialog = true }
+                    )
+
+                    RowDivider()
+
+                    ActionSettingItem(
+                        label = stringResource(R.string.swipe_in_action),
+                        description = stringResource(R.string.swipe_in_desc),
+                        value = actionLabel(state.swipeInAction),
+                        icon = state.swipeInActionIcon,
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        showProBadge = false,
+                        onClick = { showSwipeInDialog = true }
+                    )
+
+                    RowDivider()
+
+                    ActionSettingItem(
+                        label = stringResource(R.string.swipe_out_action),
+                        description = stringResource(R.string.swipe_out_desc),
+                        value = actionLabel(state.swipeOutAction),
+                        icon = state.swipeOutActionIcon,
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        showProBadge = false,
+                        onClick = { showSwipeOutDialog = true }
+                    )
+
+                    RowDivider()
+
+                    // Sits with the swipes rather than in Behaviour because it *is* a swipe —
+                    // the same stroke, carried further — and a user looking for why their long
+                    // swipe opened a slider will look here first.
+                    ActionSettingItem(
+                        label = stringResource(R.string.quick_slider_title),
+                        description = stringResource(R.string.quick_slider_desc),
+                        value = if (sliderOpenWith == QuickSliderStore.OPEN_OFF) {
+                            stringResource(R.string.slider_open_off)
+                        } else {
+                            stringResource(sliderTargetLabel(sliderTarget))
+                        },
+                        icon = ActionIcon.Res(R.drawable.ic_brightness_up),
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        showProBadge = false,
+                        onClick = onOpenQuickSlider
                     )
                 }
             }
@@ -384,45 +520,25 @@ fun HandlerActionsScreen(
                             R.string.context_menu_count,
                             HandlerActionCatalog.contextMenuEntries(contextMenuItems).size
                         ),
-                        icon = R.drawable.ic_move,
+                        icon = ActionIcon.Res(R.drawable.ic_move),
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = { showContextMenuDialog = true }
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    SettingSwitchItem(
-                        title = stringResource(R.string.edge_swipe_menu_title),
-                        description = stringResource(R.string.edge_swipe_menu_desc),
-                        checked = edgeSwipeMenu,
-                        onCheckedChange = {
-                            edgeSwipeMenu = it
-                            // No service round-trip: the overlay reads this preference live, at
-                            // the moment a horizontal swipe is classified.
-                            viewModel.preference.setHandlerEdgeSwipeMenu(it)
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                    Spacer(modifier = Modifier.height(16.dp))
+                    RowDivider()
 
                     ActionSettingItem(
                         label = stringResource(R.string.volume_stream_title),
                         description = stringResource(R.string.volume_stream_desc),
                         value = stringResource(AudioStreamCatalog.labelForMode(volumeStreamMode)),
-                        icon = R.drawable.ic_music_ui,
+                        icon = ActionIcon.Res(R.drawable.ic_music_ui),
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = { showVolumeStreamDialog = true }
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                    Spacer(modifier = Modifier.height(16.dp))
+                    RowDivider()
 
                     SettingSwitchItem(
                         title = stringResource(R.string.show_volume_percent_title),
@@ -434,85 +550,148 @@ fun HandlerActionsScreen(
                         }
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                    Spacer(modifier = Modifier.height(16.dp))
+                    RowDivider()
 
+                    // Who draws the bar. On, the accessibility service does and there is no
+                    // notification at all; off, the foreground service does, with the row below.
+                    val accessibilityHost = state.overlayHostMode == OverlayHostMode.ACCESSIBILITY
                     SettingSwitchItem(
-                        title = stringResource(R.string.show_notification_title),
-                        description = stringResource(R.string.show_notification_desc),
-                        checked = showNotification,
-                        onCheckedChange = {
-                            showNotification = it
-                            viewModel.preference.setShowNotification(it)
-                            // The service owns the notification, so it is the only thing that can
-                            // re-post it on the other channel. Notification only: a full update
-                            // would rebuild the handler and pop it up over this screen.
-                            viewModel.refreshServiceNotification(context)
-                            // Switching the controls on while Android is blocking notifications
-                            // produces nothing at all, with no hint as to why. Say so at the
-                            // moment the switch is flipped.
-                            if (it && !notificationsAllowed) showNotificationWarning = true
+                        title = stringResource(R.string.overlay_host_title),
+                        description = stringResource(R.string.overlay_host_desc),
+                        checked = accessibilityHost,
+                        onCheckedChange = { on ->
+                            viewModel.onEvent(
+                                MainEvent.SetOverlayHostMode(
+                                    if (on) OverlayHostMode.ACCESSIBILITY else OverlayHostMode.NOTIFICATION,
+                                    context
+                                )
+                            )
                         }
                     )
 
-                    // And keep saying so afterwards, because the dialog above is dismissible and
-                    // the permission can be revoked from system settings long after this switch
-                    // was last touched.
-                    if (showNotification && !notificationsAllowed) {
+                    if (accessibilityHost) {
                         Spacer(modifier = Modifier.height(10.dp))
+                        val enabled = state.isAccessibilityEnabled
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { requestNotificationPermission() },
+                                .clickable(enabled = !enabled) { showHostDisclosure = true },
                             shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
+                            color = if (enabled) {
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                            } else {
+                                MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
+                            }
                         ) {
                             Row(
                                 modifier = Modifier.padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Warning,
+                                    imageVector = if (enabled) Icons.Default.CheckCircle else Icons.Default.Warning,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.onErrorContainer
+                                    tint = if (enabled) {
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.onErrorContainer
+                                    }
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
-                                    text = stringResource(R.string.notification_permission_warning_inline),
+                                    text = stringResource(
+                                        if (enabled) R.string.overlay_host_active
+                                        else R.string.overlay_host_needs_accessibility
+                                    ),
                                     fontSize = 13.sp,
                                     lineHeight = 18.sp,
-                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                    color = if (enabled) {
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.onErrorContainer
+                                    }
                                 )
                             }
                         }
                     }
 
-                    // Only once the switch is off is there anything left to explain: Android will
-                    // not run a foreground service with no notification at all, so the last step
-                    // belongs to the system's own channel settings.
-                    if (!showNotification) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        TextButton(
-                            onClick = {
-                                viewModel.preference.setAppOpenAdPaused(true)
-                                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                                try {
-                                    context.startActivity(intent)
-                                } catch (_: Exception) {
-                                    viewModel.preference.setAppOpenAdPaused(false)
+                    // The notification only exists on the notification route.
+                    if (!accessibilityHost) {
+                        RowDivider()
+
+                        SettingSwitchItem(
+                            title = stringResource(R.string.show_notification_title),
+                            description = stringResource(R.string.show_notification_desc),
+                            checked = showNotification,
+                            onCheckedChange = {
+                                showNotification = it
+                                viewModel.preference.setShowNotification(it)
+                                // The service owns the notification, so it is the only thing that
+                                // can re-post it on the other channel. Notification only: a full
+                                // update would rebuild the handler and pop it up over this screen.
+                                viewModel.refreshServiceNotification(context)
+                                // Switching the controls on while Android is blocking
+                                // notifications produces nothing at all, with no hint as to why.
+                                // Say so at the moment the switch is flipped.
+                                if (it && !notificationsAllowed) showNotificationWarning = true
+                            }
+                        )
+
+                        // And keep saying so afterwards, because the dialog above is dismissible
+                        // and the permission can be revoked from system settings long after this
+                        // switch was last touched.
+                        if (showNotification && !notificationsAllowed) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { requestNotificationPermission() },
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Warning,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = stringResource(R.string.notification_permission_warning_inline),
+                                        fontSize = 13.sp,
+                                        lineHeight = 18.sp,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
                                 }
-                            },
-                            contentPadding = PaddingValues(0.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.show_notification_off_hint),
-                                fontSize = 12.sp,
-                                textAlign = TextAlign.Start,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                            }
+                        }
+
+                        // Only once the switch is off is there anything left to explain: Android
+                        // will not run a foreground service with no notification at all, so the
+                        // last step belongs to the system's own channel settings.
+                        if (!showNotification) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextButton(
+                                onClick = {
+                                    openSystemScreen(
+                                        context, viewModel,
+                                        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                            .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                    )
+                                },
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.show_notification_off_hint),
+                                    fontSize = 12.sp,
+                                    textAlign = TextAlign.Start,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                 }
@@ -575,6 +754,18 @@ fun HandlerActionsScreen(
         )
     }
 
+    if (showTripleClickActionDialog) {
+        TapActionDialog(
+            title = stringResource(R.string.triple_tap_action),
+            currentAction = state.tripleClickAction,
+            onDismiss = { showTripleClickActionDialog = false },
+            onSelect = { action ->
+                viewModel.onEvent(MainEvent.SetTripleClickAction(action, context))
+                showTripleClickActionDialog = false
+            }
+        )
+    }
+
     if (showLongClickActionDialog) {
         TapActionDialog(
             title = stringResource(R.string.long_press_action),
@@ -613,4 +804,45 @@ fun HandlerActionsScreen(
             }
         )
     }
+
+    if (showSwipeInDialog) {
+        TapActionDialog(
+            title = stringResource(R.string.swipe_in_action),
+            currentAction = state.swipeInAction,
+            onDismiss = { showSwipeInDialog = false },
+            onSelect = { action ->
+                viewModel.onEvent(MainEvent.SetSwipeInAction(action, context))
+                showSwipeInDialog = false
+            }
+        )
+    }
+
+    if (showSwipeOutDialog) {
+        TapActionDialog(
+            title = stringResource(R.string.swipe_out_action),
+            currentAction = state.swipeOutAction,
+            onDismiss = { showSwipeOutDialog = false },
+            onSelect = { action ->
+                viewModel.onEvent(MainEvent.SetSwipeOutAction(action, context))
+                showSwipeOutDialog = false
+            }
+        )
+    }
+}
+
+/**
+ * The translated name of an action, for the summary rows.
+ *
+ * The rows used to show the raw identifier — "Mute or Unmute", in English, in every locale —
+ * because the identifier is what the preference stores. The catalog knows the label.
+ */
+@Composable
+private fun actionLabel(action: String): String =
+    HandlerActionCatalog.entryFor(action)?.let { stringResource(it.labelRes) } ?: action
+
+@Composable
+private fun RowDivider() {
+    Spacer(modifier = Modifier.height(16.dp))
+    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+    Spacer(modifier = Modifier.height(16.dp))
 }

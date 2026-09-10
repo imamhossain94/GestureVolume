@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="deck_apps_pinned_count">
+        <item quantity="other">%1$d 件固定中</item>
+    </plurals>
+    <plurals name="deck_quick_dial_count">
+        <item quantity="other">%1$d 件の連絡先</item>
+    </plurals>
+    <plurals name="deck_notes_count">
+        <item quantity="other">%1$d 件保存済み</item>
+    </plurals>
+    <plurals name="deck_clipboard_count">
+        <item quantity="other">%1$d 件</item>
+    </plurals>
+    <plurals name="deck_tiles_count">
+        <item quantity="other">%2$d 件中 %1$d 件オン</item>
+    </plurals>
+</resources>

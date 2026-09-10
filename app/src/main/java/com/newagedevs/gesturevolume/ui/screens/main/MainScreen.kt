@@ -67,6 +67,7 @@ fun MainScreen(
     onNavigateToAppearance: (String?) -> Unit,
     onNavigateToActions: () -> Unit,
     onNavigateToPermissions: () -> Unit,
+    onNavigateToDeck: () -> Unit,
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
@@ -202,6 +203,23 @@ fun MainScreen(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // The Deck: the slide-out panel of shortcuts and tools beside the bar.
+                NavigationCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),
+                    title = stringResource(R.string.deck_title),
+                    subtitle = stringResource(R.string.deck_card_subtitle),
+                    icon = R.drawable.ic_layer,
+                    gradientColors = listOf(
+                        Color(0xFFF59E0B),
+                        Color(0xFFEF4444)
+                    ),
+                    onClick = onNavigateToDeck
+                )
 
                 Spacer(modifier = Modifier.height(12.dp))
 

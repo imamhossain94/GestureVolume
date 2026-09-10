@@ -10,7 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.newagedevs.gesturevolume.R
@@ -74,8 +74,8 @@ fun ContextMenuItemsDialog(
                             .padding(vertical = 10.dp, horizontal = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            painter = painterResource(entry.iconRes),
+                        ActionIconImage(
+                            icon = entry.icon,
                             contentDescription = null,
                             modifier = Modifier.size(22.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant

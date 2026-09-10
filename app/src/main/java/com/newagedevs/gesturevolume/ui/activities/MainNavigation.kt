@@ -37,11 +37,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.screens.about.AboutScreen
+import com.newagedevs.gesturevolume.ui.screens.deck.AppShortcutsScreen
+import com.newagedevs.gesturevolume.ui.screens.deck.ClipboardScreen
+import com.newagedevs.gesturevolume.ui.screens.deck.DeckScreen
+import com.newagedevs.gesturevolume.ui.screens.deck.DeckTilesScreen
+import com.newagedevs.gesturevolume.ui.screens.deck.NotesScreen
+import com.newagedevs.gesturevolume.ui.screens.deck.QuickDialScreen
+import com.newagedevs.gesturevolume.ui.screens.deck.SearchSettingsScreen
 import com.newagedevs.gesturevolume.ui.screens.feedback.FeedbackScreen
 import com.newagedevs.gesturevolume.ui.screens.handler_action.HandlerActionsScreen
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.HandlerAppearanceScreen
 import com.newagedevs.gesturevolume.ui.screens.main.MainScreen
+import com.newagedevs.gesturevolume.ui.screens.quick_slider.QuickSliderScreen
 import com.newagedevs.gesturevolume.ui.screens.permission.PermissionsScreen
 import com.newagedevs.gesturevolume.ui.screens.troubleshoot.TroubleshootScreen
 import com.newagedevs.gesturevolume.ui.screens.walkthrough.WalkthroughScreen
@@ -49,6 +58,9 @@ import com.newagedevs.gesturevolume.ui.util.navigateBackOnce
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEffect
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
+
+/** Routes the Deck may ask the app to open. Anything else in the extra is ignored. */
+private val DEEP_LINK_ROUTES = setOf("deck", "notes", "clipboard", "deck_search", "deck_apps", "deck_quick_dial", "deck_tiles")
 
 @Composable
 fun MainNavigation(
@@ -82,6 +94,16 @@ fun MainNavigation(
         ActivityResultContracts.RequestPermission()
     ) { }
 
+    // A route the Deck asked for — "manage notes", "manage clipboard" — arrives on the Activity
+    // and is consumed here, once, so a rotation does not navigate a second time.
+    val activity = context as? MainActivity
+    val pendingRoute = activity?.pendingRoute?.value
+    LaunchedEffect(pendingRoute) {
+        val route = pendingRoute ?: return@LaunchedEffect
+        activity.pendingRoute.value = null
+        if (route in DEEP_LINK_ROUTES) navController.navigate(route)
+    }
+
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
@@ -108,6 +130,14 @@ fun MainNavigation(
                 is MainEffect.ShowThemeDialog -> showThemeDialog = true
                 is MainEffect.ShowLanguageDialog -> showLanguageDialog = true
                 is MainEffect.NavigateToTroubleshoot -> navController.navigate("troubleshoot")
+                is MainEffect.OpenAccessibilitySettings -> {
+                    viewModel.preference.setAppOpenAdPaused(true)
+                    try {
+                        context.startActivity(OverlayRuntime.accessibilitySettingsIntent())
+                    } catch (_: Exception) {
+                        viewModel.preference.setAppOpenAdPaused(false)
+                    }
+                }
                 else -> {}
             }
         }
@@ -161,8 +191,44 @@ fun MainNavigation(
                         },
                         onNavigateToPermissions = {
                             navController.navigate("permissions")
+                        },
+                        onNavigateToDeck = {
+                            viewModel.maybeShowInterstitialAd()
+                            navController.navigate("deck")
                         }
                     )
+                }
+
+                composable("deck") {
+                    DeckScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.navigateBackOnce() },
+                        onNavigate = { route -> navController.navigate(route) }
+                    )
+                }
+
+                composable("deck_tiles") {
+                    DeckTilesScreen(viewModel = viewModel, onNavigateBack = { navController.navigateBackOnce() })
+                }
+
+                composable("deck_apps") {
+                    AppShortcutsScreen(viewModel = viewModel, onNavigateBack = { navController.navigateBackOnce() })
+                }
+
+                composable("deck_quick_dial") {
+                    QuickDialScreen(viewModel = viewModel, onNavigateBack = { navController.navigateBackOnce() })
+                }
+
+                composable("deck_search") {
+                    SearchSettingsScreen(viewModel = viewModel, onNavigateBack = { navController.navigateBackOnce() })
+                }
+
+                composable("notes") {
+                    NotesScreen(viewModel = viewModel, onNavigateBack = { navController.navigateBackOnce() })
+                }
+
+                composable("clipboard") {
+                    ClipboardScreen(viewModel = viewModel, onNavigateBack = { navController.navigateBackOnce() })
                 }
 
                 composable(
@@ -181,6 +247,18 @@ fun MainNavigation(
 
                 composable("actions") {
                     HandlerActionsScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = {
+                            navController.navigateBackOnce()
+                        },
+                        onOpenQuickSlider = {
+                            navController.navigate("quick_slider")
+                        }
+                    )
+                }
+
+                composable("quick_slider") {
+                    QuickSliderScreen(
                         viewModel = viewModel,
                         onNavigateBack = {
                             navController.navigateBackOnce()

@@ -1,7 +1,6 @@
 package com.newagedevs.gesturevolume.ui.viewmodels
 
 import android.app.Activity
-import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -13,29 +12,35 @@ import android.provider.Settings
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.newagedevs.gesturevolume.manager.BillingManager
-import com.newagedevs.gesturevolume.manager.PurchaseEvent
 import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.helper.ApplovinAdsManager
+import com.newagedevs.gesturevolume.helper.extensions.openAppStore
+import com.newagedevs.gesturevolume.helper.extensions.shareApp
+import com.newagedevs.gesturevolume.livedata.LiveDataManager
+import com.newagedevs.gesturevolume.manager.BillingManager
+import com.newagedevs.gesturevolume.manager.PurchaseEvent
+import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.service.OverlayService
 import com.newagedevs.gesturevolume.service.OverlayServiceInterface
+import com.newagedevs.gesturevolume.utils.ActionIcon
 import com.newagedevs.gesturevolume.utils.Constants
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.HandlerActions
+import com.newagedevs.gesturevolume.utils.OverlayHostMode
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import androidx.lifecycle.Observer
-import com.newagedevs.gesturevolume.helper.extensions.shareApp
-import com.newagedevs.gesturevolume.helper.extensions.openAppStore
-import com.newagedevs.gesturevolume.livedata.LiveDataManager
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -69,15 +74,22 @@ class MainViewModel @Inject constructor(
             isProActivated = preference.isProFeatureActivated(),
             clickAction = preference.getHandlerSingleTapAction(),
             doubleClickAction = preference.getHandlerDoubleTapAction(),
+            tripleClickAction = preference.getHandlerTripleTapAction(),
             longClickAction = preference.getHandlerLongTapAction(),
             swipeUpAction = preference.getHandlerSwipeUpAction(),
             swipeDownAction = preference.getHandlerSwipeDownAction(),
+            swipeInAction = preference.getHandlerSwipeInAction(),
+            swipeOutAction = preference.getHandlerSwipeOutAction(),
             clickActionIcon = getActionIcon(preference.getHandlerSingleTapAction()),
             doubleClickActionIcon = getActionIcon(preference.getHandlerDoubleTapAction()),
+            tripleClickActionIcon = getActionIcon(preference.getHandlerTripleTapAction()),
             longClickActionIcon = getActionIcon(preference.getHandlerLongTapAction()),
             swipeUpActionIcon = getSwipeUpIcon(preference.getHandlerSwipeUpAction()),
             swipeDownActionIcon = getSwipeDownIcon(preference.getHandlerSwipeDownAction()),
+            swipeInActionIcon = getActionIcon(preference.getHandlerSwipeInAction()),
+            swipeOutActionIcon = getActionIcon(preference.getHandlerSwipeOutAction()),
             isHandlerHidden = preference.isHandlerHidden(),
+            overlayHostMode = preference.getOverlayHostMode(),
             theme = preference.getTheme(),
             language = preference.getLanguage()
         )
@@ -86,23 +98,25 @@ class MainViewModel @Inject constructor(
     /**
      * Which setting a pending brightness action belongs to.
      *
-     * Typed rather than a boolean: the same brightness-permission gate is reachable from all five
-     * action slots, and a boolean "was it swipe up?" would silently write a tap action into a swipe
+     * Typed rather than a boolean: the same brightness-permission gate is reachable from every
+     * action slot, and a boolean "was it swipe up?" would silently write a tap action into a swipe
      * preference — destroying a setting the user had already configured.
      */
-    private enum class ActionSlot { SINGLE_TAP, DOUBLE_TAP, LONG_TAP, SWIPE_UP, SWIPE_DOWN }
+    private enum class ActionSlot { SINGLE_TAP, DOUBLE_TAP, TRIPLE_TAP, LONG_TAP, SWIPE_UP, SWIPE_DOWN, SWIPE_IN, SWIPE_OUT }
 
     private var pendingBrightnessAction: Pair<String, ActionSlot>? = null
-
 
     fun onEvent(event: MainEvent) {
         when (event) {
             is MainEvent.ToggleService -> toggleService(event.isRunning, event.context)
-            is MainEvent.SetClickAction -> setClickAction(event.action, event.context)
-            is MainEvent.SetDoubleClickAction -> setDoubleClickAction(event.action, event.context)
-            is MainEvent.SetLongClickAction -> setLongClickAction(event.action, event.context)
-            is MainEvent.SetSwipeUpAction -> setSwipeUpAction(event.action, event.context)
-            is MainEvent.SetSwipeDownAction -> setSwipeDownAction(event.action, event.context)
+            is MainEvent.SetClickAction -> setAction(event.action, ActionSlot.SINGLE_TAP, event.context)
+            is MainEvent.SetDoubleClickAction -> setAction(event.action, ActionSlot.DOUBLE_TAP, event.context)
+            is MainEvent.SetTripleClickAction -> setAction(event.action, ActionSlot.TRIPLE_TAP, event.context)
+            is MainEvent.SetLongClickAction -> setAction(event.action, ActionSlot.LONG_TAP, event.context)
+            is MainEvent.SetSwipeUpAction -> setAction(event.action, ActionSlot.SWIPE_UP, event.context)
+            is MainEvent.SetSwipeDownAction -> setAction(event.action, ActionSlot.SWIPE_DOWN, event.context)
+            is MainEvent.SetSwipeInAction -> setAction(event.action, ActionSlot.SWIPE_IN, event.context)
+            is MainEvent.SetSwipeOutAction -> setAction(event.action, ActionSlot.SWIPE_OUT, event.context)
             is MainEvent.UpdatePermissionsStatus -> updatePermissionsStatus(event.context)
             is MainEvent.SyncServiceState -> syncServiceState(event.context)
             is MainEvent.WriteSettingsResult -> onWriteSettingsResult(event.context)
@@ -110,7 +124,12 @@ class MainViewModel @Inject constructor(
                 pendingBrightnessAction = null
                 _state.value = _state.value.copy(pendingWriteSettingsRequest = false)
             }
+            MainEvent.DismissAccessibilityPrompt ->
+                _state.value = _state.value.copy(showAccessibilityPrompt = false)
+            MainEvent.DismissDndPrompt ->
+                _state.value = _state.value.copy(showDndPrompt = false)
             is MainEvent.SetHandlerHidden -> setHandlerHidden(event.hidden, event.context)
+            is MainEvent.SetOverlayHostMode -> setOverlayHostMode(event.mode, event.context)
             is MainEvent.ResetAllSettings -> resetAllSettings(event.context)
             MainEvent.ShowProDialog -> showProDialog()
         }
@@ -123,6 +142,8 @@ class MainViewModel @Inject constructor(
         _state.value = _state.value.copy(
             hasOverlayPermission = hasOverlay,
             hasWriteSettingsPermission = Settings.System.canWrite(context),
+            isAccessibilityEnabled = OverlayRuntime.isAccessibilityEnabled(context),
+            overlayHostMode = preference.getOverlayHostMode(),
             missingPermissionCount = needs.missingCount,
             // Refreshed here because this runs on every ON_RESUME, and the bar can be hidden from
             // the overlay's own menu or the notification while the app sits in the background.
@@ -139,7 +160,7 @@ class MainViewModel @Inject constructor(
      * telling them it will be back when they leave. Clearing the preference is enough: the `show`
      * the Activity already sends from `onPause` puts the bar back on the way out.
      *
-     * Hiding, by contrast, has to reach the service, since there may be a window to take down.
+     * Hiding, by contrast, has to reach the host, since there may be a window to take down.
      *
      * Either way the notification is re-posted, because its first button swaps between Show and
      * Hide and only the service can replace it.
@@ -148,13 +169,31 @@ class MainViewModel @Inject constructor(
         preference.setHandlerHidden(hidden)
         _state.value = _state.value.copy(isHandlerHidden = hidden)
         if (!preference.isRunning()) return
-        val intent = Intent(context, OverlayService::class.java)
-            .setAction(if (hidden) "user_hide" else "refresh_notification")
-        try {
-            context.startService(intent)
-        } catch (_: Exception) {
-            // Service not running; the preference above is still the durable answer.
+        OverlayRuntime.sendCommand(context, if (hidden) "user_hide" else "refresh_notification")
+    }
+
+    /**
+     * Switches the bar between its two hosts.
+     *
+     * Takes effect at once when the bar is running: [OverlayRuntime.startOverlay] hands the bar
+     * from the foreground service to the accessibility service or back, so the user sees the
+     * notification appear or disappear the moment they flip the switch rather than on the next
+     * start. The accessibility route silently falls back to the notification one while the
+     * service is off; the Actions screen says so beside the switch.
+     */
+    private fun setOverlayHostMode(mode: OverlayHostMode, context: Context) {
+        preference.setOverlayHostMode(mode)
+        _state.value = _state.value.copy(overlayHostMode = mode)
+        if (mode == OverlayHostMode.ACCESSIBILITY && !OverlayRuntime.isAccessibilityEnabled(context)) {
+            _state.value = _state.value.copy(showAccessibilityPrompt = true)
         }
+        if (preference.isRunning()) {
+            OverlayRuntime.startOverlay(context, preference)
+            // The bar is kept out of the way while the app is in front; the fresh host must be
+            // told so too, or a handover mid-settings pops the bar over this screen.
+            OverlayRuntime.sendCommand(context, "hide")
+        }
+        updatePermissionsStatus(context)
     }
 
     /**
@@ -180,31 +219,19 @@ class MainViewModel @Inject constructor(
         pendingBrightnessAction = null
         if (!Settings.System.canWrite(context)) return
 
-        when (slot) {
-            ActionSlot.SINGLE_TAP -> setClickAction(action, context)
-            ActionSlot.DOUBLE_TAP -> setDoubleClickAction(action, context)
-            ActionSlot.LONG_TAP -> setLongClickAction(action, context)
-            ActionSlot.SWIPE_UP -> setSwipeUpAction(action, context)
-            ActionSlot.SWIPE_DOWN -> setSwipeDownAction(action, context)
-        }
+        setAction(action, slot, context)
         sendUpdateToService(context)
     }
 
     private fun syncServiceState(context: Context) {
-        val actualRunning = isServiceRunning(context, OverlayService::class.java)
+        val actualRunning = OverlayRuntime.isOverlayActive(context)
         val prefRunning = preference.isRunning()
-        
+
         if (actualRunning != _state.value.isRunning || actualRunning != prefRunning) {
-            // If actual state differs from state/pref, we trust actual state
-            // But if user intended it to run (pref is true) but it's not (actual is false),
-            // it means it was killed. We might want to restart it here too,
-            // but for UI sync, we just update the state.
-            
+            // If the actual state differs from the state or the preference, the actual state is
+            // trusted for the switch. The preference is deliberately left alone: when it says
+            // running and nothing is, the repair on the next start is what brings the bar back.
             _state.value = _state.value.copy(isRunning = actualRunning)
-            
-            // Note: We don't necessarily update SharedPref here because if it's true 
-            // and service is dead, our restart mechanisms should bring it back.
-            // However, for UI toggle sync, we use actualRunning.
         }
     }
 
@@ -215,11 +242,12 @@ class MainViewModel @Inject constructor(
     }
 
     private fun toggleService(isRunning: Boolean, context: Context) {
-        // Overlay permission is the only hard gate. The notification permission is asked for
-        // separately, below, and never blocks: the old code refused to start the service at all
-        // when POST_NOTIFICATIONS was declined, which made the toggle fail silently.
-        if (!Settings.canDrawOverlays(context)) {
-            // Reset state before requesting permission
+        // One hard gate: some host must be able to draw. The overlay permission serves the
+        // notification route; the accessibility service, when it is on and chosen, needs neither.
+        // The notification permission is asked for separately, below, and never blocks: the old
+        // code refused to start the service at all when POST_NOTIFICATIONS was declined, which
+        // made the toggle fail silently.
+        if (isRunning && OverlayRuntime.effectiveHost(context, preference) == null) {
             preference.setRunning(false)
             _state.value = _state.value.copy(isRunning = false)
 
@@ -230,7 +258,6 @@ class MainViewModel @Inject constructor(
             return
         }
 
-        // Only update preference and state if permissions are granted
         preference.setRunning(isRunning)
         _state.value = _state.value.copy(isRunning = isRunning)
 
@@ -257,11 +284,13 @@ class MainViewModel @Inject constructor(
      *
      * Android 13+ stops showing the dialog after two refusals, so repeating the request on every
      * start would be a no-op that reads as a bug. Skipped entirely when the user has already
-     * turned the notification off in settings — there would be nothing to post.
+     * turned the notification off in settings, or when the accessibility service is the one
+     * drawing the bar — there would be nothing to post.
      */
     private fun maybeAskForNotificationPermission(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
         if (!preference.getShowNotification()) return
+        if (OverlayRuntime.effectiveHost(context, preference) == OverlayHostMode.ACCESSIBILITY) return
         if (preference.hasAskedNotificationPermission()) return
         if (
             ContextCompat.checkSelfPermission(
@@ -299,17 +328,17 @@ class MainViewModel @Inject constructor(
      *   never connects cannot leave it armed for the next caller.
      */
     private fun startOverlayService(context: Context, announceWithAd: Boolean = false) {
-        val service = Intent(context, OverlayService::class.java)
-        
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(service)
-            } else {
-                context.startService(service)
-            }
-        } catch (e: Exception) {
-            context.startService(service)
+        val hostMode = OverlayRuntime.effectiveHost(context, preference) ?: return
+        OverlayRuntime.startOverlay(context, preference)
+
+        if (hostMode == OverlayHostMode.ACCESSIBILITY) {
+            // Nothing to bind to: the accessibility service is not ours to connect to, and the
+            // bar is already up. Setup is finished, which is the moment the ad was waiting for.
+            if (announceWithAd) maybeShowInterstitialAd()
+            return
         }
+
+        val service = Intent(context, OverlayService::class.java)
         serviceConnection = object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName, service: IBinder) {
                 overlayService = (service as OverlayService.LocalBinder).instance()
@@ -325,7 +354,11 @@ class MainViewModel @Inject constructor(
             }
         }
         serviceConnection?.let {
-            context.bindService(service, it, Context.BIND_AUTO_CREATE)
+            try {
+                context.bindService(service, it, Context.BIND_AUTO_CREATE)
+            } catch (_: Exception) {
+                // Bound state is only used for the ad and the reset; the bar is up regardless.
+            }
         }
     }
 
@@ -339,17 +372,10 @@ class MainViewModel @Inject constructor(
         }
         overlayService = null
 
-        // Always stop the service directly rather than routing via intents to avoid LiveDataManager loops
-        try {
-            context.stopService(Intent(context, OverlayService::class.java))
-        } catch (_: Exception) {}
+        // Both hosts, directly rather than via intents, to avoid LiveDataManager loops.
+        OverlayRuntime.stopOverlay(context)
     }
 
-    /**
-     * Re-bind to an already-running OverlayService.
-     * Called from MainActivity.onStart() to recover the binding after the app
-     * was cleared from recents and reopened.
-     */
     /**
      * If the user wants the overlay running but the system has killed the service, bring it back.
      *
@@ -359,15 +385,19 @@ class MainViewModel @Inject constructor(
      */
     fun repairServiceIfNeeded(context: Context) {
         if (!preference.isRunning()) return
-        if (isServiceRunning(context, OverlayService::class.java)) return
-        if (!Settings.canDrawOverlays(context)) return
+        if (OverlayRuntime.isOverlayActive(context)) return
+        if (OverlayRuntime.effectiveHost(context, preference) == null) return
         startOverlayService(context)
     }
 
+    /**
+     * Re-bind to an already-running OverlayService.
+     * Called from MainActivity.onStart() to recover the binding after the app
+     * was cleared from recents and reopened.
+     */
     fun rebindToServiceIfRunning(context: Context) {
         if (preference.isRunning() && !isBound) {
-            val actuallyRunning = isServiceRunning(context, OverlayService::class.java)
-            if (actuallyRunning) {
+            if (OverlayRuntime.isServiceRunning(context, OverlayService::class.java)) {
                 val service = Intent(context, OverlayService::class.java)
                 serviceConnection = object : ServiceConnection {
                     override fun onServiceConnected(name: ComponentName, service: IBinder) {
@@ -381,27 +411,26 @@ class MainViewModel @Inject constructor(
                     }
                 }
                 serviceConnection?.let {
-                    context.bindService(service, it, Context.BIND_AUTO_CREATE)
+                    try {
+                        context.bindService(service, it, Context.BIND_AUTO_CREATE)
+                    } catch (_: Exception) {
+                        // Nothing depends on the binding but the ad and the reset.
+                    }
                 }
-            } else {
-                // Service died — sync state
+            } else if (!OverlayRuntime.isAccessibilityHosting) {
+                // Neither host is up — sync state
                 _state.value = _state.value.copy(isRunning = false)
             }
         }
     }
 
     /**
-     * Send an "update" command to the running service so it reloads
+     * Send an "update" command to the running host so it reloads
      * its handler with the latest settings from SharedPref.
      */
     fun sendUpdateToService(context: Context) {
         if (preference.isRunning()) {
-            val intent = Intent(context, OverlayService::class.java).apply {
-                action = "update"
-            }
-            try {
-                context.startService(intent)
-            } catch (_: Exception) { /* service not running */ }
+            OverlayRuntime.sendCommand(context, "update")
         }
     }
 
@@ -420,7 +449,9 @@ class MainViewModel @Inject constructor(
         _state.value = _state.value.copy(
             isRunning = false,
             isHandlerHidden = false,
-            pendingWriteSettingsRequest = false
+            pendingWriteSettingsRequest = false,
+            showAccessibilityPrompt = false,
+            showDndPrompt = false
         )
     }
 
@@ -433,58 +464,76 @@ class MainViewModel @Inject constructor(
      */
     fun refreshServiceNotification(context: Context) {
         if (!preference.isRunning()) return
-        val intent = Intent(context, OverlayService::class.java)
-            .setAction("refresh_notification")
-        try {
-            context.startService(intent)
-        } catch (_: Exception) {
-            // Service not running; the preference is already written either way.
+        OverlayRuntime.sendCommand(context, "refresh_notification")
+    }
+
+    /**
+     * Binds an action to a gesture slot.
+     *
+     * Three permission gates, handled three ways, each the way its permission works:
+     *
+     *  - WRITE_SETTINGS (brightness, auto-rotate) is a blocking request: the action is held
+     *    pending, the user is sent to the system toggle, and the action is written when they come
+     *    back with it granted. Without it the action is exactly nothing, so writing it first would
+     *    only record a setting that lies.
+     *  - The accessibility service and Do Not Disturb access are asked for *after* the action is
+     *    saved. Both are things the user turns on in a system list that this app cannot return a
+     *    result from, and both can be switched off again long after the fact — so the honest
+     *    model is a saved action, a prompt now, and a warning on the Permissions screen for as
+     *    long as the gap exists.
+     */
+    private fun setAction(action: String, slot: ActionSlot, context: Context) {
+        if (!requireWriteSettings(action, slot, context)) return
+        when (slot) {
+            ActionSlot.SINGLE_TAP -> {
+                preference.setHandlerSingleTapAction(action)
+                _state.value = _state.value.copy(clickAction = action, clickActionIcon = getActionIcon(action))
+            }
+            ActionSlot.DOUBLE_TAP -> {
+                preference.setHandlerDoubleTapAction(action)
+                _state.value = _state.value.copy(doubleClickAction = action, doubleClickActionIcon = getActionIcon(action))
+            }
+            ActionSlot.TRIPLE_TAP -> {
+                preference.setHandlerTripleTapAction(action)
+                _state.value = _state.value.copy(tripleClickAction = action, tripleClickActionIcon = getActionIcon(action))
+            }
+            ActionSlot.LONG_TAP -> {
+                preference.setHandlerLongTapAction(action)
+                _state.value = _state.value.copy(longClickAction = action, longClickActionIcon = getActionIcon(action))
+            }
+            ActionSlot.SWIPE_UP -> {
+                preference.setHandlerSwipeUpAction(action)
+                _state.value = _state.value.copy(swipeUpAction = action, swipeUpActionIcon = getSwipeUpIcon(action))
+            }
+            ActionSlot.SWIPE_DOWN -> {
+                preference.setHandlerSwipeDownAction(action)
+                _state.value = _state.value.copy(swipeDownAction = action, swipeDownActionIcon = getSwipeDownIcon(action))
+            }
+            ActionSlot.SWIPE_IN -> {
+                preference.setHandlerSwipeInAction(action)
+                _state.value = _state.value.copy(swipeInAction = action, swipeInActionIcon = getActionIcon(action))
+            }
+            ActionSlot.SWIPE_OUT -> {
+                preference.setHandlerSwipeOutAction(action)
+                _state.value = _state.value.copy(swipeOutAction = action, swipeOutActionIcon = getActionIcon(action))
+            }
         }
+        if (HandlerActions.needsAccessibility(action) && !OverlayRuntime.isAccessibilityEnabled(context)) {
+            _state.value = _state.value.copy(showAccessibilityPrompt = true)
+        }
+        if (HandlerActions.needsNotificationPolicy(action) &&
+            !PermissionNeeds.hasNotificationPolicyAccess(context)
+        ) {
+            _state.value = _state.value.copy(showDndPrompt = true)
+        }
+        updatePermissionsStatus(context)
     }
 
-    private fun setClickAction(action: String, context: Context) {
-        if (!requireWriteSettings(action, ActionSlot.SINGLE_TAP, context)) return
-        preference.setHandlerSingleTapAction(action)
-        _state.value = _state.value.copy(
-            clickAction = action,
-            clickActionIcon = getActionIcon(action)
-        )
-    }
-
-    private fun setDoubleClickAction(action: String, context: Context) {
-        if (!requireWriteSettings(action, ActionSlot.DOUBLE_TAP, context)) return
-        preference.setHandlerDoubleTapAction(action)
-        _state.value = _state.value.copy(
-            doubleClickAction = action,
-            doubleClickActionIcon = getActionIcon(action)
-        )
-    }
-
-    private fun setLongClickAction(action: String, context: Context) {
-        if (!requireWriteSettings(action, ActionSlot.LONG_TAP, context)) return
-        preference.setHandlerLongTapAction(action)
-        _state.value = _state.value.copy(
-            longClickAction = action,
-            longClickActionIcon = getActionIcon(action)
-        )
-    }
-
-    private fun setSwipeUpAction(action: String, context: Context) {
-        if (!requireWriteSettings(action, ActionSlot.SWIPE_UP, context)) return
-        preference.setHandlerSwipeUpAction(action)
-        _state.value = _state.value.copy(
-            swipeUpAction = action,
-            swipeUpActionIcon = getSwipeUpIcon(action)
-        )
-    }
-
-    private fun setSwipeDownAction(action: String, context: Context) {
-        if (!requireWriteSettings(action, ActionSlot.SWIPE_DOWN, context)) return
-        preference.setHandlerSwipeDownAction(action)
-        _state.value = _state.value.copy(
-            swipeDownAction = action,
-            swipeDownActionIcon = getSwipeDownIcon(action)
-        )
+    /** The disclosure was accepted: open the system list. */
+    fun openAccessibilitySettings() {
+        preference.setAcceptedAccessibilityDisclosure(true)
+        _state.value = _state.value.copy(showAccessibilityPrompt = false)
+        viewModelScope.launch { _effect.send(MainEffect.OpenAccessibilitySettings) }
     }
 
     private fun showProDialog() {
@@ -499,28 +548,28 @@ class MainViewModel @Inject constructor(
      * This used to be a `when` listing every action by hand, which meant "Mute or Unmute" — never
      * in the list — showed the do-nothing icon on the main screen for as long as it has existed.
      */
-    private fun getActionIcon(action: String): Int =
-        HandlerActionCatalog.entryFor(action)?.iconRes ?: R.drawable.ic_nothing
+    private fun getActionIcon(action: String): ActionIcon =
+        HandlerActionCatalog.entryFor(action)?.icon ?: ActionIcon.Res(R.drawable.ic_nothing)
 
-    private fun getSwipeUpIcon(action: String): Int {
-        return when (action) {
+    private fun getSwipeUpIcon(action: String): ActionIcon = ActionIcon.Res(
+        when (action) {
             HandlerActions.NONE -> R.drawable.ic_nothing
             HandlerActions.INCREASE_VOLUME -> R.drawable.ic_vol_plus
             HandlerActions.INCREASE_VOLUME_UI -> R.drawable.ic_vol_increase
             HandlerActions.INCREASE_BRIGHTNESS -> R.drawable.ic_brightness_up
             else -> R.drawable.ic_nothing
         }
-    }
+    )
 
-    private fun getSwipeDownIcon(action: String): Int {
-        return when (action) {
+    private fun getSwipeDownIcon(action: String): ActionIcon = ActionIcon.Res(
+        when (action) {
             HandlerActions.NONE -> R.drawable.ic_nothing
             HandlerActions.DECREASE_VOLUME -> R.drawable.ic_vol_minus
             HandlerActions.DECREASE_VOLUME_UI -> R.drawable.ic_vol_decrease
             HandlerActions.DECREASE_BRIGHTNESS -> R.drawable.ic_brightness_down
             else -> R.drawable.ic_nothing
         }
-    }
+    )
 
     fun handleMenuOption(option: String, context: Context) {
         when (option) {
@@ -565,10 +614,10 @@ class MainViewModel @Inject constructor(
                 _effect.send(MainEffect.ProductDetailsLoaded(price))
             }
         }
-        
+
         viewModelScope.launch {
             billingManager.events.collect { event ->
-                when(event) {
+                when (event) {
                     PurchaseEvent.PURCHASE_SUCCESS -> {
                         adsManager?.destroyAds()
                         adsManager = null
@@ -593,7 +642,7 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
-        
+
         viewModelScope.launch {
             billingManager.isPremium.collect { isPremium ->
                 if (isPremium) {
@@ -611,7 +660,6 @@ class MainViewModel @Inject constructor(
         }
 
         if (adsManager == null) {
-            // Pass preferences to the ads manager
             adsManager = ApplovinAdsManager(activity)
         }
     }
@@ -639,7 +687,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-
     fun observeCommunicator(activity: Activity) {
         if (messageObserver != null) return
 
@@ -647,9 +694,11 @@ class MainViewModel @Inject constructor(
             when (message) {
                 "show" -> {
                     // Handle show command - could restart or show overlay
-                    if (!_state.value.isRunning && Settings.canDrawOverlays(activity)) {
-                        startOverlayService(activity)
+                    if (!_state.value.isRunning &&
+                        OverlayRuntime.effectiveHost(activity, preference) != null
+                    ) {
                         preference.setRunning(true)
+                        startOverlayService(activity)
                         _state.value = _state.value.copy(isRunning = true)
                     }
                 }
@@ -666,9 +715,7 @@ class MainViewModel @Inject constructor(
                 // the next ON_RESUME.
                 "user_hide" -> _state.value = _state.value.copy(isHandlerHidden = true)
                 "user_show" -> _state.value = _state.value.copy(isHandlerHidden = false)
-                else -> {
-
-                }
+                else -> Unit
             }
         }
 
@@ -680,17 +727,6 @@ class MainViewModel @Inject constructor(
             LiveDataManager.communicator().removeObserver(it)
             messageObserver = null
         }
-    }
-
-    private fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
-        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        @Suppress("DEPRECATION")
-        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
-            if (serviceClass.name == service.service.className) {
-                return true
-            }
-        }
-        return false
     }
 
     fun getNextBackground(): String {

@@ -154,6 +154,16 @@ class VolumeController(private val context: Context) {
         opaque = false,
     )
 
+    /** One named stream, for the Deck's per-stream sliders. Ring keeps its floor of 1. */
+    fun forStream(stream: Int): Resolution = withBounds(
+        stream,
+        AudioStreamResolver.Source.MEDIA_ONLY,
+        opaque = false,
+    )
+
+    /** Whether the ring stream can be written right now — see [ringWritable]. */
+    fun canWriteRing(): Boolean = ringWritable()
+
     private fun withBounds(stream: Int, source: AudioStreamResolver.Source, opaque: Boolean): Resolution {
         val max = runCatching { audio?.getStreamMaxVolume(stream) ?: 15 }.getOrDefault(15)
         return Resolution(
@@ -317,6 +327,35 @@ class VolumeController(private val context: Context) {
         if (!written) return null
 
         val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
+        return ((target - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
+    }
+
+    /** The current index of a resolved stream, or null when it cannot be read. */
+    fun level(res: Resolution): Int? =
+        runCatching { audio?.getStreamVolume(res.stream) }.getOrNull()
+
+    /** The current level of a resolved stream as 0..100, or null when it cannot be read. */
+    fun percent(res: Resolution): Int? {
+        val current = level(res) ?: return null
+        val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
+        return ((current - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
+    }
+
+    /**
+     * Sets a resolved stream to a 0..100 percentage, for the Deck's slider.
+     *
+     * @return the percentage actually applied, or null when the write was refused.
+     */
+    fun setPercent(res: Resolution, percent: Int, showUi: Boolean): Int? {
+        val manager = audio ?: return null
+        val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
+        val target = (res.minIndex + percent.coerceIn(0, 100) * span / 100f).roundToInt()
+            .coerceIn(res.minIndex, res.maxIndex)
+        val flags = if (showUi) AudioManager.FLAG_SHOW_UI else 0
+        val written = runCatching {
+            manager.setStreamVolume(res.stream, target, flags); true
+        }.getOrDefault(false)
+        if (!written) return null
         return ((target - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
     }
 

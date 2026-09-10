@@ -7,7 +7,11 @@ import com.newagedevs.gesturevolume.R
 import android.view.Gravity
 import androidx.compose.ui.graphics.toArgb
 import com.newagedevs.gesturevolume.utils.HandlerActions
+import com.newagedevs.gesturevolume.utils.ClipboardEntry
 import com.newagedevs.gesturevolume.utils.HandlerPresets
+import com.newagedevs.gesturevolume.utils.OverlayHostMode
+import org.json.JSONArray
+import org.json.JSONObject
 import com.newagedevs.gesturevolume.utils.VolumeStreamMode
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import javax.inject.Inject
@@ -20,6 +24,71 @@ class SharedPref @Inject constructor(
     private val appContext: Context = context.applicationContext
     val sharedPreferences: SharedPreferences =
         appContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+
+    /** The Deck's own settings and contents. Same file, its own object. */
+    val deck: DeckStore by lazy { DeckStore(sharedPreferences) }
+
+    /** The universal search's settings. Same file, its own object. */
+    val search: SearchStore by lazy { SearchStore(sharedPreferences) }
+
+    /** The expanding quick slider's settings. Same file, its own object. */
+    val slider: QuickSliderStore by lazy { QuickSliderStore(sharedPreferences) }
+
+    init {
+        pinLegacyAppearanceDefaults()
+    }
+
+    /**
+     * Freezes the pre-1.4.0 appearance defaults onto an install that already existed, once.
+     *
+     * The bar's appearance preferences are all fallback-to-the-Default-preset: an install that
+     * never opened the appearance screen has no colour, width or corner radius stored at all, and
+     * reads [HandlerPresets.DEFAULT] every time. That is the right design until the Default preset
+     * itself changes, at which point every one of those users would wake up to a different bar —
+     * a slim black pill in place of the wide indigo one they have been tapping for months. Nobody
+     * asked for that, and a handler that changed shape overnight reads as a bug.
+     *
+     * So: on the first run after the update, if this prefs file has anything in it at all, the old
+     * values are written out explicitly for the keys that moved. A genuinely fresh install has an
+     * empty file, gets nothing written, and falls through to the new Default. Either way the flag
+     * is set so this never runs twice.
+     *
+     * Only unset keys are touched. A user who did open the appearance screen already has their own
+     * values stored and none of this applies to them.
+     *
+     * Runs in `init` rather than from an activity because the overlay service can be the first
+     * thing to read a preference after a reboot, and it must see the same bar the user last saw.
+     */
+    private fun pinLegacyAppearanceDefaults() {
+        if (sharedPreferences.getBoolean(APPEARANCE_DEFAULTS_PINNED, false)) return
+
+        val isExistingInstall = sharedPreferences.all.isNotEmpty()
+        sharedPreferences.edit {
+            putBoolean(APPEARANCE_DEFAULTS_PINNED, true)
+            if (!isExistingInstall) return@edit
+
+            fun pinInt(key: String, value: Int) {
+                if (!sharedPreferences.contains(key)) putInt(key, value)
+            }
+
+            fun pinFloat(key: String, value: Float) {
+                if (!sharedPreferences.contains(key)) putFloat(key, value)
+            }
+
+            pinInt(HANDLER_COLOR, LEGACY_BG_COLOR)
+            pinInt(HANDLER_BACKGROUND_ALPHA, LEGACY_BG_ALPHA)
+            pinFloat(HANDLER_STROKE_WIDTH, LEGACY_STROKE_WIDTH)
+            pinFloat(HANDLER_CORNER_RADIUS_TL, LEGACY_CORNER_RADIUS)
+            pinFloat(HANDLER_CORNER_RADIUS_TR, LEGACY_CORNER_RADIUS)
+            pinFloat(HANDLER_CORNER_RADIUS_BL, LEGACY_CORNER_RADIUS)
+            pinFloat(HANDLER_CORNER_RADIUS_BR, LEGACY_CORNER_RADIUS)
+            pinFloat(HANDLER_WIDTH + "_dp", LEGACY_WIDTH_DP)
+            pinFloat(HANDLER_HEIGHT, LEGACY_HEIGHT_DP)
+            pinFloat(HANDLER_POSITION_FRACTION, LEGACY_POSITION_FRACTION)
+            pinFloat(HANDLER_POS_Y_PORTRAIT, LEGACY_POSITION_FRACTION)
+            pinFloat(HANDLER_POS_Y_LANDSCAPE, LEGACY_POSITION_FRACTION)
+        }
+    }
 
     private companion object {
         const val PRO_FEATURE_ACTIVATION = "proFeatureActivation"
@@ -82,15 +151,35 @@ class SharedPref @Inject constructor(
         const val BRIGHTNESS_AUTO_WAS_ON = "brightnessAutoWasOn"
         const val LEGACY_TRANSLATION_Y_DEFAULT = 260f
         /**
-         * Where a fresh install puts the bar vertically: its centre an eighth of the way down.
+         * Where a fresh install puts the bar vertically, read from the Default preset.
          *
-         * Paired with a horizontal default of 1f — flush right — this is the top-right corner,
-         * clear of the status bar but well above the middle, which is where a thumb reaches
-         * without stretching and where the bar is least likely to collide with a full-screen
-         * app's own controls. Centring it put it exactly where video players and games place
-         * their scrubbers.
+         * Paired with a horizontal default of 1f — flush right — the preset's 0.5 puts the bar
+         * halfway down the right edge, which is where the thumb rests when the phone is held
+         * normally and where every edge launcher in the category puts its handle. It used to sit
+         * an eighth of the way down to stay clear of a video player's scrubber; being reachable
+         * without a stretch turned out to matter more, and the bar can be dragged anywhere.
+         *
+         * An install that predates the change keeps whatever it had: see
+         * [pinLegacyAppearanceDefaults].
          */
-        const val DEFAULT_POSITION_FRACTION = 0.12f
+        val DEFAULT_POSITION_FRACTION = HandlerPresets.DEFAULT.positionFraction
+
+        /**
+         * The appearance defaults as they stood through 1.3.x, before the Default preset became
+         * the slim black pill. Written out verbatim by [pinLegacyAppearanceDefaults].
+         *
+         * Frozen literals on purpose. They must not follow [HandlerPresets.DEFAULT] — the whole
+         * point is to record what an existing install was already showing at the moment the
+         * default moved out from under it.
+         */
+        const val LEGACY_BG_COLOR = 0xFF4F46E5.toInt()
+        const val LEGACY_BG_ALPHA = 128
+        const val LEGACY_STROKE_WIDTH = 1f
+        const val LEGACY_CORNER_RADIUS = 15f
+        const val LEGACY_WIDTH_DP = 30f
+        const val LEGACY_HEIGHT_DP = 100f
+        const val LEGACY_POSITION_FRACTION = 0.12f
+        const val APPEARANCE_DEFAULTS_PINNED = "appearanceDefaultsPinned"
 
         /** The Default preset's side, as the string this preference stores. */
         val DEFAULT_SIDE: String =
@@ -115,6 +204,21 @@ class SharedPref @Inject constructor(
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
         const val VOLUME_STREAM_MODE = "handlerVolumeStreamMode"
         const val HANDLER_EDGE_SWIPE_MENU = "handlerEdgeSwipeMenu"
+
+        // 1.4.0: the two extra tap and swipe slots, and who draws the bar.
+        const val HANDLER_TRIPLE_TAP = "handlerTripleTap"
+        const val HANDLER_SWIPE_IN = "handlerSwipeIn"
+        const val HANDLER_SWIPE_OUT = "handlerSwipeOut"
+        const val OVERLAY_HOST_MODE = "overlayHostMode"
+        const val ASKED_ACCESSIBILITY = "askedAccessibility"
+
+        // 1.4.0: clipboard history.
+        const val CLIPBOARD_ENTRIES = "clipboardEntries"
+        const val CLIPBOARD_CAPTURE = "clipboardCapture"
+        const val CLIPBOARD_AUTO_PASTE = "clipboardAutoPaste"
+        const val CLIPBOARD_MAX_ITEMS = "clipboardMaxItems"
+        const val DEFAULT_CLIPBOARD_MAX_ITEMS = 25
+        const val CLIPBOARD_MAX_ITEMS_LIMIT = 100
 
         /**
          * Prefix for the pre-mute level, keyed per framework stream type.
@@ -440,25 +544,168 @@ class SharedPref @Inject constructor(
     }
 
     /**
-     * Whether swiping inward from the bar opens the context menu.
+     * What swiping from the bar toward the middle of the screen does.
      *
-     * **Off by default, and that is a deliberate decision about the Play listing, not timidity.**
-     * The default bar ships flush against the screen edge — `HandlerPresets.DEFAULT` uses
-     * `edgeMargin = 0f` with `Gravity.END`, and snap-to-edge defaults on — which is exactly the
-     * strip every Android user has been trained to swipe inward on to go back. The bar already asks
-     * the system not to treat its own bounds as the back-gesture zone, so today a Back attempt that
-     * lands on the bar quietly does nothing and the user retries an inch inboard: a forgiving miss.
-     * Binding an action to that same swipe turns the miss into a menu thrown over the app they were
-     * reading.
+     * Three sources, in order. A value stored under the 1.4.0 key wins. Failing that, the 1.3.5
+     * switch that bound this swipe to the long-press menu is honoured — on means the menu, off
+     * means nothing, exactly what those users had. Failing both, the Deck: it is the reason the
+     * swipe exists now, and an install that has never touched either setting gets its headline
+     * feature on the gesture built for it.
      *
-     * No threshold fixes this, because the two gestures are not merely similar — they are the same
-     * shape. Only opting in does, which is why this exists rather than a sensitivity slider.
+     * The bar asks the system not to treat its own bounds as the back-gesture zone, so a swipe that
+     * starts on the bar is the bar's; a Back swipe that lands there was already a miss before this
+     * did anything. Users who would rather keep that miss silent set this to None.
      */
-    fun getHandlerEdgeSwipeMenu(): Boolean =
-        sharedPreferences.getBoolean(HANDLER_EDGE_SWIPE_MENU, false)
+    fun getHandlerSwipeInAction(): String {
+        sharedPreferences.getString(HANDLER_SWIPE_IN, null)?.let { return HandlerActions.sanitize(it) }
+        if (sharedPreferences.contains(HANDLER_EDGE_SWIPE_MENU)) {
+            return if (sharedPreferences.getBoolean(HANDLER_EDGE_SWIPE_MENU, false)) {
+                HandlerActions.OPEN_MENU
+            } else {
+                HandlerActions.NONE
+            }
+        }
+        return HandlerActions.OPEN_DECK
+    }
 
-    fun setHandlerEdgeSwipeMenu(value: Boolean) {
-        sharedPreferences.edit { putBoolean(HANDLER_EDGE_SWIPE_MENU, value) }
+    fun setHandlerSwipeInAction(value: String) {
+        sharedPreferences.edit { putString(HANDLER_SWIPE_IN, value) }
+    }
+
+    /**
+     * What swiping from the bar toward the nearer screen edge does. Nothing by default: a bar flush
+     * against the edge has nowhere to be swiped to, so this is only reachable with an edge distance
+     * or a bar parked mid-screen.
+     */
+    fun getHandlerSwipeOutAction(): String =
+        HandlerActions.sanitize(
+            sharedPreferences.getString(HANDLER_SWIPE_OUT, HandlerActions.NONE) ?: HandlerActions.NONE
+        )
+
+    fun setHandlerSwipeOutAction(value: String) {
+        sharedPreferences.edit { putString(HANDLER_SWIPE_OUT, value) }
+    }
+
+    fun getHandlerTripleTapAction(): String =
+        HandlerActions.sanitize(
+            sharedPreferences.getString(HANDLER_TRIPLE_TAP, HandlerActions.NONE) ?: HandlerActions.NONE
+        )
+
+    fun setHandlerTripleTapAction(value: String) {
+        sharedPreferences.edit { putString(HANDLER_TRIPLE_TAP, value) }
+    }
+
+    /**
+     * Which service draws the bar. See [OverlayHostMode].
+     *
+     * The accessibility route by default, and this default costs an install that has not granted
+     * accessibility exactly nothing: `OverlayRuntime.effectiveHost` needs the service to be bound
+     * as well as preferred, and falls back to the notification route when it is not. So this
+     * decides only what happens once the user does grant it — and then it should be used, for
+     * three reasons.
+     *
+     * It draws where the other route cannot. `TYPE_ACCESSIBILITY_OVERLAY` is shown over the
+     * Settings app and the other privileged screens where the platform hides
+     * `TYPE_APPLICATION_OVERLAY` outright — so with the notification route the bar simply vanishes
+     * in Settings, which reads as the app crashing.
+     *
+     * It needs no overlay permission and no notification. Android will not run a foreground
+     * service without an ongoing notification, and a permanent notification for a floating bar is
+     * the single most common complaint about apps of this kind.
+     *
+     * And it removes the conflict. With both permissions granted and this defaulting the other
+     * way, the app took the notification route while the user was looking at a granted
+     * accessibility permission and an ongoing notification, and concluded — correctly — that the
+     * two were fighting.
+     */
+    fun getOverlayHostMode(): OverlayHostMode =
+        OverlayHostMode.fromStored(
+            sharedPreferences.getString(OVERLAY_HOST_MODE, OverlayHostMode.ACCESSIBILITY.name)
+        )
+
+    fun setOverlayHostMode(mode: OverlayHostMode) {
+        sharedPreferences.edit { putString(OVERLAY_HOST_MODE, mode.name) }
+    }
+
+    // ---- clipboard history ----------------------------------------------------------------------
+
+    /**
+     * Whether the accessibility service watches for copied text. Off by default: it is the one
+     * thing the service does that reads anything, and the user opts in from the Clipboard screen.
+     */
+    fun getClipboardCaptureEnabled(): Boolean =
+        sharedPreferences.getBoolean(CLIPBOARD_CAPTURE, false)
+
+    fun setClipboardCaptureEnabled(value: Boolean) {
+        sharedPreferences.edit { putBoolean(CLIPBOARD_CAPTURE, value) }
+    }
+
+    /** Whether tapping a clip in the Deck pastes it into the focused field, rather than only copying. */
+    fun getClipboardAutoPaste(): Boolean =
+        sharedPreferences.getBoolean(CLIPBOARD_AUTO_PASTE, false)
+
+    fun setClipboardAutoPaste(value: Boolean) {
+        sharedPreferences.edit { putBoolean(CLIPBOARD_AUTO_PASTE, value) }
+    }
+
+    fun getClipboardMaxItems(): Int =
+        sharedPreferences.getInt(CLIPBOARD_MAX_ITEMS, DEFAULT_CLIPBOARD_MAX_ITEMS)
+            .coerceIn(5, CLIPBOARD_MAX_ITEMS_LIMIT)
+
+    fun setClipboardMaxItems(value: Int) {
+        sharedPreferences.edit { putInt(CLIPBOARD_MAX_ITEMS, value.coerceIn(5, CLIPBOARD_MAX_ITEMS_LIMIT)) }
+    }
+
+    /** The history, newest first. Stored as one JSON array; a few dozen short strings at most. */
+    fun getClipboardEntries(): List<ClipboardEntry> {
+        val raw = sharedPreferences.getString(CLIPBOARD_ENTRIES, null) ?: return emptyList()
+        return runCatching {
+            val array = JSONArray(raw)
+            List(array.length()) { i ->
+                val o = array.getJSONObject(i)
+                ClipboardEntry(o.getLong("id"), o.getString("text"), o.optLong("time"))
+            }
+        }.getOrDefault(emptyList())
+    }
+
+    private fun putClipboardEntries(entries: List<ClipboardEntry>) {
+        val array = JSONArray()
+        entries.forEach { e ->
+            array.put(JSONObject().put("id", e.id).put("text", e.text).put("time", e.timeMillis))
+        }
+        sharedPreferences.edit { putString(CLIPBOARD_ENTRIES, array.toString()) }
+    }
+
+    /**
+     * Records a clip at the top of the history.
+     *
+     * A text already in the list moves to the top rather than appearing twice, and the list is
+     * trimmed to the configured size from the bottom — the oldest goes first.
+     */
+    fun addClipboardEntry(text: String): ClipboardEntry? {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return null
+        val now = System.currentTimeMillis()
+        val entry = ClipboardEntry(id = now, text = trimmed, timeMillis = now)
+        val rest = getClipboardEntries().filterNot { it.text == trimmed }
+        putClipboardEntries((listOf(entry) + rest).take(getClipboardMaxItems()))
+        return entry
+    }
+
+    fun removeClipboardEntry(id: Long) {
+        putClipboardEntries(getClipboardEntries().filterNot { it.id == id })
+    }
+
+    fun clearClipboardEntries() {
+        sharedPreferences.edit { remove(CLIPBOARD_ENTRIES) }
+    }
+
+    /** Whether the accessibility disclosure has been shown and accepted once. */
+    fun hasAcceptedAccessibilityDisclosure(): Boolean =
+        sharedPreferences.getBoolean(ASKED_ACCESSIBILITY, false)
+
+    fun setAcceptedAccessibilityDisclosure(value: Boolean) {
+        sharedPreferences.edit { putBoolean(ASKED_ACCESSIBILITY, value) }
     }
 
     /**

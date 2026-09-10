@@ -31,10 +31,12 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.service.HandlerGeometry
+import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.ui.view.HandlerGestureDetector
 import com.newagedevs.gesturevolume.ui.view.HandlerView
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.BrightnessController
+import com.newagedevs.gesturevolume.utils.DeviceToggles
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.VolumeController
 import kotlin.math.roundToInt
@@ -73,6 +75,11 @@ fun HandlerPreviewSurface(
 
     val vibratorService = remember { context.getSystemService(Vibrator::class.java) }
     val brightness = remember { BrightnessController(context) }
+    val toggles = remember { DeviceToggles(context) }
+    DisposableEffect(toggles) {
+        toggles.start()
+        onDispose { toggles.stop() }
+    }
 
     /**
      * The same [VolumeController] the live overlay uses, so the preview cannot disagree with the
@@ -163,6 +170,9 @@ fun HandlerPreviewSurface(
     val brightnessPermissionMsg = stringResource(R.string.brightness_needs_permission_short)
     val actionNotAvailableMsg = stringResource(R.string.action_not_available_msg)
     val unknownActionMsg = stringResource(R.string.unknown_action_msg)
+    val flashlightOnMsg = stringResource(R.string.flashlight_on)
+    val flashlightOffMsg = stringResource(R.string.flashlight_off)
+    val flashlightUnavailableMsg = stringResource(R.string.flashlight_unavailable)
 
     fun handlerTapActions(action: String) {
         if (preference.getHandlerVibrateOnClick()) {
@@ -198,13 +208,40 @@ fun HandlerPreviewSurface(
                     viewModel.showToast(brightnessPermissionMsg)
                 }
             }
-            // Everything that acts on the live overlay or leaves the app. Listed rather than left
-            // to the else branch, which reports an unrecognised identifier — a real bug worth
-            // seeing, and not what a perfectly valid action outside the preview's remit is.
+            // The device toggles are harmless to rehearse and give real feedback, so they run.
+            HandlerActions.TOGGLE_FLASHLIGHT -> viewModel.showToast(
+                when (toggles.toggleFlashlight()) {
+                    true -> flashlightOnMsg
+                    false -> flashlightOffMsg
+                    null -> flashlightUnavailableMsg
+                }
+            )
+            HandlerActions.MEDIA_PLAY_PAUSE -> toggles.mediaPlayPause()
+            HandlerActions.MEDIA_NEXT -> toggles.mediaNext()
+            HandlerActions.MEDIA_PREVIOUS -> toggles.mediaPrevious()
+            // Everything that acts on the live overlay, leaves the app, or opens a window of its
+            // own. Listed rather than left to the else branch, which reports an unrecognised
+            // identifier — a real bug worth seeing, and not what a perfectly valid action outside
+            // the preview's remit is.
             HandlerActions.ACTIVE_MUSIC_OVERLAY,
             HandlerActions.HIDE_HANDLER,
             HandlerActions.STOP_SERVICE,
-            HandlerActions.OPEN_APP -> {
+            HandlerActions.OPEN_APP,
+            HandlerActions.OPEN_DECK,
+            HandlerActions.OPEN_MENU,
+            HandlerActions.OPEN_SEARCH,
+            HandlerActions.OPEN_TIMER,
+            HandlerActions.OPEN_CALCULATOR,
+            HandlerActions.OPEN_NOTES,
+            HandlerActions.OPEN_CLIPBOARD,
+            HandlerActions.OPEN_MEDIA,
+            HandlerActions.COIN_TOSS,
+            HandlerActions.DICE_ROLL,
+            HandlerActions.SCAN_QR,
+            HandlerActions.SONG_SEARCH,
+            HandlerActions.TOGGLE_DND,
+            HandlerActions.TOGGLE_AUTO_ROTATE,
+            in HandlerActions.ACCESSIBILITY_ACTIONS -> {
                 viewModel.showToast(actionNotAvailableMsg)
             }
             else -> {
@@ -269,11 +306,17 @@ fun HandlerPreviewSurface(
                             override fun isDoubleTapArmed(): Boolean =
                                 preference.getHandlerDoubleTapAction() != HandlerActions.NONE
 
+                            override fun isTripleTapArmed(): Boolean =
+                                preference.getHandlerTripleTapAction() != HandlerActions.NONE
+
                             override fun onTap() =
                                 handlerTapActions(preference.getHandlerSingleTapAction())
 
                             override fun onDoubleTap() =
                                 handlerTapActions(preference.getHandlerDoubleTapAction())
+
+                            override fun onTripleTap() =
+                                handlerTapActions(preference.getHandlerTripleTapAction())
 
                             override fun onLongPress() =
                                 handlerTapActions(preference.getHandlerLongTapAction())
@@ -347,20 +390,35 @@ fun HandlerPreviewSurface(
                              * the bar and still drags it, which is the part worth previewing.
                              */
                             /**
-                             * The preview has no inward swipe, for the same reason it has no
+                             * The preview has no horizontal swipes, for the same reason it has no
                              * context menu: it lives inside a sheet that already owns the screen,
-                             * and a floating menu would sit over the very controls being adjusted.
-                             * This gesture's entire payload IS that menu, so stubbing the menu
-                             * necessarily stubs the gesture.
-                             *
-                             * Returning 0 means the detector never enters its tracking state here,
-                             * so the preview's horizontal branch is line-for-line what it has
-                             * always been - a stub that changes nothing, not one that hides
-                             * something.
+                             * and the Deck or a menu would sit over the very controls being
+                             * adjusted. Nothing is armed, so the detector never enters its
+                             * tracking state here and the horizontal branch stays a silent miss.
                              */
-                            override fun edgeSwipeInwardSign(): Int = 0
+                            override fun edgeSwipeInwardSign(): Int =
+                                if (state.gravity == Gravity.START) 1 else -1
 
-                            override fun onEdgeSwipe() = Unit
+                            override fun isHorizontalSwipeArmed(inward: Boolean): Boolean = false
+
+                            override fun onHorizontalSwipe(inward: Boolean) = Unit
+
+                            /**
+                             * The slider is inert in the preview for the same reason the swipe
+                             * actions are: this bar is a picture of the settings being edited, and
+                             * a stroke across it must not reach out and change the real screen
+                             * brightness of the phone the user is editing settings on.
+                             */
+                            override fun isQuickSliderArmed(inward: Boolean): Boolean = false
+
+                            override fun quickSliderSweepDp(): Float =
+                                QuickSliderStore.DEFAULT_LENGTH
+
+                            override fun onQuickSliderBegin(inward: Boolean) = Unit
+
+                            override fun onQuickSliderUpdate(fractionFromOpen: Float) = Unit
+
+                            override fun onQuickSliderEnd() = Unit
 
                             override fun onContextMenuOpen() = Unit
 

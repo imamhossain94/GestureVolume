@@ -46,8 +46,11 @@ fun PresetCardsGrid(
 
     val presets = remember(primary, onSurface) {
         listOf(
+            // Black rather than a theme colour, and narrow rather than wide: the Default bar is
+            // now a slim opaque pill, and a swatch that showed the old indigo slab would be
+            // advertising a preset that no longer exists.
             PresetConfig("Default", R.string.preset_default_title, R.string.preset_default_subtitle, Icons.Default.Settings,
-                listOf(primary, primary), 22.dp, 10.dp, primary, 0.5f),
+                listOf(primary, primary), 8.dp, 4.dp, ComposeColor.Black, 0.9f),
             PresetConfig("Minimal", R.string.preset_minimal_title, R.string.preset_minimal_subtitle, Icons.Default.LinearScale,
                 listOf(primary, primary), 8.dp, 6.dp, onSurface, 0.4f),
             PresetConfig("Bold", R.string.preset_bold_title, R.string.preset_bold_subtitle, Icons.Default.VerticalAlignCenter,
@@ -57,7 +60,9 @@ fun PresetCardsGrid(
             PresetConfig("Ghost", R.string.preset_ghost_title, R.string.preset_ghost_subtitle, Icons.Default.HideSource,
                 listOf(primary, primary), 16.dp, 8.dp, onSurface, 0.1f),
             PresetConfig("Edge", R.string.preset_edge_title, R.string.preset_edge_subtitle, Icons.Default.DragHandle,
-                listOf(primary, primary), 8.dp, 4.dp, onSurface, 0.6f)
+                listOf(primary, primary), 8.dp, 4.dp, onSurface, 0.6f),
+            PresetConfig("Notch", R.string.preset_notch_title, R.string.preset_notch_subtitle, Icons.Default.HorizontalRule,
+                listOf(primary, primary), 10.dp, 5.dp, onSurface, 0.9f)
         )
     }
 
@@ -137,6 +142,20 @@ fun PresetCardsGrid(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            presets[6].let { preset ->
+                PresetCard(
+                    modifier = Modifier.weight(1f),
+                    title = stringResource(preset.nameRes),
+                    subtitle = stringResource(preset.subtitleRes),
+                    icon = preset.icon,
+                    gradientColors = preset.gradientColors,
+                    previewWidth = preset.previewWidth,
+                    previewCorner = preset.previewCorner,
+                    previewColor = preset.previewColor,
+                    previewAlpha = preset.previewAlpha,
+                    onClick = { onNavigateToAppearance(preset.id) }
+                )
+            }
             presets[4].let { preset ->
                 PresetCard(
                     modifier = Modifier.weight(1f),

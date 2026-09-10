@@ -104,10 +104,12 @@ class AppearanceStateHolder(
  * Extracted so the deep link from the main screen's preset card and the quick-preset chips in the
  * settings sheet cannot drift apart — they were two copies of the same sixteen assignments.
  *
- * A preset is an **appearance, not a placement**. It deliberately leaves [AppearanceStateHolder.gravity],
- * [AppearanceStateHolder.positionFraction] and [AppearanceStateHolder.posXFraction] alone: the bar
- * is dragged where the user wants it, and picking "Night" to change the colour should not also
- * throw that away.
+ * A preset is an **appearance, not a placement** — with one stated exception. It leaves
+ * [AppearanceStateHolder.gravity], [AppearanceStateHolder.positionFraction] and
+ * [AppearanceStateHolder.posXFraction] alone, because the bar is dragged where the user wants it
+ * and picking "Night" to change the colour should not throw that away. A preset that carries a
+ * [HandlerPresets.Placement] is the exception, and carries one precisely because where it sits is
+ * what it *is*: see the Notch preset.
  *
  * Writes only the holder, so applying a preset stays inside the Apply/Discard contract.
  */
@@ -129,6 +131,12 @@ fun AppearanceStateHolder.applyPreset(preset: HandlerPresets.Preset) {
     showIcon = preset.showIcon
     vibrate = preset.vibrate
     edgeMargin = preset.edgeMargin
+    preset.placement?.let { placement ->
+        gravity = placement.gravity
+        posXFraction = placement.posXFraction
+        positionFraction = placement.posYFraction
+        snapToEdge = placement.snapToEdge
+    }
 }
 
 /**
@@ -139,7 +147,8 @@ fun AppearanceStateHolder.applyPreset(preset: HandlerPresets.Preset) {
  * deselect the preset whose colours are still on screen.
  */
 fun HandlerPresets.Preset.matches(state: AppearanceStateHolder): Boolean =
-    state.width == width &&
+    (placement == null || state.snapToEdge == placement.snapToEdge) &&
+        state.width == width &&
         state.height == height &&
         state.bgColor == bgColor &&
         state.bgAlpha == bgAlpha &&

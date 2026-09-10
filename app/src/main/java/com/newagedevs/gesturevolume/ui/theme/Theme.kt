@@ -97,7 +97,9 @@ fun GestureVolumeTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
+            // Null outside an Activity: the overlay windows the services draw use this theme too,
+            // and they have no system bars of their own to recolour.
+            val window = (view.context as? Activity)?.window ?: return@SideEffect
             // Bar colours are left to enableEdgeToEdge() in MainActivity;
             // Window.setStatusBarColor/setNavigationBarColor are deprecated in Android 15.
             WindowCompat.getInsetsController(window, view).apply {

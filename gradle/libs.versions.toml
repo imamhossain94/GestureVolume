@@ -37,6 +37,7 @@ cardview = "1.0.0"
 # Ads
 applovinSdk = "13.6.4"
 playServicesBase = "18.10.1"
+playServicesCodeScanner = "16.1.0"
 inmobiAdapter = "11.4.1.2"
 mintegralAdapter = "17.1.81.0"
 picasso = "2.71828"
@@ -97,6 +98,7 @@ inmobi-adapter = { module = "com.applovin.mediation:inmobi-adapter", version.ref
 mintegral-adapter = { module = "com.applovin.mediation:mintegral-adapter", version.ref = "mintegralAdapter" }
 picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
+play-services-code-scanner = { module = "com.google.android.gms:play-services-code-scanner", version.ref = "playServicesCodeScanner" }
 unityads-adapter = { module = "com.applovin.mediation:unityads-adapter", version.ref = "unityadsAdapter" }
 vungle-adapter = { module = "com.applovin.mediation:vungle-adapter", version.ref = "vungleAdapter" }
 

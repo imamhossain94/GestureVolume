@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.collectAsState
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.newagedevs.gesturevolume.BuildConfig
-import com.newagedevs.gesturevolume.service.OverlayService
+import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.utils.ReviewPrompter
 import com.newagedevs.gesturevolume.ui.theme.GestureVolumeTheme
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
@@ -36,7 +37,19 @@ class MainActivity : AppCompatActivity() {
     companion object {
         /** Let the screen settle — and any app-open ad finish — before considering a prompt. */
         private const val REVIEW_SETTLE_DELAY_MS = 2_500L
+
+        /** A navigation route to open on arrival, from the Deck's "manage" buttons. */
+        const val EXTRA_ROUTE = "route"
     }
+
+    /**
+     * The route the Deck asked for, consumed once by the navigation graph.
+     *
+     * State rather than an argument to the graph, because the Activity is `singleTop` in spirit:
+     * the Deck reuses a running instance, and the route then arrives through [onNewIntent] with
+     * the composition already up.
+     */
+    val pendingRoute = mutableStateOf<String?>(null)
 
     private val viewModel: MainViewModel by viewModels()
 
@@ -101,6 +114,14 @@ class MainActivity : AppCompatActivity() {
 
         // Check for App Updates
         checkForAppUpdate()
+
+        pendingRoute.value = intent?.getStringExtra(EXTRA_ROUTE)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        intent.getStringExtra(EXTRA_ROUTE)?.let { pendingRoute.value = it }
     }
 
     override fun onStart() {
@@ -160,15 +181,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendServiceCommand(action: String) {
+        // Routed rather than sent to the foreground service by name: since 1.4.0 the bar may be
+        // drawn by the accessibility service instead, and the runtime knows which host is up.
         if (viewModel.preference.isRunning()) {
-            val intent = Intent(this, OverlayService::class.java).apply {
-                this.action = action
-            }
-            try {
-                startService(intent)
-            } catch (_: Exception) {
-                // Service might not be running, ignore
-            }
+            OverlayRuntime.sendCommand(this, action)
         }
     }
 

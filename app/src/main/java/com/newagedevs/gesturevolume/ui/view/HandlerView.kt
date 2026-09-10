@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.widget.TextViewCompat
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.HandlerPresets
 
 class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
 
@@ -36,11 +37,18 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     private var backgroundColor: Int = Color.BLUE
     private var backgroundAlpha: Int = 255
 
-    // Corner radius properties
-    private var cornerRadiusTopLeft: Float = 20f
-    private var cornerRadiusTopRight: Float = 0f
-    private var cornerRadiusBottomLeft: Float = 20f
-    private var cornerRadiusBottomRight: Float = 0f
+    // Corner radius properties.
+    //
+    // Uniform, and they must stay uniform. These used to be 20/0/20/0 — rounded on the left,
+    // square on the right — from when the bar was always mounted on the right edge and drawn as
+    // if it were welded to it. Every caller overwrites all four before the view is attached, so
+    // the asymmetry never reached the screen, but it is the exact shape a half-configured bar
+    // would show, and "the right corners are square" is not a bug anyone should have to chase
+    // through a placeholder. Seeded from the Default preset so there is one number, not two.
+    private var cornerRadiusTopLeft: Float = HandlerPresets.DEFAULT.cornerRadius
+    private var cornerRadiusTopRight: Float = HandlerPresets.DEFAULT.cornerRadius
+    private var cornerRadiusBottomLeft: Float = HandlerPresets.DEFAULT.cornerRadius
+    private var cornerRadiusBottomRight: Float = HandlerPresets.DEFAULT.cornerRadius
 
     // Stroke properties
     private var strokeColor: Int = Color.GRAY
@@ -48,6 +56,7 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     private var strokeAlpha: Int = 255
 
     // Inset properties
+    private var inwardPaddingDp: Float = 0f
     private var insetLeft: Float = DEFAULT_INSET
     private var insetTop: Float = 0f
     private var insetRight: Float = 0f
@@ -340,17 +349,34 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         translationX = if (viewGravityPosition == Gravity.START) px else -px
     }
 
+    /**
+     * Dead space between the bar and the inner edge of its window, in dp.
+     *
+     * The window is deliberately wider than the bar so there is something worth aiming at; this is
+     * the difference. It goes on the inward side — away from the screen edge — so the bar itself
+     * stays flush where the user put it, and it moves with the bar when it is carried to the other
+     * side. See `OverlayController.MIN_TOUCH_WIDTH_DP`.
+     */
+    fun setInwardPaddingDp(dp: Float) {
+        inwardPaddingDp = dp.coerceAtLeast(0f)
+        updateInsetsForGravity(viewGravityPosition)
+    }
+
     private fun updateInsetsForGravity(gravity: Int) {
         when (gravity) {
             Gravity.START -> {
                 insetLeft = 0f
-                insetRight = DEFAULT_INSET
+                insetRight = DEFAULT_INSET + inwardPaddingDp
             }
             Gravity.END -> {
-                insetLeft = DEFAULT_INSET
+                insetLeft = DEFAULT_INSET + inwardPaddingDp
                 insetRight = 0f
             }
         }
+        // The background is inset by the drawable; the padding is what moves the *icon* with it.
+        // Without this the icon would centre itself in the window, which is beside the bar rather
+        // than in it, and a bar with an icon would look like it had come apart.
+        setPadding(dpToPx(insetLeft).toInt(), 0, dpToPx(insetRight).toInt(), 0)
         updateViewAppearance()
     }
 

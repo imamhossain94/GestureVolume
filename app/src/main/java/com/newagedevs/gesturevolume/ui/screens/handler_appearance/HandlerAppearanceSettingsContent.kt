@@ -133,7 +133,10 @@ fun HandlerAppearanceSettingsContent(
             SliderControl(
                 label = stringResource(R.string.width),
                 value = state.width,
-                valueRange = 10f..60f,
+                // Up to 200dp since 1.4.0: the Notch preset lays the bar across the top of the
+                // screen, and a range that stopped at 60 could not express it — nor could a user
+                // adjust one after applying it.
+                valueRange = 10f..200f,
                 valueDisplay = "${state.width.toInt()}dp",
                 borderColor = MaterialTheme.colorScheme.primary,
                 onValueChange = { state.width = it }
@@ -145,7 +148,8 @@ fun HandlerAppearanceSettingsContent(
             SliderControl(
                 label = stringResource(R.string.height),
                 value = state.height,
-                valueRange = 30f..200f,
+                // Down to 8dp for the same reason: a bar across the top is a thin one.
+                valueRange = 8f..200f,
                 valueDisplay = "${state.height.toInt()}dp",
                 borderColor = MaterialTheme.colorScheme.primary,
                 onValueChange = { state.height = it }
