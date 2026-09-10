@@ -121,10 +121,10 @@ fun AppearanceStateHolder.applyPreset(preset: HandlerPresets.Preset) {
     strokeColor = preset.strokeColor
     strokeWidth = preset.strokeWidth
     strokeAlpha = preset.strokeAlpha
-    cornerTL = preset.cornerRadius
-    cornerTR = preset.cornerRadius
-    cornerBL = preset.cornerRadius
-    cornerBR = preset.cornerRadius
+    cornerTL = preset.topLeft
+    cornerTR = preset.topRight
+    cornerBL = preset.bottomLeft
+    cornerBR = preset.bottomRight
     iconRes = preset.iconRes
     iconSize = preset.iconSize
     iconColor = preset.iconColor

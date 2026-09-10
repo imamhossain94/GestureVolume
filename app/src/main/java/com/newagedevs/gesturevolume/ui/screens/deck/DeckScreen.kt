@@ -56,6 +56,7 @@ import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.overlay.deck.DeckTiles
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.screens.handler_action.ActionSettingItem
+import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SectionTitle
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.ColorPickerControl
@@ -98,6 +99,7 @@ fun DeckScreen(
     val notesCount = remember(version) { store.getNotes().size }
     val clipboardCount = remember(version) { preference.getClipboardEntries().size }
 
+    var panelTheme by remember { mutableStateOf(viewModel.preference.getPanelTheme()) }
     var width by remember { mutableStateOf(store.getWidthDp()) }
     var height by remember { mutableStateOf(store.getHeightFraction()) }
     var corner by remember { mutableStateOf(store.getCornerRadiusDp()) }
@@ -244,6 +246,14 @@ fun DeckScreen(
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
+                    PanelThemeSelector(
+                        theme = panelTheme,
+                        onThemeChange = {
+                            panelTheme = it
+                            viewModel.preference.setPanelTheme(it)
+                        },
+                    )
+                    ThinDivider()
                     SliderControl(
                         label = stringResource(R.string.deck_width),
                         value = width,

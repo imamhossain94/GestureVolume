@@ -46,6 +46,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.service.HandlerGeometry
 import com.newagedevs.gesturevolume.utils.HandlerPresets
@@ -362,12 +364,32 @@ fun HandlerAppearanceSettingsContent(
         // ---- Position -----------------------------------------------------------------------
         AppearanceSection(
             title = stringResource(R.string.position_uppercase),
-            summary = "${state.edgeMargin.toInt()}dp",
+            summary = stringResource(
+                if (state.gravity == Gravity.START) R.string.side_left else R.string.side_right
+            ),
         ) {
-            // No Left/Right picker. The bar goes where it is dragged, and which side it is
-            // "on" is a consequence of that rather than a setting — a picker on top could only
-            // ever disagree with where the bar actually is. The two controls below are the whole
-            // of horizontal placement: whether it returns to a side, and how far in that side is.
+            // Which side the bar starts on. There *was* no picker here, on the reasoning that the
+            // side is a consequence of where the bar was dragged rather than a setting, and that a
+            // picker could only disagree with where the bar actually is. That reasoning depended
+            // on this screen having a draggable preview, which it no longer does — so without this
+            // there is no way to put a right-hand bar on the left except to long press the live
+            // one and carry it across, which is a thing you have to already know.
+            //
+            // It writes the x fraction as well as the gravity, so it is a real move rather than a
+            // change of dressing: flush left is 0, flush right is 1, and the edge distance below
+            // does the rest.
+            SideSelector(
+                gravity = state.gravity,
+                onGravityChange = {
+                    state.gravity = it
+                    state.posXFraction = if (it == Gravity.START) 0f else 1f
+                },
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
             Text(
                 text = stringResource(R.string.drag_to_move_hint),
                 style = MaterialTheme.typography.bodySmall,
@@ -516,4 +538,80 @@ private fun PresetChip(
             )
         }
     }
+}
+
+/**
+ * Left or right, as two halves of one pill.
+ *
+ * A segmented pair rather than a switch, because the two states are places and neither is "off";
+ * and rather than a dropdown, because there are exactly two of them and they are the answer to a
+ * question the user can see the result of immediately in the dock above.
+ */
+@Composable
+private fun SideSelector(
+    gravity: Int,
+    onGravityChange: (Int) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
+            .padding(3.dp)
+            .selectableGroup(),
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        SideSelectorHalf(
+            label = stringResource(R.string.side_left),
+            selected = gravity == Gravity.START,
+            onClick = { onGravityChange(Gravity.START) },
+            modifier = Modifier.weight(1f),
+        )
+        SideSelectorHalf(
+            label = stringResource(R.string.side_right),
+            selected = gravity == Gravity.END,
+            onClick = { onGravityChange(Gravity.END) },
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun SideSelectorHalf(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val background by animateColorAsState(
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            Color.Transparent
+        },
+        animationSpec = AppearanceMotion.Tint,
+        label = "sideSelectorBackground",
+    )
+    val content by animateColorAsState(
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.onPrimary
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        animationSpec = AppearanceMotion.Tint,
+        label = "sideSelectorContent",
+    )
+
+    Text(
+        text = label,
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .background(background)
+            .padding(vertical = 9.dp),
+        textAlign = TextAlign.Center,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = content,
+    )
 }

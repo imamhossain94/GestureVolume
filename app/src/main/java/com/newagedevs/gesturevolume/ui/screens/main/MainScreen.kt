@@ -68,6 +68,9 @@ fun MainScreen(
     onNavigateToActions: () -> Unit,
     onNavigateToPermissions: () -> Unit,
     onNavigateToDeck: () -> Unit,
+    onNavigateToQuickPanel: () -> Unit,
+    onNavigateToLongPressMenu: () -> Unit,
+    onNavigateToFaq: () -> Unit,
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
@@ -219,6 +222,44 @@ fun MainScreen(
                         Color(0xFFEF4444)
                     ),
                     onClick = onNavigateToDeck
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // The Quick panel: the track the bar opens into. Beside the Deck rather than
+                // buried in Actions, because the two are the bar's two panels and a user looking
+                // for one will look wherever they found the other.
+                NavigationCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),
+                    title = stringResource(R.string.quick_slider_title),
+                    subtitle = stringResource(R.string.quick_panel_card_subtitle),
+                    icon = R.drawable.ic_brightness_up,
+                    gradientColors = listOf(
+                        Color(0xFF06B6D4),
+                        Color(0xFF3B82F6)
+                    ),
+                    onClick = onNavigateToQuickPanel
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // The long-press menu, beside the two panels it sits alongside in use. It was
+                // reachable only from a row buried in Actions, which is where you look for what a
+                // gesture *does* — not for what is inside the thing one of them opens.
+                NavigationCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),
+                    title = stringResource(R.string.context_menu_title),
+                    subtitle = stringResource(R.string.long_press_menu_card_subtitle),
+                    icon = R.drawable.ic_move,
+                    gradientColors = listOf(
+                        Color(0xFF8B5CF6),
+                        Color(0xFFEC4899)
+                    ),
+                    onClick = onNavigateToLongPressMenu
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))

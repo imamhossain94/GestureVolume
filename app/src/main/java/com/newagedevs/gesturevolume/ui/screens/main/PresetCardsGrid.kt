@@ -32,7 +32,9 @@ private data class PresetConfig(
     val previewWidth: Dp,
     val previewCorner: Dp,
     val previewColor: ComposeColor,
-    val previewAlpha: Float
+    val previewAlpha: Float,
+    /** See [PresetCard]'s parameter of the same name. Null keeps the swatch symmetric. */
+    val outerCorner: Dp? = null
 )
 
 @Composable
@@ -49,140 +51,53 @@ fun PresetCardsGrid(
             // Black rather than a theme colour, and narrow rather than wide: the Default bar is
             // now a slim opaque pill, and a swatch that showed the old indigo slab would be
             // advertising a preset that no longer exists.
+            // 12dp wide, rounded on the inside and softened — not squared — on the edge side.
+            // The preset itself uses 1dp there, which at swatch scale is a hard corner and reads
+            // as a mistake rather than as a bar meeting the edge of a screen; 4dp is the same
+            // idea drawn at a size where it is legible.
             PresetConfig("Default", R.string.preset_default_title, R.string.preset_default_subtitle, Icons.Default.Settings,
-                listOf(primary, primary), 8.dp, 4.dp, ComposeColor.Black, 0.9f),
+                listOf(primary, primary), 12.dp, 10.dp, ComposeColor.Black, 0.9f, outerCorner = 4.dp),
             PresetConfig("Minimal", R.string.preset_minimal_title, R.string.preset_minimal_subtitle, Icons.Default.LinearScale,
                 listOf(primary, primary), 8.dp, 6.dp, onSurface, 0.4f),
-            PresetConfig("Bold", R.string.preset_bold_title, R.string.preset_bold_subtitle, Icons.Default.VerticalAlignCenter,
-                listOf(primary, primary), 36.dp, 12.dp, primary, 0.85f),
+            // A circle, because Bold is one now. Equal width and a radius of half it is what the
+            // swatch has to say; PresetCard draws the height, so the two are matched there.
+            PresetConfig("Bold", R.string.preset_bold_title, R.string.preset_bold_subtitle, Icons.Default.Adjust,
+                listOf(primary, primary), 34.dp, 17.dp, onSurface, 0.55f),
             PresetConfig("Night", R.string.preset_night_title, R.string.preset_night_subtitle, Icons.Default.DarkMode,
                 listOf(primary, primary), 22.dp, 10.dp, onSurface, 0.7f),
             PresetConfig("Ghost", R.string.preset_ghost_title, R.string.preset_ghost_subtitle, Icons.Default.HideSource,
-                listOf(primary, primary), 16.dp, 8.dp, onSurface, 0.1f),
-            PresetConfig("Edge", R.string.preset_edge_title, R.string.preset_edge_subtitle, Icons.Default.DragHandle,
-                listOf(primary, primary), 8.dp, 4.dp, onSurface, 0.6f),
-            PresetConfig("Notch", R.string.preset_notch_title, R.string.preset_notch_subtitle, Icons.Default.HorizontalRule,
-                listOf(primary, primary), 10.dp, 5.dp, onSurface, 0.9f)
+                listOf(primary, primary), 16.dp, 8.dp, onSurface, 0.1f)
         )
     }
 
+    // Chunked rather than unrolled. The rows used to be written out by hand against fixed
+    // indices — `presets[6]`, `presets[4]` — which is a layout that silently reorders itself when
+    // a preset is inserted and crashes outright when one is removed. Two removals is exactly what
+    // happened, so the grid now follows whatever the list holds.
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        // --- Row 1 ---
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            presets[0].let { preset ->
-                PresetCard(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(preset.nameRes),
-                    subtitle = stringResource(preset.subtitleRes),
-                    icon = preset.icon,
-                    gradientColors = preset.gradientColors,
-                    previewWidth = preset.previewWidth,
-                    previewCorner = preset.previewCorner,
-                    previewColor = preset.previewColor,
-                    previewAlpha = preset.previewAlpha,
-                    onClick = { onNavigateToAppearance(preset.id) }
-                )
-            }
-            presets[1].let { preset ->
-                PresetCard(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(preset.nameRes),
-                    subtitle = stringResource(preset.subtitleRes),
-                    icon = preset.icon,
-                    gradientColors = preset.gradientColors,
-                    previewWidth = preset.previewWidth,
-                    previewCorner = preset.previewCorner,
-                    previewColor = preset.previewColor,
-                    previewAlpha = preset.previewAlpha,
-                    onClick = { onNavigateToAppearance(preset.id) }
-                )
-            }
-        }
-
-        // --- Row 2 ---
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            presets[2].let { preset ->
-                PresetCard(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(preset.nameRes),
-                    subtitle = stringResource(preset.subtitleRes),
-                    icon = preset.icon,
-                    gradientColors = preset.gradientColors,
-                    previewWidth = preset.previewWidth,
-                    previewCorner = preset.previewCorner,
-                    previewColor = preset.previewColor,
-                    previewAlpha = preset.previewAlpha,
-                    onClick = { onNavigateToAppearance(preset.id) }
-                )
-            }
-            presets[3].let { preset ->
-                PresetCard(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(preset.nameRes),
-                    subtitle = stringResource(preset.subtitleRes),
-                    icon = preset.icon,
-                    gradientColors = preset.gradientColors,
-                    previewWidth = preset.previewWidth,
-                    previewCorner = preset.previewCorner,
-                    previewColor = preset.previewColor,
-                    previewAlpha = preset.previewAlpha,
-                    onClick = { onNavigateToAppearance(preset.id) }
-                )
-            }
-        }
-
-        // --- Row 3 ---
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            presets[6].let { preset ->
-                PresetCard(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(preset.nameRes),
-                    subtitle = stringResource(preset.subtitleRes),
-                    icon = preset.icon,
-                    gradientColors = preset.gradientColors,
-                    previewWidth = preset.previewWidth,
-                    previewCorner = preset.previewCorner,
-                    previewColor = preset.previewColor,
-                    previewAlpha = preset.previewAlpha,
-                    onClick = { onNavigateToAppearance(preset.id) }
-                )
-            }
-            presets[4].let { preset ->
-                PresetCard(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(preset.nameRes),
-                    subtitle = stringResource(preset.subtitleRes),
-                    icon = preset.icon,
-                    gradientColors = preset.gradientColors,
-                    previewWidth = preset.previewWidth,
-                    previewCorner = preset.previewCorner,
-                    previewColor = preset.previewColor,
-                    previewAlpha = preset.previewAlpha,
-                    onClick = { onNavigateToAppearance(preset.id) }
-                )
-            }
-            presets[5].let { preset ->
-                PresetCard(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(preset.nameRes),
-                    subtitle = stringResource(preset.subtitleRes),
-                    icon = preset.icon,
-                    gradientColors = preset.gradientColors,
-                    previewWidth = preset.previewWidth,
-                    previewCorner = preset.previewCorner,
-                    previewColor = preset.previewColor,
-                    previewAlpha = preset.previewAlpha,
-                    onClick = { onNavigateToAppearance(preset.id) }
-                )
+        presets.chunked(2).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                row.forEach { preset ->
+                    PresetCard(
+                        modifier = Modifier.weight(1f),
+                        title = stringResource(preset.nameRes),
+                        subtitle = stringResource(preset.subtitleRes),
+                        icon = preset.icon,
+                        gradientColors = preset.gradientColors,
+                        previewWidth = preset.previewWidth,
+                        previewCorner = preset.previewCorner,
+                        previewColor = preset.previewColor,
+                        previewAlpha = preset.previewAlpha,
+                        previewOuterCorner = preset.outerCorner,
+                        onClick = { onNavigateToAppearance(preset.id) }
+                    )
+                }
+                // An odd count leaves the last card half-width rather than stretched across the
+                // row, so every card in the grid is the same size.
+                if (row.size == 1) Spacer(modifier = Modifier.weight(1f))
             }
         }
     }

@@ -23,9 +23,6 @@ import kotlin.math.abs
  *  - **Horizontal swipe** — inward (toward the middle of the screen) and outward are two separate
  *    action slots; each is inert until something is bound to it. See the note on the deferred
  *    qualification below.
- *  - **Long horizontal swipe** — the same stroke carried much further. The bar expands into a
- *    slider and the finger that opened it keeps setting the value, vertically, until it lifts.
- *    See the note on the two thresholds below.
  *
  * Four invariants, each replacing a specific defect in the code this supersedes:
  *
@@ -67,20 +64,31 @@ import kotlin.math.abs
  * Folding that test back into the axis branch would put it back on 8dp of evidence. It would look
  * like a simplification and it would be a regression.
  *
- * **Why a long swipe delays the short one, and only when it has to.**
+ * **Why the Quick panel is not a gesture here, and why a horizontal latch is always recoverable.**
  *
- * The short swipe and the long swipe are the same stroke measured at two distances, so at the
- * moment the short one qualifies there is no way to know whether the finger is finished. Firing
- * immediately and then opening a slider as well would run both actions off one gesture; waiting to
- * see would put a delay on a gesture that never had one.
+ * The Quick panel used to be the payload of the *same* inward stroke that opens the Deck, told
+ * apart from it by distance alone: past 24dp you got the Deck, past a longer threshold you got the
+ * panel. That arrangement is unambiguous in code and unusable in the hand. A thumb flicking inward
+ * to open the Deck overshoots the second threshold without trying, and nothing on screen says
+ * where either boundary is, so the user learns the difference only by getting the wrong one. No
+ * arbitration fixes that, because the arbitration was never what was wrong.
  *
- * So the wait is charged only where it is owed. With nothing bound to the long swipe in this
- * direction — which is every direction the user has not deliberately set up — the short swipe fires
- * the instant it qualifies, exactly as before, and [State.DEAD] follows. With a slider bound, the
- * short action is held until the finger lifts, because until then the stroke may still be going
- * somewhere. The cost is bounded by how long the user keeps their finger down, which for a flick is
- * nothing, and it is the only arrangement in which both gestures can share one direction without
- * either firing when the user meant the other.
+ * So the panel left this file entirely. It is `HandlerActions.OPEN_QUICK_SLIDER` now — an action
+ * in its own slot, chosen before the finger goes down — and the inward swipe means one thing
+ * again. The two gestures cannot conflict because there is only one of them.
+ *
+ * What is left is the other half of the same complaint: "swipe up and down conflicting". The axis
+ * is latched at the slop crossing on 8dp of evidence, and a thumb pivoting at the base of the hand
+ * *rolls inward before it travels up* — so on a bar mounted at the screen's edge, the normal shape
+ * of a volume swipe starts out looking horizontal. It got worse when the bar became 10dp wide,
+ * because the thumb then pivots directly on the edge.
+ *
+ * Such a stroke used to go straight to [State.DEAD] whenever nothing was bound to that horizontal
+ * direction, which is the common case — and DEAD is terminal, so the volume swipe the user was
+ * actually making did nothing at all. A horizontal latch now *always* enters [State.EDGE_TRACKING],
+ * armed or not, because that is the one state with a way back: the mirror-image test in it
+ * promotes the stroke to [State.ADJUSTING] as soon as it has proved itself vertical. The gesture
+ * the user meant survives an axis decision made on the worst evidence in it.
  */
 class HandlerGestureDetector(
     context: Context,
@@ -185,47 +193,46 @@ class HandlerGestureDetector(
         fun onHorizontalSwipe(inward: Boolean)
 
         /**
-         * Whether the expanding slider is bound to a long horizontal swipe in this direction.
+         * Whether a long swipe in this direction opens the Quick panel.
          *
          * Read at the axis decision, alongside [isHorizontalSwipeArmed], and latched for the rest
          * of the gesture. Returning false is what keeps the short swipe's timing untouched: with
-         * no slider bound, nothing about this gesture is deferred.
+         * no panel bound, nothing about this gesture is deferred.
          */
         fun isQuickSliderArmed(inward: Boolean): Boolean
 
         /**
-         * How much vertical finger travel, in dp, sweeps the slider's whole range.
+         * The swipe reached the short threshold with the panel bound to this direction: start
+         * showing the bar stretching, but commit to nothing.
          *
-         * This is the slider's drawn length, so the track on screen *is* the scale: the fill keeps
-         * pace with the finger one pixel for one pixel, and running the finger from one end of the
-         * track to the other covers exactly the full range. Read once, when the slider opens.
+         * Both outcomes are still live at this point — lift and the short action takes it, carry
+         * on and the panel takes it — and the difference between them is a distance the user
+         * cannot see. So the bar begins following the finger immediately, and how far it has
+         * stretched is the readout of which one the stroke is currently on course for.
          */
-        fun quickSliderSweepDp(): Float
+        fun onEdgePullBegin(inward: Boolean)
 
         /**
-         * The long swipe qualified: expand the bar into the slider.
+         * How far between the two thresholds the finger has travelled, 0..1. Free to go back down:
+         * the stretch follows the finger both ways.
+         */
+        fun onEdgePullUpdate(progress: Float)
+
+        /** The pull ended without reaching the panel. Collapse the stretch. */
+        fun onEdgePullCancel()
+
+        /**
+         * The long swipe qualified: the stretch becomes the Quick panel.
          *
-         * The slider opens showing the value the control already has. It does not jump to where
-         * the finger happens to be — the finger is at the edge of the screen because that is where
-         * the stroke started, which says nothing about what the user wants the brightness to be.
+         * Always preceded by [onEdgePullBegin], so the shape is already fully grown and there is
+         * nothing left to animate. The panel stays up after this gesture ends and takes its own
+         * touches from here, so the detector has nothing further to report — this is the last
+         * thing it says about this stroke.
          */
         fun onQuickSliderBegin(inward: Boolean)
-
-        /**
-         * Cumulative movement since the slider opened, as a fraction of the full range.
-         *
-         * Positive is up, which is more. Not clamped and not quantised here: the host owns the
-         * value, so it owns both the ends of the range and the step boundaries the haptics fire on.
-         * Reported cumulatively rather than as a delta so that a dropped or coalesced event costs
-         * precision on one frame instead of being lost from the total.
-         */
-        fun onQuickSliderUpdate(fractionFromOpen: Float)
-
-        /** The finger lifted or the gesture was taken away. Collapse the slider. */
-        fun onQuickSliderEnd()
     }
 
-    private enum class State { IDLE, DOWN, ADJUSTING, DRAGGING, EDGE_TRACKING, SLIDING, DEAD }
+    private enum class State { IDLE, DOWN, ADJUSTING, DRAGGING, EDGE_TRACKING, DEAD }
 
     private companion object {
         /**
@@ -265,16 +272,27 @@ class HandlerGestureDetector(
          */
         const val EDGE_RATIO = 2f
 
+        /** See [doubleTapTimeout]. Half again on top of the platform's usual 300ms. */
+        const val DOUBLE_TAP_FLOOR_MS = 450L
+
         /**
-         * How far a horizontal swipe must travel to stop being a flick and become a slider pull.
+         * How far across the screen a horizontal swipe must travel to open the Quick panel.
          *
-         * Just under three times [EDGE_TRIGGER_DP]. The gap between the two has to be wide enough
-         * that a user aiming for the short swipe cannot overshoot into the long one by accident:
-         * 24dp is a flick of the thumb tip, 64dp is most of a thumb's reach across the screen and
-         * has to be meant. It is also comfortably inside the narrowest phone in portrait, so the
-         * slider can always be reached without the finger running out of screen.
+         * A fraction of the screen's width rather than a fixed distance. The pair this replaced
+         * were 24dp and 64dp apart, and 64dp is not a long swipe by any measure a user would
+         * recognise: on a 360dp phone it is 18% of the width, which an ordinary flick inward to
+         * open the Deck clears without trying — so the Deck swipe kept turning into the panel.
+         * A third of the screen is a deliberate drag with the thumb, plainly different in kind
+         * from a flick, and it stays that way on a tablet and on a small phone alike.
          */
-        const val SLIDER_TRIGGER_DP = 64f
+        const val SLIDER_TRIGGER_FRACTION = 0.32f
+
+        /** The floor under [SLIDER_TRIGGER_FRACTION], for a window too narrow for it to mean much. */
+        const val SLIDER_TRIGGER_MIN_DP = 88f
+
+        /** And the ceiling, so the gesture is always completable from where the bar sits. */
+        const val SLIDER_TRIGGER_MAX_FRACTION = 0.5f
+
     }
 
     private val density = context.resources.displayMetrics.density
@@ -286,10 +304,38 @@ class HandlerGestureDetector(
      */
     private val edgeTriggerPx = maxOf(EDGE_TRIGGER_DP * density, touchSlop * 3f)
 
-    /** [SLIDER_TRIGGER_DP] in pixels, always clear of [edgeTriggerPx] so the two cannot collide. */
-    private val sliderTriggerPx = maxOf(SLIDER_TRIGGER_DP * density, edgeTriggerPx * 2f)
+    /**
+     * How far the finger must travel to commit to the panel, in pixels.
+     *
+     * Read from the display once, when the detector is built. The bar is rebuilt on a
+     * configuration change, so a rotation gets a detector measured against the width it rotated
+     * into. Always clear of [edgeTriggerPx] by a factor of two, whatever the arithmetic produces,
+     * so the two thresholds cannot collapse into each other on any display.
+     */
+    private val sliderTriggerPx = run {
+        val widthPx = context.resources.displayMetrics.widthPixels.toFloat()
+        (widthPx * SLIDER_TRIGGER_FRACTION)
+            .coerceAtLeast(SLIDER_TRIGGER_MIN_DP * density)
+            .coerceAtMost(widthPx * SLIDER_TRIGGER_MAX_FRACTION)
+            .coerceAtLeast(edgeTriggerPx * 2f)
+    }
+
     private val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
-    private val doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout().toLong()
+    /**
+     * How long the second tap of a double tap may take to arrive.
+     *
+     * The platform's own figure is 300ms, chosen for targets the size of a button. This one is a
+     * bar 10 to 40dp wide at the very edge of the screen, usually tapped with the side of a thumb
+     * while the hand is holding the phone — the finger has to leave and come back to a target it
+     * cannot comfortably see, and 300ms is not enough to do that reliably. The failure is silent
+     * and total: two taps 350ms apart are two single taps, and a single tap is bound to nothing
+     * by default, so the user gets no action and no clue why.
+     *
+     * Only ever *longer* than the platform value, never shorter, so a device that has already
+     * decided its users need more time keeps it.
+     */
+    private val doubleTapTimeout =
+        maxOf(ViewConfiguration.getDoubleTapTimeout().toLong(), DOUBLE_TAP_FLOOR_MS)
 
     private val handler = Handler(Looper.getMainLooper())
 
@@ -340,21 +386,26 @@ class HandlerGestureDetector(
     /** Whether a short-swipe action is bound to this direction. Latched with [edgeInwardSign]. */
     private var edgeShortArmed = false
 
-    /** Whether the slider is bound to this direction. Latched with [edgeInwardSign]. */
+    /** Whether the Quick panel is bound to this direction. Latched with [edgeInwardSign]. */
     private var edgeSliderArmed = false
 
     /**
      * Whether the short swipe has passed its distance and ratio test but has not fired yet.
      *
-     * Only ever set when [edgeSliderArmed] is true — that is the one case where the action has to
-     * wait for the finger to lift before it can be sure the stroke was not on its way to the
-     * slider. Without a slider bound the action fires at the threshold and this stays false.
+     * Only ever set when [edgeSliderArmed] is true — the one case where the action has to wait for
+     * the finger to lift before it can be sure the stroke was not on its way to the panel. Without
+     * a panel bound the action fires at the threshold and this stays false.
      */
     private var edgeQualified = false
 
-    // The expanding slider
-    private var sliderAnchorRawY = 0f
-    private var sliderSweepPx = 1f
+    /**
+     * Whether the bar is currently stretched out under the finger, short of committing.
+     *
+     * Its one job is to make [Host.onEdgePullCancel] idempotent, because the paths that end a pull
+     * overlap: a lift runs through both `onUp` and the direction re-test, and a cancel arrives on
+     * top of whatever the pull was already doing.
+     */
+    private var pullActive = false
 
     // Tap / double-tap / triple-tap
     private var lastTapTime = 0L
@@ -421,6 +472,9 @@ class HandlerGestureDetector(
             host.onContextMenuDismiss()
         }
         edgeQualified = false
+        // For the same reason as the menu above: a stretch is a window of its own, so nothing else
+        // would take it down once the bar it grew out of has gone.
+        endPull()
         finishInFlight(commitDrag = false)
         state = State.IDLE
         pointerId = MotionEvent.INVALID_POINTER_ID
@@ -430,6 +484,8 @@ class HandlerGestureDetector(
 
     private fun onDown(event: MotionEvent) {
         handler.removeCallbacks(longPressRunnable)
+        // Collapses a stretch left over from a previous gesture rather than orphaning its window.
+        endPull()
         state = State.DOWN
         pointerId = event.getPointerId(0)
         downRawX = event.rawX
@@ -478,11 +534,13 @@ class HandlerGestureDetector(
                         edgeInward = (rawX - downRawX) * edgeInwardSign > 0f
                         edgeShortArmed = edgeInwardSign != 0 && host.isHorizontalSwipeArmed(edgeInward)
                         edgeSliderArmed = edgeInwardSign != 0 && host.isQuickSliderArmed(edgeInward)
-                        state = if (edgeShortArmed || edgeSliderArmed) {
-                            State.EDGE_TRACKING
-                        } else {
-                            State.DEAD
-                        }
+                        // EDGE_TRACKING unconditionally, even with nothing bound to this
+                        // direction. It used to go DEAD in that case, which is terminal — and a
+                        // volume swipe that rolled sideways off a thumb pivot latches horizontal
+                        // on 8dp of evidence, so the common configuration silently ate the
+                        // commonest gesture. EDGE_TRACKING is the only state with a way back to
+                        // ADJUSTING; an unarmed direction simply never fires anything from it.
+                        state = State.EDGE_TRACKING
                     } else {
                         // A plain vertical swipe is always the volume/brightness gesture. Moving
                         // the bar takes a long press first, which is handled in longPressRunnable.
@@ -527,11 +585,11 @@ class HandlerGestureDetector(
                 // there is no cycle for a diagonal swipe to flicker around.
                 if (edy >= edgeTriggerPx && edy >= EDGE_RATIO * edx) {
                     state = State.ADJUSTING
-                    // A short swipe that qualified earlier in this same stroke is abandoned rather
-                    // than left pending. Nothing would fire it now — that only happens from
-                    // EDGE_TRACKING — but leaving it set makes that a fact about the other states
-                    // rather than about this line.
+                    // The stroke was a volume swipe that rolled sideways on the way up. The short
+                    // action it may have qualified for is abandoned, and the stretch it was
+                    // showing snaps back.
                     edgeQualified = false
+                    endPull()
                     // Measured from here, not from the down point: the travel that went into
                     // proving the stroke was vertical is evidence, not input, and banking it would
                     // jump the volume several steps the instant the gesture was recognised.
@@ -544,34 +602,52 @@ class HandlerGestureDetector(
                 }
 
                 if (edgeSliderArmed && straight && nowInward == edgeInward && edx >= sliderTriggerPx) {
-                    // The long threshold wins outright: the stroke went far enough that the short
+                    // The far threshold wins outright: the stroke went far enough that the short
                     // swipe was never what the user meant, so its deferred action is dropped
                     // rather than also firing on lift.
                     edgeQualified = false
-                    // Set before the host call so a re-entrant host cannot open the slider twice.
-                    state = State.SLIDING
-                    sliderAnchorRawY = rawY
-                    sliderSweepPx = (host.quickSliderSweepDp() * density).coerceAtLeast(1f)
+                    // Deliberately not endPull(): the stretch is handed over, not collapsed. It is
+                    // already at full extension because the finger dragged it there, so committing
+                    // is a change of meaning with no change of shape.
+                    pullActive = false
+                    // DEAD, not a state of its own. The panel stays up after this and takes its
+                    // own touches from here, so there is nothing left for this stroke to drive.
+                    state = State.DEAD
                     host.onQuickSliderBegin(edgeInward)
-                    host.onQuickSliderUpdate(0f)
-                } else if (edgeShortArmed && straight && edx >= edgeTriggerPx) {
+                } else if (straight && edx >= edgeTriggerPx) {
                     if (edgeSliderArmed) {
-                        // Held until lift. See "Why a long swipe delays the short one" above.
-                        edgeQualified = true
-                    } else {
+                        // Both outcomes are still live, so neither fires and the bar starts
+                        // stretching instead. The short action is held until lift — but only if
+                        // one is bound; the stretch is shown either way, because it answers "how
+                        // much further to the panel?" and that does not depend on what the shorter
+                        // swipe happens to do.
+                        if (nowInward == edgeInward) {
+                            if (edgeShortArmed) edgeQualified = true
+                            if (!pullActive) {
+                                pullActive = true
+                                host.onEdgePullBegin(edgeInward)
+                            }
+                        }
+                    } else if (edgeShortArmed) {
+                        // Nothing further along this direction to wait for, so the Deck opens
+                        // while the finger is still moving.
                         state = State.DEAD
                         if (nowInward == edgeInward) host.onHorizontalSwipe(edgeInward)
                     }
                 }
-                lastRawX = rawX
-                lastRawY = rawY
-            }
 
-            State.SLIDING -> {
-                // Vertical, because the bar expands into a vertical track along the edge it is
-                // mounted on and the fill has to follow the finger. Screen coordinates grow
-                // downward, hence the negation: up is more.
-                host.onQuickSliderUpdate(-(rawY - sliderAnchorRawY) / sliderSweepPx)
+                // Every frame the pull is live. Measured along the direction the gesture armed
+                // rather than from `edx`, which is absolute and would read a finger that has
+                // doubled back past its own start as travelling *forward* — stretching the bar
+                // hardest exactly when the user is undoing the gesture.
+                if (pullActive) {
+                    val along = (rawX - downRawX) * edgeInwardSign * (if (edgeInward) 1f else -1f)
+                    host.onEdgePullUpdate(
+                        ((along - edgeTriggerPx) / (sliderTriggerPx - edgeTriggerPx))
+                            .coerceIn(0f, 1f)
+                    )
+                }
+
                 lastRawX = rawX
                 lastRawY = rawY
             }
@@ -684,20 +760,13 @@ class HandlerGestureDetector(
             // The opposite remedy to the drag's, for the same hazard, and for a stated reason.
             // downRawX is deliberately never re-anchored here, so a resting palm becoming the
             // tracked pointer makes the measured travel jump instantly to the distance between the
-            // palm and the original touch — on a curved edge, easily past both thresholds, firing
+            // palm and the original touch — on a curved edge, easily past the threshold, firing
             // the action from a palm. A drag re-anchors because the bar is already visibly
             // following the finger and must not leap; an edge swipe has emitted nothing yet, so
             // abandoning it costs the user only a re-swipe.
             state = State.DEAD
             edgeQualified = false
-        }
-        if (state == State.SLIDING) {
-            // Same hazard, same answer, and here the stakes are higher: re-anchoring onto a palm
-            // would hand it a live brightness control. The value set so far stands — it was
-            // applied as the finger moved and the user watched it happen — but nothing further is
-            // read from a pointer the user did not choose.
-            state = State.DEAD
-            host.onQuickSliderEnd()
+            endPull()
         }
     }
 
@@ -711,8 +780,13 @@ class HandlerGestureDetector(
                 host.onDragCue(false)
                 host.onDragEnd(dragMoved)
             }
-            State.EDGE_TRACKING -> fireDeferredHorizontalSwipe()
-            State.SLIDING -> host.onQuickSliderEnd()
+            State.EDGE_TRACKING -> {
+                // Collapse first, fire second. The short action is usually a window — the Deck —
+                // and letting it go up before the stretch has been told to retract leaves the
+                // stretch frozen at full extension underneath it.
+                endPull()
+                fireDeferredHorizontalSwipe()
+            }
             else -> Unit
         }
 
@@ -722,12 +796,13 @@ class HandlerGestureDetector(
 
     private fun onCancel() {
         handler.removeCallbacks(longPressRunnable)
-        // A short swipe held back for the slider still fires here. Before the slider existed this
-        // action had already gone out by the time a cancel could arrive — it fired at the
-        // threshold — so dropping it now would turn "the system stole the gesture" into "the
-        // gesture did nothing", which is a regression the user would read as the swipe being
-        // unreliable. Deliberately not done from [cancel], where the bar is going away.
-        if (state == State.EDGE_TRACKING) fireDeferredHorizontalSwipe()
+        // A short swipe held back for the panel still fires here. Before the panel shared this
+        // direction the action had already gone out by the time a cancel could arrive, so dropping
+        // it now would turn "the system stole the gesture" into "the gesture did nothing".
+        if (state == State.EDGE_TRACKING) {
+            endPull()
+            fireDeferredHorizontalSwipe()
+        }
         // Commit an in-flight drag rather than snapping back: the bar is already visibly where the
         // user put it, and the cancel usually came from the system stealing the gesture, not from
         // the user changing their mind.
@@ -737,19 +812,31 @@ class HandlerGestureDetector(
     }
 
     /**
-     * Fires a short swipe that qualified while the slider was armed and has been waiting for the
-     * finger to lift.
+     * Fires a short swipe that qualified while the panel was armed and has been waiting for lift.
      *
-     * The direction is re-tested against where the finger actually ended up, not where it was when
-     * it qualified: a stroke that went out past the threshold and came back has reversed, and the
-     * direction it armed no longer describes it. That test is the same one the immediate path runs
-     * at the threshold — deferring the action defers the test with it.
+     * The direction is re-tested against where the finger actually ended up: a stroke that went out
+     * past the threshold and came back has reversed, and the direction it armed no longer describes
+     * it. That is the same test the immediate path runs at the threshold — deferring the action
+     * defers the test with it.
      */
     private fun fireDeferredHorizontalSwipe() {
         if (!edgeQualified) return
         edgeQualified = false
         val endedInward = (lastRawX - downRawX) * edgeInwardSign > 0f
         if (endedInward == edgeInward) host.onHorizontalSwipe(edgeInward)
+    }
+
+    /**
+     * Collapses a stretch that never became a panel, at most once.
+     *
+     * Every way out of [State.EDGE_TRACKING] that is not the commit runs through here, and several
+     * of them run through each other. The flag is what makes that safe, so callers do not each have
+     * to know which of the others has already been.
+     */
+    private fun endPull() {
+        if (!pullActive) return
+        pullActive = false
+        host.onEdgePullCancel()
     }
 
     private fun finishInFlight(commitDrag: Boolean) {
@@ -759,10 +846,6 @@ class HandlerGestureDetector(
                 host.onDragCue(false)
                 host.onDragEnd(commitDrag && dragMoved)
             }
-            // Always collapsed, never "committed or not": the value the slider set was applied
-            // live as the finger moved, so there is nothing left to commit and a slider left on
-            // screen after the bar went away would be unreachable.
-            State.SLIDING -> host.onQuickSliderEnd()
             else -> Unit
         }
     }

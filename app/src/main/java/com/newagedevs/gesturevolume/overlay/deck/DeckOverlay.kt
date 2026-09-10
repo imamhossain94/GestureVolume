@@ -6,6 +6,15 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
+import com.newagedevs.gesturevolume.utils.PanelTheme
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntRect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -59,7 +68,20 @@ import kotlin.math.min
  * The colours a Deck surface is drawn with: the user's background and accent, and the text
  * colour that reads on that background.
  */
-class DeckPalette(val background: Color, val accent: Color) {
+class DeckPalette(
+    background: Color,
+    val accent: Color,
+    /**
+     * How much of the Deck's own background survives, from [com.newagedevs.gesturevolume.utils.PanelTheme].
+     *
+     * Multiplied into the colour rather than applied to the panel as a whole, for the reason the
+     * Quick panel gives: the text and tiles on this surface have to stay legible on a surface that
+     * is deliberately see-through, and fading the panel would fade them with it.
+     */
+    surfaceAlpha: Float = 1f,
+) {
+    val background: Color = background.copy(alpha = background.alpha * surfaceAlpha)
+
     val onBackground: Color = if (background.luminance() > 0.5f) Color(0xFF111111) else Color.White
     val subtle: Color = onBackground.copy(alpha = 0.62f)
     val onAccent: Color = if (accent.luminance() > 0.5f) Color(0xFF111111) else Color.White
@@ -78,14 +100,43 @@ class DeckPalette(val background: Color, val accent: Color) {
  * A tap outside either dismisses. Every touch anywhere pushes the auto-close back, which the
  * root view reports; nothing here has to remember to.
  */
+/**
+ * The Deck's placed surfaces, for whoever has to line something up behind them.
+ *
+ * Corner radii travel with the rectangles because the blur behind each one is rounded off to
+ * match, and the two shapes do not share a radius.
+ */
+data class DeckSurfaces(
+    val strip: IntRect,
+    val stripCornerPx: Float,
+    val card: IntRect?,
+    val cardCornerPx: Float,
+)
+
 @Composable
 fun DeckOverlay(
     model: DeckModel,
     actions: DeckActions,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    /**
+     * Where the Deck's own surfaces ended up, in window coordinates.
+     *
+     * Reported out because the blur behind the Deck lives in *other* windows — see
+     * `OverlayController.showDeck` and [com.newagedevs.gesturevolume.overlay.PanelBackdrop] — and
+     * those have to match these rectangles exactly or the blur shows up where the panel is not.
+     * Emitted from the layout pass, so it is the placement that actually happened rather than a
+     * second calculation of it that could disagree.
+     */
+    onSurfaces: (DeckSurfaces) -> Unit = {},
 ) {
     val state = actions.env.state
-    val palette = remember(model.config) { DeckPalette(model.config.background, model.config.accent) }
+    val palette = remember(model.config, model.panelTheme) {
+        DeckPalette(
+            model.config.background,
+            model.config.accent,
+            PanelTheme.surfaceAlpha(model.panelTheme),
+        )
+    }
     var shown by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { shown = true }
 
@@ -95,6 +146,10 @@ fun DeckOverlay(
     val edgePx = with(density) { 6.dp.roundToPx() }
     val gapPx = with(density) { 8.dp.roundToPx() }
     val cardWidthPx = with(density) { 320.dp.roundToPx() }
+    // Resolved out here rather than inside the measure block: `MeasureScope` has a `density` of
+    // its own — a Float — and inside the block it shadows this one.
+    val stripCornerPx = with(density) { model.config.cornerDp.dp.toPx() }
+    val cardCornerPx = with(density) { DECK_CARD_CORNER.toPx() }
 
     val expanded = state.expandedTile
     val expandedTile = expanded?.let { DeckTiles.byId(it) }
@@ -132,6 +187,7 @@ fun DeckOverlay(
                             DeckCard(
                                 tile = tile,
                                 palette = palette,
+                                glass = PanelTheme.hasLitEdge(model.panelTheme),
                                 onClose = { state.expandedTile = null }
                             ) {
                                 DeckCardContent(tile, actions, palette)
@@ -155,6 +211,23 @@ fun DeckOverlay(
             val cardX = if (model.isLeft) stripX + strip.width + gapPx else stripX - gapPx - card.width
             val cardY = stripY.coerceIn(gapPx, max(gapPx, frameH - card.height - gapPx))
 
+            // Reported as two rectangles rather than one enclosing both: the backdrop behind
+            // them is a rounded rectangle, and a single one spanning the pair would also blur the
+            // gap down the middle. The card is measured even when no tile is expanded — it is what
+            // the exit animation draws — so it only counts while there is a tile to show.
+            onSurfaces(
+                DeckSurfaces(
+                    strip = IntRect(stripX, stripY, stripX + strip.width, stripY + strip.height),
+                    stripCornerPx = stripCornerPx,
+                    card = if (expandedTile != null) {
+                        IntRect(cardX, cardY, cardX + card.width, cardY + card.height)
+                    } else {
+                        null
+                    },
+                    cardCornerPx = cardCornerPx,
+                )
+            )
+
             layout(constraints.maxWidth, constraints.maxHeight) {
                 strip.place(stripX, stripY)
                 card.place(cardX, cardY)
@@ -170,6 +243,7 @@ private fun DeckStrip(
     palette: DeckPalette,
     stripWidthPx: Int
 ) {
+    val glass = PanelTheme.hasLitEdge(model.panelTheme)
     val state = actions.env.state
     val density = LocalDensity.current
     val stripWidth = with(density) { stripWidthPx.toDp() }
@@ -180,6 +254,7 @@ private fun DeckStrip(
             .width(stripWidth)
             .clip(shape)
             .background(palette.background)
+            .then(if (glass) Modifier.liquidGlass(model.config.cornerDp.dp) else Modifier)
             // Swallows the tap so the root's dismiss does not fire for a press on the strip.
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -353,12 +428,15 @@ fun DeckCard(
     tile: DeckTile,
     palette: DeckPalette,
     onClose: () -> Unit,
-    content: @Composable () -> Unit
+    // Before `content`, so the caller can still pass the card body as a trailing lambda.
+    glass: Boolean = false,
+    content: @Composable () -> Unit,
 ) {
     Column(
         modifier = Modifier
-            .clip(RoundedCornerShape(22.dp))
+            .clip(RoundedCornerShape(DECK_CARD_CORNER))
             .background(palette.background)
+            .then(if (glass) Modifier.liquidGlass(DECK_CARD_CORNER) else Modifier)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -397,3 +475,55 @@ fun DeckCard(
         }
     }
 }
+
+/**
+ * The lighting that turns a translucent panel into a piece of glass.
+ *
+ * The same three cues the long-press menu uses, and deliberately the same numbers: a sheen across
+ * the top of the surface, a specular rim that is bright along the top edge and nearly gone by the
+ * bottom, and a faint counter-light along the bottom where real glass picks up what it is sitting
+ * on. A border of even weight cannot express the second of those, which is why this is drawn.
+ *
+ * Duplicated rather than shared with `ContextMenuOverlay` because the two live in different
+ * packages with different private palettes, and the numbers here are the whole of what is shared —
+ * lifting them into a common file would move four colours and leave the drawing behind.
+ */
+internal fun Modifier.liquidGlass(cornerRadius: Dp): Modifier = drawWithContent {
+    val r = CornerRadius(cornerRadius.toPx(), cornerRadius.toPx())
+
+    drawRoundRect(
+        brush = Brush.verticalGradient(
+            0f to Color(0x2EFFFFFF),
+            0.45f to Color(0x08FFFFFF),
+            1f to Color.Transparent,
+        ),
+        cornerRadius = r,
+    )
+    drawRoundRect(
+        brush = Brush.verticalGradient(
+            0f to Color.Transparent,
+            0.82f to Color.Transparent,
+            1f to Color(0x1AFFFFFF),
+        ),
+        cornerRadius = r,
+    )
+
+    drawContent()
+
+    val stroke = 1.2.dp.toPx()
+    drawRoundRect(
+        brush = Brush.verticalGradient(
+            0f to Color(0xA6FFFFFF),
+            0.35f to Color(0x3DFFFFFF),
+            0.75f to Color(0x14FFFFFF),
+            1f to Color(0x4DFFFFFF),
+        ),
+        topLeft = Offset(stroke / 2f, stroke / 2f),
+        size = Size(size.width - stroke, size.height - stroke),
+        cornerRadius = r,
+        style = Stroke(width = stroke),
+    )
+}
+
+/** The expanding card's corner. Named so its shape and its lighting cannot drift apart. */
+private val DECK_CARD_CORNER = 22.dp

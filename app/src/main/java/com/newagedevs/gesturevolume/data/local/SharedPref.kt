@@ -6,6 +6,9 @@ import androidx.core.content.edit
 import com.newagedevs.gesturevolume.R
 import android.view.Gravity
 import androidx.compose.ui.graphics.toArgb
+import com.newagedevs.gesturevolume.utils.ContextMenuLayout
+import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
+import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.ClipboardEntry
 import com.newagedevs.gesturevolume.utils.HandlerPresets
@@ -201,6 +204,7 @@ class SharedPref @Inject constructor(
         const val HANDLER_POS_Y_LANDSCAPE = "handlerPosYFractionLandscape"
 
         const val HANDLER_HIDDEN = "handlerHidden"
+        const val APP_IN_FOREGROUND = "appInForeground"
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
         const val VOLUME_STREAM_MODE = "handlerVolumeStreamMode"
         const val HANDLER_EDGE_SWIPE_MENU = "handlerEdgeSwipeMenu"
@@ -228,6 +232,18 @@ class SharedPref @Inject constructor(
          */
         const val PRE_MUTE_LEVEL_PREFIX = "handlerPreMuteLevel_"
         const val CONTEXT_MENU_ITEMS = "handlerContextMenuItems"
+        const val CONTEXT_MENU_ORDER = "handlerContextMenuOrder"
+        const val CONTEXT_MENU_LAYOUT = "handlerContextMenuLayout"
+        const val PANEL_THEME = "panelTheme"
+
+        /**
+         * What separates one action from the next in [CONTEXT_MENU_ORDER].
+         *
+         * ASCII unit separator, and it has to be something like it: the identifiers stored here
+         * are human-readable strings — "Open deck", "Mute or Unmute" — so every printable
+         * character a person would reach for is already inside one of them.
+         */
+        const val ORDER_SEPARATOR = "\u001F"
         const val HANDLER_SNAP_TO_EDGE = "handlerSnapToEdge"
         const val SHOW_NOTIFICATION = "showServiceNotification"
         const val ASKED_NOTIFICATION_PERMISSION = "askedNotificationPermission"
@@ -505,6 +521,25 @@ class SharedPref @Inject constructor(
      * Only an explicit Show clears this, and stopping the service clears it too — a service that
      * is off has nothing to hide, and the bar must be there when it is switched on again.
      */
+    /**
+     * Whether the app's own UI is on screen right now.
+     *
+     * In preferences rather than in memory, and that is the whole point of it. The activity tells
+     * the service to hide the bar as it comes to the foreground, but a *cold* start races: the
+     * command is sent while the service process is still coming up, so it can arrive before the
+     * controller exists — or be processed before the controller has drawn the bar — and either way
+     * the bar appears on top of the app that just asked for it to go away. A flag both sides can
+     * read has no ordering to get wrong: whoever creates the bar checks it, whenever that happens.
+     *
+     * Written on every resume and pause, so it is also correct after the service is killed and
+     * restarted by the system while the app sits in front of it.
+     */
+    fun isAppInForeground(): Boolean = sharedPreferences.getBoolean(APP_IN_FOREGROUND, false)
+
+    fun setAppInForeground(value: Boolean) {
+        sharedPreferences.edit { putBoolean(APP_IN_FOREGROUND, value) }
+    }
+
     fun isHandlerHidden(): Boolean = sharedPreferences.getBoolean(HANDLER_HIDDEN, false)
 
     fun setHandlerHidden(value: Boolean) {
@@ -776,13 +811,73 @@ class SharedPref @Inject constructor(
      * A set rather than an ordered list: the menu renders in a fixed canonical order so that an
      * entry does not move under the user's thumb between one long press and the next.
      */
-    fun getContextMenuItems(): Set<String> =
-        sharedPreferences.getStringSet(CONTEXT_MENU_ITEMS, null)
+    /**
+     * The long-press menu, in the order it is drawn.
+     *
+     * A list, where this used to be a `Set`, because the user can now arrange it. That is not a
+     * cosmetic difference: `putStringSet` gives no guarantee about iteration order at all, so the
+     * old storage could not have held an arrangement even if something had wanted to write one —
+     * the menu was ordered by the catalog and the preference only said which rows survived.
+     *
+     * Three sources, in order. The new key wins. Failing that, an install that predates
+     * arrangement has its set migrated, sequenced by [HandlerActionCatalog.CONTEXT_MENU_CANDIDATES]
+     * so it comes out in exactly the order that install was already drawing. Failing both, the
+     * default menu. Nothing is written during any of this: the migration is a read, so a user who
+     * never opens the picker keeps their old preference intact for an older build to read back.
+     */
+    fun getContextMenuOrder(): List<String> {
+        val stored = sharedPreferences.getString(CONTEXT_MENU_ORDER, null)
+        if (stored != null) {
+            return stored.split(ORDER_SEPARATOR)
+                .filter { it.isNotEmpty() }
+                .filter { it in HandlerActions.KNOWN }
+        }
+        val legacy = sharedPreferences.getStringSet(CONTEXT_MENU_ITEMS, null)
             ?.let { HandlerActions.sanitize(it) }
             ?: HandlerActions.DEFAULT_CONTEXT_MENU
+        return HandlerActionCatalog.CONTEXT_MENU_CANDIDATES
+            .map { it.action }
+            .filter { it in legacy }
+    }
 
-    fun setContextMenuItems(value: Set<String>) {
-        sharedPreferences.edit { putStringSet(CONTEXT_MENU_ITEMS, value) }
+    fun setContextMenuOrder(value: List<String>) {
+        sharedPreferences.edit {
+            putString(CONTEXT_MENU_ORDER, value.joinToString(ORDER_SEPARATOR))
+            // The old key is kept in step so that a downgrade, or any code still reading the set
+            // form, sees the same menu — minus the arrangement, which it could not have used.
+            putStringSet(CONTEXT_MENU_ITEMS, value.toSet())
+        }
+    }
+
+    /** The set form, for callers that only ask whether something is in the menu. */
+    fun getContextMenuItems(): Set<String> = getContextMenuOrder().toSet()
+
+    /**
+     * Whether the menu is drawn as a grid of icons or a list of labelled rows.
+     *
+     * A grid puts more within one thumb's reach and is read by shape; a list is read by name and
+     * is the only one that works for someone who does not recognise the icons. Neither is right
+     * for everyone, which is why it is a setting rather than a decision.
+     */
+    /**
+     * How the floating panels are dressed. Shared by the menu, the Quick panel and the Deck.
+     *
+     * Solid by default, which is what they looked like before the setting existed — the blurred
+     * options cost GPU work on every frame the panel is up, and are not something to hand someone
+     * who has not asked for them.
+     */
+    fun getPanelTheme(): String =
+        PanelTheme.sanitize(sharedPreferences.getString(PANEL_THEME, null))
+
+    fun setPanelTheme(value: String) {
+        sharedPreferences.edit { putString(PANEL_THEME, value) }
+    }
+
+    fun getContextMenuLayout(): String =
+        ContextMenuLayout.sanitize(sharedPreferences.getString(CONTEXT_MENU_LAYOUT, null))
+
+    fun setContextMenuLayout(value: String) {
+        sharedPreferences.edit { putString(CONTEXT_MENU_LAYOUT, value) }
     }
 
     /** True when *we* turned adaptive brightness off, so we know it is ours to hand back. */
@@ -804,9 +899,23 @@ class SharedPref @Inject constructor(
         sharedPreferences.edit { putString(HANDLER_SINGLE_TAP, value) }
     }
 
+    /**
+     * What a double tap does. The Quick panel, unless the user has said otherwise.
+     *
+     * The panel needs a slot of its own, and this is the one it can have without taking anything.
+     * Long press is reposition — the only way to move the bar, and not worth trading. Single tap is
+     * the gesture most likely to be hit by accident. A double tap was bound to nothing at all, and
+     * costs nothing to give away: `isDoubleTapArmed` means a single tap now waits out the
+     * double-tap timeout, but the single tap is `None` by default too, so on a fresh install there
+     * is no action being delayed.
+     *
+     * Read through the same `sanitize` as every other slot, so an install that arrives from a
+     * newer build with something unrecognised here falls back to None rather than to this default.
+     */
     fun getHandlerDoubleTapAction(): String =
         HandlerActions.sanitize(
-            sharedPreferences.getString(HANDLER_DOUBLE_TAP, "None") ?: "None"
+            sharedPreferences.getString(HANDLER_DOUBLE_TAP, HandlerActions.OPEN_QUICK_SLIDER)
+                ?: HandlerActions.OPEN_QUICK_SLIDER
         )
 
     fun setHandlerDoubleTapAction(value: String) {
@@ -828,9 +937,20 @@ class SharedPref @Inject constructor(
     }
 
     // Swipe actions
+    /**
+     * What swiping up the bar does. The Quick panel, unless the user has said otherwise.
+     *
+     * It used to step the volume directly, and stepping is still what it does for anyone who has
+     * chosen one of the volume or brightness bindings. The panel is the better default because a
+     * swipe that opens it can be short and careless — the value is then set on a track that stays
+     * put and can be corrected — whereas a swipe that *is* the adjustment has to be accurate on
+     * the first attempt, on a target at the very edge of the screen.
+     */
     fun getHandlerSwipeUpAction(): String =
-        sharedPreferences.getString(HANDLER_SWIPE_UP, "Increase volume and show UI")
-            ?: "Increase volume and show UI"
+        HandlerActions.sanitize(
+            sharedPreferences.getString(HANDLER_SWIPE_UP, HandlerActions.OPEN_QUICK_SLIDER)
+                ?: HandlerActions.OPEN_QUICK_SLIDER
+        )
 
     fun setHandlerSwipeUpAction(value: String) {
         sharedPreferences.edit { putString(HANDLER_SWIPE_UP, value) }
@@ -839,9 +959,12 @@ class SharedPref @Inject constructor(
     // The default said "Increase..." for the swipe-DOWN slot, which showed the wrong row and the
     // wrong icon in the picker. Correcting it is behaviour-neutral because the direction of a swipe
     // comes from the gesture's sign, never from this string.
+    /** The other half of the pair. See [getHandlerSwipeUpAction]. */
     fun getHandlerSwipeDownAction(): String =
-        sharedPreferences.getString(HANDLER_SWIPE_DOWN, "Decrease volume and show UI")
-            ?: "Decrease volume and show UI"
+        HandlerActions.sanitize(
+            sharedPreferences.getString(HANDLER_SWIPE_DOWN, HandlerActions.OPEN_QUICK_SLIDER)
+                ?: HandlerActions.OPEN_QUICK_SLIDER
+        )
 
     fun setHandlerSwipeDownAction(value: String) {
         sharedPreferences.edit { putString(HANDLER_SWIPE_DOWN, value) }
@@ -1082,28 +1205,28 @@ class SharedPref @Inject constructor(
 
     // Corner radius settings
     fun getHandlerCornerRadiusTL(): Float =
-        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_TL, HandlerPresets.DEFAULT.cornerRadius)
+        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_TL, HandlerPresets.DEFAULT.topLeft)
 
     fun setHandlerCornerRadiusTL(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_CORNER_RADIUS_TL, value) }
     }
 
     fun getHandlerCornerRadiusTR(): Float =
-        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_TR, HandlerPresets.DEFAULT.cornerRadius)
+        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_TR, HandlerPresets.DEFAULT.topRight)
 
     fun setHandlerCornerRadiusTR(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_CORNER_RADIUS_TR, value) }
     }
 
     fun getHandlerCornerRadiusBL(): Float =
-        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_BL, HandlerPresets.DEFAULT.cornerRadius)
+        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_BL, HandlerPresets.DEFAULT.bottomLeft)
 
     fun setHandlerCornerRadiusBL(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_CORNER_RADIUS_BL, value) }
     }
 
     fun getHandlerCornerRadiusBR(): Float =
-        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_BR, HandlerPresets.DEFAULT.cornerRadius)
+        sharedPreferences.getFloat(HANDLER_CORNER_RADIUS_BR, HandlerPresets.DEFAULT.bottomRight)
 
     fun setHandlerCornerRadiusBR(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_CORNER_RADIUS_BR, value) }

@@ -64,7 +64,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.R
-import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
 import com.newagedevs.gesturevolume.ui.components.DndAccessDialog
@@ -113,7 +112,8 @@ private fun openSystemScreen(context: android.content.Context, viewModel: MainVi
 fun HandlerActionsScreen(
     viewModel: MainViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
-    onOpenQuickSlider: () -> Unit = {}
+    onOpenQuickSlider: () -> Unit = {},
+    onOpenLongPressMenu: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -127,12 +127,10 @@ fun HandlerActionsScreen(
     var showSwipeDownDialog by remember { mutableStateOf(false) }
     var showSwipeInDialog by remember { mutableStateOf(false) }
     var showSwipeOutDialog by remember { mutableStateOf(false) }
-    var showContextMenuDialog by remember { mutableStateOf(false) }
 
     // Summary of the slider's own screen, so the row says what a long swipe will actually do
     // rather than only that the feature exists. Refreshed on resume below, because the screen
     // that changes these is a separate destination and writes straight through to preferences.
-    var sliderOpenWith by remember { mutableStateOf(viewModel.preference.slider.getOpenWith()) }
     var sliderTarget by remember { mutableStateOf(viewModel.preference.slider.getTarget()) }
 
     // Read once into local state rather than on every recomposition: these are plain SharedPref
@@ -141,7 +139,8 @@ fun HandlerActionsScreen(
     var showVolumePercent by remember { mutableStateOf(viewModel.preference.getShowVolumePercent()) }
     var volumeStreamMode by remember { mutableStateOf(viewModel.preference.getVolumeStreamMode()) }
     var showVolumeStreamDialog by remember { mutableStateOf(false) }
-    var contextMenuItems by remember { mutableStateOf(viewModel.preference.getContextMenuItems()) }
+    var contextMenuItems by remember { mutableStateOf(viewModel.preference.getContextMenuOrder()) }
+    var contextMenuLayout by remember { mutableStateOf(viewModel.preference.getContextMenuLayout()) }
     var showNotification by remember { mutableStateOf(viewModel.preference.getShowNotification()) }
     var notificationsAllowed by remember { mutableStateOf(hasNotificationPermission(context)) }
     var showNotificationWarning by remember { mutableStateOf(false) }
@@ -178,7 +177,6 @@ fun HandlerActionsScreen(
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.preference.setAppOpenAdPaused(false)
                 notificationsAllowed = hasNotificationPermission(context)
-                sliderOpenWith = viewModel.preference.slider.getOpenWith()
                 sliderTarget = viewModel.preference.slider.getTarget()
                 viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
             }
@@ -327,20 +325,6 @@ fun HandlerActionsScreen(
         )
     }
 
-    if (showContextMenuDialog) {
-        ContextMenuItemsDialog(
-            selected = contextMenuItems,
-            onDismiss = { showContextMenuDialog = false },
-            onConfirm = { picked ->
-                contextMenuItems = picked
-                viewModel.preference.setContextMenuItems(picked)
-                showContextMenuDialog = false
-                // A system action added to the menu needs the service just as one on a tap does.
-                viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
-            }
-        )
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -481,17 +465,13 @@ fun HandlerActionsScreen(
 
                     RowDivider()
 
-                    // Sits with the swipes rather than in Behaviour because it *is* a swipe —
-                    // the same stroke, carried further — and a user looking for why their long
-                    // swipe opened a slider will look here first.
+                    // Sits with the gestures because the panel is opened by one — whichever slot
+                    // above the user has put "Quick panel" in. What this row leads to is the
+                    // panel's own settings: what it drives, how big it is, how hard it buzzes.
                     ActionSettingItem(
                         label = stringResource(R.string.quick_slider_title),
                         description = stringResource(R.string.quick_slider_desc),
-                        value = if (sliderOpenWith == QuickSliderStore.OPEN_OFF) {
-                            stringResource(R.string.slider_open_off)
-                        } else {
-                            stringResource(sliderTargetLabel(sliderTarget))
-                        },
+                        value = stringResource(sliderTargetLabel(sliderTarget)),
                         icon = ActionIcon.Res(R.drawable.ic_brightness_up),
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
@@ -523,7 +503,7 @@ fun HandlerActionsScreen(
                         icon = ActionIcon.Res(R.drawable.ic_move),
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
-                        onClick = { showContextMenuDialog = true }
+                        onClick = onOpenLongPressMenu
                     )
 
                     RowDivider()

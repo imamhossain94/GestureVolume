@@ -41,6 +41,14 @@ fun PresetCard(
     // Visual preview properties to make the card more logical
     previewWidth: Dp = 20.dp,
     previewCorner: Dp = 10.dp,
+    /**
+     * The radius on the side that faces the screen edge, when it differs from [previewCorner].
+     *
+     * The Default bar is rounded on the inside and all but square where it meets the edge, and a
+     * swatch that showed it as a symmetric pill would be advertising a shape the preset does not
+     * apply. Null keeps both sides the same, which is every other preset.
+     */
+    previewOuterCorner: Dp? = null,
     previewColor: Color = MaterialTheme.colorScheme.primary,
     previewAlpha: Float = 0.8f,
     isSelected: Boolean = false,
@@ -101,7 +109,16 @@ fun PresetCard(
                 modifier = Modifier
                     .width(previewWidth)
                     .fillMaxHeight()
-                    .clip(RoundedCornerShape(previewCorner))
+                    // The swatch sits at the right of the card, so its right edge is the one
+                    // standing in for the screen edge.
+                    .clip(
+                        RoundedCornerShape(
+                            topStart = previewCorner,
+                            bottomStart = previewCorner,
+                            topEnd = previewOuterCorner ?: previewCorner,
+                            bottomEnd = previewOuterCorner ?: previewCorner,
+                        )
+                    )
                     .background(previewColor.copy(alpha = previewAlpha))
             )
         }

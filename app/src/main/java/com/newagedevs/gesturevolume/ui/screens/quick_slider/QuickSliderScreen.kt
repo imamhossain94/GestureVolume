@@ -42,7 +42,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.core.graphics.ColorUtils
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.ui.components.PREVIEW_SUBJECT_MAX_HEIGHT
+import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
+import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SectionTitle
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
@@ -59,18 +63,18 @@ fun sliderTargetLabel(id: String): Int = when (id) {
     else -> R.string.slider_target_brightness
 }
 
-fun sliderHapticLabel(id: String): Int = when (id) {
-    QuickSliderStore.HAPTIC_OFF -> R.string.slider_haptic_off
-    QuickSliderStore.HAPTIC_MEDIUM -> R.string.slider_haptic_medium
-    QuickSliderStore.HAPTIC_STRONG -> R.string.slider_haptic_strong
-    else -> R.string.slider_haptic_light
-}
-
 fun sliderOpenerLabel(id: String): Int = when (id) {
     QuickSliderStore.OPEN_OUT -> R.string.slider_open_out
     QuickSliderStore.OPEN_BOTH -> R.string.slider_open_both
     QuickSliderStore.OPEN_OFF -> R.string.slider_open_off
     else -> R.string.slider_open_in
+}
+
+fun sliderHapticLabel(id: String): Int = when (id) {
+    QuickSliderStore.HAPTIC_OFF -> R.string.slider_haptic_off
+    QuickSliderStore.HAPTIC_MEDIUM -> R.string.slider_haptic_medium
+    QuickSliderStore.HAPTIC_STRONG -> R.string.slider_haptic_strong
+    else -> R.string.slider_haptic_light
 }
 
 /**
@@ -95,17 +99,43 @@ fun QuickSliderScreen(
 ) {
     val store = viewModel.preference.slider
 
+    // One wallpaper per visit; see the note in HandlerAppearanceScreen.
+    val bgImage = remember { viewModel.getNextBackground() }
+
+    // Read once: which side the bar is on is settled on the Appearance screen, and this one has
+    // no way to change it.
+    val handlerOnLeft = remember { viewModel.preference.getHandlerPosition() == "Left" }
+
     var openWith by remember { mutableStateOf(store.getOpenWith()) }
     var target by remember { mutableStateOf(store.getTarget()) }
     var haptic by remember { mutableStateOf(store.getHaptic()) }
     var length by remember { mutableFloatStateOf(store.getLengthDp()) }
     var thickness by remember { mutableFloatStateOf(store.getThicknessDp()) }
-    var corner by remember { mutableFloatStateOf(store.getCornerDp()) }
-    var trackColor by remember { mutableStateOf(Color(store.getTrackColor())) }
+    // The panel's track colour and its corners are the handler's, not its own — see
+    // `OverlayController.openQuickSliderWindow`. Read here only so the preview shows the truth;
+    // there are deliberately no controls for them on this screen, because a control that appeared
+    // to set them would be setting something nothing reads.
+    val handlerTrackColor = remember {
+        Color(
+            ColorUtils.setAlphaComponent(
+                viewModel.preference.getHandlerColor(),
+                viewModel.preference.getHandlerBackgroundAlpha().coerceIn(0, 255)
+            )
+        )
+    }
+    val handlerCorners = remember {
+        listOf(
+            viewModel.preference.getHandlerCornerRadiusTL(),
+            viewModel.preference.getHandlerCornerRadiusTR(),
+            viewModel.preference.getHandlerCornerRadiusBL(),
+            viewModel.preference.getHandlerCornerRadiusBR(),
+        )
+    }
     var fillColor by remember { mutableStateOf(Color(store.getFillColor())) }
     var showValue by remember { mutableStateOf(store.getShowValue()) }
     var showIcon by remember { mutableStateOf(store.getShowIcon()) }
     var autoBrightnessOff by remember { mutableStateOf(store.getDisableAutoBrightness()) }
+    var panelTheme by remember { mutableStateOf(viewModel.preference.getPanelTheme()) }
 
     val accent = MaterialTheme.colorScheme.primary
 
@@ -144,10 +174,12 @@ fun QuickSliderScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
             SliderPreview(
+                backgroundImageURL = bgImage,
+                handlerOnLeft = handlerOnLeft,
                 lengthDp = length,
                 thicknessDp = thickness,
-                cornerDp = corner,
-                trackColor = trackColor,
+                trackColor = handlerTrackColor,
+                corners = handlerCorners,
                 fillColor = fillColor,
                 showValue = showValue,
                 showIcon = showIcon,
@@ -235,25 +267,17 @@ fun QuickSliderScreen(
                     borderColor = accent,
                     onValueChange = { thickness = it; store.setThicknessDp(it) }
                 )
-                Sep()
-                SliderControl(
-                    label = stringResource(R.string.slider_corner),
-                    value = corner,
-                    valueRange = 0f..40f,
-                    valueDisplay = "${corner.toInt()}dp",
-                    borderColor = accent,
-                    onValueChange = { corner = it; store.setCornerDp(it) }
-                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
             SectionTitle(stringResource(R.string.quick_slider_look_title), accent)
             Card {
-                ColorPickerControl(
-                    label = stringResource(R.string.slider_track_color),
-                    color = trackColor,
-                    borderColor = accent,
-                    onColorChange = { trackColor = it; store.setTrackColor(it.toArgb()) }
+                PanelThemeSelector(
+                    theme = panelTheme,
+                    onThemeChange = {
+                        panelTheme = it
+                        viewModel.preference.setPanelTheme(it)
+                    },
                 )
                 Sep()
                 ColorPickerControl(
@@ -305,43 +329,51 @@ fun QuickSliderScreen(
 private fun SliderPreview(
     lengthDp: Float,
     thicknessDp: Float,
-    cornerDp: Float,
+    corners: List<Float>,
     trackColor: Color,
     fillColor: Color,
     showValue: Boolean,
     showIcon: Boolean,
-    target: String
+    target: String,
+    backgroundImageURL: String,
+    handlerOnLeft: Boolean,
 ) {
     val iconRes = if (target == QuickSliderStore.TARGET_BRIGHTNESS) {
         R.drawable.ic_brightness_up
     } else {
         R.drawable.ic_vol_increase
     }
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+    // Against the same edge the handler is on, because that is where the panel actually opens —
+    // it grows out of the bar. Centred, it was a picture of a track floating in the middle of the
+    // screen, which is the one place it never appears.
+    PreviewStage(
+        backgroundImageURL = backgroundImageURL,
+        contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height((lengthDp + 48f).dp),
-            contentAlignment = Alignment.Center
-        ) {
-            AndroidView(
+        AndroidView(
                 factory = { ctx -> QuickSliderView(ctx) },
                 update = { view ->
                     view.setColors(trackColor.toArgb(), fillColor.toArgb())
-                    view.setCornerRadiusDp(cornerDp)
+                    view.setExpandedCorners(corners[0], corners[1], corners[2], corners[3])
                     view.setShowValue(showValue)
                     view.setIcon(if (showIcon) iconRes else null)
                     view.setValue(0.6f)
+                    // Both, and neither is optional. QuickSliderView is built to grow out of the
+                    // bar, so it starts collapsed and empty: at expansion 0 it draws no fill, no
+                    // number and no icon, which in a *static* preview is just a black lozenge.
+                    // These two say "this one is already open" — the state every other caller
+                    // reaches by animating, and this one has no reason to animate to.
+                    view.setExpansion(1f)
+                    view.setCommitted()
                 },
-                modifier = Modifier
-                    .height(lengthDp.dp)
-                    .width(thicknessDp.dp)
-            )
-        }
+            modifier = Modifier
+                .padding(horizontal = 18.dp)
+                // Capped to the stage's clear height, so a 320dp track is shown shortened rather
+                // than bleeding off both ends. What the user is judging here is width, colour and
+                // the shape of the ends; length is a number they set with a slider and read off it.
+                .height(minOf(lengthDp, PREVIEW_SUBJECT_MAX_HEIGHT.value).dp)
+                .width(thicknessDp.dp)
+        )
     }
 }
 

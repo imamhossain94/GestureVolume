@@ -26,7 +26,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
-import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
@@ -41,6 +40,7 @@ import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.overlay.ContextMenuOverlay
 import com.newagedevs.gesturevolume.overlay.OverlayComposeHost
 import com.newagedevs.gesturevolume.overlay.OverlayTheme
+import com.newagedevs.gesturevolume.overlay.PanelBackdrop
 import com.newagedevs.gesturevolume.overlay.deck.AppShortcut
 import com.newagedevs.gesturevolume.overlay.deck.DeckActions
 import com.newagedevs.gesturevolume.overlay.deck.DeckConfig
@@ -49,6 +49,7 @@ import com.newagedevs.gesturevolume.overlay.deck.DeckModel
 import com.newagedevs.gesturevolume.overlay.deck.DeckOverlay
 import com.newagedevs.gesturevolume.overlay.deck.DeckRootView
 import com.newagedevs.gesturevolume.overlay.deck.DeckState
+import com.newagedevs.gesturevolume.overlay.deck.DeckSurfaces
 import com.newagedevs.gesturevolume.overlay.deck.DeckTiles
 import com.newagedevs.gesturevolume.data.local.QuickDialEntry
 import com.newagedevs.gesturevolume.ui.activities.MainActivity
@@ -58,6 +59,7 @@ import android.content.pm.PackageManager
 import android.media.RingtoneManager
 import android.net.Uri
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.toBitmap
 import com.newagedevs.gesturevolume.ui.view.HandlerGestureDetector
 import com.newagedevs.gesturevolume.ui.view.HandlerView
@@ -66,7 +68,9 @@ import com.newagedevs.gesturevolume.utils.AudioStreamCatalog
 import com.newagedevs.gesturevolume.utils.AudioStreamResolver
 import com.newagedevs.gesturevolume.utils.BrightnessController
 import com.newagedevs.gesturevolume.utils.DeviceToggles
+import com.newagedevs.gesturevolume.utils.ContextMenuLayout
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
+import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.VolumeController
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
@@ -114,6 +118,24 @@ class OverlayController(
 
         /** Long enough to read as movement, short enough not to delay the next gesture. */
         private const val ANIM_DURATION_MS = 180L
+
+        /** How long the Quick panel takes to grow out of the bar. */
+        private const val PANEL_OPEN_MS = 220L
+
+        /** How long it stays after the finger lifts, so the value just set can be read. */
+        private const val PANEL_LINGER_MS = 550L
+
+        /** How long a panel nobody has touched waits before putting itself away. */
+        private const val PANEL_IDLE_MS = 4000L
+
+        /**
+         * The narrowest the Quick panel may be drawn, whatever the thickness setting says.
+         *
+         * The setting was chosen when the panel was a readout beside a finger already committed to
+         * a stroke, where 24dp was legible and nothing needed aiming at. It is a touch target now,
+         * so it gets the platform's floor.
+         */
+        private const val PANEL_MIN_THICKNESS_DP = 48f
 
         /** How long the level lingers on the bar after the last step of a swipe. */
         private const val VOLUME_PERCENT_VISIBLE_MS = 700L
@@ -181,6 +203,24 @@ class OverlayController(
     private var adjustResolution: VolumeController.Resolution? = null
 
     /** Direction the latched swipe settings belong to: `+1` up, `-1` down, `0` nothing resolved. */
+    /**
+     * A vertical-swipe binding that fires once rather than stepping, waiting to be run.
+     *
+     * Set by [resolveAdjustAction] and consumed by `onAdjustBegin`, which is the only caller
+     * allowed to act on it. See the note where it is set.
+     */
+    private var adjustOneShot: String? = null
+
+    /**
+     * Whether the vertical swipe in progress is steering the Quick panel.
+     *
+     * The panel is opened by the same stroke that then sets its value, so for the length of that
+     * stroke the swipe's steps go to the panel instead of straight to the volume. It is a separate
+     * flag from `adjustEnabled` because the two answer different questions: that one asks whether
+     * this swipe adjusts anything at all, this one asks *what*.
+     */
+    private var adjustDrivesPanel = false
+
     private var adjustDirection = 0
 
     // ---- drag-to-reposition state ----------------------------------------------------------
@@ -217,6 +257,17 @@ class OverlayController(
     // ---- the Deck --------------------------------------------------------------------------------
 
     private var deckHost: OverlayComposeHost? = null
+
+    /**
+     * The blur behind the Deck: one window under the strip, one under the expanded card.
+     *
+     * The Deck's own window has to be full-screen — it catches the tap that dismisses it and hosts
+     * the keyboard for search — so it cannot carry the blur itself; see [PanelBackdrop] for why
+     * the flag-based blur cannot be clipped to part of a window either. These sit underneath and
+     * follow whatever the Deck reports from its layout pass.
+     */
+    private var deckStripBackdrop: PanelBackdrop? = null
+    private var deckCardBackdrop: PanelBackdrop? = null
     private var deckRoot: DeckRootView? = null
     private val deckState = DeckState()
     private val deckEnvironment: DeckEnvironment by lazy {
@@ -227,13 +278,48 @@ class OverlayController(
     private var appShortcutCache: Pair<List<String>, List<AppShortcut>>? = null
 
     private val deckAutoCloseRunnable = Runnable { hideDeck() }
+
+    /** Closes the Quick panel a beat after the finger lifts. See `onAdjustFinished`. */
+    private val sliderCloseRunnable = Runnable { hideQuickSlider() }
+
+    /** Closes a Quick panel that has been sitting untouched. */
+    private val sliderIdleRunnable = Runnable { hideQuickSlider() }
     private val timerFinishRunnable = Runnable { onTimerFinished() }
 
     // ---- the expanding quick slider ----------------------------------------------------------
 
     private var sliderView: QuickSliderView? = null
 
-    /** What this pull is driving, latched when it opens. */
+    /**
+     * The collapse animation, held so a pull that starts again mid-retract can take it over.
+     *
+     * Without this, swiping twice in quick succession — which is what a user does the moment the
+     * first swipe does not do what they expected — leaves an animator still driving the expansion
+     * of a view the new gesture is also driving, and the bar jitters between the two.
+     */
+    private var sliderCollapse: ValueAnimator? = null
+
+    /**
+     * Whether the open slider is live, or still the pre-commit stretch.
+     *
+     * The window exists for both. What separates them is that a stretch controls nothing: it has
+     * latched no target, disabled no adaptive brightness and written no value, so abandoning it
+     * costs the user nothing and leaves nothing to put back.
+     */
+    private var sliderCommitted = false
+
+    /**
+     * Whether this panel has already dealt with adaptive brightness.
+     *
+     * The switch-off is deferred to the first write rather than done when the panel opens, and
+     * this is what keeps it to one attempt per panel. Opening is not using: a panel the user
+     * summons and then dismisses untouched must leave their settings exactly as it found them,
+     * and turning adaptive brightness off on the way in would silently cost them it every time
+     * they changed their mind.
+     */
+    private var sliderAutoBrightnessHandled = false
+
+    /** What this panel is driving, latched when it opens. */
     private var sliderTarget: String = QuickSliderStore.TARGET_BRIGHTNESS
     private var sliderResolution: VolumeController.Resolution? = null
 
@@ -348,6 +434,15 @@ class OverlayController(
      */
     fun handleCommand(action: String) {
         when (action) {
+            // The transient pair, sent as the app comes to the foreground and leaves again.
+            //
+            // Neither touches `appInForeground`, and that is the fix for a bug this once had: the
+            // activity is not the only sender. `repairServiceIfNeeded` starts the service with
+            // "show" from `onStart`, one line after the activity has recorded that it *is* in the
+            // foreground — so a "show" that wrote the flag immediately undid it, and the bar was
+            // drawn over the app that had just asked for it to go away. The boot receiver and the
+            // notification send "show" too, from further away still. Where the app is, is the
+            // activity's own business; these commands only say what to do about it.
             "show" -> show()
             "hide" -> hide()
             "user_show" -> showByUser()
@@ -407,6 +502,11 @@ class OverlayController(
     private fun createOverlayHandler() {
         if (destroyed) return
         if (preference.isHandlerHidden()) return
+        // The bar is never drawn over the app's own UI. Checked here, at the one place that puts
+        // it on screen, rather than trusted to arrive as a "hide" command: on a cold start the
+        // activity's hide races the service coming up, and whichever order those two land in, the
+        // check below gives the same answer. See SharedPref.isAppInForeground.
+        if (preference.isAppInForeground()) return
         if (handlerView != null) return
 
         val handlerPosition = preference.getHandlerPosition()
@@ -533,6 +633,31 @@ class OverlayController(
      * @param focusable true for the Deck, whose search field needs the keyboard. Everything else
      *   stays non-focusable so it never takes input away from the app underneath.
      */
+    /**
+     * Blurs the screen behind a panel, where the theme asks for it and the device allows.
+     *
+     * The *whole* screen, and the window's own size does not change that: `FLAG_BLUR_BEHIND` works
+     * like `FLAG_DIM_BEHIND`, so a window the size of a postage stamp still blurs the launcher in
+     * the far corner. What it buys is a scrim that reads as frosted rather than as grey, which is
+     * right for the menu — a modal the user has just deliberately opened over everything else.
+     *
+     * It is *not* right behind a panel that sits beside the app rather than over it. That case
+     * wants [PanelBackdrop], which is clipped to its own bounds and rounded off to match; the Deck
+     * uses it.
+     *
+     * Silently does nothing below Android 12, and on any device where the system has turned
+     * cross-window blur off — it does that in battery saver and on hardware that cannot afford
+     * it. That is why [PanelTheme]'s alphas are chosen to look deliberate without the blur too.
+     */
+    private fun applyPanelBlur(params: WindowManager.LayoutParams) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+        val radiusDp = PanelTheme.blurRadiusDp(preference.getPanelTheme())
+        if (radiusDp <= 0) return
+        if (windowManager?.isCrossWindowBlurEnabled != true) return
+        params.flags = params.flags or WindowManager.LayoutParams.FLAG_BLUR_BEHIND
+        params.blurBehindRadius = dpToPx(radiusDp.toFloat())
+    }
+
     private fun fullScreenParams(focusable: Boolean): WindowManager.LayoutParams =
         WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -824,10 +949,33 @@ class OverlayController(
 
         override fun onAdjustBegin(initialDirection: Int) {
             adjustDirection = 0
+            adjustOneShot = null
+            adjustDrivesPanel = false
             resolveAdjustAction(initialDirection)
+
+            if (adjustOneShot == HandlerActions.OPEN_QUICK_SLIDER) {
+                adjustOneShot = null
+                // Opened *synchronously*, where every other action here is posted. Posting is for
+                // actions that tear the handler's window down from inside its own input dispatch;
+                // this adds a separate window and leaves the handler's in place, still receiving
+                // the stroke. A posted open would arrive a frame after the swipe had already begun
+                // producing steps, and those steps would have nothing to land on.
+                if (openQuickSliderForSwipe()) {
+                    adjustDrivesPanel = true
+                    // The sweep is re-scaled to the panel's own range, so one full swipe covers
+                    // the track once however many steps the chosen control happens to have.
+                    gestureDetector?.setStepCount(sliderSteps)
+                }
+            } else {
+                adjustOneShot?.let { action -> mainHandler.post { runAction(action) } }
+            }
         }
 
         override fun onAdjustStep(direction: Int): Boolean {
+            // Before the re-resolve below, and deliberately: this stroke has already committed to
+            // the panel, and re-reading the slot on a reversal would try to open a second one.
+            if (adjustDrivesPanel) return nudgeQuickSlider(direction)
+
             // Re-resolved per step, not latched at gesture start: swipe up and swipe down are two
             // independent settings, so reversing mid-gesture has to switch to the other one. Latching
             // meant a swipe that started upward kept driving the swipe-UP action on the way back
@@ -838,6 +986,14 @@ class OverlayController(
         }
 
         override fun onAdjustEnd() {
+            if (adjustDrivesPanel) {
+                adjustDrivesPanel = false
+                // The panel outlives the swipe. It stays up for a beat so the value just set can
+                // be read, and it is touchable throughout — so a stroke that overshot can be
+                // corrected with a second touch rather than repeated from the bar.
+                mainHandler.removeCallbacks(sliderCloseRunnable)
+                mainHandler.postDelayed(sliderCloseRunnable, PANEL_LINGER_MS)
+            }
             adjustEnabled = false
             adjustDirection = 0
         }
@@ -926,33 +1082,35 @@ class OverlayController(
 
         override fun isQuickSliderArmed(inward: Boolean): Boolean {
             if (!preference.slider.opensOn(inward)) return false
-            // A slider bound to a control this device will not let the app write is not "armed but
+            // A panel bound to a control this device will not let the app write is not "armed but
             // failing" — it never opens at all, so the long swipe stays inert and the short swipe
             // keeps its immediate timing rather than being deferred for a gesture that cannot work.
             return quickSliderIsWritable(preference.slider.getTarget())
         }
 
-        override fun quickSliderSweepDp(): Float = preference.slider.getLengthDp()
-
         /**
-         * Opened synchronously, unlike every action above.
+         * Opened synchronously, unlike the actions above.
          *
          * Those are posted because they can tear down the handler window from inside its own input
-         * dispatch. This does the opposite: it *adds* a separate, untouchable window and leaves the
-         * handler's own window in place, still receiving the gesture that is driving the slider.
-         * Posting it would put a frame of nothing between the swipe qualifying and the bar
-         * appearing to expand, which is the one moment the gesture has to feel immediate.
+         * dispatch. This does the opposite: it adds a separate window and leaves the handler's own
+         * in place, still receiving the gesture driving the stretch. Posting it would put a frame
+         * of nothing between the swipe qualifying and the bar appearing to move, which is the one
+         * moment this gesture has to feel immediate.
          */
-        override fun onQuickSliderBegin(inward: Boolean) {
-            showQuickSlider()
+        override fun onEdgePullBegin(inward: Boolean) {
+            beginQuickSliderPull()
         }
 
-        override fun onQuickSliderUpdate(fractionFromOpen: Float) {
-            applyQuickSlider(fractionFromOpen)
+        override fun onEdgePullUpdate(progress: Float) {
+            updateQuickSliderPull(progress)
         }
 
-        override fun onQuickSliderEnd() {
+        override fun onEdgePullCancel() {
             hideQuickSlider()
+        }
+
+        override fun onQuickSliderBegin(inward: Boolean) {
+            commitQuickSliderPull()
         }
 
         override fun onContextMenuOpen() {
@@ -991,6 +1149,17 @@ class OverlayController(
         adjustShowsUi = HandlerActions.showsVolumeUi(action)
         adjustEnabled = !HandlerActions.isDisabled(action)
         if (!adjustEnabled) return
+
+        // A binding the finger triggers rather than steers — the Quick panel, the Deck, a torch.
+        // Recorded, not run: `onAdjustBegin` fires it, and this function is also called on every
+        // direction reversal inside a stroke, where firing would mean a wobbling thumb toggling
+        // the panel open and shut. Stepping is switched off either way, so the rest of the stroke
+        // does nothing.
+        if (!HandlerActions.isAdjustSwipe(action)) {
+            adjustEnabled = false
+            adjustOneShot = action
+            return
+        }
 
         if (adjustIsBrightness) {
             if (!brightness.canWrite()) {
@@ -1179,31 +1348,141 @@ class OverlayController(
         }
 
     /**
-     * Expands the bar into the slider.
+     * Opens the Quick panel beside the bar and leaves it there.
      *
-     * The handler's window is left in place and only its view is hidden. That window is the one
-     * Android is dispatching this gesture to, and taking it away mid-stream would end the gesture
-     * the slider exists to follow — the finger would be holding a control that had stopped
-     * listening. The slider gets a window of its own, marked untouchable so it cannot intercept
-     * anything, sitting exactly where the bar was.
+     * **Why it stays.** It used to be the payload of a long inward swipe: it appeared while the
+     * finger was still down and the *same* finger set the value by moving vertically. Two things
+     * were wrong with that. It shared the inward swipe with the Deck, which is the "they conflict"
+     * report — one stroke, two outcomes, told apart by a distance nothing on screen reported. And
+     * the finger that opened it was the only thing that could ever move it, so a user who let go
+     * to look at what had appeared was left holding a control that had stopped listening. That is
+     * the "opens but cannot increase or decrease" report, and both have the same cure: make it a
+     * panel rather than a gesture payload. It is opened by an action from any slot, it takes its
+     * own touches, and it closes itself once it has been used.
+     *
+     * The handler's own window is left in place and only its view is hidden. The panel grows out
+     * of exactly where the bar was drawn, so the two must not be visible at once — and the window
+     * must stay, because removing it is what would strand the gesture that asked for the panel.
      */
-    private fun showQuickSlider() {
-        if (destroyed || sliderView != null) return
-        val wm = windowManager ?: return
-        val barParams = handlerParams ?: return
-        val currentFrame = frame ?: return
+    private fun showQuickSliderPanel() {
+        // Already up: treat a second trigger as "put it away", so whatever gesture opens the panel
+        // also closes it and the user is never left hunting for a way out.
+        if (sliderView != null) {
+            hideQuickSlider()
+            return
+        }
+        if (!openQuickSliderWindow()) return
+        animateQuickSliderOpen()
+    }
+
+    /**
+     * The long inward swipe reached the short threshold: start the bar stretching.
+     *
+     * Same window, same view, opened the same way — the only difference from [showQuickSliderPanel]
+     * is who moves the expansion. Here it is the finger, one pixel for one pixel, and the panel is
+     * not live until [armQuickSlider]. Everything with a side effect waits for that, because until
+     * the far threshold this stroke is still equally on course for the Deck.
+     */
+    private fun beginQuickSliderPull() {
+        if (sliderView != null) return
+        openQuickSliderWindow()
+    }
+
+    /**
+     * Opens the panel for a vertical swipe that is going to keep driving it.
+     *
+     * Unlike [showQuickSliderPanel] this never toggles: a swipe means "put the panel up and let me
+     * set a value", and a second swipe while one is open means the same thing again. It also arms
+     * the panel immediately instead of waiting for the grow animation to finish, because the
+     * finger driving it is on the *handler's* window — the reason arming is deferred on the other
+     * route is to stop a touch landing on a four-pixel-tall track, and there is no such touch here.
+     *
+     * @return true when there is a live panel to steer.
+     */
+    private fun openQuickSliderForSwipe(): Boolean {
+        if (sliderView == null) {
+            if (!openQuickSliderWindow()) return false
+            animateQuickSliderOpen()
+        }
+        val view = sliderView ?: return false
+        mainHandler.removeCallbacks(sliderCloseRunnable)
+        armQuickSlider(view)
+        return true
+    }
+
+    /**
+     * Moves the panel one step, for the swipe that opened it.
+     *
+     * Steps rather than a raw fraction because that is the currency the gesture engine already
+     * deals in, and because it puts the swipe and a touch on the track on the same quantisation —
+     * the haptics, the number and the value written all come from one rounding either way.
+     *
+     * @return false at the ends of the range, which is what stops the detector banking travel the
+     *   control cannot use.
+     */
+    private fun nudgeQuickSlider(direction: Int): Boolean {
+        if (!sliderCommitted) return false
+        val steps = sliderSteps.coerceAtLeast(1)
+        val next = (sliderLastStep + direction).coerceIn(0, steps)
+        if (next == sliderLastStep) return false
+        restartQuickSliderIdleTimeout()
+        applyQuickSlider(next / steps.toFloat())
+        return true
+    }
+
+    /** One frame of the stretch, straight from the finger. */
+    private fun updateQuickSliderPull(progress: Float) {
+        if (sliderCommitted) return
+        sliderView?.setExpansion(progress)
+    }
+
+    /**
+     * The pull passed the far threshold: the stretch becomes the panel.
+     *
+     * No animation, because the finger has already dragged the shape to full extension — that is
+     * what committing means here. What changes is what the shape *is*.
+     */
+    private fun commitQuickSliderPull() {
+        val view = sliderView ?: return
+        view.setExpansion(1f)
+        armQuickSlider(view)
+    }
+
+    /**
+     * Creates the panel's window, collapsed onto the bar and not yet live.
+     *
+     * @return false when there is nothing to open — no bar to grow out of, or a target this
+     *   device will not let the app write.
+     */
+    private fun openQuickSliderWindow(): Boolean {
+        if (destroyed) return false
+        val wm = windowManager ?: return false
+        val barParams = handlerParams ?: return false
+        val currentFrame = frame ?: return false
+        // A retraction still running is left alone rather than cancelled: cancelling it would
+        // freeze a view part-way out with nothing left to finish or remove it. It owns its own
+        // teardown, and it checks whether this new window has taken its place before restoring
+        // the bar — see the listener in hideQuickSlider.
+
         val settings = preference.slider
 
         sliderTarget = settings.getTarget()
         sliderResolution = quickSliderResolution(sliderTarget)
 
-        // Adaptive brightness has to go before the first write, not after: the light sensor
-        // overwrites anything the app sets within a second or two, which reads as the slider
-        // not working rather than as a setting fighting it. Restored by the same
-        // restoreAutoBrightnessIfOurs the swipe gesture already uses, so the user gets it back.
-        if (sliderTarget == QuickSliderStore.TARGET_BRIGHTNESS && settings.getDisableAutoBrightness()) {
-            brightness.disableAutoBrightnessIfNeeded()
-            if (brightness.autoDisabledByFraction) preference.setBrightnessAutoWasOn(true)
+        // Nothing to control, so nothing to open. Reported rather than opened-and-inert: a panel
+        // that appears and refuses every touch is indistinguishable from the bug this rework
+        // exists to fix.
+        if (!quickSliderIsWritable(sliderTarget)) {
+            showIndicatorMessage(
+                context.getString(
+                    if (sliderTarget == QuickSliderStore.TARGET_BRIGHTNESS) {
+                        R.string.brightness_needs_permission_short
+                    } else {
+                        R.string.action_not_available_msg
+                    }
+                )
+            )
+            return false
         }
 
         sliderSteps = if (sliderTarget == QuickSliderStore.TARGET_BRIGHTNESS) {
@@ -1212,8 +1491,9 @@ class OverlayController(
             sliderResolution?.stepCount ?: 1
         }.coerceAtLeast(1)
 
-        sliderOpenValue = quickSliderCurrentValue() ?: 0f
-        sliderLastStep = (sliderOpenValue * sliderSteps).roundToInt()
+        val openValue = quickSliderCurrentValue() ?: 0f
+        sliderOpenValue = openValue
+        sliderLastStep = (openValue * sliderSteps).roundToInt()
 
         val haptic = settings.getHaptic()
         sliderHapticMs = when (haptic) {
@@ -1229,92 +1509,218 @@ class OverlayController(
             else -> 0
         }
 
+        // The bar as *drawn*, which is not the same as the window it lives in: that window is
+        // widened to MIN_TOUCH_WIDTH_DP so there is something to aim at, and the bar is pushed
+        // against its outer edge with the difference left as dead space. Morphing out of the
+        // window instead of the bar is how a 10dp Edge preset would flick to 28dp wide on the
+        // first frame.
+        val drawnWidthPx = dpToPx(preference.getHandlerWidthDp()).coerceIn(1, barParams.width)
+
+        // Floored at the bar's own size so the collapsed rect fits inside the window, and at
+        // PANEL_MIN_THICKNESS_DP because this is now a control the user aims at with a thumb
+        // rather than a readout beside a finger that is already committed to a stroke.
         val thicknessPx = dpToPx(settings.getThicknessDp())
+            .coerceAtLeast(dpToPx(PANEL_MIN_THICKNESS_DP))
+            .coerceAtLeast(drawnWidthPx)
         val lengthPx = dpToPx(settings.getLengthDp())
             .coerceAtMost(currentFrame.usableHeight.coerceAtLeast(1))
+            .coerceAtLeast(barParams.height)
         val isLeft = handlerIsLeft()
-        val edgeMarginPx = dpToPx(preference.getHandlerEdgeMarginDp())
+
+        // Absolute screen coordinates of the drawn bar, from the window and which way it faces.
+        val drawnLeft = if (isLeft) barParams.x else barParams.x + barParams.width - drawnWidthPx
+
+        // The panel is the bar, grown. Its colour and all four of its corners come from the
+        // handler rather than from settings of its own, so there is nothing to travel *between*
+        // during the morph — the radii hold still and only the rectangle changes. Giving the panel
+        // its own track colour and its own single radius meant the shape had to change identity
+        // half way out, which is what "grow the handler" is the opposite of.
+        //
+        // Read live, every time, so a change on the appearance screen reaches the panel without
+        // the service being restarted.
+        val handlerColor = ColorUtils.setAlphaComponent(
+            preference.getHandlerColor(),
+            preference.getHandlerBackgroundAlpha().coerceIn(0, 255)
+        )
+        val cornerTL = preference.getHandlerCornerRadiusTL()
+        val cornerTR = preference.getHandlerCornerRadiusTR()
+        val cornerBL = preference.getHandlerCornerRadiusBL()
+        val cornerBR = preference.getHandlerCornerRadiusBR()
 
         val view = QuickSliderView(context).apply {
-            setColors(settings.getTrackColor(), settings.getFillColor())
-            setCornerRadiusDp(settings.getCornerDp())
+            setColors(handlerColor, settings.getFillColor())
+            setExpandedCorners(cornerTL, cornerTR, cornerBL, cornerBR)
+            setCollapsedAppearance(handlerColor, cornerTL, cornerTR, cornerBL, cornerBR)
+            val theme = preference.getPanelTheme()
+            setPanelTheme(PanelTheme.surfaceAlpha(theme), PanelTheme.hasLitEdge(theme))
             setIcon(if (settings.getShowIcon()) quickSliderIcon(sliderTarget) else null)
             setShowValue(settings.getShowValue())
-            setValue(sliderOpenValue)
-            alpha = 0f
+            setValue(openValue)
         }
 
         val params = WindowManager.LayoutParams(
             thicknessPx,
             lengthPx,
             windowType,
+            // Touchable, unlike every other window this class puts up. FLAG_NOT_TOUCH_MODAL keeps
+            // everything outside the panel working normally, and WATCH_OUTSIDE_TOUCH is what lets
+            // a tap anywhere else dismiss it without that tap being swallowed.
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.LEFT
-            x = if (isLeft) {
-                edgeMarginPx
-            } else {
-                (currentFrame.usableWidth - thicknessPx - edgeMarginPx).coerceAtLeast(0)
-            }
-            // Centred on the bar rather than on the screen, so the track grows out of where the
-            // user's finger already is instead of jumping to the middle.
+            // Anchored on the bar, not on the screen edge. The bar can be parked anywhere — free
+            // placement on both axes is a feature — and a window pinned to the edge would make the
+            // first frame of the morph jump sideways to meet it. The window grows inward from the
+            // bar's own side, then gets clamped into the frame; the collapsed rect below is
+            // computed after that clamp, so the bar's position survives whatever the clamp did.
+            val wantX = if (isLeft) drawnLeft else drawnLeft + drawnWidthPx - thicknessPx
+            x = wantX.coerceIn(0, (currentFrame.usableWidth - thicknessPx).coerceAtLeast(0))
             val barCenterY = barParams.y + barParams.height / 2
             y = (barCenterY - lengthPx / 2)
                 .coerceIn(0, (currentFrame.usableHeight - lengthPx).coerceAtLeast(0))
             fitUsableFrame(this)
+            applyPanelBlur(this)
         }
+
+        // Window coordinates, from the two absolutes, so the rect lands on the bar even where the
+        // clamps above moved the window off its preferred spot.
+        view.setCollapsedRect(
+            (drawnLeft - params.x).toFloat(),
+            (barParams.y - params.y).toFloat(),
+            (drawnLeft - params.x + drawnWidthPx).toFloat(),
+            (barParams.y - params.y + barParams.height).toFloat()
+        )
+        view.setExpansion(0f)
+        view.listener = quickSliderListener
+        view.setOnTouchOutside { hideQuickSlider() }
 
         try {
             wm.addView(view, params)
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "quick slider addView failed", e)
-            return
+            android.util.Log.e(TAG, "quick panel addView failed", e)
+            return false
         }
         sliderView = view
+        // Not live yet, on either route. The action route arms it when its open animation
+        // finishes; the pull route when the finger passes the far threshold.
+        sliderCommitted = false
+        sliderAutoBrightnessHandled = false
 
         // Faded out, NOT made INVISIBLE, and this is load-bearing rather than a style choice.
         //
         // This view is the root of its own window. ViewRootImpl reports the root's visibility to
         // WindowManagerService on the next traversal, and a window reported not-visible is dropped
-        // from input dispatch — which cancels the very gesture whose finger is still driving the
-        // slider. The bar would vanish and the slider would freeze at whatever value it opened on.
+        // from input dispatch — which would take the bar out of the input stack entirely.
         // Alpha leaves the view VISIBLE to the window system and merely stops it being drawn.
+        //
+        // Instant rather than faded, and safe to be instant only because of the morph: what
+        // replaces the bar on this frame is a rectangle of the same size, colour and corner in the
+        // same place. Only the icon differs, and the view fades that in.
         handlerView?.let { bar ->
             bar.animate().cancel()
             bar.alpha = 0f
         }
 
-        // Grown from the bar's own dimensions, pivoting on the edge it is mounted against, so the
-        // motion reads as the bar stretching rather than a panel fading in over it.
-        view.pivotX = if (isLeft) 0f else thicknessPx.toFloat()
-        view.pivotY = lengthPx / 2f
-        view.scaleX = (barParams.width.toFloat() / thicknessPx.coerceAtLeast(1)).coerceIn(0.05f, 1f)
-        view.scaleY = (barParams.height.toFloat() / lengthPx.coerceAtLeast(1)).coerceIn(0.05f, 1f)
-        view.animate()
-            .scaleX(1f).scaleY(1f).alpha(1f)
-            .setDuration(ANIM_DURATION_MS)
-            .setInterpolator(DecelerateInterpolator())
-            .start()
-
-        // The buzz that says the bar is now a slider. Distinct from the per-step ticks: longer,
-        // so it cannot be mistaken for the first step having already been crossed.
-        if (sliderHapticMs > 0L) vibrateQuick(28L, sliderHapticAmplitude)
+        return true
     }
 
     /**
-     * Applies one frame of the pull.
+     * Grows the panel out of the bar on a clock, for the routes with no finger driving it.
+     *
+     * Arms it at the end rather than at the start: a track four pixels tall that already answers
+     * touches turns the first frame of this animation into a brightness the user did not choose.
+     */
+    private fun animateQuickSliderOpen() {
+        val view = sliderView ?: return
+        sliderCollapse?.cancel()
+        val animator = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = PANEL_OPEN_MS
+            interpolator = DecelerateInterpolator(1.8f)
+            addUpdateListener { view.setExpansion(it.animatedValue as Float) }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    if (sliderCollapse === animation) sliderCollapse = null
+                    if (sliderView === view) armQuickSlider(view)
+                }
+            })
+        }
+        sliderCollapse = animator
+        animator.start()
+    }
+
+    /**
+     * Makes an open panel live: it answers touches, it buzzes, and it starts counting down.
+     *
+     * The one place a Quick panel becomes something the user can change a setting with, whichever
+     * route opened it.
+     */
+    private fun armQuickSlider(view: QuickSliderView) {
+        if (sliderCommitted) return
+        sliderCommitted = true
+        view.setCommitted()
+        view.setInteractive(true)
+
+        // The buzz that says the panel is live. Distinct from the per-step ticks: longer, so it
+        // cannot be mistaken for a step having already been crossed.
+        if (sliderHapticMs > 0L) vibrateQuick(28L, sliderHapticAmplitude)
+
+        restartQuickSliderIdleTimeout()
+    }
+
+    /**
+     * The panel's own touches, routed back into the same quantise-and-write path the swipe uses.
+     */
+    private val quickSliderListener = object : QuickSliderView.Listener {
+        override fun onValuePicked(fraction: Float) {
+            mainHandler.removeCallbacks(sliderCloseRunnable)
+            restartQuickSliderIdleTimeout()
+            applyQuickSlider(fraction)
+        }
+
+        override fun onAdjustFinished() {
+            // "Adjust it and it closes itself." Not instant: the number the user just set is the
+            // point of the whole interaction, and a panel that vanishes on the up-stroke never
+            // lets them read it. One beat is enough to see the result and short enough that the
+            // panel never feels like something they have to dismiss.
+            mainHandler.removeCallbacks(sliderIdleRunnable)
+            mainHandler.removeCallbacks(sliderCloseRunnable)
+            mainHandler.postDelayed(sliderCloseRunnable, PANEL_LINGER_MS)
+        }
+    }
+
+    /**
+     * Closes a panel nobody touched.
+     *
+     * Longer than the linger above, because this is the timeout for a panel opened by mistake or
+     * abandoned mid-thought, and the cost of being early is that the control disappears while the
+     * user is still deciding what to do with it.
+     */
+    private fun restartQuickSliderIdleTimeout() {
+        mainHandler.removeCallbacks(sliderIdleRunnable)
+        mainHandler.postDelayed(sliderIdleRunnable, PANEL_IDLE_MS)
+    }
+
+    /**
+     * Applies one touch on the panel.
+     *
+     * Takes the value the finger is *on*, not a distance it has moved from where the panel opened.
+     * The two differ in more than arithmetic: a delta is only meaningful while one unbroken stroke
+     * owns the control, which is exactly the assumption that left the old slider unadjustable once
+     * its opening stroke had ended. An absolute fraction is meaningful on every touch, including
+     * the fifth one, which is what makes this a control rather than a readout.
      *
      * Quantised to [sliderSteps] before anything else happens, so the number the user reads, the
      * value written to the system and the boundary the haptics fire on are all the same decision
      * made once. Reading them off three separate roundings is how a slider ends up buzzing without
      * moving, or showing 41% while the system holds 40%.
      */
-    private fun applyQuickSlider(fractionFromOpen: Float) {
+    private fun applyQuickSlider(fraction: Float) {
         val view = sliderView ?: return
-        val target = (sliderOpenValue + fractionFromOpen).coerceIn(0f, 1f)
+        if (!sliderCommitted) return
+        val target = fraction.coerceIn(0f, 1f)
         val step = (target * sliderSteps).roundToInt().coerceIn(0, sliderSteps)
         val quantised = step / sliderSteps.toFloat()
 
@@ -1323,6 +1729,17 @@ class OverlayController(
         sliderLastStep = step
 
         val applied = if (sliderTarget == QuickSliderStore.TARGET_BRIGHTNESS) {
+            // Before the write, never after: the light sensor overwrites anything the app sets
+            // within a second or two, which reads as the panel not working rather than as a
+            // setting fighting it. Restored by the same restoreAutoBrightnessIfOurs the swipe
+            // gesture already uses, so the user gets it back when the service stops.
+            if (!sliderAutoBrightnessHandled) {
+                sliderAutoBrightnessHandled = true
+                if (preference.slider.getDisableAutoBrightness()) {
+                    brightness.disableAutoBrightnessIfNeeded()
+                    if (brightness.autoDisabledByFraction) preference.setBrightnessAutoWasOn(true)
+                }
+            }
             brightness.setFraction(quantised) != null
         } else {
             val res = sliderResolution
@@ -1334,22 +1751,60 @@ class OverlayController(
         if (applied && sliderHapticMs > 0L) vibrateQuick(sliderHapticMs, sliderHapticAmplitude)
     }
 
-    /** Collapses the slider back into the bar. */
+    /**
+     * Retracts the track back into the bar, along the path the finger dragged it out on.
+     *
+     * The same interpolation the pull used, run backwards on a clock instead of a finger — so the
+     * shape shrinks, the corner tightens and the colour returns to the bar's, all together, and
+     * the last frame is the bar. That is the whole trick, and it is why the bar's own alpha is
+     * restored at the *end* rather than at the start: for the length of the animation the thing on
+     * screen is standing in for the bar, and putting the real one back underneath it would draw
+     * both, at full size, through a shape that is no longer either.
+     *
+     * Eased out rather than in. Retraction is the tail of a gesture the user has finished with —
+     * it should leave quickly and settle, not gather speed on its way out, which is what the
+     * accelerating fade this replaces did.
+     */
     private fun hideQuickSlider() {
+        mainHandler.removeCallbacks(sliderCloseRunnable)
+        mainHandler.removeCallbacks(sliderIdleRunnable)
         val view = sliderView ?: return
         sliderView = null
         sliderResolution = null
         sliderLastStep = -1
+        sliderCommitted = false
+        // Deaf from this instant, not from the end of the animation. It is still on screen and
+        // still touchable for the length of the retraction, and a touch landing on a shape that is
+        // shrinking would be read against a track whose geometry no longer means anything.
+        view.listener = null
+        view.setOnTouchOutside(null)
+        view.setInteractive(false)
+        sliderAutoBrightnessHandled = false
 
-        handlerView?.alpha = 1f
-
-        view.animate()
-            .alpha(0f)
-            .scaleY(0.2f)
-            .setDuration(ANIM_DURATION_MS)
-            .setInterpolator(AccelerateInterpolator())
-            .withEndAction { removeQuickSliderView(view) }
-            .start()
+        // From wherever it actually is, not from 1. A pull abandoned early has barely opened, and
+        // a fixed start would snap it out to full extension to begin retracting from there.
+        val from = view.expansion()
+        val animator = ValueAnimator.ofFloat(from, 0f).apply {
+            // Scaled by how far there is to travel, so a stretch abandoned at a tenth of the way
+            // out does not take as long to disappear as a full track. Floored so the shortest
+            // ones are still a movement rather than a blink.
+            duration = (ANIM_DURATION_MS * from).toLong().coerceIn(90L, ANIM_DURATION_MS)
+            interpolator = DecelerateInterpolator(1.6f)
+            addUpdateListener { view.setExpansion(it.animatedValue as Float) }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    if (sliderCollapse === animation) sliderCollapse = null
+                    // Only when nothing has taken this window's place. A second swipe landing
+                    // inside the ~200ms retraction opens a new stretch, and that stretch is
+                    // standing in for the bar exactly as this one was — putting the bar back now
+                    // would draw it alongside its own replacement until the new gesture ended.
+                    if (sliderView == null) handlerView?.alpha = 1f
+                    removeQuickSliderView(view)
+                }
+            })
+        }
+        sliderCollapse = animator
+        animator.start()
     }
 
     /**
@@ -1361,11 +1816,24 @@ class OverlayController(
      * wrong place.
      */
     private fun dismissQuickSliderNow() {
+        mainHandler.removeCallbacks(sliderCloseRunnable)
+        mainHandler.removeCallbacks(sliderIdleRunnable)
+        // First, because a retraction started a moment ago has already handed its view over to
+        // the animator and cleared sliderView — so without this, the one case that most needs
+        // taking off screen at once is the one this would walk straight past. `end` runs the
+        // listener, which is what actually removes it.
+        sliderCollapse?.end()
+        sliderCollapse = null
+
         val view = sliderView ?: return
         sliderView = null
         sliderResolution = null
         sliderLastStep = -1
-        view.animate().cancel()
+        sliderCommitted = false
+        sliderAutoBrightnessHandled = false
+        view.listener = null
+        view.setOnTouchOutside(null)
+        view.setInteractive(false)
         handlerView?.alpha = 1f
         removeQuickSliderView(view)
     }
@@ -1411,7 +1879,8 @@ class OverlayController(
         if (contextMenuHost != null) return
         hideDeck()
 
-        val entries = HandlerActionCatalog.contextMenuEntries(preference.getContextMenuItems())
+        val entries = HandlerActionCatalog.contextMenuEntries(preference.getContextMenuOrder())
+        val grid = preference.getContextMenuLayout() == ContextMenuLayout.GRID
         if (entries.isEmpty()) return
 
         val anchor = IntRect(params.x, params.y, params.x + params.width, params.y + params.height)
@@ -1424,6 +1893,8 @@ class OverlayController(
                     entries = entries,
                     anchor = anchor,
                     frame = frameSize,
+                    grid = grid,
+                    theme = preference.getPanelTheme(),
                     onSelect = { entry ->
                         hideContextMenu()
                         // Posted for the same reason the tap actions are: "Hide Handler" and
@@ -1440,7 +1911,7 @@ class OverlayController(
         // the menu that dismisses it. The window is not focusable, so there is no back-button
         // route to close it and an outside tap is the only way out.
         try {
-            wm.addView(menuHost.view, fullScreenParams(focusable = false))
+            wm.addView(menuHost.view, fullScreenParams(focusable = false).also(::applyPanelBlur))
         } catch (e: Exception) {
             android.util.Log.e(TAG, "context menu addView failed", e)
             menuHost.destroy()
@@ -1507,6 +1978,10 @@ class OverlayController(
         )
         deckState.expandedTile = tile
 
+        // Added *before* the Deck's own window so it sits underneath: windows of the same type
+        // stack in the order they arrive.
+        addDeckBlurWindow()
+
         val host = OverlayComposeHost(context)
         val root = DeckRootView(
             context = context,
@@ -1515,7 +1990,12 @@ class OverlayController(
         )
         host.setContent {
             OverlayTheme {
-                DeckOverlay(model = model, actions = deckActions, onDismiss = { hideDeck() })
+                DeckOverlay(
+                    model = model,
+                    actions = deckActions,
+                    onDismiss = { hideDeck() },
+                    onSurfaces = ::updateDeckBlurBounds,
+                )
             }
         }
         // The wrapper is the window's root, and Compose resolves its recomposer from the root
@@ -1529,6 +2009,15 @@ class OverlayController(
             )
         )
         try {
+            // Deliberately unblurred, where the menu and the Quick panel are not.
+            //
+            // Window blur covers the whole window, and this window has to be full-screen: it is
+            // what catches the tap outside the Deck that dismisses it, and what hosts the keyboard
+            // for the search field. Blurring it blurs the entire screen, which is not what the
+            // theme is for — the theme dresses the Deck's own panel, and the panel is a strip down
+            // one side. There is no way to clip a window's blur to part of itself, so the Deck
+            // takes its frosted and glass treatment from its surfaces instead: the translucency in
+            // DeckPalette and the lit edge below.
             wm.addView(root, fullScreenParams(focusable = true))
         } catch (e: Exception) {
             android.util.Log.e(TAG, "deck addView failed", e)
@@ -1542,6 +2031,7 @@ class OverlayController(
 
     fun hideDeck() {
         mainHandler.removeCallbacks(deckAutoCloseRunnable)
+        removeDeckBlurWindow()
         val root = deckRoot ?: return
         val host = deckHost
         deckRoot = null
@@ -1554,6 +2044,50 @@ class OverlayController(
         host?.destroy()
         // The next opening starts on the strip, unless a gesture names a tile.
         deckState.expandedTile = null
+    }
+
+    /**
+     * Puts up the blur window, off-screen and empty, for the Deck to size later.
+     *
+     * Starts at 1x1 in the corner rather than at a guessed rectangle: the first real bounds arrive
+     * a frame later from the Deck's own layout, and a guess that was wrong would flash a blurred
+     * rectangle in the wrong place before being corrected.
+     */
+    private fun addDeckBlurWindow() {
+        if (destroyed || deckStripBackdrop != null) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+        val radiusDp = PanelTheme.blurRadiusDp(preference.getPanelTheme())
+        if (radiusDp <= 0) return
+        val wm = windowManager ?: return
+        if (!wm.isCrossWindowBlurEnabled) return
+
+        val radiusPx = dpToPx(radiusDp.toFloat())
+        // Both up front, even though the card usually has nothing to sit behind: a backdrop shown
+        // later would be added after the Deck's window and land in front of it.
+        deckStripBackdrop = PanelBackdrop(context, windowType, radiusPx).apply { show() }
+        deckCardBackdrop = PanelBackdrop(context, windowType, radiusPx).apply { show() }
+    }
+
+    /** Lines each backdrop up with the surface it belongs behind. */
+    private fun updateDeckBlurBounds(surfaces: DeckSurfaces) {
+        deckStripBackdrop?.setBounds(
+            surfaces.strip.left, surfaces.strip.top,
+            surfaces.strip.width, surfaces.strip.height,
+            surfaces.stripCornerPx,
+        )
+        val card = surfaces.card
+        deckCardBackdrop?.setBounds(
+            card?.left ?: 0, card?.top ?: 0,
+            card?.width ?: 0, card?.height ?: 0,
+            surfaces.cardCornerPx,
+        )
+    }
+
+    private fun removeDeckBlurWindow() {
+        deckStripBackdrop?.dismiss()
+        deckStripBackdrop = null
+        deckCardBackdrop?.dismiss()
+        deckCardBackdrop = null
     }
 
     val isDeckOpen: Boolean get() = deckHost != null
@@ -1612,6 +2146,7 @@ class OverlayController(
             tiles = tiles,
             apps = resolveAppShortcuts(),
             quickDial = store.getQuickDial(),
+            panelTheme = preference.getPanelTheme(),
             anchor = anchor,
             frame = frameSize,
             isLeft = isLeft,
@@ -1848,6 +2383,7 @@ class OverlayController(
             HandlerActions.STOP_SERVICE -> host.onStopRequested()
             HandlerActions.OPEN_APP -> openApp()
             HandlerActions.OPEN_DECK -> showDeck()
+            HandlerActions.OPEN_QUICK_SLIDER -> showQuickSliderPanel()
             HandlerActions.OPEN_MENU -> showContextMenu()
             HandlerActions.TOGGLE_FLASHLIGHT -> toggleFlashlight()
             HandlerActions.TOGGLE_DND -> toggleDnd()

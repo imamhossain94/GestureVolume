@@ -151,6 +151,15 @@ fun NavigationDrawerContent(
                     onClick = { onMenuItemClick("Feedback") }
                 )
                 
+                // Above Troubleshoot, because it is the wider net: most of what sends someone
+                // to this section is a question rather than a fault, and Troubleshoot only helps
+                // with the handful of problems that have a button to press.
+                NavigationDrawerItem(
+                    icon = R.drawable.ic_help,
+                    label = stringResource(R.string.faq),
+                    onClick = { onMenuItemClick("FAQ") }
+                )
+
                 NavigationDrawerItem(
                     icon = R.drawable.ic_bug,
                     label = stringResource(R.string.troubleshoot),

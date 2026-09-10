@@ -4,13 +4,17 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 
 /**
- * The expanding slider: what it controls, how it looks, and how hard it buzzes.
+ * The Quick panel: what it controls, how it looks, and how hard it buzzes.
  *
- * The slider is the payload of a long horizontal swipe on the bar — the bar stretches into a
- * track and the same finger that opened it keeps setting the value. Everything about it is a
- * setting because the gesture is worth almost nothing if it adjusts the wrong quantity, and
- * because a slider that buzzes at every step is delightful to some people and intolerable to
- * others.
+ * The panel is opened by `HandlerActions.OPEN_QUICK_SLIDER` from whichever gesture slot the user
+ * put it in, and it then takes its own touches until it closes. It used to be the payload of a
+ * long horizontal swipe, sharing that stroke with the Deck; the `sliderOpenWith` key that chose
+ * which direction opened it is gone with the gesture, and is deliberately left unread rather than
+ * migrated — there is no direction left for it to name.
+ *
+ * Everything else about it is a setting because the panel is worth almost nothing if it adjusts
+ * the wrong quantity, and because one that buzzes at every step is delightful to some people and
+ * intolerable to others.
  *
  * The identifiers are a persistence format, like [com.newagedevs.gesturevolume.utils.HandlerActions]:
  * written verbatim into preferences, never renamed.
@@ -18,7 +22,15 @@ import androidx.core.content.edit
 class QuickSliderStore(private val prefs: SharedPreferences) {
 
     companion object {
-        /** Which swipe opens the slider. */
+        /**
+         * Which long swipe opens the panel, on top of whichever gesture slot it is bound to.
+         *
+         * The panel is an action first — it can go on a tap, a long press or the menu — and this
+         * is the extra opener for people who want it on the stroke that made the feature. It is a
+         * setting rather than a fixed behaviour because it is the one opener that shares a
+         * direction with the Deck, and anyone who finds that ambiguous can switch it off here
+         * without losing the panel.
+         */
         const val OPEN_OFF = "off"
         const val OPEN_IN = "in"
         const val OPEN_OUT = "out"
@@ -60,21 +72,26 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     }
 
     /**
-     * Which long swipe opens the slider.
+     * Which long swipe opens the panel, if any. **Off unless the user asks for it.**
      *
-     * Defaults to inward — the stroke that starts at the edge and pulls toward the middle of the
-     * screen, which is the one a thumb can complete without repositioning the hand. Outward from a
-     * bar already flush to the edge has almost no travel before the finger leaves the screen, so it
-     * is offered but not chosen for anyone.
+     * The horizontal swipe belongs to the Deck. Sharing it meant the two were one stroke told
+     * apart by a distance, and no arrangement of thresholds makes a distance visible to a thumb —
+     * so the Deck swipe kept turning into the panel and the panel kept refusing to open when it
+     * was wanted. The panel's home is the vertical swipe now, where nothing else lives, plus
+     * whichever other slot the user binds `OPEN_QUICK_SLIDER` to.
+     *
+     * The setting survives because the gesture is genuinely nice when it is the only thing on that
+     * direction — a bar with the Deck unbound, say. It is simply not something to hand anyone who
+     * has not asked.
      */
     fun getOpenWith(): String {
-        val stored = prefs.getString(OPEN_WITH, OPEN_IN) ?: OPEN_IN
-        return if (stored in ALL_OPENERS) stored else OPEN_IN
+        val stored = prefs.getString(OPEN_WITH, OPEN_OFF) ?: OPEN_OFF
+        return if (stored in ALL_OPENERS) stored else OPEN_OFF
     }
 
     fun setOpenWith(value: String) = prefs.edit { putString(OPEN_WITH, value) }
 
-    /** Whether a long swipe in this direction opens the slider. */
+    /** Whether a long swipe in this direction opens the panel. */
     fun opensOn(inward: Boolean): Boolean = when (getOpenWith()) {
         OPEN_BOTH -> true
         OPEN_IN -> inward
