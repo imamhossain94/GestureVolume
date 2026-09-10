@@ -46,7 +46,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -202,26 +205,7 @@ fun HandlerAppearanceScreen(
         // A preset is an appearance, not a placement. It deliberately leaves gravity and both
         // position fractions alone: the bar is dragged where the user wants it, and picking
         // "Night" to change the colour should not also throw that away.
-        HandlerPresets.byId(presetId)?.let { preset ->
-            state.width = preset.width
-            state.height = preset.height
-            state.bgColor = preset.bgColor
-            state.bgAlpha = preset.bgAlpha
-            state.strokeColor = preset.strokeColor
-            state.strokeWidth = preset.strokeWidth
-            state.strokeAlpha = preset.strokeAlpha
-            state.cornerRadiusAll = preset.cornerRadius
-            state.cornerTL = preset.cornerRadius
-            state.cornerTR = preset.cornerRadius
-            state.cornerBL = preset.cornerRadius
-            state.cornerBR = preset.cornerRadius
-            state.iconRes = preset.iconRes
-            state.iconSize = preset.iconSize
-            state.iconColor = preset.iconColor
-            state.showIcon = preset.showIcon
-            state.vibrate = preset.vibrate
-            state.edgeMargin = preset.edgeMargin
-        }
+        HandlerPresets.byId(presetId)?.let { state.applyPreset(it) }
     }
 
     fun saveChanges() {
@@ -375,6 +359,25 @@ fun HandlerAppearanceScreen(
                     // Always present, so its place in the bar never moves; live only when there
                     // is something to apply, which is also the whole of the answer to "have I
                     // saved this yet?".
+                    // The tick is the screen's one piece of feedback that something is pending,
+                    // so it is worth a moment of motion. Scale through graphicsLayer rather than a
+                    // size change: the icon sits in a top bar with other buttons beside it, and a
+                    // bouncy spring on a real dimension would shove them sideways. `enabled` still
+                    // gates the click, so an animating tick is never a mis-tap.
+                    val tickScale by animateFloatAsState(
+                        targetValue = if (hasUnsavedChanges) 1f else 0.85f,
+                        animationSpec = AppearanceMotion.Pop,
+                        label = "applyTickScale",
+                    )
+                    val tickTint by animateColorAsState(
+                        targetValue = if (hasUnsavedChanges) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        },
+                        animationSpec = AppearanceMotion.Tint,
+                        label = "applyTickTint",
+                    )
                     IconButton(
                         onClick = { saveChanges() },
                         enabled = hasUnsavedChanges
@@ -382,11 +385,11 @@ fun HandlerAppearanceScreen(
                         Icon(
                             Icons.Default.Check,
                             contentDescription = stringResource(R.string.save_changes),
-                            tint = if (hasUnsavedChanges) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                            }
+                            tint = tickTint,
+                            modifier = Modifier.graphicsLayer {
+                                scaleX = tickScale
+                                scaleY = tickScale
+                            },
                         )
                     }
                     // A plain toggle rather than a three-way cycle: the drag handle already owns

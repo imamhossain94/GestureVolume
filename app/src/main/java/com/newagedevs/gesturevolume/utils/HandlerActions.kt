@@ -2,7 +2,7 @@ package com.newagedevs.gesturevolume.utils
 
 /**
  * The action identifiers that are persisted in [com.newagedevs.gesturevolume.data.local.SharedPref]
- * and matched by the overlay service.
+ * and matched by the overlay controller.
  *
  * These strings are a **persistence format**: they are written verbatim into SharedPreferences and
  * read back on every launch. Existing values must never be renamed — only added to. Everything here
@@ -58,14 +58,66 @@ object HandlerActions {
      */
     const val REPOSITION = "Reposition handler"
 
+    // ---- 1.4.0: the Deck, and everything that opens inside it ----------------------------------
+
+    /** Opens the slide-out Deck panel beside the bar. */
+    const val OPEN_DECK = "Open deck"
+
+    /** Opens the long-press menu, from any gesture. */
+    const val OPEN_MENU = "Open menu"
+
+    /** Opens the Deck straight onto its search card. */
+    const val OPEN_SEARCH = "Open search"
+    const val OPEN_TIMER = "Open timer"
+    const val OPEN_CALCULATOR = "Open calculator"
+    const val OPEN_NOTES = "Open notes"
+    const val OPEN_CLIPBOARD = "Open clipboard"
+    const val OPEN_MEDIA = "Open media controls"
+    const val COIN_TOSS = "Coin toss"
+    const val DICE_ROLL = "Dice roll"
+    const val SCAN_QR = "Scan QR code"
+    const val SONG_SEARCH = "Identify song"
+
+    // ---- 1.4.0: device toggles -----------------------------------------------------------------
+
+    const val TOGGLE_FLASHLIGHT = "Toggle flashlight"
+
+    /** Needs Do Not Disturb access, asked for at the moment the action is chosen. */
+    const val TOGGLE_DND = "Toggle Do Not Disturb"
+
+    /** Needs WRITE_SETTINGS, like the brightness actions. */
+    const val TOGGLE_AUTO_ROTATE = "Toggle auto-rotate"
+    const val MEDIA_PLAY_PAUSE = "Play or pause"
+    const val MEDIA_NEXT = "Next track"
+    const val MEDIA_PREVIOUS = "Previous track"
+
+    // ---- 1.4.0: system actions, performed by the accessibility service ------------------------
+
+    /**
+     * Back from 1.3.4's retirement, and deliberately the same identifier it had before.
+     *
+     * Every install that chose it kept the string in its preferences — [sanitize] only ever
+     * masked it on read — so bringing the identifier back is what gives those users the action
+     * back without them touching a setting.
+     */
+    const val LOCK = "Lock"
+    const val SCREENSHOT = "Screenshot"
+    const val BACK = "Back"
+    const val HOME = "Home"
+    const val RECENTS = "Recent apps"
+    const val NOTIFICATIONS = "Open notifications"
+    const val QUICK_SETTINGS = "Open quick settings"
+    const val POWER_MENU = "Power menu"
+
     /**
      * What the long-press menu offers before the user has chosen otherwise.
      *
      * Deliberately short. The menu opens on a gesture the user is holding, often one-handed, so
-     * four entries that can be hit without looking beat ten that need aiming. Everything else is
-     * one toggle away in settings.
+     * a handful of entries that can be hit without looking beat ten that need aiming. Everything
+     * else is one toggle away in settings.
      */
     val DEFAULT_CONTEXT_MENU: Set<String> = setOf(
+        OPEN_DECK,
         OPEN_VOLUME_UI,
         MUTE_OR_UNMUTE,
         HIDE_HANDLER,
@@ -76,40 +128,44 @@ object HandlerActions {
     /**
      * Menu entries the user cannot end up without.
      *
-     * Hiding the bar is now reachable only from this menu, so an install whose menu has been
-     * pruned down to colours-and-volume would have no way to put the overlay away at all. These
-     * are added back to whatever the user selected rather than made unselectable, so the picker
-     * stays a plain list of switches.
+     * Hiding the bar is reachable only from this menu, so an install whose menu has been pruned
+     * down to colours-and-volume would have no way to put the overlay away at all. These are added
+     * back to whatever the user selected rather than made unselectable, so the picker stays a plain
+     * list of switches.
      */
     val ALWAYS_IN_CONTEXT_MENU: Set<String> = setOf(HIDE_HANDLER)
 
-    /**
-     * Retired in 1.3.4, when the accessibility service that performed it was removed.
-     *
-     * The only route to a locked screen was `performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)` on a
-     * bound [android.accessibilityservice.AccessibilityService], and shipping one made this app
-     * subject to Play's Accessibility API policy — a policy written for apps whose *core*
-     * functionality serves people with disabilities, which one optional action out of eleven is
-     * not. Device Admin, the other route, was dropped earlier for taking the user's fingerprint
-     * unlock away. With neither route left, the action is gone rather than present and inert.
-     *
-     * The identifier stays here because it is still written in the preferences of every install
-     * that used it. [sanitize] is what reads those back out; nothing else should reference it.
-     */
-    private const val RETIRED_LOCK = "Lock"
+    /** Every identifier this build understands, swipe directions included. */
+    val KNOWN: Set<String> = setOf(
+        NONE,
+        INCREASE_VOLUME, INCREASE_VOLUME_UI, DECREASE_VOLUME, DECREASE_VOLUME_UI,
+        INCREASE_BRIGHTNESS, DECREASE_BRIGHTNESS,
+        OPEN_VOLUME_UI, MUTE, MUTE_OR_UNMUTE, ACTIVE_MUSIC_OVERLAY, HIDE_HANDLER, OPEN_APP,
+        STOP_SERVICE, TOGGLE_AUTO_BRIGHTNESS, REPOSITION,
+        OPEN_DECK, OPEN_MENU, OPEN_SEARCH, OPEN_TIMER, OPEN_CALCULATOR, OPEN_NOTES, OPEN_CLIPBOARD,
+        OPEN_MEDIA, COIN_TOSS, DICE_ROLL, SCAN_QR, SONG_SEARCH,
+        TOGGLE_FLASHLIGHT, TOGGLE_DND, TOGGLE_AUTO_ROTATE,
+        MEDIA_PLAY_PAUSE, MEDIA_NEXT, MEDIA_PREVIOUS,
+        LOCK, SCREENSHOT, BACK, HOME, RECENTS, NOTIFICATIONS, QUICK_SETTINGS, POWER_MENU
+    )
+
+    /** The actions the accessibility service performs. Nothing else can. */
+    val ACCESSIBILITY_ACTIONS: Set<String> = setOf(
+        LOCK, SCREENSHOT, BACK, HOME, RECENTS, NOTIFICATIONS, QUICK_SETTINGS, POWER_MENU
+    )
 
     /**
      * Maps a stored action identifier onto one this build still understands.
      *
      * Applied on read in [com.newagedevs.gesturevolume.data.local.SharedPref] rather than as a
-     * one-shot migration, because the preferences are also restored from cloud backup: a migration
-     * that ran once at upgrade would miss an install that received "Lock" from a device where it
-     * still existed. Reading defensively costs a string comparison and cannot be outrun.
+     * one-shot migration, because the preferences are also restored from cloud backup: a value
+     * written by a newer build can arrive on an older one long after any migration would have
+     * run. Reading defensively costs a set lookup and cannot be outrun.
      */
-    fun sanitize(action: String): String = if (action == RETIRED_LOCK) NONE else action
+    fun sanitize(action: String): String = if (action in KNOWN) action else NONE
 
     /** The set form, for the long-press menu's stored selection. */
-    fun sanitize(actions: Set<String>): Set<String> = actions - RETIRED_LOCK
+    fun sanitize(actions: Set<String>): Set<String> = actions.filterTo(mutableSetOf()) { it in KNOWN }
 
     /** True when this swipe identifier drives screen brightness rather than media volume. */
     fun isBrightnessSwipe(action: String): Boolean =
@@ -117,7 +173,13 @@ object HandlerActions {
 
     /** True when the action needs WRITE_SETTINGS before it can do anything. */
     fun needsWriteSettings(action: String): Boolean =
-        isBrightnessSwipe(action) || action == TOGGLE_AUTO_BRIGHTNESS
+        isBrightnessSwipe(action) || action == TOGGLE_AUTO_BRIGHTNESS || action == TOGGLE_AUTO_ROTATE
+
+    /** True when the action can only be carried out by the accessibility service. */
+    fun needsAccessibility(action: String): Boolean = action in ACCESSIBILITY_ACTIONS
+
+    /** True when the action needs Do Not Disturb access. */
+    fun needsNotificationPolicy(action: String): Boolean = action == TOGGLE_DND
 
     /** True when the volume change should surface the system volume panel. */
     fun showsVolumeUi(action: String): Boolean =
@@ -125,4 +187,22 @@ object HandlerActions {
 
     /** True when the swipe is configured to do nothing. */
     fun isDisabled(action: String): Boolean = action == NONE
+
+    /**
+     * The Deck tile an action opens, or null when the action is not a Deck shortcut.
+     *
+     * The identifiers are [com.newagedevs.gesturevolume.overlay.deck.DeckTiles] ids. Kept here as
+     * plain strings so this object stays free of overlay imports.
+     */
+    fun deckTileFor(action: String): String? = when (action) {
+        OPEN_SEARCH -> "search"
+        OPEN_TIMER -> "timer"
+        OPEN_CALCULATOR -> "calculator"
+        OPEN_NOTES -> "notes"
+        OPEN_CLIPBOARD -> "clipboard"
+        OPEN_MEDIA -> "media"
+        COIN_TOSS -> "coin"
+        DICE_ROLL -> "dice"
+        else -> null
+    }
 }

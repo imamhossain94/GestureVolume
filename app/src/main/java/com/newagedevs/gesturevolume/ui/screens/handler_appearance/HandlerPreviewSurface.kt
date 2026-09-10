@@ -2,7 +2,6 @@ package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
 import android.animation.ValueAnimator
 import android.content.Context
-import android.media.AudioManager
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.view.Gravity
@@ -11,6 +10,7 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -31,11 +31,14 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.service.HandlerGeometry
+import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.ui.view.HandlerGestureDetector
 import com.newagedevs.gesturevolume.ui.view.HandlerView
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.BrightnessController
+import com.newagedevs.gesturevolume.utils.DeviceToggles
 import com.newagedevs.gesturevolume.utils.HandlerActions
+import com.newagedevs.gesturevolume.utils.VolumeController
 import kotlin.math.roundToInt
 
 /**
@@ -70,11 +73,31 @@ fun HandlerPreviewSurface(
     var handlerViewRef by remember { mutableStateOf<HandlerView?>(null) }
 
 
-    val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
     val vibratorService = remember { context.getSystemService(Vibrator::class.java) }
-    val maxVolume = remember { audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) }
     val brightness = remember { BrightnessController(context) }
-    val previousVolume = remember { mutableIntStateOf(1) }
+    val toggles = remember { DeviceToggles(context) }
+    DisposableEffect(toggles) {
+        toggles.start()
+        onDispose { toggles.stop() }
+    }
+
+    /**
+     * The same [VolumeController] the live overlay uses, so the preview cannot disagree with the
+     * bar it is previewing. It replaces a hand-copied duplicate of the service's volume code that
+     * had drifted in three ways: it captured `getStreamMaxVolume` once in a `remember`, so the
+     * range went stale the moment the resolved stream changed; it kept its pre-mute level in a
+     * composition-scoped `mutableIntStateOf(1)` that every recomposition-from-scratch reset; and it
+     * cast `getSystemService` unchecked, which is a settings-screen crash on a device that returns
+     * null for it.
+     */
+    val volume = remember { VolumeController(context) }
+    DisposableEffect(volume) {
+        volume.start()
+        onDispose { volume.stop() }
+    }
+
+    /** Latched for one gesture, exactly as the service does it. */
+    val adjustResolution = remember { mutableStateOf<VolumeController.Resolution?>(null) }
 
     val gestureDetectorRef = remember { mutableStateOf<HandlerGestureDetector?>(null) }
     val adjustIsBrightness = remember { mutableStateOf(false) }
@@ -147,6 +170,9 @@ fun HandlerPreviewSurface(
     val brightnessPermissionMsg = stringResource(R.string.brightness_needs_permission_short)
     val actionNotAvailableMsg = stringResource(R.string.action_not_available_msg)
     val unknownActionMsg = stringResource(R.string.unknown_action_msg)
+    val flashlightOnMsg = stringResource(R.string.flashlight_on)
+    val flashlightOffMsg = stringResource(R.string.flashlight_off)
+    val flashlightUnavailableMsg = stringResource(R.string.flashlight_unavailable)
 
     fun handlerTapActions(action: String) {
         if (preference.getHandlerVibrateOnClick()) {
@@ -156,21 +182,18 @@ fun HandlerPreviewSurface(
             // Reposition is armed by the gesture engine, never run as an action.
             HandlerActions.NONE, HandlerActions.REPOSITION -> {}
             HandlerActions.OPEN_VOLUME_UI -> {
-                audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+                volume.panel(volume.resolve(preference.getVolumeStreamMode()))
             }
             HandlerActions.MUTE -> {
-                audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-                audioManager.adjustVolume(AudioManager.ADJUST_MUTE, 0)
+                val resolution = volume.resolve(preference.getVolumeStreamMode())
+                volume.mute(resolution)?.let { preference.setPreMuteLevel(resolution.stream, it) }
             }
             HandlerActions.MUTE_OR_UNMUTE -> {
-                val volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-                audioManager.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-
-                if (volume > 0) {
-                    previousVolume.intValue = volume
-                    audioManager.adjustVolume(AudioManager.ADJUST_MUTE, 0)
+                val resolution = volume.resolve(preference.getVolumeStreamMode())
+                if (volume.isMuted(resolution)) {
+                    volume.unmute(resolution, preference.getPreMuteLevel(resolution.stream))
                 } else {
-                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, previousVolume.intValue, 0)
+                    volume.mute(resolution)?.let { preference.setPreMuteLevel(resolution.stream, it) }
                 }
             }
             HandlerActions.TOGGLE_AUTO_BRIGHTNESS -> {
@@ -185,13 +208,40 @@ fun HandlerPreviewSurface(
                     viewModel.showToast(brightnessPermissionMsg)
                 }
             }
-            // Everything that acts on the live overlay or leaves the app. Listed rather than left
-            // to the else branch, which reports an unrecognised identifier — a real bug worth
-            // seeing, and not what a perfectly valid action outside the preview's remit is.
+            // The device toggles are harmless to rehearse and give real feedback, so they run.
+            HandlerActions.TOGGLE_FLASHLIGHT -> viewModel.showToast(
+                when (toggles.toggleFlashlight()) {
+                    true -> flashlightOnMsg
+                    false -> flashlightOffMsg
+                    null -> flashlightUnavailableMsg
+                }
+            )
+            HandlerActions.MEDIA_PLAY_PAUSE -> toggles.mediaPlayPause()
+            HandlerActions.MEDIA_NEXT -> toggles.mediaNext()
+            HandlerActions.MEDIA_PREVIOUS -> toggles.mediaPrevious()
+            // Everything that acts on the live overlay, leaves the app, or opens a window of its
+            // own. Listed rather than left to the else branch, which reports an unrecognised
+            // identifier — a real bug worth seeing, and not what a perfectly valid action outside
+            // the preview's remit is.
             HandlerActions.ACTIVE_MUSIC_OVERLAY,
             HandlerActions.HIDE_HANDLER,
             HandlerActions.STOP_SERVICE,
-            HandlerActions.OPEN_APP -> {
+            HandlerActions.OPEN_APP,
+            HandlerActions.OPEN_DECK,
+            HandlerActions.OPEN_MENU,
+            HandlerActions.OPEN_SEARCH,
+            HandlerActions.OPEN_TIMER,
+            HandlerActions.OPEN_CALCULATOR,
+            HandlerActions.OPEN_NOTES,
+            HandlerActions.OPEN_CLIPBOARD,
+            HandlerActions.OPEN_MEDIA,
+            HandlerActions.COIN_TOSS,
+            HandlerActions.DICE_ROLL,
+            HandlerActions.SCAN_QR,
+            HandlerActions.SONG_SEARCH,
+            HandlerActions.TOGGLE_DND,
+            HandlerActions.TOGGLE_AUTO_ROTATE,
+            in HandlerActions.ACCESSIBILITY_ACTIONS -> {
                 viewModel.showToast(actionNotAvailableMsg)
             }
             else -> {
@@ -201,11 +251,11 @@ fun HandlerPreviewSurface(
     }
 
     fun adjustVolume(direction: Int): Boolean {
-        val volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-        val newVolume = (volume + direction).coerceIn(0, maxVolume)
-        if (newVolume == volume) return false
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, AudioManager.FLAG_SHOW_UI)
-        return true
+        val resolution = adjustResolution.value
+            ?: volume.media().also { adjustResolution.value = it }
+        // The preview always shows the system panel, which is what makes a swipe here legible
+        // without the bar's own percentage readout.
+        return volume.step(resolution, direction, showUi = true) != null
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -256,11 +306,17 @@ fun HandlerPreviewSurface(
                             override fun isDoubleTapArmed(): Boolean =
                                 preference.getHandlerDoubleTapAction() != HandlerActions.NONE
 
+                            override fun isTripleTapArmed(): Boolean =
+                                preference.getHandlerTripleTapAction() != HandlerActions.NONE
+
                             override fun onTap() =
                                 handlerTapActions(preference.getHandlerSingleTapAction())
 
                             override fun onDoubleTap() =
                                 handlerTapActions(preference.getHandlerDoubleTapAction())
+
+                            override fun onTripleTap() =
+                                handlerTapActions(preference.getHandlerTripleTapAction())
 
                             override fun onLongPress() =
                                 handlerTapActions(preference.getHandlerLongTapAction())
@@ -277,9 +333,15 @@ fun HandlerPreviewSurface(
                                 }
                                 adjustIsBrightness.value = HandlerActions.isBrightnessSwipe(action)
                                 adjustEnabled.value = !HandlerActions.isDisabled(action)
-                                gestureDetectorRef.value?.setStepCount(
-                                    if (adjustIsBrightness.value) brightness.stepCount else maxVolume
-                                )
+                                if (adjustIsBrightness.value) {
+                                    adjustResolution.value = null
+                                    gestureDetectorRef.value?.setStepCount(brightness.stepCount)
+                                } else {
+                                    val resolution =
+                                        volume.resolve(preference.getVolumeStreamMode())
+                                    adjustResolution.value = resolution
+                                    gestureDetectorRef.value?.setStepCount(resolution.stepCount)
+                                }
                             }
 
                             override fun onAdjustBegin(initialDirection: Int) {
@@ -303,6 +365,7 @@ fun HandlerPreviewSurface(
                             override fun onAdjustEnd() {
                                 adjustEnabled.value = false
                                 adjustDirection.intValue = 0
+                                adjustResolution.value = null
                             }
 
                             override fun onDragCue(active: Boolean) {
@@ -326,6 +389,37 @@ fun HandlerPreviewSurface(
                              * over the very controls being adjusted. Holding here still highlights
                              * the bar and still drags it, which is the part worth previewing.
                              */
+                            /**
+                             * The preview has no horizontal swipes, for the same reason it has no
+                             * context menu: it lives inside a sheet that already owns the screen,
+                             * and the Deck or a menu would sit over the very controls being
+                             * adjusted. Nothing is armed, so the detector never enters its
+                             * tracking state here and the horizontal branch stays a silent miss.
+                             */
+                            override fun edgeSwipeInwardSign(): Int =
+                                if (state.gravity == Gravity.START) 1 else -1
+
+                            override fun isHorizontalSwipeArmed(inward: Boolean): Boolean = false
+
+                            override fun onHorizontalSwipe(inward: Boolean) = Unit
+
+                            /**
+                             * The slider is inert in the preview for the same reason the swipe
+                             * actions are: this bar is a picture of the settings being edited, and
+                             * a stroke across it must not reach out and change the real screen
+                             * brightness of the phone the user is editing settings on.
+                             */
+                            override fun isQuickSliderArmed(inward: Boolean): Boolean = false
+
+                            override fun quickSliderSweepDp(): Float =
+                                QuickSliderStore.DEFAULT_LENGTH
+
+                            override fun onQuickSliderBegin(inward: Boolean) = Unit
+
+                            override fun onQuickSliderUpdate(fractionFromOpen: Float) = Unit
+
+                            override fun onQuickSliderEnd() = Unit
+
                             override fun onContextMenuOpen() = Unit
 
                             override fun onContextMenuDismiss() = Unit

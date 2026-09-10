@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import com.newagedevs.gesturevolume.utils.HandlerPresets
 
 data class AppearanceState(
     val gravity: Int,
@@ -73,7 +74,6 @@ class AppearanceStateHolder(
     var strokeWidth by mutableStateOf(initialStrokeWidth)
     var strokeAlpha by mutableStateOf(initialStrokeAlpha)
     
-    var cornerRadiusAll by mutableStateOf(initialCornerTL)
     var cornerTL by mutableStateOf(initialCornerTL)
     var cornerTR by mutableStateOf(initialCornerTR)
     var cornerBL by mutableStateOf(initialCornerBL)
@@ -97,3 +97,71 @@ class AppearanceStateHolder(
         edgeMargin, snapToEdge, positionFraction, posXFraction
     )
 }
+
+/**
+ * Writes a preset's appearance onto the holder.
+ *
+ * Extracted so the deep link from the main screen's preset card and the quick-preset chips in the
+ * settings sheet cannot drift apart — they were two copies of the same sixteen assignments.
+ *
+ * A preset is an **appearance, not a placement** — with one stated exception. It leaves
+ * [AppearanceStateHolder.gravity], [AppearanceStateHolder.positionFraction] and
+ * [AppearanceStateHolder.posXFraction] alone, because the bar is dragged where the user wants it
+ * and picking "Night" to change the colour should not throw that away. A preset that carries a
+ * [HandlerPresets.Placement] is the exception, and carries one precisely because where it sits is
+ * what it *is*: see the Notch preset.
+ *
+ * Writes only the holder, so applying a preset stays inside the Apply/Discard contract.
+ */
+fun AppearanceStateHolder.applyPreset(preset: HandlerPresets.Preset) {
+    width = preset.width
+    height = preset.height
+    bgColor = preset.bgColor
+    bgAlpha = preset.bgAlpha
+    strokeColor = preset.strokeColor
+    strokeWidth = preset.strokeWidth
+    strokeAlpha = preset.strokeAlpha
+    cornerTL = preset.cornerRadius
+    cornerTR = preset.cornerRadius
+    cornerBL = preset.cornerRadius
+    cornerBR = preset.cornerRadius
+    iconRes = preset.iconRes
+    iconSize = preset.iconSize
+    iconColor = preset.iconColor
+    showIcon = preset.showIcon
+    vibrate = preset.vibrate
+    edgeMargin = preset.edgeMargin
+    preset.placement?.let { placement ->
+        gravity = placement.gravity
+        posXFraction = placement.posXFraction
+        positionFraction = placement.posYFraction
+        snapToEdge = placement.snapToEdge
+    }
+}
+
+/**
+ * Whether the holder currently matches this preset, so a chip can show as selected.
+ *
+ * Compares exactly the fields [applyPreset] writes — gravity and the two position fractions are
+ * excluded for the same reason it does not write them, otherwise dragging the bar would silently
+ * deselect the preset whose colours are still on screen.
+ */
+fun HandlerPresets.Preset.matches(state: AppearanceStateHolder): Boolean =
+    (placement == null || state.snapToEdge == placement.snapToEdge) &&
+        state.width == width &&
+        state.height == height &&
+        state.bgColor == bgColor &&
+        state.bgAlpha == bgAlpha &&
+        state.strokeColor == strokeColor &&
+        state.strokeWidth == strokeWidth &&
+        state.strokeAlpha == strokeAlpha &&
+        state.cornerTL == cornerRadius &&
+        state.cornerTR == cornerRadius &&
+        state.cornerBL == cornerRadius &&
+        state.cornerBR == cornerRadius &&
+        state.iconRes == iconRes &&
+        state.iconSize == iconSize &&
+        state.iconColor == iconColor &&
+        state.showIcon == showIcon &&
+        state.vibrate == vibrate &&
+        state.edgeMargin == edgeMargin

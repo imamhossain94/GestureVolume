@@ -350,4 +350,30 @@
     <string name="permission_needed_brightness">你已设置亮度操作。没有此权限，它无法改变亮度。</string>
     <string name="permission_action_required_one">1 项权限需要处理</string>
     <string name="permission_action_required_many">%1$d 项权限需要处理</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">音量类型</string>
+    <string name="volume_stream_desc">选择悬浮条要调节的音量。</string>
+    <string name="volume_stream_dialog_title">调节哪个音量？</string>
+    <string name="volume_stream_media_only">仅媒体</string>
+    <string name="volume_stream_media_only_desc">即使在通话中，悬浮条也始终调节媒体音量。</string>
+    <string name="volume_stream_follow_playback">跟随播放</string>
+    <string name="volume_stream_follow_playback_desc">根据通话、来电铃声或闹钟自动切换，其余情况下调节媒体音量。</string>
+    <string name="volume_stream_match_keys">与音量键一致</string>
+    <string name="volume_stream_match_keys_desc">像音量键一样，没有播放时也会调节铃声音量。悬浮条不会完全静音铃声。</string>
+    <string name="volume_stream_media">媒体</string>
+    <string name="volume_stream_call">通话</string>
+    <string name="volume_stream_alarm">闹钟</string>
+    <string name="volume_stream_ring">铃声</string>
+    <string name="volume_fixed_short">此设备音量固定</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">展开</string>
+    <string name="collapse_section">收起</string>
+    <string name="per_corner">单独设置各个角</string>
+    <string name="per_corner_mixed">混合</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">向内滑动打开菜单</string>
+    <string name="edge_swipe_menu_desc">从悬浮条向屏幕中间滑动即可打开操作菜单。默认关闭，因为系统的返回手势也是这样操作的。</string>
+    <!-- 1.3.5: edge preset -->
+    <string name="preset_edge_title">边缘</string>
+    <string name="preset_edge_subtitle">紧贴侧边的细长条</string>
 </resources>

@@ -117,6 +117,32 @@ class BrightnessController(private val context: Context) {
     }
 
     /**
+     * Sets brightness to a 0..1 fraction, for the Deck's slider.
+     *
+     * @return the fraction actually applied, or null when the write was refused.
+     */
+    fun setFraction(fraction: Float): Float? {
+        if (!canWrite()) return null
+        if (disableAutoBrightnessIfNeeded()) autoDisabledByFraction = true
+        val span = (maxBrightness - minBrightness).coerceAtLeast(1)
+        val target = (minBrightness + fraction.coerceIn(0f, 1f) * span).toInt()
+            .coerceIn(minBrightness, maxBrightness)
+        val written = runCatching {
+            Settings.System.putInt(context.contentResolver, Settings.System.SCREEN_BRIGHTNESS, target)
+        }.getOrDefault(false)
+        if (!written) return null
+        return ((target - minBrightness).toFloat() / span).coerceIn(0f, 1f)
+    }
+
+    /**
+     * True once [setFraction] has switched adaptive brightness off, so the caller can record
+     * that the hand-back is this app's to make. Cleared on read.
+     */
+    var autoDisabledByFraction: Boolean = false
+        get() { val v = field; field = false; return v }
+        private set
+
+    /**
      * Moves brightness one step.
      *
      * @return the new 0..1 fraction, or `null` when the write failed or nothing changed because the

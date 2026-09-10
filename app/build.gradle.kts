@@ -46,8 +46,8 @@ android {
         applicationId = "com.newagedevs.gesturevolume"
         minSdk = 26
         targetSdk = 37
-        versionCode = 34
-        versionName = "1.3.4"
+        versionCode = 35
+        versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -68,6 +68,15 @@ android {
     }
 
     buildTypes {
+        debug {
+            // `./gradlew assembleDebug -Psideload` builds a copy that installs *beside* the Play
+            // release on a test device, under its own package name, so trying a build never means
+            // replacing the release — and losing its settings — on the phone in your pocket.
+            if (project.hasProperty("sideload")) {
+                applicationIdSuffix = ".sideload"
+                versionNameSuffix = "-sideload"
+            }
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -136,6 +145,10 @@ dependencies {
 
     // Billing
     implementation(libs.billing.ktx)
+
+    // QR / barcode scanning. The scanner itself is downloaded on demand by Play services, so
+    // this adds a couple of hundred kilobytes to the APK rather than a whole vision pipeline.
+    implementation(libs.play.services.code.scanner)
 
     // Play Core
     implementation(libs.play.update)

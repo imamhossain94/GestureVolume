@@ -350,4 +350,30 @@
     <string name="permission_needed_brightness">Bạn đã đặt một hành động độ sáng. Không có quyền này, nó không thể đổi độ sáng.</string>
     <string name="permission_action_required_one">1 quyền cần bạn xử lý</string>
     <string name="permission_action_required_many">%1$d quyền cần bạn xử lý</string>
+    <!-- 1.3.5: adaptive volume stream -->
+    <string name="volume_stream_title">Luồng âm lượng</string>
+    <string name="volume_stream_desc">Chọn âm lượng mà thanh sẽ thay đổi.</string>
+    <string name="volume_stream_dialog_title">Âm lượng nào?</string>
+    <string name="volume_stream_media_only">Chỉ phương tiện</string>
+    <string name="volume_stream_media_only_desc">Thanh luôn thay đổi âm lượng phương tiện, kể cả khi đang gọi.</string>
+    <string name="volume_stream_follow_playback">Theo nội dung phát</string>
+    <string name="volume_stream_follow_playback_desc">Tự điều chỉnh theo cuộc gọi, chuông điện thoại hoặc báo thức. Ngược lại sẽ đổi âm lượng phương tiện.</string>
+    <string name="volume_stream_match_keys">Giống phím âm lượng</string>
+    <string name="volume_stream_match_keys_desc">Hoạt động như phím âm lượng, bao gồm đổi âm lượng chuông khi không có gì phát. Thanh sẽ không tắt hẳn chuông.</string>
+    <string name="volume_stream_media">Phương tiện</string>
+    <string name="volume_stream_call">Cuộc gọi</string>
+    <string name="volume_stream_alarm">Báo thức</string>
+    <string name="volume_stream_ring">Nhạc chuông</string>
+    <string name="volume_fixed_short">Thiết bị này có âm lượng cố định</string>
+    <!-- 1.3.5: appearance redesign -->
+    <string name="expand_section">Mở rộng</string>
+    <string name="collapse_section">Thu gọn</string>
+    <string name="per_corner">Đặt từng góc riêng</string>
+    <string name="per_corner_mixed">Hỗn hợp</string>
+    <!-- 1.3.5: inward edge swipe -->
+    <string name="edge_swipe_menu_title">Vuốt vào trong để mở menu</string>
+    <string name="edge_swipe_menu_desc">Vuốt từ thanh về phía giữa màn hình để mở menu thao tác. Mặc định tắt, vì cử chỉ Quay lại của hệ thống cũng được thực hiện theo cách này.</string>
+    <!-- 1.3.5: edge preset -->
+    <string name="preset_edge_title">Cạnh</string>
+    <string name="preset_edge_subtitle">Thanh mỏng sát mép</string>
 </resources>
