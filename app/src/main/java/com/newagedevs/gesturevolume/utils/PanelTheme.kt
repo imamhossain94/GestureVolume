@@ -109,6 +109,24 @@ object PanelTheme {
     fun isLight(theme: String): Boolean = theme == AERO || theme == VIBRANT
 
     /**
+     * The surface a pale material insists on, or null where the panel keeps the user's own colour.
+     *
+     * [surfaceAlpha] is a multiplier because the Deck and the Quick panel carry a colour somebody
+     * chose, and thinning it is a change this object is entitled to make. Replacing it is not — so
+     * only the two materials that are *defined* by being pale return anything here. Fading a dark
+     * bar toward transparent gives grey; it never gives a pane of glass, and a Deck that stayed
+     * charcoal while the menu beside it turned to frost was the whole complaint.
+     *
+     * Where this is non-null the alpha is already in it, and [surfaceAlpha] must not be applied on
+     * top or the surface is thinned twice.
+     */
+    fun panelSurface(theme: String): Long? = when (theme) {
+        AERO -> 0x8CD6E6F4
+        VIBRANT -> 0xA6F7F7FA
+        else -> null
+    }
+
+    /**
      * The long-press menu's full palette, as `0xAARRGGBB` literals.
      *
      * Longs rather than `androidx.compose.ui.graphics.Color` so that this file stays where it is —

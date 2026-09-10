@@ -137,6 +137,9 @@ class OverlayController(
          */
         private const val PANEL_MIN_THICKNESS_DP = 48f
 
+        /** The ink a pale panel writes in: dark enough to read on frosted glass, not pure black. */
+        private const val PANEL_LIGHT_INK = 0xFF15161A.toInt()
+
         /** How long the level lingers on the bar after the last step of a swipe. */
         private const val VOLUME_PERCENT_VISIBLE_MS = 700L
 
@@ -1474,7 +1477,9 @@ class OverlayController(
         val next = (sliderLastStep + direction).coerceIn(0, steps)
         if (next == sliderLastStep) return false
         restartQuickSliderIdleTimeout()
-        applyQuickSlider(next / steps.toFloat())
+        // Animated, unlike a drag: there is no finger on the track to explain the movement, so
+        // the fill has to travel the distance itself or the value appears to teleport.
+        applyQuickSlider(next / steps.toFloat(), animated = true)
         return true
     }
 
@@ -1595,12 +1600,28 @@ class OverlayController(
         val cornerBL = preference.getHandlerCornerRadiusBL()
         val cornerBR = preference.getHandlerCornerRadiusBR()
 
+        val theme = preference.getPanelTheme()
+        // A pale material supplies the track, and with it the ink: this panel writes its number and
+        // its icon in exactly two colours — the fill over the empty half, the track over the filled
+        // half — so a white fill on a white pane loses both at once, not just the fill.
+        //
+        // The *collapsed* colour stays the bar's either way. That is what the panel grows out of,
+        // and the blend between the two is the morph; starting it anywhere else would make the
+        // first frame jump to a colour the bar never had.
+        val paleSurface = PanelTheme.panelSurface(theme)
+
         val view = QuickSliderView(context).apply {
-            setColors(handlerColor, settings.getFillColor())
+            if (paleSurface != null) {
+                setColors(paleSurface.toInt(), PANEL_LIGHT_INK)
+                // 1f, because the material's own alpha is already in that colour. Thinning it by
+                // the multiplier as well would fade the pane twice.
+                setPanelTheme(1f, PanelTheme.hasLitEdge(theme), light = true)
+            } else {
+                setColors(handlerColor, settings.getFillColor())
+                setPanelTheme(PanelTheme.surfaceAlpha(theme), PanelTheme.hasLitEdge(theme))
+            }
             setExpandedCorners(cornerTL, cornerTR, cornerBL, cornerBR)
             setCollapsedAppearance(handlerColor, cornerTL, cornerTR, cornerBL, cornerBR)
-            val theme = preference.getPanelTheme()
-            setPanelTheme(PanelTheme.surfaceAlpha(theme), PanelTheme.hasLitEdge(theme))
             setIcon(if (settings.getShowIcon()) quickSliderIcon(sliderTarget) else null)
             setShowValue(settings.getShowValue())
             setValue(openValue)
@@ -1788,14 +1809,27 @@ class OverlayController(
      * made once. Reading them off three separate roundings is how a slider ends up buzzing without
      * moving, or showing 41% while the system holds 40%.
      */
-    private fun applyQuickSlider(fraction: Float) {
+    private fun applyQuickSlider(fraction: Float, animated: Boolean = false) {
         val view = sliderView ?: return
         if (!sliderCommitted) return
         val target = fraction.coerceIn(0f, 1f)
-        val step = (target * sliderSteps).roundToInt().coerceIn(0, sliderSteps)
-        val quantised = step / sliderSteps.toFloat()
 
-        view.setValue(quantised)
+        /*
+         * The bar goes exactly where the finger is. Only what is written underneath is quantised.
+         *
+         * It used to be drawn at the quantised value, and that is the whole of "the slider is not
+         * smooth": a stream's volume is an integer index, and on the streams with few of them —
+         * seven for ring and alarm on most phones — one index is fourteen points of the range. So
+         * the fill sat still through most of a drag and then jumped a seventh of the track at
+         * once, which looks like a control that is fighting the finger rather than following it.
+         *
+         * Every system volume slider does it this way: the bar is continuous, the audio is not.
+         */
+        if (animated) view.animateValue(target) else view.setValue(target)
+
+        // `sliderSteps` is the stream's own index count, so this *is* the hardware index — one
+        // apart is as fine a move as the platform can make.
+        val step = (target * sliderSteps).roundToInt().coerceIn(0, sliderSteps)
         if (step == sliderLastStep) return
         sliderLastStep = step
 
@@ -1811,10 +1845,13 @@ class OverlayController(
                     if (brightness.autoDisabledByFraction) preference.setBrightnessAutoWasOn(true)
                 }
             }
-            brightness.setFraction(quantised) != null
+            brightness.setFraction(step / sliderSteps.toFloat()) != null
         } else {
             val res = sliderResolution
-            res != null && volume.setPercent(res, (quantised * 100f).roundToInt(), showUi = false) != null
+            // By index rather than by percentage. Going through a whole-number percent on a
+            // seven-step stream lands two consecutive indices on the same percent and makes
+            // others unreachable, so a slow drag skipped levels and stuck on others.
+            res != null && volume.setIndex(res, res.minIndex + step, showUi = false) != null
         }
 
         // No buzz for a step the system refused. The tick is feedback about the control moving,
@@ -1963,14 +2000,17 @@ class OverlayController(
         val frameSize = IntSize(currentFrame.usableWidth, currentFrame.usableHeight)
 
         val menuHost = OverlayComposeHost(context)
+        val panelTheme = preference.getPanelTheme()
         menuHost.setContent {
-            OverlayTheme {
+            // The pale materials carry dark ink, so the scheme underneath everything the panel
+            // does not colour by hand has to flip with them. See OverlayTheme.
+            OverlayTheme(light = PanelTheme.isLight(panelTheme)) {
                 ContextMenuOverlay(
                     entries = entries,
                     anchor = anchor,
                     frame = frameSize,
                     grid = grid,
-                    theme = preference.getPanelTheme(),
+                    theme = panelTheme,
                     onSelect = { entry ->
                         hideContextMenu()
                         // Posted for the same reason the tap actions are: "Hide Handler" and
@@ -2077,7 +2117,7 @@ class OverlayController(
             onInteraction = { restartDeckAutoClose() }
         )
         host.setContent {
-            OverlayTheme {
+            OverlayTheme(light = PanelTheme.isLight(model.panelTheme)) {
                 DeckOverlay(
                     model = model,
                     actions = deckActions,

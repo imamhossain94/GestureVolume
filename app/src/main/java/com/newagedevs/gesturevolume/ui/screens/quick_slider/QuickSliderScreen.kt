@@ -48,6 +48,7 @@ import com.newagedevs.gesturevolume.ui.components.PREVIEW_SUBJECT_MAX_HEIGHT
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
+import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SectionTitle
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.ColorPickerControl
@@ -183,7 +184,8 @@ fun QuickSliderScreen(
                 fillColor = fillColor,
                 showValue = showValue,
                 showIcon = showIcon,
-                target = target
+                target = target,
+                panelTheme = panelTheme
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -337,6 +339,8 @@ private fun SliderPreview(
     target: String,
     backgroundImageURL: String,
     handlerOnLeft: Boolean,
+    /** The panel style, so this shows the material the user is about to get. */
+    panelTheme: String,
 ) {
     val iconRes = if (target == QuickSliderStore.TARGET_BRIGHTNESS) {
         R.drawable.ic_brightness_up
@@ -353,7 +357,21 @@ private fun SliderPreview(
         AndroidView(
                 factory = { ctx -> QuickSliderView(ctx) },
                 update = { view ->
-                    view.setColors(trackColor.toArgb(), fillColor.toArgb())
+                    // Dressed exactly the way the live panel is — see
+                    // `OverlayController.openQuickSliderWindow`. It used to skip the theme
+                    // entirely, so the preview showed the Solid look whatever was selected, which
+                    // on a picker whose whole job is choosing a look is worse than no preview.
+                    val paleSurface = PanelTheme.panelSurface(panelTheme)
+                    if (paleSurface != null) {
+                        view.setColors(paleSurface.toInt(), PANEL_PREVIEW_LIGHT_INK)
+                        view.setPanelTheme(1f, PanelTheme.hasLitEdge(panelTheme), light = true)
+                    } else {
+                        view.setColors(trackColor.toArgb(), fillColor.toArgb())
+                        view.setPanelTheme(
+                            PanelTheme.surfaceAlpha(panelTheme),
+                            PanelTheme.hasLitEdge(panelTheme),
+                        )
+                    }
                     view.setExpandedCorners(corners[0], corners[1], corners[2], corners[3])
                     view.setShowValue(showValue)
                     view.setIcon(if (showIcon) iconRes else null)
@@ -434,3 +452,6 @@ private fun Sep() {
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
     )
 }
+
+/** Mirrors `OverlayController.PANEL_LIGHT_INK`, so the preview and the panel write in one colour. */
+private val PANEL_PREVIEW_LIGHT_INK = 0xFF15161A.toInt()

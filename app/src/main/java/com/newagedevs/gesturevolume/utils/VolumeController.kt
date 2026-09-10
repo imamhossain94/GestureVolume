@@ -346,6 +346,30 @@ class VolumeController(private val context: Context) {
      *
      * @return the percentage actually applied, or null when the write was refused.
      */
+    /**
+     * Writes an absolute index, and returns the index that landed.
+     *
+     * The finest control the platform offers. A stream's volume is an integer index and nothing
+     * else — there is no public API for anything in between — so one index is as smooth as audio
+     * can get, and a caller that wants a smooth *control* has to be smooth on its own side and
+     * quantise only here.
+     *
+     * Distinct from [setPercent], which takes a whole-number percentage and converts. That extra
+     * hop is lossy in both directions on a stream with few steps: a ring stream with seven of them
+     * moves 14 points per index, so consecutive percentages map to the same index and consecutive
+     * indices are unreachable from some percentages. A slider driven through it appears to stick
+     * and then jump. [setPercent] stays for the callers that genuinely start from a percentage.
+     */
+    fun setIndex(res: Resolution, index: Int, showUi: Boolean): Int? {
+        val manager = audio ?: return null
+        val target = index.coerceIn(res.minIndex, res.maxIndex)
+        val flags = if (showUi) AudioManager.FLAG_SHOW_UI else 0
+        val written = runCatching {
+            manager.setStreamVolume(res.stream, target, flags); true
+        }.getOrDefault(false)
+        return if (written) target else null
+    }
+
     fun setPercent(res: Resolution, percent: Int, showUi: Boolean): Int? {
         val manager = audio ?: return null
         val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)

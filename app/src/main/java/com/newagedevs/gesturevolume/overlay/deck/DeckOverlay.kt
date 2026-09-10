@@ -72,8 +72,8 @@ import kotlin.math.min
  * colour that reads on that background.
  */
 class DeckPalette(
-    background: Color,
-    val accent: Color,
+    surface: Color,
+    accent: Color,
     /**
      * How much of the Deck's own background survives, from [com.newagedevs.gesturevolume.utils.PanelTheme].
      *
@@ -83,12 +83,35 @@ class DeckPalette(
      */
     surfaceAlpha: Float = 1f,
 ) {
-    val background: Color = background.copy(alpha = background.alpha * surfaceAlpha)
+    val background: Color = surface.copy(alpha = surface.alpha * surfaceAlpha)
 
-    val onBackground: Color = if (background.luminance() > 0.5f) Color(0xFF111111) else Color.White
+    /**
+     * Which way the ink runs, decided from the surface rather than declared.
+     *
+     * `luminance()` ignores alpha, so this is asking about the *colour* of the pane and not how
+     * much of it there is — which is the right question: a pale pane at a third opacity is still
+     * a pale pane, because what shows through it has been blurred to a wash of the same
+     * brightness.
+     */
+    val light: Boolean = surface.luminance() > 0.5f
+
+    val onBackground: Color = if (light) Color(0xFF111111) else Color.White
     val subtle: Color = onBackground.copy(alpha = 0.62f)
-    val onAccent: Color = if (accent.luminance() > 0.5f) Color(0xFF111111) else Color.White
-    val chip: Color = accent.copy(alpha = 0.14f)
+
+    /**
+     * The accent, forced to something that can be seen.
+     *
+     * The default accent is white, which is invisible on a pale pane — and it is not just the
+     * default: every tile glyph, every quick-dial initial and half the card chrome is drawn in it,
+     * so a white accent on frosted glass is most of the Deck disappearing. A *coloured* accent
+     * survives untouched; only one too close to the surface's own brightness is pulled to the ink
+     * colour, which is the smallest change that keeps the panel readable.
+     */
+    val accent: Color =
+        if (light && accent.luminance() > 0.45f) Color(0xFF111111) else accent
+
+    val onAccent: Color = if (this.accent.luminance() > 0.5f) Color(0xFF111111) else Color.White
+    val chip: Color = this.accent.copy(alpha = if (light) 0.10f else 0.14f)
 }
 
 /**
@@ -134,10 +157,13 @@ fun DeckOverlay(
 ) {
     val state = actions.env.state
     val palette = remember(model.config, model.panelTheme) {
+        // A pale material brings its own surface, alpha included; everything else keeps the colour
+        // the user picked and only has it thinned. See PanelTheme.panelSurface.
+        val forced = PanelTheme.panelSurface(model.panelTheme)
         DeckPalette(
-            model.config.background,
-            model.config.accent,
-            PanelTheme.surfaceAlpha(model.panelTheme),
+            surface = forced?.let { Color(it) } ?: model.config.background,
+            accent = model.config.accent,
+            surfaceAlpha = if (forced != null) 1f else PanelTheme.surfaceAlpha(model.panelTheme),
         )
     }
     var shown by remember { mutableStateOf(false) }
@@ -269,7 +295,7 @@ private fun DeckStrip(
             .width(stripWidth)
             .clip(shape)
             .background(palette.background)
-            .then(if (glass) Modifier.liquidGlass(model.config.cornerDp.dp) else Modifier)
+            .then(if (glass) Modifier.liquidGlass(model.config.cornerDp.dp, palette.light) else Modifier)
             // Swallows the tap so the root's dismiss does not fire for a press on the strip.
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -286,7 +312,7 @@ private fun DeckStrip(
                 QuickDialButton(entry, palette) { actions.dial(entry) }
             }
             model.apps.forEach { app ->
-                AppButton(app) { actions.launchApp(app.packageName) }
+                AppButton(app, palette) { actions.launchApp(app.packageName) }
             }
         }
         val hasShortcuts = model.quickDial.isNotEmpty() || model.apps.isNotEmpty()
@@ -391,7 +417,7 @@ fun TileButton(
 }
 
 @Composable
-private fun AppButton(app: AppShortcut, onClick: () -> Unit) {
+private fun AppButton(app: AppShortcut, palette: DeckPalette, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(44.dp)
@@ -408,7 +434,14 @@ private fun AppButton(app: AppShortcut, onClick: () -> Unit) {
                     .clip(RoundedCornerShape(11.dp))
             )
         } else {
-            Text(text = app.label.take(1).uppercase(), fontWeight = FontWeight.Bold)
+            // Coloured explicitly. This was the one label in the Deck that took whatever the
+            // scheme handed it, which on a pale pane is the difference between an initial and a
+            // blank tile.
+            Text(
+                text = app.label.take(1).uppercase(),
+                color = palette.onBackground,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -451,7 +484,7 @@ fun DeckCard(
         modifier = Modifier
             .clip(RoundedCornerShape(DECK_CARD_CORNER))
             .background(palette.background)
-            .then(if (glass) Modifier.liquidGlass(DECK_CARD_CORNER) else Modifier)
+            .then(if (glass) Modifier.liquidGlass(DECK_CARD_CORNER, palette.light) else Modifier)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -503,13 +536,18 @@ fun DeckCard(
  * packages with different private palettes, and the numbers here are the whole of what is shared —
  * lifting them into a common file would move four colours and leave the drawing behind.
  */
-internal fun Modifier.liquidGlass(cornerRadius: Dp): Modifier = drawWithContent {
+internal fun Modifier.liquidGlass(cornerRadius: Dp, light: Boolean = false): Modifier = drawWithContent {
+    // A pale pane is already brighter than what is behind it, so white piled on white flattens it.
+    // Its highlights are pulled back to under a half and the rim leans on contrast with the screen
+    // behind instead. The menu's copy of this does the same, for the same reason.
+    val k = if (light) 0.45f else 1f
+    fun w(alpha: Int): Color = Color(((alpha * k).toInt().coerceIn(0, 255) shl 24) or 0xFFFFFF)
     val r = CornerRadius(cornerRadius.toPx(), cornerRadius.toPx())
 
     drawRoundRect(
         brush = Brush.verticalGradient(
-            0f to Color(0x2EFFFFFF),
-            0.45f to Color(0x08FFFFFF),
+            0f to w(0x2E),
+            0.45f to w(0x08),
             1f to Color.Transparent,
         ),
         cornerRadius = r,
@@ -518,7 +556,7 @@ internal fun Modifier.liquidGlass(cornerRadius: Dp): Modifier = drawWithContent 
         brush = Brush.verticalGradient(
             0f to Color.Transparent,
             0.82f to Color.Transparent,
-            1f to Color(0x1AFFFFFF),
+            1f to w(0x1A),
         ),
         cornerRadius = r,
     )
@@ -528,10 +566,10 @@ internal fun Modifier.liquidGlass(cornerRadius: Dp): Modifier = drawWithContent 
     val stroke = 1.2.dp.toPx()
     drawRoundRect(
         brush = Brush.verticalGradient(
-            0f to Color(0xA6FFFFFF),
-            0.35f to Color(0x3DFFFFFF),
-            0.75f to Color(0x14FFFFFF),
-            1f to Color(0x4DFFFFFF),
+            0f to w(0xA6),
+            0.35f to w(0x3D),
+            0.75f to w(0x14),
+            1f to w(0x4D),
         ),
         topLeft = Offset(stroke / 2f, stroke / 2f),
         size = Size(size.width - stroke, size.height - stroke),

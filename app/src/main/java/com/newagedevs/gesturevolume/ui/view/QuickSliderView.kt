@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.view
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
@@ -9,6 +10,7 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.view.MotionEvent
+import android.view.animation.DecelerateInterpolator
 import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
@@ -235,15 +237,22 @@ class QuickSliderView(context: Context) : View(context) {
     /** Whether a finger is on the track right now. Widens the fill's leading edge as a grab cue. */
     private var grabbed = false
 
+    /** Whether the surface is a pale one, which halves the strength of the glass lighting. */
+    private var glassLight = false
+
+    /** Held so a second glide, or a finger arriving mid-glide, can take it over. */
+    private var valueAnimator: ValueAnimator? = null
+
     /**
      * Dresses the panel: how much of its colour survives, and whether it has a lit edge.
      *
      * Blur is not set here — it belongs to the window, not the view, and `OverlayController`
      * applies it when the window is added. This is only the part that is painted.
      */
-    fun setPanelTheme(surface: Float, litEdge: Boolean) {
+    fun setPanelTheme(surface: Float, litEdge: Boolean, light: Boolean = false) {
         surfaceAlpha = surface.coerceIn(0f, 1f)
         glassEnabled = litEdge
+        glassLight = light
         if (litEdge) {
             edgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 style = Paint.Style.STROKE
@@ -272,22 +281,26 @@ class QuickSliderView(context: Context) : View(context) {
         if (!glassEnabled || drawRect.isEmpty) return
         val top = drawRect.top
         val bottom = drawRect.bottom
+        // On a pale pane, white lighting piled on a white surface flattens it. Same correction the
+        // menu and the Deck make, and for the same reason.
+        val k = if (glassLight) 0.45f else 1f
+        fun w(alpha: Int): Int = ((alpha * k).toInt().coerceIn(0, 255) shl 24) or 0xFFFFFF
 
         sheenPaint?.shader = android.graphics.LinearGradient(
             0f, top, 0f, top + drawRect.height() * 0.5f,
-            intArrayOf(0x2EFFFFFF.toInt(), 0x08FFFFFF, 0x00FFFFFF),
+            intArrayOf(w(0x2E), w(0x08), 0x00FFFFFF),
             floatArrayOf(0f, 0.55f, 1f),
             android.graphics.Shader.TileMode.CLAMP,
         )
         counterLightPaint?.shader = android.graphics.LinearGradient(
             0f, bottom - drawRect.height() * 0.2f, 0f, bottom,
-            intArrayOf(0x00FFFFFF, 0x1AFFFFFF),
+            intArrayOf(0x00FFFFFF, w(0x1A)),
             null,
             android.graphics.Shader.TileMode.CLAMP,
         )
         edgePaint?.shader = android.graphics.LinearGradient(
             0f, top, 0f, bottom,
-            intArrayOf(0xA6FFFFFF.toInt(), 0x3DFFFFFF, 0x14FFFFFF, 0x4DFFFFFF),
+            intArrayOf(w(0xA6), w(0x3D), w(0x14), w(0x4D)),
             floatArrayOf(0f, 0.35f, 0.75f, 1f),
             android.graphics.Shader.TileMode.CLAMP,
         )
@@ -396,11 +409,42 @@ class QuickSliderView(context: Context) : View(context) {
         invalidate()
     }
 
+    /**
+     * Puts the fill at [fraction] this frame.
+     *
+     * For a finger on the track, and nothing else. A drag must be exactly where the finger is —
+     * a control that eases toward the touch instead of sitting under it feels like it is lagging,
+     * however short the ease is. Use [animateValue] when there is no finger to explain the move.
+     */
     fun setValue(fraction: Float) {
+        valueAnimator?.cancel()
+        setValueNow(fraction)
+    }
+
+    private fun setValueNow(fraction: Float) {
         val clamped = fraction.coerceIn(0f, 1f)
         if (clamped == value) return
         value = clamped
         invalidate()
+    }
+
+    /**
+     * Glides the fill to [fraction].
+     *
+     * For the moves nothing on screen accounts for: the nudge buttons, and a level changed from
+     * somewhere else while the panel happens to be open. A jump there reads as a glitch, because
+     * the user's eye has nothing to attribute it to.
+     */
+    fun animateValue(fraction: Float) {
+        val clamped = fraction.coerceIn(0f, 1f)
+        if (clamped == value) return
+        valueAnimator?.cancel()
+        valueAnimator = ValueAnimator.ofFloat(value, clamped).apply {
+            duration = VALUE_GLIDE_MS
+            interpolator = DecelerateInterpolator(1.6f)
+            addUpdateListener { setValueNow(it.animatedValue as Float) }
+            start()
+        }
     }
 
     private fun contentFadeFor(e: Float): Float =
@@ -585,3 +629,11 @@ class QuickSliderView(context: Context) : View(context) {
         }
     }
 }
+
+/**
+ * How long the fill takes to travel to a value nobody's finger is on.
+ *
+ * Short. This is a confirmation that something moved, not a journey; anything longer and a second
+ * press of a nudge button arrives while the first is still travelling.
+ */
+private const val VALUE_GLIDE_MS = 130L
