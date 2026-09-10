@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,12 +24,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.newagedevs.gesturevolume.utils.HandlerShape
 
 
 @Composable
@@ -49,6 +52,15 @@ fun PresetCard(
      * apply. Null keeps both sides the same, which is every other preset.
      */
     previewOuterCorner: Dp? = null,
+    /**
+     * The outline the swatch is cut to, when the preset is not a rounded rectangle.
+     *
+     * Drawn from [HandlerShape]'s own geometry rather than approximated with a corner radius, so
+     * the card advertises the shape the preset actually applies. A tab drawn as a pill here is
+     * the one thing this swatch exists to prevent.
+     */
+    previewShape: String = HandlerShape.ROUNDED,
+    previewFlare: Float = HandlerShape.DEFAULT_FLARE,
     previewColor: Color = MaterialTheme.colorScheme.primary,
     previewAlpha: Float = 0.8f,
     isSelected: Boolean = false,
@@ -105,22 +117,51 @@ fun PresetCard(
             Spacer(modifier = Modifier.width(10.dp))
 
             // Right: Visual handler preview strip
-            Box(
-                modifier = Modifier
-                    .width(previewWidth)
-                    .fillMaxHeight()
-                    // The swatch sits at the right of the card, so its right edge is the one
-                    // standing in for the screen edge.
-                    .clip(
-                        RoundedCornerShape(
-                            topStart = previewCorner,
-                            bottomStart = previewCorner,
-                            topEnd = previewOuterCorner ?: previewCorner,
-                            bottomEnd = previewOuterCorner ?: previewCorner,
-                        )
+            if (previewShape == HandlerShape.TAB) {
+                Canvas(
+                    modifier = Modifier
+                        .width(previewWidth)
+                        .fillMaxHeight()
+                ) {
+                    // The swatch sits at the right of the card, so its right edge stands in for
+                    // the screen edge — which is the side a tab's sweeps run to.
+                    val sweep = HandlerShape.tabSweep(
+                        size.width,
+                        size.height,
+                        previewFlare,
+                        edgeOnLeft = false
                     )
-                    .background(previewColor.copy(alpha = previewAlpha))
-            )
+                    val path = Path().apply {
+                        moveTo(sweep[0], 0f)
+                        cubicTo(sweep[2], sweep[3], sweep[4], sweep[5], sweep[6], sweep[7])
+                        lineTo(sweep[6], size.height - sweep[7])
+                        cubicTo(
+                            sweep[4], size.height - sweep[5],
+                            sweep[2], size.height - sweep[3],
+                            sweep[0], size.height
+                        )
+                        close()
+                    }
+                    drawPath(path, previewColor.copy(alpha = previewAlpha))
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .width(previewWidth)
+                        .fillMaxHeight()
+                        // The swatch sits at the right of the card, so its right edge is the one
+                        // standing in for the screen edge.
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = previewCorner,
+                                bottomStart = previewCorner,
+                                topEnd = previewOuterCorner ?: previewCorner,
+                                bottomEnd = previewOuterCorner ?: previewCorner,
+                            )
+                        )
+                        .background(previewColor.copy(alpha = previewAlpha))
+                )
+            }
         }
     }
 }

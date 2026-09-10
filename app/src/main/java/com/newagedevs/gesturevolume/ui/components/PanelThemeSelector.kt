@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
@@ -50,30 +51,44 @@ fun PanelThemeSelector(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp, bottom = 10.dp),
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
-                .padding(3.dp)
-                .selectableGroup(),
-            horizontalArrangement = Arrangement.spacedBy(3.dp),
-        ) {
-            PanelTheme.ALL.forEach { id ->
-                Segment(
-                    label = stringResource(labelFor(id)),
-                    selected = theme == id,
-                    onClick = { onThemeChange(id) },
-                    modifier = Modifier.weight(1f),
-                )
+        // Two rows rather than five segments abreast. Five labels across a phone leaves about
+        // sixty pixels each, which is not a word — it is an ellipsis. The short row is padded out
+        // so its segments stay the same width as the ones above rather than stretching to fill.
+        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            PanelTheme.ALL.chunked(SEGMENTS_PER_ROW).forEach { row ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
+                        .padding(3.dp)
+                        .selectableGroup(),
+                    horizontalArrangement = Arrangement.spacedBy(3.dp),
+                ) {
+                    row.forEach { id ->
+                        Segment(
+                            label = stringResource(labelFor(id)),
+                            selected = theme == id,
+                            onClick = { onThemeChange(id) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                    repeat(SEGMENTS_PER_ROW - row.size) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
             }
         }
     }
 }
 
+private const val SEGMENTS_PER_ROW = 3
+
 private fun labelFor(id: String): Int = when (id) {
     PanelTheme.FROSTED -> R.string.panel_theme_frosted
     PanelTheme.GLASS -> R.string.panel_theme_glass
+    PanelTheme.AERO -> R.string.panel_theme_aero
+    PanelTheme.VIBRANT -> R.string.panel_theme_vibrant
     else -> R.string.panel_theme_solid
 }
 

@@ -91,6 +91,15 @@ object HandlerPresets {
         val cornerTopRight: Float? = null,
         val cornerBottomLeft: Float? = null,
         val cornerBottomRight: Float? = null,
+        /**
+         * The outline the bar is cut to. See [HandlerShape].
+         *
+         * Defaulted rather than required because every preset that predates shapes is a rounded
+         * rectangle, and saying so five times would be five chances to say it differently.
+         */
+        val shape: String = HandlerShape.ROUNDED,
+        /** How far a [HandlerShape.TAB]'s ends sweep, as a fraction of the bar's height. */
+        val flare: Float = HandlerShape.DEFAULT_FLARE,
     ) {
         val topLeft: Float get() = cornerTopLeft ?: cornerRadius
         val topRight: Float get() = cornerTopRight ?: cornerRadius
@@ -210,6 +219,47 @@ object HandlerPresets {
             cornerRadius = 12f,
             iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
             showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.12f
+        ),
+        Preset(
+            /**
+             * The dock tab: a bar whose ends sweep back into the side of the phone.
+             *
+             * The one preset here that is not a rounded rectangle, and the reason [HandlerShape]
+             * exists. A pill sits *next to* the screen edge — however flush you push it, the two
+             * corners facing the glass tell you it is a separate object resting against it. A tab
+             * has no corners there at all: its outline runs off the edge and back, so it reads as
+             * part of the phone's own frame, which is the whole effect this shape is for.
+             *
+             * Taller than the pill presets because the sweeps eat into both ends — at 120dp with
+             * a 0.29 flare the straight section is only about 50dp, and a tab needs a flat middle
+             * to read as a handle rather than as a leaf. Opaque black for
+             * the same reason the Default is: the shape is the whole idea, and a translucent tab
+             * over a busy app is a shape you cannot make out.
+             *
+             * Carries a [Placement] because a tab that is not touching the edge is not a tab. The
+             * sweeps run to where the glass is, and parked in mid-screen they curve away into
+             * nothing.
+             */
+            id = "Dock",
+            nameRes = R.string.preset_dock_title,
+            subtitleRes = R.string.preset_dock_subtitle,
+            gravity = Gravity.END,
+            width = 14f, height = 120f,
+            bgColor = Color.Black, bgAlpha = 255,
+            strokeColor = Color.White, strokeWidth = 0f, strokeAlpha = 200,
+            // Unused by a tab, which has no corners — carried so that switching this preset back
+            // to a rounded shape lands on something sane rather than on four zeroes.
+            cornerRadius = 8f,
+            iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
+            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.5f,
+            placement = Placement(
+                gravity = Gravity.END,
+                posXFraction = 1f,
+                posYFraction = 0.5f,
+                snapToEdge = true
+            ),
+            shape = HandlerShape.TAB,
+            flare = 0.29f
         )
     )
 

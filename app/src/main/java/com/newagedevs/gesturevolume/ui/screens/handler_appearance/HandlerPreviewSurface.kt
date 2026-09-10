@@ -56,7 +56,7 @@ fun HandlerPreviewSurface(
         handlerViewRef, state.gravity, state.width, state.height, state.bgColor, state.bgAlpha,
         state.strokeColor, state.strokeWidth, state.strokeAlpha, state.cornerTL,
         state.cornerTR, state.cornerBL, state.cornerBR, state.iconRes, state.iconSize,
-        state.iconColor, state.showIcon, state.edgeMargin
+        state.iconColor, state.showIcon, state.edgeMargin, state.shape, state.flare
     ) {
         handlerViewRef?.apply {
             // Capped to the stage's clear height for the same reason the Quick panel's preview
@@ -71,6 +71,7 @@ fun HandlerPreviewSurface(
             setEdgeMarginDp(state.edgeMargin)
             setViewBackgroundColor(state.bgColor.toArgb(), state.bgAlpha)
             setCornerRadiiDp(state.cornerTL, state.cornerTR, state.cornerBL, state.cornerBR)
+            setShapeStyle(state.shape, state.flare)
             setStrokeProperties(state.strokeColor.toArgb(), state.strokeWidth, state.strokeAlpha)
             setCenterIcon(state.iconRes, state.iconSize, state.iconColor.toArgb())
             setCenterIconColor(state.iconColor.toArgb())

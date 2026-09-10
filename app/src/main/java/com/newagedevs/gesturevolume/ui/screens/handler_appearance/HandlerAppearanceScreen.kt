@@ -112,6 +112,8 @@ fun HandlerAppearanceScreen(
                 cornerTR = preference.getHandlerCornerRadiusTR(),
                 cornerBL = preference.getHandlerCornerRadiusBL(),
                 cornerBR = preference.getHandlerCornerRadiusBR(),
+                shape = preference.getHandlerShape(),
+                flare = preference.getHandlerShapeFlare(),
                 iconRes = preference.getHandlerIconRes(),
                 iconSize = preference.getHandlerIconSize(),
                 iconColor = preference.getHandlerIconColor(),
@@ -143,6 +145,8 @@ fun HandlerAppearanceScreen(
             initialCornerTR = savedState.value.cornerTR,
             initialCornerBL = savedState.value.cornerBL,
             initialCornerBR = savedState.value.cornerBR,
+            initialShape = savedState.value.shape,
+            initialFlare = savedState.value.flare,
             initialIconRes = savedState.value.iconRes,
             initialIconSize = savedState.value.iconSize,
             initialIconColor = Color(savedState.value.iconColor),
@@ -187,6 +191,8 @@ fun HandlerAppearanceScreen(
         preference.setHandlerCornerRadiusTR(state.cornerTR)
         preference.setHandlerCornerRadiusBL(state.cornerBL)
         preference.setHandlerCornerRadiusBR(state.cornerBR)
+        preference.setHandlerShape(state.shape)
+        preference.setHandlerShapeFlare(state.flare)
         preference.setHandlerIconRes(state.iconRes)
         preference.setHandlerIconSize(state.iconSize)
         preference.setHandlerIconColor(state.iconColor.toArgb())

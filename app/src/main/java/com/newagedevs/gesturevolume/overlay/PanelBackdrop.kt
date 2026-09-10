@@ -68,6 +68,9 @@ class PanelBackdrop(
         try {
             d.show()
             dialog = d
+            // Again, after the dialog is up, because `Dialog.show()` reapplies its theme's window
+            // attributes over the ones set before it.
+            applyBounds(window)
         } catch (e: Exception) {
             // No overlay permission, or the window token went away mid-flight.
             android.util.Log.e("PanelBackdrop", "show failed", e)
@@ -76,6 +79,13 @@ class PanelBackdrop(
 
     /**
      * Moves the blur onto [left], [top], [width] by [height], rounded off by [cornerRadiusPx].
+     *
+     * **In display coordinates**, measured from the top-left of the screen — not from the usable
+     * frame the panels lay themselves out in. A dialog window arrives from its theme with
+     * `FLAG_LAYOUT_IN_SCREEN`, and a window laid out in the screen is not moved by fit-insets, so
+     * asking for the frame's coordinate space here does nothing at all: the blur simply sits one
+     * status bar above the panel it belongs behind. Converting is the caller's job — see
+     * `OverlayController.setFrameBounds`.
      *
      * A width or height of zero means "nothing to blur just now" — the expanded card's backdrop
      * spends most of its life there. It stays a 1x1 window with the blur switched off rather than
@@ -131,6 +141,9 @@ class PanelBackdrop(
 
     private fun applyBounds(window: android.view.Window) {
         val params = window.attributes
+        // The translucent dialog theme hands this window an alpha of 0.8, which is not a style
+        // choice here — it thins the blur to four fifths of the radius that was asked for.
+        params.alpha = 1f
         params.gravity = Gravity.TOP or Gravity.START
         params.x = bounds[0]
         params.y = bounds[1]

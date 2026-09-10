@@ -51,6 +51,7 @@ import androidx.compose.ui.text.style.TextAlign
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.service.HandlerGeometry
 import com.newagedevs.gesturevolume.utils.HandlerPresets
+import com.newagedevs.gesturevolume.utils.HandlerShape
 
 /**
  * Where "Reset position" puts the bar horizontally: flush with the default preset's side.
@@ -160,6 +161,57 @@ fun HandlerAppearanceSettingsContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // ---- Shape --------------------------------------------------------------------------
+        // Above the corner radius, and the reason that section is now conditional: corners are a
+        // property of a rectangle, and a tab has none. Showing four radius sliders that the bar
+        // on screen visibly ignores is worse than showing nothing.
+        val isTab = state.shape == HandlerShape.TAB
+
+        AppearanceSection(
+            title = stringResource(R.string.shape_uppercase),
+            summary = stringResource(
+                if (isTab) R.string.shape_tab else R.string.shape_rounded
+            ),
+        ) {
+            ShapeSelector(
+                shape = state.shape,
+                onShapeChange = { state.shape = it },
+            )
+            AnimatedVisibility(
+                visible = isTab,
+                enter = expandVertically(AppearanceMotion.ExpandSize) +
+                    fadeIn(AppearanceMotion.Fade),
+                exit = shrinkVertically(AppearanceMotion.ExpandSize) +
+                    fadeOut(AppearanceMotion.Fade),
+            ) {
+                Column {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                    )
+                    SliderControl(
+                        label = stringResource(R.string.end_sweep),
+                        // Shown as a percentage of the bar's height rather than as the fraction
+                        // it is stored as: "14%" is a length someone can picture against the bar
+                        // in the dock above, where "0.14" is a number about nothing.
+                        value = state.flare * 100f,
+                        valueRange = HandlerShape.MIN_FLARE * 100f..HandlerShape.MAX_FLARE * 100f,
+                        valueDisplay = "${(state.flare * 100f).toInt()}%",
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        onValueChange = { state.flare = it / 100f }
+                    )
+                    Text(
+                        text = stringResource(R.string.end_sweep_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         // ---- Corner radius ------------------------------------------------------------------
         // Five sliders became one plus an opt-in. Four of them were per-corner controls that
         // almost nobody wants and that the fifth silently overwrote.
@@ -168,7 +220,7 @@ fun HandlerAppearanceSettingsContent(
             state.cornerBL == state.cornerBR
         val mixedLabel = stringResource(R.string.per_corner_mixed)
 
-        AppearanceSection(
+        if (!isTab) AppearanceSection(
             title = stringResource(R.string.corner_radius_uppercase),
             summary = if (cornersUniform) "${state.cornerTL.toInt()}dp" else mixedLabel,
         ) {
@@ -537,6 +589,53 @@ private fun PresetChip(
                 },
             )
         }
+    }
+}
+
+/**
+ * Rounded or tab, as two halves of one pill.
+ *
+ * The same segmented control the side picker uses, for the same reason: two states, neither of
+ * them "off", and the result is visible in the dock above the moment it is tapped. It carries a
+ * line of explanation where the side picker does not, because "tab" is a word for a shape that
+ * only makes sense once you know it has to be touching the edge to look like anything.
+ */
+@Composable
+private fun ShapeSelector(
+    shape: String,
+    onShapeChange: (String) -> Unit,
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
+                .padding(3.dp)
+                .selectableGroup(),
+            horizontalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            SideSelectorHalf(
+                label = stringResource(R.string.shape_rounded),
+                selected = shape != HandlerShape.TAB,
+                onClick = { onShapeChange(HandlerShape.ROUNDED) },
+                modifier = Modifier.weight(1f),
+            )
+            SideSelectorHalf(
+                label = stringResource(R.string.shape_tab),
+                selected = shape == HandlerShape.TAB,
+                onClick = { onShapeChange(HandlerShape.TAB) },
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Text(
+            text = stringResource(
+                if (shape == HandlerShape.TAB) R.string.shape_tab_desc else R.string.shape_rounded_desc
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp)
+        )
     }
 }
 

@@ -442,10 +442,12 @@
     <string name="faq_q_games">The bar gets in the way in games and full-screen video.</string>
     <string name="faq_a_games">Move it somewhere the app you are using does not need — long press and drag — or make it smaller and more transparent under Appearance. The Ghost preset is close to invisible while still being there. For a game you play often, hiding the bar from the long-press menu and bringing it back from the notification afterwards is the cleanest option.</string>
     <string name="panel_theme">Panel style</string>
-    <string name="panel_theme_desc">How the Deck, the Quick panel and the long-press menu are drawn. The blurred styles need Android 12 or newer; where the system will not blur, they stay translucent.</string>
+    <string name="panel_theme_desc">How the Deck, the Quick panel and the long-press menu are drawn. Gloss and Clear are pale panes with dark text on them. Everything but Solid blurs the screen behind the panel, which needs Android 12 or newer; where the system will not blur, the panel stays translucent.</string>
     <string name="panel_theme_solid">Solid</string>
     <string name="panel_theme_frosted">Frosted</string>
     <string name="panel_theme_glass">Glass</string>
+    <string name="panel_theme_aero">Gloss</string>
+    <string name="panel_theme_vibrant">Clear</string>
     <string name="side_left">Left</string>
     <string name="side_right">Right</string>
     <string name="expand_section">Expand</string>
@@ -807,4 +809,13 @@
     <string name="slider_show_icon_desc">A small mark at the foot of the track for what it adjusts.</string>
     <string name="slider_auto_brightness">Turn off adaptive brightness</string>
     <string name="slider_auto_brightness_desc">While the brightness slider is open. Without this the light sensor undoes what you set within a second or two. It is handed back when the service stops.</string>
+    <string name="preset_dock_title">Dock</string>
+    <string name="preset_dock_subtitle">Curved edge tab</string>
+    <string name="shape_uppercase">SHAPE</string>
+    <string name="shape_rounded">Rounded</string>
+    <string name="shape_tab">Tab</string>
+    <string name="shape_rounded_desc">A rectangle with corners you set below.</string>
+    <string name="shape_tab_desc">Both ends sweep back into the side of the screen. Keep the bar flush to the edge, or the curves have nothing to meet.</string>
+    <string name="end_sweep">End sweep</string>
+    <string name="end_sweep_desc">How much of the bar\'s height each curve takes. At the top of the range the two meet and the bar becomes a leaf.</string>
 </resources>

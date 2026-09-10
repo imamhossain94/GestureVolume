@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.HandlerShape
 import androidx.compose.ui.res.stringResource
 
 // Data class to hold preset configuration for preview
@@ -34,7 +35,10 @@ private data class PresetConfig(
     val previewColor: ComposeColor,
     val previewAlpha: Float,
     /** See [PresetCard]'s parameter of the same name. Null keeps the swatch symmetric. */
-    val outerCorner: Dp? = null
+    val outerCorner: Dp? = null,
+    /** See [PresetCard]. Rounded unless the preset is cut to something else. */
+    val shape: String = HandlerShape.ROUNDED,
+    val flare: Float = HandlerShape.DEFAULT_FLARE
 )
 
 @Composable
@@ -66,7 +70,12 @@ fun PresetCardsGrid(
             PresetConfig("Night", R.string.preset_night_title, R.string.preset_night_subtitle, Icons.Default.DarkMode,
                 listOf(primary, primary), 22.dp, 10.dp, onSurface, 0.7f),
             PresetConfig("Ghost", R.string.preset_ghost_title, R.string.preset_ghost_subtitle, Icons.Default.HideSource,
-                listOf(primary, primary), 16.dp, 8.dp, onSurface, 0.1f)
+                listOf(primary, primary), 16.dp, 8.dp, onSurface, 0.1f),
+            // The swatch is drawn from the shape's own geometry, so the corner radius here is
+            // carried only to satisfy the constructor — a tab has no corners to round.
+            PresetConfig("Dock", R.string.preset_dock_title, R.string.preset_dock_subtitle, Icons.Default.Bookmark,
+                listOf(primary, primary), 14.dp, 0.dp, ComposeColor.Black, 0.9f,
+                shape = HandlerShape.TAB, flare = 0.29f)
         )
     }
 
@@ -92,6 +101,8 @@ fun PresetCardsGrid(
                         previewColor = preset.previewColor,
                         previewAlpha = preset.previewAlpha,
                         previewOuterCorner = preset.outerCorner,
+                        previewShape = preset.shape,
+                        previewFlare = preset.flare,
                         onClick = { onNavigateToAppearance(preset.id) }
                     )
                 }

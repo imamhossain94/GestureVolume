@@ -1,10 +1,13 @@
 package com.newagedevs.gesturevolume.overlay.deck
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import androidx.compose.ui.geometry.CornerRadius
@@ -154,6 +157,10 @@ fun DeckOverlay(
     val expanded = state.expandedTile
     val expandedTile = expanded?.let { DeckTiles.byId(it) }
 
+    // Both grow out of the side they are anchored to, which is where the bar is.
+    val stripOrigin = TransformOrigin(if (model.isLeft) 0f else 1f, 0.5f)
+    val cardOrigin = TransformOrigin(if (model.isLeft) 0f else 1f, 0.5f)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -168,8 +175,16 @@ fun DeckOverlay(
                 Box(modifier = Modifier.layoutId("strip")) {
                     AnimatedVisibility(
                         visible = shown,
-                        enter = slideInHorizontally { if (model.isLeft) -it else it } + fadeIn(),
-                        exit = slideOutHorizontally { if (model.isLeft) -it else it } + fadeOut()
+                        // Grows into place rather than sliding in from the edge, and the reason
+                        // is the pane of blurred glass behind it. That blur is a window of its
+                        // own, positioned from the rectangle this layout reports — and a slide
+                        // does not change that rectangle, it offsets the strip *inside* it. So a
+                        // sliding strip spent its whole entrance flying across a stationary
+                        // blurred slab: the single ugliest thing the panel did. A scale is a
+                        // draw-layer transform, so the rectangle is right from the first frame
+                        // and the glass and the strip arrive as one object.
+                        enter = fadeIn(PANEL_FADE) + scaleIn(PANEL_SCALE, DECK_ENTER_SCALE, stripOrigin),
+                        exit = fadeOut(PANEL_FADE) + scaleOut(PANEL_SCALE, DECK_ENTER_SCALE, stripOrigin)
                     ) {
                         DeckStrip(model, actions, palette, stripWidthPx)
                     }
@@ -177,8 +192,8 @@ fun DeckOverlay(
                 Box(modifier = Modifier.layoutId("card")) {
                     AnimatedVisibility(
                         visible = expandedTile != null,
-                        enter = slideInHorizontally { if (model.isLeft) -it / 3 else it / 3 } + fadeIn(),
-                        exit = slideOutHorizontally { if (model.isLeft) -it / 3 else it / 3 } + fadeOut()
+                        enter = fadeIn(PANEL_FADE) + scaleIn(PANEL_SCALE, DECK_ENTER_SCALE, cardOrigin),
+                        exit = fadeOut(PANEL_FADE) + scaleOut(PANEL_SCALE, DECK_ENTER_SCALE, cardOrigin)
                     ) {
                         // The last tile is held so the exit animation has something to draw.
                         var lastTile by remember { mutableStateOf(expandedTile) }
@@ -527,3 +542,24 @@ internal fun Modifier.liquidGlass(cornerRadius: Dp): Modifier = drawWithContent 
 
 /** The expanding card's corner. Named so its shape and its lighting cannot drift apart. */
 private val DECK_CARD_CORNER = 22.dp
+
+/**
+ * How the Deck's surfaces arrive.
+ *
+ * A tween rather than a spring, and this is the one place in the app where that is not a matter of
+ * taste. A spring on a scale overshoots past 1, and the pane of blurred glass behind the panel
+ * cannot overshoot with it — its size is a window attribute, not something that can be animated
+ * per frame without a relayout on every one. Under a spring the panel would swell a few percent
+ * past its glass and settle back; under a tween it never leaves it.
+ */
+private val PANEL_FADE: FiniteAnimationSpec<Float> = tween(durationMillis = 190)
+private val PANEL_SCALE: FiniteAnimationSpec<Float> = tween(durationMillis = 220)
+
+/**
+ * How small a surface starts.
+ *
+ * Close to 1 on purpose. The scale is standing in for a slide, and its whole job is to say "this
+ * came from over there" without the panel's painted edge ever straying far from the blurred pane
+ * it is lined up against.
+ */
+private const val DECK_ENTER_SCALE = 0.94f

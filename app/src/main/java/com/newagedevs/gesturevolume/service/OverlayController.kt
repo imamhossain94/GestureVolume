@@ -268,6 +268,20 @@ class OverlayController(
      */
     private var deckStripBackdrop: PanelBackdrop? = null
     private var deckCardBackdrop: PanelBackdrop? = null
+
+    /**
+     * The blur behind the long-press menu and behind the Quick panel.
+     *
+     * Both used to ask for `FLAG_BLUR_BEHIND` instead, which blurs the *whole screen* — the
+     * window's own size has nothing to do with it — and which a good many devices quietly decline
+     * to honour for an overlay at all. The result was the worst of both: on the phones that did
+     * honour it, everything behind a small card washed out; on the ones that did not, a panel
+     * advertised as frosted came up as a flat grey rectangle with nothing behind it blurred. A
+     * backdrop clipped to the panel is the thing that actually looks like glass, and it is the
+     * mechanism the Deck was already using two hundred lines further down.
+     */
+    private var menuBackdrop: PanelBackdrop? = null
+    private var sliderBackdrop: PanelBackdrop? = null
     private var deckRoot: DeckRootView? = null
     private val deckState = DeckState()
     private val deckEnvironment: DeckEnvironment by lazy {
@@ -289,6 +303,9 @@ class OverlayController(
     // ---- the expanding quick slider ----------------------------------------------------------
 
     private var sliderView: QuickSliderView? = null
+
+    /** The open panel's window rectangle, kept so the blur behind it can be sized to match. */
+    private var sliderParams: WindowManager.LayoutParams? = null
 
     /**
      * The collapse animation, held so a pull that starts again mid-retract can take it over.
@@ -403,6 +420,7 @@ class OverlayController(
         hideOverlayView()
         hideHandlerView()
         hideIndicator()
+        hideContextMenu()
         hideDeck()
         // After hideHandlerView, whose gestureDetector.cancel() is what asks a slider still under
         // the finger to collapse. This turns that collapse into an immediate removal.
@@ -525,6 +543,9 @@ class OverlayController(
         val cornerRadiusBL = preference.getHandlerCornerRadiusBL()
         val cornerRadiusBR = preference.getHandlerCornerRadiusBR()
 
+        val shapeStyle = preference.getHandlerShape()
+        val shapeFlare = preference.getHandlerShapeFlare()
+
         val iconRes = preference.getHandlerIconRes()
         val iconSize = preference.getHandlerIconSize()
         val iconColor = preference.getHandlerIconColor()
@@ -549,6 +570,7 @@ class OverlayController(
             setViewBackgroundColor(backgroundColor, backgroundAlpha)
             setStrokeProperties(strokeColor, strokeWidth, strokeAlpha)
             setCornerRadiiDp(cornerRadiusTL, cornerRadiusTR, cornerRadiusBL, cornerRadiusBR)
+            setShapeStyle(shapeStyle, shapeFlare)
 
             // Resolve through the shared safe-resolver so a stale stored icon id (R.drawable
             // values shift across app updates) falls back to the default instead of throwing.
@@ -627,37 +649,63 @@ class OverlayController(
     }
 
     /**
+     * Places a backdrop behind a rectangle a panel reported from its own layout pass.
+     *
+     * Every panel window here fits the system bars and the cutout, so what they measure and report
+     * is relative to the usable frame. A [PanelBackdrop] is a dialog and cannot be made to share
+     * that space — see its [PanelBackdrop.setBounds] — so the offset is added on the way in. One
+     * helper rather than three call sites doing it, because the failure when one of them forgets
+     * is a blurred rectangle floating a status bar away from the panel, which reads as a rendering
+     * bug rather than as a missing addition.
+     */
+    private fun PanelBackdrop.setFrameBounds(
+        left: Int,
+        top: Int,
+        width: Int,
+        height: Int,
+        cornerRadiusPx: Float,
+    ) {
+        val f = frame
+        setBounds(
+            left + (f?.insetLeft ?: 0),
+            top + (f?.insetTop ?: 0),
+            width,
+            height,
+            cornerRadiusPx,
+        )
+    }
+
+    /**
+     * A pane of blurred glass, sized later by whoever is going to sit on it.
+     *
+     * Returns null — and the panel simply goes unblurred — below Android 12, when the material
+     * asks for no blur, and on any device where the system has turned cross-window blur off. It
+     * does that in battery saver and on hardware that cannot afford it, so this is the common case
+     * rather than an exotic one, and it is why [PanelTheme]'s alphas are chosen to look deliberate
+     * without the blur too.
+     *
+     * Shown immediately, empty and 1x1 in the corner. It has to exist *before* the panel's own
+     * window is added, because stacking among overlay windows follows the order they were added
+     * and a backdrop created afterwards would blur the panel instead of the screen behind it. The
+     * blur is switched on only when real bounds arrive, so nothing flashes in the wrong place.
+     */
+    private fun newPanelBackdrop(): PanelBackdrop? {
+        if (destroyed) return null
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return null
+        val radiusDp = PanelTheme.blurRadiusDp(preference.getPanelTheme())
+        if (radiusDp <= 0) return null
+        val wm = windowManager ?: return null
+        if (!wm.isCrossWindowBlurEnabled) return null
+        return PanelBackdrop(context, windowType, dpToPx(radiusDp.toFloat())).apply { show() }
+    }
+
+    /**
      * A window covering the whole usable frame, for the menu, the Deck and anything else that
      * has to catch a tap outside itself.
      *
      * @param focusable true for the Deck, whose search field needs the keyboard. Everything else
      *   stays non-focusable so it never takes input away from the app underneath.
      */
-    /**
-     * Blurs the screen behind a panel, where the theme asks for it and the device allows.
-     *
-     * The *whole* screen, and the window's own size does not change that: `FLAG_BLUR_BEHIND` works
-     * like `FLAG_DIM_BEHIND`, so a window the size of a postage stamp still blurs the launcher in
-     * the far corner. What it buys is a scrim that reads as frosted rather than as grey, which is
-     * right for the menu — a modal the user has just deliberately opened over everything else.
-     *
-     * It is *not* right behind a panel that sits beside the app rather than over it. That case
-     * wants [PanelBackdrop], which is clipped to its own bounds and rounded off to match; the Deck
-     * uses it.
-     *
-     * Silently does nothing below Android 12, and on any device where the system has turned
-     * cross-window blur off — it does that in battery saver and on hardware that cannot afford
-     * it. That is why [PanelTheme]'s alphas are chosen to look deliberate without the blur too.
-     */
-    private fun applyPanelBlur(params: WindowManager.LayoutParams) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
-        val radiusDp = PanelTheme.blurRadiusDp(preference.getPanelTheme())
-        if (radiusDp <= 0) return
-        if (windowManager?.isCrossWindowBlurEnabled != true) return
-        params.flags = params.flags or WindowManager.LayoutParams.FLAG_BLUR_BEHIND
-        params.blurBehindRadius = dpToPx(radiusDp.toFloat())
-    }
-
     private fun fullScreenParams(focusable: Boolean): WindowManager.LayoutParams =
         WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -1582,7 +1630,6 @@ class OverlayController(
             y = (barCenterY - lengthPx / 2)
                 .coerceIn(0, (currentFrame.usableHeight - lengthPx).coerceAtLeast(0))
             fitUsableFrame(this)
-            applyPanelBlur(this)
         }
 
         // Window coordinates, from the two absolutes, so the rect lands on the bar even where the
@@ -1597,13 +1644,22 @@ class OverlayController(
         view.listener = quickSliderListener
         view.setOnTouchOutside { hideQuickSlider() }
 
+        // Before the panel's own window, so it stacks underneath. Its bounds are set once the
+        // morph has finished — see [armQuickSlider]. Blurring a rectangle the size of the open
+        // panel while a bar-sized sliver is still growing into it is the exact glitch the Deck's
+        // first attempt at this had.
+        sliderBackdrop = newPanelBackdrop()
+
         try {
             wm.addView(view, params)
         } catch (e: Exception) {
             android.util.Log.e(TAG, "quick panel addView failed", e)
+            sliderBackdrop?.dismiss()
+            sliderBackdrop = null
             return false
         }
         sliderView = view
+        sliderParams = params
         // Not live yet, on either route. The action route arms it when its open animation
         // finishes; the pull route when the finger passes the far threshold.
         sliderCommitted = false
@@ -1662,6 +1718,21 @@ class OverlayController(
         sliderCommitted = true
         view.setCommitted()
         view.setInteractive(true)
+
+        // The glass arrives with the open panel rather than during the morph. The window is the
+        // panel — the track fills it once expanded — so its own rectangle is what to blur, and
+        // the largest of the four corner radii is the one that keeps the blur inside the shape.
+        sliderParams?.let { params ->
+            val corner = maxOf(
+                preference.getHandlerCornerRadiusTL(),
+                preference.getHandlerCornerRadiusTR(),
+                preference.getHandlerCornerRadiusBL(),
+                preference.getHandlerCornerRadiusBR()
+            )
+            sliderBackdrop?.setFrameBounds(
+                params.x, params.y, params.width, params.height, dpToPx(corner).toFloat()
+            )
+        }
 
         // The buzz that says the panel is live. Distinct from the per-step ticks: longer, so it
         // cannot be mistaken for a step having already been crossed.
@@ -1844,6 +1915,11 @@ class OverlayController(
         } catch (_: Exception) {
             // Already gone — the service was torn down while the collapse was still running.
         }
+        // With the panel, never after it: a blurred rectangle left on screen for even one frame
+        // after the thing it was behind has gone reads as a smear rather than as a panel closing.
+        sliderBackdrop?.dismiss()
+        sliderBackdrop = null
+        sliderParams = null
     }
 
     /**
@@ -1902,7 +1978,12 @@ class OverlayController(
                         // tears down a view hierarchy that is still being walked.
                         mainHandler.post { runAction(entry.action) }
                     },
-                    onDismiss = { hideContextMenu() }
+                    onDismiss = { hideContextMenu() },
+                    onCardBounds = { rect, cornerPx ->
+                        menuBackdrop?.setFrameBounds(
+                            rect.left, rect.top, rect.width, rect.height, cornerPx
+                        )
+                    },
                 )
             }
         }
@@ -1910,10 +1991,15 @@ class OverlayController(
         // A full-screen root rather than a card-sized window: it is what catches the tap outside
         // the menu that dismisses it. The window is not focusable, so there is no back-button
         // route to close it and an outside tap is the only way out.
+        // Before the menu's own window, so it stacks underneath. See [newPanelBackdrop].
+        menuBackdrop = newPanelBackdrop()
+
         try {
-            wm.addView(menuHost.view, fullScreenParams(focusable = false).also(::applyPanelBlur))
+            wm.addView(menuHost.view, fullScreenParams(focusable = false))
         } catch (e: Exception) {
             android.util.Log.e(TAG, "context menu addView failed", e)
+            menuBackdrop?.dismiss()
+            menuBackdrop = null
             menuHost.destroy()
             return
         }
@@ -1930,6 +2016,8 @@ class OverlayController(
             menuHost.destroy()
         }
         contextMenuHost = null
+        menuBackdrop?.dismiss()
+        menuBackdrop = null
     }
 
     // =============================================================================================
@@ -2055,28 +2143,21 @@ class OverlayController(
      */
     private fun addDeckBlurWindow() {
         if (destroyed || deckStripBackdrop != null) return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
-        val radiusDp = PanelTheme.blurRadiusDp(preference.getPanelTheme())
-        if (radiusDp <= 0) return
-        val wm = windowManager ?: return
-        if (!wm.isCrossWindowBlurEnabled) return
-
-        val radiusPx = dpToPx(radiusDp.toFloat())
         // Both up front, even though the card usually has nothing to sit behind: a backdrop shown
         // later would be added after the Deck's window and land in front of it.
-        deckStripBackdrop = PanelBackdrop(context, windowType, radiusPx).apply { show() }
-        deckCardBackdrop = PanelBackdrop(context, windowType, radiusPx).apply { show() }
+        deckStripBackdrop = newPanelBackdrop()
+        deckCardBackdrop = newPanelBackdrop()
     }
 
     /** Lines each backdrop up with the surface it belongs behind. */
     private fun updateDeckBlurBounds(surfaces: DeckSurfaces) {
-        deckStripBackdrop?.setBounds(
+        deckStripBackdrop?.setFrameBounds(
             surfaces.strip.left, surfaces.strip.top,
             surfaces.strip.width, surfaces.strip.height,
             surfaces.stripCornerPx,
         )
         val card = surfaces.card
-        deckCardBackdrop?.setBounds(
+        deckCardBackdrop?.setFrameBounds(
             card?.left ?: 0, card?.top ?: 0,
             card?.width ?: 0, card?.height ?: 0,
             surfaces.cardCornerPx,

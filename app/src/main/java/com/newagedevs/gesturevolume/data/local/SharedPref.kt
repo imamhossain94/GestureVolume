@@ -12,6 +12,7 @@ import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.ClipboardEntry
 import com.newagedevs.gesturevolume.utils.HandlerPresets
+import com.newagedevs.gesturevolume.utils.HandlerShape
 import com.newagedevs.gesturevolume.utils.OverlayHostMode
 import org.json.JSONArray
 import org.json.JSONObject
@@ -143,6 +144,8 @@ class SharedPref @Inject constructor(
         const val HANDLER_CORNER_RADIUS_TR = "handlerCornerRadiusTR"
         const val HANDLER_CORNER_RADIUS_BL = "handlerCornerRadiusBL"
         const val HANDLER_CORNER_RADIUS_BR = "handlerCornerRadiusBR"
+        const val HANDLER_SHAPE = "handlerShape"
+        const val HANDLER_SHAPE_FLARE = "handlerShapeFlare"
         const val HANDLER_ICON_RES = "handlerIconRes"
         const val HANDLER_ICON_NAME = "handlerIconName"
         const val HANDLER_ICON_SIZE = "handlerIconSize"
@@ -1230,6 +1233,32 @@ class SharedPref @Inject constructor(
 
     fun setHandlerCornerRadiusBR(value: Float) {
         sharedPreferences.edit { putFloat(HANDLER_CORNER_RADIUS_BR, value) }
+    }
+
+    /**
+     * The outline the bar is cut to, and how far a tab's ends sweep. See [HandlerShape].
+     *
+     * Absent from an install that predates shapes, and the fallback for that is the Default
+     * preset's — a rounded rectangle — so nobody's bar changes shape on update. That is also why
+     * these two keys are *not* in [pinLegacyAppearanceDefaults]: there is nothing to pin when the
+     * new default and the old behaviour are the same thing.
+     */
+    fun getHandlerShape(): String =
+        HandlerShape.sanitize(
+            sharedPreferences.getString(HANDLER_SHAPE, HandlerPresets.DEFAULT.shape)
+        )
+
+    fun setHandlerShape(value: String) {
+        sharedPreferences.edit { putString(HANDLER_SHAPE, HandlerShape.sanitize(value)) }
+    }
+
+    fun getHandlerShapeFlare(): Float =
+        HandlerShape.sanitizeFlare(
+            sharedPreferences.getFloat(HANDLER_SHAPE_FLARE, HandlerPresets.DEFAULT.flare)
+        )
+
+    fun setHandlerShapeFlare(value: Float) {
+        sharedPreferences.edit { putFloat(HANDLER_SHAPE_FLARE, HandlerShape.sanitizeFlare(value)) }
     }
 
     fun setAllCornerRadii(value: Float) {

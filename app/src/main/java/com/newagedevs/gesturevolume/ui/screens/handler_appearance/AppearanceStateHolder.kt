@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.newagedevs.gesturevolume.utils.HandlerPresets
+import com.newagedevs.gesturevolume.utils.HandlerShape
 
 data class AppearanceState(
     val gravity: Int,
@@ -20,6 +21,10 @@ data class AppearanceState(
     val cornerTR: Float,
     val cornerBL: Float,
     val cornerBR: Float,
+    /** The outline the bar is cut to. See [HandlerShape]. */
+    val shape: String,
+    /** How far a tab's ends sweep back into the screen edge, as a fraction of the height. */
+    val flare: Float,
     val iconRes: Int,
     val iconSize: Float,
     val iconColor: Int,
@@ -55,6 +60,8 @@ class AppearanceStateHolder(
     initialCornerTR: Float,
     initialCornerBL: Float,
     initialCornerBR: Float,
+    initialShape: String,
+    initialFlare: Float,
     initialIconRes: Int,
     initialIconSize: Float,
     initialIconColor: Color,
@@ -78,6 +85,9 @@ class AppearanceStateHolder(
     var cornerTR by mutableStateOf(initialCornerTR)
     var cornerBL by mutableStateOf(initialCornerBL)
     var cornerBR by mutableStateOf(initialCornerBR)
+
+    var shape by mutableStateOf(HandlerShape.sanitize(initialShape))
+    var flare by mutableStateOf(HandlerShape.sanitizeFlare(initialFlare))
     
     var iconRes by mutableStateOf(initialIconRes)
     var iconSize by mutableStateOf(initialIconSize)
@@ -92,7 +102,7 @@ class AppearanceStateHolder(
     fun toState(): AppearanceState = AppearanceState(
         gravity, width, height, bgColor.toArgb(), bgAlpha,
         strokeColor.toArgb(), strokeWidth, strokeAlpha,
-        cornerTL, cornerTR, cornerBL, cornerBR,
+        cornerTL, cornerTR, cornerBL, cornerBR, shape, flare,
         iconRes, iconSize, iconColor.toArgb(), showIcon, vibrate,
         edgeMargin, snapToEdge, positionFraction, posXFraction
     )
@@ -125,6 +135,8 @@ fun AppearanceStateHolder.applyPreset(preset: HandlerPresets.Preset) {
     cornerTR = preset.topRight
     cornerBL = preset.bottomLeft
     cornerBR = preset.bottomRight
+    shape = preset.shape
+    flare = preset.flare
     iconRes = preset.iconRes
     iconSize = preset.iconSize
     iconColor = preset.iconColor
@@ -159,6 +171,10 @@ fun HandlerPresets.Preset.matches(state: AppearanceStateHolder): Boolean =
         state.cornerTR == cornerRadius &&
         state.cornerBL == cornerRadius &&
         state.cornerBR == cornerRadius &&
+        state.shape == shape &&
+        // Only where the shape has ends to sweep. Comparing it on a rounded preset would let a
+        // stale flare left over from the tab deselect a chip whose bar is identical on screen.
+        (shape != HandlerShape.TAB || state.flare == flare) &&
         state.iconRes == iconRes &&
         state.iconSize == iconSize &&
         state.iconColor == iconColor &&

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,7 +36,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
@@ -77,25 +77,46 @@ fun ContextMenuOverlay(
     grid: Boolean,
     theme: String,
     onSelect: (HandlerActionCatalog.Entry) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    /**
+     * Where the card ended up, in window pixels, with the radius its corners are cut to.
+     *
+     * Reported out for the same reason the Deck reports its surfaces: the blur behind this card
+     * lives in a window of its own — a `WindowManager` overlay has no `Window`, and only a
+     * `Window` can blur *within its own bounds* rather than across the whole screen. That window
+     * has to be told where the card is, and this is the placement that actually happened rather
+     * than a second calculation of it that could disagree.
+     */
+    onCardBounds: (IntRect, Float) -> Unit = { _, _ -> },
 ) {
     var shown by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { shown = true }
 
-    val scale by animateFloatAsState(
-        targetValue = if (shown) 1f else 0.85f,
-        animationSpec = AppearanceMotion.Pop,
-        label = "menuScale"
-    )
+    /*
+     * A fade, and deliberately not the scale this used to do.
+     *
+     * The card no longer draws its own backdrop: there is a blurred window sitting exactly
+     * underneath it, and that window cannot be scaled — its bounds are a window attribute, and
+     * pushing new ones at it sixty times a second is the relayout-per-frame that makes a window
+     * stutter. So a card that grew from 85% would spend its whole entrance sliding across a pane
+     * of glass that stayed the size the card was going to be, with the blur poking out around it.
+     *
+     * The motion instead goes *inside* the card, where a transform costs no layout and moves
+     * nothing the blur is lined up against.
+     */
     val alpha by animateFloatAsState(
         targetValue = if (shown) 1f else 0f,
         animationSpec = AppearanceMotion.Fade,
         label = "menuAlpha"
     )
+    val contentScale by animateFloatAsState(
+        targetValue = if (shown) 1f else 0.94f,
+        animationSpec = AppearanceMotion.Pop,
+        label = "menuContentScale"
+    )
 
-    // Which side the card opened on, for the transform origin. Decided in layout, read in draw.
-    var openedRight by remember { mutableStateOf(true) }
     val gapPx = with(LocalDensity.current) { 10.dp.roundToPx() }
+    val cornerPx = with(LocalDensity.current) { MENU_CORNER.toPx() }
 
     Box(
         modifier = Modifier
@@ -111,6 +132,7 @@ fun ContextMenuOverlay(
             grid = grid,
             theme = theme,
             onSelect = onSelect,
+            contentScale = contentScale,
             modifier = Modifier
                 .layout { measurable, constraints ->
                     val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
@@ -126,20 +148,17 @@ fun ContextMenuOverlay(
                         spaceLeft >= needed -> false
                         else -> spaceRight >= spaceLeft
                     }
-                    openedRight = right
                     val x = (if (right) anchor.right + gapPx else anchor.left - cardW - gapPx)
                         .coerceIn(gapPx, (frame.width - cardW - gapPx).coerceAtLeast(gapPx))
                     val y = (anchor.top + anchor.height / 2 - cardH / 2)
                         .coerceIn(gapPx, (frame.height - cardH - gapPx).coerceAtLeast(gapPx))
+                    onCardBounds(IntRect(x, y, x + cardW, y + cardH), cornerPx)
                     layout(constraints.maxWidth, constraints.maxHeight) {
                         placeable.place(x, y)
                     }
                 }
                 .graphicsLayer {
-                    scaleX = scale
-                    scaleY = scale
                     this.alpha = alpha
-                    transformOrigin = TransformOrigin(if (openedRight) 0f else 1f, 0.5f)
                 }
                 // Swallows the tap so the root's dismiss does not fire for a press on the card.
                 .clickable(
@@ -166,8 +185,23 @@ fun ContextMenuCard(
     onSelect: (HandlerActionCatalog.Entry) -> Unit,
     modifier: Modifier = Modifier,
     theme: String = PanelTheme.SOLID,
+    /**
+     * A transform on the contents only, for the entrance.
+     *
+     * On the card itself it would change nothing about the layout either — but it *would* move the
+     * card's painted edge off the blurred pane behind it, which is the one thing the entrance must
+     * not do. See the note in [ContextMenuOverlay].
+     */
+    contentScale: Float = 1f,
 ) {
     val shape = RoundedCornerShape(MENU_CORNER)
+    val palette = PanelTheme.menuPalette(theme)
+    val surface = Color(palette.surface)
+    val onSurface = Color(palette.onSurface)
+    val onSurfaceDim = Color(palette.onSurfaceDim)
+    val chip = Color(palette.chip)
+    val divider = Color(palette.divider)
+
     Column(
         modifier = modifier
             // The grid is sized by its columns and the list by its longest label, so the two want
@@ -182,14 +216,18 @@ fun ContextMenuCard(
                 }
             )
             .clip(shape)
-            .background(MENU_SURFACE.copy(alpha = MENU_SURFACE.alpha * PanelTheme.surfaceAlpha(theme)))
+            .background(surface)
             .then(
                 if (PanelTheme.hasLitEdge(theme)) {
-                    Modifier.liquidGlass(MENU_CORNER)
+                    Modifier.liquidGlass(MENU_CORNER, PanelTheme.isLight(theme))
                 } else {
-                    Modifier.border(1.dp, MENU_STROKE, shape)
+                    Modifier.border(1.dp, Color(palette.border), shape)
                 }
             )
+            .graphicsLayer {
+                scaleX = contentScale
+                scaleY = contentScale
+            }
             .padding(MENU_PADDING)
             .verticalScroll(rememberScrollState())
     ) {
@@ -206,11 +244,24 @@ fun ContextMenuCard(
                     // looks like.
                     horizontalArrangement = Arrangement.Center,
                 ) {
-                    row.forEach { entry -> GridTile(entry, onSelect) }
+                    row.forEach { entry -> GridTile(entry, onSurface, onSurfaceDim, chip, onSelect) }
                 }
             }
         } else {
-            entries.forEach { entry -> ListRow(entry, onSelect) }
+            // Hairlines between the rows, not around them. On a material this transparent the
+            // rows would otherwise float in a wash of whatever is behind the panel with nothing
+            // saying where one target ends and the next begins — which is exactly what a real
+            // frosted menu uses a divider for.
+            entries.forEachIndexed { index, entry ->
+                if (index > 0) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(start = ICON_CHIP + 20.dp, end = 8.dp),
+                        thickness = Dp.Hairline,
+                        color = divider,
+                    )
+                }
+                ListRow(entry, onSurface, chip, onSelect)
+            }
         }
     }
 }
@@ -235,6 +286,9 @@ fun ContextMenuCard(
 @Composable
 private fun GridTile(
     entry: HandlerActionCatalog.Entry,
+    onSurface: Color,
+    onSurfaceDim: Color,
+    chip: Color,
     onSelect: (HandlerActionCatalog.Entry) -> Unit,
 ) {
     Column(
@@ -250,20 +304,20 @@ private fun GridTile(
             modifier = Modifier
                 .size(ICON_CHIP)
                 .clip(RoundedCornerShape(14.dp))
-                .background(MENU_CHIP),
+                .background(chip),
             contentAlignment = Alignment.Center,
         ) {
             ActionIconImage(
                 icon = entry.icon,
                 contentDescription = null,
                 modifier = Modifier.size(21.dp),
-                tint = MENU_ON_SURFACE
+                tint = onSurface
             )
         }
         Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = stringResource(entry.labelRes),
-            color = MENU_ON_SURFACE_DIM,
+            color = onSurfaceDim,
             fontSize = 10.sp,
             lineHeight = 12.sp,
             fontWeight = FontWeight.Medium,
@@ -278,6 +332,8 @@ private fun GridTile(
 @Composable
 private fun ListRow(
     entry: HandlerActionCatalog.Entry,
+    onSurface: Color,
+    chip: Color,
     onSelect: (HandlerActionCatalog.Entry) -> Unit,
 ) {
     Row(
@@ -292,20 +348,20 @@ private fun ListRow(
             modifier = Modifier
                 .size(ICON_CHIP)
                 .clip(RoundedCornerShape(14.dp))
-                .background(MENU_CHIP),
+                .background(chip),
             contentAlignment = Alignment.Center,
         ) {
             ActionIconImage(
                 icon = entry.icon,
                 contentDescription = null,
                 modifier = Modifier.size(21.dp),
-                tint = MENU_ON_SURFACE
+                tint = onSurface
             )
         }
         Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = stringResource(entry.labelRes),
-            color = MENU_ON_SURFACE,
+            color = onSurface,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             maxLines = 2,
@@ -327,17 +383,6 @@ private val ICON_CHIP = 40.dp
 private val MENU_PADDING = 8.dp
 private val MENU_CORNER = 24.dp
 
-/** Menu chrome. Fixed dark surface: the overlay has no theme of its own to follow. */
-private val MENU_SURFACE = Color(0xF41C1C20)
-private val MENU_STROKE = Color(0x1FFFFFFF)
-private val MENU_ON_SURFACE = Color(0xF2FFFFFF)
-
-/** The label under a grid tile. Dimmer than the icon, so the icon leads and the word confirms. */
-private val MENU_ON_SURFACE_DIM = Color(0xB8FFFFFF)
-
-/** The chip behind each icon. Light enough to separate it from the card, dark enough to recede. */
-private val MENU_CHIP = Color(0x1AFFFFFF)
-
 /**
  * The lighting that turns a translucent rectangle into a piece of glass.
  *
@@ -357,14 +402,19 @@ private val MENU_CHIP = Color(0x1AFFFFFF)
  * All of it is drawn rather than composed from `border`, because a border cannot vary its own
  * weight around the shape and these two rims are different strengths.
  */
-private fun Modifier.liquidGlass(cornerRadius: Dp): Modifier = drawWithContent {
+private fun Modifier.liquidGlass(cornerRadius: Dp, light: Boolean): Modifier = drawWithContent {
+    // A pale pane is already brighter than what is behind it, so white piled on white flattens it.
+    // Its highlights are pulled back to roughly a third and the rim leans on contrast with the
+    // screen behind instead.
+    val k = if (light) 0.45f else 1f
+    fun w(alpha: Int): Color = Color(((alpha * k).toInt().coerceIn(0, 255) shl 24) or 0xFFFFFF)
     val r = CornerRadius(cornerRadius.toPx(), cornerRadius.toPx())
 
     // 1. the sheen, over the top of the surface only
     drawRoundRect(
         brush = Brush.verticalGradient(
-            0f to Color(0x2EFFFFFF),
-            0.45f to Color(0x08FFFFFF),
+            0f to w(0x2E),
+            0.45f to w(0x08),
             1f to Color.Transparent,
         ),
         cornerRadius = r,
@@ -375,7 +425,7 @@ private fun Modifier.liquidGlass(cornerRadius: Dp): Modifier = drawWithContent {
         brush = Brush.verticalGradient(
             0f to Color.Transparent,
             0.82f to Color.Transparent,
-            1f to Color(0x1AFFFFFF),
+            1f to w(0x1A),
         ),
         cornerRadius = r,
     )
@@ -386,10 +436,10 @@ private fun Modifier.liquidGlass(cornerRadius: Dp): Modifier = drawWithContent {
     val stroke = 1.2.dp.toPx()
     drawRoundRect(
         brush = Brush.verticalGradient(
-            0f to Color(0xA6FFFFFF),
-            0.35f to Color(0x3DFFFFFF),
-            0.75f to Color(0x14FFFFFF),
-            1f to Color(0x4DFFFFFF),
+            0f to w(0xA6),
+            0.35f to w(0x3D),
+            0.75f to w(0x14),
+            1f to w(0x4D),
         ),
         topLeft = Offset(stroke / 2f, stroke / 2f),
         size = Size(size.width - stroke, size.height - stroke),
