@@ -275,6 +275,82 @@ class QuickSliderView(context: Context) : View(context) {
     var listener: Listener? = null
 
     /**
+     * Where the blur behind this panel belongs, told whenever that changes.
+     *
+     * The panel cannot blur what is behind it itself: window blur lives on a separate window (see
+     * `PanelBackdrop`), so whoever owns that window has to keep it under the panel. That used to be
+     * done once, at full size, when the panel finished opening, and then left alone. Everything
+     * this view animates moved the panel off its glass. The morph shrank it back into the bar in a
+     * tenth of a second and left a blurred rectangle, hard edge and all, standing where it had been
+     * until the retraction ended: the line that blinked at the edge on every auto-close. The
+     * entrance slid, scaled and faded the panel over a pane that did none of those.
+     *
+     * So the view reports the glass as it draws: the full-width part of the shape it is drawing
+     * right now, carried through whatever the entrance is doing to the layer, with a strength that
+     * falls away with the morph and the fade, so the blur leaves with the panel rather than after
+     * it. In this window's coordinates. A strength of zero means nothing to blur.
+     */
+    fun interface GlassListener {
+        fun onGlass(left: Float, top: Float, right: Float, bottom: Float, cornerPx: Float, strength: Float)
+    }
+
+    var glassListener: GlassListener? = null
+        set(value) {
+            field = value
+            reportGlass()
+        }
+
+    /**
+     * Called once, when this view first draws, so whatever it is replacing can wait until it has
+     * certainly reached the screen. See `OverlayController.openQuickSliderWindow`.
+     */
+    var onFirstFrame: (() -> Unit)? = null
+    private var firstFrameDrawn = false
+
+    /** The outline [rebuildPath] last drew, kept so the glass can be cut to match it. */
+    private var drawnIsTab = false
+    private var drawnFlare = HandlerShape.DEFAULT_FLARE
+    private val glassBounds = RectF()
+
+    private fun reportGlass() {
+        val glass = glassListener ?: return
+        val strength = (expansion * alpha).coerceIn(0f, 1f)
+        if (drawRect.isEmpty || strength <= 0f) {
+            glass.onGlass(0f, 0f, 0f, 0f, 0f, 0f)
+            return
+        }
+        val corner: Float
+        if (drawnIsTab) {
+            // Only the straight middle is full width. A blur region is a rounded rectangle and
+            // nothing else, so behind a tab's sweeps it would poke out past the shape, and because
+            // blur lightens what is behind it the corners would read as a second panel.
+            val depth = HandlerShape.tabSweepDepth(drawRect.height(), drawnFlare)
+            glassBounds.set(drawRect.left, drawRect.top + depth, drawRect.right, drawRect.bottom - depth)
+            corner = minOf(drawRect.width() / 2f, depth)
+        } else {
+            glassBounds.set(drawRect)
+            // The largest of the four. A rounder corner cuts deeper, so it stays inside all four.
+            corner = drawRadii.maxOrNull() ?: 0f
+        }
+        if (glassBounds.isEmpty) {
+            glass.onGlass(0f, 0f, 0f, 0f, 0f, 0f)
+            return
+        }
+        // The entrance moves this view as a layer, so the glass goes through the same transform.
+        // For a turned layer that is its bounding box, the compromise the menu and the Deck make.
+        var scale = 1f
+        val m = matrix
+        if (!m.isIdentity) {
+            m.mapRect(glassBounds)
+            scale = minOf(kotlin.math.abs(scaleX), kotlin.math.abs(scaleY))
+        }
+        glass.onGlass(
+            glassBounds.left, glassBounds.top, glassBounds.right, glassBounds.bottom,
+            corner * scale, strength,
+        )
+    }
+
+    /**
      * What to do when a touch lands anywhere but on this panel.
      *
      * Delivered as `ACTION_OUTSIDE` because the window carries `FLAG_WATCH_OUTSIDE_TOUCH`, and it
@@ -359,7 +435,10 @@ class QuickSliderView(context: Context) : View(context) {
         val bottom = drawRect.bottom
         // On a pale pane, white lighting piled on a white surface flattens it. Same correction the
         // menu and the Deck make, and for the same reason.
-        val k = if (glassLight) 0.45f else 1f
+        // And by how open the panel is. The lighting belongs to the panel's material, and collapsed
+        // the panel has to be the bar exactly, since it stands in for it at both ends of the morph,
+        // and the bar has none.
+        val k = (if (glassLight) 0.45f else 1f) * expansion
         fun w(alpha: Int): Int = ((alpha * k).toInt().coerceIn(0, 255) shl 24) or 0xFFFFFF
 
         sheenPaint?.shader = android.graphics.LinearGradient(
@@ -626,6 +705,7 @@ class QuickSliderView(context: Context) : View(context) {
         rotation = f.rotationZ
         rotationX = f.rotationX
         rotationY = f.rotationY
+        reportGlass()
     }
 
     private fun restartFillClock() {
@@ -1414,6 +1494,7 @@ class QuickSliderView(context: Context) : View(context) {
         drawPath.reset()
         if (drawRect.isEmpty) {
             rebuildGlass()
+            reportGlass()
             return
         }
 
@@ -1421,6 +1502,7 @@ class QuickSliderView(context: Context) : View(context) {
         // the sweep's length is what interpolates.
         val tab = expandedShape == HandlerShape.TAB ||
             (collapsedShape == HandlerShape.TAB && expansion < 0.5f)
+        drawnIsTab = tab
 
         if (tab) {
             val flare = when {
@@ -1428,6 +1510,7 @@ class QuickSliderView(context: Context) : View(context) {
                 expandedShape == HandlerShape.TAB -> expandedFlare
                 else -> collapsedFlare
             }
+            drawnFlare = flare
             val outline = HandlerShape.tabOutline(drawRect.width(), drawRect.height(), flare, edgeOnLeft)
             val l = drawRect.left
             val t = drawRect.top
@@ -1455,11 +1538,19 @@ class QuickSliderView(context: Context) : View(context) {
             drawPath.addRoundRect(drawRect, drawRadii, Path.Direction.CW)
         }
         rebuildGlass()
+        reportGlass()
     }
 
     private fun lerp(from: Float, to: Float): Float = from + (to - from) * expansion
 
     override fun onDraw(canvas: Canvas) {
+        if (!firstFrameDrawn) {
+            firstFrameDrawn = true
+            onFirstFrame?.let { callback ->
+                onFirstFrame = null
+                callback()
+            }
+        }
         if (drawRect.isEmpty) return
 
         /*

@@ -7,6 +7,8 @@ import android.annotation.SuppressLint
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.PointF
@@ -130,6 +132,33 @@ class OverlayController(
 
         /** How long a panel nobody has touched waits before putting itself away. */
         private const val PANEL_IDLE_MS = 4000L
+
+        /** How long the bar takes to fade out of the Deck's way, and back in once it has gone. */
+        private const val HANDLER_FADE_MS = 160L
+
+        /**
+         * The margins that make handing the bar to a panel and back an overlap rather than a gap:
+         * how long a retracted panel stays over the bar after the bar is told to come back, and the
+         * longest a new panel's first frame is waited for before the bar goes anyway. Two windows'
+         * frames are not ordered against each other; see [retiringSliders].
+         */
+        private const val PANEL_HANDOFF_MS = 120L
+        private const val BAR_HANDOFF_TIMEOUT_MS = 150L
+
+        /** How often an open volume panel reads the level itself. See [volumeFollower]. */
+        private const val VOLUME_FOLLOW_MS = 32L
+
+        /**
+         * Sent by the audio service on every volume change, with the stream that moved. The
+         * constants are hidden in AudioManager; the broadcast is protected, so only the system
+         * can send it.
+         */
+        private const val VOLUME_CHANGED_ACTION = "android.media.VOLUME_CHANGED_ACTION"
+        private const val EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE"
+
+        /** The stream whose level actually moved. The type above can name one of its aliases. */
+        private const val EXTRA_VOLUME_STREAM_TYPE_ALIAS =
+            "android.media.EXTRA_VOLUME_STREAM_TYPE_ALIAS"
 
         /**
          * The narrowest the Quick panel may be drawn, whatever the thickness setting says.
@@ -321,14 +350,6 @@ class OverlayController(
 
     private var sliderView: QuickSliderView? = null
 
-    /** The open panel's window rectangle, kept so the blur behind it can be sized to match. */
-    private var sliderParams: WindowManager.LayoutParams? = null
-
-    /** The open panel's outline, for the same reason. See [armQuickSlider]. */
-    private var sliderShape: String = HandlerShape.ROUNDED
-    private var sliderFlare: Float = HandlerShape.DEFAULT_FLARE
-    private var sliderCornerPx: Float = 0f
-
     /**
      * The collapse animation, held so a pull that starts again mid-retract can take it over.
      *
@@ -417,28 +438,44 @@ class OverlayController(
     init {
         (context.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager)
             ?.registerDisplayListener(displayListener, mainHandler)
-        registerVolumeWatcher()
         restoreTimer()
     }
 
     /**
      * Makes the bar answer the hardware volume keys, not just its own gestures.
      *
-     * There is no public callback for "the volume changed" — the broadcast everyone reaches for is
-     * hidden API. What there is: the volume indices live in `Settings.System`, and the system
-     * writes them there whenever anything moves one, so an observer on that table hears the rocker,
-     * the system panel, and another app's slider alike.
+     * Two sources for one piece of news. The volume indices live in `Settings.System`, and the
+     * system writes them there whenever anything moves one, so an observer on that table hears the
+     * rocker, the system panel and another app's slider alike, but half a second after the fact.
+     * The broadcast in [volumeReceiver] says the same thing and names the stream. Neither is quick
+     * enough for a panel that is already open, which reads the level itself: see [volumeFollower].
      *
      * That breadth is also why it is filtered rather than trusted. The table changes for a great
      * many reasons that are not volume, so the handler only speaks up when the stream it would
      * itself be driving has actually landed on a different level.
      */
     private fun registerVolumeWatcher() {
+        // The levels as they stand, so the first write to the settings table after start-up,
+        // which is almost never about volume, is not taken for a change in it.
+        runCatching {
+            val media = volume.media()
+            volume.percent(media)?.let { lastSeenVolume[media.stream] = it }
+            val resolved = volume.resolve(preference.getVolumeStreamMode())
+            volume.percent(resolved)?.let { lastSeenVolume[resolved.stream] = it }
+        }
         runCatching {
             context.contentResolver.registerContentObserver(
                 Settings.System.CONTENT_URI,
                 true,
                 volumeWatcher,
+            )
+        }
+        runCatching {
+            ContextCompat.registerReceiver(
+                context,
+                volumeReceiver,
+                IntentFilter(VOLUME_CHANGED_ACTION),
+                ContextCompat.RECEIVER_EXPORTED,
             )
         }
     }
@@ -447,49 +484,171 @@ class OverlayController(
         override fun onChange(selfChange: Boolean) = onVolumeChangedElsewhere()
     }
 
-    /** The level the bar last showed, so a settings write that moved nothing stays quiet. */
-    private var lastSeenVolumePercent: Int? = null
+    /**
+     * The same news from a second source: the broadcast the audio service sends on every change,
+     * rocker included, naming the stream that moved.
+     *
+     * It is not faster than the observer. On Android 14 and later the system hands it to an app
+     * that is not in the foreground about half a second after the change, the same delay the
+     * settings table is written with; measured, delivery is scheduled 500ms after dispatch. It is
+     * here because it does not depend on that table being written at all, and because it says
+     * which stream moved. The speed a panel that is already open needs comes from
+     * [volumeFollower] instead.
+     *
+     * Registered exported because the broadcast is a protected one: only the system can send it,
+     * so exporting costs nothing, and some builds do not deliver it to a receiver that is not.
+     * Both sources arriving for one press is harmless, because the second finds nothing it has not
+     * already seen.
+     */
+    private val volumeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != VOLUME_CHANGED_ACTION) return
+            // The alias, not the type. A change to one stream is announced once for it and once
+            // for every stream that shares its level (on a phone, media shares with the assistant
+            // and accessibility streams), all in one delivery group that keeps only the most
+            // recent. So what arrives for a press of the rocker is usually an announcement about
+            // accessibility volume, and only its alias says it was media that moved. Filtering on
+            // the type turned every press away.
+            val type = intent.getIntExtra(EXTRA_VOLUME_STREAM_TYPE, -1)
+            val stream = intent.getIntExtra(EXTRA_VOLUME_STREAM_TYPE_ALIAS, type)
+            onVolumeChangedElsewhere(stream.takeIf { it >= 0 })
+        }
+    }
+
+    /**
+     * The level each stream was last seen at, as 0..100, so news that moved nothing stays quiet.
+     *
+     * Per stream, because the two sources know different things: the broadcast names the stream
+     * that moved, and the observer knows only that something in its table did. One remembered
+     * number, compared against whichever stream was asked about last, would mistake a swipe on
+     * one stream for news about another.
+     */
+    private val lastSeenVolume = HashMap<Int, Int>()
+
+    /*
+     * Registered here, below the three properties it uses, and not in the init block further up.
+     * Kotlin runs property initialisers and init blocks in the order they appear in the file, so
+     * from up there the observer, the receiver and the map above were all still null. Registering
+     * a null observer throws, the runCatching around it swallowed that, and the volume watcher was
+     * never registered at all: the rocker reached neither the bar nor the panel.
+     */
+    init {
+        registerVolumeWatcher()
+    }
 
     /** True between the first and last step of a swipe that is driving the volume itself. */
     private var adjustingBySwipe = false
 
     /**
-     * Something moved the volume. Show it on the bar, unless the something was us.
+     * Something moved the volume. Follow it on an open panel, or show it on the bar, unless the
+     * something was us.
      *
-     * The Quick panel and the swipe gesture both put the level on the bar themselves and both
-     * write through `Settings.System` on the way, so without this guard every step of a swipe
-     * would arrive back here and re-post the readout the swipe had just posted — twice the work
-     * for the same number, and a readout that outstayed the gesture by its own full timeout.
+     * Our own writes come back through both sources, so every path here that moves the volume also
+     * records where it left the level (see [stepVolume] and [applyQuickSlider]), and a change that
+     * lands exactly there is recognised as ours. Without that, the last step of a swipe arriving
+     * after the swipe had ended was read as a press of the rocker.
+     *
+     * @param stream the stream that moved, when the news says. Null from the settings observer,
+     *   which only knows that something in its table changed.
      */
-    private fun onVolumeChangedElsewhere() {
+    private fun onVolumeChangedElsewhere(stream: Int? = null) {
         if (destroyed) return
-        if (sliderView != null) return
         if (adjustingBySwipe) return
-        val res = volume.resolve(preference.getVolumeStreamMode())
-        val percent = volume.percent(res) ?: return
-        if (percent == lastSeenVolumePercent) return
-        lastSeenVolumePercent = percent
-        if (handlerView == null) return
+
+        // An open panel follows the level, however it was opened and whatever moved it. This used
+        // to return here instead, which is why the rocker never moved a panel that was already up.
+        if (sliderView != null) {
+            followVolumeOnPanel(stream)
+            return
+        }
+        // The Deck has volume controls of its own, and the bar is out of sight beneath it.
+        if (deckHost != null) return
 
         /*
          * The panel, where the user has asked for it, and the readout on the bar otherwise.
          *
          * Opened on the volume target whatever the panel is configured for: a press of the volume
          * rocker that brought up a brightness slider would be answering a question nobody asked.
-         * An already-open panel is left alone — it is showing this stream anyway, and its own
-         * redraw has the new level.
+         * So media is also the stream listened to when media is what would open.
          */
-        if (preference.slider.getOpenOnVolumeKey()) {
-            if (sliderView != null) {
-                restartQuickSliderIdleTimeout()
-                sliderView?.animateValue(percent / 100f)
-                sliderLastStep = (percent / 100f * sliderSteps).roundToInt()
-                return
-            }
+        val openPanel = preference.slider.getOpenOnVolumeKey()
+        val res = if (openPanel) volume.media() else volume.resolve(preference.getVolumeStreamMode())
+        if (stream != null && stream != res.stream) return
+        val percent = volume.percent(res) ?: return
+        val seen = lastSeenVolume[res.stream]
+        lastSeenVolume[res.stream] = percent
+        if (seen == percent) return
+        // The observer hears every write to its table, most of them nothing to do with volume, so
+        // from it a stream seen for the first time is a baseline rather than news. The broadcast
+        // fires only when a stream has actually moved, so from it that is news.
+        if (seen == null && stream == null) return
+        if (handlerView == null) return
+
+        if (openPanel) {
             showQuickSliderPanel(QuickSliderStore.TARGET_MEDIA)
             return
         }
         showVolumePercentOnHandler(percent, res)
+    }
+
+    /**
+     * Moves an open panel to wherever the volume just went, when the panel is showing a volume.
+     *
+     * One index at a time, because that is what one press of the rocker is, and animated, because
+     * there is no finger on the track to explain the movement. Read from the audio service rather
+     * than from the news that prompted it, so two presses in quick succession cannot leave the
+     * panel on the first one's level.
+     *
+     * Every press also keeps the panel up. The rocker is how the user is using it just then, and a
+     * panel that closed on its timer between the second and third press would close mid-sentence.
+     */
+    private fun followVolumeOnPanel(stream: Int?) {
+        // Not under a finger. What the finger asked for and what the system allowed can differ —
+        // the headphone safe-volume limit refuses the top of the range — and following the system
+        // mid-drag would pull the fill back under the finger on every frame. It catches up the
+        // moment the finger lifts.
+        if (adjustingBySwipe || panelTouchActive) return
+        val view = sliderView ?: return
+        // A brightness panel: the volume moving is not news to it.
+        val res = sliderResolution ?: return
+        if (stream != null && stream != res.stream) return
+        val index = volume.level(res) ?: return
+        // From the index already in hand rather than a second call, because this runs every couple
+        // of frames while a volume panel is open. The same arithmetic as VolumeController.percent.
+        val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
+        lastSeenVolume[res.stream] =
+            ((index - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
+        val step = (index - res.minIndex).coerceIn(0, sliderSteps)
+        // The panel's own write coming back, or nothing that moved this stream.
+        if (step == sliderLastStep) return
+        sliderLastStep = step
+        view.animateValue(step / sliderSteps.toFloat())
+        if (sliderCommitted) {
+            mainHandler.removeCallbacks(sliderCloseRunnable)
+            restartQuickSliderIdleTimeout()
+        }
+    }
+
+    /**
+     * Reads the level every couple of frames while a volume panel is open, so the rocker moves it
+     * at once.
+     *
+     * Both sources of news above arrive about half a second after the level moves. That is fine
+     * for opening the panel, which the system's own slider has already beaten to the screen. It is
+     * not fine for a panel that is already up: the user presses, sees the system's slider move,
+     * and watches ours catch up half a second later, a lag on every press. So while one is open
+     * the level is simply read. One call that returns an int, for the few seconds the panel is on
+     * screen, and nothing at all otherwise; it stops itself when the panel goes.
+     */
+    /** Whether a finger is on the open panel right now. See [followVolumeOnPanel]. */
+    private var panelTouchActive = false
+
+    private val volumeFollower = object : Runnable {
+        override fun run() {
+            if (destroyed || sliderView == null || sliderResolution == null) return
+            followVolumeOnPanel(null)
+            mainHandler.postDelayed(this, VOLUME_FOLLOW_MS)
+        }
     }
 
     // =============================================================================================
@@ -523,6 +682,7 @@ class OverlayController(
         (context.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager)
             ?.unregisterDisplayListener(displayListener)
         runCatching { context.contentResolver.unregisterContentObserver(volumeWatcher) }
+        runCatching { context.unregisterReceiver(volumeReceiver) }
 
         longPressHandler.removeCallbacks(longPressedRunnable)
         mainHandler.removeCallbacksAndMessages(null)
@@ -686,6 +846,9 @@ class OverlayController(
         gestureDetector = detector
         handlerView = view
         handlerParams = layoutParams
+        // Rebuilt while the Deck is up (a settings save lands here): out of sight, like the one
+        // it replaces, until the Deck closes.
+        if (deckHost != null) view.alpha = 0f
 
         // Resolve the real position BEFORE the window is added. Adding at y = 0 and correcting
         // afterwards makes the bar visibly flash at the top of the screen every time it is
@@ -759,6 +922,7 @@ class OverlayController(
         width: Int,
         height: Int,
         cornerRadiusPx: Float,
+        strength: Float = 1f,
     ) {
         val f = frame
         setBounds(
@@ -767,6 +931,7 @@ class OverlayController(
             width,
             height,
             cornerRadiusPx,
+            strength,
         )
     }
 
@@ -1333,6 +1498,9 @@ class OverlayController(
         val resolution = adjustResolution ?: volume.media().also { adjustResolution = it }
 
         val percent = volume.step(resolution, direction, adjustShowsUi) ?: return false
+        // Seen, so this step coming back through the watchers after the swipe has ended is known
+        // for the swipe's and not taken for a press of the rocker.
+        if (percent >= 0) lastSeenVolume[resolution.stream] = percent
 
         // A negative percentage is the opaque-route sentinel: the level moved, but its true value
         // is on a stream this app cannot read, so there is no honest number to show.
@@ -1858,27 +2026,44 @@ class OverlayController(
         view.listener = quickSliderListener
         view.setOnTouchOutside { hideQuickSlider() }
 
-        // Before the panel's own window, so it stacks underneath. Its bounds are set once the
-        // morph has finished — see [armQuickSlider]. Blurring a rectangle the size of the open
-        // panel while a bar-sized sliver is still growing into it is the exact glitch the Deck's
-        // first attempt at this had.
-        sliderBackdrop = newPanelBackdrop()
+        // Before the panel's own window, so it stacks underneath: windows of a type stack in the
+        // order they arrive.
+        val backdrop = newPanelBackdrop()
+        // Kept under the panel from here on by the panel itself, frame by frame: its shape through
+        // the morph, its layer through the entrance, its strength with both. It used to be placed
+        // once, at the size of the window, when the panel armed. So a panel retracting into the bar
+        // left the blur standing at full size until the retraction ended, and a panel drawn
+        // narrower than its window blurred the dead space beside it. See
+        // QuickSliderView.GlassListener.
+        //
+        // This panel's own glass and window, captured here rather than read from the fields later,
+        // because a second panel can open while this one is still retracting and the fields are
+        // that panel's by then.
+        view.glassListener = QuickSliderView.GlassListener { l, t, r, b, corner, strength ->
+            backdrop?.setFrameBounds(
+                params.x + l.roundToInt(),
+                params.y + t.roundToInt(),
+                (r - l).roundToInt(),
+                (b - t).roundToInt(),
+                corner,
+                strength,
+            )
+        }
 
         try {
             wm.addView(view, params)
         } catch (e: Exception) {
             android.util.Log.e(TAG, "quick panel addView failed", e)
-            sliderBackdrop?.dismiss()
-            sliderBackdrop = null
+            view.glassListener = null
+            backdrop?.dismiss()
             return false
         }
         sliderView = view
-        sliderParams = params
-        sliderShape = panelShape
-        sliderFlare = panelFlare
-        sliderCornerPx = dpToPx(
-            maxOf(panelCornerTL, panelCornerTR, panelCornerBL, panelCornerBR)
-        ).toFloat()
+        sliderBackdrop = backdrop
+        // A volume panel follows the rocker from the moment it exists. A brightness one has
+        // nothing to follow: its resolution is null, and the follower stops on its first run.
+        mainHandler.removeCallbacks(volumeFollower)
+        mainHandler.postDelayed(volumeFollower, VOLUME_FOLLOW_MS)
         // Not live yet, on either route. The action route arms it when its open animation
         // finishes; the pull route when the finger passes the far threshold.
         sliderCommitted = false
@@ -1892,14 +2077,31 @@ class OverlayController(
         // Alpha leaves the view VISIBLE to the window system and merely stops it being drawn.
         //
         // Instant rather than faded, and safe to be instant only because of the morph: what
-        // replaces the bar on this frame is a rectangle of the same size, colour and corner in the
-        // same place. Only the icon differs, and the view fades that in.
+        // replaces the bar is a rectangle of the same size, colour and corner in the same place.
+        // Only the icon differs, and the view fades that in.
+        //
+        // But not on this frame. The panel's window was only just added, and its first frame
+        // reaches the screen whenever the compositor gets to it, which nothing orders against the
+        // bar's next frame. Hidden here, the bar could go a frame or two before the panel arrived:
+        // a blink at the edge at the start of every open. So it goes two frames after the panel
+        // first draws, or after a timeout if the panel never does. Overlapping meanwhile shows
+        // nothing, because frame zero of the panel is the bar.
+        handlerView?.animate()?.cancel()
+        view.onFirstFrame = {
+            view.postOnAnimation { view.postOnAnimation { hideBarUnder(view) } }
+        }
+        mainHandler.postDelayed({ hideBarUnder(view) }, BAR_HANDOFF_TIMEOUT_MS)
+
+        return true
+    }
+
+    /** Takes the bar out of sight under [view], if [view] is still the panel standing in for it. */
+    private fun hideBarUnder(view: QuickSliderView) {
+        if (sliderView !== view) return
         handlerView?.let { bar ->
             bar.animate().cancel()
             bar.alpha = 0f
         }
-
-        return true
     }
 
     /**
@@ -1943,40 +2145,6 @@ class OverlayController(
         view.setCommitted()
         view.setInteractive(true)
 
-        // The glass arrives with the open panel rather than during the morph. The window is the
-        // panel — the track fills it once expanded — so its own rectangle is what to blur, and
-        // the largest of the four corner radii is the one that keeps the blur inside the shape.
-        sliderParams?.let { params ->
-            /*
-             * The glass has to fit *inside* the panel, not merely cover it.
-             *
-             * A blur region is a rounded rectangle and nothing else — that is all the platform
-             * offers — so behind a tab, whose sides curve inward at both ends, a rectangle sized
-             * to the window pokes out past the shape at top and bottom. Because the blur lightens
-             * what is behind it, those corners read as part of the panel, and the result is a
-             * rounded rectangle *and* a tab on screen at once: two panels where there is one.
-             *
-             * So for a tab the region is pulled in to the straight middle, which is the part of
-             * the shape that is full width. The swept ends go unblurred, which inside a surface
-             * this translucent is a difference you have to look for, where the second panel was
-             * the first thing you saw.
-             */
-            val tab = sliderShape == HandlerShape.TAB
-            val inset = if (tab) (params.height * HandlerShape.sanitizeFlare(sliderFlare)).toInt() else 0
-            val corner = if (tab) {
-                minOf(params.width / 2f, inset.toFloat())
-            } else {
-                sliderCornerPx
-            }
-            sliderBackdrop?.setFrameBounds(
-                params.x,
-                params.y + inset,
-                params.width,
-                (params.height - inset * 2).coerceAtLeast(0),
-                corner,
-            )
-        }
-
         restartQuickSliderIdleTimeout()
     }
 
@@ -1985,12 +2153,14 @@ class OverlayController(
      */
     private val quickSliderListener = object : QuickSliderView.Listener {
         override fun onValuePicked(fraction: Float) {
+            panelTouchActive = true
             mainHandler.removeCallbacks(sliderCloseRunnable)
             restartQuickSliderIdleTimeout()
             applyQuickSlider(fraction)
         }
 
         override fun onAdjustFinished() {
+            panelTouchActive = false
             // "Adjust it and it closes itself." Not instant: the number the user just set is the
             // point of the whole interaction, and a panel that vanishes on the up-stroke never
             // lets them read it. One beat is enough to see the result and short enough that the
@@ -2069,7 +2239,11 @@ class OverlayController(
             // By index rather than by percentage. Going through a whole-number percent on a
             // seven-step stream lands two consecutive indices on the same percent and makes
             // others unreachable, so a slow drag skipped levels and stuck on others.
-            res != null && volume.setIndex(res, res.minIndex + step, showUi = false) != null
+            val written = res != null && volume.setIndex(res, res.minIndex + step, showUi = false) != null
+            // Seen, so the change coming back through the watchers is known for this panel's own
+            // rather than taken for a press of the rocker and animated back over the finger.
+            if (written && res != null) volume.percent(res)?.let { lastSeenVolume[res.stream] = it }
+            written
         }
 
         // No buzz for a step the system refused. The tick is feedback about the control moving,
@@ -2095,6 +2269,11 @@ class OverlayController(
         mainHandler.removeCallbacks(sliderCloseRunnable)
         mainHandler.removeCallbacks(sliderIdleRunnable)
         val view = sliderView ?: return
+        panelTouchActive = false
+        // This panel's glass goes with it. Taken now rather than when the retraction ends,
+        // because a second panel can open inside the retraction, and the field is that one's.
+        val backdrop = sliderBackdrop
+        sliderBackdrop = null
         sliderView = null
         sliderResolution = null
         sliderLastStep = -1
@@ -2105,6 +2284,13 @@ class OverlayController(
         view.listener = null
         view.setOnTouchOutside(null)
         view.setInteractive(false)
+        // Out of the input stack too, not merely deaf. This window still covers the bar, so a
+        // second swipe landing inside the retraction was swallowed by a panel that had stopped
+        // listening, instead of reaching the bar and opening a new one.
+        (view.layoutParams as? WindowManager.LayoutParams)?.let { lp ->
+            lp.flags = lp.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+            runCatching { windowManager?.updateViewLayout(view, lp) }
+        }
         sliderAutoBrightnessHandled = false
 
         // From wherever it actually is, not from 1. A pull abandoned early has barely opened, and
@@ -2124,8 +2310,16 @@ class OverlayController(
                     // inside the ~200ms retraction opens a new stretch, and that stretch is
                     // standing in for the bar exactly as this one was — putting the bar back now
                     // would draw it alongside its own replacement until the new gesture ended.
-                    if (sliderView == null) handlerView?.alpha = 1f
-                    removeQuickSliderView(view)
+                    // And not while the Deck is up: it keeps the bar out of sight until it closes.
+                    val bar = handlerView
+                    if (sliderView == null && deckHost == null && bar != null) {
+                        bar.animate().cancel()
+                        bar.alpha = 1f
+                        // Left over the bar a moment rather than taken down on this same frame.
+                        retireQuickSliderView(view, backdrop)
+                    } else {
+                        removeQuickSliderView(view, backdrop)
+                    }
                 }
             })
         }
@@ -2150,8 +2344,13 @@ class OverlayController(
         // listener, which is what actually removes it.
         sliderCollapse?.end()
         sliderCollapse = null
+        // Including any that finished retracting and are waiting out their handover.
+        flushRetiringSliders()
 
         val view = sliderView ?: return
+        panelTouchActive = false
+        val backdrop = sliderBackdrop
+        sliderBackdrop = null
         sliderView = null
         sliderResolution = null
         sliderLastStep = -1
@@ -2160,21 +2359,48 @@ class OverlayController(
         view.listener = null
         view.setOnTouchOutside(null)
         view.setInteractive(false)
-        handlerView?.alpha = 1f
-        removeQuickSliderView(view)
+        if (deckHost == null) handlerView?.alpha = 1f
+        removeQuickSliderView(view, backdrop)
     }
 
-    private fun removeQuickSliderView(view: View) {
+    private fun removeQuickSliderView(view: QuickSliderView, backdrop: PanelBackdrop?) {
+        // Deaf first, so nothing the view does on its way out can move glass that is going.
+        view.glassListener = null
         try {
             windowManager?.removeView(view)
         } catch (_: Exception) {
             // Already gone — the service was torn down while the collapse was still running.
         }
-        // With the panel, never after it: a blurred rectangle left on screen for even one frame
-        // after the thing it was behind has gone reads as a smear rather than as a panel closing.
-        sliderBackdrop?.dismiss()
-        sliderBackdrop = null
-        sliderParams = null
+        // With the panel, never after it. By now the retraction has faded it to nothing anyway, so
+        // whichever of the two windows the compositor drops first, no frame has glass and no panel.
+        backdrop?.dismiss()
+    }
+
+    /**
+     * Retracted panels waiting to be taken down, each with its glass.
+     *
+     * A panel that has retracted stays on screen a moment after the bar has been told to come
+     * back, rather than being taken down on the same frame. The two are separate windows and
+     * nothing orders their frames, so taken down together the panel could leave before the bar
+     * arrived, and the bar blinked out at the end of every close. Collapsed, the panel is the bar
+     * pixel for pixel, so overlapping it for a few frames shows nothing.
+     */
+    private val retiringSliders = ArrayList<Pair<QuickSliderView, PanelBackdrop?>>()
+
+    private fun retireQuickSliderView(view: QuickSliderView, backdrop: PanelBackdrop?) {
+        val entry = view to backdrop
+        retiringSliders += entry
+        mainHandler.postDelayed({
+            if (retiringSliders.remove(entry)) removeQuickSliderView(view, backdrop)
+        }, PANEL_HANDOFF_MS)
+    }
+
+    /** Takes every retracted panel down now, for teardown, where there is no bar to hand over to. */
+    private fun flushRetiringSliders() {
+        if (retiringSliders.isEmpty()) return
+        val all = ArrayList(retiringSliders)
+        retiringSliders.clear()
+        all.forEach { (view, backdrop) -> removeQuickSliderView(view, backdrop) }
     }
 
     /**
@@ -2428,6 +2654,11 @@ class OverlayController(
         }
         deckHost = host
         deckRoot = root
+        // The bar steps out of the Deck's way while it is up and comes back once it has gone (see
+        // removeDeckNow). Faded, not removed or made INVISIBLE, for the reason
+        // openQuickSliderWindow gives: its window has to stay in the input stack, and the gesture
+        // that opened the Deck can still be under the finger on it.
+        fadeHandler(visible = false)
         restartDeckAutoClose()
     }
 
@@ -2473,6 +2704,21 @@ class OverlayController(
         host?.destroy()
         // The next opening starts on the strip, unless a gesture names a tile.
         deckState.expandedTile = null
+        // The bar back, now there is nothing in front of it. Not while a Quick panel is standing
+        // in for it: that puts the bar back itself when it retracts.
+        if (sliderView == null && sliderCollapse == null) fadeHandler(visible = true)
+    }
+
+    /**
+     * Fades the bar in or out of sight without touching its window.
+     *
+     * Cancelling whatever fade was running first, so a Deck closed while it is still opening does
+     * not leave two animations fighting over the same alpha.
+     */
+    private fun fadeHandler(visible: Boolean) {
+        val bar = handlerView ?: return
+        bar.animate().cancel()
+        bar.animate().alpha(if (visible) 1f else 0f).setDuration(HANDLER_FADE_MS).start()
     }
 
     /**

@@ -9,6 +9,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
+import kotlin.math.roundToInt
 
 /**
  * A blur that sits behind one panel and nowhere else.
@@ -49,8 +50,8 @@ class PanelBackdrop(
     private var shownRadius = -1f
     private var bounds = intArrayOf(0, 0, 1, 1)
 
-    /** Whether the blur is currently switched off, so the radius is pushed only when it flips. */
-    private var shownEmpty: Boolean? = null
+    /** The blur radius last pushed to the window, so it is pushed only when it changes. */
+    private var shownBlurPx = -1
 
     /**
      * Puts the window up, blurring nothing yet.
@@ -102,17 +103,32 @@ class PanelBackdrop(
      * A width or height of zero means "nothing to blur just now" — the expanded card's backdrop
      * spends most of its life there. It stays a 1x1 window with the blur switched off rather than
      * being dismissed and recreated, because recreating it would put it back on top of the Deck.
+     *
+     * [strength] scales the blur itself, 0 to 1, so glass can leave with a panel that is shrinking
+     * or fading instead of standing where the panel was until the panel's window is gone.
      */
-    fun setBounds(left: Int, top: Int, width: Int, height: Int, cornerRadiusPx: Float) {
+    fun setBounds(
+        left: Int,
+        top: Int,
+        width: Int,
+        height: Int,
+        cornerRadiusPx: Float,
+        strength: Float = 1f,
+    ) {
         val window = dialog?.window ?: return
         val w = width.coerceAtLeast(1)
         val h = height.coerceAtLeast(1)
-        val empty = width <= 0 || height <= 0
+        val s = strength.coerceIn(0f, 1f)
+        val empty = width <= 0 || height <= 0 || s < MIN_STRENGTH
+        // Scaled by the strength, and never below a pixel while shown: at zero the platform takes
+        // the blur down altogether and rebuilds it on the next non-zero radius, which would put
+        // that work on the first frame of every fade.
+        val blurPx = if (empty) 0 else (blurRadiusPx * s).roundToInt().coerceAtLeast(1)
         val next = intArrayOf(left, top, w, h)
         val sameBounds = next.contentEquals(bounds)
         val sameRadius = shownRadius == cornerRadiusPx
-        val sameEmpty = shownEmpty == empty
-        if (sameBounds && sameRadius && sameEmpty) return
+        val sameBlur = shownBlurPx == blurPx
+        if (sameBounds && sameRadius && sameBlur) return
 
         bounds = next
         // Rebuilt only when the radius really changes. During an animation the rectangle moves
@@ -122,12 +138,14 @@ class PanelBackdrop(
             shownRadius = cornerRadiusPx
             applyBackground(window, cornerRadiusPx)
         }
-        // Likewise: a window attribute, so it is pushed only when it flips.
-        if (!sameEmpty) {
-            shownEmpty = empty
-            window.setBackgroundBlurRadius(if (empty) 0 else blurRadiusPx)
+        // Likewise, pushed only when it changes. Cheap between two non-zero radii — the platform
+        // re-reads it on the window's next frame — which is what lets the glass fade out with a
+        // panel rather than be dropped after it.
+        if (!sameBlur) {
+            shownBlurPx = blurPx
+            window.setBackgroundBlurRadius(blurPx)
         }
-        applyBounds(window)
+        if (!sameBounds) applyBounds(window)
     }
 
     fun dismiss() {
@@ -168,5 +186,10 @@ class PanelBackdrop(
         params.width = bounds[2]
         params.height = bounds[3]
         window.attributes = params
+    }
+
+    private companion object {
+        /** Below this much of a blur there is nothing to see, so the blur is switched off. */
+        const val MIN_STRENGTH = 0.02f
     }
 }
