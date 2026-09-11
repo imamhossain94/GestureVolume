@@ -73,10 +73,20 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val CORNER_BR = "sliderCornerBR"
         private const val SHAPE = "sliderShape"
         private const val SHAPE_FLARE = "sliderShapeFlare"
+        private const val VALUE_MARGIN = "sliderValueMarginDp"
+        private const val ICON_MARGIN = "sliderIconMarginDp"
 
         const val DEFAULT_LENGTH = 220f
-        /** Mirrors `OverlayController.PANEL_MIN_THICKNESS_DP`. See [getThicknessDp]. */
-        const val MIN_THICKNESS = 48f
+        /**
+         * The thinnest the open panel may be.
+         *
+         * Ten, not the forty-eight it was. Forty-eight was a thumb target, and the reasoning was
+         * sound for a panel you aim at — but the panel is not only that: it is also a readout that
+         * grows out of the bar, and somebody who wants a sliver that barely widens is entitled to
+         * one. The window it lives in keeps its own floor, so the thing a finger lands on has not
+         * changed; only the part that is painted has. See `QuickSliderView.setDrawnThickness`.
+         */
+        const val MIN_THICKNESS = 10f
         const val DEFAULT_THICKNESS = 52f
         /** Half the thickness: a track with fully round ends, matching the bar's pill shape. */
         const val DEFAULT_CORNER = 22f
@@ -143,6 +153,20 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
      * already interpolating each corner from its collapsed value to its expanded one, so the only
      * thing that had changed was that both ends were being handed the same number.
      */
+    /**
+     * How far the number sits from the top of the panel, and the icon from the bottom, in dp.
+     *
+     * Adjustable because the panel's own size is: the fourteen and sixteen that were hard-coded
+     * were chosen against a 44dp track, and on a 10dp one they are most of its length while on a
+     * 72dp one the number floats. Measured from where the shape is still full width, so a tab's
+     * sweep is already taken off before this is applied.
+     */
+    fun getValueMarginDp(): Float = prefs.getFloat(VALUE_MARGIN, 14f).coerceIn(0f, 60f)
+    fun setValueMarginDp(value: Float) = prefs.edit { putFloat(VALUE_MARGIN, value.coerceIn(0f, 60f)) }
+
+    fun getIconMarginDp(): Float = prefs.getFloat(ICON_MARGIN, 16f).coerceIn(0f, 60f)
+    fun setIconMarginDp(value: Float) = prefs.edit { putFloat(ICON_MARGIN, value.coerceIn(0f, 60f)) }
+
     fun getCornerDp(): Float = prefs.getFloat(CORNER, DEFAULT_CORNER).coerceIn(0f, 40f)
     fun setCornerDp(value: Float) = prefs.edit { putFloat(CORNER, value.coerceIn(0f, 40f)) }
 

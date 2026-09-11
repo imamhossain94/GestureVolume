@@ -1668,9 +1668,24 @@ class OverlayController(
         // Floored at the bar's own size so the collapsed rect fits inside the window, and at
         // PANEL_MIN_THICKNESS_DP because this is now a control the user aims at with a thumb
         // rather than a readout beside a finger that is already committed to a stroke.
-        val thicknessPx = dpToPx(settings.getThicknessDp())
-            .coerceAtLeast(dpToPx(PANEL_MIN_THICKNESS_DP))
-            .coerceAtLeast(drawnWidthPx)
+        /*
+         * Two widths, and they are no longer the same number.
+         *
+         * `panelThicknessPx` is what gets painted, and it is whatever the user asked for, down to
+         * ten. `windowThicknessPx` is the window it is painted in, and that keeps the old floor:
+         * at least a thumb's worth, and never narrower than the bar — because the bar is the
+         * collapsed end of the morph, and a first frame wider than its own window is a first frame
+         * with its edge sliced off.
+         *
+         * The panel is drawn against the screen edge inside that window, exactly the way the bar
+         * is drawn against the edge inside its own wider one.
+         */
+        val panelThicknessPx = dpToPx(settings.getThicknessDp())
+        val thicknessPx = maxOf(
+            panelThicknessPx,
+            dpToPx(PANEL_MIN_THICKNESS_DP),
+            drawnWidthPx,
+        )
         val lengthPx = dpToPx(settings.getLengthDp())
             .coerceAtMost(currentFrame.usableHeight.coerceAtLeast(1))
             .coerceAtLeast(barParams.height)
@@ -1717,7 +1732,7 @@ class OverlayController(
         val density = context.resources.displayMetrics.density
         val barWidthForShape = preference.getHandlerWidthDp().coerceAtLeast(1f)
         val widthRatio = if (drawnWidthPx > 0) {
-            (thicknessPx.toFloat() / drawnWidthPx).coerceIn(1f, 4f)
+            (panelThicknessPx.toFloat() / drawnWidthPx).coerceIn(0.25f, 4f)
         } else {
             1f
         }
@@ -1745,7 +1760,7 @@ class OverlayController(
              * left to be a panel.
              */
             val barSweepDp = barFlare * preference.getHandlerHeightDp()
-            val wanted = (barSweepDp / barWidthForShape) * (thicknessPx / density)
+            val wanted = (barSweepDp / barWidthForShape) * (panelThicknessPx / density)
             val character = wanted / (lengthPx / density).coerceAtLeast(1f)
             // The smaller of the three, and the ceiling is the load-bearing one. A bar four times
             // narrower than the panel wants a sweep longer than the panel is tall, which clamps to
@@ -1797,6 +1812,8 @@ class OverlayController(
             setExpandedCorners(panelCornerTL, panelCornerTR, panelCornerBL, panelCornerBR)
             setCollapsedAppearance(handlerColor, barCornerTL, barCornerTR, barCornerBL, barCornerBR)
             setShapes(panelShape, panelFlare, barShape, barFlare, isLeft)
+            setDrawnThickness(panelThicknessPx.toFloat(), isLeft)
+            setContentMargins(settings.getValueMarginDp(), settings.getIconMarginDp())
             setIcon(if (settings.getShowIcon()) quickSliderIcon(sliderTarget) else null)
             setFillStyle(settings.getFillStyle())
             setShowValue(settings.getShowValue())

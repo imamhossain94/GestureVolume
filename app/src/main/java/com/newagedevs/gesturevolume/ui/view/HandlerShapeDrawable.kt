@@ -118,16 +118,13 @@ class HandlerShapeDrawable : Drawable() {
         if (width <= 0f || height <= 0f) return
 
         if (shape == HandlerShape.TAB) {
-            val s = HandlerShape.tabSweep(width, height, flare, edgeOnLeft)
-            val edgeX = left + s[0]
-            val innerX = left + s[6]
-            val sweep = s[7]
-            path.moveTo(edgeX, top)
-            path.cubicTo(left + s[2], top + s[3], left + s[4], top + s[5], innerX, top + sweep)
-            path.lineTo(innerX, bottom - sweep)
-            // The same cubic run backwards and mirrored in y: control points swap places, because
-            // the second control of a curve going down is the first control of the one coming up.
-            path.cubicTo(left + s[4], bottom - s[5], left + s[2], bottom - s[3], edgeX, bottom)
+            val outline = HandlerShape.tabOutline(width, height, flare, edgeOnLeft)
+            path.moveTo(left + outline[0], top + outline[1])
+            var i = 2
+            while (i < outline.size) {
+                path.lineTo(left + outline[i], top + outline[i + 1])
+                i += 2
+            }
             // Closes along the screen edge, which is the one straight side of a tab.
             path.close()
         } else {

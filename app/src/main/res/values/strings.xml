@@ -868,4 +868,6 @@
     <string name="fill_ember">Ember</string>
     <string name="fill_sonar">Sonar</string>
     <string name="fill_circuit">Circuit</string>
+    <string name="slider_value_margin">Number margin</string>
+    <string name="slider_icon_margin">Icon margin</string>
 </resources>

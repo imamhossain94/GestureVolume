@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -170,6 +171,8 @@ fun QuickSliderScreen(
     var fillColor by remember { mutableStateOf(Color(store.getFillColor())) }
     var showValue by remember { mutableStateOf(store.getShowValue()) }
     var showIcon by remember { mutableStateOf(store.getShowIcon()) }
+    var valueMargin by remember { mutableFloatStateOf(store.getValueMarginDp()) }
+    var iconMargin by remember { mutableFloatStateOf(store.getIconMarginDp()) }
     var autoBrightnessOff by remember { mutableStateOf(store.getDisableAutoBrightness()) }
     var openOnVolumeKey by remember { mutableStateOf(store.getOpenOnVolumeKey()) }
     var panelTheme by remember { mutableStateOf(viewModel.preference.getPanelTheme()) }
@@ -225,6 +228,8 @@ fun QuickSliderScreen(
                 fillColor = fillColor,
                 showValue = showValue,
                 showIcon = showIcon,
+                valueMargin = valueMargin,
+                iconMargin = iconMargin,
                 target = target,
                 panelTheme = panelTheme,
                 fillStyle = fillStyle,
@@ -460,6 +465,17 @@ fun QuickSliderScreen(
                     checked = showValue,
                     onCheckedChange = { showValue = it; store.setShowValue(it) }
                 )
+                if (showValue) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    SliderControl(
+                        label = stringResource(R.string.slider_value_margin),
+                        value = valueMargin,
+                        valueRange = 0f..60f,
+                        valueDisplay = "${valueMargin.toInt()}dp",
+                        borderColor = accent,
+                        onValueChange = { valueMargin = it; store.setValueMarginDp(it) }
+                    )
+                }
                 Sep()
                 SettingSwitchItem(
                     title = stringResource(R.string.slider_show_icon),
@@ -467,6 +483,17 @@ fun QuickSliderScreen(
                     checked = showIcon,
                     onCheckedChange = { showIcon = it; store.setShowIcon(it) }
                 )
+                if (showIcon) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    SliderControl(
+                        label = stringResource(R.string.slider_icon_margin),
+                        value = iconMargin,
+                        valueRange = 0f..60f,
+                        valueDisplay = "${iconMargin.toInt()}dp",
+                        borderColor = accent,
+                        onValueChange = { iconMargin = it; store.setIconMarginDp(it) }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -509,6 +536,8 @@ private fun SliderPreview(
     fillColor: Color,
     showValue: Boolean,
     showIcon: Boolean,
+    valueMargin: Float,
+    iconMargin: Float,
     target: String,
     backgroundImageURL: String,
     handlerOnLeft: Boolean,
@@ -538,6 +567,7 @@ private fun SliderPreview(
     // Against the same edge the handler is on, because that is where the panel actually opens —
     // it grows out of the bar. Centred, it was a picture of a track floating in the middle of the
     // screen, which is the one place it never appears.
+    val density = LocalDensity.current.density
     PreviewStage(
         backgroundImageURL = backgroundImageURL,
         contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
@@ -576,6 +606,8 @@ private fun SliderPreview(
                         view.setShapes(shape, flare, shape, flare, handlerOnLeft)
                     }
                     view.setFillStyle(fillStyle)
+                    view.setDrawnThickness(thicknessDp * density, handlerOnLeft)
+                    view.setContentMargins(valueMargin, iconMargin)
                     view.setShowValue(showValue)
                     view.setIcon(if (showIcon) iconRes else null)
                     view.setValue(0.6f)
@@ -594,7 +626,9 @@ private fun SliderPreview(
                 // than bleeding off both ends. What the user is judging here is width, colour and
                 // the shape of the ends; length is a number they set with a slider and read off it.
                 .height(minOf(lengthDp, PREVIEW_SUBJECT_MAX_HEIGHT.value).dp)
-                .width(thicknessDp.dp)
+                // The window's floor, not the panel's: the preview is the window, and the panel
+                // is drawn inside it against the edge, exactly as it is on screen.
+                .width(maxOf(thicknessDp, PANEL_PREVIEW_MIN_WINDOW).dp)
         )
     }
 }
@@ -668,3 +702,6 @@ private val PANEL_PREVIEW_LIGHT_INK = 0xFF15161A.toInt()
  * contract between them.
  */
 private const val QUICK_PANEL_MAX_FLARE = 0.22f
+
+/** Mirrors `OverlayController.PANEL_MIN_THICKNESS_DP`: the window's floor, not the panel's. */
+private const val PANEL_PREVIEW_MIN_WINDOW = 48f

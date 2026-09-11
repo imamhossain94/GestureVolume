@@ -47,51 +47,87 @@ object HandlerShape {
         if (value.isNaN()) DEFAULT_FLARE else value.coerceIn(MIN_FLARE, MAX_FLARE)
 
     /**
-     * The three numbers that make the sweep an ogee rather than a quarter-circle.
+     * How wide the bar is at [t] of the way down one end sweep, 0 at the tip and 1 where the sweep
+     * meets the rest of the shape.
      *
-     * Together they put both control points of the cubic on the two vertical lines the curve runs
-     * between — the screen edge and the inner face — which is what makes the width follow a
-     * *smoothstep* of the distance down the sweep: flat at the tip, steepest in the middle, flat
-     * again where it meets the straight section. That is the profile, and it is not a matter of
-     * taste: measured off the shape this preset is answering to, the width is 20% of full a fifth
-     * of the way down, 40% at two fifths, 80% at seven tenths. A curve that leaves the tip at any
-     * angle other than straight down hits half its width in the first eighth and comes out looking
-     * like a corner that has been sanded off.
+     * **Why it is not a cubic.** It was, and a cubic leaves a crease. A sweep drawn as one cubic
+     * can be made to *arrive* travelling straight down — that much is easy, and it is what stops
+     * the join being a corner — but its curvature at that point is not zero, while the straight
+     * section it joins has no curvature at all. Curvature jumping from something to nothing in one
+     * place is a crease, and on a shape this size the eye picks it out even though both sides of
+     * the join are smooth.
      *
-     * [LEAD] is that "straight down at the tip": zero, so the curve starts with no width at all.
-     * [LIFT] and [SETTLE] at a third each are what keep the descent even — pull either toward zero
-     * and the curve bunches its width against one end.
-     *
-     * A proportion is not anyone's property and nothing here is traced from another app's assets;
-     * a symmetric S between two parallel lines is the curve anyone fitting this by eye would land
-     * on, and these are its textbook control points.
+     * So the profile is a fifth-order curve whose first *and* second derivatives are zero at both
+     * ends, blended against a third-order one at the tip. The quintic alone is seamless at the
+     * join and too timid at the tip — it leaves it barely two percent wide a seventh of the way
+     * down, where the shape this is answering to is nearer ten. The blend takes the join from the
+     * quintic and the tip from the cubic, which is the only part of each that was any good.
      */
-    private const val LEAD = 0f
-    private const val LIFT = 1f / 3f
-    private const val SETTLE = 1f / 3f
+    fun tabProfile(t: Float): Float {
+        val p = t.coerceIn(0f, 1f)
+        val cubic = p * p * (3f - 2f * p)
+        val quintic = p * p * p * (p * (6f * p - 15f) + 10f)
+        return cubic * (1f - p) + quintic * p
+    }
+
+    /** How many points each end sweep is drawn with. Finer than a phone can resolve. */
+    const val OUTLINE_STEPS = 40
 
     /**
-     * The top sweep of a [TAB], as a single cubic in the bar's own coordinates.
+     * The whole of a tab's outline, as a polyline: `[x0, y0, x1, y1, …]`.
      *
-     * Returns `[x0, y0, c1x, c1y, c2x, c2y, x1, y1]`: it starts on the screen edge at the top of
-     * the bar and ends on the inner face, `flare * height` down. The bottom sweep is this one
-     * mirrored in y, which is the caller's job — expressing it once keeps the two ends identical
-     * by construction rather than by two blocks of arithmetic agreeing.
+     * From the top tip, down whichever side the screen edge is *not* on, to the bottom tip. The
+     * caller closes the shape along the screen edge, which is the one straight side a tab has.
+     *
+     * A polyline rather than curve commands because [tabProfile] is a quintic blend and there is
+     * no Bézier of the order the platform draws that reproduces it. At forty steps a sweep's
+     * longest straight segment is under a pixel on any phone, so nothing is lost by flattening it,
+     * and what is gained is that the shape is exactly the profile rather than an approximation of
+     * it that reintroduces the crease.
      *
      * @param edgeOnLeft which side of the bar the screen edge is on. The bar flips sides when it
      *   is carried across the screen, and a sweep that did not flip with it would leave the curve
      *   pointing out into the app and the flat face against the glass.
      */
-    fun tabSweep(width: Float, height: Float, flare: Float, edgeOnLeft: Boolean): FloatArray {
+    fun tabOutline(
+        width: Float,
+        height: Float,
+        flare: Float,
+        edgeOnLeft: Boolean,
+        steps: Int = OUTLINE_STEPS,
+    ): FloatArray {
+        val n = steps.coerceAtLeast(2)
         val length = sanitizeFlare(flare) * height
         val edgeX = if (edgeOnLeft) 0f else width
         val innerX = if (edgeOnLeft) width else 0f
         val span = innerX - edgeX
-        return floatArrayOf(
-            edgeX, 0f,
-            edgeX + span * LEAD, length * LIFT,
-            innerX, length * (1f - SETTLE),
-            innerX, length,
-        )
+
+        // Both sweeps, plus the one point that carries the straight section between them. The
+        // bottom sweep already finishes back on the screen edge, so there is nothing to add after
+        // it — a repeated final point would be a zero-length segment for every renderer to skip.
+        val points = FloatArray((n + 1) * 4 + 2)
+        var i = 0
+        for (step in 0..n) {
+            val t = step.toFloat() / n
+            points[i++] = edgeX + span * tabProfile(t)
+            points[i++] = length * t
+        }
+        points[i++] = innerX
+        points[i++] = height - length
+        for (step in n downTo 0) {
+            val t = step.toFloat() / n
+            points[i++] = edgeX + span * tabProfile(t)
+            points[i++] = height - length * t
+        }
+        return points
     }
+
+    /**
+     * How far down one end sweep reaches, in the same pixels the shape was measured in.
+     *
+     * Its own function because two things that never draw the shape need it: the blur behind an
+     * open panel, which has to be pulled in to the part that is full width, and the panel's own
+     * contents, which would otherwise be placed in the part that has been swept away.
+     */
+    fun tabSweepDepth(height: Float, flare: Float): Float = sanitizeFlare(flare) * height
 }

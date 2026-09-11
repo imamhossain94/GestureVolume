@@ -125,21 +125,19 @@ fun PresetCard(
                 ) {
                     // The swatch sits at the right of the card, so its right edge stands in for
                     // the screen edge — which is the side a tab's sweeps run to.
-                    val sweep = HandlerShape.tabSweep(
+                    val outline = HandlerShape.tabOutline(
                         size.width,
                         size.height,
                         previewFlare,
-                        edgeOnLeft = false
+                        edgeOnLeft = false,
                     )
                     val path = Path().apply {
-                        moveTo(sweep[0], 0f)
-                        cubicTo(sweep[2], sweep[3], sweep[4], sweep[5], sweep[6], sweep[7])
-                        lineTo(sweep[6], size.height - sweep[7])
-                        cubicTo(
-                            sweep[4], size.height - sweep[5],
-                            sweep[2], size.height - sweep[3],
-                            sweep[0], size.height
-                        )
+                        moveTo(outline[0], outline[1])
+                        var i = 2
+                        while (i < outline.size) {
+                            lineTo(outline[i], outline[i + 1])
+                            i += 2
+                        }
                         close()
                     }
                     drawPath(path, previewColor.copy(alpha = previewAlpha))

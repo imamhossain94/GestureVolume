@@ -100,6 +100,26 @@ class QuickSliderView(context: Context) : View(context) {
     /** The window's own bounds — where a fully expanded slider is drawn. */
     private val expandedRect = RectF()
 
+    /**
+     * How much of the window the open panel actually fills, and which side it sits against.
+     *
+     * The two used to be the same thing, which put a floor under how thin the panel could be: the
+     * window has to be at least as wide as the bar, because the bar is what the morph starts from
+     * and a collapsed rect wider than its own window is a first frame with its edge cut off. So
+     * the window keeps that floor and the panel is drawn inside it, pushed against the screen edge
+     * — the same arrangement the handler has always used, and for the same reason.
+     */
+    private var drawnThicknessPx = 0f
+    private var drawnOnLeft = false
+
+    fun setDrawnThickness(px: Float, onLeft: Boolean) {
+        drawnThicknessPx = px.coerceAtLeast(0f)
+        drawnOnLeft = onLeft
+        applyExpandedRect()
+        rebuildPath()
+        invalidate()
+    }
+
     /** [collapsedRect] and [expandedRect] interpolated by [expansion]. What actually gets drawn. */
     private val drawRect = RectF()
     private val drawPath = Path()
@@ -142,6 +162,23 @@ class QuickSliderView(context: Context) : View(context) {
 
     /** Which side of the panel the screen edge is on, for a tab's sweeps. */
     private var edgeOnLeft = false
+
+    /**
+     * How far the number sits from the top of the shape, and the icon from the bottom, in pixels.
+     *
+     * Settings rather than constants because the panel is now anything from a 10dp sliver to a
+     * 72dp slab, and a margin that centres the number on one of those crowds it on another. They
+     * are measured from where the shape is still full width — see [drawContent] — so a tab's sweep
+     * is already accounted for and this is the gap on top of it.
+     */
+    private var valueMarginPx = 14f * density
+    private var iconMarginPx = 16f * density
+
+    fun setContentMargins(valueTopDp: Float, iconBottomDp: Float) {
+        valueMarginPx = valueTopDp.coerceAtLeast(0f) * density
+        iconMarginPx = iconBottomDp.coerceAtLeast(0f) * density
+        invalidate()
+    }
 
     /** Reused by the stripe pass, so a repeating animation allocates nothing per frame. */
     private val stripePath = Path()
@@ -1031,14 +1068,27 @@ class QuickSliderView(context: Context) : View(context) {
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        expandedRect.set(0f, 0f, w.toFloat(), h.toFloat())
-        // Sized from the window rather than the drawn rect, so the number does not grow as the
-        // track does — text that scales during an animation reads as a zoom, not a reveal.
-        textPaint.textSize = (w * 0.34f).coerceIn(10f * density, 20f * density)
+        applyExpandedRect()
+        // Sized from the *drawn* panel rather than the window, so a panel deliberately made
+        // narrower than the bar gets a number that fits it. Still not from the rect being drawn,
+        // because text that scales during the morph reads as a zoom rather than as a reveal.
+        textPaint.textSize = (expandedRect.width() * 0.34f).coerceIn(9f * density, 20f * density)
         // A collapsed rect the caller has not set yet would leave the first frame at the window's
         // full size, which is the pop this class exists to remove.
         if (collapsedRect.isEmpty) collapsedRect.set(expandedRect)
         rebuildPath()
+    }
+
+    private fun applyExpandedRect() {
+        val w = width.toFloat()
+        val h = height.toFloat()
+        if (w <= 0f || h <= 0f) return
+        val drawn = if (drawnThicknessPx <= 0f) w else drawnThicknessPx.coerceAtMost(w)
+        if (drawnOnLeft) {
+            expandedRect.set(0f, 0f, drawn, h)
+        } else {
+            expandedRect.set(w - drawn, 0f, w, h)
+        }
     }
 
     private fun rebuildPath() {
@@ -1068,17 +1118,15 @@ class QuickSliderView(context: Context) : View(context) {
                 expandedShape == HandlerShape.TAB -> expandedFlare
                 else -> collapsedFlare
             }
-            val sweep = HandlerShape.tabSweep(drawRect.width(), drawRect.height(), flare, edgeOnLeft)
+            val outline = HandlerShape.tabOutline(drawRect.width(), drawRect.height(), flare, edgeOnLeft)
             val l = drawRect.left
             val t = drawRect.top
-            val b = drawRect.bottom
-            val edgeX = l + sweep[0]
-            val innerX = l + sweep[6]
-            val depth = sweep[7]
-            drawPath.moveTo(edgeX, t)
-            drawPath.cubicTo(l + sweep[2], t + sweep[3], l + sweep[4], t + sweep[5], innerX, t + depth)
-            drawPath.lineTo(innerX, b - depth)
-            drawPath.cubicTo(l + sweep[4], b - sweep[5], l + sweep[2], b - sweep[3], edgeX, b)
+            drawPath.moveTo(l + outline[0], t + outline[1])
+            var i = 2
+            while (i < outline.size) {
+                drawPath.lineTo(l + outline[i], t + outline[i + 1])
+                i += 2
+            }
             drawPath.close()
         } else {
             // Never more than half the shorter side, or the corners overlap and the round-rect
@@ -1185,7 +1233,7 @@ class QuickSliderView(context: Context) : View(context) {
          * so it follows the sweep as the panel's flare is changed.
          */
         val endInset = if (expandedShape == HandlerShape.TAB) {
-            drawRect.height() * HandlerShape.sanitizeFlare(expandedFlare)
+            HandlerShape.tabSweepDepth(drawRect.height(), expandedFlare)
         } else {
             0f
         }
@@ -1196,14 +1244,14 @@ class QuickSliderView(context: Context) : View(context) {
             val label = "${(value * 100f).toInt()}"
             // Baseline placed by the font's own metrics rather than a guessed offset, so the
             // number sits the same distance from the top on every device font scale.
-            val y = drawRect.top + endInset + 14f * density - textPaint.fontMetrics.ascent
+            val y = drawRect.top + endInset + valueMarginPx - textPaint.fontMetrics.ascent
             canvas.drawText(label, drawRect.centerX(), y, textPaint)
         }
 
         icon?.let { drawable ->
             val size = (drawRect.width() * 0.46f).coerceIn(12f * density, 26f * density)
             val cx = drawRect.centerX()
-            val cy = drawRect.bottom - endInset - 16f * density - size / 2f
+            val cy = drawRect.bottom - endInset - iconMarginPx - size / 2f
             val wrapped = DrawableCompat.wrap(drawable)
             DrawableCompat.setTint(wrapped, ink)
             wrapped.alpha = alpha
