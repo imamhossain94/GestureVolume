@@ -2,6 +2,7 @@ package com.newagedevs.gesturevolume.service
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.ComponentName
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
@@ -119,20 +120,28 @@ class GestureAccessibilityService : AccessibilityService() {
     /**
      * Subscribes to exactly the events the current settings need.
      *
-     * With clipboard capture off that is nothing at all. The XML declaration has to name the
-     * event types the service *may* use, so the honest version of "not looking" is to set the
-     * live subscription to zero here rather than to receive and discard.
+     * With clipboard capture off and no apps for the bar to step aside in, that is nothing at all.
+     * The XML declaration has to name the event types the service *may* use, so the honest
+     * version of "not looking" is to set the live subscription to zero here rather than to
+     * receive and discard.
      */
     fun applyEventSubscription() {
         val info = runCatching { serviceInfo }.getOrNull() ?: return
-        info.eventTypes = if (preference.getClipboardCaptureEnabled()) {
-            AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED or
+        var types = 0
+        if (preference.getClipboardCaptureEnabled()) {
+            types = types or AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED or
                 AccessibilityEvent.TYPE_VIEW_CLICKED
-        } else {
-            0
         }
+        // Which app is in front, and only while the user has picked apps for the bar to step aside
+        // in. Nothing about the window is read but its package and class.
+        val watchApps = preference.getHandlerHiddenApps().isNotEmpty()
+        if (watchApps) types = types or AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+        info.eventTypes = types
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
-        info.notificationTimeout = 100
+        // A timeout keeps only the last event of each type in a burst, and an app coming forward
+        // sends its window change moments before its first dialog or pane sends another. With
+        // one, the app itself would be lost, so there is none while watching for the app in front.
+        info.notificationTimeout = if (watchApps) 0L else 100L
         // Keys only while the volume keys are set to Instant. With the flag on, every key press on
         // the device is offered here before anything else sees it; this takes the two volume keys
         // and hands every other straight back, but the honest version of not looking is not to
@@ -145,13 +154,41 @@ class GestureAccessibilityService : AccessibilityService() {
             info.flags and AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS.inv()
         }
         runCatching { serviceInfo = info }
+        // No longer watching, so the app the bar was stepping aside for no longer counts.
+        if (!watchApps) (controller ?: OverlayRuntime.activeController)?.clearForegroundApp()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
+        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            foregroundAppOf(event)?.let { app ->
+                (controller ?: OverlayRuntime.activeController)?.onForegroundApp(app)
+            }
+            return
+        }
         if (!preference.getClipboardCaptureEnabled()) return
         controller?.let { ClipboardCapture.onEvent(this, event, preference) }
             ?: ClipboardCapture.onEvent(this, event, preference)
+    }
+
+    /** Whether each window class seen is an activity, remembered so each is asked about once. */
+    private val activityClasses = HashMap<String, Boolean>()
+
+    /**
+     * The app a window change brought to the front, or null when it was not an app coming forward.
+     *
+     * Only an activity window counts. Dialogs, the keyboard, the notification shade and toasts all
+     * raise the same event, and reading any of them as a change of app would bring the bar back
+     * over an app the user is still in.
+     */
+    private fun foregroundAppOf(event: AccessibilityEvent): String? {
+        if (preference.getHandlerHiddenApps().isEmpty()) return null
+        val pkg = event.packageName?.toString() ?: return null
+        val cls = event.className?.toString() ?: return null
+        val isActivity = activityClasses.getOrPut("$pkg/$cls") {
+            runCatching { packageManager.getActivityInfo(ComponentName(pkg, cls), 0) }.isSuccess
+        }
+        return if (isActivity) pkg else null
     }
 
     override fun onInterrupt() = Unit
@@ -233,6 +270,8 @@ class GestureAccessibilityService : AccessibilityService() {
 
     override fun onUnbind(intent: Intent?): Boolean {
         val wasHosting = isHostingOverlay
+        // Nothing will report the app in front any more, so the bar must not stay away for one.
+        if (!wasHosting) OverlayRuntime.activeController?.clearForegroundApp()
         // Another host is about to carry on, or nothing is; either way the brightness hand-back
         // belongs to the one that stops for good.
         releaseOverlay(restoreBrightness = !preference.isRunning())

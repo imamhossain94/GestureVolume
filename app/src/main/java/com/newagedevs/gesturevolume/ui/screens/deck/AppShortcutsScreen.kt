@@ -166,7 +166,7 @@ private fun SectionLabel(text: String) {
 }
 
 @Composable
-private fun AppRow(app: InstalledApp, checked: Boolean, onToggle: () -> Unit) {
+internal fun AppRow(app: InstalledApp, checked: Boolean, onToggle: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

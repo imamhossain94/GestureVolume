@@ -882,6 +882,43 @@ class OverlayController(
         }
     }
 
+    /**
+     * Whether the app in front is one the user asked the bar to stay out of.
+     *
+     * Transient, like the app's own foreground flag, and checked at the same one place that puts
+     * the bar on screen ([createOverlayHandler]), so a settings save or a restart cannot bring it
+     * back over that app either.
+     */
+    private var hiddenForApp = false
+
+    /**
+     * The app now in front, from the accessibility service's window changes.
+     *
+     * Steps the bar aside when that app is on the user's list, closing whatever panel was open over
+     * it, and brings it back when the app in front is not. The app's own screens are not counted:
+     * they hide the bar by other means, and counting them would bring it back over an app the user
+     * had only stepped out of.
+     */
+    fun onForegroundApp(packageName: String) {
+        if (destroyed || packageName == context.packageName) return
+        val stepAside = packageName in preference.getHandlerHiddenApps()
+        if (stepAside == hiddenForApp) return
+        hiddenForApp = stepAside
+        if (stepAside) {
+            dismissQuickSliderNow()
+            hide()
+        } else {
+            show()
+        }
+    }
+
+    /** Forgets the app in front: whatever reported it has stopped, so nothing will say it changed. */
+    fun clearForegroundApp() {
+        if (!hiddenForApp) return
+        hiddenForApp = false
+        show()
+    }
+
     fun show() = createOverlayHandler()
 
     fun hide() {
@@ -895,8 +932,9 @@ class OverlayController(
         preference.setHandlerHidden(false)
         show()
         // The notification's first button swaps between Show and Hide, so it is reposted whenever
-        // which one applies changes.
+        // which one applies changes. The Quick Settings tile says the same thing, so it is too.
         host.onNotificationStateChanged()
+        HandlerTileService.refresh(context)
     }
 
     /** The user put the bar away: it stays away until they say otherwise. */
@@ -904,6 +942,7 @@ class OverlayController(
         preference.setHandlerHidden(true)
         hide()
         host.onNotificationStateChanged()
+        HandlerTileService.refresh(context)
     }
 
     /** Rebuilds the handler so new appearance settings take effect. */
@@ -937,6 +976,8 @@ class OverlayController(
         // activity's hide races the service coming up, and whichever order those two land in, the
         // check below gives the same answer. See SharedPref.isAppInForeground.
         if (preference.isAppInForeground()) return
+        // Nor over an app the user asked it to stay out of. See [onForegroundApp].
+        if (hiddenForApp) return
         if (handlerView != null) return
 
         val handlerPosition = preference.getHandlerPosition()
@@ -3357,7 +3398,8 @@ class OverlayController(
     }
 
     /**
-     * A screenshot with nothing of this app in it.
+     * A screenshot with nothing of this app in it — unless the user wants the bar in the picture
+     * (Visibility, Hide in screenshots), in which case only the menu and the Deck step out.
      *
      * The bar is made invisible — the window stays, so nothing is rebuilt — the menu and the Deck
      * are closed, and the shutter is pressed a quarter second later, once the compositor has had a
@@ -3371,12 +3413,15 @@ class OverlayController(
         removeContextMenuNow()
         removeDeckNow()
         hideIndicator()
-        handlerView?.visibility = View.INVISIBLE
+        val hideBar = preference.getHideInScreenshots()
+        if (hideBar) handlerView?.visibility = View.INVISIBLE
         mainHandler.postDelayed({
             if (!service.performSystemAction(HandlerActions.SCREENSHOT)) {
                 showIndicatorMessage(context.getString(R.string.action_unavailable_on_device))
             }
-            mainHandler.postDelayed({ handlerView?.visibility = View.VISIBLE }, SCREENSHOT_HIDE_AFTER_MS)
+            if (hideBar) {
+                mainHandler.postDelayed({ handlerView?.visibility = View.VISIBLE }, SCREENSHOT_HIDE_AFTER_MS)
+            }
         }, SCREENSHOT_HIDE_BEFORE_MS)
     }
 

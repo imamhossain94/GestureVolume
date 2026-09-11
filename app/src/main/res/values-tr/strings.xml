@@ -430,11 +430,11 @@
     <string name="swipe_out_desc">Çubuktan ekranın kenarına doğru kaydır</string>
     <string name="accessibility_service_label">GestureVolume</string>
     <string name="accessibility_service_summary">Ses çubuğundan sistem kısayolları ve bildirimsiz çubuk</string>
-    <string name="accessibility_service_description">GestureVolume, yüzen çubuğa atadığın sistem eylemlerini gerçekleştirmek için erişilebilirlik hizmetini kullanır: ekranı kilitlemek, ekran görüntüsü almak, Geri veya Ana ekrana gitmek, son uygulamaları, bildirim panelini, hızlı ayarları ve güç menüsünü açmak. İstersen çubuğu kalıcı bildirim olmadan da çizer ve kopyaladığın metni uygulamanın pano geçmişine kaydeder. İstersen bir ses tuşuna bastığın anda hızlı kaydırıcıyı da açar ve bunun için yalnızca iki ses tuşuna bakar. Başka hiçbir şey okumaz, hiçbir şey toplamaz ve her şey bu cihazda kalır.</string>
+    <string name="accessibility_service_description">GestureVolume, yüzen çubuğa atadığın sistem eylemlerini gerçekleştirmek için erişilebilirlik hizmetini kullanır: ekranı kilitlemek, ekran görüntüsü almak, Geri veya Ana ekrana gitmek, son uygulamaları, bildirim panelini, hızlı ayarları ve güç menüsünü açmak. İstersen çubuğu kalıcı bildirim olmadan da çizer ve kopyaladığın metni uygulamanın pano geçmişine kaydeder. İstersen bir ses tuşuna bastığın anda hızlı kaydırıcıyı da açar ve bunun için yalnızca iki ses tuşuna bakar. Çubuğun gizleneceği uygulamaları seçersen, ekranda hangi uygulamanın açık olduğunu görür, başka hiçbir şeyi değil. Başka hiçbir şey okumaz, hiçbir şey toplamaz ve her şey bu cihazda kalır.</string>
     <string name="accessibility_permission">Erişilebilirlik hizmeti</string>
     <string name="accessibility_permission_desc">İsteğe bağlı: Ekranı kilitle, Ekran görüntüsü, Geri, Ana ekran, Son uygulamalar, Bildirimler, Hızlı ayarlar ve Güç menüsünü gerçekleştirir ve çubuğu bildirimsiz çizebilir.</string>
     <string name="accessibility_disclosure_title">Erişilebilirlik hizmeti açılsın mı?</string>
-    <string name="accessibility_disclosure_message">GestureVolume, Android’in erişilebilirlik hizmetini dört şey için kullanır; hepsi isteğe bağlıdır:\n\n• Çubuğa atadığın sistem eylemlerini gerçekleştirmek için: Ekranı kilitle, Ekran görüntüsü, Geri, Ana ekran, Son uygulamalar, Bildirimler, Hızlı ayarlar ve Güç menüsü.\n\n• Açarsan, çubuğu kalıcı bildirim olmadan çizmek için.\n\n• Yalnızca açarsan, kopyaladığın metni pano geçmişine kaydetmek için.\n\n• Yalnızca açarsan, bir ses tuşuna bastığın anda hızlı kaydırıcıyı açmak için. Yalnızca iki ses tuşuna bakar, diğer tüm tuşları olduğu gibi geçirir.\n\nBaşka hiçbir şey okumaz veya toplamaz. Cihazından hiçbir şey çıkmaz. Ayarlar › Erişilebilirlik bölümünden istediğin zaman kapatabilirsin.</string>
+    <string name="accessibility_disclosure_message">GestureVolume, Android’in erişilebilirlik hizmetini beş şey için kullanır; hepsi isteğe bağlıdır:\n\n• Çubuğa atadığın sistem eylemlerini gerçekleştirmek için: Ekranı kilitle, Ekran görüntüsü, Geri, Ana ekran, Son uygulamalar, Bildirimler, Hızlı ayarlar ve Güç menüsü.\n\n• Açarsan, çubuğu kalıcı bildirim olmadan çizmek için.\n\n• Yalnızca açarsan, kopyaladığın metni pano geçmişine kaydetmek için.\n\n• Yalnızca açarsan, bir ses tuşuna bastığın anda hızlı kaydırıcıyı açmak için. Yalnızca iki ses tuşuna bakar, diğer tüm tuşları olduğu gibi geçirir.\n\n• Ekranda hangi uygulamanın açık olduğunu görmek için; yalnızca çubuğun gizleneceği uygulamaları seçersen. Yalnızca uygulamanın adına bakar, başka hiçbir şeye bakmaz.\n\nBaşka hiçbir şey okumaz veya toplamaz. Cihazından hiçbir şey çıkmaz. Ayarlar › Erişilebilirlik bölümünden istediğin zaman kapatabilirsin.</string>
     <string name="accessibility_disclosure_accept">Erişilebilirlik’i aç</string>
     <string name="accessibility_disclosure_decline">Şimdi değil</string>
     <string name="accessibility_how_to">Listeden GestureVolume’u aç ve etkinleştir.</string>
@@ -722,4 +722,23 @@
     <string name="about_developed_in">Bangladeş\'te geliştirildi</string>
     <string name="about_ideas_by">Bharat\'tan (Hindistan) bir arkadaşın özellik fikirleri</string>
     <string name="about_ideas_desc">Bu uygulamadaki birçok özelliği önerdi ve yeni fikirler getirmeye devam ediyor.</string>
+    <string name="visibility_title">Görünürlük</string>
+    <string name="visibility_card_subtitle">Uygulamalar, ekran görüntüleri, kayıt</string>
+    <string name="visibility_intro">Çubuğun ne zaman kenara çekileceği.</string>
+    <string name="visibility_screenshots_title">Ekran görüntüleri</string>
+    <string name="visibility_hide_in_screenshots">Ekran görüntülerinde gizle</string>
+    <string name="visibility_hide_in_screenshots_desc">Çubuk, kendi Ekran görüntüsü eylemiyle alınan görüntülerde yer almaz. Android, telefonun tuşlarıyla alınan bir ekran görüntüsünü uygulamalara önceden bildirmez; bu yüzden onlarda görünmeye devam eder.</string>
+    <string name="visibility_recording_title">Ekran kaydı</string>
+    <string name="visibility_recording_desc">Android, ekranın kaydedildiğini uygulamalara bildirmez; bu yüzden çubuk kendiliğinden kenara çekilemez. Hızlı Ayarlar\'a \"Çubuk\" kutucuğunu ekle ve kayda başlamadan önce ona dokun ya da yalnızca bir uygulamayı kaydet; o zaman çubuk kayda girmez.</string>
+    <string name="visibility_add_tile">\"Çubuk\" kutucuğunu ekle</string>
+    <string name="visibility_tile_added">\"Çubuk\" kutucuğu Hızlı Ayarlar\'ında.</string>
+    <string name="visibility_tile_manual">Hızlı Ayarlar\'ı aç, kaleme dokun ve \"Çubuk\" kutucuğunu sürükle.</string>
+    <string name="visibility_apps_title">Bu uygulamalarda gizle</string>
+    <string name="visibility_apps_desc">Bu uygulamalardan biri açıkken çubuk kenara çekilir, çıktığında geri gelir.</string>
+    <string name="visibility_apps_needs_accessibility">Erişilebilirlik hizmeti gerekir; hangi uygulamanın açık olduğunu uygulamaya bildirir. Açmak için dokun.</string>
+    <string name="visibility_apps_chosen">GİZLİ OLDUĞU YERLER</string>
+    <string name="tile_handler">Çubuk</string>
+    <string name="tile_handler_shown">Gösteriliyor</string>
+    <string name="tile_handler_hidden">Gizli</string>
+    <string name="tile_handler_off">Kapalı</string>
 </resources>

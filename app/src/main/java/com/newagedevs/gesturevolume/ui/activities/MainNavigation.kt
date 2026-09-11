@@ -61,6 +61,7 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainEffect
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.ui.screens.upgrade.UpgradeScreen
+import com.newagedevs.gesturevolume.ui.screens.visibility.VisibilityScreen
 
 /** Routes the Deck may ask the app to open. Anything else in the extra is ignored. */
 private val DEEP_LINK_ROUTES = setOf("deck", "notes", "clipboard", "deck_search", "deck_apps", "deck_quick_dial", "deck_tiles")
@@ -209,7 +210,18 @@ fun MainNavigation(
                             navController.navigate("long_press_menu")
                         },
                         onNavigateToFaq = { navController.navigate("faq") },
-                        onNavigateToUpgrade = { navController.navigate("upgrade") }
+                        onNavigateToUpgrade = { navController.navigate("upgrade") },
+                        onNavigateToVisibility = {
+                            viewModel.maybeShowInterstitialAd()
+                            navController.navigate("visibility")
+                        }
+                    )
+                }
+
+                composable("visibility") {
+                    VisibilityScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.navigateBackOnce() }
                     )
                 }
 

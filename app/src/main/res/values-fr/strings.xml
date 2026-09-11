@@ -430,11 +430,11 @@
     <string name="swipe_out_desc">Balaie depuis la barre vers le bord de l’écran</string>
     <string name="accessibility_service_label">GestureVolume</string>
     <string name="accessibility_service_summary">Raccourcis système depuis la barre de volume, et la barre sans notification</string>
-    <string name="accessibility_service_description">GestureVolume utilise le service d’accessibilité pour exécuter les actions système que tu attribues à la barre flottante : verrouiller l’écran, faire une capture, revenir en arrière ou à l’accueil, ouvrir les applis récentes, le volet des notifications, les réglages rapides et le menu d’alimentation. Si tu le souhaites, il dessine aussi la barre sans notification permanente et enregistre le texte que tu copies dans l’historique du presse-papiers de l’application. Si tu l’actives, il ouvre aussi le curseur rapide dès que tu appuies sur une touche de volume, en ne regardant que les deux touches de volume. Il ne lit rien d’autre, ne collecte rien, et tout reste sur cet appareil.</string>
+    <string name="accessibility_service_description">GestureVolume utilise le service d’accessibilité pour exécuter les actions système que tu attribues à la barre flottante : verrouiller l’écran, faire une capture, revenir en arrière ou à l’accueil, ouvrir les applis récentes, le volet des notifications, les réglages rapides et le menu d’alimentation. Si tu le souhaites, il dessine aussi la barre sans notification permanente et enregistre le texte que tu copies dans l’historique du presse-papiers de l’application. Si tu l’actives, il ouvre aussi le curseur rapide dès que tu appuies sur une touche de volume, en ne regardant que les deux touches de volume. Si tu choisis des applis où masquer la barre, il voit quelle appli est à l’écran, et rien d’autre. Il ne lit rien d’autre, ne collecte rien, et tout reste sur cet appareil.</string>
     <string name="accessibility_permission">Service d’accessibilité</string>
     <string name="accessibility_permission_desc">Facultatif : exécute Verrouiller l’écran, Capture, Retour, Accueil, Applis récentes, Notifications, Réglages rapides et Menu d’alimentation, et peut dessiner la barre sans notification.</string>
     <string name="accessibility_disclosure_title">Activer le service d’accessibilité ?</string>
-    <string name="accessibility_disclosure_message">GestureVolume utilise le service d’accessibilité d’Android pour quatre choses, toutes facultatives :\n\n• Pour exécuter les actions système que tu attribues à la barre : Verrouiller l’écran, Capture, Retour, Accueil, Applis récentes, Notifications, Réglages rapides et le Menu d’alimentation.\n\n• Pour dessiner la barre sans notification permanente, si tu l’actives.\n\n• Pour enregistrer le texte que tu copies dans l’historique du presse-papiers, seulement si tu l’actives.\n\n• Pour ouvrir le curseur rapide dès que tu appuies sur une touche de volume, seulement si tu l’actives. Il ne regarde que les deux touches de volume et laisse passer toutes les autres touches.\n\nIl ne lit ni ne collecte rien d’autre. Rien ne quitte ton appareil. Tu peux le désactiver à tout moment dans Paramètres › Accessibilité.</string>
+    <string name="accessibility_disclosure_message">GestureVolume utilise le service d’accessibilité d’Android pour cinq choses, toutes facultatives :\n\n• Pour exécuter les actions système que tu attribues à la barre : Verrouiller l’écran, Capture, Retour, Accueil, Applis récentes, Notifications, Réglages rapides et le Menu d’alimentation.\n\n• Pour dessiner la barre sans notification permanente, si tu l’actives.\n\n• Pour enregistrer le texte que tu copies dans l’historique du presse-papiers, seulement si tu l’actives.\n\n• Pour ouvrir le curseur rapide dès que tu appuies sur une touche de volume, seulement si tu l’actives. Il ne regarde que les deux touches de volume et laisse passer toutes les autres touches.\n\n• Pour savoir quelle appli est à l’écran, seulement si tu choisis des applis où masquer la barre. Il ne regarde que le nom de l’appli, rien d’autre.\n\nIl ne lit ni ne collecte rien d’autre. Rien ne quitte ton appareil. Tu peux le désactiver à tout moment dans Paramètres › Accessibilité.</string>
     <string name="accessibility_disclosure_accept">Ouvrir l’accessibilité</string>
     <string name="accessibility_disclosure_decline">Pas maintenant</string>
     <string name="accessibility_how_to">Dans la liste, ouvre GestureVolume et active-le.</string>
@@ -722,4 +722,23 @@
     <string name="about_developed_in">Développé au Bangladesh par</string>
     <string name="about_ideas_by">Idées de fonctionnalités d\'un ami de Bharat (Inde)</string>
     <string name="about_ideas_desc">A suggéré bon nombre des fonctionnalités de cette application, et continue d\'en proposer.</string>
+    <string name="visibility_title">Visibilité</string>
+    <string name="visibility_card_subtitle">Applis, captures, enregistrement</string>
+    <string name="visibility_intro">Quand la barre s’efface.</string>
+    <string name="visibility_screenshots_title">Captures d’écran</string>
+    <string name="visibility_hide_in_screenshots">Masquer dans les captures</string>
+    <string name="visibility_hide_in_screenshots_desc">La barre disparaît des captures prises avec sa propre action Capture d’écran. Android ne prévient pas les applis d’une capture faite avec les boutons du téléphone ; celles-ci la montrent donc toujours.</string>
+    <string name="visibility_recording_title">Enregistrement de l’écran</string>
+    <string name="visibility_recording_desc">Android ne signale pas aux applis que l’écran est enregistré ; la barre ne peut donc pas s’effacer d’elle-même. Ajoute la vignette « Barre » aux Réglages rapides et touche-la avant de commencer — ou enregistre une seule appli, ce qui laisse la barre de côté.</string>
+    <string name="visibility_add_tile">Ajouter la vignette « Barre »</string>
+    <string name="visibility_tile_added">La vignette « Barre » est dans tes Réglages rapides.</string>
+    <string name="visibility_tile_manual">Ouvre les Réglages rapides, touche le crayon et fais glisser la vignette « Barre ».</string>
+    <string name="visibility_apps_title">Masquer dans ces applis</string>
+    <string name="visibility_apps_desc">La barre s’efface quand l’une de ces applis est ouverte, et revient quand tu la quittes.</string>
+    <string name="visibility_apps_needs_accessibility">Nécessite le service d’accessibilité, qui indique à l’appli quelle appli est ouverte. Touche pour l’activer.</string>
+    <string name="visibility_apps_chosen">MASQUÉE DANS</string>
+    <string name="tile_handler">Barre</string>
+    <string name="tile_handler_shown">Affichée</string>
+    <string name="tile_handler_hidden">Masquée</string>
+    <string name="tile_handler_off">Désactivée</string>
 </resources>

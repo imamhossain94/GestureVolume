@@ -430,11 +430,11 @@
     <string name="swipe_out_desc">바에서 화면 가장자리로 밉니다</string>
     <string name="accessibility_service_label">GestureVolume</string>
     <string name="accessibility_service_summary">음량 바에서 쓰는 시스템 단축키, 그리고 알림 없는 바</string>
-    <string name="accessibility_service_description">GestureVolume은 플로팅 바에 지정한 시스템 동작 — 화면 잠금, 스크린샷, 뒤로, 홈, 최근 앱, 알림창, 빠른 설정, 전원 메뉴 — 을 실행하기 위해 접근성 서비스를 사용합니다. 원하시면 상시 알림 없이 바를 그리고, 복사한 텍스트를 앱의 클립보드 기록에 저장합니다. 원하시면 볼륨 키를 누르는 즉시 빠른 슬라이더도 열며, 이때 두 볼륨 키만 봅니다. 그 밖에는 아무것도 읽지 않고, 아무것도 수집하지 않으며, 모든 것이 이 기기에 남습니다.</string>
+    <string name="accessibility_service_description">GestureVolume은 플로팅 바에 지정한 시스템 동작 — 화면 잠금, 스크린샷, 뒤로, 홈, 최근 앱, 알림창, 빠른 설정, 전원 메뉴 — 을 실행하기 위해 접근성 서비스를 사용합니다. 원하시면 상시 알림 없이 바를 그리고, 복사한 텍스트를 앱의 클립보드 기록에 저장합니다. 원하시면 볼륨 키를 누르는 즉시 빠른 슬라이더도 열며, 이때 두 볼륨 키만 봅니다. 바를 숨길 앱을 고르면, 화면에 떠 있는 앱의 이름만 확인합니다. 그 밖에는 아무것도 읽지 않고, 아무것도 수집하지 않으며, 모든 것이 이 기기에 남습니다.</string>
     <string name="accessibility_permission">접근성 서비스</string>
     <string name="accessibility_permission_desc">선택 사항: 화면 잠금, 스크린샷, 뒤로, 홈, 최근 앱, 알림, 빠른 설정, 전원 메뉴를 실행하고, 알림 없이 바를 그릴 수 있습니다.</string>
     <string name="accessibility_disclosure_title">접근성 서비스를 켤까요?</string>
-    <string name="accessibility_disclosure_message">GestureVolume은 Android 접근성 서비스를 네 가지에 사용하며, 모두 선택 사항입니다:\n\n• 바에 지정한 시스템 동작 실행: 화면 잠금, 스크린샷, 뒤로, 홈, 최근 앱, 알림, 빠른 설정, 전원 메뉴.\n\n• 켜두면, 상시 알림 없이 바를 그리기 위해.\n\n• 켜둔 경우에만, 복사한 텍스트를 클립보드 기록에 저장하기 위해.\n\n• 켜둔 경우에만, 볼륨 키를 누르는 즉시 빠른 슬라이더를 열기 위해. 두 볼륨 키만 보고, 다른 모든 키는 그대로 넘깁니다.\n\n그 밖에는 아무것도 읽거나 수집하지 않습니다. 기기 밖으로 나가는 것은 없습니다. 설정 › 접근성에서 언제든 끌 수 있습니다.</string>
+    <string name="accessibility_disclosure_message">GestureVolume은 Android 접근성 서비스를 다섯 가지에 사용하며, 모두 선택 사항입니다:\n\n• 바에 지정한 시스템 동작 실행: 화면 잠금, 스크린샷, 뒤로, 홈, 최근 앱, 알림, 빠른 설정, 전원 메뉴.\n\n• 켜두면, 상시 알림 없이 바를 그리기 위해.\n\n• 켜둔 경우에만, 복사한 텍스트를 클립보드 기록에 저장하기 위해.\n\n• 켜둔 경우에만, 볼륨 키를 누르는 즉시 빠른 슬라이더를 열기 위해. 두 볼륨 키만 보고, 다른 모든 키는 그대로 넘깁니다.\n\n• 화면에 떠 있는 앱을 알기 위해: 바를 숨길 앱을 고른 경우에만. 앱 이름만 보고 그 외에는 보지 않습니다.\n\n그 밖에는 아무것도 읽거나 수집하지 않습니다. 기기 밖으로 나가는 것은 없습니다. 설정 › 접근성에서 언제든 끌 수 있습니다.</string>
     <string name="accessibility_disclosure_accept">접근성 설정 열기</string>
     <string name="accessibility_disclosure_decline">나중에</string>
     <string name="accessibility_how_to">목록에서 GestureVolume을 열고 켜세요.</string>
@@ -722,4 +722,23 @@
     <string name="about_developed_in">방글라데시에서 개발</string>
     <string name="about_ideas_by">바라트(인도)에서 온 친구의 기능 아이디어</string>
     <string name="about_ideas_desc">이 앱의 많은 기능을 제안했고, 지금도 새로운 아이디어를 내고 있습니다.</string>
+    <string name="visibility_title">표시</string>
+    <string name="visibility_card_subtitle">앱, 스크린샷, 녹화</string>
+    <string name="visibility_intro">바가 비켜나는 때.</string>
+    <string name="visibility_screenshots_title">스크린샷</string>
+    <string name="visibility_hide_in_screenshots">스크린샷에서 숨기기</string>
+    <string name="visibility_hide_in_screenshots_desc">바 자체의 스크린샷 동작으로 찍으면 바가 찍히지 않습니다. 휴대폰 버튼으로 찍는 스크린샷은 Android가 앱에 미리 알려주지 않아서 그때는 바가 보입니다.</string>
+    <string name="visibility_recording_title">화면 녹화</string>
+    <string name="visibility_recording_desc">Android는 화면이 녹화되는 것을 앱에 알려주지 않아서 바가 스스로 비켜날 수 없습니다. 빠른 설정에 \'바\' 타일을 추가하고 녹화를 시작하기 전에 누르세요. 앱 하나만 녹화하면 바가 들어가지 않습니다.</string>
+    <string name="visibility_add_tile">\'바\' 타일 추가</string>
+    <string name="visibility_tile_added">\'바\' 타일이 빠른 설정에 있습니다.</string>
+    <string name="visibility_tile_manual">빠른 설정을 열고 연필 아이콘을 누른 뒤 \'바\' 타일을 끌어다 놓으세요.</string>
+    <string name="visibility_apps_title">이 앱에서 숨기기</string>
+    <string name="visibility_apps_desc">이 앱들 중 하나가 열려 있는 동안 바가 비켜나고, 앱을 나가면 돌아옵니다.</string>
+    <string name="visibility_apps_needs_accessibility">접근성 서비스가 필요합니다. 어떤 앱이 열려 있는지 알려줍니다. 눌러서 켜세요.</string>
+    <string name="visibility_apps_chosen">숨긴 앱</string>
+    <string name="tile_handler">바</string>
+    <string name="tile_handler_shown">표시</string>
+    <string name="tile_handler_hidden">숨김</string>
+    <string name="tile_handler_off">꺼짐</string>
 </resources>

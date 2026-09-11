@@ -525,11 +525,11 @@
     <!-- 1.4.0: the accessibility service -->
     <string name="accessibility_service_label">GestureVolume</string>
     <string name="accessibility_service_summary">System shortcuts from the volume bar, and the bar without a notification</string>
-    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also draws the bar without a persistent notification, saves text you copy into the app’s clipboard history, and opens the Quick panel the moment you press a volume key, looking at the two volume keys only. It reads nothing else, collects nothing, and everything stays on this device.</string>
+    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also draws the bar without a persistent notification, saves text you copy into the app’s clipboard history, and opens the Quick panel the moment you press a volume key, looking at the two volume keys only. If you choose apps to hide the bar in, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device.</string>
     <string name="accessibility_permission">Accessibility service</string>
     <string name="accessibility_permission_desc">Optional: performs Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and Power menu, and can draw the bar without a notification.</string>
     <string name="accessibility_disclosure_title">Turn on the accessibility service?</string>
-    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for four things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To draw the bar without a persistent notification, if you switch that on.\n\n• To save text you copy into the clipboard history, only if you switch that on.\n\n• To open the Quick panel the moment you press a volume key, only if you set the volume keys to Instant. It looks at the two volume keys and passes every other key straight on.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
+    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for five things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To draw the bar without a persistent notification, if you switch that on.\n\n• To save text you copy into the clipboard history, only if you switch that on.\n\n• To open the Quick panel the moment you press a volume key, only if you set the volume keys to Instant. It looks at the two volume keys and passes every other key straight on.\n\n• To see which app is on screen, only if you choose apps to hide the bar in. It looks at the app’s name and nothing else.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
     <string name="accessibility_disclosure_accept">Open Accessibility settings</string>
     <string name="accessibility_disclosure_decline">Not now</string>
     <string name="accessibility_how_to">In the list, open GestureVolume and switch it on.</string>
@@ -917,4 +917,23 @@
     <string name="context_menu_per_page_all">All</string>
     <string name="context_menu_per_page_desc">With more than this, the grid becomes pages you swipe between.</string>
     <string name="about_ideas_name" translatable="false">Deepam Rathod</string>
+    <string name="visibility_title">Visibility</string>
+    <string name="visibility_card_subtitle">Apps, screenshots, recording</string>
+    <string name="visibility_intro">When the handler steps aside.</string>
+    <string name="visibility_screenshots_title">Screenshots</string>
+    <string name="visibility_hide_in_screenshots">Hide in screenshots</string>
+    <string name="visibility_hide_in_screenshots_desc">The handler steps out of screenshots taken with its own Screenshot action. Android gives apps no warning of a screenshot taken with the phone’s buttons, so those still show it.</string>
+    <string name="visibility_recording_title">Screen recording</string>
+    <string name="visibility_recording_desc">Android doesn’t tell apps when the screen is being recorded, so the handler can’t step aside on its own. Add the Handler tile to Quick Settings and tap it before you start — or record a single app, which leaves the handler out.</string>
+    <string name="visibility_add_tile">Add the Handler tile</string>
+    <string name="visibility_tile_added">The Handler tile is in your Quick Settings.</string>
+    <string name="visibility_tile_manual">Open Quick Settings, tap the pencil, and drag in the Handler tile.</string>
+    <string name="visibility_apps_title">Hide in these apps</string>
+    <string name="visibility_apps_desc">The handler steps aside while one of these apps is open, and comes back when you leave it.</string>
+    <string name="visibility_apps_needs_accessibility">This needs the accessibility service, which tells the app which app is open. Tap to turn it on.</string>
+    <string name="visibility_apps_chosen">HIDDEN IN</string>
+    <string name="tile_handler">Handler</string>
+    <string name="tile_handler_shown">Shown</string>
+    <string name="tile_handler_hidden">Hidden</string>
+    <string name="tile_handler_off">Off</string>
 </resources>

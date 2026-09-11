@@ -271,6 +271,8 @@ class SharedPref @Inject constructor(
 
         const val HANDLER_HIDDEN = "handlerHidden"
         const val APP_IN_FOREGROUND = "appInForeground"
+        const val HANDLER_HIDDEN_APPS = "handlerHiddenApps"
+        const val HIDE_IN_SCREENSHOTS = "hideInScreenshots"
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
         const val VOLUME_STREAM_MODE = "handlerVolumeStreamMode"
         const val HANDLER_EDGE_SWIPE_MENU = "handlerEdgeSwipeMenu"
@@ -618,6 +620,33 @@ class SharedPref @Inject constructor(
 
     fun setHandlerHidden(value: Boolean) {
         sharedPreferences.edit { putBoolean(HANDLER_HIDDEN, value) }
+    }
+
+    /**
+     * The apps the bar steps aside for: while one of them is in front, it is not drawn.
+     *
+     * Package names, so an app keeps its place through its own updates. Knowing which app is in
+     * front takes the accessibility service, which listens for window changes only while this set
+     * has something in it — see `GestureAccessibilityService.applyEventSubscription`.
+     */
+    fun getHandlerHiddenApps(): Set<String> =
+        sharedPreferences.getStringSet(HANDLER_HIDDEN_APPS, null)?.toSet() ?: emptySet()
+
+    fun setHandlerHiddenApps(value: Set<String>) {
+        sharedPreferences.edit { putStringSet(HANDLER_HIDDEN_APPS, value.toSet()) }
+    }
+
+    /**
+     * Whether the bar steps out of screenshots taken with its own Screenshot action.
+     *
+     * On by default, which is what that action has always done. Only that action: Android gives an
+     * app no warning of a screenshot taken with the phone's buttons, nor of another app recording
+     * the screen, so neither can be caught.
+     */
+    fun getHideInScreenshots(): Boolean = sharedPreferences.getBoolean(HIDE_IN_SCREENSHOTS, true)
+
+    fun setHideInScreenshots(value: Boolean) {
+        sharedPreferences.edit { putBoolean(HIDE_IN_SCREENSHOTS, value) }
     }
 
     /**

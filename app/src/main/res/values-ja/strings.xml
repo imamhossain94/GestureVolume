@@ -430,11 +430,11 @@
     <string name="swipe_out_desc">バーから画面の端へスワイプ</string>
     <string name="accessibility_service_label">GestureVolume</string>
     <string name="accessibility_service_summary">音量バーからのシステム操作と、通知なしのバー</string>
-    <string name="accessibility_service_description">GestureVolume は、フローティングバーに割り当てたシステム操作 — 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知シェード、クイック設定、電源メニュー — を実行するためにユーザー補助サービスを使います。ご希望であれば、常駐通知なしでバーを表示し、コピーしたテキストをアプリのクリップボード履歴に保存します。ご希望であれば、音量キーを押した瞬間にクイックスライダーも開きます。そのとき見るのは2つの音量キーだけです。それ以外は何も読み取らず、何も収集せず、すべてこの端末にとどまります。</string>
+    <string name="accessibility_service_description">GestureVolume は、フローティングバーに割り当てたシステム操作 — 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知シェード、クイック設定、電源メニュー — を実行するためにユーザー補助サービスを使います。ご希望であれば、常駐通知なしでバーを表示し、コピーしたテキストをアプリのクリップボード履歴に保存します。ご希望であれば、音量キーを押した瞬間にクイックスライダーも開きます。そのとき見るのは2つの音量キーだけです。バーを隠すアプリを選んだ場合は、画面に表示中のアプリ名を確認します。それ以外は何も読み取らず、何も収集せず、すべてこの端末にとどまります。</string>
     <string name="accessibility_permission">ユーザー補助サービス</string>
     <string name="accessibility_permission_desc">任意: 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知、クイック設定、電源メニューを実行し、通知なしでバーを表示できます。</string>
     <string name="accessibility_disclosure_title">ユーザー補助サービスをオンにしますか？</string>
-    <string name="accessibility_disclosure_message">GestureVolume は Android のユーザー補助サービスを次の4つに使います。いずれも任意です:\n\n• バーに割り当てたシステム操作の実行: 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知、クイック設定、電源メニュー。\n\n• オンにした場合、常駐通知なしでバーを表示するため。\n\n• オンにした場合にかぎり、コピーしたテキストをクリップボード履歴に保存するため。\n\n• オンにした場合にかぎり、音量キーを押した瞬間にクイックスライダーを開くため。見るのは2つの音量キーだけで、それ以外のキーはそのまま通します。\n\nそれ以外は何も読み取らず、収集しません。端末の外へは何も出ません。設定 › ユーザー補助 からいつでもオフにできます。</string>
+    <string name="accessibility_disclosure_message">GestureVolume は Android のユーザー補助サービスを次の5つに使います。いずれも任意です:\n\n• バーに割り当てたシステム操作の実行: 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知、クイック設定、電源メニュー。\n\n• オンにした場合、常駐通知なしでバーを表示するため。\n\n• オンにした場合にかぎり、コピーしたテキストをクリップボード履歴に保存するため。\n\n• オンにした場合にかぎり、音量キーを押した瞬間にクイックスライダーを開くため。見るのは2つの音量キーだけで、それ以外のキーはそのまま通します。\n\n• 画面に表示中のアプリを知るため（バーを隠すアプリを選んだ場合のみ）。見るのはアプリ名だけです。\n\nそれ以外は何も読み取らず、収集しません。端末の外へは何も出ません。設定 › ユーザー補助 からいつでもオフにできます。</string>
     <string name="accessibility_disclosure_accept">ユーザー補助設定を開く</string>
     <string name="accessibility_disclosure_decline">今はしない</string>
     <string name="accessibility_how_to">一覧から GestureVolume を開いてオンにしてください。</string>
@@ -722,4 +722,23 @@
     <string name="about_developed_in">開発者（バングラデシュ）</string>
     <string name="about_ideas_by">バーラト（インド）の友人による機能のアイデア</string>
     <string name="about_ideas_desc">このアプリの多くの機能を提案し、今もアイデアを出し続けています。</string>
+    <string name="visibility_title">表示</string>
+    <string name="visibility_card_subtitle">アプリ、スクリーンショット、録画</string>
+    <string name="visibility_intro">バーを隠すタイミング。</string>
+    <string name="visibility_screenshots_title">スクリーンショット</string>
+    <string name="visibility_hide_in_screenshots">スクリーンショットで隠す</string>
+    <string name="visibility_hide_in_screenshots_desc">バー自身のスクリーンショット操作で撮るときは、バーが写りません。本体のボタンで撮るスクリーンショットは Android がアプリに事前に知らせないため、そちらには写ります。</string>
+    <string name="visibility_recording_title">画面録画</string>
+    <string name="visibility_recording_desc">画面が録画されていることを Android はアプリに知らせないため、バーは自動では隠れません。クイック設定に「バー」タイルを追加し、録画を始める前にタップしてください。1つのアプリだけを録画すると、バーは写りません。</string>
+    <string name="visibility_add_tile">「バー」タイルを追加</string>
+    <string name="visibility_tile_added">「バー」タイルはクイック設定にあります。</string>
+    <string name="visibility_tile_manual">クイック設定を開き、鉛筆アイコンをタップして「バー」タイルをドラッグしてください。</string>
+    <string name="visibility_apps_title">これらのアプリで隠す</string>
+    <string name="visibility_apps_desc">これらのアプリが開いている間はバーを隠し、アプリを離れると戻ります。</string>
+    <string name="visibility_apps_needs_accessibility">ユーザー補助サービスが必要です。開いているアプリをこのアプリに伝えます。タップしてオンにしてください。</string>
+    <string name="visibility_apps_chosen">非表示にするアプリ</string>
+    <string name="tile_handler">バー</string>
+    <string name="tile_handler_shown">表示中</string>
+    <string name="tile_handler_hidden">非表示</string>
+    <string name="tile_handler_off">オフ</string>
 </resources>

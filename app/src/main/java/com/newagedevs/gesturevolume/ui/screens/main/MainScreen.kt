@@ -75,6 +75,7 @@ fun MainScreen(
     onNavigateToLongPressMenu: () -> Unit,
     onNavigateToFaq: () -> Unit,
     onNavigateToUpgrade: () -> Unit,
+    onNavigateToVisibility: () -> Unit,
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
@@ -271,6 +272,24 @@ fun MainScreen(
                         Color(0xFFEC4899)
                     ),
                     onClick = onNavigateToLongPressMenu
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // When the bar steps aside: over the apps the user picks, and out of its own
+                // screenshots.
+                NavigationCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),
+                    title = stringResource(R.string.visibility_title),
+                    subtitle = stringResource(R.string.visibility_card_subtitle),
+                    icon = R.drawable.ic_visibility_hide,
+                    gradientColors = listOf(
+                        Color(0xFF14B8A6),
+                        Color(0xFF3B82F6)
+                    ),
+                    onClick = onNavigateToVisibility
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))

@@ -430,11 +430,11 @@
     <string name="swipe_out_desc">Scorri dalla barra verso il bordo dello schermo</string>
     <string name="accessibility_service_label">GestureVolume</string>
     <string name="accessibility_service_summary">Scorciatoie di sistema dalla barra del volume, e la barra senza notifica</string>
-    <string name="accessibility_service_description">GestureVolume usa il servizio di accessibilità per eseguire le azioni di sistema che assegni alla barra flottante: bloccare lo schermo, fare uno screenshot, tornare Indietro o alla Home, aprire le app recenti, il pannello delle notifiche, le impostazioni rapide e il menu di spegnimento. Se vuoi, disegna anche la barra senza notifica permanente e salva il testo che copi nella cronologia degli appunti dell’app. Se lo attivi, apre anche il cursore rapido non appena premi un tasto del volume, guardando solo i due tasti del volume. Non legge nient’altro, non raccoglie nulla, e tutto resta su questo dispositivo.</string>
+    <string name="accessibility_service_description">GestureVolume usa il servizio di accessibilità per eseguire le azioni di sistema che assegni alla barra flottante: bloccare lo schermo, fare uno screenshot, tornare Indietro o alla Home, aprire le app recenti, il pannello delle notifiche, le impostazioni rapide e il menu di spegnimento. Se vuoi, disegna anche la barra senza notifica permanente e salva il testo che copi nella cronologia degli appunti dell’app. Se lo attivi, apre anche il cursore rapido non appena premi un tasto del volume, guardando solo i due tasti del volume. Se scegli app in cui nascondere la barra, vede quale app è sullo schermo, e nient’altro. Non legge nient’altro, non raccoglie nulla, e tutto resta su questo dispositivo.</string>
     <string name="accessibility_permission">Servizio di accessibilità</string>
     <string name="accessibility_permission_desc">Facoltativo: esegue Blocca schermo, Screenshot, Indietro, Home, App recenti, Notifiche, Impostazioni rapide e Menu di spegnimento, e può disegnare la barra senza notifica.</string>
     <string name="accessibility_disclosure_title">Attivare il servizio di accessibilità?</string>
-    <string name="accessibility_disclosure_message">GestureVolume usa il servizio di accessibilità di Android per quattro cose, tutte facoltative:\n\n• Per eseguire le azioni di sistema che assegni alla barra: Blocca schermo, Screenshot, Indietro, Home, App recenti, Notifiche, Impostazioni rapide e il Menu di spegnimento.\n\n• Per disegnare la barra senza notifica permanente, se lo attivi.\n\n• Per salvare il testo che copi nella cronologia degli appunti, solo se lo attivi.\n\n• Per aprire il cursore rapido non appena premi un tasto del volume, solo se lo attivi. Guarda solo i due tasti del volume e lascia passare tutti gli altri tasti.\n\nNon legge né raccoglie nient’altro. Nulla lascia il dispositivo. Puoi disattivarlo quando vuoi in Impostazioni › Accessibilità.</string>
+    <string name="accessibility_disclosure_message">GestureVolume usa il servizio di accessibilità di Android per cinque cose, tutte facoltative:\n\n• Per eseguire le azioni di sistema che assegni alla barra: Blocca schermo, Screenshot, Indietro, Home, App recenti, Notifiche, Impostazioni rapide e il Menu di spegnimento.\n\n• Per disegnare la barra senza notifica permanente, se lo attivi.\n\n• Per salvare il testo che copi nella cronologia degli appunti, solo se lo attivi.\n\n• Per aprire il cursore rapido non appena premi un tasto del volume, solo se lo attivi. Guarda solo i due tasti del volume e lascia passare tutti gli altri tasti.\n\n• Per sapere quale app è sullo schermo, solo se scegli app in cui nascondere la barra. Guarda solo il nome dell’app, nient’altro.\n\nNon legge né raccoglie nient’altro. Nulla lascia il dispositivo. Puoi disattivarlo quando vuoi in Impostazioni › Accessibilità.</string>
     <string name="accessibility_disclosure_accept">Apri Accessibilità</string>
     <string name="accessibility_disclosure_decline">Non ora</string>
     <string name="accessibility_how_to">Nell’elenco, apri GestureVolume e attivalo.</string>
@@ -722,4 +722,23 @@
     <string name="about_developed_in">Sviluppato in Bangladesh da</string>
     <string name="about_ideas_by">Idee per le funzioni di un amico dal Bharat (India)</string>
     <string name="about_ideas_desc">Ha suggerito molte delle funzioni di questa app e continua a proporre idee.</string>
+    <string name="visibility_title">Visibilità</string>
+    <string name="visibility_card_subtitle">App, screenshot, registrazione</string>
+    <string name="visibility_intro">Quando la barra si fa da parte.</string>
+    <string name="visibility_screenshots_title">Screenshot</string>
+    <string name="visibility_hide_in_screenshots">Nascondi negli screenshot</string>
+    <string name="visibility_hide_in_screenshots_desc">La barra esce dagli screenshot fatti con la sua azione Screenshot. Android non avvisa le app di uno screenshot fatto con i tasti del telefono, quindi in quelli si vede ancora.</string>
+    <string name="visibility_recording_title">Registrazione dello schermo</string>
+    <string name="visibility_recording_desc">Android non avvisa le app quando lo schermo viene registrato, quindi la barra non può farsi da parte da sola. Aggiungi il riquadro «Barra» alle Impostazioni rapide e toccalo prima di iniziare, oppure registra una sola app, che lascia fuori la barra.</string>
+    <string name="visibility_add_tile">Aggiungi il riquadro «Barra»</string>
+    <string name="visibility_tile_added">Il riquadro «Barra» è nelle tue Impostazioni rapide.</string>
+    <string name="visibility_tile_manual">Apri le Impostazioni rapide, tocca la matita e trascina dentro il riquadro «Barra».</string>
+    <string name="visibility_apps_title">Nascondi in queste app</string>
+    <string name="visibility_apps_desc">La barra si fa da parte mentre una di queste app è aperta e torna quando la lasci.</string>
+    <string name="visibility_apps_needs_accessibility">Serve il servizio di accessibilità, che dice all’app quale app è aperta. Tocca per attivarlo.</string>
+    <string name="visibility_apps_chosen">NASCOSTA IN</string>
+    <string name="tile_handler">Barra</string>
+    <string name="tile_handler_shown">Visibile</string>
+    <string name="tile_handler_hidden">Nascosta</string>
+    <string name="tile_handler_off">Disattivata</string>
 </resources>
