@@ -22,32 +22,11 @@ object SliderFill {
     /** A flat top edge that does not move. What the panel has always drawn. */
     const val SOLID = "solid"
 
-    /** A bright band travels up the fill, over and over, the way a charging battery reads. */
-    const val BATTERY = "battery"
-
     /** The top edge is a wave, and it drifts upward. */
     const val TIDE_UP = "tideUp"
 
     /** The same wave, drifting the other way. */
     const val TIDE_DOWN = "tideDown"
-
-    /** The fill is a stack of blocks, lighting from the bottom up. */
-    const val PIXEL_UP = "pixelUp"
-
-    /** The same stack, lighting from the top down. */
-    const val PIXEL_DOWN = "pixelDown"
-
-    /** The whole fill breathes. */
-    const val PULSE = "pulse"
-
-    /** A highlight sweeps across the fill and away. */
-    const val SHIMMER = "shimmer"
-
-    /** Diagonal bands sliding along it, the way an indeterminate progress bar reads. */
-    const val STRIPES = "stripes"
-
-    /** A soft glow gathered at the top edge, rising and falling. */
-    const val GLOW = "glow"
 
     /** A grid of lit dots, with a bright wave passing through it. */
     const val DOT_MATRIX = "dotMatrix"
@@ -64,10 +43,40 @@ object SliderFill {
     /** Carved marks rising through the fill, lit as they pass. */
     const val RUNE = "rune"
 
+    /** Interfering colour fields, folding through each other. */
+    const val PLASMA = "plasma"
+
+    /** Scan bands with the colour split either side of them, flickering. */
+    const val HOLOGRAM = "hologram"
+
+    /** Curtains of light, leaning and shifting. */
+    const val AURORA = "aurora"
+
+    /** Sparks rising and going out. */
+    const val EMBER = "ember"
+
+    /** Rings going out from the fill line, one after another. */
+    const val SONAR = "sonar"
+
+    /** Traces on a board, lighting in sequence. */
+    const val CIRCUIT = "circuit"
+
+    /** Diagonal bands sliding along it, the way an indeterminate progress bar reads. */
+    const val STRIPES = "stripes"
+
+    /**
+     * Every style, in the order they are offered.
+     *
+     * Five earlier ones — a charging band, two block walls, a breath and a sheen — are gone rather
+     * than kept for compatibility. They were tints on a bar: technically animations, and nothing
+     * anybody would choose twice. A preference holding one of them now sanitises to [SOLID], which
+     * is the honest outcome; leaving them in the list to avoid that would have been keeping nine
+     * options to protect five that were not worth having.
+     */
     val ALL = listOf(
-        SOLID, TIDE_UP, TIDE_DOWN, DOT_MATRIX, NEBULA,
-        CYBERPUNK, MATRIX_RAIN, RUNE, BATTERY, PIXEL_UP,
-        PIXEL_DOWN, PULSE, SHIMMER, STRIPES, GLOW,
+        SOLID, TIDE_UP, TIDE_DOWN, PLASMA, AURORA,
+        HOLOGRAM, EMBER, SONAR, CIRCUIT, DOT_MATRIX,
+        NEBULA, CYBERPUNK, MATRIX_RAIN, RUNE, STRIPES,
     )
 
     fun sanitize(value: String?): String = if (value in ALL) value!! else SOLID
@@ -77,27 +86,25 @@ object SliderFill {
 
     /** How long one cycle takes. The slow ones are the ones you would otherwise notice too much. */
     fun cycleMs(id: String): Int = when (sanitize(id)) {
-        BATTERY -> 1800
         TIDE_UP, TIDE_DOWN -> 2600
-        PIXEL_UP, PIXEL_DOWN -> 1600
-        PULSE -> 2200
-        SHIMMER -> 2000
         STRIPES -> 1200
-        GLOW -> 2400
         DOT_MATRIX -> 2000
         // Slow. A nebula that hurried would be a lava lamp.
         NEBULA -> 7000
         CYBERPUNK -> 1500
         MATRIX_RAIN -> 2400
         RUNE -> 3200
+        PLASMA -> 5200
+        AURORA -> 6000
+        HOLOGRAM -> 1800
+        EMBER -> 3000
+        SONAR -> 2200
+        CIRCUIT -> 2800
         else -> 1
     }
 
     /** Whether the top edge of the fill is a wave rather than a straight line. */
     fun hasWave(id: String): Boolean = sanitize(id) == TIDE_UP || sanitize(id) == TIDE_DOWN
-
-    /** Whether the fill is drawn as a stack of blocks rather than as one solid piece. */
-    fun hasBlocks(id: String): Boolean = sanitize(id) == PIXEL_UP || sanitize(id) == PIXEL_DOWN
 
     /**
      * How far the wave's crest sits above the fill line at [x], 0..1 across the track's width.
@@ -121,72 +128,6 @@ object SliderFill {
     const val WAVE_AMPLITUDE_DP = 3.5f
 
     /**
-     * How bright block [index] of [count] is, 0..1, with the bottom block at index 0.
-     *
-     * Every block stays lit — the fill is a value, and a block that went dark would be reading as
-     * a value that had changed. What travels is a *brightening*, one block at a time, which is the
-     * part that says "working" without the part that says "wrong".
-     */
-    fun blockGlow(id: String, phase: Float, index: Int, count: Int): Float {
-        if (!hasBlocks(id)) return 0f
-        if (count <= 0) return 0f
-        val p = (phase % 1f + 1f) % 1f
-        val head = if (sanitize(id) == PIXEL_UP) p else 1f - p
-        val here = (index + 0.5f) / count
-        // A narrow band around the travelling head, wrapping at both ends so the pass is seamless.
-        val raw = abs(here - head)
-        val distance = minOf(raw, 1f - raw)
-        val reach = 0.22f
-        return if (distance >= reach) 0f else 1f - distance / reach
-    }
-
-    /** How many blocks a track [heightPx] tall is cut into. */
-    fun blockCount(heightPx: Float, densityPx: Float): Int {
-        if (heightPx <= 0f || densityPx <= 0f) return 0
-        return (heightPx / (BLOCK_PITCH_DP * densityPx)).toInt().coerceIn(3, 40)
-    }
-
-    /** Block height plus its gap, in dp. */
-    const val BLOCK_PITCH_DP = 11f
-
-    /** The share of a block's pitch that is drawn, the rest being the gap. */
-    const val BLOCK_FILL_RATIO = 0.74f
-
-    /**
-     * The extra brightness the whole fill carries at [phase], 0..1.
-     *
-     * For the styles whose effect is the fill itself changing rather than something moving across
-     * it. Everything else returns zero and pays nothing.
-     */
-    fun bodyGlow(id: String, phase: Float): Float {
-        val p = (phase % 1f + 1f) % 1f
-        return when (sanitize(id)) {
-            PULSE -> (sin(p * 2f * PI.toFloat()) + 1f) / 2f * 0.35f
-            GLOW -> (sin(p * 2f * PI.toFloat()) + 1f) / 2f * 0.22f
-            else -> 0f
-        }
-    }
-
-    /**
-     * Where a travelling highlight sits, as a fraction of the fill's height measured from its top.
-     *
-     * Negative or greater than one means it is off the fill entirely, which is the gap between
-     * passes — a sweep with no rest reads as a loading spinner rather than as a sheen.
-     */
-    fun sweepAt(id: String, phase: Float): Float {
-        val p = (phase % 1f + 1f) % 1f
-        return when (sanitize(id)) {
-            // Travels bottom to top, then waits out the rest of the cycle off-screen.
-            BATTERY -> 1.25f - p * 1.9f
-            SHIMMER -> p * 1.9f - 0.45f
-            else -> Float.NaN
-        }
-    }
-
-    /** How tall a travelling highlight is, as a fraction of the fill's height. */
-    const val SWEEP_HEIGHT = 0.28f
-
-    /**
      * Whether the style paints its own picture over the fill rather than tinting it.
      *
      * The difference matters to the caller: a tinting style is drawn in the track's colour, so it
@@ -194,7 +135,8 @@ object SliderFill {
      * the idea. A nebula in one colour is a cloud; a matrix rain that is not green is just rain.
      */
     fun isPictorial(id: String): Boolean = when (sanitize(id)) {
-        DOT_MATRIX, NEBULA, CYBERPUNK, MATRIX_RAIN, RUNE -> true
+        DOT_MATRIX, NEBULA, CYBERPUNK, MATRIX_RAIN, RUNE,
+        PLASMA, AURORA, HOLOGRAM, EMBER, SONAR, CIRCUIT -> true
         else -> false
     }
 
@@ -210,6 +152,12 @@ object SliderFill {
         CYBERPUNK -> longArrayOf(0xFF00F0FF, 0xFFFF2E88, 0x66FFE24B)
         MATRIX_RAIN -> longArrayOf(0xFFB9FFC8, 0xE034FF6A, 0x8014C94A, 0x2E0B7A2E)
         RUNE -> longArrayOf(0xFFFFD79B, 0xB3FF9E3D, 0x59A85B1E)
+        PLASMA -> longArrayOf(0xCC4BE3FF, 0xCC7A5CFF, 0xCCFF5CC2, 0xCCFFC15C)
+        AURORA -> longArrayOf(0x996BFFC2, 0x8C5CD6FF, 0x73B98CFF, 0x66FFF3A8)
+        HOLOGRAM -> longArrayOf(0xFF6FF7FF, 0x99FF4FA8, 0x66FFFFFF)
+        EMBER -> longArrayOf(0xFFFFE9A8, 0xE6FF9D3D, 0x99FF5A1E)
+        SONAR -> longArrayOf(0xFF7CFFB0, 0x8C2ED67A, 0x3D14803F)
+        CIRCUIT -> longArrayOf(0xFF8CFFE0, 0xA62ED6A8, 0x4D147A5E)
         else -> longArrayOf(0xFFFFFFFF)
     }
 

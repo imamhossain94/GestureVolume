@@ -601,7 +601,7 @@ private fun PresetChip(
  * only makes sense once you know it has to be touching the edge to look like anything.
  */
 @Composable
-private fun ShapeSelector(
+fun ShapeSelector(
     shape: String,
     onShapeChange: (String) -> Unit,
 ) {
@@ -676,7 +676,7 @@ private fun SideSelector(
 }
 
 @Composable
-private fun SideSelectorHalf(
+internal fun SideSelectorHalf(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,

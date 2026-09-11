@@ -3,6 +3,7 @@ package com.newagedevs.gesturevolume.data.local
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.newagedevs.gesturevolume.utils.SliderFill
+import com.newagedevs.gesturevolume.utils.HandlerShape
 
 /**
  * The Quick panel: what it controls, how it looks, and how hard it buzzes.
@@ -64,6 +65,14 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val SHOW_ICON = "sliderShowIcon"
         private const val AUTO_BRIGHTNESS_OFF = "sliderDisableAutoBrightness"
         private const val FILL_STYLE = "sliderFillStyle"
+        private const val FOLLOW_HANDLER = "sliderFollowHandlerShape"
+        private const val OPEN_ON_VOLUME_KEY = "sliderOpenOnVolumeKey"
+        private const val CORNER_TL = "sliderCornerTL"
+        private const val CORNER_TR = "sliderCornerTR"
+        private const val CORNER_BL = "sliderCornerBL"
+        private const val CORNER_BR = "sliderCornerBR"
+        private const val SHAPE = "sliderShape"
+        private const val SHAPE_FLARE = "sliderShapeFlare"
 
         const val DEFAULT_LENGTH = 220f
         /** Mirrors `OverlayController.PANEL_MIN_THICKNESS_DP`. See [getThicknessDp]. */
@@ -138,6 +147,47 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     fun setCornerDp(value: Float) = prefs.edit { putFloat(CORNER, value.coerceIn(0f, 40f)) }
 
     /**
+     * Whether the panel's outline is the handler's, scaled up, rather than its own.
+     *
+     * On by default, and that is the point: the panel is the bar grown, so a bar cut to a tab
+     * should open into a tab and a bar with one square corner should open with one. Nobody should
+     * have to set the same shape twice to get the obvious result. Turning it off hands over the
+     * four radii and the shape below, which is for the person who wants a round pill out of a
+     * square bar.
+     */
+    fun getFollowHandlerShape(): Boolean = prefs.getBoolean(FOLLOW_HANDLER, true)
+    fun setFollowHandlerShape(value: Boolean) = prefs.edit { putBoolean(FOLLOW_HANDLER, value) }
+
+    /**
+     * The panel's four corner radii, clockwise from the top left, when it is not following the bar.
+     *
+     * Four rather than the one it had, because the bar has four and the panel is meant to be the
+     * bar: a shape that is square where it meets the screen edge cannot be expressed with a single
+     * number, and that is the shape the default handler wears.
+     */
+    fun getCornerTL(): Float = prefs.getFloat(CORNER_TL, DEFAULT_CORNER).coerceIn(0f, 60f)
+    fun getCornerTR(): Float = prefs.getFloat(CORNER_TR, DEFAULT_CORNER).coerceIn(0f, 60f)
+    fun getCornerBL(): Float = prefs.getFloat(CORNER_BL, DEFAULT_CORNER).coerceIn(0f, 60f)
+    fun getCornerBR(): Float = prefs.getFloat(CORNER_BR, DEFAULT_CORNER).coerceIn(0f, 60f)
+
+    fun setCorners(topLeft: Float, topRight: Float, bottomLeft: Float, bottomRight: Float) = prefs.edit {
+        putFloat(CORNER_TL, topLeft.coerceIn(0f, 60f))
+        putFloat(CORNER_TR, topRight.coerceIn(0f, 60f))
+        putFloat(CORNER_BL, bottomLeft.coerceIn(0f, 60f))
+        putFloat(CORNER_BR, bottomRight.coerceIn(0f, 60f))
+    }
+
+    /** The panel's own outline, when it is not following the bar. See [HandlerShape]. */
+    fun getShape(): String = HandlerShape.sanitize(prefs.getString(SHAPE, null))
+    fun setShape(value: String) = prefs.edit { putString(SHAPE, HandlerShape.sanitize(value)) }
+
+    fun getShapeFlare(): Float =
+        HandlerShape.sanitizeFlare(prefs.getFloat(SHAPE_FLARE, HandlerShape.DEFAULT_FLARE))
+
+    fun setShapeFlare(value: Float) =
+        prefs.edit { putFloat(SHAPE_FLARE, HandlerShape.sanitizeFlare(value)) }
+
+    /**
      * The colour the open panel's track settles at.
      *
      * Like the corner radius, the panel begins at the bar's colour and blends to this one as it
@@ -156,6 +206,18 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     }
 
     fun setHaptic(value: String) = prefs.edit { putString(HAPTIC, value) }
+
+    /**
+     * Whether a press of the hardware volume keys brings the panel up.
+     *
+     * There is no public callback for a volume key, and the hidden broadcast everyone reaches for
+     * is not one this app is going to depend on. What there is: the indices live in
+     * `Settings.System`, and an observer on that hears the rocker — along with the system panel and
+     * any other app that moves the volume, which is the right behaviour anyway. See
+     * `OverlayController.onVolumeChangedElsewhere`.
+     */
+    fun getOpenOnVolumeKey(): Boolean = prefs.getBoolean(OPEN_ON_VOLUME_KEY, true)
+    fun setOpenOnVolumeKey(value: Boolean) = prefs.edit { putBoolean(OPEN_ON_VOLUME_KEY, value) }
 
     /** What the filled portion does while the panel is open. See [SliderFill]. */
     fun getFillStyle(): String = SliderFill.sanitize(prefs.getString(FILL_STYLE, null))

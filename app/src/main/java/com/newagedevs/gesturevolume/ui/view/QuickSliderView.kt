@@ -18,6 +18,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.PanelAnimation
+import com.newagedevs.gesturevolume.utils.HandlerShape
 
 /**
  * The bar, mid-way through becoming a track, at any point on that journey.
@@ -124,6 +125,23 @@ class QuickSliderView(context: Context) : View(context) {
 
     /** The eight radii `Path.addRoundRect` wants: an x and a y for each corner. */
     private val drawRadii = FloatArray(8)
+
+    /**
+     * Which outline the open panel is cut to, and how far a tab's ends sweep.
+     *
+     * The bar's shape is the *collapsed* end and the panel's is the expanded one, exactly as the
+     * corner radii are. Where the two agree the morph interpolates the flare and the change is
+     * seamless; where they disagree there is nothing to interpolate — a rectangle and a tab are
+     * not the same outline with different numbers — so the panel's shape is used throughout and
+     * the first frame is a close approximation of the bar rather than a copy of it.
+     */
+    private var expandedShape = HandlerShape.ROUNDED
+    private var expandedFlare = HandlerShape.DEFAULT_FLARE
+    private var collapsedShape = HandlerShape.ROUNDED
+    private var collapsedFlare = HandlerShape.DEFAULT_FLARE
+
+    /** Which side of the panel the screen edge is on, for a tab's sweeps. */
+    private var edgeOnLeft = false
 
     /** Reused by the stripe pass, so a repeating animation allocates nothing per frame. */
     private val stripePath = Path()
@@ -372,6 +390,27 @@ class QuickSliderView(context: Context) : View(context) {
         invalidate()
     }
 
+    /**
+     * The outline the panel grows into, and the one it grows out of.
+     *
+     * @param edgeLeft which screen edge the bar is on, so a tab's sweeps run the right way.
+     */
+    fun setShapes(
+        expanded: String,
+        expandedFlare: Float,
+        collapsed: String,
+        collapsedFlare: Float,
+        edgeLeft: Boolean,
+    ) {
+        this.expandedShape = HandlerShape.sanitize(expanded)
+        this.expandedFlare = HandlerShape.sanitizeFlare(expandedFlare)
+        this.collapsedShape = HandlerShape.sanitize(collapsed)
+        this.collapsedFlare = HandlerShape.sanitizeFlare(collapsedFlare)
+        this.edgeOnLeft = edgeLeft
+        rebuildPath()
+        invalidate()
+    }
+
     /** The four the shape grows into. Clockwise from the top left, like the collapsed set. */
     fun setExpandedCorners(
         topLeftDp: Float,
@@ -611,27 +650,6 @@ class QuickSliderView(context: Context) : View(context) {
                 fillShapePath.close()
             }
 
-            SliderFill.hasBlocks(fillStyle) -> {
-                val count = SliderFill.blockCount(drawRect.height(), density)
-                if (count <= 0) {
-                    fillShapePath.addRect(l, fillTop, r, b, Path.Direction.CW)
-                } else {
-                    val pitch = drawRect.height() / count
-                    val block = pitch * SliderFill.BLOCK_FILL_RATIO
-                    val radius = block / 3f
-                    for (i in 0 until count) {
-                        val top = b - pitch * (i + 1) + (pitch - block) / 2f
-                        // Only the blocks inside the filled portion, and only whole ones: a block
-                        // sliced in half by the fill line is the one thing a pixel wall must not
-                        // show, because the point of it is that the value is counted in blocks.
-                        if (top + block <= fillTop) continue
-                        fillShapePath.addRoundRect(
-                            l, top, r, top + block, radius, radius, Path.Direction.CW
-                        )
-                    }
-                }
-            }
-
             else -> fillShapePath.addRect(l, fillTop, r, b, Path.Direction.CW)
         }
     }
@@ -659,74 +677,24 @@ class QuickSliderView(context: Context) : View(context) {
      * what the number and the icon are drawn in over the filled half, for the same reason.
      */
     private fun drawTintedFill(canvas: Canvas, fillTop: Float, alpha: Int) {
+        if (fillStyle != SliderFill.STRIPES) return
         val ink = blendedTrackColor or (0xFF shl 24)
-        val height = (drawRect.bottom - fillTop).coerceAtLeast(1f)
-
-        val body = SliderFill.bodyGlow(fillStyle, fillPhase)
-        if (body > 0f) {
-            effectPaint.shader = null
-            effectPaint.color = ink
-            effectPaint.alpha = (body * alpha).toInt().coerceIn(0, 255)
-            if (fillStyle == SliderFill.GLOW) {
-                canvas.drawRect(drawRect.left, fillTop, drawRect.right, fillTop + height * 0.35f, effectPaint)
-            } else {
-                canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
-            }
-        }
-
-        if (SliderFill.hasBlocks(fillStyle)) {
-            val count = SliderFill.blockCount(drawRect.height(), density)
-            val pitch = drawRect.height() / count.coerceAtLeast(1)
-            val block = pitch * SliderFill.BLOCK_FILL_RATIO
-            effectPaint.shader = null
-            effectPaint.color = ink
-            for (i in 0 until count) {
-                val glow = SliderFill.blockGlow(fillStyle, fillPhase, i, count)
-                if (glow <= 0.01f) continue
-                val top = drawRect.bottom - pitch * (i + 1) + (pitch - block) / 2f
-                if (top + block <= fillTop) continue
-                effectPaint.alpha = (glow * 0.55f * alpha).toInt().coerceIn(0, 255)
-                canvas.drawRect(drawRect.left, top, drawRect.right, top + block, effectPaint)
-            }
-        }
-
-        val sweep = SliderFill.sweepAt(fillStyle, fillPhase)
-        if (!sweep.isNaN()) {
-            val centre = fillTop + height * sweep
-            val half = height * SliderFill.SWEEP_HEIGHT / 2f
-            if (centre + half > fillTop && centre - half < drawRect.bottom) {
-                val clear = ink and 0x00FFFFFF
-                val peak = (ink and 0x00FFFFFF) or (0x7A shl 24)
-                effectPaint.color = ink
-                effectPaint.alpha = alpha
-                effectPaint.shader = android.graphics.LinearGradient(
-                    0f, centre - half, 0f, centre + half,
-                    intArrayOf(clear, peak, clear), null,
-                    android.graphics.Shader.TileMode.CLAMP,
-                )
-                canvas.drawRect(drawRect.left, centre - half, drawRect.right, centre + half, effectPaint)
-                effectPaint.shader = null
-            }
-        }
-
-        if (fillStyle == SliderFill.STRIPES) {
-            effectPaint.shader = null
-            effectPaint.color = ink
-            effectPaint.alpha = (0.20f * alpha).toInt().coerceIn(0, 255)
-            val pitch = STRIPE_PITCH_DP * density
-            val offset = fillPhase * pitch * 2f
-            val width = drawRect.width()
-            var y = fillTop - width - pitch * 2f + offset
-            while (y < drawRect.bottom + pitch) {
-                stripePath.reset()
-                stripePath.moveTo(drawRect.left, y)
-                stripePath.lineTo(drawRect.left + width, y - width)
-                stripePath.lineTo(drawRect.left + width, y - width + pitch)
-                stripePath.lineTo(drawRect.left, y + pitch)
-                stripePath.close()
-                canvas.drawPath(stripePath, effectPaint)
-                y += pitch * 2f
-            }
+        effectPaint.shader = null
+        effectPaint.color = ink
+        effectPaint.alpha = (0.20f * alpha).toInt().coerceIn(0, 255)
+        val pitch = STRIPE_PITCH_DP * density
+        val offset = fillPhase * pitch * 2f
+        val width = drawRect.width()
+        var y = fillTop - width - pitch * 2f + offset
+        while (y < drawRect.bottom + pitch) {
+            stripePath.reset()
+            stripePath.moveTo(drawRect.left, y)
+            stripePath.lineTo(drawRect.left + width, y - width)
+            stripePath.lineTo(drawRect.left + width, y - width + pitch)
+            stripePath.lineTo(drawRect.left, y + pitch)
+            stripePath.close()
+            canvas.drawPath(stripePath, effectPaint)
+            y += pitch * 2f
         }
     }
 
@@ -801,6 +769,180 @@ class QuickSliderView(context: Context) : View(context) {
                     effectPaint.alpha = (0.85f * alpha).toInt().coerceIn(0, 255)
                     canvas.drawRect(drawRect.left, gy, drawRect.right, gy + 3f * density, effectPaint)
                 }
+            }
+
+            SliderFill.PLASMA -> {
+                // Three sine fields folded together, sampled on a coarse grid. The classic, and
+                // it is classic because two fields read as stripes and four as noise.
+                // Fine enough to read as a field rather than as tiles. Coarser was cheaper and
+                // looked like a spreadsheet.
+                val cell = 2f * density
+                val cols = (width / cell).toInt().coerceIn(1, 64)
+                val rows = (height / cell).toInt().coerceIn(1, 320)
+                val cw = width / cols
+                val ch = height / rows
+                val t = fillPhase * 6.28318f
+                for (c in 0 until cols) {
+                    for (r in 0 until rows) {
+                        val x = c.toFloat() / cols
+                        val y = r.toFloat() / rows
+                        val v = (
+                            kotlin.math.sin(x * 5f + t) +
+                                kotlin.math.sin(y * 7f - t * 0.8f) +
+                                kotlin.math.sin((x + y) * 6f + t * 1.3f)
+                            ) / 3f
+                        val idx = ((v + 1f) / 2f * (palette.size - 1)).toInt().coerceIn(0, palette.size - 1)
+                        effectPaint.color = palette[idx].toInt()
+                        effectPaint.alpha = alpha
+                        canvas.drawRect(
+                            drawRect.left + cw * c, drawRect.bottom - ch * (r + 1),
+                            drawRect.left + cw * (c + 1), drawRect.bottom - ch * r, effectPaint
+                        )
+                    }
+                }
+            }
+
+            SliderFill.AURORA -> {
+                // Curtains: soft vertical gradients that lean as they drift. Leaning is what
+                // separates an aurora from a set of coloured bars.
+                for (i in palette.indices) {
+                    val seed = SliderFill.pseudoRandom(i * 53 + 11)
+                    val drift = fillPhase * 6.28318f * (0.5f + seed * 0.7f) + seed * 6.28f
+                    val cx = drawRect.left + width * (0.5f + 0.45f * kotlin.math.sin(drift))
+                    val bandWidth = width * (0.32f + seed * 0.3f)
+                    val lean = width * 0.18f * kotlin.math.cos(drift * 0.8f)
+                    effectPaint.shader = android.graphics.LinearGradient(
+                        cx, drawRect.bottom, cx + lean, fillTop,
+                        intArrayOf(
+                            palette[i].toInt() and 0x00FFFFFF,
+                            palette[i].toInt(),
+                            palette[i].toInt() and 0x00FFFFFF,
+                        ),
+                        floatArrayOf(0f, 0.45f, 1f),
+                        android.graphics.Shader.TileMode.CLAMP,
+                    )
+                    effectPaint.alpha = alpha
+                    // Drawn twice, the second pass narrower and offset: a single band is a stripe,
+                    // and what makes a curtain is folds overlapping at different depths.
+                    stripePath.reset()
+                    stripePath.moveTo(cx - bandWidth / 2f, drawRect.bottom)
+                    stripePath.lineTo(cx + bandWidth / 2f, drawRect.bottom)
+                    stripePath.lineTo(cx + bandWidth / 2f + lean, fillTop)
+                    stripePath.lineTo(cx - bandWidth / 2f + lean, fillTop)
+                    stripePath.close()
+                    canvas.drawPath(stripePath, effectPaint)
+                    canvas.drawPath(stripePath, effectPaint)
+                }
+                effectPaint.shader = null
+            }
+
+            SliderFill.HOLOGRAM -> {
+                // A projected image: scan bands, the colour split either side of them, and a
+                // flicker. The split is the part that sells it — a clean band is a blind.
+                val pitch = 7f * density
+                val offset = (fillPhase * pitch * 3f) % (pitch * 2f)
+                val flicker = if (SliderFill.pseudoRandom((fillPhase * 24f).toInt()) > 0.88f) 0.45f else 1f
+                var y = fillTop + offset - pitch * 2f
+                while (y < drawRect.bottom) {
+                    effectPaint.shader = null
+                    effectPaint.color = palette[1].toInt()
+                    effectPaint.alpha = (0.55f * flicker * alpha).toInt().coerceIn(0, 255)
+                    canvas.drawRect(drawRect.left, y - 1.2f * density, drawRect.right, y, effectPaint)
+                    effectPaint.color = palette[0].toInt()
+                    effectPaint.alpha = (0.9f * flicker * alpha).toInt().coerceIn(0, 255)
+                    canvas.drawRect(drawRect.left, y, drawRect.right, y + pitch * 0.5f, effectPaint)
+                    y += pitch * 2f
+                }
+                // The sheet the bands are printed on.
+                effectPaint.shader = android.graphics.LinearGradient(
+                    0f, fillTop, 0f, drawRect.bottom,
+                    intArrayOf(palette[2].toInt(), palette[2].toInt() and 0x00FFFFFF), null,
+                    android.graphics.Shader.TileMode.CLAMP,
+                )
+                effectPaint.alpha = (0.5f * alpha).toInt().coerceIn(0, 255)
+                canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+                effectPaint.shader = null
+            }
+
+            SliderFill.EMBER -> {
+                // Sparks, each on its own seeded path, fading as it climbs. Deterministic, so the
+                // same panel opened twice shows the same fire continuing rather than restarting.
+                effectPaint.shader = null
+                for (i in 0 until EMBER_COUNT) {
+                    val seed = SliderFill.pseudoRandom(i * 97 + 5)
+                    val seed2 = SliderFill.pseudoRandom(i * 131 + 17)
+                    val life = ((fillPhase * (0.7f + seed * 0.8f) + seed2) % 1f)
+                    val y = drawRect.bottom - height * life
+                    if (y < fillTop) continue
+                    val sway = kotlin.math.sin(life * 9f + seed * 6.28f) * width * 0.16f
+                    val x = drawRect.left + width * (0.2f + seed * 0.6f) + sway
+                    val fade = (1f - life).coerceIn(0f, 1f)
+                    val idx = ((1f - fade) * (palette.size - 1)).toInt().coerceIn(0, palette.size - 1)
+                    effectPaint.color = palette[idx].toInt()
+                    effectPaint.alpha = (fade * fade * alpha).toInt().coerceIn(0, 255)
+                    canvas.drawCircle(x, y, (1.1f + seed2 * 1.6f) * density, effectPaint)
+                }
+            }
+
+            SliderFill.SONAR -> {
+                // Rings leaving the fill line. Three at a time, evenly spaced through the cycle,
+                // so there is always one arriving and one on its way out.
+                effectPaint.style = Paint.Style.STROKE
+                effectPaint.shader = null
+                for (i in 0 until 3) {
+                    val life = ((fillPhase + i / 3f) % 1f)
+                    val radius = width * 0.2f + life * height * 0.9f
+                    val fade = (1f - life)
+                    effectPaint.strokeWidth = (1f + fade * 1.6f) * density
+                    effectPaint.color = palette[0].toInt()
+                    effectPaint.alpha = (fade * fade * alpha).toInt().coerceIn(0, 255)
+                    canvas.drawCircle(drawRect.centerX(), fillTop, radius, effectPaint)
+                }
+                effectPaint.style = Paint.Style.FILL
+                // The source, so the rings have something to come from.
+                effectPaint.color = palette[0].toInt()
+                effectPaint.alpha = (0.8f * alpha).toInt().coerceIn(0, 255)
+                canvas.drawCircle(drawRect.centerX(), fillTop, 2.2f * density, effectPaint)
+            }
+
+            SliderFill.CIRCUIT -> {
+                // Traces on a board. Each segment is seeded to run one way or the other, and a
+                // travelling wave lights them — a board where everything lit at once would be a
+                // grid, and a board where nothing travelled would be wallpaper.
+                val cell = 11f * density
+                val cols = (width / cell).toInt().coerceIn(1, 8)
+                val rows = (height / cell).toInt().coerceIn(1, 50)
+                val cw = width / cols
+                val ch = height / rows
+                effectPaint.style = Paint.Style.STROKE
+                effectPaint.strokeWidth = 1.5f * density
+                effectPaint.shader = null
+                for (c in 0 until cols) {
+                    for (r in 0 until rows) {
+                        val seed = SliderFill.pseudoRandom(c * 733 + r * 191)
+                        if (seed < 0.38f) continue
+                        val here = 1f - r.toFloat() / rows
+                        val d = kotlin.math.abs(((here - fillPhase) % 1f + 1f) % 1f)
+                        val glow = (1f - minOf(d, 1f - d) / 0.3f).coerceAtLeast(0f)
+                        val idx = ((1f - glow) * (palette.size - 1)).toInt().coerceIn(0, palette.size - 1)
+                        effectPaint.color = palette[idx].toInt()
+                        effectPaint.alpha = ((0.25f + glow * 0.75f) * alpha).toInt().coerceIn(0, 255)
+                        val x = drawRect.left + cw * (c + 0.5f)
+                        val y = drawRect.bottom - ch * (r + 0.5f)
+                        if (seed > 0.72f) {
+                            canvas.drawLine(x, y, x, y - ch, effectPaint)
+                            canvas.drawLine(x, y - ch, x + cw * 0.5f, y - ch, effectPaint)
+                        } else {
+                            canvas.drawLine(x - cw * 0.5f, y, x + cw * 0.5f, y, effectPaint)
+                        }
+                        if (glow > 0.6f) {
+                            effectPaint.style = Paint.Style.FILL
+                            canvas.drawCircle(x, y, 1.7f * density, effectPaint)
+                            effectPaint.style = Paint.Style.STROKE
+                        }
+                    }
+                }
+                effectPaint.style = Paint.Style.FILL
             }
 
             else -> {
@@ -904,23 +1046,52 @@ class QuickSliderView(context: Context) : View(context) {
             lerp(collapsedRect.right, expandedRect.right),
             lerp(collapsedRect.bottom, expandedRect.bottom)
         )
-        // Never more than half the shorter side, or the corners overlap and the round-rect
-        // degenerates into a shape the caller did not ask for. Clamped against the rect being
-        // drawn rather than the window, because the collapsed rect is the smaller of the two and
-        // is where the clamp actually bites.
-        val limit = minOf(drawRect.width(), drawRect.height()) / 2f
-        // Each corner travels from its own starting radius to the panel's single one, so a bar
-        // that is square on one side rounds off as it grows rather than snapping round on frame
-        // one. `addRoundRect` takes them as x/y pairs, clockwise from the top left.
-        for (corner in 0..3) {
-            val r = lerp(collapsedCornersPx[corner], expandedCornersPx[corner]).coerceIn(0f, limit)
-            drawRadii[corner * 2] = r
-            drawRadii[corner * 2 + 1] = r
-        }
 
         drawPath.reset()
-        if (drawRect.isEmpty) return
-        drawPath.addRoundRect(drawRect, drawRadii, Path.Direction.CW)
+        if (drawRect.isEmpty) {
+            rebuildGlass()
+            return
+        }
+
+        // A tab at either end means a tab: the outline has no corners to travel, only a sweep, and
+        // the sweep's length is what interpolates.
+        val tab = expandedShape == HandlerShape.TAB ||
+            (collapsedShape == HandlerShape.TAB && expansion < 0.5f)
+
+        if (tab) {
+            val flare = when {
+                expandedShape == collapsedShape -> lerp(collapsedFlare, expandedFlare)
+                expandedShape == HandlerShape.TAB -> expandedFlare
+                else -> collapsedFlare
+            }
+            val sweep = HandlerShape.tabSweep(drawRect.width(), drawRect.height(), flare, edgeOnLeft)
+            val l = drawRect.left
+            val t = drawRect.top
+            val b = drawRect.bottom
+            val edgeX = l + sweep[0]
+            val innerX = l + sweep[6]
+            val depth = sweep[7]
+            drawPath.moveTo(edgeX, t)
+            drawPath.cubicTo(l + sweep[2], t + sweep[3], l + sweep[4], t + sweep[5], innerX, t + depth)
+            drawPath.lineTo(innerX, b - depth)
+            drawPath.cubicTo(l + sweep[4], b - sweep[5], l + sweep[2], b - sweep[3], edgeX, b)
+            drawPath.close()
+        } else {
+            // Never more than half the shorter side, or the corners overlap and the round-rect
+            // degenerates into a shape the caller did not ask for. Clamped against the rect being
+            // drawn rather than the window, because the collapsed rect is the smaller of the two
+            // and is where the clamp actually bites.
+            val limit = minOf(drawRect.width(), drawRect.height()) / 2f
+            // Each corner travels from its own starting radius to its own finishing one, so a bar
+            // that is square on one side rounds off as it grows rather than snapping round on
+            // frame one. `addRoundRect` takes them as x/y pairs, clockwise from the top left.
+            for (corner in 0..3) {
+                val r = lerp(collapsedCornersPx[corner], expandedCornersPx[corner]).coerceIn(0f, limit)
+                drawRadii[corner * 2] = r
+                drawRadii[corner * 2 + 1] = r
+            }
+            drawPath.addRoundRect(drawRect, drawRadii, Path.Direction.CW)
+        }
         rebuildGlass()
     }
 
@@ -1034,3 +1205,6 @@ private const val WAVE_STEP_PX = 6f
 
 /** The width of one diagonal band, and of the gap after it. */
 private const val STRIPE_PITCH_DP = 9f
+
+/** How many sparks an ember fill carries. Enough to read as fire, few enough to stay sparks. */
+private const val EMBER_COUNT = 22

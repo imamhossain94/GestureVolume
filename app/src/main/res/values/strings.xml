@@ -858,4 +858,14 @@
     <string name="context_menu_colour">Colour</string>
     <string name="context_menu_own_colour">Use my own colour</string>
     <string name="context_menu_own_colour_desc">Off, the menu takes its colours from the panel style. On, it takes them from the colour below, and its text and dividers follow whether that colour is light or dark.</string>
+    <string name="slider_follow_handler">Match the bar\'s shape</string>
+    <string name="slider_follow_handler_desc">On, the panel opens into the bar\'s own outline, scaled up to the panel\'s width. Off, you set its corners and shape yourself.</string>
+    <string name="slider_volume_key">Open on the volume keys</string>
+    <string name="slider_volume_key_desc">A press of the volume rocker brings the panel up on the media stream, wherever you are. It also catches the system\'s own panel and any other app that moves the volume.</string>
+    <string name="fill_plasma">Plasma</string>
+    <string name="fill_aurora">Aurora</string>
+    <string name="fill_hologram">Hologram</string>
+    <string name="fill_ember">Ember</string>
+    <string name="fill_sonar">Sonar</string>
+    <string name="fill_circuit">Circuit</string>
 </resources>

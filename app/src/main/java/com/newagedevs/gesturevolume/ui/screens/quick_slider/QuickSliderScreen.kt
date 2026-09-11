@@ -52,10 +52,12 @@ import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.SliderFillSelector
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
+import com.newagedevs.gesturevolume.utils.HandlerShape
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SectionTitle
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.ColorPickerControl
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.ShapeSelector
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
 import com.newagedevs.gesturevolume.ui.view.QuickSliderView
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
@@ -127,7 +129,26 @@ fun QuickSliderScreen(
             )
         )
     }
-    var corner by remember { mutableFloatStateOf(store.getCornerDp()) }
+    var followBar by remember { mutableStateOf(store.getFollowHandlerShape()) }
+    var cornerTL by remember { mutableFloatStateOf(store.getCornerTL()) }
+    var cornerTR by remember { mutableFloatStateOf(store.getCornerTR()) }
+    var cornerBL by remember { mutableFloatStateOf(store.getCornerBL()) }
+    var cornerBR by remember { mutableFloatStateOf(store.getCornerBR()) }
+    var panelShape by remember { mutableStateOf(store.getShape()) }
+    var panelFlare by remember { mutableFloatStateOf(store.getShapeFlare()) }
+
+    // The bar's own outline, for the preview to show when the panel is set to follow it.
+    val barShape = remember { viewModel.preference.getHandlerShape() }
+    val barFlare = remember { viewModel.preference.getHandlerShapeFlare() }
+    val barCorners = remember {
+        listOf(
+            viewModel.preference.getHandlerCornerRadiusTL(),
+            viewModel.preference.getHandlerCornerRadiusTR(),
+            viewModel.preference.getHandlerCornerRadiusBL(),
+            viewModel.preference.getHandlerCornerRadiusBR(),
+        )
+    }
+    val barWidth = remember { viewModel.preference.getHandlerWidthDp() }
     var fillStyle by remember { mutableStateOf(store.getFillStyle()) }
     var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
     var animationSpeed by remember { mutableFloatStateOf(viewModel.preference.getPanelAnimationSpeed()) }
@@ -137,6 +158,7 @@ fun QuickSliderScreen(
     var showValue by remember { mutableStateOf(store.getShowValue()) }
     var showIcon by remember { mutableStateOf(store.getShowIcon()) }
     var autoBrightnessOff by remember { mutableStateOf(store.getDisableAutoBrightness()) }
+    var openOnVolumeKey by remember { mutableStateOf(store.getOpenOnVolumeKey()) }
     var panelTheme by remember { mutableStateOf(viewModel.preference.getPanelTheme()) }
 
     val accent = MaterialTheme.colorScheme.primary
@@ -187,13 +209,20 @@ fun QuickSliderScreen(
                 lengthDp = length,
                 thicknessDp = thickness,
                 trackColor = trackColor,
-                corner = corner,
                 fillColor = fillColor,
                 showValue = showValue,
                 showIcon = showIcon,
                 target = target,
                 panelTheme = panelTheme,
                 fillStyle = fillStyle,
+                followBar = followBar,
+                barShape = barShape,
+                barFlare = barFlare,
+                barCorners = barCorners,
+                barWidthDp = barWidth,
+                shape = panelShape,
+                flare = panelFlare,
+                corners = listOf(cornerTL, cornerTR, cornerBL, cornerBR),
                 animation = panelAnimation,
                 animationSpeed = animationSpeed,
                 replay = replay
@@ -293,20 +322,63 @@ fun QuickSliderScreen(
                     onValueChange = { thickness = it; store.setThicknessDp(it) }
                 )
                 Sep()
-                SliderControl(
-                    label = stringResource(R.string.slider_corner),
-                    value = corner,
-                    valueRange = 0f..40f,
-                    valueDisplay = "${corner.toInt()}dp",
-                    borderColor = accent,
-                    onValueChange = { corner = it; store.setCornerDp(it) }
+                SettingSwitchItem(
+                    title = stringResource(R.string.slider_follow_handler),
+                    description = stringResource(R.string.slider_follow_handler_desc),
+                    checked = followBar,
+                    onCheckedChange = { followBar = it; store.setFollowHandlerShape(it) },
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.slider_corner_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (!followBar) {
+                    Sep()
+                    ShapeSelector(
+                        shape = panelShape,
+                        onShapeChange = { panelShape = it; store.setShape(it) },
+                    )
+                    if (panelShape == HandlerShape.TAB) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        SliderControl(
+                            label = stringResource(R.string.end_sweep),
+                            value = panelFlare * 100f,
+                            valueRange = HandlerShape.MIN_FLARE * 100f..HandlerShape.MAX_FLARE * 100f,
+                            valueDisplay = "${(panelFlare * 100f).toInt()}%",
+                            borderColor = accent,
+                            onValueChange = { panelFlare = it / 100f; store.setShapeFlare(it / 100f) },
+                        )
+                    } else {
+                        val setCorners = {
+                            store.setCorners(cornerTL, cornerTR, cornerBL, cornerBR)
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        SliderControl(
+                            label = stringResource(R.string.top_left),
+                            value = cornerTL, valueRange = 0f..60f,
+                            valueDisplay = "${cornerTL.toInt()}dp",
+                            borderColor = accent,
+                            onValueChange = { cornerTL = it; setCorners() },
+                        )
+                        SliderControl(
+                            label = stringResource(R.string.top_right),
+                            value = cornerTR, valueRange = 0f..60f,
+                            valueDisplay = "${cornerTR.toInt()}dp",
+                            borderColor = accent,
+                            onValueChange = { cornerTR = it; setCorners() },
+                        )
+                        SliderControl(
+                            label = stringResource(R.string.bottom_left),
+                            value = cornerBL, valueRange = 0f..60f,
+                            valueDisplay = "${cornerBL.toInt()}dp",
+                            borderColor = accent,
+                            onValueChange = { cornerBL = it; setCorners() },
+                        )
+                        SliderControl(
+                            label = stringResource(R.string.bottom_right),
+                            value = cornerBR, valueRange = 0f..60f,
+                            valueDisplay = "${cornerBR.toInt()}dp",
+                            borderColor = accent,
+                            onValueChange = { cornerBR = it; setCorners() },
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -373,6 +445,13 @@ fun QuickSliderScreen(
             SectionTitle(stringResource(R.string.quick_slider_behaviour_title), accent)
             Card {
                 SettingSwitchItem(
+                    title = stringResource(R.string.slider_volume_key),
+                    description = stringResource(R.string.slider_volume_key_desc),
+                    checked = openOnVolumeKey,
+                    onCheckedChange = { openOnVolumeKey = it; store.setOpenOnVolumeKey(it) }
+                )
+                Sep()
+                SettingSwitchItem(
                     title = stringResource(R.string.slider_auto_brightness),
                     description = stringResource(R.string.slider_auto_brightness_desc),
                     checked = autoBrightnessOff,
@@ -398,7 +477,6 @@ private fun SliderPreview(
     modifier: Modifier = Modifier,
     lengthDp: Float,
     thicknessDp: Float,
-    corner: Float,
     trackColor: Color,
     fillColor: Color,
     showValue: Boolean,
@@ -414,6 +492,15 @@ private fun SliderPreview(
     animation: String,
     animationSpeed: Float,
     replay: Int,
+    /** The outline, either the bar's scaled up or the panel's own. */
+    followBar: Boolean,
+    barShape: String,
+    barFlare: Float,
+    barCorners: List<Float>,
+    barWidthDp: Float,
+    shape: String,
+    flare: Float,
+    corners: List<Float>,
 ) {
     val iconRes = if (target == QuickSliderStore.TARGET_BRIGHTNESS) {
         R.drawable.ic_brightness_up
@@ -447,7 +534,19 @@ private fun SliderPreview(
                             PanelTheme.hasLitEdge(panelTheme),
                         )
                     }
-                    view.setCornerRadiusDp(corner)
+                    // The same resolution the live panel does, for the same reason: following the
+                    // bar means scaled, not copied — see `OverlayController.openQuickSliderWindow`.
+                    val ratio = (thicknessDp / barWidthDp.coerceAtLeast(1f)).coerceIn(1f, 4f)
+                    if (followBar) {
+                        view.setExpandedCorners(
+                            barCorners[0] * ratio, barCorners[1] * ratio,
+                            barCorners[2] * ratio, barCorners[3] * ratio,
+                        )
+                        view.setShapes(barShape, barFlare, barShape, barFlare, handlerOnLeft)
+                    } else {
+                        view.setExpandedCorners(corners[0], corners[1], corners[2], corners[3])
+                        view.setShapes(shape, flare, shape, flare, handlerOnLeft)
+                    }
                     view.setFillStyle(fillStyle)
                     view.setShowValue(showValue)
                     view.setIcon(if (showIcon) iconRes else null)

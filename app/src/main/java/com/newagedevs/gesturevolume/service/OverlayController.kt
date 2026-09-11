@@ -79,6 +79,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import android.provider.Settings
+import com.newagedevs.gesturevolume.utils.HandlerShape
 
 /**
  * The overlay itself: the bar, its gestures, the long-press menu, the readouts, the music
@@ -141,6 +142,9 @@ class OverlayController(
 
         /** The ink a pale panel writes in: dark enough to read on frosted glass, not pure black. */
         private const val PANEL_LIGHT_INK = 0xFF15161A.toInt()
+
+        /** The most of an open panel's height one end sweep may take. See where it is used. */
+        private const val PANEL_MAX_FLARE = 0.22f
 
         /** How long the level lingers on the bar after the last step of a swipe. */
         private const val VOLUME_PERCENT_VISIBLE_MS = 700L
@@ -461,6 +465,25 @@ class OverlayController(
         if (percent == lastSeenVolumePercent) return
         lastSeenVolumePercent = percent
         if (handlerView == null) return
+
+        /*
+         * The panel, where the user has asked for it, and the readout on the bar otherwise.
+         *
+         * Opened on the volume target whatever the panel is configured for: a press of the volume
+         * rocker that brought up a brightness slider would be answering a question nobody asked.
+         * An already-open panel is left alone — it is showing this stream anyway, and its own
+         * redraw has the new level.
+         */
+        if (preference.slider.getOpenOnVolumeKey()) {
+            if (sliderView != null) {
+                restartQuickSliderIdleTimeout()
+                sliderView?.animateValue(percent / 100f)
+                sliderLastStep = (percent / 100f * sliderSteps).roundToInt()
+                return
+            }
+            showQuickSliderPanel(QuickSliderStore.TARGET_MEDIA)
+            return
+        }
         showVolumePercentOnHandler(percent, res)
     }
 
@@ -1481,14 +1504,14 @@ class OverlayController(
      * of exactly where the bar was drawn, so the two must not be visible at once — and the window
      * must stay, because removing it is what would strand the gesture that asked for the panel.
      */
-    private fun showQuickSliderPanel() {
+    private fun showQuickSliderPanel(targetOverride: String? = null) {
         // Already up: treat a second trigger as "put it away", so whatever gesture opens the panel
         // also closes it and the user is never left hunting for a way out.
         if (sliderView != null) {
             hideQuickSlider()
             return
         }
-        if (!openQuickSliderWindow()) return
+        if (!openQuickSliderWindow(targetOverride)) return
         animateQuickSliderOpen()
     }
 
@@ -1573,7 +1596,7 @@ class OverlayController(
      * @return false when there is nothing to open — no bar to grow out of, or a target this
      *   device will not let the app write.
      */
-    private fun openQuickSliderWindow(): Boolean {
+    private fun openQuickSliderWindow(targetOverride: String? = null): Boolean {
         if (destroyed) return false
         val wm = windowManager ?: return false
         val barParams = handlerParams ?: return false
@@ -1585,7 +1608,9 @@ class OverlayController(
 
         val settings = preference.slider
 
-        sliderTarget = settings.getTarget()
+        // The override exists for the hardware volume keys. A panel configured for brightness
+        // that opened on a volume press would be showing one thing while the user changed another.
+        sliderTarget = targetOverride ?: settings.getTarget()
         sliderResolution = quickSliderResolution(sliderTarget)
 
         // Nothing to control, so nothing to open. Reported rather than opened-and-inert: a panel
@@ -1671,10 +1696,66 @@ class OverlayController(
         val barCornerTR = preference.getHandlerCornerRadiusTR()
         val barCornerBL = preference.getHandlerCornerRadiusBL()
         val barCornerBR = preference.getHandlerCornerRadiusBR()
+        val barShape = preference.getHandlerShape()
+        val barFlare = preference.getHandlerShapeFlare()
 
-        // Where it arrives: one radius, all four corners, because a panel is a plain pill and the
-        // asymmetry the bar has is about meeting a screen edge, which the open panel does not do.
-        val panelCorner = settings.getCornerDp()
+        /*
+         * Where it arrives.
+         *
+         * Following the bar by default, and "following" means *scaled*, not copied: the panel is
+         * several times the bar's width, and a 10dp radius that reads as a soft corner on a 12dp
+         * bar reads as a nearly square one on a 52dp panel. The radii are multiplied by the same
+         * ratio the width grew by, so the shape is the bar's at the panel's size — which is what
+         * "the handler, larger" actually means.
+         */
+        val followBar = settings.getFollowHandlerShape()
+        val density = context.resources.displayMetrics.density
+        val barWidthForShape = preference.getHandlerWidthDp().coerceAtLeast(1f)
+        val widthRatio = if (drawnWidthPx > 0) {
+            (thicknessPx.toFloat() / drawnWidthPx).coerceIn(1f, 4f)
+        } else {
+            1f
+        }
+        val panelCornerTL: Float
+        val panelCornerTR: Float
+        val panelCornerBL: Float
+        val panelCornerBR: Float
+        val panelShape: String
+        val panelFlare: Float
+        if (followBar) {
+            panelCornerTL = barCornerTL * widthRatio
+            panelCornerTR = barCornerTR * widthRatio
+            panelCornerBL = barCornerBL * widthRatio
+            panelCornerBR = barCornerBR * widthRatio
+            panelShape = barShape
+            /*
+             * The sweep keeps the bar's *character*, not its fraction.
+             *
+             * A flare is a share of the height, and the panel is both taller and much wider than
+             * the bar. Carried across unchanged it produces a sweep that is proportionally right
+             * and visually wrong: on a bar 14dp wide a third of the height reads as a tapered tab,
+             * and on a panel 52dp wide the same third reads as a leaf. What the eye is actually
+             * reading is the sweep against the width, so that ratio is what is carried over — and
+             * capped, because past a half the two sweeps meet and there is no straight section
+             * left to be a panel.
+             */
+            val barSweepDp = barFlare * preference.getHandlerHeightDp()
+            val wanted = (barSweepDp / barWidthForShape) * (thicknessPx / density)
+            val character = wanted / (lengthPx / density).coerceAtLeast(1f)
+            // The smaller of the three, and the ceiling is the load-bearing one. A bar four times
+            // narrower than the panel wants a sweep longer than the panel is tall, which clamps to
+            // a half — and at a half the two sweeps meet and the panel is a leaf with no straight
+            // section at all. A tab has to have a middle; this is where that is guaranteed.
+            panelFlare = minOf(barFlare, character, PANEL_MAX_FLARE)
+                .coerceAtLeast(HandlerShape.MIN_FLARE)
+        } else {
+            panelCornerTL = settings.getCornerTL()
+            panelCornerTR = settings.getCornerTR()
+            panelCornerBL = settings.getCornerBL()
+            panelCornerBR = settings.getCornerBR()
+            panelShape = settings.getShape()
+            panelFlare = settings.getShapeFlare()
+        }
 
         val theme = preference.getPanelTheme()
         // A pale material supplies the track, and with it the ink: this panel writes its number and
@@ -1701,8 +1782,9 @@ class OverlayController(
                 setColors(settings.getTrackColor(), settings.getFillColor())
                 setPanelTheme(PanelTheme.surfaceAlpha(theme), PanelTheme.hasLitEdge(theme))
             }
-            setExpandedCorners(panelCorner, panelCorner, panelCorner, panelCorner)
+            setExpandedCorners(panelCornerTL, panelCornerTR, panelCornerBL, panelCornerBR)
             setCollapsedAppearance(handlerColor, barCornerTL, barCornerTR, barCornerBL, barCornerBR)
+            setShapes(panelShape, panelFlare, barShape, barFlare, isLeft)
             setIcon(if (settings.getShowIcon()) quickSliderIcon(sliderTarget) else null)
             setFillStyle(settings.getFillStyle())
             setShowValue(settings.getShowValue())
@@ -1834,7 +1916,17 @@ class OverlayController(
             // The panel's own radius, because by the time this runs the morph is over and the
             // panel is wearing it. Using the bar's here left the blur rounded to a different
             // shape than the glass it was sitting behind.
-            val corner = preference.slider.getCornerDp()
+            val settings = preference.slider
+            val corner = if (settings.getFollowHandlerShape()) {
+                maxOf(
+                    preference.getHandlerCornerRadiusTL(),
+                    preference.getHandlerCornerRadiusTR(),
+                    preference.getHandlerCornerRadiusBL(),
+                    preference.getHandlerCornerRadiusBR(),
+                ) * 2f
+            } else {
+                maxOf(settings.getCornerTL(), settings.getCornerTR(), settings.getCornerBL(), settings.getCornerBR())
+            }
             sliderBackdrop?.setFrameBounds(
                 params.x, params.y, params.width, params.height, dpToPx(corner).toFloat()
             )
