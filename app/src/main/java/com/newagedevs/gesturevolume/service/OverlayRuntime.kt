@@ -44,6 +44,16 @@ object OverlayRuntime {
     val isAccessibilityHosting: Boolean get() = accessibilityService?.isHostingOverlay == true
 
     /**
+     * The controller drawing the bar, whichever host it belongs to.
+     *
+     * For the one caller that has to reach it from outside both hosts: the accessibility service's
+     * key filter, which hears the volume keys even while the foreground service is the one drawing
+     * the bar. Written only by the controller itself, as it starts and as it is torn down.
+     */
+    @Volatile
+    var activeController: OverlayController? = null
+
+    /**
      * Whether the user has switched the accessibility service on in system settings.
      *
      * Read from the system rather than from [accessibilityService], because the service can be

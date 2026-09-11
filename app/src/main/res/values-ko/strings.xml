@@ -430,11 +430,11 @@
     <string name="swipe_out_desc">바에서 화면 가장자리로 밉니다</string>
     <string name="accessibility_service_label">GestureVolume</string>
     <string name="accessibility_service_summary">음량 바에서 쓰는 시스템 단축키, 그리고 알림 없는 바</string>
-    <string name="accessibility_service_description">GestureVolume은 플로팅 바에 지정한 시스템 동작 — 화면 잠금, 스크린샷, 뒤로, 홈, 최근 앱, 알림창, 빠른 설정, 전원 메뉴 — 을 실행하기 위해 접근성 서비스를 사용합니다. 원하시면 상시 알림 없이 바를 그리고, 복사한 텍스트를 앱의 클립보드 기록에 저장합니다. 그 밖에는 아무것도 읽지 않고, 아무것도 수집하지 않으며, 모든 것이 이 기기에 남습니다.</string>
+    <string name="accessibility_service_description">GestureVolume은 플로팅 바에 지정한 시스템 동작 — 화면 잠금, 스크린샷, 뒤로, 홈, 최근 앱, 알림창, 빠른 설정, 전원 메뉴 — 을 실행하기 위해 접근성 서비스를 사용합니다. 원하시면 상시 알림 없이 바를 그리고, 복사한 텍스트를 앱의 클립보드 기록에 저장합니다. 원하시면 볼륨 키를 누르는 즉시 빠른 슬라이더도 열며, 이때 두 볼륨 키만 봅니다. 그 밖에는 아무것도 읽지 않고, 아무것도 수집하지 않으며, 모든 것이 이 기기에 남습니다.</string>
     <string name="accessibility_permission">접근성 서비스</string>
     <string name="accessibility_permission_desc">선택 사항: 화면 잠금, 스크린샷, 뒤로, 홈, 최근 앱, 알림, 빠른 설정, 전원 메뉴를 실행하고, 알림 없이 바를 그릴 수 있습니다.</string>
     <string name="accessibility_disclosure_title">접근성 서비스를 켤까요?</string>
-    <string name="accessibility_disclosure_message">GestureVolume은 Android 접근성 서비스를 세 가지에 사용하며, 모두 선택 사항입니다:\n\n• 바에 지정한 시스템 동작 실행: 화면 잠금, 스크린샷, 뒤로, 홈, 최근 앱, 알림, 빠른 설정, 전원 메뉴.\n\n• 켜두면, 상시 알림 없이 바를 그리기 위해.\n\n• 켜둔 경우에만, 복사한 텍스트를 클립보드 기록에 저장하기 위해.\n\n그 밖에는 아무것도 읽거나 수집하지 않습니다. 기기 밖으로 나가는 것은 없습니다. 설정 › 접근성에서 언제든 끌 수 있습니다.</string>
+    <string name="accessibility_disclosure_message">GestureVolume은 Android 접근성 서비스를 네 가지에 사용하며, 모두 선택 사항입니다:\n\n• 바에 지정한 시스템 동작 실행: 화면 잠금, 스크린샷, 뒤로, 홈, 최근 앱, 알림, 빠른 설정, 전원 메뉴.\n\n• 켜두면, 상시 알림 없이 바를 그리기 위해.\n\n• 켜둔 경우에만, 복사한 텍스트를 클립보드 기록에 저장하기 위해.\n\n• 켜둔 경우에만, 볼륨 키를 누르는 즉시 빠른 슬라이더를 열기 위해. 두 볼륨 키만 보고, 다른 모든 키는 그대로 넘깁니다.\n\n그 밖에는 아무것도 읽거나 수집하지 않습니다. 기기 밖으로 나가는 것은 없습니다. 설정 › 접근성에서 언제든 끌 수 있습니다.</string>
     <string name="accessibility_disclosure_accept">접근성 설정 열기</string>
     <string name="accessibility_disclosure_decline">나중에</string>
     <string name="accessibility_how_to">목록에서 GestureVolume을 열고 켜세요.</string>

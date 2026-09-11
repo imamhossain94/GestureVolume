@@ -430,11 +430,11 @@
     <string name="swipe_out_desc">バーから画面の端へスワイプ</string>
     <string name="accessibility_service_label">GestureVolume</string>
     <string name="accessibility_service_summary">音量バーからのシステム操作と、通知なしのバー</string>
-    <string name="accessibility_service_description">GestureVolume は、フローティングバーに割り当てたシステム操作 — 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知シェード、クイック設定、電源メニュー — を実行するためにユーザー補助サービスを使います。ご希望であれば、常駐通知なしでバーを表示し、コピーしたテキストをアプリのクリップボード履歴に保存します。それ以外は何も読み取らず、何も収集せず、すべてこの端末にとどまります。</string>
+    <string name="accessibility_service_description">GestureVolume は、フローティングバーに割り当てたシステム操作 — 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知シェード、クイック設定、電源メニュー — を実行するためにユーザー補助サービスを使います。ご希望であれば、常駐通知なしでバーを表示し、コピーしたテキストをアプリのクリップボード履歴に保存します。ご希望であれば、音量キーを押した瞬間にクイックスライダーも開きます。そのとき見るのは2つの音量キーだけです。それ以外は何も読み取らず、何も収集せず、すべてこの端末にとどまります。</string>
     <string name="accessibility_permission">ユーザー補助サービス</string>
     <string name="accessibility_permission_desc">任意: 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知、クイック設定、電源メニューを実行し、通知なしでバーを表示できます。</string>
     <string name="accessibility_disclosure_title">ユーザー補助サービスをオンにしますか？</string>
-    <string name="accessibility_disclosure_message">GestureVolume は Android のユーザー補助サービスを次の3つに使います。いずれも任意です:\n\n• バーに割り当てたシステム操作の実行: 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知、クイック設定、電源メニュー。\n\n• オンにした場合、常駐通知なしでバーを表示するため。\n\n• オンにした場合にかぎり、コピーしたテキストをクリップボード履歴に保存するため。\n\nそれ以外は何も読み取らず、収集しません。端末の外へは何も出ません。設定 › ユーザー補助 からいつでもオフにできます。</string>
+    <string name="accessibility_disclosure_message">GestureVolume は Android のユーザー補助サービスを次の4つに使います。いずれも任意です:\n\n• バーに割り当てたシステム操作の実行: 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知、クイック設定、電源メニュー。\n\n• オンにした場合、常駐通知なしでバーを表示するため。\n\n• オンにした場合にかぎり、コピーしたテキストをクリップボード履歴に保存するため。\n\n• オンにした場合にかぎり、音量キーを押した瞬間にクイックスライダーを開くため。見るのは2つの音量キーだけで、それ以外のキーはそのまま通します。\n\nそれ以外は何も読み取らず、収集しません。端末の外へは何も出ません。設定 › ユーザー補助 からいつでもオフにできます。</string>
     <string name="accessibility_disclosure_accept">ユーザー補助設定を開く</string>
     <string name="accessibility_disclosure_decline">今はしない</string>
     <string name="accessibility_how_to">一覧から GestureVolume を開いてオンにしてください。</string>

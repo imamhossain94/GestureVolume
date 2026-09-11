@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.quick_slider
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -39,20 +41,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.core.graphics.ColorUtils
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.components.PREVIEW_SUBJECT_MAX_HEIGHT
+import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.SliderFillSelector
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
+import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.utils.HandlerShape
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SectionTitle
@@ -76,6 +84,18 @@ fun sliderOpenerLabel(id: String): Int = when (id) {
     QuickSliderStore.OPEN_BOTH -> R.string.slider_open_both
     QuickSliderStore.OPEN_OFF -> R.string.slider_open_off
     else -> R.string.slider_open_in
+}
+
+fun sliderVolumeKeysLabel(id: String): Int = when (id) {
+    QuickSliderStore.VOLUME_KEYS_OFF -> R.string.slider_volume_keys_off
+    QuickSliderStore.VOLUME_KEYS_INSTANT -> R.string.slider_volume_keys_instant
+    else -> R.string.slider_volume_keys_follow
+}
+
+private fun sliderVolumeKeysHint(id: String): Int = when (id) {
+    QuickSliderStore.VOLUME_KEYS_OFF -> R.string.slider_volume_keys_off_hint
+    QuickSliderStore.VOLUME_KEYS_INSTANT -> R.string.slider_volume_keys_instant_hint
+    else -> R.string.slider_volume_keys_follow_hint
 }
 
 fun sliderHapticLabel(id: String): Int = when (id) {
@@ -174,7 +194,40 @@ fun QuickSliderScreen(
     var valueMargin by remember { mutableFloatStateOf(store.getValueMarginDp()) }
     var iconMargin by remember { mutableFloatStateOf(store.getIconMarginDp()) }
     var autoBrightnessOff by remember { mutableStateOf(store.getDisableAutoBrightness()) }
-    var openOnVolumeKey by remember { mutableStateOf(store.getOpenOnVolumeKey()) }
+    var volumeKeys by remember { mutableStateOf(store.getVolumeKeyMode()) }
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var accessibilityOn by remember { mutableStateOf(OverlayRuntime.isAccessibilityEnabled(context)) }
+    var showDisclosure by remember { mutableStateOf(false) }
+
+    // Back from the system's accessibility screen: whatever the user did there is what to show.
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                accessibilityOn = OverlayRuntime.isAccessibilityEnabled(context)
+                viewModel.preference.setAppOpenAdPaused(false)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    if (showDisclosure) {
+        AccessibilityDisclosureDialog(
+            onAccept = {
+                showDisclosure = false
+                viewModel.preference.setAcceptedAccessibilityDisclosure(true)
+                // Paused, so coming back from the system screen is not taken for a fresh launch.
+                viewModel.preference.setAppOpenAdPaused(true)
+                try {
+                    context.startActivity(OverlayRuntime.accessibilitySettingsIntent())
+                } catch (_: Exception) {
+                    viewModel.preference.setAppOpenAdPaused(false)
+                }
+            },
+            onDismiss = { showDisclosure = false }
+        )
+    }
     var panelTheme by remember { mutableStateOf(viewModel.preference.getPanelTheme()) }
 
     val accent = MaterialTheme.colorScheme.primary
@@ -499,12 +552,41 @@ fun QuickSliderScreen(
             Spacer(modifier = Modifier.height(24.dp))
             SectionTitle(stringResource(R.string.quick_slider_behaviour_title), accent)
             Card {
-                SettingSwitchItem(
-                    title = stringResource(R.string.slider_volume_key),
-                    description = stringResource(R.string.slider_volume_key_desc),
-                    checked = openOnVolumeKey,
-                    onCheckedChange = { openOnVolumeKey = it; store.setOpenOnVolumeKey(it) }
+                Text(
+                    text = stringResource(R.string.slider_volume_key),
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.slider_volume_key_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                ChipRow(
+                    ids = QuickSliderStore.ALL_VOLUME_KEY_MODES,
+                    label = { stringResource(sliderVolumeKeysLabel(it)) },
+                    selected = { it == volumeKeys },
+                    onClick = { mode ->
+                        volumeKeys = mode
+                        store.setVolumeKeyMode(mode)
+                        // The key filter is asked for only while this says Instant.
+                        OverlayRuntime.accessibilityService?.applyEventSubscription()
+                        if (mode == QuickSliderStore.VOLUME_KEYS_INSTANT && !accessibilityOn) {
+                            showDisclosure = true
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(sliderVolumeKeysHint(volumeKeys)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (volumeKeys == QuickSliderStore.VOLUME_KEYS_INSTANT && !accessibilityOn) {
+                    NeedsAccessibilityForKeys { showDisclosure = true }
+                }
                 Sep()
                 SettingSwitchItem(
                     title = stringResource(R.string.slider_auto_brightness),
@@ -676,6 +758,26 @@ private fun ChipRow(
                 }
             }
         }
+    }
+}
+
+/** The note under Instant while the accessibility service is off, and the way to turn it on. */
+@Composable
+private fun NeedsAccessibilityForKeys(onClick: () -> Unit) {
+    Spacer(modifier = Modifier.height(10.dp))
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
+    ) {
+        Text(
+            text = stringResource(R.string.slider_volume_keys_needs_accessibility),
+            fontSize = 13.sp,
+            color = MaterialTheme.colorScheme.onErrorContainer,
+            modifier = Modifier.padding(12.dp)
+        )
     }
 }
 

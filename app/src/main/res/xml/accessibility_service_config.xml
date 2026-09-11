@@ -6,6 +6,10 @@
   subscription is set at runtime and is empty unless capture is on; the types below are the most it
   will ever ask for.
 
+  canRequestFilterKeyEvents is for the Quick panel's Instant volume keys. The filter itself is
+  requested at runtime and only while that setting is chosen; even then the service takes the two
+  volume keys and hands every other key straight back.
+
   isAccessibilityTool is false on purpose: this is a convenience feature for everyone, not an
   assistive tool, and the Play listing carries the matching disclosure.
 -->
@@ -18,4 +22,5 @@
     android:canRetrieveWindowContent="true"
     android:accessibilityFlags="flagDefault"
     android:canPerformGestures="false"
+    android:canRequestFilterKeyEvents="true"
     android:isAccessibilityTool="false" />

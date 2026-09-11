@@ -53,6 +53,20 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         const val HAPTIC_STRONG = "strong"
         val ALL_HAPTICS = listOf(HAPTIC_OFF, HAPTIC_LIGHT, HAPTIC_MEDIUM, HAPTIC_STRONG)
 
+        /**
+         * What the hardware volume keys do to the panel.
+         *
+         * Off leaves the keys alone. With the system opens the panel when the level changes,
+         * which the app hears about half a second after the press, beside the system's own
+         * slider. Instant is handed the press itself by the accessibility service, before the
+         * system acts on it, and takes the system slider's place; with that service off it
+         * behaves like With the system. See `OverlayController.onVolumeKey`.
+         */
+        const val VOLUME_KEYS_OFF = "off"
+        const val VOLUME_KEYS_FOLLOW = "follow"
+        const val VOLUME_KEYS_INSTANT = "instant"
+        val ALL_VOLUME_KEY_MODES = listOf(VOLUME_KEYS_OFF, VOLUME_KEYS_FOLLOW, VOLUME_KEYS_INSTANT)
+
         private const val OPEN_WITH = "sliderOpenWith"
         private const val TARGET = "sliderTarget"
         private const val LENGTH = "sliderLengthDp"
@@ -67,6 +81,7 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val FILL_STYLE = "sliderFillStyle"
         private const val FOLLOW_HANDLER = "sliderFollowHandlerShape"
         private const val OPEN_ON_VOLUME_KEY = "sliderOpenOnVolumeKey"
+        private const val VOLUME_KEYS = "sliderVolumeKeys"
         private const val CORNER_TL = "sliderCornerTL"
         private const val CORNER_TR = "sliderCornerTR"
         private const val CORNER_BL = "sliderCornerBL"
@@ -243,16 +258,23 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     fun setHaptic(value: String) = prefs.edit { putString(HAPTIC, value) }
 
     /**
-     * Whether a press of the hardware volume keys brings the panel up.
+     * What the volume keys do to the panel: one of [ALL_VOLUME_KEY_MODES].
      *
-     * There is no public callback for a volume key, and the hidden broadcast everyone reaches for
-     * is not one this app is going to depend on. What there is: the indices live in
-     * `Settings.System`, and an observer on that hears the rocker — along with the system panel and
-     * any other app that moves the volume, which is the right behaviour anyway. See
-     * `OverlayController.onVolumeChangedElsewhere`.
+     * Before there was a choice there was a switch, and a switch that was on meant what With the
+     * system means now, so its answer is carried across until a choice is made.
      */
-    fun getOpenOnVolumeKey(): Boolean = prefs.getBoolean(OPEN_ON_VOLUME_KEY, true)
-    fun setOpenOnVolumeKey(value: Boolean) = prefs.edit { putBoolean(OPEN_ON_VOLUME_KEY, value) }
+    fun getVolumeKeyMode(): String {
+        val stored = prefs.getString(VOLUME_KEYS, null)
+        if (stored in ALL_VOLUME_KEY_MODES) return stored!!
+        return if (prefs.getBoolean(OPEN_ON_VOLUME_KEY, true)) VOLUME_KEYS_FOLLOW else VOLUME_KEYS_OFF
+    }
+
+    fun setVolumeKeyMode(value: String) = prefs.edit {
+        putString(VOLUME_KEYS, if (value in ALL_VOLUME_KEY_MODES) value else VOLUME_KEYS_FOLLOW)
+    }
+
+    /** Whether the volume keys open the panel at all, by either route. */
+    fun getOpenOnVolumeKey(): Boolean = getVolumeKeyMode() != VOLUME_KEYS_OFF
 
     /** What the filled portion does while the panel is open. See [SliderFill]. */
     fun getFillStyle(): String = SliderFill.sanitize(prefs.getString(FILL_STYLE, null))

@@ -525,11 +525,11 @@
     <!-- 1.4.0: the accessibility service -->
     <string name="accessibility_service_label">GestureVolume</string>
     <string name="accessibility_service_summary">System shortcuts from the volume bar, and the bar without a notification</string>
-    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also draws the bar without a persistent notification, and saves text you copy into the app’s clipboard history. It reads nothing else, collects nothing, and everything stays on this device.</string>
+    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also draws the bar without a persistent notification, saves text you copy into the app’s clipboard history, and opens the Quick panel the moment you press a volume key, looking at the two volume keys only. It reads nothing else, collects nothing, and everything stays on this device.</string>
     <string name="accessibility_permission">Accessibility service</string>
     <string name="accessibility_permission_desc">Optional: performs Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and Power menu, and can draw the bar without a notification.</string>
     <string name="accessibility_disclosure_title">Turn on the accessibility service?</string>
-    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for three things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To draw the bar without a persistent notification, if you switch that on.\n\n• To save text you copy into the clipboard history, only if you switch that on.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
+    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for four things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To draw the bar without a persistent notification, if you switch that on.\n\n• To save text you copy into the clipboard history, only if you switch that on.\n\n• To open the Quick panel the moment you press a volume key, only if you set the volume keys to Instant. It looks at the two volume keys and passes every other key straight on.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
     <string name="accessibility_disclosure_accept">Open Accessibility settings</string>
     <string name="accessibility_disclosure_decline">Not now</string>
     <string name="accessibility_how_to">In the list, open GestureVolume and switch it on.</string>
@@ -854,8 +854,15 @@
     <string name="context_menu_own_colour_desc">Off, the menu takes its colours from the panel style. On, it takes them from the colour below, and its text and dividers follow whether that colour is light or dark.</string>
     <string name="slider_follow_handler">Match the bar\'s shape</string>
     <string name="slider_follow_handler_desc">On, the panel opens into the bar\'s own outline, scaled up to the panel\'s width. Off, you set its corners and shape yourself.</string>
-    <string name="slider_volume_key">Open on the volume keys</string>
-    <string name="slider_volume_key_desc">A press of the volume rocker brings the panel up on the media stream, wherever you are. It also catches the system\'s own panel and any other app that moves the volume.</string>
+    <string name="slider_volume_key">Volume keys</string>
+    <string name="slider_volume_key_desc">What pressing a volume key does to the panel. It opens on the media volume, wherever you are.</string>
+    <string name="slider_volume_keys_off">Off</string>
+    <string name="slider_volume_keys_follow">With the system</string>
+    <string name="slider_volume_keys_instant">Instant</string>
+    <string name="slider_volume_keys_off_hint">The keys work as usual and the panel stays closed.</string>
+    <string name="slider_volume_keys_follow_hint">The panel opens beside the system\'s own volume slider, about half a second after the press. It also follows the system panel and other apps when they change the volume.</string>
+    <string name="slider_volume_keys_instant_hint">The panel opens the moment a key is pressed and moves one step per press, in place of the system\'s volume slider. During a call, on the lock screen or with the screen off, the keys work as usual.</string>
+    <string name="slider_volume_keys_needs_accessibility">Instant needs GestureVolume\'s accessibility service, which is handed the key before the system acts on it. Until it is on, the panel opens with the system. Tap to turn it on.</string>
     <string name="fill_plasma">Plasma</string>
     <string name="fill_aurora">Aurora</string>
     <string name="fill_hologram">Hologram</string>

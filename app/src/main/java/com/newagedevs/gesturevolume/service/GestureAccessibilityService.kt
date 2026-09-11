@@ -5,9 +5,11 @@ import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
+import android.view.KeyEvent
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import androidx.core.content.ContextCompat
+import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.livedata.LiveDataManager
 import com.newagedevs.gesturevolume.utils.HandlerActions
@@ -16,7 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 /**
- * The accessibility service, back after its 1.3.4 retirement and doing three things.
+ * The accessibility service, back after its 1.3.4 retirement and doing four things.
  *
  * **It performs the system actions** — lock the screen, take a screenshot, Back, Home, Recents,
  * the notification shade, quick settings, the power menu. Every one of these is a
@@ -32,6 +34,11 @@ import javax.inject.Inject
  * **It can read copied text**, when the user turns clipboard capture on, by watching text
  * selection and the Copy button. Off by default; the event subscription is empty until it is
  * switched on, so the service sees nothing it has no reason to.
+ *
+ * **It can catch the volume keys**, when the user sets the Quick panel to open on them instantly.
+ * The platform tells an app that is not in the foreground about a volume change half a second
+ * after the press; a key filter is handed the press itself. Off unless that setting is chosen,
+ * and even then it takes the two volume keys and hands every other key straight back.
  *
  * It is declared `isAccessibilityTool="false"`: this is a convenience feature, and the Play
  * listing carries the disclosure that says so.
@@ -126,6 +133,17 @@ class GestureAccessibilityService : AccessibilityService() {
         }
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
         info.notificationTimeout = 100
+        // Keys only while the volume keys are set to Instant. With the flag on, every key press on
+        // the device is offered here before anything else sees it; this takes the two volume keys
+        // and hands every other straight back, but the honest version of not looking is not to
+        // ask, the same as for the events above.
+        val filterKeys =
+            preference.slider.getVolumeKeyMode() == QuickSliderStore.VOLUME_KEYS_INSTANT
+        info.flags = if (filterKeys) {
+            info.flags or AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS
+        } else {
+            info.flags and AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS.inv()
+        }
         runCatching { serviceInfo = info }
     }
 
@@ -137,6 +155,23 @@ class GestureAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() = Unit
+
+    /**
+     * The two volume keys, before the system acts on them, while the Quick panel is set to open
+     * on them instantly. Every other key goes straight back. See [applyEventSubscription] for when
+     * keys are asked for at all, and `OverlayController.onVolumeKey` for when one is taken.
+     *
+     * Passed to whichever controller is drawing the bar, which need not be this service's own:
+     * on the notification route the foreground service draws it and this service only listens.
+     */
+    override fun onKeyEvent(event: KeyEvent?): Boolean {
+        event ?: return false
+        if (event.keyCode != KeyEvent.KEYCODE_VOLUME_UP &&
+            event.keyCode != KeyEvent.KEYCODE_VOLUME_DOWN
+        ) return false
+        val target = controller ?: OverlayRuntime.activeController ?: return false
+        return runCatching { target.onVolumeKey(event) }.getOrDefault(false)
+    }
 
     // ---- the system actions ----------------------------------------------------------------
 

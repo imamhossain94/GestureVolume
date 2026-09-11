@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.app.KeyguardManager
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.PointF
@@ -18,11 +19,13 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -534,6 +537,7 @@ class OverlayController(
      */
     init {
         registerVolumeWatcher()
+        OverlayRuntime.activeController = this
     }
 
     /** True between the first and last step of a swipe that is driving the volume itself. */
@@ -651,6 +655,104 @@ class OverlayController(
         }
     }
 
+    // ---- the volume keys, caught ---------------------------------------------------------------
+
+    /** Volume keys whose press was taken, so their release is taken too, and nothing else's. */
+    private val volumeKeysTaken = HashSet<Int>()
+
+    /**
+     * A volume key from the accessibility service's key filter, before the system has acted on it.
+     *
+     * This is what Instant means. Through [volumeReceiver] and the settings observer the panel
+     * hears about a press half a second after the fact, which is as soon as the platform tells an
+     * app that is not in the foreground anything about volume. The only way to be there at the
+     * moment of the press is to be handed the key itself, and only an accessibility service can
+     * ask for that. So the service asks while the setting says Instant, and passes the two volume
+     * keys here.
+     *
+     * @return true when the panel took the key: the level has moved one index, the panel is up
+     *   and showing it, and the system's own slider stays away. False hands it back to the system
+     *   exactly as if nothing had looked.
+     */
+    fun onVolumeKey(event: KeyEvent): Boolean {
+        val direction = when (event.keyCode) {
+            KeyEvent.KEYCODE_VOLUME_UP -> 1
+            KeyEvent.KEYCODE_VOLUME_DOWN -> -1
+            else -> return false
+        }
+        // A release belongs to whoever took its press. Taking one whose press went to the system
+        // would leave the system holding a key that never comes up.
+        if (event.action == KeyEvent.ACTION_UP) return volumeKeysTaken.remove(event.keyCode)
+        if (event.action != KeyEvent.ACTION_DOWN) return event.keyCode in volumeKeysTaken
+        // Held down, the key repeats as further presses, and each is a step, as it is for the
+        // system's own slider.
+        val taken = takesVolumeKeys() && stepVolumeFromKey(direction)
+        if (taken) volumeKeysTaken += event.keyCode else volumeKeysTaken -= event.keyCode
+        return taken
+    }
+
+    /**
+     * Whether a volume key is the panel's to take right now.
+     *
+     * Only when the setting says so, and only where the keys mean what the panel shows. In a call,
+     * or while the phone rings, they mean the call's own volume or silencing the ringer, and only
+     * the system knows which. With the screen off they have always adjusted music in a pocket. On
+     * the lock screen the panel may not even be drawn: the foreground-service host's windows sit
+     * beneath it. And with the bar hidden or the Deck up there is nothing to open the panel from.
+     */
+    private fun takesVolumeKeys(): Boolean {
+        if (destroyed) return false
+        if (preference.slider.getVolumeKeyMode() != QuickSliderStore.VOLUME_KEYS_INSTANT) return false
+        if (handlerView == null || deckHost != null) return false
+        val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return false
+        if (audio.mode != AudioManager.MODE_NORMAL) return false
+        val power = context.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return false
+        if (!power.isInteractive) return false
+        val keyguard = context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
+        if (keyguard?.isKeyguardLocked == true) return false
+        return quickSliderIsWritable(QuickSliderStore.TARGET_MEDIA)
+    }
+
+    /**
+     * Moves media one index for a key press and shows it on the panel.
+     *
+     * @return false when the system refused the step, so the key can go to the system instead.
+     *   The usual refusal is the headphone safe-volume limit, and the warning the user has to
+     *   accept before going louder is the system's to show, not the panel's to hide.
+     */
+    private fun stepVolumeFromKey(direction: Int): Boolean {
+        val res = volume.media()
+        val current = volume.level(res) ?: return false
+        val target = (current + direction).coerceIn(res.minIndex, res.maxIndex)
+        if (target != current) {
+            volume.setIndex(res, target, showUi = false)
+            if (volume.level(res) == current) return false
+        }
+        // Seen, so the same change arriving later through the watchers is known for this one.
+        val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
+        lastSeenVolume[res.stream] =
+            ((target - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
+        showPanelForVolumeKey(res)
+        return true
+    }
+
+    /** Puts the panel up on [res] for a key press, or moves it there if it is already up. */
+    private fun showPanelForVolumeKey(res: VolumeController.Resolution) {
+        if (sliderView != null && sliderResolution?.stream == res.stream) {
+            // Moved now rather than on the follower's next beat, and kept up for as long as the
+            // keys are being pressed, including at the ends, where the level no longer moves.
+            followVolumeOnPanel(null)
+            if (sliderCommitted) {
+                mainHandler.removeCallbacks(sliderCloseRunnable)
+                restartQuickSliderIdleTimeout()
+            }
+            return
+        }
+        // A panel showing something else, brightness, makes way for the one the key is about.
+        if (sliderView != null) hideQuickSlider()
+        if (openQuickSliderWindow(QuickSliderStore.TARGET_MEDIA)) animateQuickSliderOpen()
+    }
+
     // =============================================================================================
     // Lifecycle and commands
     // =============================================================================================
@@ -670,6 +772,7 @@ class OverlayController(
     fun destroy(restoreBrightness: Boolean = true) {
         if (destroyed) return
         destroyed = true
+        if (OverlayRuntime.activeController === this) OverlayRuntime.activeController = null
         hideOverlayView()
         hideHandlerView()
         hideIndicator()
