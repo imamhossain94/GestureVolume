@@ -46,15 +46,18 @@ fun PanelAnimationSelector(
     /** How fast they run, as a multiple of the catalogue's own timing. */
     speed: Float = 1f,
     onSpeedChange: ((Float) -> Unit)? = null,
+    /** The heading and the line under it, for a screen that says more about its own panel. */
+    title: String = stringResource(R.string.panel_animation),
+    description: String = stringResource(R.string.panel_animation_desc),
 ) {
     Column(modifier = modifier) {
         Text(
-            text = stringResource(R.string.panel_animation),
+            text = title,
             fontSize = 15.sp,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Text(
-            text = stringResource(R.string.panel_animation_desc),
+            text = description,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp, bottom = 10.dp),

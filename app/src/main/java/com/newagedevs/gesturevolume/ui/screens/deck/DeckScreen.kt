@@ -36,6 +36,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -58,6 +59,8 @@ import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.overlay.deck.DeckPalette
 import com.newagedevs.gesturevolume.overlay.deck.DeckPreviewStrip
 import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
+import com.newagedevs.gesturevolume.utils.PanelAnimation
+import kotlinx.coroutines.delay
 import com.newagedevs.gesturevolume.overlay.panelFrame
 import com.newagedevs.gesturevolume.overlay.deck.DeckTiles
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
@@ -128,7 +131,32 @@ fun DeckScreen(
     }
     // Bumped whenever the entrance is picked, which is what makes the preview play it again.
     var replay by remember { mutableIntStateOf(0) }
-    val entrance = rememberPanelEntrance(panelAnimation, handlerOnLeft, replay, speed = animationSpeed)
+    /*
+     * Open, a breath, close, and open again, each time an animation is picked. The Deck leaves the
+     * way it arrived, run backwards, so a preview that only ever played the arrival showed half of
+     * what the choice decides. Ends open, so the page is never left without its preview; picking
+     * again part-way through starts the sequence over.
+     */
+    var previewClosing by remember { mutableStateOf(false) }
+    var demo by remember { mutableIntStateOf(0) }
+    LaunchedEffect(demo) {
+        if (demo == 0) return@LaunchedEffect
+        val millis = PanelAnimation.scaledDurationMs(panelAnimation, animationSpeed).toLong()
+        previewClosing = false
+        replay++
+        delay(millis + DEMO_HOLD_MS)
+        previewClosing = true
+        delay(millis + DEMO_GAP_MS)
+        previewClosing = false
+        replay++
+    }
+    val entrance = rememberPanelEntrance(
+        panelAnimation,
+        handlerOnLeft,
+        replay,
+        closing = previewClosing,
+        speed = animationSpeed,
+    )
     val previewPalette = remember(background, accent, alpha, panelTheme) {
         val forced = PanelTheme.panelSurface(panelTheme)
         DeckPalette(
@@ -225,6 +253,37 @@ fun DeckScreen(
                         Text(stringResource(R.string.deck_change_gestures))
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ---- how it moves -------------------------------------------------------------------
+            SectionTitle(stringResource(R.string.deck_animation_title), MaterialTheme.colorScheme.primary)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+            ) {
+                // One choice for how every panel moves, shared with the long-press menu and the
+                // Quick panel, but offered here too: the Deck's own page is where anyone looks for
+                // how the Deck opens and closes, and it was the one page that did not have it.
+                PanelAnimationSelector(
+                    animation = panelAnimation,
+                    onAnimationChange = {
+                        panelAnimation = it
+                        viewModel.preference.setPanelAnimation(it)
+                        demo++
+                    },
+                    speed = animationSpeed,
+                    onSpeedChange = {
+                        animationSpeed = it
+                        viewModel.preference.setPanelAnimationSpeed(it)
+                        demo++
+                    },
+                    title = stringResource(R.string.deck_animation),
+                    description = stringResource(R.string.deck_animation_desc),
+                    modifier = Modifier.padding(16.dp),
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -407,6 +466,10 @@ fun DeckScreen(
         }
     }
 }
+
+/** How long the preview holds the Deck open, and then hidden, between showing its two halves. */
+private const val DEMO_HOLD_MS = 700L
+private const val DEMO_GAP_MS = 350L
 
 /** The gestures currently bound to "Open deck", as label resources, for the summary card. */
 private fun deckOpeners(preference: com.newagedevs.gesturevolume.data.local.SharedPref): List<Int> {

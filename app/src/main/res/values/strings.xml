@@ -654,6 +654,9 @@
     <string name="deck_notes_row">Notes</string>
     <string name="deck_clipboard_row">Clipboard history</string>
     <string name="deck_panel_title">PANEL</string>
+    <string name="deck_animation_title">ANIMATION</string>
+    <string name="deck_animation">Opening and closing animation</string>
+    <string name="deck_animation_desc">How the Deck arrives. It leaves the same way, played backwards. Tap one to watch it open and close on the preview above. The long-press menu and the Quick panel open with the same choice.</string>
     <string name="deck_width">Width</string>
     <string name="deck_height">Height</string>
     <string name="deck_corner">Corner radius</string>
