@@ -135,7 +135,20 @@ fun QuickSliderScreen(
     var cornerBL by remember { mutableFloatStateOf(store.getCornerBL()) }
     var cornerBR by remember { mutableFloatStateOf(store.getCornerBR()) }
     var panelShape by remember { mutableStateOf(store.getShape()) }
-    var panelFlare by remember { mutableFloatStateOf(store.getShapeFlare()) }
+    // Seeded from what the panel would work out for itself, so the slider opens where the shape
+    // already is rather than jumping the moment it is touched.
+    var panelFlare by remember {
+        mutableFloatStateOf(
+            if (store.hasShapeFlare()) {
+                store.getShapeFlare()
+            } else {
+                minOf(
+                    viewModel.preference.getHandlerShapeFlare(),
+                    QUICK_PANEL_MAX_FLARE,
+                ).coerceAtLeast(HandlerShape.MIN_FLARE)
+            }
+        )
+    }
 
     // The bar's own outline, for the preview to show when the panel is set to follow it.
     val barShape = remember { viewModel.preference.getHandlerShape() }
@@ -328,6 +341,21 @@ fun QuickSliderScreen(
                     checked = followBar,
                     onCheckedChange = { followBar = it; store.setFollowHandlerShape(it) },
                 )
+                // The sweep stays yours either way. Matching the bar settles which shape the
+                // panel is and where its corners sit; how deep the ends cut in is a number about
+                // this panel's own proportions, and a panel four times the bar's width does not
+                // want the bar's answer to it.
+                if (followBar && barShape == HandlerShape.TAB) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    SliderControl(
+                        label = stringResource(R.string.end_sweep),
+                        value = panelFlare * 100f,
+                        valueRange = HandlerShape.MIN_FLARE * 100f..HandlerShape.MAX_FLARE * 100f,
+                        valueDisplay = "${(panelFlare * 100f).toInt()}%",
+                        borderColor = accent,
+                        onValueChange = { panelFlare = it / 100f; store.setShapeFlare(it / 100f) },
+                    )
+                }
                 if (!followBar) {
                     Sep()
                     ShapeSelector(
@@ -542,7 +570,7 @@ private fun SliderPreview(
                             barCorners[0] * ratio, barCorners[1] * ratio,
                             barCorners[2] * ratio, barCorners[3] * ratio,
                         )
-                        view.setShapes(barShape, barFlare, barShape, barFlare, handlerOnLeft)
+                        view.setShapes(barShape, flare, barShape, barFlare, handlerOnLeft)
                     } else {
                         view.setExpandedCorners(corners[0], corners[1], corners[2], corners[3])
                         view.setShapes(shape, flare, shape, flare, handlerOnLeft)
@@ -631,3 +659,12 @@ private fun Sep() {
 
 /** Mirrors `OverlayController.PANEL_LIGHT_INK`, so the preview and the panel write in one colour. */
 private val PANEL_PREVIEW_LIGHT_INK = 0xFF15161A.toInt()
+
+/**
+ * Mirrors `OverlayController.PANEL_MAX_FLARE`.
+ *
+ * Duplicated rather than shared because the controller's copy is private to the service and this
+ * one exists only to seed a slider; the number they agree on is a proportion of a panel, not a
+ * contract between them.
+ */
+private const val QUICK_PANEL_MAX_FLARE = 0.22f

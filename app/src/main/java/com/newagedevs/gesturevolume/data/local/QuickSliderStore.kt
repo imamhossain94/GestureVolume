@@ -181,6 +181,9 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     fun getShape(): String = HandlerShape.sanitize(prefs.getString(SHAPE, null))
     fun setShape(value: String) = prefs.edit { putString(SHAPE, HandlerShape.sanitize(value)) }
 
+    /** Whether the sweep has ever been set by hand, as opposed to being worked out from the bar. */
+    fun hasShapeFlare(): Boolean = prefs.contains(SHAPE_FLARE)
+
     fun getShapeFlare(): Float =
         HandlerShape.sanitizeFlare(prefs.getFloat(SHAPE_FLARE, HandlerShape.DEFAULT_FLARE))
 

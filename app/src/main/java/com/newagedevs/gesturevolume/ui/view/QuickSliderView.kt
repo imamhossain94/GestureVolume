@@ -652,6 +652,10 @@ class QuickSliderView(context: Context) : View(context) {
 
             else -> fillShapePath.addRect(l, fillTop, r, b, Path.Direction.CW)
         }
+
+        // Cut to the panel's own outline rather than left to a clip to do it. Same reason as the
+        // surface: a clipped edge is a stepped edge, and on a tab the fill's edge *is* the tab's.
+        fillShapePath.op(drawPath, Path.Op.INTERSECT)
     }
 
     /** The part of a style that is drawn *over* the fill rather than being its shape. */
@@ -1100,18 +1104,26 @@ class QuickSliderView(context: Context) : View(context) {
     override fun onDraw(canvas: Canvas) {
         if (drawRect.isEmpty) return
 
-        // Everything is inside the pill. Clipping once here is what lets the fill be a plain
-        // rectangle and still come out with rounded ends.
+        /*
+         * The surface is *drawn* as a path, not a rectangle inside a clip.
+         *
+         * It used to be the second, and a clip is not antialiased. On a rounded rectangle that
+         * shows as a slightly hard corner and nobody notices; on a tab, whose sides are one long
+         * sweep, it shows as stair-steps down the whole edge. Everything that has to stay inside
+         * the shape is still clipped — but the shape's own outline, the part the eye follows, is
+         * now a path with antialiasing on.
+         */
+        canvas.drawPath(drawPath, trackPaint)
+
         canvas.save()
         canvas.clipPath(drawPath)
-
-        canvas.drawRect(drawRect, trackPaint)
 
         // Under the contents: lighting on the surface, not over the number.
         sheenPaint?.let { canvas.drawRect(drawRect, it) }
         counterLightPaint?.let { canvas.drawRect(drawRect, it) }
 
         drawContent(canvas, overFill = false)
+        canvas.restore()
 
         if (fillVisible && contentAlpha > 0.01f) {
             val fillTop = drawRect.bottom - drawRect.height() * value
@@ -1121,9 +1133,10 @@ class QuickSliderView(context: Context) : View(context) {
             fillPaint.alpha = alpha
             canvas.drawPath(fillShapePath, fillPaint)
 
-            // Whatever the style adds on top of a plain fill: a charging band, a sheen, a breath,
-            // a block lighting up. All of it clipped to the fill, so none of it strays onto the
-            // empty half of the track.
+            // Whatever the style adds on top of a plain fill. All of it clipped to the fill, so
+            // none of it strays onto the empty half of the track — and the fill's own edge is
+            // already drawn antialiased underneath, so a clip here lands colour-on-colour rather
+            // than colour-on-wallpaper.
             drawFillEffects(canvas, fillTop, alpha)
 
             // Pass two: the same content, clipped to the filled region, in the inverted colour.
@@ -1153,10 +1166,8 @@ class QuickSliderView(context: Context) : View(context) {
         }
 
         // The rim last and outside the fill pass, so the filled half of the track does not paint
-        // over the edge. Still inside the clip, so it follows the corners as they open out.
+        // over the edge.
         edgePaint?.let { canvas.drawPath(drawPath, it) }
-
-        canvas.restore()
     }
 
     private fun drawContent(canvas: Canvas, overFill: Boolean) {
@@ -1164,20 +1175,35 @@ class QuickSliderView(context: Context) : View(context) {
         val ink = if (overFill) blendedTrackColor else fillColor
         val alpha = (contentAlpha * 255f).toInt().coerceIn(0, 255)
 
+        /*
+         * How far in from each end the shape is still full width.
+         *
+         * Zero for a rounded panel, which is full width from top to bottom. A tab is not: its ends
+         * sweep away to nothing, and a number placed a fixed distance from the top of the *window*
+         * lands in the part that has been swept away and comes out with its top sliced off. The
+         * icon at the other end had the same problem. Measured from the shape rather than guessed,
+         * so it follows the sweep as the panel's flare is changed.
+         */
+        val endInset = if (expandedShape == HandlerShape.TAB) {
+            drawRect.height() * HandlerShape.sanitizeFlare(expandedFlare)
+        } else {
+            0f
+        }
+
         if (showValue) {
             textPaint.color = ink
             textPaint.alpha = alpha
             val label = "${(value * 100f).toInt()}"
             // Baseline placed by the font's own metrics rather than a guessed offset, so the
             // number sits the same distance from the top on every device font scale.
-            val y = drawRect.top + 14f * density - textPaint.fontMetrics.ascent
+            val y = drawRect.top + endInset + 14f * density - textPaint.fontMetrics.ascent
             canvas.drawText(label, drawRect.centerX(), y, textPaint)
         }
 
         icon?.let { drawable ->
             val size = (drawRect.width() * 0.46f).coerceIn(12f * density, 26f * density)
             val cx = drawRect.centerX()
-            val cy = drawRect.bottom - 16f * density - size / 2f
+            val cy = drawRect.bottom - endInset - 16f * density - size / 2f
             val wrapped = DrawableCompat.wrap(drawable)
             DrawableCompat.setTint(wrapped, ink)
             wrapped.alpha = alpha

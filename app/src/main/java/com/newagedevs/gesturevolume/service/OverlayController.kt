@@ -1751,8 +1751,15 @@ class OverlayController(
             // narrower than the panel wants a sweep longer than the panel is tall, which clamps to
             // a half — and at a half the two sweeps meet and the panel is a leaf with no straight
             // section at all. A tab has to have a middle; this is where that is guaranteed.
-            panelFlare = minOf(barFlare, character, PANEL_MAX_FLARE)
-                .coerceAtLeast(HandlerShape.MIN_FLARE)
+            //
+            // Unless the user has said otherwise. Matching the bar's shape settles *which* shape
+            // and where its corners are; how deep the sweep goes is still theirs to set, and the
+            // figure above is only the starting point they are given.
+            panelFlare = if (settings.hasShapeFlare()) {
+                settings.getShapeFlare()
+            } else {
+                minOf(barFlare, character, PANEL_MAX_FLARE).coerceAtLeast(HandlerShape.MIN_FLARE)
+            }
         } else {
             panelCornerTL = settings.getCornerTL()
             panelCornerTR = settings.getCornerTR()
