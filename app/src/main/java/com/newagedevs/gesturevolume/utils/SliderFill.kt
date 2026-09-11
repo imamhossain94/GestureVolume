@@ -28,61 +28,61 @@ object SliderFill {
     /** The same wave, drifting the other way. */
     const val TIDE_DOWN = "tideDown"
 
-    /** A grid of lit dots, with a bright wave passing through it. */
+    /** An LED panel: every light faintly there, a wave lighting them across. */
     const val DOT_MATRIX = "dotMatrix"
 
     /** Soft coloured clouds, drifting and folding through each other. */
     const val NEBULA = "nebula"
 
-    /** Neon scan lines and the occasional glitch band. */
+    /** A synthwave sun: sunset colours cut by bands sliding down, a neon rim on the level. */
     const val CYBERPUNK = "cyberpunk"
 
-    /** Columns of glyphs falling, bright at the head and fading behind. */
+    /** Digital rain: characters falling in columns, brightest at the head. */
     const val MATRIX_RAIN = "matrixRain"
 
-    /** Carved marks rising through the fill, lit as they pass. */
+    /** Runes carved in dark stone, lighting gold in turn, dust in the light. */
     const val RUNE = "rune"
 
-    /** Interfering colour fields, folding through each other. */
+    /** A lava lamp: slow, smooth plasma under glass. */
     const val PLASMA = "plasma"
 
-    /** Scan bands with the colour split either side of them, flickering. */
+    /** A hologram: pastel foil drifting over fine scan lines, a beam sweeping up. */
     const val HOLOGRAM = "hologram"
 
-    /** Curtains of light, leaning and shifting. */
+    /** Curtains of light swaying over a night sky. */
     const val AURORA = "aurora"
 
     /** Sparks rising and going out. */
     const val EMBER = "ember"
 
-    /** Rings going out from the fill line, one after another. */
+    /** Soft rings leaving the level, like the ripples from a drop. */
     const val SONAR = "sonar"
 
-    /** Traces on a board, lighting in sequence. */
+    /** A circuit board, pulses of light running up its traces. */
     const val CIRCUIT = "circuit"
 
-    /** Diagonal bands sliding along it, the way an indeterminate progress bar reads. */
+    /** Soft diagonal bands of the track's colour drifting across the fill, under a gloss. */
     const val STRIPES = "stripes"
 
-    /** Liquid: deeper below the surface, a sheen on the meniscus, bubbles finding their way up. */
+    /** Water: deep below, bright at a rippling surface that throws light down into it, bubbles rising. */
     const val LIQUID = "liquid"
 
-    /** A level meter: segments lit up to the level, green through amber to red. */
+    /** A level meter: segments lit green to red by height over their own glow, a peak hold over the level. */
     const val VU_METER = "vuMeter"
 
-    /** An oscilloscope trace running up the fill, its swing set by the level. */
+    /** Three signals crossing up the fill, glowing where they meet. Louder swings wider. */
     const val WAVEFORM = "waveform"
 
-    /** Warm light for brightness: a sun sitting on the fill line, its rays fanning down. */
+    /** A sun on the level, beams turning slowly down into a dusk sky, dust drifting in the light. */
     const val SUNRISE = "sunrise"
 
-    /** The colour wheel, flowing upward. */
+    /** Iridescent foil: pastel colours flowing upward, a glint crossing it now and then. */
     const val SPECTRUM = "spectrum"
 
     /** Deep space, with stars at three depths drifting past each other. */
     const val GALAXY = "galaxy"
 
-    /** Translucent ribbons weaving up the fill. */
+    /** Satin ribbons weaving up the fill, a sheen sliding across each as it turns. */
     const val SILK = "silk"
 
     /**
@@ -110,22 +110,22 @@ object SliderFill {
     /** How long one cycle takes. The slow ones are the ones you would otherwise notice too much. */
     fun cycleMs(id: String): Int = when (sanitize(id)) {
         TIDE_UP, TIDE_DOWN -> 2600
-        STRIPES -> 1200
+        STRIPES -> 2400
         DOT_MATRIX -> 2000
         // Slow. A nebula that hurried would be a lava lamp.
         NEBULA -> 7000
-        CYBERPUNK -> 1500
-        MATRIX_RAIN -> 2400
-        RUNE -> 3200
-        PLASMA -> 5200
-        AURORA -> 6000
-        HOLOGRAM -> 1800
+        CYBERPUNK -> 2400
+        MATRIX_RAIN -> 3000
+        RUNE -> 4200
+        PLASMA -> 9000
+        AURORA -> 9000
+        HOLOGRAM -> 4000
         EMBER -> 3000
-        SONAR -> 2200
-        CIRCUIT -> 2800
+        SONAR -> 3600
+        CIRCUIT -> 3200
         LIQUID -> 6000
-        VU_METER -> 900
-        WAVEFORM -> 1600
+        VU_METER -> 1400
+        WAVEFORM -> 2400
         // Slow, and a full turn of the fan is one ray's width: the rays are identical, so moving
         // by exactly one spacing is a seamless loop however long the cycle is.
         SUNRISE -> 9000
@@ -133,7 +133,7 @@ object SliderFill {
         // Long, because the stars travel at whole-number speeds (see the note on loops) and the
         // slowest layer needs a cycle this long to drift rather than stream.
         GALAXY -> 24000
-        SILK -> 5200
+        SILK -> 7000
         else -> 1
     }
 
@@ -192,24 +192,24 @@ object SliderFill {
      * through it.
      */
     fun palette(id: String): LongArray = when (sanitize(id)) {
-        DOT_MATRIX -> longArrayOf(0xFF7CF9FF, 0x996BE8F2, 0x3D2E8F9B)
+        DOT_MATRIX -> longArrayOf(0xFFB8FBFF, 0xFF3FB7D6, 0x3389E8FF)
         NEBULA -> longArrayOf(0x8C7A5CFF, 0x805CB8FF, 0x66FF6FD8, 0x59FFC46B)
-        CYBERPUNK -> longArrayOf(0xFF00F0FF, 0xFFFF2E88, 0x66FFE24B)
-        MATRIX_RAIN -> longArrayOf(0xFFB9FFC8, 0xE034FF6A, 0x8014C94A, 0x2E0B7A2E)
-        RUNE -> longArrayOf(0xFFFFD79B, 0xB3FF9E3D, 0x59A85B1E)
-        PLASMA -> longArrayOf(0xCC4BE3FF, 0xCC7A5CFF, 0xCCFF5CC2, 0xCCFFC15C)
-        AURORA -> longArrayOf(0x996BFFC2, 0x8C5CD6FF, 0x73B98CFF, 0x66FFF3A8)
-        HOLOGRAM -> longArrayOf(0xFF6FF7FF, 0x99FF4FA8, 0x66FFFFFF)
+        CYBERPUNK -> longArrayOf(0xFFFFE24B, 0xFFFF9A3D, 0xFFFF2E88, 0xFF5B1A8C, 0xFF1B0B3A, 0xFF00F0FF)
+        MATRIX_RAIN -> longArrayOf(0xFFE2FFE8, 0xFF3CFF74, 0xFF0B6E2B)
+        RUNE -> longArrayOf(0xFFFFE2B0, 0xFFFFA43D, 0xFF6B4122)
+        PLASMA -> longArrayOf(0xFF2B0A5C, 0xFFE0318F, 0xFFFF9F43, 0xFFFFE66B, 0xFF33D1FF)
+        AURORA -> longArrayOf(0xFF5CFFB0, 0xFF3DE0FF, 0xFFB77CFF, 0xFF9DFF7C)
+        HOLOGRAM -> longArrayOf(0xFF6FF7FF, 0xFFB79CFF, 0xFFFF9AD5)
         EMBER -> longArrayOf(0xFFFFE9A8, 0xE6FF9D3D, 0x99FF5A1E)
-        SONAR -> longArrayOf(0xFF7CFFB0, 0x8C2ED67A, 0x3D14803F)
-        CIRCUIT -> longArrayOf(0xFF8CFFE0, 0xA62ED6A8, 0x4D147A5E)
-        LIQUID -> longArrayOf(0xFF8BEBFF, 0xFF2E9BE6, 0xFF173E9C, 0xCCFFFFFF)
+        SONAR -> longArrayOf(0xFF8CFFD8, 0xFF2ED6A0)
+        CIRCUIT -> longArrayOf(0xFF9CFFE6, 0xFF1F7A5A)
+        LIQUID -> longArrayOf(0xFF7FE6FF, 0xFF2D8FE6, 0xFF0B2A6B, 0xFFFFFFFF)
         VU_METER -> longArrayOf(0xFF3DE68A, 0xFFFFC23D, 0xFFFF4F61, 0xFFFFFFFF)
-        WAVEFORM -> longArrayOf(0xFFEFFEFF, 0x8C4FE3FF)
-        SUNRISE -> longArrayOf(0xFFFFE9A8, 0xFFFFA94D, 0xFFE8553B, 0x4DFFF3CC)
-        SPECTRUM -> longArrayOf(0xFFFF5C8A, 0xFF5CC8FF)
+        WAVEFORM -> longArrayOf(0xFF4FE3FF, 0xFFFF5CC8, 0xFF9B7CFF)
+        SUNRISE -> longArrayOf(0xFFFFE3A1, 0xFFFF8A3D, 0xFFC2386B, 0xFF3A1450)
+        SPECTRUM -> longArrayOf(0xFFFF9AD5, 0xFFB79CFF, 0xFF8CD9FF, 0xFF8CFFD1, 0xFFFFE98C, 0xFFFFB38C)
         GALAXY -> longArrayOf(0xFF120A2E, 0xFF34207A, 0xFFFFFFFF, 0xFFBFD0FF)
-        SILK -> longArrayOf(0xFFFF8FCF, 0xFF8FB5FF, 0xFFA6FFE0)
+        SILK -> longArrayOf(0xFFFF7AA8, 0xFFFFB08A, 0xFFC3A0FF)
         else -> longArrayOf(0xFFFFFFFF)
     }
 
@@ -232,7 +232,7 @@ object SliderFill {
                 val here = (column.toFloat() / columns) * 0.45f + (1f - row.toFloat() / rows) * 0.55f
                 val d = abs(((here - p) % 1f + 1f) % 1f)
                 val distance = minOf(d, 1f - d)
-                (1f - distance / 0.3f).coerceAtLeast(0f)
+                (1f - distance / 0.22f).coerceAtLeast(0f)
             }
 
             MATRIX_RAIN -> {
@@ -244,7 +244,9 @@ object SliderFill {
                 val speed = 1f + (seed * 2f).toInt()
                 val head = ((p * speed + seed) % 1f)
                 val here = 1f - row.toFloat() / rows
-                val behind = ((here - head) % 1f + 1f) % 1f
+                // Measured up the column from the head, so the head leads the fall and the trail
+                // lies where it has been. The other way round, the rain fell tail first.
+                val behind = ((head - here) % 1f + 1f) % 1f
                 // Bright at the head, trailing off behind it, dark for most of the column.
                 if (behind > TRAIL) 0f else 1f - behind / TRAIL
             }
@@ -263,7 +265,7 @@ object SliderFill {
     }
 
     /** How much of a rain column trails behind its head, as a fraction of the column. */
-    private const val TRAIL = 0.55f
+    private const val TRAIL = 0.4f
 
     /**
      * A stable number in 0..1 for [n].
@@ -276,20 +278,5 @@ object SliderFill {
         var x = n * 374761393 + 668265263
         x = (x xor (x shr 13)) * 1274126177
         return ((x xor (x shr 16)) and 0x7FFFFFFF) / 2147483647f
-    }
-
-    /**
-     * Where the cyberpunk glitch band sits, as a fraction of the fill, or NaN for none.
-     *
-     * Present for a fraction of each cycle and absent for the rest. A glitch that is always there
-     * is a stripe.
-     */
-    fun glitchAt(id: String, phase: Float): Float {
-        if (sanitize(id) != CYBERPUNK) return Float.NaN
-        val p = (phase % 1f + 1f) % 1f
-        val window = 0.22f
-        if (p > window) return Float.NaN
-        val burst = (p / window)
-        return pseudoRandom((phase * 3f).toInt() * 977) * 0.8f + burst * 0.1f
     }
 }
