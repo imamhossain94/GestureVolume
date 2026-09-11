@@ -16,6 +16,7 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
+import com.newagedevs.gesturevolume.utils.SliderFill
 
 /**
  * The bar, mid-way through becoming a track, at any point on that journey.
@@ -122,6 +123,9 @@ class QuickSliderView(context: Context) : View(context) {
 
     /** The eight radii `Path.addRoundRect` wants: an x and a y for each corner. */
     private val drawRadii = FloatArray(8)
+
+    /** Reused by the stripe pass, so a repeating animation allocates nothing per frame. */
+    private val stripePath = Path()
 
     private var trackColor = Color.BLACK
     private var fillColor = Color.WHITE
@@ -239,6 +243,17 @@ class QuickSliderView(context: Context) : View(context) {
 
     /** Whether the surface is a pale one, which halves the strength of the glass lighting. */
     private var glassLight = false
+
+    /** Which of [SliderFill]'s behaviours the filled portion has. */
+    private var fillStyle = SliderFill.SOLID
+
+    /** 0..1 through the current style's cycle. Driven by [fillClock] while the panel is open. */
+    private var fillPhase = 0f
+    private var fillClock: ValueAnimator? = null
+
+    /** The fill's outline. A rectangle for most styles, a wave or a stack of blocks for the rest. */
+    private val fillShapePath = Path()
+    private val effectPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     /** Held so a second glide, or a finger arriving mid-glide, can take it over. */
     private var valueAnimator: ValueAnimator? = null
@@ -471,6 +486,198 @@ class QuickSliderView(context: Context) : View(context) {
         }
     }
 
+    /**
+     * Which behaviour the fill has, and starts or stops the clock that drives it.
+     *
+     * The clock only runs while there is something to animate and the panel is on screen — this
+     * view's whole life is a few seconds, but a repeating animator left running after the window
+     * is gone is a leak that outlives the thing that leaked it.
+     */
+    fun setFillStyle(style: String) {
+        val next = SliderFill.sanitize(style)
+        if (next == fillStyle) return
+        fillStyle = next
+        fillPhase = 0f
+        restartFillClock()
+        invalidate()
+    }
+
+    private fun restartFillClock() {
+        fillClock?.cancel()
+        fillClock = null
+        if (!SliderFill.isAnimated(fillStyle) || !isAttachedToWindow) return
+        fillClock = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = SliderFill.cycleMs(fillStyle).toLong()
+            repeatCount = ValueAnimator.INFINITE
+            interpolator = null
+            addUpdateListener {
+                fillPhase = it.animatedValue as Float
+                invalidate()
+            }
+            start()
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        restartFillClock()
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        fillClock?.cancel()
+        fillClock = null
+        valueAnimator?.cancel()
+        valueAnimator = null
+    }
+
+    /**
+     * The outline of the filled portion.
+     *
+     * A plain rectangle unless the style says otherwise. The wave styles replace its top edge with
+     * a surface; the block styles cut the whole thing into a stack. Everything downstream — the
+     * fill itself, the effects, the clip that inverts the content colour — uses this one path, so
+     * a style cannot end up with its fill and its ink disagreeing about where the fill is.
+     */
+    private fun buildFillPath(fillTop: Float) {
+        fillShapePath.reset()
+        val l = drawRect.left
+        val r = drawRect.right
+        val b = drawRect.bottom
+
+        when {
+            SliderFill.hasWave(fillStyle) && fillTop > drawRect.top -> {
+                val amp = SliderFill.WAVE_AMPLITUDE_DP * density
+                fillShapePath.moveTo(l, b)
+                fillShapePath.lineTo(l, fillTop)
+                var x = l
+                while (x <= r) {
+                    val at = (x - l) / (r - l).coerceAtLeast(1f)
+                    fillShapePath.lineTo(x, fillTop - SliderFill.waveAt(fillStyle, fillPhase, at) * amp)
+                    x += WAVE_STEP_PX
+                }
+                fillShapePath.lineTo(r, fillTop - SliderFill.waveAt(fillStyle, fillPhase, 1f) * amp)
+                fillShapePath.lineTo(r, b)
+                fillShapePath.close()
+            }
+
+            SliderFill.hasBlocks(fillStyle) -> {
+                val count = SliderFill.blockCount(drawRect.height(), density)
+                if (count <= 0) {
+                    fillShapePath.addRect(l, fillTop, r, b, Path.Direction.CW)
+                } else {
+                    val pitch = drawRect.height() / count
+                    val block = pitch * SliderFill.BLOCK_FILL_RATIO
+                    val radius = block / 3f
+                    for (i in 0 until count) {
+                        val top = b - pitch * (i + 1) + (pitch - block) / 2f
+                        // Only the blocks inside the filled portion, and only whole ones: a block
+                        // sliced in half by the fill line is the one thing a pixel wall must not
+                        // show, because the point of it is that the value is counted in blocks.
+                        if (top + block <= fillTop) continue
+                        fillShapePath.addRoundRect(
+                            l, top, r, top + block, radius, radius, Path.Direction.CW
+                        )
+                    }
+                }
+            }
+
+            else -> fillShapePath.addRect(l, fillTop, r, b, Path.Direction.CW)
+        }
+    }
+
+    /** The part of a style that is drawn *over* the fill rather than being its shape. */
+    private fun drawFillEffects(canvas: Canvas, fillTop: Float, alpha: Int) {
+        if (fillStyle == SliderFill.SOLID) return
+        val height = (drawRect.bottom - fillTop).coerceAtLeast(1f)
+
+        canvas.save()
+        canvas.clipPath(fillShapePath)
+
+        // Everything below is drawn in the *track's* colour, not in white.
+        //
+        // White was the obvious choice and it was wrong: the fill's own default is white, so a
+        // white charging band on it was invisible, and the whole catalogue looked like it did
+        // nothing. The track colour is the one colour in this view guaranteed to contrast with the
+        // fill — it is already what the number and the icon are drawn in over the filled half, for
+        // exactly the same reason.
+        val ink = blendedTrackColor or (0xFF shl 24)
+
+        // A fill that breathes, or one gathered brighter at its top edge.
+        val body = SliderFill.bodyGlow(fillStyle, fillPhase)
+        if (body > 0f) {
+            effectPaint.shader = null
+            effectPaint.color = ink
+            effectPaint.alpha = (body * alpha).toInt().coerceIn(0, 255)
+            if (fillStyle == SliderFill.GLOW) {
+                canvas.drawRect(drawRect.left, fillTop, drawRect.right, fillTop + height * 0.35f, effectPaint)
+            } else {
+                canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+            }
+        }
+
+        // One block brighter than its neighbours, travelling.
+        if (SliderFill.hasBlocks(fillStyle)) {
+            val count = SliderFill.blockCount(drawRect.height(), density)
+            val pitch = drawRect.height() / count.coerceAtLeast(1)
+            val block = pitch * SliderFill.BLOCK_FILL_RATIO
+            effectPaint.shader = null
+            effectPaint.color = ink
+            for (i in 0 until count) {
+                val glow = SliderFill.blockGlow(fillStyle, fillPhase, i, count)
+                if (glow <= 0.01f) continue
+                val top = drawRect.bottom - pitch * (i + 1) + (pitch - block) / 2f
+                if (top + block <= fillTop) continue
+                effectPaint.alpha = (glow * 0.55f * alpha).toInt().coerceIn(0, 255)
+                canvas.drawRect(drawRect.left, top, drawRect.right, top + block, effectPaint)
+            }
+        }
+
+        // A band travelling along the fill: the charging sweep, and the sheen.
+        val sweep = SliderFill.sweepAt(fillStyle, fillPhase)
+        if (!sweep.isNaN()) {
+            val centre = fillTop + height * sweep
+            val half = height * SliderFill.SWEEP_HEIGHT / 2f
+            if (centre + half > fillTop && centre - half < drawRect.bottom) {
+                effectPaint.color = ink
+                effectPaint.alpha = alpha
+                val clear = ink and 0x00FFFFFF
+                val peak = (ink and 0x00FFFFFF) or (0x7A shl 24)
+                effectPaint.shader = android.graphics.LinearGradient(
+                    0f, centre - half, 0f, centre + half,
+                    intArrayOf(clear, peak, clear),
+                    null,
+                    android.graphics.Shader.TileMode.CLAMP,
+                )
+                canvas.drawRect(drawRect.left, centre - half, drawRect.right, centre + half, effectPaint)
+                effectPaint.shader = null
+            }
+        }
+
+        // Diagonal bands sliding along, the indeterminate-progress look.
+        if (fillStyle == SliderFill.STRIPES) {
+            effectPaint.shader = null
+            effectPaint.color = ink
+            effectPaint.alpha = (0.20f * alpha).toInt().coerceIn(0, 255)
+            val pitch = STRIPE_PITCH_DP * density
+            val offset = fillPhase * pitch * 2f
+            val width = drawRect.width()
+            var y = fillTop - width - pitch * 2f + offset
+            while (y < drawRect.bottom + pitch) {
+                stripePath.reset()
+                stripePath.moveTo(drawRect.left, y)
+                stripePath.lineTo(drawRect.left + width, y - width)
+                stripePath.lineTo(drawRect.left + width, y - width + pitch)
+                stripePath.lineTo(drawRect.left, y + pitch)
+                stripePath.close()
+                canvas.drawPath(stripePath, effectPaint)
+                y += pitch * 2f
+            }
+        }
+
+        canvas.restore()
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         // Ahead of the interactive gate, and deliberately. A panel still growing is exactly the
@@ -563,11 +770,20 @@ class QuickSliderView(context: Context) : View(context) {
 
         if (fillVisible && contentAlpha > 0.01f) {
             val fillTop = drawRect.bottom - drawRect.height() * value
+            buildFillPath(fillTop)
+
+            val alpha = (contentAlpha * 255f).toInt().coerceIn(0, 255)
+            fillPaint.alpha = alpha
+            canvas.drawPath(fillShapePath, fillPaint)
+
+            // Whatever the style adds on top of a plain fill: a charging band, a sheen, a breath,
+            // a block lighting up. All of it clipped to the fill, so none of it strays onto the
+            // empty half of the track.
+            drawFillEffects(canvas, fillTop, alpha)
+
             // Pass two: the same content, clipped to the filled region, in the inverted colour.
             canvas.save()
-            canvas.clipRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom)
-            fillPaint.alpha = (contentAlpha * 255f).toInt().coerceIn(0, 255)
-            canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, fillPaint)
+            canvas.clipPath(fillShapePath)
             drawContent(canvas, overFill = true)
             canvas.restore()
 
@@ -588,6 +804,7 @@ class QuickSliderView(context: Context) : View(context) {
                 )
                 canvas.restore()
             }
+            fillPaint.alpha = 255
         }
 
         // The rim last and outside the fill pass, so the filled half of the track does not paint
@@ -637,3 +854,9 @@ class QuickSliderView(context: Context) : View(context) {
  * press of a nudge button arrives while the first is still travelling.
  */
 private const val VALUE_GLIDE_MS = 130L
+
+/** How often the wave's outline is sampled across the track. Finer than the eye can resolve. */
+private const val WAVE_STEP_PX = 6f
+
+/** The width of one diagonal band, and of the gap after it. */
+private const val STRIPE_PITCH_DP = 9f

@@ -4,11 +4,14 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
+import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
+import com.newagedevs.gesturevolume.overlay.panelFrame
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -201,25 +204,25 @@ fun DeckOverlay(
                 Box(modifier = Modifier.layoutId("strip")) {
                     AnimatedVisibility(
                         visible = shown,
-                        // Grows into place rather than sliding in from the edge, and the reason
-                        // is the pane of blurred glass behind it. That blur is a window of its
-                        // own, positioned from the rectangle this layout reports — and a slide
-                        // does not change that rectangle, it offsets the strip *inside* it. So a
-                        // sliding strip spent its whole entrance flying across a stationary
-                        // blurred slab: the single ugliest thing the panel did. A scale is a
-                        // draw-layer transform, so the rectangle is right from the first frame
-                        // and the glass and the strip arrive as one object.
-                        enter = fadeIn(PANEL_FADE) + scaleIn(PANEL_SCALE, DECK_ENTER_SCALE, stripOrigin),
+                        // The entrance is played by the strip itself, from the catalogue the user
+                        // picked out of — see [PanelAnimation], and the note there on why every
+                        // one of them is a draw-layer transform rather than a move. Leaving it to
+                        // AnimatedVisibility would mean two animations on the same surface, and
+                        // the one that is not the user's choice would win the argument.
+                        enter = EnterTransition.None,
                         exit = fadeOut(PANEL_FADE) + scaleOut(PANEL_SCALE, DECK_ENTER_SCALE, stripOrigin)
                     ) {
-                        DeckStrip(model, actions, palette, stripWidthPx)
+                        val entrance = rememberPanelEntrance(model.animation, model.isLeft)
+                        Box(modifier = Modifier.panelFrame(entrance.value)) {
+                            DeckStrip(model, actions, palette, stripWidthPx)
+                        }
                     }
                 }
                 Box(modifier = Modifier.layoutId("card")) {
                     AnimatedVisibility(
                         visible = expandedTile != null,
                         enter = fadeIn(PANEL_FADE) + scaleIn(PANEL_SCALE, DECK_ENTER_SCALE, cardOrigin),
-                        exit = fadeOut(PANEL_FADE) + scaleOut(PANEL_SCALE, DECK_ENTER_SCALE, cardOrigin)
+                        exit = fadeOut(PANEL_FADE) + scaleOut(PANEL_SCALE, DECK_ENTER_SCALE, cardOrigin),
                     ) {
                         // The last tile is held so the exit animation has something to draw.
                         var lastTile by remember { mutableStateOf(expandedTile) }
@@ -601,3 +604,53 @@ private val PANEL_SCALE: FiniteAnimationSpec<Float> = tween(durationMillis = 220
  * it is lined up against.
  */
 private const val DECK_ENTER_SCALE = 0.94f
+
+/**
+ * A picture of the Deck's strip, for the settings screen.
+ *
+ * Not the strip itself. [DeckStrip] needs a [DeckActions], which needs an environment holding a
+ * context, the toggles, the volume and brightness controllers and the live Deck state — the whole
+ * running overlay, in other words, which a settings screen has no business standing up just to
+ * show somebody what a colour looks like.
+ *
+ * What it does share is everything that decides how the strip *looks*: the same [DeckPalette], the
+ * same corner radius, the same glass. Those are the things the screen's controls change, so those
+ * are the things that must not be a second implementation. The tiles are drawn from the same
+ * [DeckTile] list the real strip walks; they simply do nothing when touched.
+ */
+@Composable
+fun DeckPreviewStrip(
+    tiles: List<DeckTile>,
+    palette: DeckPalette,
+    widthDp: Float,
+    cornerDp: Float,
+    glass: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(cornerDp.dp)
+    Column(
+        modifier = modifier
+            .width(widthDp.dp)
+            .clip(shape)
+            .background(palette.background)
+            .then(if (glass) Modifier.liquidGlass(cornerDp.dp, palette.light) else Modifier)
+            .padding(vertical = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        // However many fit the stage. The real strip scrolls; a preview that scrolled would be
+        // inviting a gesture that tells the user nothing.
+        tiles.take(PREVIEW_TILE_COUNT).forEach { tile ->
+            TileButton(
+                icon = tile.icon,
+                label = stringResource(tile.labelRes),
+                active = false,
+                palette = palette,
+                onClick = {},
+            )
+        }
+    }
+}
+
+/** As many tiles as the preview stage has room for without the last one being clipped. */
+private const val PREVIEW_TILE_COUNT = 4

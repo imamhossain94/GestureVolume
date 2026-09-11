@@ -77,6 +77,7 @@ import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import android.provider.Settings
 
 /**
  * The overlay itself: the bar, its gestures, the long-press menu, the readouts, the music
@@ -398,7 +399,60 @@ class OverlayController(
     init {
         (context.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager)
             ?.registerDisplayListener(displayListener, mainHandler)
+        registerVolumeWatcher()
         restoreTimer()
+    }
+
+    /**
+     * Makes the bar answer the hardware volume keys, not just its own gestures.
+     *
+     * There is no public callback for "the volume changed" — the broadcast everyone reaches for is
+     * hidden API. What there is: the volume indices live in `Settings.System`, and the system
+     * writes them there whenever anything moves one, so an observer on that table hears the rocker,
+     * the system panel, and another app's slider alike.
+     *
+     * That breadth is also why it is filtered rather than trusted. The table changes for a great
+     * many reasons that are not volume, so the handler only speaks up when the stream it would
+     * itself be driving has actually landed on a different level.
+     */
+    private fun registerVolumeWatcher() {
+        runCatching {
+            context.contentResolver.registerContentObserver(
+                Settings.System.CONTENT_URI,
+                true,
+                volumeWatcher,
+            )
+        }
+    }
+
+    private val volumeWatcher = object : android.database.ContentObserver(mainHandler) {
+        override fun onChange(selfChange: Boolean) = onVolumeChangedElsewhere()
+    }
+
+    /** The level the bar last showed, so a settings write that moved nothing stays quiet. */
+    private var lastSeenVolumePercent: Int? = null
+
+    /** True between the first and last step of a swipe that is driving the volume itself. */
+    private var adjustingBySwipe = false
+
+    /**
+     * Something moved the volume. Show it on the bar, unless the something was us.
+     *
+     * The Quick panel and the swipe gesture both put the level on the bar themselves and both
+     * write through `Settings.System` on the way, so without this guard every step of a swipe
+     * would arrive back here and re-post the readout the swipe had just posted — twice the work
+     * for the same number, and a readout that outstayed the gesture by its own full timeout.
+     */
+    private fun onVolumeChangedElsewhere() {
+        if (destroyed) return
+        if (sliderView != null) return
+        if (adjustingBySwipe) return
+        val res = volume.resolve(preference.getVolumeStreamMode())
+        val percent = volume.percent(res) ?: return
+        if (percent == lastSeenVolumePercent) return
+        lastSeenVolumePercent = percent
+        if (handlerView == null) return
+        showVolumePercentOnHandler(percent, res)
     }
 
     // =============================================================================================
@@ -431,6 +485,7 @@ class OverlayController(
 
         (context.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager)
             ?.unregisterDisplayListener(displayListener)
+        runCatching { context.contentResolver.unregisterContentObserver(volumeWatcher) }
 
         longPressHandler.removeCallbacks(longPressedRunnable)
         mainHandler.removeCallbacksAndMessages(null)
@@ -999,6 +1054,7 @@ class OverlayController(
         }
 
         override fun onAdjustBegin(initialDirection: Int) {
+            adjustingBySwipe = true
             adjustDirection = 0
             adjustOneShot = null
             adjustDrivesPanel = false
@@ -1037,6 +1093,7 @@ class OverlayController(
         }
 
         override fun onAdjustEnd() {
+            adjustingBySwipe = false
             if (adjustDrivesPanel) {
                 adjustDrivesPanel = false
                 // The panel outlives the swipe. It stays up for a beat so the value just set can
@@ -1583,22 +1640,32 @@ class OverlayController(
         // Absolute screen coordinates of the drawn bar, from the window and which way it faces.
         val drawnLeft = if (isLeft) barParams.x else barParams.x + barParams.width - drawnWidthPx
 
-        // The panel is the bar, grown. Its colour and all four of its corners come from the
-        // handler rather than from settings of its own, so there is nothing to travel *between*
-        // during the morph — the radii hold still and only the rectangle changes. Giving the panel
-        // its own track colour and its own single radius meant the shape had to change identity
-        // half way out, which is what "grow the handler" is the opposite of.
+        // The panel is the bar, grown — and it grows into its *own* shape and colour rather than
+        // keeping the bar's.
         //
-        // Read live, every time, so a change on the appearance screen reaches the panel without
-        // the service being restarted.
+        // It used to keep them, on the reasoning that a morph with nothing to travel between is a
+        // pure growth. What that actually produced was two settings on the Quick panel's own
+        // screen that nothing anywhere read: a corner radius and a track colour the user could
+        // set and never see. The view has interpolated both from the collapsed end to the
+        // expanded end since it was written; it was simply being handed the same value twice. So
+        // the bar's colour and corners stay the *starting* point, which is what keeps frame zero
+        // an exact stand-in for the bar, and the panel's own settings are where it arrives.
+        //
+        // Read live, every time, so a change on either screen reaches the panel without the
+        // service being restarted.
         val handlerColor = ColorUtils.setAlphaComponent(
             preference.getHandlerColor(),
             preference.getHandlerBackgroundAlpha().coerceIn(0, 255)
         )
-        val cornerTL = preference.getHandlerCornerRadiusTL()
-        val cornerTR = preference.getHandlerCornerRadiusTR()
-        val cornerBL = preference.getHandlerCornerRadiusBL()
-        val cornerBR = preference.getHandlerCornerRadiusBR()
+        // Where the morph starts: the bar, exactly as it is drawn.
+        val barCornerTL = preference.getHandlerCornerRadiusTL()
+        val barCornerTR = preference.getHandlerCornerRadiusTR()
+        val barCornerBL = preference.getHandlerCornerRadiusBL()
+        val barCornerBR = preference.getHandlerCornerRadiusBR()
+
+        // Where it arrives: one radius, all four corners, because a panel is a plain pill and the
+        // asymmetry the bar has is about meeting a screen edge, which the open panel does not do.
+        val panelCorner = settings.getCornerDp()
 
         val theme = preference.getPanelTheme()
         // A pale material supplies the track, and with it the ink: this panel writes its number and
@@ -1612,17 +1679,23 @@ class OverlayController(
 
         val view = QuickSliderView(context).apply {
             if (paleSurface != null) {
-                setColors(paleSurface.toInt(), PANEL_LIGHT_INK)
+                // The user's fill colour still wins wherever it can be seen. Only one that would
+                // vanish into a pale pane — white on frosted white, which is the default — is
+                // replaced, the same rule the Deck applies to its accent.
+                val chosenFill = settings.getFillColor()
+                val fill = if (isTooPaleFor(chosenFill, paleSurface.toInt())) PANEL_LIGHT_INK else chosenFill
+                setColors(paleSurface.toInt(), fill)
                 // 1f, because the material's own alpha is already in that colour. Thinning it by
                 // the multiplier as well would fade the pane twice.
                 setPanelTheme(1f, PanelTheme.hasLitEdge(theme), light = true)
             } else {
-                setColors(handlerColor, settings.getFillColor())
+                setColors(settings.getTrackColor(), settings.getFillColor())
                 setPanelTheme(PanelTheme.surfaceAlpha(theme), PanelTheme.hasLitEdge(theme))
             }
-            setExpandedCorners(cornerTL, cornerTR, cornerBL, cornerBR)
-            setCollapsedAppearance(handlerColor, cornerTL, cornerTR, cornerBL, cornerBR)
+            setExpandedCorners(panelCorner, panelCorner, panelCorner, panelCorner)
+            setCollapsedAppearance(handlerColor, barCornerTL, barCornerTR, barCornerBL, barCornerBR)
             setIcon(if (settings.getShowIcon()) quickSliderIcon(sliderTarget) else null)
+            setFillStyle(settings.getFillStyle())
             setShowValue(settings.getShowValue())
             setValue(openValue)
         }
@@ -1744,12 +1817,10 @@ class OverlayController(
         // panel — the track fills it once expanded — so its own rectangle is what to blur, and
         // the largest of the four corner radii is the one that keeps the blur inside the shape.
         sliderParams?.let { params ->
-            val corner = maxOf(
-                preference.getHandlerCornerRadiusTL(),
-                preference.getHandlerCornerRadiusTR(),
-                preference.getHandlerCornerRadiusBL(),
-                preference.getHandlerCornerRadiusBR()
-            )
+            // The panel's own radius, because by the time this runs the morph is over and the
+            // panel is wearing it. Using the bar's here left the blur rounded to a different
+            // shape than the glass it was sitting behind.
+            val corner = preference.slider.getCornerDp()
             sliderBackdrop?.setFrameBounds(
                 params.x, params.y, params.width, params.height, dpToPx(corner).toFloat()
             )
@@ -2001,6 +2072,7 @@ class OverlayController(
 
         val menuHost = OverlayComposeHost(context)
         val panelTheme = preference.getPanelTheme()
+        val panelAnimation = preference.getPanelAnimation()
         menuHost.setContent {
             // The pale materials carry dark ink, so the scheme underneath everything the panel
             // does not colour by hand has to flip with them. See OverlayTheme.
@@ -2011,6 +2083,7 @@ class OverlayController(
                     frame = frameSize,
                     grid = grid,
                     theme = panelTheme,
+                    animation = panelAnimation,
                     onSelect = { entry ->
                         hideContextMenu()
                         // Posted for the same reason the tap actions are: "Hide Handler" and
@@ -2268,6 +2341,7 @@ class OverlayController(
             apps = resolveAppShortcuts(),
             quickDial = store.getQuickDial(),
             panelTheme = preference.getPanelTheme(),
+            animation = preference.getPanelAnimation(),
             anchor = anchor,
             frame = frameSize,
             isLeft = isLeft,
@@ -2838,6 +2912,16 @@ class OverlayController(
 
     // The host's own resources, not Resources.getSystem(): only these follow the current display
     // configuration, so only these give a correct density after a rotation.
+    /**
+     * Whether [colour] would disappear against [surface].
+     *
+     * Compares perceived brightness rather than the colours themselves: what makes ink vanish is
+     * matching the surface's *lightness*, not its hue, and a saturated colour of the same
+     * lightness still reads perfectly well against it.
+     */
+    private fun isTooPaleFor(colour: Int, surface: Int): Boolean =
+        kotlin.math.abs(ColorUtils.calculateLuminance(colour) - ColorUtils.calculateLuminance(surface)) < 0.25
+
     private fun dpToPx(dp: Float): Int =
         (dp * context.resources.displayMetrics.density).toInt()
 }

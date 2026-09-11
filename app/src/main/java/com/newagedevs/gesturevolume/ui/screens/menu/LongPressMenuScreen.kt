@@ -55,9 +55,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.mutableIntStateOf
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
+import com.newagedevs.gesturevolume.overlay.panelFrame
 import com.newagedevs.gesturevolume.overlay.ContextMenuCard
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
+import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
@@ -109,6 +114,15 @@ fun LongPressMenuScreen(
     }
     var layout by remember { mutableStateOf(preference.getContextMenuLayout()) }
     var panelTheme by remember { mutableStateOf(preference.getPanelTheme()) }
+    var panelAnimation by remember { mutableStateOf(preference.getPanelAnimation()) }
+
+    // Bumped whenever the entrance is picked, which is what makes the preview play it again.
+    var replay by remember { mutableIntStateOf(0) }
+    val entrance = rememberPanelEntrance(
+        animation = panelAnimation,
+        towardLeft = preference.getHandlerPosition() == "Left",
+        replayKey = replay,
+    )
 
     // One wallpaper per visit; see the note in HandlerAppearanceScreen. The menu's own chrome is a
     // fixed dark card with no theme to follow, so a photograph behind it is the only honest way to
@@ -140,10 +154,48 @@ fun LongPressMenuScreen(
             )
         }
     ) { padding ->
+        // Preview pinned, controls scrolling underneath — the shape the Appearance screen uses.
+        // The menu is the one panel whose settings all change how it *looks*, so losing sight of
+        // it while you change them is the worst possible arrangement.
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = padding.calculateTopPadding())
+                .padding(top = padding.calculateTopPadding()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = CONTENT_MAX_WIDTH)
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.context_menu_desc),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
+                )
+
+                PreviewStage(backgroundImageURL = bgImage) {
+                    ContextMenuCard(
+                        entries = HandlerActionCatalog.contextMenuEntries(shown.toList()),
+                        grid = layout == ContextMenuLayout.GRID,
+                        // Inert. This is a picture of the menu, and a tile that ran its action
+                        // from the settings screen would be a trap rather than a convenience.
+                        onSelect = {},
+                        modifier = Modifier
+                            .scale(PREVIEW_SCALE)
+                            .panelFrame(entrance.value),
+                        theme = panelTheme,
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(10.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -156,26 +208,7 @@ fun LongPressMenuScreen(
                 .widthIn(max = CONTENT_MAX_WIDTH)
                 .padding(horizontal = 16.dp)
         ) {
-            Text(
-                text = stringResource(R.string.context_menu_desc),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp, bottom = 14.dp),
-            )
-
-            PreviewStage(backgroundImageURL = bgImage) {
-                ContextMenuCard(
-                    entries = HandlerActionCatalog.contextMenuEntries(shown.toList()),
-                    grid = layout == ContextMenuLayout.GRID,
-                    // Inert. This is a picture of the menu, and a tile that ran its action from
-                    // the settings screen would be a trap rather than a convenience.
-                    onSelect = {},
-                    modifier = Modifier.scale(PREVIEW_SCALE),
-                    theme = panelTheme,
-                )
-            }
-
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(16.dp))
             SectionLabel(stringResource(R.string.context_menu_layout))
             LayoutSelector(
                 layout = layout,
@@ -191,6 +224,19 @@ fun LongPressMenuScreen(
                 onThemeChange = {
                     panelTheme = it
                     preference.setPanelTheme(it)
+                },
+            )
+
+            Spacer(Modifier.height(22.dp))
+            PanelAnimationSelector(
+                animation = panelAnimation,
+                onAnimationChange = {
+                    panelAnimation = it
+                    preference.setPanelAnimation(it)
+                    // Replays it on the preview above. Picking an entrance from a list of words
+                    // is picking blind; the point of the preview is that the word is followed by
+                    // the thing it names.
+                    replay++
                 },
             )
 
@@ -233,6 +279,7 @@ fun LongPressMenuScreen(
             }
 
             Spacer(Modifier.height(28.dp))
+        }
         }
         }
     }

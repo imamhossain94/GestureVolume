@@ -53,6 +53,8 @@ data class DeckModel(
     val initialTile: String?,
     /** How the panel is dressed. See [com.newagedevs.gesturevolume.utils.PanelTheme]. */
     val panelTheme: String = com.newagedevs.gesturevolume.utils.PanelTheme.SOLID,
+    /** How the Deck arrives. See [com.newagedevs.gesturevolume.utils.PanelAnimation]. */
+    val animation: String = com.newagedevs.gesturevolume.utils.PanelAnimation.POP,
 )
 
 /**

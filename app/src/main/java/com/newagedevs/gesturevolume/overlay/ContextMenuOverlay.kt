@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.AppearanceMotion
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
+import com.newagedevs.gesturevolume.utils.PanelAnimation
 import com.newagedevs.gesturevolume.utils.PanelTheme
 
 /**
@@ -76,6 +77,8 @@ fun ContextMenuOverlay(
     frame: IntSize,
     grid: Boolean,
     theme: String,
+    /** Which of [PanelAnimation]'s entrances to play. */
+    animation: String,
     onSelect: (HandlerActionCatalog.Entry) -> Unit,
     onDismiss: () -> Unit,
     /**
@@ -89,31 +92,21 @@ fun ContextMenuOverlay(
      */
     onCardBounds: (IntRect, Float) -> Unit = { _, _ -> },
 ) {
-    var shown by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { shown = true }
-
     /*
-     * A fade, and deliberately not the scale this used to do.
+     * The entrance, from the catalogue the user picked out of.
      *
-     * The card no longer draws its own backdrop: there is a blurred window sitting exactly
-     * underneath it, and that window cannot be scaled — its bounds are a window attribute, and
-     * pushing new ones at it sixty times a second is the relayout-per-frame that makes a window
-     * stutter. So a card that grew from 85% would spend its whole entrance sliding across a pane
-     * of glass that stayed the size the card was going to be, with the blur poking out around it.
-     *
-     * The motion instead goes *inside* the card, where a transform costs no layout and moves
-     * nothing the blur is lined up against.
+     * Every one of them transforms the card's *contents*, never the rectangle the card occupies —
+     * there is a blurred window sitting exactly underneath it whose bounds are window attributes,
+     * and pushing new ones at it every frame is a relayout per frame. A card that grew or slid
+     * would spend its entrance travelling across a stationary pane of glass. See [PanelAnimation].
      */
-    val alpha by animateFloatAsState(
-        targetValue = if (shown) 1f else 0f,
-        animationSpec = AppearanceMotion.Fade,
-        label = "menuAlpha"
-    )
-    val contentScale by animateFloatAsState(
-        targetValue = if (shown) 1f else 0.94f,
-        animationSpec = AppearanceMotion.Pop,
-        label = "menuContentScale"
-    )
+    // Which edge the card grows from, taken from the bar rather than from the layout pass: the
+    // entrance has to start on the first frame, and the layout that finally settles which side the
+    // card opens on has not run yet. The bar's own side is the same answer in every case that
+    // matters — the card opens away from it — and where the frame is too narrow for that, the
+    // difference is a hinge on the wrong edge of a card that filled the screen anyway.
+    val barOnLeft = anchor.left + anchor.width / 2 < frame.width / 2
+    val entrance = rememberPanelEntrance(animation = animation, towardLeft = barOnLeft)
 
     val gapPx = with(LocalDensity.current) { 10.dp.roundToPx() }
     val cornerPx = with(LocalDensity.current) { MENU_CORNER.toPx() }
@@ -132,7 +125,7 @@ fun ContextMenuOverlay(
             grid = grid,
             theme = theme,
             onSelect = onSelect,
-            contentScale = contentScale,
+            entrance = entrance.value,
             modifier = Modifier
                 .layout { measurable, constraints ->
                     val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
@@ -158,7 +151,9 @@ fun ContextMenuOverlay(
                     }
                 }
                 .graphicsLayer {
-                    this.alpha = alpha
+                    // Only the surface's opacity lives out here, where it cannot move the card's
+                    // rectangle. Everything else the entrance does happens inside.
+                    alpha = entrance.value.alpha
                 }
                 // Swallows the tap so the root's dismiss does not fire for a press on the card.
                 .clickable(
@@ -186,13 +181,13 @@ fun ContextMenuCard(
     modifier: Modifier = Modifier,
     theme: String = PanelTheme.SOLID,
     /**
-     * A transform on the contents only, for the entrance.
+     * The entrance, applied to the contents only.
      *
-     * On the card itself it would change nothing about the layout either — but it *would* move the
-     * card's painted edge off the blurred pane behind it, which is the one thing the entrance must
-     * not do. See the note in [ContextMenuOverlay].
+     * On the card itself a transform would change nothing about the layout either — but it *would*
+     * move the card's painted edge off the blurred pane behind it, which is the one thing an
+     * entrance must not do. See the note in [ContextMenuOverlay].
      */
-    contentScale: Float = 1f,
+    entrance: PanelAnimation.Frame = PanelAnimation.Frame(),
 ) {
     val shape = RoundedCornerShape(MENU_CORNER)
     val palette = PanelTheme.menuPalette(theme)
@@ -224,10 +219,7 @@ fun ContextMenuCard(
                     Modifier.border(1.dp, Color(palette.border), shape)
                 }
             )
-            .graphicsLayer {
-                scaleX = contentScale
-                scaleY = contentScale
-            }
+            .panelFrame(entrance.copy(alpha = 1f))
             .padding(MENU_PADDING)
             .verticalScroll(rememberScrollState())
     ) {

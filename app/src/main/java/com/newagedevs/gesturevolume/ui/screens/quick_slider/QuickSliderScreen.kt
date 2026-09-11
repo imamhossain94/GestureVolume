@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -46,6 +47,7 @@ import androidx.core.graphics.ColorUtils
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.components.PREVIEW_SUBJECT_MAX_HEIGHT
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
+import com.newagedevs.gesturevolume.ui.components.SliderFillSelector
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.utils.PanelTheme
@@ -112,10 +114,9 @@ fun QuickSliderScreen(
     var haptic by remember { mutableStateOf(store.getHaptic()) }
     var length by remember { mutableFloatStateOf(store.getLengthDp()) }
     var thickness by remember { mutableFloatStateOf(store.getThicknessDp()) }
-    // The panel's track colour and its corners are the handler's, not its own — see
-    // `OverlayController.openQuickSliderWindow`. Read here only so the preview shows the truth;
-    // there are deliberately no controls for them on this screen, because a control that appeared
-    // to set them would be setting something nothing reads.
+    // The bar's colour and corners, read once. Not settings any more — the panel has its own —
+    // but still the shape the morph *starts* from, which is what the preview has to show as the
+    // collapsed end so that the preview and the real opening agree about frame zero.
     val handlerTrackColor = remember {
         Color(
             ColorUtils.setAlphaComponent(
@@ -124,14 +125,9 @@ fun QuickSliderScreen(
             )
         )
     }
-    val handlerCorners = remember {
-        listOf(
-            viewModel.preference.getHandlerCornerRadiusTL(),
-            viewModel.preference.getHandlerCornerRadiusTR(),
-            viewModel.preference.getHandlerCornerRadiusBL(),
-            viewModel.preference.getHandlerCornerRadiusBR(),
-        )
-    }
+    var corner by remember { mutableFloatStateOf(store.getCornerDp()) }
+    var fillStyle by remember { mutableStateOf(store.getFillStyle()) }
+    var trackColor by remember { mutableStateOf(Color(store.getTrackColor())) }
     var fillColor by remember { mutableStateOf(Color(store.getFillColor())) }
     var showValue by remember { mutableStateOf(store.getShowValue()) }
     var showIcon by remember { mutableStateOf(store.getShowIcon()) }
@@ -160,35 +156,51 @@ fun QuickSliderScreen(
             )
         }
     ) { padding ->
+        // Preview pinned, controls scrolling underneath — the shape the Appearance screen uses.
+        // A preview that scrolls away with the control that changes it is the old two-screen
+        // problem with extra steps: you set a number, lose sight of the thing it applies to, and
+        // have to scroll back to find out what you did.
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                // Top inset only. The bottom one belongs to the scroller below, or the fixed
+                // block gets padded away from the gesture pill it is nowhere near.
+                .padding(top = padding.calculateTopPadding())
         ) {
             Text(
                 text = stringResource(R.string.quick_slider_intro),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp)
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             SliderPreview(
+                modifier = Modifier.padding(horizontal = 16.dp),
                 backgroundImageURL = bgImage,
                 handlerOnLeft = handlerOnLeft,
                 lengthDp = length,
                 thicknessDp = thickness,
-                trackColor = handlerTrackColor,
-                corners = handlerCorners,
+                trackColor = trackColor,
+                corner = corner,
                 fillColor = fillColor,
                 showValue = showValue,
                 showIcon = showIcon,
                 target = target,
-                panelTheme = panelTheme
+                panelTheme = panelTheme,
+                fillStyle = fillStyle
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .navigationBarsPadding()
+                    .padding(16.dp)
+            ) {
             SectionTitle(stringResource(R.string.quick_slider_gesture_title), accent)
             Card {
                 Text(
@@ -263,11 +275,29 @@ fun QuickSliderScreen(
                 Sep()
                 SliderControl(
                     label = stringResource(R.string.slider_thickness),
+                    // Starts where the panel's own floor is rather than at 24dp. Below that the
+                    // panel is widened back out when it is built, so the lower half of this slider
+                    // used to move the preview and nothing else.
+                    valueRange = QuickSliderStore.MIN_THICKNESS..72f,
                     value = thickness,
-                    valueRange = 24f..72f,
                     valueDisplay = "${thickness.toInt()}dp",
                     borderColor = accent,
                     onValueChange = { thickness = it; store.setThicknessDp(it) }
+                )
+                Sep()
+                SliderControl(
+                    label = stringResource(R.string.slider_corner),
+                    value = corner,
+                    valueRange = 0f..40f,
+                    valueDisplay = "${corner.toInt()}dp",
+                    borderColor = accent,
+                    onValueChange = { corner = it; store.setCornerDp(it) }
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.slider_corner_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -283,10 +313,22 @@ fun QuickSliderScreen(
                 )
                 Sep()
                 ColorPickerControl(
+                    label = stringResource(R.string.slider_track_color),
+                    color = trackColor,
+                    borderColor = accent,
+                    onColorChange = { trackColor = it; store.setTrackColor(it.toArgb()) }
+                )
+                Sep()
+                ColorPickerControl(
                     label = stringResource(R.string.slider_fill_color),
                     color = fillColor,
                     borderColor = accent,
                     onColorChange = { fillColor = it; store.setFillColor(it.toArgb()) }
+                )
+                Sep()
+                SliderFillSelector(
+                    style = fillStyle,
+                    onStyleChange = { fillStyle = it; store.setFillStyle(it) },
                 )
                 Sep()
                 SettingSwitchItem(
@@ -316,6 +358,7 @@ fun QuickSliderScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 }
@@ -329,9 +372,10 @@ fun QuickSliderScreen(
  */
 @Composable
 private fun SliderPreview(
+    modifier: Modifier = Modifier,
     lengthDp: Float,
     thicknessDp: Float,
-    corners: List<Float>,
+    corner: Float,
     trackColor: Color,
     fillColor: Color,
     showValue: Boolean,
@@ -341,6 +385,8 @@ private fun SliderPreview(
     handlerOnLeft: Boolean,
     /** The panel style, so this shows the material the user is about to get. */
     panelTheme: String,
+    /** What the fill does. Runs here exactly as it runs on the real panel. */
+    fillStyle: String,
 ) {
     val iconRes = if (target == QuickSliderStore.TARGET_BRIGHTNESS) {
         R.drawable.ic_brightness_up
@@ -353,6 +399,7 @@ private fun SliderPreview(
     PreviewStage(
         backgroundImageURL = backgroundImageURL,
         contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
+        modifier = modifier,
     ) {
         AndroidView(
                 factory = { ctx -> QuickSliderView(ctx) },
@@ -372,7 +419,8 @@ private fun SliderPreview(
                             PanelTheme.hasLitEdge(panelTheme),
                         )
                     }
-                    view.setExpandedCorners(corners[0], corners[1], corners[2], corners[3])
+                    view.setCornerRadiusDp(corner)
+                    view.setFillStyle(fillStyle)
                     view.setShowValue(showValue)
                     view.setIcon(if (showIcon) iconRes else null)
                     view.setValue(0.6f)

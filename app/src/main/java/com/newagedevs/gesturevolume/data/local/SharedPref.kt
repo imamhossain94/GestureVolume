@@ -8,6 +8,7 @@ import android.view.Gravity
 import androidx.compose.ui.graphics.toArgb
 import com.newagedevs.gesturevolume.utils.ContextMenuLayout
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
+import com.newagedevs.gesturevolume.utils.PanelAnimation
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.ClipboardEntry
@@ -238,6 +239,7 @@ class SharedPref @Inject constructor(
         const val CONTEXT_MENU_ORDER = "handlerContextMenuOrder"
         const val CONTEXT_MENU_LAYOUT = "handlerContextMenuLayout"
         const val PANEL_THEME = "panelTheme"
+        const val PANEL_ANIMATION = "panelAnimation"
 
         /**
          * What separates one action from the next in [CONTEXT_MENU_ORDER].
@@ -874,6 +876,20 @@ class SharedPref @Inject constructor(
 
     fun setPanelTheme(value: String) {
         sharedPreferences.edit { putString(PANEL_THEME, value) }
+    }
+
+    /**
+     * How the floating panels arrive. See [PanelAnimation].
+     *
+     * One setting for the menu and the Deck, for the same reason the panel style is one setting
+     * for all three: they are the same app putting the same kind of surface on the same screen,
+     * and two of them arriving differently is not a choice anybody made on purpose.
+     */
+    fun getPanelAnimation(): String =
+        PanelAnimation.sanitize(sharedPreferences.getString(PANEL_ANIMATION, null))
+
+    fun setPanelAnimation(value: String) {
+        sharedPreferences.edit { putString(PANEL_ANIMATION, PanelAnimation.sanitize(value)) }
     }
 
     fun getContextMenuLayout(): String =

@@ -3,6 +3,7 @@ package com.newagedevs.gesturevolume.ui.screens.deck
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,15 +54,22 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.overlay.deck.DeckPalette
+import com.newagedevs.gesturevolume.overlay.deck.DeckPreviewStrip
+import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
+import com.newagedevs.gesturevolume.overlay.panelFrame
 import com.newagedevs.gesturevolume.overlay.deck.DeckTiles
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.screens.handler_action.ActionSettingItem
+import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
+import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SectionTitle
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.ColorPickerControl
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
+import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.ActionIcon
 import com.newagedevs.gesturevolume.utils.HandlerActions
 
@@ -108,6 +116,25 @@ fun DeckScreen(
     var accent by remember { mutableStateOf(Color(store.getAccentColor())) }
     var autoClose by remember { mutableIntStateOf(store.getAutoCloseSeconds()) }
     var utilitiesFirst by remember { mutableStateOf(store.getUtilitiesFirst()) }
+    var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
+
+    // One wallpaper per visit; see the note in HandlerAppearanceScreen.
+    val bgImage = remember { viewModel.getNextBackground() }
+    val handlerOnLeft = remember { preference.getHandlerPosition() == "Left" }
+    val previewTiles = remember(version) {
+        DeckTiles.visible(store.getTileOrder(), store.getEnabledTiles())
+    }
+    // Bumped whenever the entrance is picked, which is what makes the preview play it again.
+    var replay by remember { mutableIntStateOf(0) }
+    val entrance = rememberPanelEntrance(panelAnimation, handlerOnLeft, replay)
+    val previewPalette = remember(background, accent, alpha, panelTheme) {
+        val forced = PanelTheme.panelSurface(panelTheme)
+        DeckPalette(
+            surface = forced?.let { Color(it) } ?: background.copy(alpha = alpha / 255f),
+            accent = accent,
+            surfaceAlpha = if (forced != null) 1f else PanelTheme.surfaceAlpha(panelTheme),
+        )
+    }
 
     val openers = remember(version) { deckOpeners(preference) }
     // Resolved here rather than inside joinToString: stringResource is composable, and a
@@ -131,13 +158,41 @@ fun DeckScreen(
             )
         }
     ) { padding ->
+        // Preview pinned, controls scrolling underneath — the shape the Appearance screen uses.
+        // The Deck had no preview at all, so every colour and every number on this screen was set
+        // blind and checked by going out and opening the thing.
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(top = padding.calculateTopPadding())
         ) {
+            PreviewStage(
+                backgroundImageURL = bgImage,
+                contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp),
+            ) {
+                DeckPreviewStrip(
+                    tiles = previewTiles,
+                    palette = previewPalette,
+                    widthDp = width,
+                    cornerDp = corner,
+                    glass = PanelTheme.hasLitEdge(panelTheme),
+                    modifier = Modifier
+                        .padding(horizontal = 14.dp)
+                        .panelFrame(entrance.value),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .navigationBarsPadding()
+                    .padding(16.dp)
+            ) {
             // ---- how it opens -------------------------------------------------------------------
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -346,6 +401,7 @@ fun DeckScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 }

@@ -2,6 +2,7 @@ package com.newagedevs.gesturevolume.data.local
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.newagedevs.gesturevolume.utils.SliderFill
 
 /**
  * The Quick panel: what it controls, how it looks, and how hard it buzzes.
@@ -62,9 +63,12 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val SHOW_VALUE = "sliderShowValue"
         private const val SHOW_ICON = "sliderShowIcon"
         private const val AUTO_BRIGHTNESS_OFF = "sliderDisableAutoBrightness"
+        private const val FILL_STYLE = "sliderFillStyle"
 
         const val DEFAULT_LENGTH = 220f
-        const val DEFAULT_THICKNESS = 44f
+        /** Mirrors `OverlayController.PANEL_MIN_THICKNESS_DP`. See [getThicknessDp]. */
+        const val MIN_THICKNESS = 48f
+        const val DEFAULT_THICKNESS = 52f
         /** Half the thickness: a track with fully round ends, matching the bar's pill shape. */
         const val DEFAULT_CORNER = 22f
         const val DEFAULT_TRACK_COLOR = 0xFF1C1C20.toInt()
@@ -110,12 +114,36 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     fun getLengthDp(): Float = prefs.getFloat(LENGTH, DEFAULT_LENGTH).coerceIn(120f, 320f)
     fun setLengthDp(value: Float) = prefs.edit { putFloat(LENGTH, value.coerceIn(120f, 320f)) }
 
-    fun getThicknessDp(): Float = prefs.getFloat(THICKNESS, DEFAULT_THICKNESS).coerceIn(24f, 72f)
-    fun setThicknessDp(value: Float) = prefs.edit { putFloat(THICKNESS, value.coerceIn(24f, 72f)) }
+    /**
+     * How wide the open panel is.
+     *
+     * The floor is 48dp and not the 24dp it used to be, because the panel is floored at 48dp when
+     * it is built — see `OverlayController.PANEL_MIN_THICKNESS_DP`, which is there because this is
+     * a control a thumb aims at. The store's range and the live floor disagreeing meant the bottom
+     * half of the slider moved the preview and did nothing at all to the panel.
+     */
+    fun getThicknessDp(): Float = prefs.getFloat(THICKNESS, DEFAULT_THICKNESS).coerceIn(MIN_THICKNESS, 72f)
+    fun setThicknessDp(value: Float) = prefs.edit { putFloat(THICKNESS, value.coerceIn(MIN_THICKNESS, 72f)) }
 
+    /**
+     * The radius the open panel's corners settle at.
+     *
+     * Its own, rather than the handler's, which is what it used to borrow. The panel still *starts*
+     * at the bar's corners — that is what makes the opening read as the bar growing rather than as
+     * a second object appearing over it — and travels to this one on the way out. The view was
+     * already interpolating each corner from its collapsed value to its expanded one, so the only
+     * thing that had changed was that both ends were being handed the same number.
+     */
     fun getCornerDp(): Float = prefs.getFloat(CORNER, DEFAULT_CORNER).coerceIn(0f, 40f)
     fun setCornerDp(value: Float) = prefs.edit { putFloat(CORNER, value.coerceIn(0f, 40f)) }
 
+    /**
+     * The colour the open panel's track settles at.
+     *
+     * Like the corner radius, the panel begins at the bar's colour and blends to this one as it
+     * grows — `QuickSliderView.refreshBlend` has always done that interpolation; it was simply
+     * being given the bar's colour at both ends.
+     */
     fun getTrackColor(): Int = prefs.getInt(TRACK_COLOR, DEFAULT_TRACK_COLOR)
     fun setTrackColor(value: Int) = prefs.edit { putInt(TRACK_COLOR, value) }
 
@@ -128,6 +156,10 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     }
 
     fun setHaptic(value: String) = prefs.edit { putString(HAPTIC, value) }
+
+    /** What the filled portion does while the panel is open. See [SliderFill]. */
+    fun getFillStyle(): String = SliderFill.sanitize(prefs.getString(FILL_STYLE, null))
+    fun setFillStyle(value: String) = prefs.edit { putString(FILL_STYLE, SliderFill.sanitize(value)) }
 
     fun getShowValue(): Boolean = prefs.getBoolean(SHOW_VALUE, true)
     fun setShowValue(value: Boolean) = prefs.edit { putBoolean(SHOW_VALUE, value) }
