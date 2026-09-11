@@ -93,24 +93,7 @@ fun NavigationDrawerContent(
                     .padding(horizontal = 20.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // === PREMIUM SECTION ===
-                if (!isProActivated) {
-                    Text(
-                        text = stringResource(R.string.upgrade),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp, top = 4.dp),
-                        letterSpacing = 0.5.sp
-                    )
-
-                    PremiumNavigationItem(
-                        onClick = { onMenuItemClick("Premium") }
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
-
+                // Pro is the crown on the home screen's bar now, not a card here.
                 // === GENERAL SECTION ===
                 Text(
                     text = stringResource(R.string.general),
@@ -202,78 +185,6 @@ fun NavigationDrawerContent(
         }
     }
 }
-
-@Composable
-private fun PremiumNavigationItem(
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_crown_2),
-                    contentDescription = stringResource(R.string.crown),
-                    modifier = Modifier.size(22.dp),
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-
-            Spacer(modifier = Modifier.width(14.dp))
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = stringResource(R.string.upgrade_to_pro),
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Text(
-                    text = stringResource(R.string.remove_ads_support_developer),
-                    fontSize = 13.sp,
-                    lineHeight = 17.sp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.primary
-            ) {
-                Text(
-                    text = stringResource(R.string.pro),
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    letterSpacing = 0.5.sp
-                )
-            }
-        }
-    }
-}
-
 
 @Composable
 private fun NavigationDrawerItem(

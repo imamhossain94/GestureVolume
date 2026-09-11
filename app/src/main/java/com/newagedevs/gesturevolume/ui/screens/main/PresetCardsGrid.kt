@@ -52,14 +52,20 @@ fun PresetCardsGrid(
 
     val presets = remember(primary, onSurface) {
         listOf(
-            // Black rather than a theme colour, and narrow rather than wide: the Default bar is
-            // now a slim opaque pill, and a swatch that showed the old indigo slab would be
-            // advertising a preset that no longer exists.
+            // First: the default.
+            // The swatch is drawn from the shape's own geometry, so the corner radius here is
+            // carried only to satisfy the constructor — a tab has no corners to round.
+            PresetConfig("Dock", R.string.preset_dock_title, R.string.preset_dock_subtitle, Icons.Default.Bookmark,
+                listOf(primary, primary), 14.dp, 0.dp, ComposeColor.Black, 0.9f,
+                shape = HandlerShape.TAB, flare = 0.29f),
+            // Black rather than a theme colour, and narrow rather than wide: the Edge bar is a slim
+            // opaque pill, and a swatch that showed the old indigo slab would be advertising a
+            // preset that no longer exists.
             // 12dp wide, rounded on the inside and softened — not squared — on the edge side.
             // The preset itself uses 1dp there, which at swatch scale is a hard corner and reads
             // as a mistake rather than as a bar meeting the edge of a screen; 4dp is the same
             // idea drawn at a size where it is legible.
-            PresetConfig("Default", R.string.preset_default_title, R.string.preset_default_subtitle, Icons.Default.Settings,
+            PresetConfig("Edge", R.string.preset_edge_title, R.string.preset_edge_subtitle, Icons.Default.Settings,
                 listOf(primary, primary), 12.dp, 10.dp, ComposeColor.Black, 0.9f, outerCorner = 4.dp),
             PresetConfig("Minimal", R.string.preset_minimal_title, R.string.preset_minimal_subtitle, Icons.Default.LinearScale,
                 listOf(primary, primary), 8.dp, 6.dp, onSurface, 0.4f),
@@ -71,11 +77,6 @@ fun PresetCardsGrid(
                 listOf(primary, primary), 22.dp, 10.dp, onSurface, 0.7f),
             PresetConfig("Ghost", R.string.preset_ghost_title, R.string.preset_ghost_subtitle, Icons.Default.HideSource,
                 listOf(primary, primary), 16.dp, 8.dp, onSurface, 0.1f),
-            // The swatch is drawn from the shape's own geometry, so the corner radius here is
-            // carried only to satisfy the constructor — a tab has no corners to round.
-            PresetConfig("Dock", R.string.preset_dock_title, R.string.preset_dock_subtitle, Icons.Default.Bookmark,
-                listOf(primary, primary), 14.dp, 0.dp, ComposeColor.Black, 0.9f,
-                shape = HandlerShape.TAB, flare = 0.29f)
         )
     }
 

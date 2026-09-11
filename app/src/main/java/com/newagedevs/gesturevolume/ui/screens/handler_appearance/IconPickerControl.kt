@@ -33,7 +33,9 @@ fun IconPickerControl(
     label: String,
     selectedIconRes: Int,
     borderColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    /** What to say beside the icon, where "Tap to change" is not the most useful thing to say. */
+    caption: String? = null,
 ) {
     // Guard against dangling stored icon ids (stale across app updates) so a missing
     // resource renders the default instead of crashing the whole screen.
@@ -72,7 +74,7 @@ fun IconPickerControl(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Tap to change",
+                        text = caption ?: "Tap to change",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface

@@ -376,4 +376,20 @@
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">Cạnh</string>
     <string name="preset_edge_subtitle">Thanh mỏng sát mép</string>
+    <string name="icon_sun">Mặt trời</string>
+    <string name="icon_dim">Mờ</string>
+    <string name="upgrade_tagline">Mua một lần. Dùng mãi mãi.</string>
+    <string name="upgrade_ad_free_title">Không quảng cáo</string>
+    <string name="upgrade_ad_free_desc">Mọi quảng cáo biến mất khỏi toàn bộ ứng dụng, vĩnh viễn.</string>
+    <string name="upgrade_features_title">Thêm tính năng</string>
+    <string name="upgrade_features_desc">Các tính năng Pro mới ngay khi ra mắt, không tốn thêm phí.</string>
+    <string name="upgrade_support_title">Ủng hộ nhà phát triển</string>
+    <string name="upgrade_support_desc">Giúp ứng dụng độc lập và ngày càng tốt hơn.</string>
+    <string name="upgrade_buy">Nâng cấp với giá %1$s</string>
+    <string name="upgrade_one_time">Mua một lần. Không đăng ký.</string>
+    <string name="upgrade_restore">Khôi phục giao dịch</string>
+    <string name="upgrade_thanks_title">Bạn đã là Pro</string>
+    <string name="upgrade_thanks_desc">Cảm ơn bạn đã ủng hộ ứng dụng. Hãy tận hưởng không quảng cáo.</string>
+    <string name="about_ideas_by">Ý tưởng tính năng bởi</string>
+    <string name="about_ideas_desc">Đã đề xuất nhiều tính năng trong ứng dụng này và vẫn tiếp tục đưa ra ý tưởng.</string>
 </resources>

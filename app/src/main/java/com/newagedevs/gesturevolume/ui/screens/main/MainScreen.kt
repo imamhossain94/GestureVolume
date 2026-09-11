@@ -59,6 +59,9 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 import com.newagedevs.gesturevolume.R
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.layout.size
+import com.newagedevs.gesturevolume.ui.screens.upgrade.ProGold
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +74,7 @@ fun MainScreen(
     onNavigateToQuickPanel: () -> Unit,
     onNavigateToLongPressMenu: () -> Unit,
     onNavigateToFaq: () -> Unit,
+    onNavigateToUpgrade: () -> Unit,
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
@@ -133,8 +137,15 @@ fun MainScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { (context as? Activity)?.finish() }) {
-                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close))
+                        // The way to Pro, where the close button used to be. Gold, because it is
+                        // the one thing on this bar that is an offer rather than a control.
+                        IconButton(onClick = onNavigateToUpgrade) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_crown_2),
+                                contentDescription = stringResource(R.string.upgrade_to_pro),
+                                tint = ProGold,
+                                modifier = Modifier.size(24.dp)
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(

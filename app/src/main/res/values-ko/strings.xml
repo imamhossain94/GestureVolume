@@ -701,4 +701,24 @@
     <string name="slider_show_icon_desc">무엇을 조절하는지 알려 주는 작은 표시를 트랙 아래쪽에 둡니다.</string>
     <string name="slider_auto_brightness">적응형 밝기 끄기</string>
     <string name="slider_auto_brightness_desc">밝기 슬라이더가 열려 있는 동안에만. 이 설정이 없으면 조도 센서가 1~2초 안에 설정을 되돌립니다. 서비스가 멈추면 다시 켜집니다.</string>
+    <string name="slider_icon">아이콘</string>
+    <string name="slider_icon_auto">자동</string>
+    <string name="slider_icon_opens_panel">아이콘으로 볼륨 패널 열기</string>
+    <string name="slider_icon_opens_panel_desc">아이콘을 탭하면 시스템 전체 볼륨 패널이 열려 미디어, 통화, 벨소리, 알람 볼륨을 한곳에서 조절할 수 있습니다.</string>
+    <string name="icon_sun">해</string>
+    <string name="icon_dim">어둡게</string>
+    <string name="upgrade_tagline">한 번 구매로 평생 사용하세요.</string>
+    <string name="upgrade_ad_free_title">광고 없음</string>
+    <string name="upgrade_ad_free_desc">앱 전체에서 모든 광고가 영구적으로 사라집니다.</string>
+    <string name="upgrade_features_title">더 많은 기능</string>
+    <string name="upgrade_features_desc">새로운 Pro 기능을 추가 비용 없이 받아보세요.</string>
+    <string name="upgrade_support_title">개발자 응원하기</string>
+    <string name="upgrade_support_desc">앱이 독립적으로 유지되고 계속 발전할 수 있도록 도와줍니다.</string>
+    <string name="upgrade_buy">%1$s에 업그레이드</string>
+    <string name="upgrade_one_time">일회성 구매. 구독 없음.</string>
+    <string name="upgrade_restore">구매 복원</string>
+    <string name="upgrade_thanks_title">Pro 사용 중</string>
+    <string name="upgrade_thanks_desc">앱을 응원해 주셔서 감사합니다. 광고 없이 즐기세요.</string>
+    <string name="about_ideas_by">기능 아이디어 제공</string>
+    <string name="about_ideas_desc">이 앱의 많은 기능을 제안했고, 지금도 새로운 아이디어를 내고 있습니다.</string>
 </resources>

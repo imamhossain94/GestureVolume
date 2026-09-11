@@ -56,6 +56,13 @@ import com.newagedevs.gesturevolume.ui.screens.handler_appearance.AppearanceMoti
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.PanelAnimation
 import com.newagedevs.gesturevolume.utils.PanelTheme
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.VerticalDivider
+import com.newagedevs.gesturevolume.utils.ContextMenuLayout
+import com.newagedevs.gesturevolume.utils.ContextMenuStyle
 
 /**
  * The long-press menu, drawn beside the bar.
@@ -77,6 +84,8 @@ fun ContextMenuOverlay(
     anchor: IntRect,
     frame: IntSize,
     grid: Boolean,
+    /** Size, lines and page size, from the settings. See [ContextMenuStyle]. */
+    style: ContextMenuStyle = ContextMenuStyle(),
     theme: String,
     /** Which of [PanelAnimation]'s entrances to play. */
     animation: String,
@@ -171,6 +180,7 @@ fun ContextMenuOverlay(
             grid = grid,
             theme = theme,
             surfaceOverride = surfaceOverride,
+            style = style,
             onSelect = onSelect,
             modifier = Modifier
                 .layout { measurable, constraints ->
@@ -227,6 +237,8 @@ fun ContextMenuCard(
     theme: String = PanelTheme.SOLID,
     /** A surface colour of the user's own, or null to take the material's. */
     surfaceOverride: Long? = null,
+    /** Its size, its lines and a grid's page size. See [ContextMenuStyle]. */
+    style: ContextMenuStyle = ContextMenuStyle(),
 ) {
     val shape = RoundedCornerShape(MENU_CORNER)
     val palette = PanelTheme.menuPalette(theme, surfaceOverride)
@@ -236,19 +248,20 @@ fun ContextMenuCard(
     val chip = Color(palette.chip)
     val divider = Color(palette.divider)
 
+    val lines = ContextMenuLayout.linesFor(style.lines, grid)
+    val columns = if (grid) ContextMenuLayout.columnsFor(style.widthDp) else 1
+    // The tiles share out the width the card was given, so every full row runs edge to edge.
+    val tileWidth = (style.widthDp.dp - MENU_PADDING * 2) / columns
+    val perPage = style.perPage
+    val paged = grid && perPage != ContextMenuLayout.PER_PAGE_ALL && entries.size > perPage
+
     Column(
         modifier = modifier
-            // The grid is sized by its columns and the list by its longest label, so the two want
-            // different widths from the same modifier chain. Fixed for the grid because a
-            // three-column tile layout with a flexible width is a layout that reflows depending
-            // on which actions you happened to choose.
-            .then(
-                if (grid) {
-                    Modifier.width(GRID_TILE_W * GRID_COLUMNS + MENU_PADDING * 2)
-                } else {
-                    Modifier.widthIn(min = 180.dp, max = 270.dp)
-                }
-            )
+            // One width for both layouts, the user's. The grid used to be sized by its columns and
+            // the list by its longest label, which left the card's size to whichever actions
+            // happened to be picked.
+            .width(style.widthDp.dp)
+            .heightIn(max = style.maxHeightDp.dp)
             .clip(shape)
             .background(surface)
             .then(
@@ -259,23 +272,38 @@ fun ContextMenuCard(
                 }
             )
             .padding(MENU_PADDING)
-            .verticalScroll(rememberScrollState())
+            // Pages scroll on their own, inside the pager. A card that scrolled as well would
+            // swallow every vertical flick meant for a page.
+            .then(if (paged) Modifier else Modifier.verticalScroll(rememberScrollState()))
     ) {
         if (grid) {
-            // Chunked into rows rather than drawn with a lazy grid, because the whole menu is on
-            // screen at once inside a scrolling column — a lazy grid nested in that has no height
-            // of its own to resolve against.
-            entries.chunked(GRID_COLUMNS).forEach { row ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    // A short last row is centred under the full ones rather than left-aligned
-                    // with a hole beside it. Seven entries in a three-wide grid is the common
-                    // case, not an edge case, so what that last row looks like *is* what the menu
-                    // looks like.
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    row.forEach { entry -> GridTile(entry, onSurface, onSurfaceDim, chip, onSelect) }
+            val tile: @Composable (HandlerActionCatalog.Entry) -> Unit = { entry ->
+                GridTile(entry, tileWidth, onSurface, onSurfaceDim, chip, onSelect)
+            }
+            if (paged) {
+                val pages = entries.chunked(perPage)
+                val pagerState = rememberPagerState(pageCount = { pages.size })
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.weight(1f, fill = false),
+                    verticalAlignment = Alignment.Top,
+                ) { page ->
+                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                        // Every page as tall as a full one, so the card keeps its size when the
+                        // finger reaches a short last page.
+                        GridRows(
+                            entries = pages[page],
+                            columns = columns,
+                            rowsPerPage = (perPage + columns - 1) / columns,
+                            lines = lines,
+                            divider = divider,
+                            tile = tile,
+                        )
+                    }
                 }
+                PageDots(count = pages.size, current = pagerState.currentPage, color = onSurface)
+            } else {
+                GridRows(entries, columns, rowsPerPage = 0, lines = lines, divider = divider, tile = tile)
             }
         } else {
             // Hairlines between the rows, not around them. On a material this transparent the
@@ -283,7 +311,7 @@ fun ContextMenuCard(
             // saying where one target ends and the next begins — which is exactly what a real
             // frosted menu uses a divider for.
             entries.forEachIndexed { index, entry ->
-                if (index > 0) {
+                if (index > 0 && lines == ContextMenuLayout.LINES_HORIZONTAL) {
                     HorizontalDivider(
                         modifier = Modifier.padding(start = ICON_CHIP + 20.dp, end = 8.dp),
                         thickness = Dp.Hairline,
@@ -292,6 +320,83 @@ fun ContextMenuCard(
                 }
                 ListRow(entry, onSurface, chip, onSelect)
             }
+        }
+    }
+}
+
+/**
+ * The grid's rows, with whichever lines were asked for between them and between their tiles.
+ *
+ * Chunked into rows rather than drawn with a lazy grid, because the whole menu is on screen at
+ * once inside a scrolling column — a lazy grid nested in that has no height of its own to resolve
+ * against. [rowsPerPage], when not zero, pads a short page out with empty rows.
+ */
+@Composable
+private fun GridRows(
+    entries: List<HandlerActionCatalog.Entry>,
+    columns: Int,
+    rowsPerPage: Int,
+    lines: String,
+    divider: Color,
+    tile: @Composable (HandlerActionCatalog.Entry) -> Unit,
+) {
+    val rows = entries.chunked(columns)
+    val across = lines == ContextMenuLayout.LINES_HORIZONTAL || lines == ContextMenuLayout.LINES_GRID
+    val down = lines == ContextMenuLayout.LINES_VERTICAL || lines == ContextMenuLayout.LINES_GRID
+    for (r in 0 until maxOf(rows.size, rowsPerPage)) {
+        val row = rows.getOrNull(r)
+        if (row == null) {
+            Spacer(modifier = Modifier.height(GRID_TILE_H))
+            continue
+        }
+        if (r > 0 && across) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 6.dp),
+                thickness = Dp.Hairline,
+                color = divider,
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            // A short last row is centred under the full ones rather than left-aligned with a
+            // hole beside it. Seven entries in a three-wide grid is the common case, not an edge
+            // case, so what that last row looks like *is* what the menu looks like.
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            row.forEachIndexed { i, entry ->
+                if (i > 0 && down) {
+                    VerticalDivider(
+                        modifier = Modifier.height(GRID_TILE_H - 20.dp),
+                        thickness = Dp.Hairline,
+                        color = divider,
+                    )
+                }
+                tile(entry)
+            }
+        }
+    }
+}
+
+/** Which page of the grid is showing, as a row of dots under it. */
+@Composable
+private fun PageDots(count: Int, current: Int, color: Color) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 6.dp, bottom = 2.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        repeat(count) { i ->
+            val on = i == current
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 3.dp)
+                    .size(if (on) 7.dp else 5.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = if (on) 0.9f else 0.35f))
+            )
         }
     }
 }
@@ -316,6 +421,7 @@ fun ContextMenuCard(
 @Composable
 private fun GridTile(
     entry: HandlerActionCatalog.Entry,
+    width: Dp,
     onSurface: Color,
     onSurfaceDim: Color,
     chip: Color,
@@ -323,7 +429,7 @@ private fun GridTile(
 ) {
     Column(
         modifier = Modifier
-            .width(GRID_TILE_W)
+            .width(width)
             .height(GRID_TILE_H)
             .clip(RoundedCornerShape(16.dp))
             .clickable { onSelect(entry) }
@@ -400,17 +506,13 @@ private fun ListRow(
     }
 }
 
-/** Three across: as many as fit beside the bar without the card reaching the far edge. */
-private const val GRID_COLUMNS = 3
-
-/** Wide enough for two words of label; tall enough for two lines of it on every tile. */
-private val GRID_TILE_W = 74.dp
+/** Tall enough for two lines of label on every tile. How wide they are is the card's width. */
 private val GRID_TILE_H = 88.dp
 
 /** The filled square behind each icon. Shared by both layouts, which is what unifies them. */
 private val ICON_CHIP = 40.dp
 
-private val MENU_PADDING = 8.dp
+private val MENU_PADDING = ContextMenuLayout.PADDING_DP.dp
 private val MENU_CORNER = 24.dp
 
 /**

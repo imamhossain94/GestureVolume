@@ -376,4 +376,20 @@
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">حافة</string>
     <string name="preset_edge_subtitle">شريط نحيل ملتصق بالجانب</string>
+    <string name="icon_sun">شمس</string>
+    <string name="icon_dim">خافت</string>
+    <string name="upgrade_tagline">شراء واحد. لك إلى الأبد.</string>
+    <string name="upgrade_ad_free_title">بلا إعلانات إطلاقًا</string>
+    <string name="upgrade_ad_free_desc">تختفي جميع الإعلانات من التطبيق بالكامل، وإلى الأبد.</string>
+    <string name="upgrade_features_title">ميزات أكثر</string>
+    <string name="upgrade_features_desc">ميزات Pro الجديدة فور صدورها، دون أي تكلفة إضافية.</string>
+    <string name="upgrade_support_title">ادعم المطوّر</string>
+    <string name="upgrade_support_desc">يبقي التطبيق مستقلًا ويجعله يتحسن باستمرار.</string>
+    <string name="upgrade_buy">الترقية مقابل %1$s</string>
+    <string name="upgrade_one_time">شراء لمرة واحدة. بلا اشتراك.</string>
+    <string name="upgrade_restore">استعادة الشراء</string>
+    <string name="upgrade_thanks_title">أنت مشترك Pro</string>
+    <string name="upgrade_thanks_desc">شكرًا لدعمك التطبيق. استمتع به بلا إعلانات.</string>
+    <string name="about_ideas_by">أفكار الميزات من</string>
+    <string name="about_ideas_desc">اقترح كثيرًا من ميزات هذا التطبيق، ولا تزال أفكاره تتوالى.</string>
 </resources>

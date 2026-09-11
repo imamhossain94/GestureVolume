@@ -21,6 +21,7 @@ import com.newagedevs.gesturevolume.utils.VolumeStreamMode
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.newagedevs.gesturevolume.utils.ContextMenuStyle
 
 @Singleton
 class SharedPref @Inject constructor(
@@ -40,7 +41,10 @@ class SharedPref @Inject constructor(
     val slider: QuickSliderStore by lazy { QuickSliderStore(sharedPreferences) }
 
     init {
-        pinLegacyAppearanceDefaults()
+        // Read before either pin writes its flag, which would make every install look lived-in.
+        val freshInstall = sharedPreferences.all.isEmpty()
+        pinLegacyAppearanceDefaults(freshInstall)
+        pinEdgeAppearanceDefaults(freshInstall)
     }
 
     /**
@@ -64,13 +68,12 @@ class SharedPref @Inject constructor(
      * Runs in `init` rather than from an activity because the overlay service can be the first
      * thing to read a preference after a reboot, and it must see the same bar the user last saw.
      */
-    private fun pinLegacyAppearanceDefaults() {
+    private fun pinLegacyAppearanceDefaults(freshInstall: Boolean) {
         if (sharedPreferences.getBoolean(APPEARANCE_DEFAULTS_PINNED, false)) return
 
-        val isExistingInstall = sharedPreferences.all.isNotEmpty()
         sharedPreferences.edit {
             putBoolean(APPEARANCE_DEFAULTS_PINNED, true)
-            if (!isExistingInstall) return@edit
+            if (freshInstall) return@edit
 
             fun pinInt(key: String, value: Int) {
                 if (!sharedPreferences.contains(key)) putInt(key, value)
@@ -92,6 +95,62 @@ class SharedPref @Inject constructor(
             pinFloat(HANDLER_POSITION_FRACTION, LEGACY_POSITION_FRACTION)
             pinFloat(HANDLER_POS_Y_PORTRAIT, LEGACY_POSITION_FRACTION)
             pinFloat(HANDLER_POS_Y_LANDSCAPE, LEGACY_POSITION_FRACTION)
+        }
+    }
+
+    /**
+     * Freezes the Edge preset onto an install that already existed, once: the same guard as
+     * [pinLegacyAppearanceDefaults], one default later.
+     *
+     * The slim pill was the out-of-the-box bar until the Dock tab took over, and an install that
+     * never touched the appearance screen has been reading it as a fallback ever since. Without
+     * this, every such bar would turn into a tab on update. Runs after the legacy pin, so an
+     * install old enough for that one keeps its indigo bar and only gets the keys that pin left
+     * alone. Every appearance key that falls back to the default preset is written, including the
+     * ones the two presets happen to agree on, so the next default can move without this growing.
+     */
+    private fun pinEdgeAppearanceDefaults(freshInstall: Boolean) {
+        if (sharedPreferences.getBoolean(EDGE_DEFAULTS_PINNED, false)) return
+
+        sharedPreferences.edit {
+            putBoolean(EDGE_DEFAULTS_PINNED, true)
+            if (freshInstall) return@edit
+
+            fun pinInt(key: String, value: Int) {
+                if (!sharedPreferences.contains(key)) putInt(key, value)
+            }
+
+            fun pinFloat(key: String, value: Float) {
+                if (!sharedPreferences.contains(key)) putFloat(key, value)
+            }
+
+            fun pinBoolean(key: String, value: Boolean) {
+                if (!sharedPreferences.contains(key)) putBoolean(key, value)
+            }
+
+            fun pinString(key: String, value: String) {
+                if (!sharedPreferences.contains(key)) putString(key, value)
+            }
+
+            val edge = HandlerPresets.EDGE
+            pinInt(HANDLER_COLOR, edge.bgColor.toArgb())
+            pinInt(HANDLER_BACKGROUND_ALPHA, edge.bgAlpha)
+            pinInt(HANDLER_STROKE_COLOR, edge.strokeColor.toArgb())
+            pinFloat(HANDLER_STROKE_WIDTH, edge.strokeWidth)
+            pinInt(HANDLER_STROKE_ALPHA, edge.strokeAlpha)
+            pinFloat(HANDLER_CORNER_RADIUS_TL, edge.topLeft)
+            pinFloat(HANDLER_CORNER_RADIUS_TR, edge.topRight)
+            pinFloat(HANDLER_CORNER_RADIUS_BL, edge.bottomLeft)
+            pinFloat(HANDLER_CORNER_RADIUS_BR, edge.bottomRight)
+            pinFloat(HANDLER_WIDTH + "_dp", edge.width)
+            pinFloat(HANDLER_HEIGHT, edge.height)
+            pinFloat(HANDLER_EDGE_MARGIN, edge.edgeMargin)
+            pinString(HANDLER_SHAPE, edge.shape)
+            pinFloat(HANDLER_SHAPE_FLARE, edge.flare)
+            pinFloat(HANDLER_ICON_SIZE, edge.iconSize)
+            pinInt(HANDLER_ICON_COLOR, edge.iconColor.toArgb())
+            pinBoolean(HANDLER_SHOW_ICON, edge.showIcon)
+            pinBoolean(HANDLER_VIBRATE_ON_CLICK, edge.vibrate)
         }
     }
 
@@ -188,6 +247,9 @@ class SharedPref @Inject constructor(
         const val LEGACY_POSITION_FRACTION = 0.12f
         const val APPEARANCE_DEFAULTS_PINNED = "appearanceDefaultsPinned"
 
+        /** Set once [pinEdgeAppearanceDefaults] has run. */
+        const val EDGE_DEFAULTS_PINNED = "edgeDefaultsPinned"
+
         /** The Default preset's side, as the string this preference stores. */
         val DEFAULT_SIDE: String =
             if (HandlerPresets.DEFAULT.gravity == Gravity.START) "Left" else "Right"
@@ -238,6 +300,10 @@ class SharedPref @Inject constructor(
         const val CONTEXT_MENU_ITEMS = "handlerContextMenuItems"
         const val CONTEXT_MENU_ORDER = "handlerContextMenuOrder"
         const val CONTEXT_MENU_LAYOUT = "handlerContextMenuLayout"
+        const val CONTEXT_MENU_WIDTH = "handlerContextMenuWidthDp"
+        const val CONTEXT_MENU_HEIGHT = "handlerContextMenuHeightDp"
+        const val CONTEXT_MENU_LINES = "handlerContextMenuLines"
+        const val CONTEXT_MENU_PER_PAGE = "handlerContextMenuPerPage"
         const val PANEL_THEME = "panelTheme"
         const val PANEL_ANIMATION = "panelAnimation"
         const val PANEL_ANIMATION_SPEED = "panelAnimationSpeed"
@@ -942,6 +1008,48 @@ class SharedPref @Inject constructor(
         sharedPreferences.edit { putString(CONTEXT_MENU_LAYOUT, value) }
     }
 
+    fun getContextMenuWidthDp(): Float =
+        sharedPreferences.getFloat(CONTEXT_MENU_WIDTH, ContextMenuLayout.DEFAULT_WIDTH_DP)
+            .coerceIn(ContextMenuLayout.WIDTH_RANGE)
+
+    fun setContextMenuWidthDp(value: Float) {
+        sharedPreferences.edit { putFloat(CONTEXT_MENU_WIDTH, value.coerceIn(ContextMenuLayout.WIDTH_RANGE)) }
+    }
+
+    fun getContextMenuHeightDp(): Float =
+        sharedPreferences.getFloat(CONTEXT_MENU_HEIGHT, ContextMenuLayout.DEFAULT_HEIGHT_DP)
+            .coerceIn(ContextMenuLayout.HEIGHT_RANGE)
+
+    fun setContextMenuHeightDp(value: Float) {
+        sharedPreferences.edit { putFloat(CONTEXT_MENU_HEIGHT, value.coerceIn(ContextMenuLayout.HEIGHT_RANGE)) }
+    }
+
+    /**
+     * The lines between the menu's entries as chosen, or null for the layout's own. Kept as the
+     * choice rather than resolved, so switching layout falls back to that layout's look for anyone
+     * who has never picked. See [ContextMenuLayout.linesFor].
+     */
+    fun getContextMenuLines(): String? = sharedPreferences.getString(CONTEXT_MENU_LINES, null)
+
+    fun setContextMenuLines(value: String) {
+        sharedPreferences.edit { putString(CONTEXT_MENU_LINES, value) }
+    }
+
+    fun getContextMenuPerPage(): Int = ContextMenuLayout.sanitizePerPage(
+        sharedPreferences.getInt(CONTEXT_MENU_PER_PAGE, ContextMenuLayout.PER_PAGE_ALL)
+    )
+
+    fun setContextMenuPerPage(value: Int) {
+        sharedPreferences.edit { putInt(CONTEXT_MENU_PER_PAGE, ContextMenuLayout.sanitizePerPage(value)) }
+    }
+
+    fun getContextMenuStyle(): ContextMenuStyle = ContextMenuStyle(
+        widthDp = getContextMenuWidthDp(),
+        maxHeightDp = getContextMenuHeightDp(),
+        lines = getContextMenuLines(),
+        perPage = getContextMenuPerPage(),
+    )
+
     /** True when *we* turned adaptive brightness off, so we know it is ours to hand back. */
     fun getBrightnessAutoWasOn(): Boolean =
         sharedPreferences.getBoolean(BRIGHTNESS_AUTO_WAS_ON, false)
@@ -1297,10 +1405,9 @@ class SharedPref @Inject constructor(
     /**
      * The outline the bar is cut to, and how far a tab's ends sweep. See [HandlerShape].
      *
-     * Absent from an install that predates shapes, and the fallback for that is the Default
-     * preset's — a rounded rectangle — so nobody's bar changes shape on update. That is also why
-     * these two keys are *not* in [pinLegacyAppearanceDefaults]: there is nothing to pin when the
-     * new default and the old behaviour are the same thing.
+     * Absent from an install that predates shapes. The fallback is the default preset's, which is
+     * a tab now; an install from before that has its rounded rectangle written out by
+     * [pinEdgeAppearanceDefaults], so nobody's bar changes shape on update.
      */
     fun getHandlerShape(): String =
         HandlerShape.sanitize(

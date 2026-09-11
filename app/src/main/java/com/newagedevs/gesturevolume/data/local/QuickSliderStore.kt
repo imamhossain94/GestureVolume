@@ -67,6 +67,9 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         const val VOLUME_KEYS_INSTANT = "instant"
         val ALL_VOLUME_KEY_MODES = listOf(VOLUME_KEYS_OFF, VOLUME_KEYS_FOLLOW, VOLUME_KEYS_INSTANT)
 
+        /** The icon that says what the panel controls. See [getIconName]. */
+        const val ICON_AUTO = "auto"
+
         private const val OPEN_WITH = "sliderOpenWith"
         private const val TARGET = "sliderTarget"
         private const val LENGTH = "sliderLengthDp"
@@ -90,6 +93,8 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val SHAPE_FLARE = "sliderShapeFlare"
         private const val VALUE_MARGIN = "sliderValueMarginDp"
         private const val ICON_MARGIN = "sliderIconMarginDp"
+        private const val ICON = "sliderIcon"
+        private const val ICON_OPENS_VOLUME_PANEL = "sliderIconOpensVolumePanel"
 
         const val DEFAULT_LENGTH = 220f
         /**
@@ -285,6 +290,26 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
 
     fun getShowIcon(): Boolean = prefs.getBoolean(SHOW_ICON, true)
     fun setShowIcon(value: Boolean) = prefs.edit { putBoolean(SHOW_ICON, value) }
+
+    /**
+     * Which icon the panel wears: a drawable's entry name, or [ICON_AUTO] for the one that says
+     * what the panel controls, a speaker for a volume and a sun for brightness.
+     *
+     * A name rather than a resource id, for the reason the handler's icon is stored as one: ids are
+     * renumbered between builds, and a stale one draws the wrong thing or nothing at all.
+     */
+    fun getIconName(): String = prefs.getString(ICON, null)?.takeIf { it.isNotBlank() } ?: ICON_AUTO
+    fun setIconName(value: String) = prefs.edit { putString(ICON, value.ifBlank { ICON_AUTO }) }
+
+    /**
+     * Whether a tap on the icon opens the system's full volume panel, every stream on one sheet,
+     * instead of setting the level at the spot where the icon happens to be drawn.
+     *
+     * On unless switched off. The icon is a small target nobody lands on by accident, and the sheet
+     * is everything this panel does not show: the other volumes, and where the sound is playing.
+     */
+    fun getIconOpensVolumePanel(): Boolean = prefs.getBoolean(ICON_OPENS_VOLUME_PANEL, true)
+    fun setIconOpensVolumePanel(value: Boolean) = prefs.edit { putBoolean(ICON_OPENS_VOLUME_PANEL, value) }
 
     /**
      * Whether opening the brightness slider switches adaptive brightness off.

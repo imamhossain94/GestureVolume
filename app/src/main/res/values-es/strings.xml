@@ -701,4 +701,24 @@
     <string name="slider_show_icon_desc">Una marca pequeña al pie de la pista para indicar qué ajusta.</string>
     <string name="slider_auto_brightness">Desactivar el brillo adaptativo</string>
     <string name="slider_auto_brightness_desc">Mientras el control de brillo está abierto. Sin esto, el sensor de luz deshace lo que ajustes en uno o dos segundos. Se devuelve cuando el servicio se detiene.</string>
+    <string name="slider_icon">Icono</string>
+    <string name="slider_icon_auto">Automático</string>
+    <string name="slider_icon_opens_panel">El icono abre el panel de volumen</string>
+    <string name="slider_icon_opens_panel_desc">Toca el icono para abrir el panel de volumen completo del sistema, con el volumen de multimedia, llamadas, tono y alarma en un solo lugar.</string>
+    <string name="icon_sun">Sol</string>
+    <string name="icon_dim">Tenue</string>
+    <string name="upgrade_tagline">Un solo pago. Tuyo para siempre.</string>
+    <string name="upgrade_ad_free_title">Sin anuncios, en ningún lugar</string>
+    <string name="upgrade_ad_free_desc">Todos los anuncios desaparecen de toda la app, para siempre.</string>
+    <string name="upgrade_features_title">Más funciones</string>
+    <string name="upgrade_features_desc">Nuevos extras Pro a medida que lleguen, sin coste adicional.</string>
+    <string name="upgrade_support_title">Apoya al desarrollador</string>
+    <string name="upgrade_support_desc">Mantiene la app independiente y hace que siga mejorando.</string>
+    <string name="upgrade_buy">Mejorar por %1$s</string>
+    <string name="upgrade_one_time">Pago único. Sin suscripción.</string>
+    <string name="upgrade_restore">Restaurar compra</string>
+    <string name="upgrade_thanks_title">Ya eres Pro</string>
+    <string name="upgrade_thanks_desc">Gracias por apoyar la app. Disfrútala sin anuncios.</string>
+    <string name="about_ideas_by">Ideas de funciones de</string>
+    <string name="about_ideas_desc">Sugirió muchas de las funciones de esta app y sigue aportando ideas.</string>
 </resources>

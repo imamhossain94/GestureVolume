@@ -19,6 +19,7 @@ import androidx.core.graphics.drawable.DrawableCompat
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.PanelAnimation
 import com.newagedevs.gesturevolume.utils.HandlerShape
+import android.view.ViewConfiguration
 
 /**
  * The bar, mid-way through becoming a track, at any point on that journey.
@@ -197,6 +198,20 @@ class QuickSliderView(context: Context) : View(context) {
     private var icon: Drawable? = null
     private var showValue = true
 
+    /**
+     * Whether a tap on the icon is its own gesture. See [Listener.onIconTapped].
+     *
+     * A tap only. A finger that lands on the icon and moves is setting the level like anywhere
+     * else on the track, so nothing is decided until it either lifts or travels.
+     */
+    var iconTapEnabled = false
+
+    /** A finger is down on the icon and has not travelled far enough to be a drag. */
+    private var iconPressed = false
+    private var iconDownY = 0f
+    private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+    private val iconPressPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+
     /** 0 = the bar's shape and colour, 1 = the full track. */
     private var expansion = 0f
 
@@ -270,6 +285,12 @@ class QuickSliderView(context: Context) : View(context) {
 
         /** The finger lifted. The panel has been used, so it can now show its result and go. */
         fun onAdjustFinished()
+
+        /**
+         * The icon was tapped, as opposed to the track under it. Only ever reported while
+         * [iconTapEnabled] is on; otherwise the icon is part of the track like everything else.
+         */
+        fun onIconTapped() {}
     }
 
     var listener: Listener? = null
@@ -678,8 +699,9 @@ class QuickSliderView(context: Context) : View(context) {
      */
     fun setInteractive(value: Boolean) {
         interactive = value
-        if (!value && grabbed) {
+        if (!value && (grabbed || iconPressed)) {
             grabbed = false
+            iconPressed = false
             invalidate()
         }
     }
@@ -1542,24 +1564,51 @@ class QuickSliderView(context: Context) : View(context) {
         }
         if (!interactive) return false
         when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                grabbed = true
-                // Measured against the drawn rect rather than the view, because the two are only
-                // the same once the panel is fully open — and a touch landing during the last few
-                // frames of the animation must still mean what it looks like it means.
-                val h = drawRect.height()
-                if (h <= 0f) return true
-                val fraction = (1f - (event.y - drawRect.top) / h).coerceIn(0f, 1f)
-                listener?.onValuePicked(fraction)
-                invalidate()
+            MotionEvent.ACTION_DOWN -> {
+                // On the icon nothing is picked yet: a lift makes it the icon's tap, and travel
+                // makes it the track's drag after all. Picking on the way down would set the level
+                // to wherever the icon is drawn before either was known.
+                if (iconTapEnabled && isOnIcon(event.y)) {
+                    iconPressed = true
+                    iconDownY = event.y
+                    invalidate()
+                } else {
+                    pickAt(event.y)
+                }
+            }
+            MotionEvent.ACTION_MOVE -> {
+                if (iconPressed) {
+                    if (kotlin.math.abs(event.y - iconDownY) <= touchSlop) return true
+                    iconPressed = false
+                }
+                pickAt(event.y)
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                if (iconPressed) {
+                    iconPressed = false
+                    invalidate()
+                    if (event.actionMasked == MotionEvent.ACTION_UP) listener?.onIconTapped()
+                    return true
+                }
                 grabbed = false
                 invalidate()
                 listener?.onAdjustFinished()
             }
         }
         return true
+    }
+
+    /** The finger is on the track at [y], and that is the value. */
+    private fun pickAt(y: Float) {
+        grabbed = true
+        // Measured against the drawn rect rather than the view, because the two are only the same
+        // once the panel is fully open — and a touch landing during the last few frames of the
+        // animation must still mean what it looks like it means.
+        val h = drawRect.height()
+        if (h <= 0f) return
+        val fraction = (1f - (y - drawRect.top) / h).coerceIn(0f, 1f)
+        listener?.onValuePicked(fraction)
+        invalidate()
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -1739,6 +1788,20 @@ class QuickSliderView(context: Context) : View(context) {
         edgePaint?.let { canvas.drawPath(drawPath, it) }
     }
 
+    /** The icon's size and centre, shared by the drawing and the touch test so the two agree. */
+    private fun iconSize(): Float = (drawRect.width() * 0.46f).coerceIn(12f * density, 26f * density)
+
+    private fun iconCenterY(size: Float): Float = drawRect.bottom - iconMarginPx - size / 2f
+
+    /** Whether a touch at [y] is on the icon, give or take a fingertip. */
+    private fun isOnIcon(y: Float): Boolean {
+        if (icon == null) return false
+        val size = iconSize()
+        val reach = size / 2f + ICON_TOUCH_SLACK_DP * density
+        val cy = iconCenterY(size)
+        return y >= cy - reach && y <= cy + reach
+    }
+
     private fun drawContent(canvas: Canvas, overFill: Boolean) {
         if (contentAlpha <= 0.01f) return
         val ink = if (overFill) blendedTrackColor else fillColor
@@ -1756,9 +1819,15 @@ class QuickSliderView(context: Context) : View(context) {
         }
 
         icon?.let { drawable ->
-            val size = (drawRect.width() * 0.46f).coerceIn(12f * density, 26f * density)
+            val size = iconSize()
             val cx = drawRect.centerX()
-            val cy = drawRect.bottom - iconMarginPx - size / 2f
+            val cy = iconCenterY(size)
+            // Pressed, a soft disc behind the glyph in the same ink, so the tap is seen to land.
+            if (iconPressed) {
+                iconPressPaint.color = ink
+                iconPressPaint.alpha = (alpha * 0.22f).toInt()
+                canvas.drawCircle(cx, cy, size * 0.85f, iconPressPaint)
+            }
             val wrapped = DrawableCompat.wrap(drawable)
             DrawableCompat.setTint(wrapped, ink)
             wrapped.alpha = alpha
@@ -1780,6 +1849,9 @@ class QuickSliderView(context: Context) : View(context) {
  * press of a nudge button arrives while the first is still travelling.
  */
 private const val VALUE_GLIDE_MS = 130L
+
+/** How far outside the drawn icon a touch still counts as on it, in dp. */
+private const val ICON_TOUCH_SLACK_DP = 8f
 
 /** How often the wave's outline is sampled across the track. Finer than the eye can resolve. */
 private const val WAVE_STEP_PX = 6f

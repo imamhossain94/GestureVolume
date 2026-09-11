@@ -701,4 +701,24 @@
     <string name="slider_show_icon_desc">Neyi ayarladığını gösteren, yolun dibinde küçük bir işaret.</string>
     <string name="slider_auto_brightness">Uyarlanabilir parlaklığı kapat</string>
     <string name="slider_auto_brightness_desc">Parlaklık kaydırıcısı açıkken. Bu olmadan ışık sensörü ayarladığınızı bir iki saniye içinde geri alır. Hizmet durduğunda geri verilir.</string>
+    <string name="slider_icon">Simge</string>
+    <string name="slider_icon_auto">Otomatik</string>
+    <string name="slider_icon_opens_panel">Simge ses panelini açar</string>
+    <string name="slider_icon_opens_panel_desc">Simgeye dokunarak sistemin tam ses panelini açın: medya, arama, zil ve alarm sesi tek bir yerde.</string>
+    <string name="icon_sun">Güneş</string>
+    <string name="icon_dim">Loş</string>
+    <string name="upgrade_tagline">Tek seferlik satın alma. Sonsuza kadar sizin.</string>
+    <string name="upgrade_ad_free_title">Hiçbir yerde reklam yok</string>
+    <string name="upgrade_ad_free_desc">Tüm reklamlar uygulamanın her yerinden kalıcı olarak kalkar.</string>
+    <string name="upgrade_features_title">Daha fazla özellik</string>
+    <string name="upgrade_features_desc">Yeni Pro özellikleri geldikçe, ek ücret olmadan.</string>
+    <string name="upgrade_support_title">Geliştiriciyi destekleyin</string>
+    <string name="upgrade_support_desc">Uygulamanın bağımsız kalmasını ve gelişmeye devam etmesini sağlar.</string>
+    <string name="upgrade_buy">%1$s karşılığında yükselt</string>
+    <string name="upgrade_one_time">Tek seferlik satın alma. Abonelik yok.</string>
+    <string name="upgrade_restore">Satın alımı geri yükle</string>
+    <string name="upgrade_thanks_title">Artık Pro\'sunuz</string>
+    <string name="upgrade_thanks_desc">Uygulamayı desteklediğiniz için teşekkürler. Reklamsız keyfini çıkarın.</string>
+    <string name="about_ideas_by">Özellik fikirleri</string>
+    <string name="about_ideas_desc">Bu uygulamadaki birçok özelliği önerdi ve yeni fikirler getirmeye devam ediyor.</string>
 </resources>

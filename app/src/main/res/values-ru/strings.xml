@@ -701,4 +701,24 @@
     <string name="slider_show_icon_desc">Небольшая метка внизу дорожки — что именно регулируется.</string>
     <string name="slider_auto_brightness">Отключать адаптивную яркость</string>
     <string name="slider_auto_brightness_desc">Пока открыт ползунок яркости. Без этого датчик света отменит вашу настройку за секунду-другую. Она возвращается при остановке службы.</string>
+    <string name="slider_icon">Значок</string>
+    <string name="slider_icon_auto">Автоматически</string>
+    <string name="slider_icon_opens_panel">Значок открывает панель громкости</string>
+    <string name="slider_icon_opens_panel_desc">Нажмите на значок, чтобы открыть полную системную панель громкости: мультимедиа, звонки, рингтон и будильник в одном месте.</string>
+    <string name="icon_sun">Солнце</string>
+    <string name="icon_dim">Тусклый</string>
+    <string name="upgrade_tagline">Одна покупка — навсегда ваша.</string>
+    <string name="upgrade_ad_free_title">Никакой рекламы</string>
+    <string name="upgrade_ad_free_desc">Вся реклама исчезнет из приложения навсегда.</string>
+    <string name="upgrade_features_title">Больше возможностей</string>
+    <string name="upgrade_features_desc">Новые функции Pro по мере выхода — без доплаты.</string>
+    <string name="upgrade_support_title">Поддержите разработчика</string>
+    <string name="upgrade_support_desc">Помогает приложению оставаться независимым и становиться лучше.</string>
+    <string name="upgrade_buy">Улучшить за %1$s</string>
+    <string name="upgrade_one_time">Разовая покупка. Без подписки.</string>
+    <string name="upgrade_restore">Восстановить покупку</string>
+    <string name="upgrade_thanks_title">У вас Pro</string>
+    <string name="upgrade_thanks_desc">Спасибо за поддержку приложения! Пользуйтесь без рекламы.</string>
+    <string name="about_ideas_by">Идеи функций</string>
+    <string name="about_ideas_desc">Предложил многие функции этого приложения и продолжает делиться идеями.</string>
 </resources>

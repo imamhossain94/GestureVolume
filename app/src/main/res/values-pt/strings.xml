@@ -701,4 +701,24 @@
     <string name="slider_show_icon_desc">Uma marca pequena no pé da pista para o que ajusta.</string>
     <string name="slider_auto_brightness">Desligar o brilho adaptativo</string>
     <string name="slider_auto_brightness_desc">Enquanto o controlo de brilho estiver aberto. Sem isto, o sensor de luz desfaz o que definir em um ou dois segundos. É devolvido quando o serviço para.</string>
+    <string name="slider_icon">Ícone</string>
+    <string name="slider_icon_auto">Automático</string>
+    <string name="slider_icon_opens_panel">O ícone abre o painel de volume</string>
+    <string name="slider_icon_opens_panel_desc">Toque no ícone para abrir o painel de volume completo do sistema, com volume de mídia, chamadas, toque e alarme em um só lugar.</string>
+    <string name="icon_sun">Sol</string>
+    <string name="icon_dim">Suave</string>
+    <string name="upgrade_tagline">Uma compra. Seu para sempre.</string>
+    <string name="upgrade_ad_free_title">Sem anúncios, em lugar nenhum</string>
+    <string name="upgrade_ad_free_desc">Todos os anúncios somem do app inteiro, para sempre.</string>
+    <string name="upgrade_features_title">Mais recursos</string>
+    <string name="upgrade_features_desc">Novos extras Pro assim que chegarem, sem custo adicional.</string>
+    <string name="upgrade_support_title">Apoie o desenvolvedor</string>
+    <string name="upgrade_support_desc">Mantém o app independente e sempre melhorando.</string>
+    <string name="upgrade_buy">Fazer upgrade por %1$s</string>
+    <string name="upgrade_one_time">Compra única. Sem assinatura.</string>
+    <string name="upgrade_restore">Restaurar compra</string>
+    <string name="upgrade_thanks_title">Você é Pro</string>
+    <string name="upgrade_thanks_desc">Obrigado por apoiar o app. Aproveite sem anúncios.</string>
+    <string name="about_ideas_by">Ideias de recursos por</string>
+    <string name="about_ideas_desc">Sugeriu muitos dos recursos deste app e continua trazendo ideias.</string>
 </resources>

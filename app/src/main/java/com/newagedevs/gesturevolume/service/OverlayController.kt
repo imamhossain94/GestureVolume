@@ -85,6 +85,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import android.provider.Settings
 import com.newagedevs.gesturevolume.utils.HandlerShape
+import com.newagedevs.gesturevolume.utils.QuickSliderIcons
 
 /**
  * The overlay itself: the bar, its gestures, the long-press menu, the readouts, the music
@@ -429,12 +430,22 @@ class OverlayController(
     /**
      * Rotation is not reliably delivered to a Service through onConfigurationChanged alone on every
      * OEM build, so the display listener is the belt to that braces. Both funnel into one place.
+     *
+     * **Only when the frame has actually moved.** The display reports far more than rotation: a
+     * refresh-rate switch is a display change too, and on a phone with adaptive refresh one arrives
+     * whenever a finger lands on the glass or an animation starts. Every one of those used to
+     * rebuild the geometry, and rebuilding it closes the Deck, the menu and the Quick panel — so a
+     * Deck opened by a swipe vanished a fifth of a second later, a long swipe's panel was taken away
+     * mid-pull, and a swipe's panel mid-stroke. The frame is compared, not the event trusted.
      */
     private val displayListener = object : DisplayManager.DisplayListener {
         override fun onDisplayAdded(displayId: Int) = Unit
         override fun onDisplayRemoved(displayId: Int) = Unit
         override fun onDisplayChanged(displayId: Int) {
-            mainHandler.post { applyHandlerGeometry() }
+            mainHandler.post {
+                val now = HandlerGeometry.read(context, windowManager)
+                if (now == null || now != frame) applyHandlerGeometry()
+            }
         }
     }
 
@@ -1792,11 +1803,7 @@ class OverlayController(
 
     @DrawableRes
     private fun quickSliderIcon(target: String): Int =
-        if (target == QuickSliderStore.TARGET_BRIGHTNESS) {
-            R.drawable.ic_brightness_up
-        } else {
-            R.drawable.ic_vol_increase
-        }
+        QuickSliderIcons.resolve(context, preference.slider.getIconName(), target)
 
     /** The control's current level as 0..1, or null when it cannot be read. */
     private fun quickSliderCurrentValue(): Float? =
@@ -1898,15 +1905,36 @@ class OverlayController(
     }
 
     /**
-     * The pull passed the far threshold: the stretch becomes the panel.
+     * The pull became the panel: at the far threshold, or on a lift past halfway.
      *
-     * No animation, because the finger has already dragged the shape to full extension — that is
-     * what committing means here. What changes is what the shape *is*.
+     * At the threshold the finger has already dragged the shape out, so almost nothing moves and
+     * what changes is what the shape *is*. On a lift it is part-way out, and it grows the rest of
+     * the way on its own: the point of the long swipe is to see all of the panel, and one left
+     * half grown looks jammed.
      */
     private fun commitQuickSliderPull() {
         val view = sliderView ?: return
-        view.setExpansion(1f)
-        armQuickSlider(view)
+        val from = view.expansion()
+        if (from >= 1f) {
+            armQuickSlider(view)
+            return
+        }
+        sliderCollapse?.cancel()
+        val animator = ValueAnimator.ofFloat(from, 1f).apply {
+            // Scaled by what is left, like the retraction, so a panel nearly out is not given a
+            // whole opening's time to finish.
+            duration = (PANEL_OPEN_MS * (1f - from)).toLong().coerceIn(90L, PANEL_OPEN_MS)
+            interpolator = DecelerateInterpolator(1.8f)
+            addUpdateListener { view.setExpansion(it.animatedValue as Float) }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    if (sliderCollapse === animation) sliderCollapse = null
+                    if (sliderView === view) armQuickSlider(view)
+                }
+            })
+        }
+        sliderCollapse = animator
+        animator.start()
     }
 
     /**
@@ -2129,6 +2157,10 @@ class OverlayController(
             setDrawnThickness(panelThicknessPx.toFloat(), isLeft)
             setContentMargins(settings.getValueMarginDp(), settings.getIconMarginDp())
             setIcon(if (settings.getShowIcon()) quickSliderIcon(sliderTarget) else null)
+            // A volume panel only. From a brightness panel the system's volume sheet would be a
+            // sheet about something else entirely.
+            iconTapEnabled = settings.getShowIcon() && settings.getIconOpensVolumePanel() &&
+                sliderTarget != QuickSliderStore.TARGET_BRIGHTNESS
             setFillStyle(settings.getFillStyle())
             setShowValue(settings.getShowValue())
             setValue(openValue)
@@ -2315,6 +2347,26 @@ class OverlayController(
             mainHandler.removeCallbacks(sliderCloseRunnable)
             mainHandler.postDelayed(sliderCloseRunnable, PANEL_LINGER_MS)
         }
+
+        override fun onIconTapped() {
+            if (sliderHapticMs > 0L) vibrateQuick(sliderHapticMs, sliderHapticAmplitude)
+            // Opened while this panel is still on screen, and only then put away: Android lets an
+            // overlay app start an activity from the background only while one of its windows is
+            // showing.
+            openSystemVolumePanel()
+            hideQuickSlider()
+        }
+    }
+
+    /**
+     * The system's own volume panel, every stream on one sheet: what the "..." on the system's
+     * volume bar opens. Android 10 and later; before that there is no such sheet, and the volume
+     * bar itself is the nearest thing to it.
+     */
+    private fun openSystemVolumePanel() {
+        val opened = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            launchActivity(Intent(Settings.Panel.ACTION_VOLUME))
+        if (!opened) volume.panel(sliderResolution ?: volume.resolve(preference.getVolumeStreamMode()))
     }
 
     /**
@@ -2592,6 +2644,7 @@ class OverlayController(
 
         val entries = HandlerActionCatalog.contextMenuEntries(preference.getContextMenuOrder())
         val grid = preference.getContextMenuLayout() == ContextMenuLayout.GRID
+        val style = preference.getContextMenuStyle()
         if (entries.isEmpty()) return
 
         val anchor = IntRect(params.x, params.y, params.x + params.width, params.y + params.height)
@@ -2619,6 +2672,7 @@ class OverlayController(
                     anchor = anchor,
                     frame = frameSize,
                     grid = grid,
+                    style = style,
                     theme = panelTheme,
                     animation = panelAnimation,
                     animationSpeed = animationSpeed,

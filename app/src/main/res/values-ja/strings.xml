@@ -701,4 +701,24 @@
     <string name="slider_show_icon_desc">何を調整しているかを示す小さな印をトラックの下部に表示します。</string>
     <string name="slider_auto_brightness">明るさの自動調整をオフにする</string>
     <string name="slider_auto_brightness_desc">明るさスライダーを開いている間だけ。これがないと、光センサーが1〜2秒で設定を元に戻してしまいます。サービスを停止すると元に戻ります。</string>
+    <string name="slider_icon">アイコン</string>
+    <string name="slider_icon_auto">自動</string>
+    <string name="slider_icon_opens_panel">アイコンで音量パネルを開く</string>
+    <string name="slider_icon_opens_panel_desc">アイコンをタップすると、システムの音量パネルを開きます。メディア、通話、着信音、アラームの音量をまとめて調整できます。</string>
+    <string name="icon_sun">太陽</string>
+    <string name="icon_dim">暗め</string>
+    <string name="upgrade_tagline">一度の購入で、ずっと使えます。</string>
+    <string name="upgrade_ad_free_title">広告は一切なし</string>
+    <string name="upgrade_ad_free_desc">アプリ全体からすべての広告が消えます。</string>
+    <string name="upgrade_features_title">さらなる機能</string>
+    <string name="upgrade_features_desc">新しい Pro 機能を追加料金なしで利用できます。</string>
+    <string name="upgrade_support_title">開発者を応援</string>
+    <string name="upgrade_support_desc">アプリの独立性を保ち、改善を続ける力になります。</string>
+    <string name="upgrade_buy">%1$s でアップグレード</string>
+    <string name="upgrade_one_time">買い切り。サブスクリプションなし。</string>
+    <string name="upgrade_restore">購入を復元</string>
+    <string name="upgrade_thanks_title">Pro をご利用中です</string>
+    <string name="upgrade_thanks_desc">アプリを応援していただきありがとうございます。広告なしでお楽しみください。</string>
+    <string name="about_ideas_by">機能のアイデア</string>
+    <string name="about_ideas_desc">このアプリの多くの機能を提案し、今もアイデアを出し続けています。</string>
 </resources>

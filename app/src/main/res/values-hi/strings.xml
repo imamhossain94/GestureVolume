@@ -701,4 +701,24 @@
     <string name="slider_show_icon_desc">क्या नियंत्रित हो रहा है, यह बताने के लिए ट्रैक के नीचे एक छोटा निशान।</string>
     <string name="slider_auto_brightness">अनुकूली चमक बंद करें</string>
     <string name="slider_auto_brightness_desc">जब तक चमक स्लाइडर खुला है। इसके बिना प्रकाश सेंसर एक-दो सेकंड में आपकी सेटिंग पलट देता है। सेवा बंद होने पर यह लौटा दी जाती है।</string>
+    <string name="slider_icon">आइकन</string>
+    <string name="slider_icon_auto">स्वचालित</string>
+    <string name="slider_icon_opens_panel">आइकन से वॉल्यूम पैनल खुले</string>
+    <string name="slider_icon_opens_panel_desc">आइकन पर टैप करने से सिस्टम का पूरा वॉल्यूम पैनल खुलता है — मीडिया, कॉल, रिंग और अलार्म वॉल्यूम एक ही जगह।</string>
+    <string name="icon_sun">सूरज</string>
+    <string name="icon_dim">मंद</string>
+    <string name="upgrade_tagline">एक बार खरीदें। हमेशा के लिए आपका।</string>
+    <string name="upgrade_ad_free_title">कहीं भी कोई विज्ञापन नहीं</string>
+    <string name="upgrade_ad_free_desc">पूरे ऐप से सारे विज्ञापन हमेशा के लिए हट जाते हैं।</string>
+    <string name="upgrade_features_title">और फ़ीचर</string>
+    <string name="upgrade_features_desc">नए Pro फ़ीचर आते ही, बिना किसी अतिरिक्त कीमत के।</string>
+    <string name="upgrade_support_title">डेवलपर का साथ दें</string>
+    <string name="upgrade_support_desc">ऐप को स्वतंत्र रखता है और लगातार बेहतर बनाता है।</string>
+    <string name="upgrade_buy">%1$s में अपग्रेड करें</string>
+    <string name="upgrade_one_time">एक बार की खरीद। कोई सदस्यता नहीं।</string>
+    <string name="upgrade_restore">खरीदारी पुनर्स्थापित करें</string>
+    <string name="upgrade_thanks_title">आप Pro हैं</string>
+    <string name="upgrade_thanks_desc">ऐप का साथ देने के लिए धन्यवाद। बिना विज्ञापनों के आनंद लें।</string>
+    <string name="about_ideas_by">फ़ीचर के आइडिया</string>
+    <string name="about_ideas_desc">इस ऐप के कई फ़ीचर सुझाए, और नए आइडिया देते रहते हैं।</string>
 </resources>

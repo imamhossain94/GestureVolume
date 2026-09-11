@@ -701,4 +701,24 @@
     <string name="slider_show_icon_desc">Un petit repère au pied de la piste indiquant ce qui est réglé.</string>
     <string name="slider_auto_brightness">Désactiver la luminosité adaptative</string>
     <string name="slider_auto_brightness_desc">Tant que le curseur de luminosité est ouvert. Sans cela, le capteur de lumière annule votre réglage en une ou deux secondes. Elle est rendue à l’arrêt du service.</string>
+    <string name="slider_icon">Icône</string>
+    <string name="slider_icon_auto">Automatique</string>
+    <string name="slider_icon_opens_panel">L\'icône ouvre le panneau du volume</string>
+    <string name="slider_icon_opens_panel_desc">Touchez l\'icône pour ouvrir le panneau de volume complet du système : multimédia, appels, sonnerie et alarme au même endroit.</string>
+    <string name="icon_sun">Soleil</string>
+    <string name="icon_dim">Tamisé</string>
+    <string name="upgrade_tagline">Un seul achat. À vous pour toujours.</string>
+    <string name="upgrade_ad_free_title">Aucune publicité, nulle part</string>
+    <string name="upgrade_ad_free_desc">Toutes les publicités disparaissent de l\'application, définitivement.</string>
+    <string name="upgrade_features_title">Plus de fonctionnalités</string>
+    <string name="upgrade_features_desc">Les nouveautés Pro dès leur sortie, sans frais supplémentaires.</string>
+    <string name="upgrade_support_title">Soutenez le développeur</string>
+    <string name="upgrade_support_desc">Garde l\'application indépendante et lui permet de continuer à s\'améliorer.</string>
+    <string name="upgrade_buy">Passer à Pro pour %1$s</string>
+    <string name="upgrade_one_time">Achat unique. Sans abonnement.</string>
+    <string name="upgrade_restore">Restaurer l\'achat</string>
+    <string name="upgrade_thanks_title">Vous êtes Pro</string>
+    <string name="upgrade_thanks_desc">Merci de soutenir l\'application. Profitez-en sans publicité.</string>
+    <string name="about_ideas_by">Idées de fonctionnalités par</string>
+    <string name="about_ideas_desc">A suggéré bon nombre des fonctionnalités de cette application, et continue d\'en proposer.</string>
 </resources>

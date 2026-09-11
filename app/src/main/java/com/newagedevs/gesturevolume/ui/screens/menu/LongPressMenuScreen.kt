@@ -75,6 +75,9 @@ import com.newagedevs.gesturevolume.utils.ContextMenuLayout
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import com.newagedevs.gesturevolume.utils.ContextMenuStyle
 
 /**
  * Builds the long-press menu: what is in it, what order it is in, and how it is drawn.
@@ -119,6 +122,11 @@ fun LongPressMenuScreen(
         (placed + missing).toMutableStateList()
     }
     var layout by remember { mutableStateOf(preference.getContextMenuLayout()) }
+    var menuWidth by remember { mutableFloatStateOf(preference.getContextMenuWidthDp()) }
+    var menuHeight by remember { mutableFloatStateOf(preference.getContextMenuHeightDp()) }
+    var menuLines by remember { mutableStateOf(preference.getContextMenuLines()) }
+    var perPage by remember { mutableIntStateOf(preference.getContextMenuPerPage()) }
+    val menuStyle = ContextMenuStyle(menuWidth, menuHeight, menuLines, perPage)
     var panelTheme by remember { mutableStateOf(preference.getPanelTheme()) }
     var panelAnimation by remember { mutableStateOf(preference.getPanelAnimation()) }
     var animationSpeed by remember { mutableFloatStateOf(preference.getPanelAnimationSpeed()) }
@@ -200,6 +208,7 @@ fun LongPressMenuScreen(
                             .panelFrame { entrance.value },
                         theme = panelTheme,
                         surfaceOverride = menuSurface,
+                        style = menuStyle,
                     )
                 }
             }
@@ -231,6 +240,81 @@ fun LongPressMenuScreen(
                     preference.setContextMenuLayout(it)
                 },
             )
+
+            val grid = layout == ContextMenuLayout.GRID
+            Spacer(Modifier.height(22.dp))
+            SectionLabel(stringResource(R.string.context_menu_size))
+            Card {
+                SliderControl(
+                    label = stringResource(R.string.context_menu_width),
+                    value = menuWidth,
+                    valueRange = ContextMenuLayout.WIDTH_RANGE,
+                    valueDisplay = "${menuWidth.toInt()}dp",
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onValueChange = { menuWidth = it; preference.setContextMenuWidthDp(it) },
+                    step = 2f,
+                )
+                if (grid) {
+                    Text(
+                        text = stringResource(R.string.context_menu_columns, ContextMenuLayout.columnsFor(menuWidth)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                SliderControl(
+                    label = stringResource(R.string.context_menu_height),
+                    value = menuHeight,
+                    valueRange = ContextMenuLayout.HEIGHT_RANGE,
+                    valueDisplay = "${menuHeight.toInt()}dp",
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onValueChange = { menuHeight = it; preference.setContextMenuHeightDp(it) },
+                    step = 4f,
+                )
+                Text(
+                    text = stringResource(R.string.context_menu_height_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+
+            Spacer(Modifier.height(22.dp))
+            SectionLabel(stringResource(R.string.context_menu_lines))
+            Card {
+                ChoiceChips(
+                    options = if (grid) ContextMenuLayout.GRID_LINES else ContextMenuLayout.LIST_LINES,
+                    selected = ContextMenuLayout.linesFor(menuLines, grid),
+                    label = { stringResource(linesLabel(it)) },
+                    onSelect = { menuLines = it; preference.setContextMenuLines(it) },
+                )
+            }
+
+            if (grid) {
+                Spacer(Modifier.height(22.dp))
+                SectionLabel(stringResource(R.string.context_menu_per_page))
+                Card {
+                    ChoiceChips(
+                        options = ContextMenuLayout.PER_PAGE_CHOICES,
+                        selected = perPage,
+                        label = {
+                            if (it == ContextMenuLayout.PER_PAGE_ALL) {
+                                stringResource(R.string.context_menu_per_page_all)
+                            } else {
+                                it.toString()
+                            }
+                        },
+                        onSelect = { perPage = it; preference.setContextMenuPerPage(it) },
+                    )
+                    Text(
+                        text = stringResource(R.string.context_menu_per_page_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+            }
 
             Spacer(Modifier.height(22.dp))
             PanelThemeSelector(
@@ -353,6 +437,44 @@ private val CONTENT_MAX_WIDTH = 560.dp
  * three-row grid inside the stage.
  */
 private const val PREVIEW_SCALE = 0.8f
+
+/** A wrapping row of choices, one of them picked. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun <T> ChoiceChips(
+    options: List<T>,
+    selected: T,
+    label: @Composable (T) -> String,
+    onSelect: (T) -> Unit,
+) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        options.forEach { option ->
+            val on = option == selected
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = if (on) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                onClick = { onSelect(option) },
+            ) {
+                Text(
+                    text = label(option),
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                    fontSize = 13.sp,
+                    color = if (on) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+private fun linesLabel(lines: String): Int = when (lines) {
+    ContextMenuLayout.LINES_HORIZONTAL -> R.string.context_menu_lines_horizontal
+    ContextMenuLayout.LINES_VERTICAL -> R.string.context_menu_lines_vertical
+    ContextMenuLayout.LINES_GRID -> R.string.context_menu_lines_grid
+    else -> R.string.context_menu_lines_none
+}
 
 /** Moves one item without disturbing the rest. */
 private fun SnapshotStateList<String>.move(from: Int, to: Int) {

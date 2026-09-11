@@ -110,7 +110,54 @@ object HandlerPresets {
     val ALL: List<Preset> = listOf(
         Preset(
             /**
-             * The out-of-the-box handle: a slim black pill, flush to the right edge, centred.
+             * The dock tab: a bar whose ends sweep back into the side of the phone.
+             *
+             * The one preset here that is not a rounded rectangle, and the reason [HandlerShape]
+             * exists. A pill sits *next to* the screen edge — however flush you push it, the two
+             * corners facing the glass tell you it is a separate object resting against it. A tab
+             * has no corners there at all: its outline runs off the edge and back, so it reads as
+             * part of the phone's own frame, which is the whole effect this shape is for.
+             *
+             * Taller than the pill presets because the sweeps eat into both ends — at 120dp with
+             * a 0.29 flare the straight section is only about 50dp, and a tab needs a flat middle
+             * to read as a handle rather than as a leaf. Opaque black for
+             * the same reason the Edge is: the shape is the whole idea, and a translucent tab
+             * over a busy app is a shape you cannot make out.
+             *
+             * Carries a [Placement] because a tab that is not touching the edge is not a tab. The
+             * sweeps run to where the glass is, and parked in mid-screen they curve away into
+             * nothing.
+             *
+             * The out-of-the-box handle, so changing these values changes what an install with
+             * unset appearance preferences looks like:
+             * [com.newagedevs.gesturevolume.data.local.SharedPref] falls back to this preset for each
+             * of them. Installs from before it became the default keep the bar they had — see
+             * `SharedPref.pinEdgeAppearanceDefaults`.
+             */
+            id = "Dock",
+            nameRes = R.string.preset_dock_title,
+            subtitleRes = R.string.preset_dock_subtitle,
+            gravity = Gravity.END,
+            width = 14f, height = 120f,
+            bgColor = Color.Black, bgAlpha = 255,
+            strokeColor = Color.White, strokeWidth = 0f, strokeAlpha = 200,
+            // Unused by a tab, which has no corners — carried so that switching this preset back
+            // to a rounded shape lands on something sane rather than on four zeroes.
+            cornerRadius = 8f,
+            iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
+            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.5f,
+            placement = Placement(
+                gravity = Gravity.END,
+                posXFraction = 1f,
+                posYFraction = 0.5f,
+                snapToEdge = true
+            ),
+            shape = HandlerShape.TAB,
+            flare = 0.29f
+        ),
+        Preset(
+            /**
+             * The Edge: a slim black pill, flush to the right edge, centred.
              *
              * These numbers are a deliberate copy of the shape the edge-launcher category has
              * settled on — 10dp of width, a little under a hundred tall, fully opaque black, ends
@@ -119,19 +166,15 @@ object HandlerPresets {
              * a dark app's chrome, which is why every app in this category converges on it.
              *
              * A geometric proportion is not anyone's property, and nothing here is copied from
-             * another app's assets or code. The name stays generic for the same reason the Edge
-             * and Notch presets do.
+             * another app's assets or code.
              *
-             * Changing these values changes what an install with unset appearance preferences
-             * looks like, because [com.newagedevs.gesturevolume.data.local.SharedPref] falls back
-             * to this preset for each of them. An install that predates the change keeps the old
-             * indigo bar: see `SharedPref.pinLegacyAppearanceDefaults`, which writes the previous
-             * defaults out explicitly on first run after the update so that only genuinely fresh
-             * installs pick up the new shape.
+             * It was the out-of-the-box handle, under the name Default, until the Dock tab took
+             * that over, and an install from those days keeps it: see
+             * `SharedPref.pinEdgeAppearanceDefaults`.
              */
-            id = "Default",
-            nameRes = R.string.preset_default_title,
-            subtitleRes = R.string.preset_default_subtitle,
+            id = "Edge",
+            nameRes = R.string.preset_edge_title,
+            subtitleRes = R.string.preset_edge_subtitle,
             gravity = Gravity.END,
             width = 12f, height = 95f,
             bgColor = Color.Black, bgAlpha = 255,
@@ -219,58 +262,20 @@ object HandlerPresets {
             cornerRadius = 12f,
             iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
             showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.12f
-        ),
-        Preset(
-            /**
-             * The dock tab: a bar whose ends sweep back into the side of the phone.
-             *
-             * The one preset here that is not a rounded rectangle, and the reason [HandlerShape]
-             * exists. A pill sits *next to* the screen edge — however flush you push it, the two
-             * corners facing the glass tell you it is a separate object resting against it. A tab
-             * has no corners there at all: its outline runs off the edge and back, so it reads as
-             * part of the phone's own frame, which is the whole effect this shape is for.
-             *
-             * Taller than the pill presets because the sweeps eat into both ends — at 120dp with
-             * a 0.29 flare the straight section is only about 50dp, and a tab needs a flat middle
-             * to read as a handle rather than as a leaf. Opaque black for
-             * the same reason the Default is: the shape is the whole idea, and a translucent tab
-             * over a busy app is a shape you cannot make out.
-             *
-             * Carries a [Placement] because a tab that is not touching the edge is not a tab. The
-             * sweeps run to where the glass is, and parked in mid-screen they curve away into
-             * nothing.
-             */
-            id = "Dock",
-            nameRes = R.string.preset_dock_title,
-            subtitleRes = R.string.preset_dock_subtitle,
-            gravity = Gravity.END,
-            width = 14f, height = 120f,
-            bgColor = Color.Black, bgAlpha = 255,
-            strokeColor = Color.White, strokeWidth = 0f, strokeAlpha = 200,
-            // Unused by a tab, which has no corners — carried so that switching this preset back
-            // to a rounded shape lands on something sane rather than on four zeroes.
-            cornerRadius = 8f,
-            iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
-            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.5f,
-            placement = Placement(
-                gravity = Gravity.END,
-                posXFraction = 1f,
-                posYFraction = 0.5f,
-                snapToEdge = true
-            ),
-            shape = HandlerShape.TAB,
-            flare = 0.29f
         )
     )
 
     fun byId(id: String?): Preset? = ALL.firstOrNull { it.id == id }
 
     /**
-     * The out-of-the-box handler.
+     * The out-of-the-box handler: the Dock tab.
      *
      * [com.newagedevs.gesturevolume.data.local.SharedPref] falls back to these values for every
-     * unset appearance preference, so a fresh install already *is* the Default preset rather than
-     * merely resembling it, and the appearance screen opens pre-populated with it.
+     * unset appearance preference, so a fresh install already *is* this preset rather than merely
+     * resembling it, and the appearance screen opens pre-populated with it.
      */
-    val DEFAULT: Preset = ALL.first { it.id == "Default" }
+    val DEFAULT: Preset = ALL.first { it.id == "Dock" }
+
+    /** The slim pill that was the default before the Dock. See `SharedPref.pinEdgeAppearanceDefaults`. */
+    val EDGE: Preset = ALL.first { it.id == "Edge" }
 }

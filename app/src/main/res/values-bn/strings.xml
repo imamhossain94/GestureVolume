@@ -701,4 +701,24 @@
     <string name="slider_show_icon_desc">কী নিয়ন্ত্রণ হচ্ছে বোঝাতে ট্র্যাকের নিচে ছোট একটি চিহ্ন।</string>
     <string name="slider_auto_brightness">অ্যাডাপটিভ উজ্জ্বলতা বন্ধ করুন</string>
     <string name="slider_auto_brightness_desc">উজ্জ্বলতার স্লাইডার খোলা থাকা অবস্থায়। এটি ছাড়া আলোর সেন্সর এক-দুই সেকেন্ডেই আপনার সেট করা মান বদলে দেয়। পরিষেবা বন্ধ হলে এটি ফিরিয়ে দেওয়া হয়।</string>
+    <string name="slider_icon">আইকন</string>
+    <string name="slider_icon_auto">স্বয়ংক্রিয়</string>
+    <string name="slider_icon_opens_panel">আইকনে ট্যাপ করলে ভলিউম প্যানেল খুলবে</string>
+    <string name="slider_icon_opens_panel_desc">আইকনে ট্যাপ করলে সিস্টেমের পূর্ণ ভলিউম প্যানেল খোলে — মিডিয়া, কল, রিং ও অ্যালার্ম ভলিউম এক জায়গায়।</string>
+    <string name="icon_sun">সূর্য</string>
+    <string name="icon_dim">ম্লান</string>
+    <string name="upgrade_tagline">একবার কিনুন। চিরদিনের জন্য আপনার।</string>
+    <string name="upgrade_ad_free_title">কোনো বিজ্ঞাপন নেই</string>
+    <string name="upgrade_ad_free_desc">পুরো অ্যাপ থেকে সব বিজ্ঞাপন চিরতরে সরে যাবে।</string>
+    <string name="upgrade_features_title">আরও ফিচার</string>
+    <string name="upgrade_features_desc">নতুন Pro ফিচার আসার সঙ্গে সঙ্গে পাবেন, কোনো অতিরিক্ত খরচ ছাড়াই।</string>
+    <string name="upgrade_support_title">ডেভেলপারকে সহায়তা করুন</string>
+    <string name="upgrade_support_desc">অ্যাপকে স্বাধীন রাখে এবং আরও ভালো হতে সাহায্য করে।</string>
+    <string name="upgrade_buy">%1$s-এ আপগ্রেড করুন</string>
+    <string name="upgrade_one_time">এককালীন কেনাকাটা। কোনো সাবস্ক্রিপশন নেই।</string>
+    <string name="upgrade_restore">কেনাকাটা পুনরুদ্ধার করুন</string>
+    <string name="upgrade_thanks_title">আপনি এখন Pro</string>
+    <string name="upgrade_thanks_desc">অ্যাপটিকে সহায়তা করার জন্য ধন্যবাদ। বিজ্ঞাপন ছাড়া উপভোগ করুন।</string>
+    <string name="about_ideas_by">ফিচারের ধারণা দিয়েছেন</string>
+    <string name="about_ideas_desc">এই অ্যাপের অনেক ফিচারের প্রস্তাব দিয়েছেন, এবং নতুন আইডিয়া দিয়েই চলেছেন।</string>
 </resources>

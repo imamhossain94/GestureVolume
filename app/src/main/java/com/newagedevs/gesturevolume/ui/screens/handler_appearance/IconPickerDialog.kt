@@ -37,32 +37,19 @@ import com.newagedevs.gesturevolume.R
 fun IconPickerDialog(
     selectedIconRes: Int,
     onIconSelected: (Int) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    /** The icons offered, each with its label. The handler's own set unless a caller has another. */
+    options: List<Pair<Int, Int>> = HANDLER_ICON_OPTIONS,
+    /**
+     * A first tile meaning "no fixed icon", drawn with this glyph and label. It is reported, and
+     * shown selected, as 0, which no drawable ever is.
+     */
+    automatic: Pair<Int, Int>? = null,
 ) {
-    val iconOptions = remember {
-        listOf(
-            R.drawable.ic_vol_increase to R.string.icon_increase,
-            R.drawable.ic_vol_decrease to R.string.icon_decrease,
-            R.drawable.ic_vol_plus to R.string.icon_boost,
-            R.drawable.ic_vol_minus to R.string.icon_reduce,
-            R.drawable.ic_bug to R.string.icon_bug,
-            R.drawable.ic_check to R.string.icon_check,
-            R.drawable.ic_color_palette to R.string.icon_palette,
-            R.drawable.ic_crown_2 to R.string.icon_crown,
-            R.drawable.ic_edit to R.string.icon_edit,
-            R.drawable.ic_feedback to R.string.icon_feedback,
-            R.drawable.ic_github to R.string.icon_github,
-            R.drawable.ic_lock to R.string.icon_lock,
-            R.drawable.ic_move to R.string.icon_move,
-            R.drawable.ic_music_ui to R.string.icon_music,
-            R.drawable.ic_nothing to R.string.icon_none,
-            R.drawable.ic_plugin to R.string.icon_plugin,
-            R.drawable.ic_power to R.string.icon_power,
-            R.drawable.ic_share to R.string.icon_share,
-            R.drawable.ic_star to R.string.icon_star,
-            R.drawable.ic_visibility_hide to R.string.icon_hide,
-            R.drawable.ic_x_close to R.string.icon_close,
-        )
+    // Each tile as (what it reports, what it draws, its label).
+    val iconOptions = remember(options, automatic) {
+        listOfNotNull(automatic?.let { Triple(0, it.first, it.second) }) +
+            options.map { Triple(it.first, it.first, it.second) }
     }
 
     AlertDialog(
@@ -87,12 +74,12 @@ fun IconPickerDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        rowIcons.forEach { (iconRes, iconNameRes) ->
+                        rowIcons.forEach { (id, iconRes, iconNameRes) ->
                             IconGridItem(
                                 iconRes = iconRes,
                                 iconName = stringResource(iconNameRes),
-                                isSelected = iconRes == selectedIconRes,
-                                onClick = { onIconSelected(iconRes) },
+                                isSelected = id == selectedIconRes,
+                                onClick = { onIconSelected(id) },
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -161,3 +148,28 @@ private fun IconGridItem(
         }
     }
 }
+
+/** The handler's own icons, each with the label shown under it. */
+private val HANDLER_ICON_OPTIONS: List<Pair<Int, Int>> = listOf(
+    R.drawable.ic_vol_increase to R.string.icon_increase,
+    R.drawable.ic_vol_decrease to R.string.icon_decrease,
+    R.drawable.ic_vol_plus to R.string.icon_boost,
+    R.drawable.ic_vol_minus to R.string.icon_reduce,
+    R.drawable.ic_bug to R.string.icon_bug,
+    R.drawable.ic_check to R.string.icon_check,
+    R.drawable.ic_color_palette to R.string.icon_palette,
+    R.drawable.ic_crown_2 to R.string.icon_crown,
+    R.drawable.ic_edit to R.string.icon_edit,
+    R.drawable.ic_feedback to R.string.icon_feedback,
+    R.drawable.ic_github to R.string.icon_github,
+    R.drawable.ic_lock to R.string.icon_lock,
+    R.drawable.ic_move to R.string.icon_move,
+    R.drawable.ic_music_ui to R.string.icon_music,
+    R.drawable.ic_nothing to R.string.icon_none,
+    R.drawable.ic_plugin to R.string.icon_plugin,
+    R.drawable.ic_power to R.string.icon_power,
+    R.drawable.ic_share to R.string.icon_share,
+    R.drawable.ic_star to R.string.icon_star,
+    R.drawable.ic_visibility_hide to R.string.icon_hide,
+    R.drawable.ic_x_close to R.string.icon_close,
+)

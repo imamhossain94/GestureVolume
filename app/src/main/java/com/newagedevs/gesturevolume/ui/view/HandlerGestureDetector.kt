@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.view.MotionEvent
+import android.view.VelocityTracker
 import android.view.ViewConfiguration
 import kotlin.math.abs
 
@@ -89,6 +90,16 @@ import kotlin.math.abs
  * armed or not, because that is the one state with a way back: the mirror-image test in it
  * promotes the stroke to [State.ADJUSTING] as soon as it has proved itself vertical. The gesture
  * the user meant survives an axis decision made on the worst evidence in it.
+ *
+ * **Why a long swipe that stops short still ends with the whole panel.**
+ *
+ * The far threshold is a third of the screen away, and until it the panel is only a stretch that
+ * follows the finger. A long swipe that stopped before it — most do, because nothing on screen
+ * says where it is — lifted with the panel half grown, watched it shrink back into the bar, and
+ * got the Deck instead. The report was "long swipe should show the Quick slider fully". So a lift
+ * with the stretch past halfway now finishes the panel ([EdgePullRelease]). A flick is still the
+ * Deck: it is the one stroke that carries past halfway without meaning to, and it is told apart
+ * by how fast it is still moving when it lifts, not by how far it got.
  */
 class HandlerGestureDetector(
     context: Context,
@@ -224,10 +235,11 @@ class HandlerGestureDetector(
         /**
          * The long swipe qualified: the stretch becomes the Quick panel.
          *
-         * Always preceded by [onEdgePullBegin], so the shape is already fully grown and there is
-         * nothing left to animate. The panel stays up after this gesture ends and takes its own
-         * touches from here, so the detector has nothing further to report — this is the last
-         * thing it says about this stroke.
+         * Always preceded by [onEdgePullBegin]. At the far threshold the finger has already grown
+         * the shape all the way; on a lift past halfway (see [EdgePullRelease]) it has not, and the
+         * host grows it the rest of the way. The panel stays up after this gesture ends and takes
+         * its own touches from here, so the detector has nothing further to report — this is the
+         * last thing it says about this stroke.
          */
         fun onQuickSliderBegin(inward: Boolean)
     }
@@ -407,6 +419,14 @@ class HandlerGestureDetector(
      */
     private var pullActive = false
 
+    /** How far out the stretch is, 0..1: the figure last sent to [Host.onEdgePullUpdate]. */
+    private var pullProgress = 0f
+
+    /** The finger's velocity, for telling a flick from a drag when it lifts. See [EdgePullRelease]. */
+    private var velocityTracker: VelocityTracker? = null
+
+    private val flickPxPerS = EdgePullRelease.FLICK_DP_PER_S * density
+
     // Tap / double-tap / triple-tap
     private var lastTapTime = 0L
     private var tapCount = 0
@@ -448,6 +468,7 @@ class HandlerGestureDetector(
     }
 
     fun onTouchEvent(event: MotionEvent): Boolean {
+        trackVelocity(event)
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> onDown(event)
             MotionEvent.ACTION_POINTER_DOWN -> Unit // A second finger (or a palm) never takes over.
@@ -458,6 +479,22 @@ class HandlerGestureDetector(
             else -> return false
         }
         return true
+    }
+
+    /**
+     * Feeds the velocity tracker in screen coordinates, like every other measurement here: a
+     * window-relative velocity reads zero for a finger that is carrying its window along.
+     */
+    private fun trackVelocity(event: MotionEvent) {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+            val tracker = velocityTracker ?: VelocityTracker.obtain().also { velocityTracker = it }
+            tracker.clear()
+        }
+        val tracker = velocityTracker ?: return
+        val screen = MotionEvent.obtain(event)
+        screen.offsetLocation(event.rawX - event.x, event.rawY - event.y)
+        tracker.addMovement(screen)
+        screen.recycle()
     }
 
     /** Call from `hideHandlerView()`, `onDestroy()` and `View.onDetachedFromWindow()`. */
@@ -476,6 +513,8 @@ class HandlerGestureDetector(
         // would take it down once the bar it grew out of has gone.
         endPull()
         finishInFlight(commitDrag = false)
+        velocityTracker?.recycle()
+        velocityTracker = null
         state = State.IDLE
         pointerId = MotionEvent.INVALID_POINTER_ID
     }
@@ -503,6 +542,7 @@ class HandlerGestureDetector(
         edgeShortArmed = false
         edgeSliderArmed = false
         edgeQualified = false
+        pullProgress = 0f
         handler.postDelayed(longPressRunnable, longPressTimeout)
     }
 
@@ -642,10 +682,9 @@ class HandlerGestureDetector(
                 // hardest exactly when the user is undoing the gesture.
                 if (pullActive) {
                     val along = (rawX - downRawX) * edgeInwardSign * (if (edgeInward) 1f else -1f)
-                    host.onEdgePullUpdate(
-                        ((along - edgeTriggerPx) / (sliderTriggerPx - edgeTriggerPx))
-                            .coerceIn(0f, 1f)
-                    )
+                    pullProgress = ((along - edgeTriggerPx) / (sliderTriggerPx - edgeTriggerPx))
+                        .coerceIn(0f, 1f)
+                    host.onEdgePullUpdate(pullProgress)
                 }
 
                 lastRawX = rawX
@@ -781,11 +820,19 @@ class HandlerGestureDetector(
                 host.onDragEnd(dragMoved)
             }
             State.EDGE_TRACKING -> {
-                // Collapse first, fire second. The short action is usually a window — the Deck —
-                // and letting it go up before the stretch has been told to retract leaves the
-                // stretch frozen at full extension underneath it.
-                endPull()
-                fireDeferredHorizontalSwipe()
+                if (settlesIntoPanel()) {
+                    // Handed over exactly as the far threshold hands it over: the stretch is not
+                    // collapsed, and the short action it was holding for this lift is dropped.
+                    edgeQualified = false
+                    pullActive = false
+                    host.onQuickSliderBegin(edgeInward)
+                } else {
+                    // Collapse first, fire second. The short action is usually a window — the
+                    // Deck — and letting it go up before the stretch has been told to retract
+                    // leaves the stretch frozen at full extension underneath it.
+                    endPull()
+                    fireDeferredHorizontalSwipe()
+                }
             }
             else -> Unit
         }
@@ -824,6 +871,21 @@ class HandlerGestureDetector(
         edgeQualified = false
         val endedInward = (lastRawX - downRawX) * edgeInwardSign > 0f
         if (endedInward == edgeInward) host.onHorizontalSwipe(edgeInward)
+    }
+
+    /**
+     * Whether the stretch on screen as the finger lifts finishes opening into the panel.
+     *
+     * Read in `onUp` before the pointer is let go, while the tracker still holds the lift itself.
+     */
+    private fun settlesIntoPanel(): Boolean {
+        if (!pullActive) return false
+        var inward = 0f
+        velocityTracker?.let { tracker ->
+            tracker.computeCurrentVelocity(1000)
+            inward = tracker.getXVelocity(pointerId) * edgeInwardSign * (if (edgeInward) 1f else -1f)
+        }
+        return EdgePullRelease.settles(pullProgress, inward, flickPxPerS, edgeShortArmed)
     }
 
     /**
@@ -914,4 +976,48 @@ class HandlerGestureDetector(
     }
 
     private fun now(): Long = SystemClock.elapsedRealtime()
+}
+
+/**
+ * What a long swipe's stretch becomes when the finger lifts short of the far threshold. Kept apart
+ * from the detector, and free of Android, so the rule can be tested on its own.
+ */
+internal object EdgePullRelease {
+
+    /**
+     * How far out the stretch must be, 0..1, for a lift to finish the panel rather than take it
+     * away. Half: past it the stroke has gone further than a flick for the Deck needs to.
+     */
+    const val SETTLE_PROGRESS = 0.5f
+
+    /**
+     * A lift still moving faster than this along the swipe is a flick, in dp per second.
+     *
+     * A user watching the panel grow lifts at a few hundred; a flick leaves at well over a
+     * thousand. A flick is how the Deck is opened, and a hard one carries past halfway without
+     * meaning to, so it keeps the short action.
+     */
+    const val FLICK_DP_PER_S = 1000f
+
+    /**
+     * @param progress how far out the stretch is, 0..1.
+     * @param inwardVelocity along the swipe's own direction, in px/s. Negative is back toward
+     *   where it started.
+     * @param flickVelocity [FLICK_DP_PER_S] in px/s.
+     * @param shortActionBound whether the short swipe has an action a flick could have been for.
+     */
+    fun settles(
+        progress: Float,
+        inwardVelocity: Float,
+        flickVelocity: Float,
+        shortActionBound: Boolean,
+    ): Boolean {
+        if (progress < SETTLE_PROGRESS) return false
+        // Thrown back toward the edge: the user is putting it away.
+        if (inwardVelocity <= -flickVelocity) return false
+        // Thrown on inward: a flick, and it was for the Deck. With nothing on the short swipe there
+        // is nothing to protect, and the panel is the only thing this stroke can mean.
+        if (shortActionBound && inwardVelocity >= flickVelocity) return false
+        return true
+    }
 }

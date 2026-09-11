@@ -70,6 +70,9 @@ import com.newagedevs.gesturevolume.ui.screens.handler_appearance.ShapeSelector
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
 import com.newagedevs.gesturevolume.ui.view.QuickSliderView
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.IconPickerControl
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.IconPickerDialog
+import com.newagedevs.gesturevolume.utils.QuickSliderIcons
 
 /** The translated name of a slider target. */
 fun sliderTargetLabel(id: String): Int = when (id) {
@@ -199,6 +202,11 @@ fun QuickSliderScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     var accessibilityOn by remember { mutableStateOf(OverlayRuntime.isAccessibilityEnabled(context)) }
     var showDisclosure by remember { mutableStateOf(false) }
+    var iconName by remember { mutableStateOf(store.getIconName()) }
+    var iconOpensPanel by remember { mutableStateOf(store.getIconOpensVolumePanel()) }
+    var showIconPicker by remember { mutableStateOf(false) }
+    // Resolved against the target, so Automatic shows the sun the moment brightness is picked.
+    val iconRes = remember(iconName, target) { QuickSliderIcons.resolve(context, iconName, target) }
 
     // Back from the system's accessibility screen: whatever the user did there is what to show.
     DisposableEffect(lifecycleOwner) {
@@ -226,6 +234,20 @@ fun QuickSliderScreen(
                 }
             },
             onDismiss = { showDisclosure = false }
+        )
+    }
+    if (showIconPicker) {
+        IconPickerDialog(
+            // Automatic is the tile reported as 0, whatever it happens to draw right now.
+            selectedIconRes = if (iconName == QuickSliderStore.ICON_AUTO) 0 else iconRes,
+            options = QuickSliderIcons.CHOICES,
+            automatic = QuickSliderIcons.automatic(target) to R.string.slider_icon_auto,
+            onIconSelected = { res ->
+                iconName = if (res == 0) QuickSliderStore.ICON_AUTO else QuickSliderIcons.nameOf(context, res)
+                store.setIconName(iconName)
+                showIconPicker = false
+            },
+            onDismiss = { showIconPicker = false }
         )
     }
     var panelTheme by remember { mutableStateOf(viewModel.preference.getPanelTheme()) }
@@ -281,6 +303,7 @@ fun QuickSliderScreen(
                 fillColor = fillColor,
                 showValue = showValue,
                 showIcon = showIcon,
+                iconRes = iconRes,
                 valueMargin = valueMargin,
                 iconMargin = iconMargin,
                 target = target,
@@ -546,6 +569,27 @@ fun QuickSliderScreen(
                         borderColor = accent,
                         onValueChange = { iconMargin = it; store.setIconMarginDp(it) }
                     )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    IconPickerControl(
+                        label = stringResource(R.string.slider_icon),
+                        selectedIconRes = iconRes,
+                        borderColor = accent,
+                        caption = if (iconName == QuickSliderStore.ICON_AUTO) {
+                            stringResource(R.string.slider_icon_auto)
+                        } else {
+                            null
+                        },
+                        onClick = { showIconPicker = true }
+                    )
+                    if (target != QuickSliderStore.TARGET_BRIGHTNESS) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        SettingSwitchItem(
+                            title = stringResource(R.string.slider_icon_opens_panel),
+                            description = stringResource(R.string.slider_icon_opens_panel_desc),
+                            checked = iconOpensPanel,
+                            onCheckedChange = { iconOpensPanel = it; store.setIconOpensVolumePanel(it) }
+                        )
+                    }
                 }
             }
 
@@ -618,6 +662,8 @@ private fun SliderPreview(
     fillColor: Color,
     showValue: Boolean,
     showIcon: Boolean,
+    /** The icon to draw when [showIcon] is on, already resolved against the target. */
+    iconRes: Int,
     valueMargin: Float,
     iconMargin: Float,
     target: String,
@@ -641,11 +687,6 @@ private fun SliderPreview(
     flare: Float,
     corners: List<Float>,
 ) {
-    val iconRes = if (target == QuickSliderStore.TARGET_BRIGHTNESS) {
-        R.drawable.ic_brightness_up
-    } else {
-        R.drawable.ic_vol_increase
-    }
     // Against the same edge the handler is on, because that is where the panel actually opens —
     // it grows out of the bar. Centred, it was a picture of a track floating in the middle of the
     // screen, which is the one place it never appears.

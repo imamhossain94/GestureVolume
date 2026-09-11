@@ -701,4 +701,24 @@
     <string name="slider_show_icon_desc">Eine kleine Markierung am Fuß der Bahn für das, was geregelt wird.</string>
     <string name="slider_auto_brightness">Adaptive Helligkeit ausschalten</string>
     <string name="slider_auto_brightness_desc">Solange der Helligkeitsregler offen ist. Ohne dies macht der Lichtsensor deine Einstellung binnen ein, zwei Sekunden rückgängig. Sie wird zurückgegeben, wenn der Dienst endet.</string>
+    <string name="slider_icon">Symbol</string>
+    <string name="slider_icon_auto">Automatisch</string>
+    <string name="slider_icon_opens_panel">Symbol öffnet das Lautstärkefeld</string>
+    <string name="slider_icon_opens_panel_desc">Ein Tipp auf das Symbol öffnet das vollständige Lautstärkefeld des Systems – Medien, Anrufe, Klingelton und Wecker auf einen Blick.</string>
+    <string name="icon_sun">Sonne</string>
+    <string name="icon_dim">Gedimmt</string>
+    <string name="upgrade_tagline">Einmal kaufen. Für immer deins.</string>
+    <string name="upgrade_ad_free_title">Keine Werbung, nirgends</string>
+    <string name="upgrade_ad_free_desc">Jede Werbung verschwindet aus der gesamten App – dauerhaft.</string>
+    <string name="upgrade_features_title">Mehr Funktionen</string>
+    <string name="upgrade_features_desc">Neue Pro-Extras, sobald sie erscheinen – ohne Aufpreis.</string>
+    <string name="upgrade_support_title">Unterstütze den Entwickler</string>
+    <string name="upgrade_support_desc">Hält die App unabhängig und sorgt dafür, dass sie immer besser wird.</string>
+    <string name="upgrade_buy">Upgrade für %1$s</string>
+    <string name="upgrade_one_time">Einmaliger Kauf. Kein Abo.</string>
+    <string name="upgrade_restore">Kauf wiederherstellen</string>
+    <string name="upgrade_thanks_title">Du hast Pro</string>
+    <string name="upgrade_thanks_desc">Danke, dass du die App unterstützt. Viel Spaß – ganz ohne Werbung.</string>
+    <string name="about_ideas_by">Funktionsideen von</string>
+    <string name="about_ideas_desc">Hat viele Funktionen dieser App vorgeschlagen – und hat immer neue Ideen.</string>
 </resources>

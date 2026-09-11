@@ -60,6 +60,7 @@ import com.newagedevs.gesturevolume.ui.util.navigateBackOnce
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEffect
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
+import com.newagedevs.gesturevolume.ui.screens.upgrade.UpgradeScreen
 
 /** Routes the Deck may ask the app to open. Anything else in the extra is ignored. */
 private val DEEP_LINK_ROUTES = setOf("deck", "notes", "clipboard", "deck_search", "deck_apps", "deck_quick_dial", "deck_tiles")
@@ -207,7 +208,15 @@ fun MainNavigation(
                             viewModel.maybeShowInterstitialAd()
                             navController.navigate("long_press_menu")
                         },
-                        onNavigateToFaq = { navController.navigate("faq") }
+                        onNavigateToFaq = { navController.navigate("faq") },
+                        onNavigateToUpgrade = { navController.navigate("upgrade") }
+                    )
+                }
+
+                composable("upgrade") {
+                    UpgradeScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.navigateBackOnce() }
                     )
                 }
 
