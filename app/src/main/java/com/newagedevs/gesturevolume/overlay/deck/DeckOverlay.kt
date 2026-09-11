@@ -142,6 +142,8 @@ data class DeckSurfaces(
     val stripCornerPx: Float,
     val card: IntRect?,
     val cardCornerPx: Float,
+    /** How strongly to blur behind both, 0 to 1. See [PanelAnimation.glassStrength]. */
+    val strength: Float = 1f,
 )
 
 @Composable
@@ -201,41 +203,31 @@ fun DeckOverlay(
         towardLeft = model.isLeft,
         closing = closing,
         speed = animationSpeed,
+        settle = true,
     )
 
     /** What the layout pass placed, before the entrance moves it. Reported on, transformed. */
     var placed by remember { mutableStateOf<DeckSurfaces?>(null) }
 
     /*
-     * The glass follows the panel, frame by frame — see the note in `ContextMenuOverlay`. Collected
-     * from a snapshot flow rather than read in the composition, so an animating value drives the
-     * one window it has to and does not recompose the Deck to do it.
+     * The glass stays where the strip comes to rest and fades with it — see
+     * [PanelAnimation.glassStrength] for why it no longer follows. Collected from a snapshot flow
+     * rather than read in the composition, so an animating value drives the one window it has to
+     * and does not recompose the Deck to do it.
      */
     LaunchedEffect(placed) {
         val base = placed ?: return@LaunchedEffect
         snapshotFlow { entrance.value }.collect { f ->
             val tx = with(density) { f.translationX.dp.toPx() }
             val ty = with(density) { f.translationY.dp.toPx() }
-            fun moved(rect: IntRect): IntRect {
-                val box = PanelAnimation.bounds(
-                    rect.left.toFloat(), rect.top.toFloat(),
-                    rect.right.toFloat(), rect.bottom.toFloat(), f, tx, ty,
-                )
-                // Nothing to blur until the panel is visible: the glass is opaque from its first
-                // frame, so putting it up under a panel that has not arrived is a blurred
-                // rectangle turning up on its own.
-                if (f.alpha <= 0.12f) return IntRect(box[0].toInt(), box[1].toInt(), box[0].toInt(), box[1].toInt())
-                return IntRect(box[0].toInt(), box[1].toInt(), box[2].toInt(), box[3].toInt())
-            }
-            val shrink = minOf(f.scaleX, f.scaleY).coerceIn(0.2f, 1f)
-            onSurfaces(
-                DeckSurfaces(
-                    strip = moved(base.strip),
-                    stripCornerPx = base.stripCornerPx * shrink,
-                    card = base.card?.let(::moved),
-                    cardCornerPx = base.cardCornerPx * shrink,
-                )
+            val s = base.strip
+            val box = PanelAnimation.bounds(
+                s.left.toFloat(), s.top.toFloat(), s.right.toFloat(), s.bottom.toFloat(), f, tx, ty,
             )
+            val strength = PanelAnimation.glassStrength(
+                box, s.left.toFloat(), s.top.toFloat(), s.right.toFloat(), s.bottom.toFloat(), f.alpha,
+            )
+            onSurfaces(base.copy(strength = strength))
         }
     }
 
@@ -261,7 +253,7 @@ fun DeckOverlay(
                         enter = EnterTransition.None,
                         exit = fadeOut(PANEL_FADE) + scaleOut(PANEL_SCALE, DECK_ENTER_SCALE, stripOrigin)
                     ) {
-                        Box(modifier = Modifier.panelFrame(entrance.value)) {
+                        Box(modifier = Modifier.panelFrame { entrance.value }) {
                             DeckStrip(model, actions, palette, stripWidthPx)
                         }
                     }

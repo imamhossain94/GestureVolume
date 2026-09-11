@@ -612,6 +612,9 @@ class OverlayController(
         // mid-drag would pull the fill back under the finger on every frame. It catches up the
         // moment the finger lifts.
         if (adjustingBySwipe || panelTouchActive) return
+        // A write of the panel's own still on its way to the audio service: reading the level now
+        // would find the old one and animate the fill back to it for a frame or two.
+        if (volumeWritesInFlight.get() > 0) return
         val view = sliderView ?: return
         // A brightness panel: the volume moving is not news to it.
         val res = sliderResolution ?: return
@@ -646,6 +649,43 @@ class OverlayController(
      */
     /** Whether a finger is on the open panel right now. See [followVolumeOnPanel]. */
     private var panelTouchActive = false
+
+    /*
+     * Where the panel's volume writes go: off the main thread, latest only.
+     *
+     * A write is a synchronous call into the audio service, and on a phone it is slow enough that a
+     * swipe driving the panel, which writes on nearly every frame, ran at 21ms a frame with the
+     * fill waiting on the audio. The fill now moves on the frame the finger does and the level
+     * follows on this thread. When the finger outruns it the writes in between are skipped, since
+     * only where the level ends up matters.
+     */
+    private var audioThread: android.os.HandlerThread? = null
+    private val pendingVolumeWrite =
+        java.util.concurrent.atomic.AtomicReference<Pair<VolumeController.Resolution, Int>?>(null)
+
+    /** Writes posted and not yet finished. The follower keeps its hands off until they have. */
+    private val volumeWritesInFlight = java.util.concurrent.atomic.AtomicInteger(0)
+
+    private val volumeWriter = Runnable {
+        try {
+            val job = pendingVolumeWrite.getAndSet(null)
+            if (job != null) volume.setIndex(job.first, job.second, showUi = false)
+        } finally {
+            volumeWritesInFlight.decrementAndGet()
+        }
+    }
+
+    private fun writeVolumeIndex(res: VolumeController.Resolution, index: Int) {
+        val thread = audioThread ?: android.os.HandlerThread("GestureVolume-audio").also {
+            it.start()
+            audioThread = it
+        }
+        pendingVolumeWrite.set(res to index)
+        volumeWritesInFlight.incrementAndGet()
+        // One post per write, each finishing one count; any that find the job already taken by an
+        // earlier one simply finish. That is the coalescing.
+        Handler(thread.looper).post(volumeWriter)
+    }
 
     private val volumeFollower = object : Runnable {
         override fun run() {
@@ -786,6 +826,9 @@ class OverlayController(
             ?.unregisterDisplayListener(displayListener)
         runCatching { context.contentResolver.unregisterContentObserver(volumeWatcher) }
         runCatching { context.unregisterReceiver(volumeReceiver) }
+        // Lets a write already queued land, then ends the thread.
+        audioThread?.quitSafely()
+        audioThread = null
 
         longPressHandler.removeCallbacks(longPressedRunnable)
         mainHandler.removeCallbacksAndMessages(null)
@@ -2342,11 +2385,15 @@ class OverlayController(
             // By index rather than by percentage. Going through a whole-number percent on a
             // seven-step stream lands two consecutive indices on the same percent and makes
             // others unreachable, so a slow drag skipped levels and stuck on others.
-            val written = res != null && volume.setIndex(res, res.minIndex + step, showUi = false) != null
-            // Seen, so the change coming back through the watchers is known for this panel's own
-            // rather than taken for a press of the rocker and animated back over the finger.
-            if (written && res != null) volume.percent(res)?.let { lastSeenVolume[res.stream] = it }
-            written
+            if (res != null) {
+                writeVolumeIndex(res, res.minIndex + step)
+                // Seen, so the change coming back through the watchers is known for this panel's
+                // own rather than taken for a press of the rocker and animated back over the
+                // finger. From the step itself: the write has not landed yet.
+                val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
+                lastSeenVolume[res.stream] = (step * 100f / span).roundToInt().coerceIn(0, 100)
+            }
+            res != null
         }
 
         // No buzz for a step the system refused. The tick is feedback about the control moving,
@@ -2585,9 +2632,9 @@ class OverlayController(
                         mainHandler.post { runAction(entry.action) }
                     },
                     onDismiss = { hideContextMenu() },
-                    onCardBounds = { rect, cornerPx ->
+                    onCardBounds = { rect, cornerPx, strength ->
                         menuBackdrop?.setFrameBounds(
-                            rect.left, rect.top, rect.width, rect.height, cornerPx
+                            rect.left, rect.top, rect.width, rect.height, cornerPx, strength
                         )
                     },
                 )
@@ -2845,12 +2892,14 @@ class OverlayController(
             surfaces.strip.left, surfaces.strip.top,
             surfaces.strip.width, surfaces.strip.height,
             surfaces.stripCornerPx,
+            surfaces.strength,
         )
         val card = surfaces.card
         deckCardBackdrop?.setFrameBounds(
             card?.left ?: 0, card?.top ?: 0,
             card?.width ?: 0, card?.height ?: 0,
             surfaces.cardCornerPx,
+            surfaces.strength,
         )
     }
 

@@ -97,7 +97,7 @@ fun ContextMenuOverlay(
      * has to be told where the card is, and this is the placement that actually happened rather
      * than a second calculation of it that could disagree.
      */
-    onCardBounds: (IntRect, Float) -> Unit = { _, _ -> },
+    onCardBounds: (IntRect, Float, Float) -> Unit = { _, _, _ -> },
 ) {
     /*
      * The entrance, from the catalogue the user picked out of.
@@ -118,6 +118,7 @@ fun ContextMenuOverlay(
         towardLeft = barOnLeft,
         closing = closing,
         speed = animationSpeed,
+        settle = true,
     )
 
     val gapPx = with(LocalDensity.current) { 10.dp.roundToPx() }
@@ -128,37 +129,30 @@ fun ContextMenuOverlay(
     val density = LocalDensity.current
 
     /*
-     * The glass follows the card, frame by frame.
+     * The glass stays where the card comes to rest and fades with it — see
+     * [PanelAnimation.glassStrength] for why it no longer follows.
      *
      * Collected from a snapshot flow rather than read in the composition: reading an animating
-     * state in the body would recompose the whole menu sixty times a second to move a window that
-     * is not part of it. This way the animation drives exactly one thing — the rectangle the blur
-     * is drawn in — and the menu itself is composed once.
+     * state in the body would recompose the whole menu on every frame to drive a window that is
+     * not part of it. This way the animation drives exactly one number — how strongly to blur —
+     * and the menu itself is composed once.
      */
     LaunchedEffect(placedRect, cornerPx) {
         if (placedRect.width <= 0) return@LaunchedEffect
+        val r = placedRect
         snapshotFlow { entrance.value }.collect { f ->
             val box = PanelAnimation.bounds(
-                placedRect.left.toFloat(),
-                placedRect.top.toFloat(),
-                placedRect.right.toFloat(),
-                placedRect.bottom.toFloat(),
+                r.left.toFloat(), r.top.toFloat(), r.right.toFloat(), r.bottom.toFloat(),
                 f,
                 with(density) { f.translationX.dp.toPx() },
                 with(density) { f.translationY.dp.toPx() },
             )
-            // Nothing to blur until the card is actually visible: the glass is opaque from its
-            // first frame, so putting it up under a card that has not faded in yet is a blurred
-            // rectangle arriving on its own.
-            val visible = f.alpha > 0.12f
             onCardBounds(
-                IntRect(
-                    box[0].toInt(),
-                    box[1].toInt(),
-                    if (visible) box[2].toInt() else box[0].toInt(),
-                    if (visible) box[3].toInt() else box[1].toInt(),
+                r,
+                cornerPx,
+                PanelAnimation.glassStrength(
+                    box, r.left.toFloat(), r.top.toFloat(), r.right.toFloat(), r.bottom.toFloat(), f.alpha,
                 ),
-                cornerPx * minOf(f.scaleX, f.scaleY).coerceIn(0.2f, 1f),
             )
         }
     }
@@ -202,12 +196,10 @@ fun ContextMenuOverlay(
                         placeable.place(x, y)
                     }
                 }
-                // The whole card, surface and all. It used to be the contents only, because the
-                // pane of glass behind the card could not follow it; the pane is moved per frame
-                // now — see [PanelBackdrop] — so there is no longer any reason for the background
-                // to sit still while the things on it move, which is what made the entrances look
-                // like they were happening to the wrong object.
-                .panelFrame(entrance.value)
+                // The whole card, surface and all, so the entrance happens to the card rather than
+                // to the things on it. The pane of glass behind it fades in and out with it rather
+                // than moving — see the note above the snapshot flow.
+                .panelFrame { entrance.value }
                 // Swallows the tap so the root's dismiss does not fire for a press on the card.
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },

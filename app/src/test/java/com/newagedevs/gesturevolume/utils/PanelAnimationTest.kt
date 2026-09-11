@@ -166,4 +166,38 @@ class PanelAnimationTest {
             assertTrue("$id outstays its welcome ($d ms)", d <= 450)
         }
     }
+
+    @Test
+    fun `the glass is at full strength over a panel at rest`() {
+        val s = PanelAnimation.glassStrength(floatArrayOf(10f, 20f, 110f, 220f), 10f, 20f, 110f, 220f, 1f)
+        assertEquals(1f, s, 1e-6f)
+    }
+
+    @Test
+    fun `the glass is off while the panel is nowhere near its place`() {
+        val s = PanelAnimation.glassStrength(floatArrayOf(500f, 500f, 600f, 700f), 10f, 20f, 110f, 220f, 1f)
+        assertEquals(0f, s, 1e-6f)
+    }
+
+    @Test
+    fun `the glass stays faint while the panel covers half its place`() {
+        // Half the width covered: a half, cubed.
+        val s = PanelAnimation.glassStrength(floatArrayOf(60f, 20f, 110f, 220f), 10f, 20f, 110f, 220f, 1f)
+        assertEquals(0.125f, s, 1e-5f)
+    }
+
+    @Test
+    fun `the glass fades with the panel`() {
+        val s = PanelAnimation.glassStrength(floatArrayOf(10f, 20f, 110f, 220f), 10f, 20f, 110f, 220f, 0.4f)
+        assertEquals(0.4f, s, 1e-6f)
+    }
+
+    @Test
+    fun `every entrance ends with its glass at full strength`() {
+        PanelAnimation.ALL.forEach { id ->
+            val f = PanelAnimation.frameAt(id, 1f, false)
+            val box = PanelAnimation.bounds(0f, 0f, 100f, 300f, f, 0f, 0f)
+            assertEquals(id, 1f, PanelAnimation.glassStrength(box, 0f, 0f, 100f, 300f, f.alpha), 1e-3f)
+        }
+    }
 }

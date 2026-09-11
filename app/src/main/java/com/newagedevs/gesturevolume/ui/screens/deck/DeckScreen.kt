@@ -209,7 +209,7 @@ fun DeckScreen(
                     glass = PanelTheme.hasLitEdge(panelTheme),
                     modifier = Modifier
                         .padding(horizontal = 14.dp)
-                        .panelFrame(entrance.value),
+                        .panelFrame { entrance.value },
                 )
             }
 

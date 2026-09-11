@@ -197,7 +197,7 @@ fun LongPressMenuScreen(
                         onSelect = {},
                         modifier = Modifier
                             .scale(PREVIEW_SCALE)
-                            .panelFrame(entrance.value),
+                            .panelFrame { entrance.value },
                         theme = panelTheme,
                         surfaceOverride = menuSurface,
                     )

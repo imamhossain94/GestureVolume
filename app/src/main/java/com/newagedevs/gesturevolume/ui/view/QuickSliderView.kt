@@ -285,10 +285,13 @@ class QuickSliderView(context: Context) : View(context) {
      * until the retraction ended: the line that blinked at the edge on every auto-close. The
      * entrance slid, scaled and faded the panel over a pane that did none of those.
      *
-     * So the view reports the glass as it draws: the full-width part of the shape it is drawing
-     * right now, carried through whatever the entrance is doing to the layer, with a strength that
-     * falls away with the morph and the fade, so the blur leaves with the panel rather than after
-     * it. In this window's coordinates. A strength of zero means nothing to blur.
+     * So the view reports where the glass belongs once the panel is at rest, the full-width part
+     * of its final shape, and how strongly to blur there right now: by how much of that rectangle
+     * the panel covers this frame, through the morph and whatever the entrance is doing to the
+     * layer, and by its fade. The rectangle never changes while the panel animates, so the glass
+     * window is never moved, which measured at 2.5ms of the main thread per frame; the blur
+     * arrives with the panel and leaves with it instead. In this window's coordinates. A strength
+     * of zero means nothing to blur.
      */
     fun interface GlassListener {
         fun onGlass(left: Float, top: Float, right: Float, bottom: Float, cornerPx: Float, strength: Float)
@@ -311,42 +314,76 @@ class QuickSliderView(context: Context) : View(context) {
     private var drawnIsTab = false
     private var drawnFlare = HandlerShape.DEFAULT_FLARE
     private val glassBounds = RectF()
+    private val glassFinal = RectF()
+    private val glassBox = FloatArray(4)
+
+    /**
+     * Whether [fillShapePath] has to be built again, and what it was last built for.
+     *
+     * Rebuilt only when it would come out different. It used to be rebuilt on every frame, and a
+     * rebuilt path is a new path to the renderer, which cannot reuse the clip masks and edges it
+     * rasterised for the last one: that was most of the ten milliseconds of render time an open
+     * panel spent on each frame of its fill animation.
+     */
+    private var fillPathDirty = true
+
+    /** Spectrum's colour wheel as a strip one mirrored period tall, and its sheen. Built once. */
+    private var spectrumShader: android.graphics.BitmapShader? = null
+    private var spectrumTrack = -1f
+    private var spectrumSheenShader: android.graphics.Shader? = null
+    private var spectrumSheenKey = Float.NaN
+    private var builtFillTop = Float.NaN
+    private var builtFillPhase = Float.NaN
 
     private fun reportGlass() {
         val glass = glassListener ?: return
-        val strength = (expansion * alpha).coerceIn(0f, 1f)
-        if (drawRect.isEmpty || strength <= 0f) {
+        if (expandedRect.isEmpty) {
             glass.onGlass(0f, 0f, 0f, 0f, 0f, 0f)
             return
         }
-        val corner: Float
-        if (drawnIsTab) {
-            // Only the straight middle is full width. A blur region is a rounded rectangle and
-            // nothing else, so behind a tab's sweeps it would poke out past the shape, and because
-            // blur lightens what is behind it the corners would read as a second panel.
-            val depth = HandlerShape.tabSweepDepth(drawRect.height(), drawnFlare)
-            glassBounds.set(drawRect.left, drawRect.top + depth, drawRect.right, drawRect.bottom - depth)
-            corner = minOf(drawRect.width() / 2f, depth)
+        // Where the glass sits: the full-width part of the panel at rest. Only a tab's straight
+        // middle is full width. A blur region is a rounded rectangle and nothing else, so behind a
+        // tab's sweeps it would poke out past the shape, and because blur lightens what is behind
+        // it the corners would read as a second panel.
+        val finalCorner: Float
+        if (expandedShape == HandlerShape.TAB) {
+            val depth = HandlerShape.tabSweepDepth(expandedRect.height(), expandedFlare)
+            glassFinal.set(expandedRect.left, expandedRect.top + depth, expandedRect.right, expandedRect.bottom - depth)
+            finalCorner = minOf(expandedRect.width() / 2f, depth)
         } else {
-            glassBounds.set(drawRect)
+            glassFinal.set(expandedRect)
             // The largest of the four. A rounder corner cuts deeper, so it stays inside all four.
-            corner = drawRadii.maxOrNull() ?: 0f
+            finalCorner = (expandedCornersPx.maxOrNull() ?: 0f)
+                .coerceAtMost(minOf(expandedRect.width(), expandedRect.height()) / 2f)
         }
-        if (glassBounds.isEmpty) {
+        if (glassFinal.isEmpty) {
             glass.onGlass(0f, 0f, 0f, 0f, 0f, 0f)
             return
-        }
-        // The entrance moves this view as a layer, so the glass goes through the same transform.
-        // For a turned layer that is its bounding box, the compromise the menu and the Deck make.
-        var scale = 1f
-        val m = matrix
-        if (!m.isIdentity) {
-            m.mapRect(glassBounds)
-            scale = minOf(kotlin.math.abs(scaleX), kotlin.math.abs(scaleY))
         }
         glass.onGlass(
-            glassBounds.left, glassBounds.top, glassBounds.right, glassBounds.bottom,
-            corner * scale, strength,
+            glassFinal.left, glassFinal.top, glassFinal.right, glassFinal.bottom,
+            finalCorner, currentGlassStrength(),
+        )
+    }
+
+    /** How much of its resting place the panel covers this frame, through morph and entrance. */
+    private fun currentGlassStrength(): Float {
+        if (drawRect.isEmpty || expansion <= 0f || alpha <= 0f) return 0f
+        if (drawnIsTab) {
+            val depth = HandlerShape.tabSweepDepth(drawRect.height(), drawnFlare)
+            glassBounds.set(drawRect.left, drawRect.top + depth, drawRect.right, drawRect.bottom - depth)
+        } else {
+            glassBounds.set(drawRect)
+        }
+        if (glassBounds.isEmpty) return 0f
+        val m = matrix
+        if (!m.isIdentity) m.mapRect(glassBounds)
+        glassBox[0] = glassBounds.left
+        glassBox[1] = glassBounds.top
+        glassBox[2] = glassBounds.right
+        glassBox[3] = glassBounds.bottom
+        return PanelAnimation.glassStrength(
+            glassBox, glassFinal.left, glassFinal.top, glassFinal.right, glassFinal.bottom, alpha,
         )
     }
 
@@ -659,6 +696,7 @@ class QuickSliderView(context: Context) : View(context) {
         if (next == fillStyle) return
         fillStyle = next
         fillPhase = 0f
+        fillPathDirty = true
         restartFillClock()
         invalidate()
     }
@@ -780,15 +818,12 @@ class QuickSliderView(context: Context) : View(context) {
     /** The part of a style that is drawn *over* the fill rather than being its shape. */
     private fun drawFillEffects(canvas: Canvas, fillTop: Float, alpha: Int) {
         if (fillStyle == SliderFill.SOLID) return
-
-        canvas.save()
-        canvas.clipPath(fillShapePath)
+        // Unclipped here: the caller has already clipped the canvas to the fill.
         if (SliderFill.isPictorial(fillStyle)) {
             drawPictorialFill(canvas, fillTop, alpha)
         } else {
             drawTintedFill(canvas, fillTop, alpha)
         }
-        canvas.restore()
     }
 
     /**
@@ -830,36 +865,110 @@ class QuickSliderView(context: Context) : View(context) {
      * on a white bar is a grey line.
      */
     /**
-     * One silk ribbon into [stripePath]: up its left edge, back down its right, closed.
+     * One silk ribbon, drawn as a mesh of triangles.
      *
-     * Its centre line sways and its width breathes, both on whole turns of the fill's clock, so
-     * both are seamless. [widthScale] narrows it about that same centre line, which is how the
-     * folds of light stay on the ribbon they belong to. The two edges walk the same samples, so the
-     * band closes square rather than with a slanted cut at the top.
+     * Four vertices across at every sample: a transparent feather, the ribbon's two edges, and
+     * another feather, so the GPU draws it straight from the triangles with a soft edge, and
+     * nothing is rasterised on the way. It was a closed path, new every frame, and six of those
+     * a frame are six shapes the renderer has to rasterise from nothing each time: on a phone,
+     * 22ms of render time for Silk alone.
+     *
+     * Its centre line sways and its width breathes on whole turns of the fill's clock, so both
+     * are seamless. [widthScale] narrows it about that same centre line, which is how the fold of
+     * light stays on the ribbon it belongs to.
      */
-    private fun buildSilkRibbon(fillTop: Float, offset: Float, widthScale: Float) {
+    private fun drawSilkRibbon(
+        canvas: Canvas,
+        fillTop: Float,
+        offset: Float,
+        widthScale: Float,
+        color: Int,
+    ) {
         val track = drawRect.height().coerceAtLeast(1f)
         val width = drawRect.width()
-        val step = 3f * density
+        // Five dp between samples: the ribbons curve gently enough that a finer step only added
+        // vertices, every frame, on a shape that is new every frame.
+        val step = 5f * density
         val turn = fillPhase * 6.28318f
         val start = drawRect.bottom + step
-        val count = ((start - (fillTop - step)) / step).toInt().coerceAtLeast(1)
-        stripePath.reset()
-        for (i in 0..count) {
+        val rows = (((start - (fillTop - step)) / step).toInt() + 1).coerceIn(2, SILK_MAX_ROWS)
+        val feather = 1.2f * density
+        val clear = color and 0x00FFFFFF
+        val verts = silkVerts
+        val colors = silkColors
+        for (i in 0 until rows) {
             val y = start - i * step
             val k = (drawRect.bottom - y) / track
             val centre = drawRect.centerX() + width * 0.28f * kotlin.math.sin(k * 5f + turn + offset)
             val half = widthScale * width * (0.2f + 0.08f * kotlin.math.sin(k * 3f - turn + offset))
-            if (i == 0) stripePath.moveTo(centre - half, y) else stripePath.lineTo(centre - half, y)
+            val v = i * 8
+            verts[v] = centre - half - feather; verts[v + 1] = y
+            verts[v + 2] = centre - half; verts[v + 3] = y
+            verts[v + 4] = centre + half; verts[v + 5] = y
+            verts[v + 6] = centre + half + feather; verts[v + 7] = y
+            val c = i * 4
+            colors[c] = clear
+            colors[c + 1] = color
+            colors[c + 2] = color
+            colors[c + 3] = clear
         }
-        for (i in count downTo 0) {
-            val y = start - i * step
-            val k = (drawRect.bottom - y) / track
-            val centre = drawRect.centerX() + width * 0.28f * kotlin.math.sin(k * 5f + turn + offset)
-            val half = widthScale * width * (0.2f + 0.08f * kotlin.math.sin(k * 3f - turn + offset))
-            stripePath.lineTo(centre + half, y)
+        canvas.drawVertices(
+            Canvas.VertexMode.TRIANGLES, rows * 8, verts, 0, null, 0, colors, 0,
+            SILK_INDICES, 0, (rows - 1) * 18, silkPaint,
+        )
+    }
+
+    private fun withAlpha(color: Int, alpha: Float): Int =
+        (alpha.toInt().coerceIn(0, 255) shl 24) or (color and 0x00FFFFFF)
+
+    /** Plasma's cells as an image, kept and reused; only its column count forces a new one. */
+    private var plasmaImage: android.graphics.Bitmap? = null
+    private val plasmaPixels = IntArray(PLASMA_MAX_COLS * PLASMA_MAX_ROWS)
+    private val plasmaSrc = android.graphics.Rect()
+    private val plasmaDst = RectF()
+
+    /** No smoothing: a pixel of the image is a cell of the field, edges and all. */
+    private val plasmaPaint = Paint().apply { isFilterBitmap = false }
+
+    private fun plasmaGrid(cols: Int): android.graphics.Bitmap {
+        plasmaImage?.let { if (it.width == cols) return it }
+        return android.graphics.Bitmap.createBitmap(cols, PLASMA_MAX_ROWS, android.graphics.Bitmap.Config.ARGB_8888)
+            .also { plasmaImage = it }
+    }
+
+    private val silkVerts = FloatArray(SILK_MAX_ROWS * 8)
+    private val silkColors = IntArray(SILK_MAX_ROWS * 4)
+    private val silkPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    private fun buildSpectrumShader(track: Float): android.graphics.BitmapShader {
+        val period = (track * 2f).toInt().coerceIn(2, 8192)
+        val hsv = floatArrayOf(0f, 0.62f, 1f)
+        val pixels = IntArray(period) { row ->
+            val f = row / track
+            hsv[0] = (if (f <= 1f) f else 2f - f).coerceIn(0f, 1f) * 300f
+            Color.HSVToColor(hsv)
         }
-        stripePath.close()
+        val strip = android.graphics.Bitmap.createBitmap(pixels, 1, period, android.graphics.Bitmap.Config.ARGB_8888)
+        return android.graphics.BitmapShader(
+            strip, android.graphics.Shader.TileMode.CLAMP, android.graphics.Shader.TileMode.REPEAT,
+        ).also {
+            spectrumShader = it
+            spectrumTrack = track
+        }
+    }
+
+    private fun spectrumSheen(left: Float, right: Float): android.graphics.Shader {
+        val key = left * 4099f + right
+        spectrumSheenShader?.takeIf { spectrumSheenKey == key }?.let { return it }
+        return android.graphics.LinearGradient(
+            left, 0f, right, 0f,
+            intArrayOf(0x59FFFFFF, 0x00FFFFFF, 0x00FFFFFF, 0x26FFFFFF),
+            floatArrayOf(0f, 0.35f, 0.75f, 1f),
+            android.graphics.Shader.TileMode.CLAMP,
+        ).also {
+            spectrumSheenShader = it
+            spectrumSheenKey = key
+        }
     }
 
     private fun drawPictorialFill(canvas: Canvas, fillTop: Float, alpha: Int) {
@@ -868,10 +977,14 @@ class QuickSliderView(context: Context) : View(context) {
         val width = drawRect.width().coerceAtLeast(1f)
 
         // The ground. Without it every one of these is washed out by whatever colour the fill is.
+        // Not under the styles that paint an opaque ground of their own over the whole fill: there
+        // it was a full pass of the GPU over the panel that nothing could see.
         effectPaint.shader = null
-        effectPaint.color = Color.BLACK
-        effectPaint.alpha = (0.82f * alpha).toInt().coerceIn(0, 255)
-        canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+        if (fillStyle !in OPAQUE_PICTORIAL) {
+            effectPaint.color = Color.BLACK
+            effectPaint.alpha = (0.82f * alpha).toInt().coerceIn(0, 255)
+            canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+        }
 
         when (fillStyle) {
             SliderFill.NEBULA -> {
@@ -934,30 +1047,37 @@ class QuickSliderView(context: Context) : View(context) {
                 // it is classic because two fields read as stripes and four as noise.
                 // Fine enough to read as a field rather than as tiles. Coarser was cheaper and
                 // looked like a spreadsheet.
+                //
+                // Worked out into an image one pixel per cell, then drawn once, scaled up with no
+                // smoothing so every pixel stays a crisp cell. It was a rectangle per cell, two and
+                // a half thousand draws a frame, which on a phone cost 21ms of render time on its
+                // own and held the panel under sixty frames a second.
                 val cell = 2f * density
-                val cols = (width / cell).toInt().coerceIn(1, 64)
-                val rows = (height / cell).toInt().coerceIn(1, 320)
-                val cw = width / cols
-                val ch = height / rows
+                val cols = (width / cell).toInt().coerceIn(1, PLASMA_MAX_COLS)
+                val rows = (height / cell).toInt().coerceIn(1, PLASMA_MAX_ROWS)
+                val grid = plasmaGrid(cols)
+                val pixels = plasmaPixels
                 val t = fillPhase * 6.28318f
-                for (c in 0 until cols) {
-                    for (r in 0 until rows) {
+                for (r in 0 until rows) {
+                    val y = r.toFloat() / rows
+                    // Row 0 of the image is its top; r counts up from the bottom of the fill.
+                    val base = (rows - 1 - r) * cols
+                    for (c in 0 until cols) {
                         val x = c.toFloat() / cols
-                        val y = r.toFloat() / rows
                         val v = (
                             kotlin.math.sin(x * 5f + t) +
                                 kotlin.math.sin(y * 7f - t) +
                                 kotlin.math.sin((x + y) * 6f + t * 2f)
                             ) / 3f
                         val idx = ((v + 1f) / 2f * (palette.size - 1)).toInt().coerceIn(0, palette.size - 1)
-                        effectPaint.color = palette[idx].toInt()
-                        effectPaint.alpha = alpha
-                        canvas.drawRect(
-                            drawRect.left + cw * c, drawRect.bottom - ch * (r + 1),
-                            drawRect.left + cw * (c + 1), drawRect.bottom - ch * r, effectPaint
-                        )
+                        pixels[base + c] = palette[idx].toInt() or OPAQUE
                     }
                 }
+                grid.setPixels(pixels, 0, cols, 0, 0, cols, rows)
+                plasmaSrc.set(0, 0, cols, rows)
+                plasmaDst.set(drawRect.left, drawRect.bottom - height, drawRect.right, drawRect.bottom)
+                plasmaPaint.alpha = alpha
+                canvas.drawBitmap(grid, plasmaSrc, plasmaDst, plasmaPaint)
             }
 
             SliderFill.AURORA -> {
@@ -1277,29 +1397,24 @@ class QuickSliderView(context: Context) : View(context) {
             SliderFill.SPECTRUM -> {
                 // The colour wheel flowing up through the fill. Saturation held short of full,
                 // because a fully saturated rainbow on a phone screen is a warning label.
-                val stops = 8
-                val colours = IntArray(stops) { i ->
-                    android.graphics.Color.HSVToColor(floatArrayOf(i / (stops - 1f) * 300f, 0.62f, 1f))
-                }
+                //
+                // Painted from a strip one pixel wide holding one mirrored period of the wheel,
+                // built once per track height and slid by its matrix. It was an eight-stop mirrored
+                // gradient made anew every frame, which on a phone cost 22ms of render time a frame
+                // on its own and held the panel well under sixty.
                 val track = drawRect.height().coerceAtLeast(1f)
-                val flow = android.graphics.LinearGradient(
-                    0f, drawRect.bottom, 0f, drawRect.bottom - track,
-                    colours, null, android.graphics.Shader.TileMode.MIRROR,
-                )
-                // Two spans per cycle is one full mirrored period: the loop is seamless.
-                effectMatrix.setTranslate(0f, -fillPhase * track * 2f)
-                flow.setLocalMatrix(effectMatrix)
-                effectPaint.shader = flow
+                val shader = spectrumShader?.takeIf { spectrumTrack == track } ?: buildSpectrumShader(track)
+                // The strip's first row is the bottom of the track and it runs upward. Two spans
+                // per cycle is one full mirrored period, so the loop is seamless.
+                effectMatrix.setScale(1f, -1f)
+                effectMatrix.postTranslate(drawRect.left, drawRect.bottom - fillPhase * track * 2f)
+                shader.setLocalMatrix(effectMatrix)
+                effectPaint.shader = shader
                 effectPaint.alpha = alpha
                 canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
                 // A glassy sheen down one side, which is most of what makes it read as a surface
                 // rather than as a gradient.
-                effectPaint.shader = android.graphics.LinearGradient(
-                    drawRect.left, 0f, drawRect.right, 0f,
-                    intArrayOf(0x59FFFFFF, 0x00FFFFFF, 0x00FFFFFF, 0x26FFFFFF),
-                    floatArrayOf(0f, 0.35f, 0.75f, 1f),
-                    android.graphics.Shader.TileMode.CLAMP,
-                )
+                effectPaint.shader = spectrumSheen(drawRect.left, drawRect.right)
                 canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
                 effectPaint.shader = null
             }
@@ -1348,10 +1463,10 @@ class QuickSliderView(context: Context) : View(context) {
             }
 
             SliderFill.SILK -> {
-                // Satin ribbons weaving up the fill, crossing over each other. Each is laid three
-                // times about its own centre line: the ribbon, then two narrower, fainter folds of
-                // light. Stacked, those make a soft ridge down the middle, which is what makes a
-                // ribbon read as fabric catching the light rather than as a stripe of colour.
+                // Satin ribbons weaving up the fill, crossing over each other. Each is laid twice
+                // about its own centre line: the ribbon, then a narrower, fainter fold of light down
+                // its middle, which is what makes a ribbon read as fabric catching the light rather
+                // than as a stripe of colour.
                 effectPaint.shader = android.graphics.LinearGradient(
                     0f, drawRect.bottom, 0f, fillTop,
                     intArrayOf(0xFF140C26.toInt(), 0xFF2A1A48.toInt()), null,
@@ -1362,17 +1477,8 @@ class QuickSliderView(context: Context) : View(context) {
                 effectPaint.shader = null
                 for (r in palette.indices) {
                     val off = r * 2.1f
-                    buildSilkRibbon(fillTop, off, 1f)
-                    effectPaint.color = palette[r].toInt()
-                    effectPaint.alpha = (alpha * 0.58f).toInt().coerceIn(0, 255)
-                    canvas.drawPath(stripePath, effectPaint)
-                    effectPaint.color = Color.WHITE
-                    buildSilkRibbon(fillTop, off, 0.5f)
-                    effectPaint.alpha = (alpha * 0.14f).toInt().coerceIn(0, 255)
-                    canvas.drawPath(stripePath, effectPaint)
-                    buildSilkRibbon(fillTop, off, 0.22f)
-                    effectPaint.alpha = (alpha * 0.2f).toInt().coerceIn(0, 255)
-                    canvas.drawPath(stripePath, effectPaint)
+                    drawSilkRibbon(canvas, fillTop, off, 1f, withAlpha(palette[r].toInt(), alpha * 0.58f))
+                    drawSilkRibbon(canvas, fillTop, off, 0.4f, withAlpha(Color.WHITE, alpha * 0.22f))
                 }
             }
 
@@ -1492,6 +1598,7 @@ class QuickSliderView(context: Context) : View(context) {
         )
 
         drawPath.reset()
+        fillPathDirty = true
         if (drawRect.isEmpty) {
             rebuildGlass()
             reportGlass()
@@ -1576,21 +1683,34 @@ class QuickSliderView(context: Context) : View(context) {
 
         if (fillVisible && contentAlpha > 0.01f) {
             val fillTop = drawRect.bottom - drawRect.height() * value
-            buildFillPath(fillTop)
+            if (fillPathDirty || fillTop != builtFillTop ||
+                (SliderFill.hasWave(fillStyle) && fillPhase != builtFillPhase)
+            ) {
+                buildFillPath(fillTop)
+                builtFillTop = fillTop
+                builtFillPhase = fillPhase
+                fillPathDirty = false
+            }
 
             val alpha = (contentAlpha * 255f).toInt().coerceIn(0, 255)
             fillPaint.alpha = alpha
             canvas.drawPath(fillShapePath, fillPaint)
 
-            // Whatever the style adds on top of a plain fill. All of it clipped to the fill, so
-            // none of it strays onto the empty half of the track — and the fill's own edge is
-            // already drawn antialiased underneath, so a clip here lands colour-on-colour rather
-            // than colour-on-wallpaper.
-            drawFillEffects(canvas, fillTop, alpha)
-
-            // Pass two: the same content, clipped to the filled region, in the inverted colour.
+            /*
+             * Whatever the style adds on top of a plain fill, and the contents again in the
+             * inverted colour, all clipped to the fill, so none of it strays onto the empty half of
+             * the track. The fill's own edge is already drawn antialiased underneath, so the clip
+             * lands colour-on-colour rather than colour-on-wallpaper.
+             *
+             * A clip rather than a layer cut to shape, measured both ways on a phone: the layer
+             * was never cheaper and was slower with spikes past 16ms once the glass was off, the
+             * cost of a second render pass on a mobile GPU. The cost that matters with the glass on
+             * is the system blurring behind the panel on every frame anything animates, which is
+             * the compositor's and the same either way.
+             */
             canvas.save()
             canvas.clipPath(fillShapePath)
+            drawFillEffects(canvas, fillTop, alpha)
             drawContent(canvas, overFill = true)
             canvas.restore()
 
@@ -1675,3 +1795,32 @@ private const val BUBBLE_COUNT = 14
 
 /** How many stars each of a galaxy's three depths carries. */
 private const val STARS_PER_LAYER = 16
+
+/** The pictorial styles whose first pass is an opaque ground over the whole fill. */
+private val OPAQUE_PICTORIAL = setOf(
+    SliderFill.LIQUID, SliderFill.SUNRISE, SliderFill.SPECTRUM, SliderFill.GALAXY, SliderFill.SILK,
+)
+
+/** The largest grid Plasma samples. At two dp a cell, well beyond any panel's size. */
+private const val PLASMA_MAX_COLS = 64
+private const val PLASMA_MAX_ROWS = 320
+private const val OPAQUE = 0xFF000000.toInt()
+
+/** The most samples a silk ribbon takes: five dp apart, taller than any panel. */
+private const val SILK_MAX_ROWS = 400
+
+/**
+ * Silk's triangles, the same for every ribbon: between each pair of sample rows, three quads —
+ * feather, ribbon, feather — of two triangles each. Built once.
+ */
+private val SILK_INDICES = ShortArray((SILK_MAX_ROWS - 1) * 18).also { idx ->
+    var n = 0
+    for (i in 0 until SILK_MAX_ROWS - 1) {
+        val a = i * 4
+        val b = (i + 1) * 4
+        for (q in 0 until 3) {
+            idx[n++] = (a + q).toShort(); idx[n++] = (b + q).toShort(); idx[n++] = (a + q + 1).toShort()
+            idx[n++] = (a + q + 1).toShort(); idx[n++] = (b + q).toShort(); idx[n++] = (b + q + 1).toShort()
+        }
+    }
+}

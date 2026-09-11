@@ -261,6 +261,34 @@ object PanelAnimation {
         return floatArrayOf(l, t, r, b)
     }
 
+    /**
+     * How strongly to blur behind a panel part-way through a [Frame], 0 to 1.
+     *
+     * The glass does not follow the panel any more. It sits still at the rectangle the panel comes
+     * to rest in, because moving its window every frame is a relayout every frame: measured on a
+     * phone, 2 to 18ms of the main thread per window, which is where the Deck's dropped frames
+     * came from. It fades instead, by how much of that rectangle [box], the panel as it is drawn
+     * this frame, covers — cubed, so a panel covering most of its place is nearly all the way
+     * there and one covering half of it barely registers — and by the panel's own [alpha]. A panel
+     * arriving brings its glass with it and a panel leaving takes it away, and the window never
+     * moves.
+     */
+    fun glassStrength(
+        box: FloatArray,
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        alpha: Float,
+    ): Float {
+        val area = (right - left) * (bottom - top)
+        if (area <= 0f) return 0f
+        val w = (minOf(box[2], right) - maxOf(box[0], left)).coerceAtLeast(0f)
+        val h = (minOf(box[3], bottom) - maxOf(box[1], top)).coerceAtLeast(0f)
+        val coverage = (w * h / area).coerceIn(0f, 1f)
+        return (coverage * coverage * coverage * alpha.coerceIn(0f, 1f)).coerceIn(0f, 1f)
+    }
+
     private fun lerp(from: Float, to: Float, f: Float): Float = from + (to - from) * f
 
     /** A decelerate curve: quick off the mark, easing into place. */
