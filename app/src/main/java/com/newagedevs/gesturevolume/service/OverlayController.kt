@@ -324,6 +324,11 @@ class OverlayController(
     /** The open panel's window rectangle, kept so the blur behind it can be sized to match. */
     private var sliderParams: WindowManager.LayoutParams? = null
 
+    /** The open panel's outline, for the same reason. See [armQuickSlider]. */
+    private var sliderShape: String = HandlerShape.ROUNDED
+    private var sliderFlare: Float = HandlerShape.DEFAULT_FLARE
+    private var sliderCornerPx: Float = 0f
+
     /**
      * The collapse animation, held so a pull that starts again mid-retract can take it over.
      *
@@ -1845,6 +1850,11 @@ class OverlayController(
         }
         sliderView = view
         sliderParams = params
+        sliderShape = panelShape
+        sliderFlare = panelFlare
+        sliderCornerPx = dpToPx(
+            maxOf(panelCornerTL, panelCornerTR, panelCornerBL, panelCornerBR)
+        ).toFloat()
         // Not live yet, on either route. The action route arms it when its open animation
         // finishes; the pull route when the finger passes the far threshold.
         sliderCommitted = false
@@ -1913,28 +1923,35 @@ class OverlayController(
         // panel — the track fills it once expanded — so its own rectangle is what to blur, and
         // the largest of the four corner radii is the one that keeps the blur inside the shape.
         sliderParams?.let { params ->
-            // The panel's own radius, because by the time this runs the morph is over and the
-            // panel is wearing it. Using the bar's here left the blur rounded to a different
-            // shape than the glass it was sitting behind.
-            val settings = preference.slider
-            val corner = if (settings.getFollowHandlerShape()) {
-                maxOf(
-                    preference.getHandlerCornerRadiusTL(),
-                    preference.getHandlerCornerRadiusTR(),
-                    preference.getHandlerCornerRadiusBL(),
-                    preference.getHandlerCornerRadiusBR(),
-                ) * 2f
+            /*
+             * The glass has to fit *inside* the panel, not merely cover it.
+             *
+             * A blur region is a rounded rectangle and nothing else — that is all the platform
+             * offers — so behind a tab, whose sides curve inward at both ends, a rectangle sized
+             * to the window pokes out past the shape at top and bottom. Because the blur lightens
+             * what is behind it, those corners read as part of the panel, and the result is a
+             * rounded rectangle *and* a tab on screen at once: two panels where there is one.
+             *
+             * So for a tab the region is pulled in to the straight middle, which is the part of
+             * the shape that is full width. The swept ends go unblurred, which inside a surface
+             * this translucent is a difference you have to look for, where the second panel was
+             * the first thing you saw.
+             */
+            val tab = sliderShape == HandlerShape.TAB
+            val inset = if (tab) (params.height * HandlerShape.sanitizeFlare(sliderFlare)).toInt() else 0
+            val corner = if (tab) {
+                minOf(params.width / 2f, inset.toFloat())
             } else {
-                maxOf(settings.getCornerTL(), settings.getCornerTR(), settings.getCornerBL(), settings.getCornerBR())
+                sliderCornerPx
             }
             sliderBackdrop?.setFrameBounds(
-                params.x, params.y, params.width, params.height, dpToPx(corner).toFloat()
+                params.x,
+                params.y + inset,
+                params.width,
+                (params.height - inset * 2).coerceAtLeast(0),
+                corner,
             )
         }
-
-        // The buzz that says the panel is live. Distinct from the per-step ticks: longer, so it
-        // cannot be mistaken for a step having already been crossed.
-        if (sliderHapticMs > 0L) vibrateQuick(28L, sliderHapticAmplitude)
 
         restartQuickSliderIdleTimeout()
     }
