@@ -126,7 +126,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
             CreditCard(
                 icon = Icons.Default.Person,
                 tint = MaterialTheme.colorScheme.primary,
-                label = stringResource(R.string.developed_by),
+                label = stringResource(R.string.about_developed_in),
                 name = stringResource(R.string.newagedevs),
                 detail = "© ${Calendar.getInstance().get(Calendar.YEAR)} All rights reserved",
             )

@@ -719,6 +719,7 @@
     <string name="upgrade_restore">Restaurer l\'achat</string>
     <string name="upgrade_thanks_title">Vous êtes Pro</string>
     <string name="upgrade_thanks_desc">Merci de soutenir l\'application. Profitez-en sans publicité.</string>
+    <string name="about_developed_in">Développé au Bangladesh par</string>
     <string name="about_ideas_by">Idées de fonctionnalités d\'un ami de Bharat (Inde)</string>
     <string name="about_ideas_desc">A suggéré bon nombre des fonctionnalités de cette application, et continue d\'en proposer.</string>
 </resources>

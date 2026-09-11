@@ -719,6 +719,7 @@
     <string name="upgrade_restore">구매 복원</string>
     <string name="upgrade_thanks_title">Pro 사용 중</string>
     <string name="upgrade_thanks_desc">앱을 응원해 주셔서 감사합니다. 광고 없이 즐기세요.</string>
+    <string name="about_developed_in">방글라데시에서 개발</string>
     <string name="about_ideas_by">바라트(인도)에서 온 친구의 기능 아이디어</string>
     <string name="about_ideas_desc">이 앱의 많은 기능을 제안했고, 지금도 새로운 아이디어를 내고 있습니다.</string>
 </resources>

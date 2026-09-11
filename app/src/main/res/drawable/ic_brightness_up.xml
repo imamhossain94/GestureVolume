@@ -3,61 +3,13 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
+    <!-- Sun with a full core: "high brightness". Tinted at runtime, like every other icon here. -->
     <path
-        android:pathData="M6.0,12.0a6.0,6.0 0 1,0 12.0,0a6.0,6.0 0 1,0 -12.0,0Z"
-        android:fillColor="#00000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="1.5" />
+        android:pathData="M12,7a5,5 0,1 0,0 10a5,5 0,1 0,0 -10z"
+        android:fillColor="#09244b" />
     <path
-        android:pathData="M12 2V3"
-        android:fillColor="#00000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="1.5"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M12 21V22"
-        android:fillColor="#00000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="1.5"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M22 12L21 12"
-        android:fillColor="#00000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="1.5"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M3 12L2 12"
-        android:fillColor="#00000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="1.5"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M19.0708 4.92969L18.678 5.32252"
-        android:fillColor="#00000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="1.5"
-        android:strokeAlpha="0.5"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M5.32178 18.6777L4.92894 19.0706"
-        android:fillColor="#00000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="1.5"
-        android:strokeAlpha="0.5"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M19.0708 19.0703L18.678 18.6775"
-        android:fillColor="#00000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="1.5"
-        android:strokeAlpha="0.5"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M5.32178 5.32227L4.92894 4.92943"
-        android:fillColor="#00000000"
-        android:strokeColor="#000000"
-        android:strokeWidth="1.5"
-        android:strokeAlpha="0.5"
+        android:pathData="M12,1.5L12,4 M12,20L12,22.5 M1.5,12L4,12 M20,12L22.5,12 M4.57,4.57L6.34,6.34 M17.66,17.66L19.43,19.43 M4.57,19.43L6.34,17.66 M17.66,6.34L19.43,4.57"
+        android:strokeColor="#09244b"
+        android:strokeWidth="2"
         android:strokeLineCap="round" />
 </vector>

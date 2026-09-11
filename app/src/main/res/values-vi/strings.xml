@@ -390,6 +390,7 @@
     <string name="upgrade_restore">Khôi phục giao dịch</string>
     <string name="upgrade_thanks_title">Bạn đã là Pro</string>
     <string name="upgrade_thanks_desc">Cảm ơn bạn đã ủng hộ ứng dụng. Hãy tận hưởng không quảng cáo.</string>
+    <string name="about_developed_in">Được phát triển tại Bangladesh bởi</string>
     <string name="about_ideas_by">Ý tưởng tính năng từ một người bạn đến từ Bharat (Ấn Độ)</string>
     <string name="about_ideas_desc">Đã đề xuất nhiều tính năng trong ứng dụng này và vẫn tiếp tục đưa ra ý tưởng.</string>
 </resources>

@@ -390,6 +390,7 @@
     <string name="upgrade_restore">恢复购买</string>
     <string name="upgrade_thanks_title">您已是 Pro 用户</string>
     <string name="upgrade_thanks_desc">感谢您对应用的支持，尽享无广告体验。</string>
+    <string name="about_developed_in">开发者（孟加拉国）</string>
     <string name="about_ideas_by">来自巴拉特（印度）的朋友提供的功能创意</string>
     <string name="about_ideas_desc">提出了本应用中的许多功能，并持续贡献新创意。</string>
 </resources>

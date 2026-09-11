@@ -900,6 +900,7 @@
     <string name="upgrade_restore">Restore purchase</string>
     <string name="upgrade_thanks_title">You\'re Pro</string>
     <string name="upgrade_thanks_desc">Thank you for supporting the app. Enjoy it ad-free.</string>
+    <string name="about_developed_in">Developed in Bangladesh by</string>
     <string name="about_ideas_by">Feature ideas by a friend from Bharat (India)</string>
     <string name="about_ideas_desc">Suggested many of the features in this app, and keeps the ideas coming.</string>
     <string name="context_menu_size">Size</string>

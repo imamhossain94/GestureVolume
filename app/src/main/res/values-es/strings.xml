@@ -719,6 +719,7 @@
     <string name="upgrade_restore">Restaurar compra</string>
     <string name="upgrade_thanks_title">Ya eres Pro</string>
     <string name="upgrade_thanks_desc">Gracias por apoyar la app. Disfrútala sin anuncios.</string>
+    <string name="about_developed_in">Desarrollado en Bangladés por</string>
     <string name="about_ideas_by">Ideas de funciones de un amigo de Bharat (India)</string>
     <string name="about_ideas_desc">Sugirió muchas de las funciones de esta app y sigue aportando ideas.</string>
 </resources>
