@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,6 +80,12 @@ fun ContextMenuOverlay(
     theme: String,
     /** Which of [PanelAnimation]'s entrances to play. */
     animation: String,
+    /** How fast to play it, as a multiple of the catalogue's own timing. */
+    animationSpeed: Float,
+    /** Set when the menu is on its way out, so the entrance runs backwards. */
+    closing: Boolean,
+    /** A surface colour of the user's own, or null to take the material's. */
+    surfaceOverride: Long?,
     onSelect: (HandlerActionCatalog.Entry) -> Unit,
     onDismiss: () -> Unit,
     /**
@@ -106,10 +113,55 @@ fun ContextMenuOverlay(
     // matters — the card opens away from it — and where the frame is too narrow for that, the
     // difference is a hinge on the wrong edge of a card that filled the screen anyway.
     val barOnLeft = anchor.left + anchor.width / 2 < frame.width / 2
-    val entrance = rememberPanelEntrance(animation = animation, towardLeft = barOnLeft)
+    val entrance = rememberPanelEntrance(
+        animation = animation,
+        towardLeft = barOnLeft,
+        closing = closing,
+        speed = animationSpeed,
+    )
 
     val gapPx = with(LocalDensity.current) { 10.dp.roundToPx() }
     val cornerPx = with(LocalDensity.current) { MENU_CORNER.toPx() }
+
+    /** Where the layout pass put the card, before the entrance moves it. */
+    var placedRect by remember { mutableStateOf(IntRect.Zero) }
+    val density = LocalDensity.current
+
+    /*
+     * The glass follows the card, frame by frame.
+     *
+     * Collected from a snapshot flow rather than read in the composition: reading an animating
+     * state in the body would recompose the whole menu sixty times a second to move a window that
+     * is not part of it. This way the animation drives exactly one thing — the rectangle the blur
+     * is drawn in — and the menu itself is composed once.
+     */
+    LaunchedEffect(placedRect, cornerPx) {
+        if (placedRect.width <= 0) return@LaunchedEffect
+        snapshotFlow { entrance.value }.collect { f ->
+            val box = PanelAnimation.bounds(
+                placedRect.left.toFloat(),
+                placedRect.top.toFloat(),
+                placedRect.right.toFloat(),
+                placedRect.bottom.toFloat(),
+                f,
+                with(density) { f.translationX.dp.toPx() },
+                with(density) { f.translationY.dp.toPx() },
+            )
+            // Nothing to blur until the card is actually visible: the glass is opaque from its
+            // first frame, so putting it up under a card that has not faded in yet is a blurred
+            // rectangle arriving on its own.
+            val visible = f.alpha > 0.12f
+            onCardBounds(
+                IntRect(
+                    box[0].toInt(),
+                    box[1].toInt(),
+                    if (visible) box[2].toInt() else box[0].toInt(),
+                    if (visible) box[3].toInt() else box[1].toInt(),
+                ),
+                cornerPx * minOf(f.scaleX, f.scaleY).coerceIn(0.2f, 1f),
+            )
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -124,8 +176,8 @@ fun ContextMenuOverlay(
             entries = entries,
             grid = grid,
             theme = theme,
+            surfaceOverride = surfaceOverride,
             onSelect = onSelect,
-            entrance = entrance.value,
             modifier = Modifier
                 .layout { measurable, constraints ->
                     val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
@@ -145,16 +197,17 @@ fun ContextMenuOverlay(
                         .coerceIn(gapPx, (frame.width - cardW - gapPx).coerceAtLeast(gapPx))
                     val y = (anchor.top + anchor.height / 2 - cardH / 2)
                         .coerceIn(gapPx, (frame.height - cardH - gapPx).coerceAtLeast(gapPx))
-                    onCardBounds(IntRect(x, y, x + cardW, y + cardH), cornerPx)
+                    placedRect = IntRect(x, y, x + cardW, y + cardH)
                     layout(constraints.maxWidth, constraints.maxHeight) {
                         placeable.place(x, y)
                     }
                 }
-                .graphicsLayer {
-                    // Only the surface's opacity lives out here, where it cannot move the card's
-                    // rectangle. Everything else the entrance does happens inside.
-                    alpha = entrance.value.alpha
-                }
+                // The whole card, surface and all. It used to be the contents only, because the
+                // pane of glass behind the card could not follow it; the pane is moved per frame
+                // now — see [PanelBackdrop] — so there is no longer any reason for the background
+                // to sit still while the things on it move, which is what made the entrances look
+                // like they were happening to the wrong object.
+                .panelFrame(entrance.value)
                 // Swallows the tap so the root's dismiss does not fire for a press on the card.
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
@@ -180,17 +233,11 @@ fun ContextMenuCard(
     onSelect: (HandlerActionCatalog.Entry) -> Unit,
     modifier: Modifier = Modifier,
     theme: String = PanelTheme.SOLID,
-    /**
-     * The entrance, applied to the contents only.
-     *
-     * On the card itself a transform would change nothing about the layout either — but it *would*
-     * move the card's painted edge off the blurred pane behind it, which is the one thing an
-     * entrance must not do. See the note in [ContextMenuOverlay].
-     */
-    entrance: PanelAnimation.Frame = PanelAnimation.Frame(),
+    /** A surface colour of the user's own, or null to take the material's. */
+    surfaceOverride: Long? = null,
 ) {
     val shape = RoundedCornerShape(MENU_CORNER)
-    val palette = PanelTheme.menuPalette(theme)
+    val palette = PanelTheme.menuPalette(theme, surfaceOverride)
     val surface = Color(palette.surface)
     val onSurface = Color(palette.onSurface)
     val onSurfaceDim = Color(palette.onSurfaceDim)
@@ -214,12 +261,11 @@ fun ContextMenuCard(
             .background(surface)
             .then(
                 if (PanelTheme.hasLitEdge(theme)) {
-                    Modifier.liquidGlass(MENU_CORNER, PanelTheme.isLight(theme))
+                    Modifier.liquidGlass(MENU_CORNER, PanelTheme.luminanceOf(palette.surface) > 0.5)
                 } else {
                     Modifier.border(1.dp, Color(palette.border), shape)
                 }
             )
-            .panelFrame(entrance.copy(alpha = 1f))
             .padding(MENU_PADDING)
             .verticalScroll(rememberScrollState())
     ) {

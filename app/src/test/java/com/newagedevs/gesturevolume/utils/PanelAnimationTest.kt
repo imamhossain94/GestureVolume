@@ -97,6 +97,61 @@ class PanelAnimationTest {
     }
 
     @Test
+    fun `a resting frame leaves a rectangle exactly where it was`() {
+        // The glass behind a panel is placed from this. If it disagreed with the panel by so much
+        // as a pixel once the animation was over, every panel would rest on a misaligned pane.
+        PanelAnimation.ALL.forEach { id ->
+            val f = PanelAnimation.frameAt(id, 1f, towardLeft = false)
+            val box = PanelAnimation.bounds(100f, 200f, 400f, 700f, f, 0f, 0f)
+            assertEquals("$id left", 100f, box[0], 1e-3f)
+            assertEquals("$id top", 200f, box[1], 1e-3f)
+            assertEquals("$id right", 400f, box[2], 1e-3f)
+            assertEquals("$id bottom", 700f, box[3], 1e-3f)
+        }
+    }
+
+    @Test
+    fun `a scaled frame shrinks the box about its origin`() {
+        val f = PanelAnimation.Frame(scaleX = 0.5f, scaleY = 0.5f, originX = 0f, originY = 0f)
+        val box = PanelAnimation.bounds(100f, 200f, 400f, 700f, f, 0f, 0f)
+        // Pinned at the top-left corner, half the size.
+        assertEquals(100f, box[0], 1e-3f)
+        assertEquals(200f, box[1], 1e-3f)
+        assertEquals(250f, box[2], 1e-3f)
+        assertEquals(450f, box[3], 1e-3f)
+    }
+
+    @Test
+    fun `a wipe reports only the band that is drawn`() {
+        val f = PanelAnimation.Frame(revealFrom = 0.25f, revealTo = 0.75f)
+        val box = PanelAnimation.bounds(0f, 0f, 100f, 400f, f, 0f, 0f)
+        assertEquals(100f, box[1], 1e-3f)
+        assertEquals(300f, box[3], 1e-3f)
+    }
+
+    @Test
+    fun `translation moves the box with the panel`() {
+        val f = PanelAnimation.Frame(translationX = 10f, translationY = -4f)
+        val box = PanelAnimation.bounds(0f, 0f, 100f, 100f, f, 25f, -10f)
+        assertEquals(25f, box[0], 1e-3f)
+        assertEquals(-10f, box[1], 1e-3f)
+        assertEquals(125f, box[2], 1e-3f)
+        assertEquals(90f, box[3], 1e-3f)
+    }
+
+    @Test
+    fun `the reported box is never inside out`() {
+        PanelAnimation.ALL.forEach { id ->
+            for (i in 0..20) {
+                val f = PanelAnimation.frameAt(id, i / 20f, towardLeft = true)
+                val box = PanelAnimation.bounds(50f, 60f, 350f, 660f, f, f.translationX, f.translationY)
+                assertTrue("$id right before left at t=${i / 20f}", box[2] >= box[0])
+                assertTrue("$id bottom above top at t=${i / 20f}", box[3] >= box[1])
+            }
+        }
+    }
+
+    @Test
     fun `sanitize rejects what it does not know`() {
         assertEquals(PanelAnimation.POP, PanelAnimation.sanitize(null))
         assertEquals(PanelAnimation.POP, PanelAnimation.sanitize("helicopter"))

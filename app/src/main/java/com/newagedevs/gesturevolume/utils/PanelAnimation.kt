@@ -87,6 +87,23 @@ object PanelAnimation {
         else -> 220
     }
 
+    /** The slowest and fastest the user can make an entrance run, as a multiple of its own time. */
+    const val MIN_SPEED = 0.4f
+    const val MAX_SPEED = 2.5f
+
+    fun sanitizeSpeed(value: Float): Float =
+        if (value.isNaN()) 1f else value.coerceIn(MIN_SPEED, MAX_SPEED)
+
+    /**
+     * How long an entrance runs once the user's speed setting is applied.
+     *
+     * A multiplier rather than a duration, so the catalogue keeps its own proportions: a wipe has
+     * further to travel than a fade and should take longer than one whatever the setting says.
+     * Floored, because below about seven frames an animation stops being one.
+     */
+    fun scaledDurationMs(id: String, speed: Float): Int =
+        (durationMs(id) / sanitizeSpeed(speed)).toInt().coerceAtLeast(90)
+
     /**
      * One frame of an animation: what to hand a draw layer, plus how much of the panel to show.
      *
@@ -197,6 +214,51 @@ object PanelAnimation {
 
             else -> Frame(alpha = ease(p))
         }
+    }
+
+    /**
+     * The box a [Frame] leaves a rectangle occupying, so the glass behind it can be put there too.
+     *
+     * Returns `[left, top, right, bottom]` in the same pixels it was given. Scale, translation and
+     * the reveal band are all exact. Rotation is *not* — a turned rectangle is not a rectangle, and
+     * the blur region can only ever be one — so for the hinged entrances this is the untitled box,
+     * and the glass lags a few pixels behind a corner for a couple of hundred milliseconds. That is
+     * the whole of the compromise, and it is invisible next to the alternative of the panel moving
+     * and its glass not.
+     *
+     * @param translationPx the frame's dp translation already converted, since this file has no
+     *   density to convert with.
+     */
+    fun bounds(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        frame: Frame,
+        translationXPx: Float,
+        translationYPx: Float,
+    ): FloatArray {
+        val width = right - left
+        val height = bottom - top
+        val pivotX = left + width * frame.originX
+        val pivotY = top + height * frame.originY
+
+        var l = pivotX + (left - pivotX) * frame.scaleX + translationXPx
+        var r = pivotX + (right - pivotX) * frame.scaleX + translationXPx
+        var t = pivotY + (top - pivotY) * frame.scaleY + translationYPx
+        var b = pivotY + (bottom - pivotY) * frame.scaleY + translationYPx
+
+        // The wipe narrows the band that is drawn at all, and it is measured on the *transformed*
+        // box, because the clip is applied inside the same layer the transform is.
+        val h = b - t
+        val bandTop = t + h * frame.revealFrom
+        val bandBottom = t + h * frame.revealTo
+        t = bandTop
+        b = bandBottom
+
+        if (r < l) { val swap = l; l = r; r = swap }
+        if (b < t) { val swap = t; t = b; b = swap }
+        return floatArrayOf(l, t, r, b)
     }
 
     private fun lerp(from: Float, to: Float, f: Float): Float = from + (to - from) * f

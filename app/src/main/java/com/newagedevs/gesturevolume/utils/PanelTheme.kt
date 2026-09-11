@@ -148,6 +148,46 @@ object PanelTheme {
         val border: Long,
     )
 
+    /**
+     * The menu's palette with a colour of the user's own in place of the material's.
+     *
+     * The menu is the one panel that never had a colour setting — it takes a full palette from the
+     * material because it has no surface of its own to tint. Given one, everything else follows
+     * from its brightness: ink, the chip behind each icon, the hairline between rows and the rim
+     * all flip together, because a palette where half the entries assumed a dark pane is how you
+     * get white text on white glass.
+     *
+     * @param surface `0xAARRGGBB`, or null to use the material's own.
+     */
+    fun menuPalette(theme: String, surface: Long?): MenuPalette {
+        val base = menuPalette(theme)
+        if (surface == null) return base
+        val light = luminanceOf(surface) > 0.5
+        return MenuPalette(
+            surface = surface,
+            onSurface = if (light) 0xF0101014 else 0xF5FFFFFF,
+            onSurfaceDim = if (light) 0x9E101014 else 0xC2FFFFFF,
+            chip = if (light) 0x14000000 else 0x24FFFFFF,
+            divider = if (light) 0x1A000000 else 0x1AFFFFFF,
+            border = if (light) 0x33000000 else 0x2EFFFFFF,
+        )
+    }
+
+    /**
+     * Perceived brightness of an `0xAARRGGBB` colour, 0..1, ignoring its alpha.
+     *
+     * Alpha is left out deliberately: a pale pane at a third opacity is still a pale pane, because
+     * what shows through it has been blurred to a wash of roughly its own brightness. The weights
+     * are the usual ones — the eye is far more sensitive to green than to blue, and a palette
+     * chosen on unweighted averages puts dark text on saturated blue.
+     */
+    fun luminanceOf(colour: Long): Double {
+        val r = ((colour shr 16) and 0xFF) / 255.0
+        val g = ((colour shr 8) and 0xFF) / 255.0
+        val b = (colour and 0xFF) / 255.0
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+    }
+
     fun menuPalette(theme: String): MenuPalette = when (theme) {
         FROSTED -> MenuPalette(
             surface = 0xA815161B,

@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
@@ -24,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
 import com.newagedevs.gesturevolume.utils.PanelAnimation
 
 /**
@@ -40,6 +43,9 @@ fun PanelAnimationSelector(
     animation: String,
     onAnimationChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    /** How fast they run, as a multiple of the catalogue's own timing. */
+    speed: Float = 1f,
+    onSpeedChange: ((Float) -> Unit)? = null,
 ) {
     Column(modifier = modifier) {
         Text(
@@ -69,6 +75,21 @@ fun PanelAnimationSelector(
                     onClick = { onAnimationChange(id) },
                 )
             }
+        }
+
+        if (onSpeedChange != null) {
+            Spacer(modifier = Modifier.height(14.dp))
+            SliderControl(
+                label = stringResource(R.string.panel_animation_speed),
+                // Shown as a multiple rather than in milliseconds: the catalogue's entrances do
+                // not all take the same time — a wipe has further to travel than a fade — so one
+                // number of milliseconds would be a lie about fifteen of the sixteen.
+                value = speed,
+                valueRange = PanelAnimation.MIN_SPEED..PanelAnimation.MAX_SPEED,
+                valueDisplay = String.format(java.util.Locale.US, "%.1f×", speed),
+                borderColor = MaterialTheme.colorScheme.primary,
+                onValueChange = onSpeedChange,
+            )
         }
     }
 }

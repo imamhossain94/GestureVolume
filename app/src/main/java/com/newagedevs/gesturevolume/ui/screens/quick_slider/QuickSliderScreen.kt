@@ -31,6 +31,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,6 +47,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.core.graphics.ColorUtils
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.components.PREVIEW_SUBJECT_MAX_HEIGHT
+import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.SliderFillSelector
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
@@ -127,6 +129,9 @@ fun QuickSliderScreen(
     }
     var corner by remember { mutableFloatStateOf(store.getCornerDp()) }
     var fillStyle by remember { mutableStateOf(store.getFillStyle()) }
+    var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
+    var animationSpeed by remember { mutableFloatStateOf(viewModel.preference.getPanelAnimationSpeed()) }
+    var replay by remember { mutableIntStateOf(0) }
     var trackColor by remember { mutableStateOf(Color(store.getTrackColor())) }
     var fillColor by remember { mutableStateOf(Color(store.getFillColor())) }
     var showValue by remember { mutableStateOf(store.getShowValue()) }
@@ -188,7 +193,10 @@ fun QuickSliderScreen(
                 showIcon = showIcon,
                 target = target,
                 panelTheme = panelTheme,
-                fillStyle = fillStyle
+                fillStyle = fillStyle,
+                animation = panelAnimation,
+                animationSpeed = animationSpeed,
+                replay = replay
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -326,6 +334,21 @@ fun QuickSliderScreen(
                     onColorChange = { fillColor = it; store.setFillColor(it.toArgb()) }
                 )
                 Sep()
+                PanelAnimationSelector(
+                    animation = panelAnimation,
+                    onAnimationChange = {
+                        panelAnimation = it
+                        viewModel.preference.setPanelAnimation(it)
+                        replay++
+                    },
+                    speed = animationSpeed,
+                    onSpeedChange = {
+                        animationSpeed = it
+                        viewModel.preference.setPanelAnimationSpeed(it)
+                        replay++
+                    },
+                )
+                Sep()
                 SliderFillSelector(
                     style = fillStyle,
                     onStyleChange = { fillStyle = it; store.setFillStyle(it) },
@@ -387,6 +410,10 @@ private fun SliderPreview(
     panelTheme: String,
     /** What the fill does. Runs here exactly as it runs on the real panel. */
     fillStyle: String,
+    /** The entrance, replayed on the preview whenever one is picked. */
+    animation: String,
+    animationSpeed: Float,
+    replay: Int,
 ) {
     val iconRes = if (target == QuickSliderStore.TARGET_BRIGHTNESS) {
         R.drawable.ic_brightness_up
@@ -404,6 +431,7 @@ private fun SliderPreview(
         AndroidView(
                 factory = { ctx -> QuickSliderView(ctx) },
                 update = { view ->
+                    @Suppress("UNUSED_EXPRESSION") replay
                     // Dressed exactly the way the live panel is — see
                     // `OverlayController.openQuickSliderWindow`. It used to skip the theme
                     // entirely, so the preview showed the Solid look whatever was selected, which
@@ -431,6 +459,7 @@ private fun SliderPreview(
                     // reaches by animating, and this one has no reason to animate to.
                     view.setExpansion(1f)
                     view.setCommitted()
+                    view.playEntrance(animation, handlerOnLeft, animationSpeed)
                 },
             modifier = Modifier
                 .padding(horizontal = 18.dp)

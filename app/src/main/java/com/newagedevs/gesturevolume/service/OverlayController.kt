@@ -70,6 +70,7 @@ import com.newagedevs.gesturevolume.utils.BrightnessController
 import com.newagedevs.gesturevolume.utils.DeviceToggles
 import com.newagedevs.gesturevolume.utils.ContextMenuLayout
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
+import com.newagedevs.gesturevolume.utils.PanelAnimation
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.VolumeController
@@ -285,6 +286,14 @@ class OverlayController(
      * mechanism the Deck was already using two hundred lines further down.
      */
     private var menuBackdrop: PanelBackdrop? = null
+
+    /** Set while the menu plays its exit. See [hideContextMenu]. */
+    private var contextMenuClosing: androidx.compose.runtime.MutableState<Boolean>? = null
+    private val removeContextMenuRunnable = Runnable { removeContextMenuNow() }
+
+    /** Set while the Deck plays its exit. See [hideDeck]. */
+    private var deckClosing: androidx.compose.runtime.MutableState<Boolean>? = null
+    private val removeDeckRunnable = Runnable { removeDeckNow() }
     private var sliderBackdrop: PanelBackdrop? = null
     private var deckRoot: DeckRootView? = null
     private val deckState = DeckState()
@@ -477,8 +486,8 @@ class OverlayController(
         hideOverlayView()
         hideHandlerView()
         hideIndicator()
-        hideContextMenu()
-        hideDeck()
+        removeContextMenuNow()
+        removeDeckNow()
         // After hideHandlerView, whose gestureDetector.cancel() is what asks a slider still under
         // the finger to collapse. This turns that collapse into an immediate removal.
         dismissQuickSliderNow()
@@ -904,8 +913,8 @@ class OverlayController(
         // app. Closing them here rather than in the callers covers both routes in:
         // onConfigurationChanged and the DisplayManager listener, so an OEM build that drops one
         // of them still behaves.
-        hideContextMenu()
-        hideDeck()
+        removeContextMenuNow()
+        removeDeckNow()
         dismissQuickSliderNow()
 
         val params = handlerParams ?: return
@@ -1786,6 +1795,11 @@ class OverlayController(
     private fun animateQuickSliderOpen() {
         val view = sliderView ?: return
         sliderCollapse?.cancel()
+        view.playEntrance(
+            preference.getPanelAnimation(),
+            handlerIsLeft(),
+            preference.getPanelAnimationSpeed(),
+        )
         val animator = ValueAnimator.ofFloat(0f, 1f).apply {
             duration = PANEL_OPEN_MS
             interpolator = DecelerateInterpolator(1.8f)
@@ -2060,8 +2074,12 @@ class OverlayController(
         val wm = windowManager ?: return
         val params = handlerParams ?: return
         val currentFrame = frame ?: return
-        if (contextMenuHost != null) return
-        hideDeck()
+        if (contextMenuHost != null) {
+            // Already open, or still playing its exit; either way start again from scratch.
+            if (contextMenuClosing?.value != true) return
+            removeContextMenuNow()
+        }
+        removeDeckNow()
 
         val entries = HandlerActionCatalog.contextMenuEntries(preference.getContextMenuOrder())
         val grid = preference.getContextMenuLayout() == ContextMenuLayout.GRID
@@ -2073,10 +2091,20 @@ class OverlayController(
         val menuHost = OverlayComposeHost(context)
         val panelTheme = preference.getPanelTheme()
         val panelAnimation = preference.getPanelAnimation()
+        val animationSpeed = preference.getPanelAnimationSpeed()
+        val menuSurface = preference.getMenuSurface()
+        // Flipped by hideContextMenu, read by the composition: the menu plays its entrance
+        // backwards and the window is taken away when it has finished, rather than the window
+        // vanishing out from under a panel that was still on screen.
+        val closing = androidx.compose.runtime.mutableStateOf(false)
+        contextMenuClosing = closing
         menuHost.setContent {
             // The pale materials carry dark ink, so the scheme underneath everything the panel
             // does not colour by hand has to flip with them. See OverlayTheme.
-            OverlayTheme(light = PanelTheme.isLight(panelTheme)) {
+            OverlayTheme(
+                light = menuSurface?.let { PanelTheme.luminanceOf(it) > 0.5 }
+                    ?: PanelTheme.isLight(panelTheme)
+            ) {
                 ContextMenuOverlay(
                     entries = entries,
                     anchor = anchor,
@@ -2084,6 +2112,9 @@ class OverlayController(
                     grid = grid,
                     theme = panelTheme,
                     animation = panelAnimation,
+                    animationSpeed = animationSpeed,
+                    closing = closing.value,
+                    surfaceOverride = menuSurface,
                     onSelect = { entry ->
                         hideContextMenu()
                         // Posted for the same reason the tap actions are: "Hide Handler" and
@@ -2119,7 +2150,39 @@ class OverlayController(
         contextMenuHost = menuHost
     }
 
+    /**
+     * Starts the menu's exit, and takes the window away when it has played.
+     *
+     * Not an immediate removal any more. The menu arrives with an animation the user chose, and a
+     * panel that eases in and then blinks out is worse than one that does neither — the blink is
+     * what the eye notices. Reversing the entrance is the whole exit: see the note in
+     * `rememberPanelEntrance` on why there is no separate catalogue of them.
+     */
     private fun hideContextMenu() {
+        val closing = contextMenuClosing
+        if (contextMenuHost == null) {
+            removeContextMenuNow()
+            return
+        }
+        if (closing == null || destroyed) {
+            removeContextMenuNow()
+            return
+        }
+        if (closing.value) return
+        closing.value = true
+        mainHandler.removeCallbacks(removeContextMenuRunnable)
+        mainHandler.postDelayed(
+            removeContextMenuRunnable,
+            PanelAnimation.scaledDurationMs(
+                preference.getPanelAnimation(),
+                preference.getPanelAnimationSpeed(),
+            ).toLong(),
+        )
+    }
+
+    private fun removeContextMenuNow() {
+        mainHandler.removeCallbacks(removeContextMenuRunnable)
+        contextMenuClosing = null
         contextMenuHost?.let { menuHost ->
             try {
                 windowManager?.removeView(menuHost.view)
@@ -2189,9 +2252,14 @@ class OverlayController(
             onBack = { onDeckBack() },
             onInteraction = { restartDeckAutoClose() }
         )
+        val deckClosing = androidx.compose.runtime.mutableStateOf(false)
+        this.deckClosing = deckClosing
+        val deckSpeed = preference.getPanelAnimationSpeed()
         host.setContent {
             OverlayTheme(light = PanelTheme.isLight(model.panelTheme)) {
                 DeckOverlay(
+                    closing = deckClosing.value,
+                    animationSpeed = deckSpeed,
                     model = model,
                     actions = deckActions,
                     onDismiss = { hideDeck() },
@@ -2230,8 +2298,35 @@ class OverlayController(
         restartDeckAutoClose()
     }
 
+    /**
+     * Starts the Deck's exit, and takes the window away when it has played.
+     *
+     * The same reasoning as the menu's: a panel that eases in and then blinks out is worse than
+     * one that does neither, because the blink is the part the eye catches.
+     */
     fun hideDeck() {
         mainHandler.removeCallbacks(deckAutoCloseRunnable)
+        val closing = deckClosing
+        if (deckRoot == null || closing == null || destroyed) {
+            removeDeckNow()
+            return
+        }
+        if (closing.value) return
+        closing.value = true
+        mainHandler.removeCallbacks(removeDeckRunnable)
+        mainHandler.postDelayed(
+            removeDeckRunnable,
+            PanelAnimation.scaledDurationMs(
+                preference.getPanelAnimation(),
+                preference.getPanelAnimationSpeed(),
+            ).toLong(),
+        )
+    }
+
+    private fun removeDeckNow() {
+        mainHandler.removeCallbacks(removeDeckRunnable)
+        mainHandler.removeCallbacks(deckAutoCloseRunnable)
+        deckClosing = null
         removeDeckBlurWindow()
         val root = deckRoot ?: return
         val host = deckHost
@@ -2688,8 +2783,8 @@ class OverlayController(
             showIndicatorMessage(context.getString(R.string.action_unavailable_on_device))
             return
         }
-        hideContextMenu()
-        hideDeck()
+        removeContextMenuNow()
+        removeDeckNow()
         hideIndicator()
         handlerView?.visibility = View.INVISIBLE
         mainHandler.postDelayed({

@@ -32,22 +32,45 @@ fun rememberPanelEntrance(
     animation: String,
     towardLeft: Boolean,
     replayKey: Any? = null,
+    /** Set to play the same animation backwards, for a panel on its way out. */
+    closing: Boolean = false,
+    /** Scales every duration. 1 is the catalogue's own timing. */
+    speed: Float = 1f,
 ): State<PanelAnimation.Frame> {
     val id = PanelAnimation.sanitize(animation)
     val progress = remember { Animatable(0f) }
     val frame = remember { mutableStateOf(PanelAnimation.frameAt(id, 0f, towardLeft)) }
+    val millis = PanelAnimation.scaledDurationMs(id, speed)
 
     LaunchedEffect(id, towardLeft, replayKey) {
         progress.snapTo(0f)
         frame.value = PanelAnimation.frameAt(id, 0f, towardLeft)
         progress.animateTo(
             targetValue = 1f,
-            animationSpec = tween(PanelAnimation.durationMs(id), easing = LinearEasing),
+            animationSpec = tween(millis, easing = LinearEasing),
         ) {
             frame.value = PanelAnimation.frameAt(id, value, towardLeft)
         }
         // Landed exactly, whatever the clock did on its last frame.
         frame.value = PanelAnimation.frameAt(id, 1f, towardLeft)
+    }
+
+    /*
+     * The way out is the way in, run backwards.
+     *
+     * A separate exit animation would double the catalogue and halve the care each one got, and
+     * the pairing is what makes a panel feel like one object: whatever it did to arrive, it undoes
+     * to leave. Started from wherever the entrance had got to, so dismissing a panel that is still
+     * opening reverses from there rather than snapping to the end first.
+     */
+    LaunchedEffect(closing) {
+        if (!closing) return@LaunchedEffect
+        progress.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(millis, easing = LinearEasing),
+        ) {
+            frame.value = PanelAnimation.frameAt(id, value, towardLeft)
+        }
     }
     return frame
 }

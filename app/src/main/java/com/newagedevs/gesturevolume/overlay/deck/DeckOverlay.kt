@@ -12,6 +12,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
 import com.newagedevs.gesturevolume.overlay.panelFrame
+import com.newagedevs.gesturevolume.utils.PanelAnimation
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -49,6 +50,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -157,6 +159,10 @@ fun DeckOverlay(
      * second calculation of it that could disagree.
      */
     onSurfaces: (DeckSurfaces) -> Unit = {},
+    /** Set when the Deck is on its way out, so its entrance runs backwards. */
+    closing: Boolean = false,
+    /** How fast the entrance runs, as a multiple of the catalogue's own timing. */
+    animationSpeed: Float = 1f,
 ) {
     val state = actions.env.state
     val palette = remember(model.config, model.panelTheme) {
@@ -190,6 +196,49 @@ fun DeckOverlay(
     val stripOrigin = TransformOrigin(if (model.isLeft) 0f else 1f, 0.5f)
     val cardOrigin = TransformOrigin(if (model.isLeft) 0f else 1f, 0.5f)
 
+    val entrance = rememberPanelEntrance(
+        animation = model.animation,
+        towardLeft = model.isLeft,
+        closing = closing,
+        speed = animationSpeed,
+    )
+
+    /** What the layout pass placed, before the entrance moves it. Reported on, transformed. */
+    var placed by remember { mutableStateOf<DeckSurfaces?>(null) }
+
+    /*
+     * The glass follows the panel, frame by frame — see the note in `ContextMenuOverlay`. Collected
+     * from a snapshot flow rather than read in the composition, so an animating value drives the
+     * one window it has to and does not recompose the Deck to do it.
+     */
+    LaunchedEffect(placed) {
+        val base = placed ?: return@LaunchedEffect
+        snapshotFlow { entrance.value }.collect { f ->
+            val tx = with(density) { f.translationX.dp.toPx() }
+            val ty = with(density) { f.translationY.dp.toPx() }
+            fun moved(rect: IntRect): IntRect {
+                val box = PanelAnimation.bounds(
+                    rect.left.toFloat(), rect.top.toFloat(),
+                    rect.right.toFloat(), rect.bottom.toFloat(), f, tx, ty,
+                )
+                // Nothing to blur until the panel is visible: the glass is opaque from its first
+                // frame, so putting it up under a panel that has not arrived is a blurred
+                // rectangle turning up on its own.
+                if (f.alpha <= 0.12f) return IntRect(box[0].toInt(), box[1].toInt(), box[0].toInt(), box[1].toInt())
+                return IntRect(box[0].toInt(), box[1].toInt(), box[2].toInt(), box[3].toInt())
+            }
+            val shrink = minOf(f.scaleX, f.scaleY).coerceIn(0.2f, 1f)
+            onSurfaces(
+                DeckSurfaces(
+                    strip = moved(base.strip),
+                    stripCornerPx = base.stripCornerPx * shrink,
+                    card = base.card?.let(::moved),
+                    cardCornerPx = base.cardCornerPx * shrink,
+                )
+            )
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -212,7 +261,6 @@ fun DeckOverlay(
                         enter = EnterTransition.None,
                         exit = fadeOut(PANEL_FADE) + scaleOut(PANEL_SCALE, DECK_ENTER_SCALE, stripOrigin)
                     ) {
-                        val entrance = rememberPanelEntrance(model.animation, model.isLeft)
                         Box(modifier = Modifier.panelFrame(entrance.value)) {
                             DeckStrip(model, actions, palette, stripWidthPx)
                         }
@@ -259,17 +307,15 @@ fun DeckOverlay(
             // them is a rounded rectangle, and a single one spanning the pair would also blur the
             // gap down the middle. The card is measured even when no tile is expanded — it is what
             // the exit animation draws — so it only counts while there is a tile to show.
-            onSurfaces(
-                DeckSurfaces(
-                    strip = IntRect(stripX, stripY, stripX + strip.width, stripY + strip.height),
-                    stripCornerPx = stripCornerPx,
-                    card = if (expandedTile != null) {
-                        IntRect(cardX, cardY, cardX + card.width, cardY + card.height)
-                    } else {
-                        null
-                    },
-                    cardCornerPx = cardCornerPx,
-                )
+            placed = DeckSurfaces(
+                strip = IntRect(stripX, stripY, stripX + strip.width, stripY + strip.height),
+                stripCornerPx = stripCornerPx,
+                card = if (expandedTile != null) {
+                    IntRect(cardX, cardY, cardX + card.width, cardY + card.height)
+                } else {
+                    null
+                },
+                cardCornerPx = cardCornerPx,
             )
 
             layout(constraints.maxWidth, constraints.maxHeight) {

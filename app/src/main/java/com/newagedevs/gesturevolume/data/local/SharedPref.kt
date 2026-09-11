@@ -240,6 +240,9 @@ class SharedPref @Inject constructor(
         const val CONTEXT_MENU_LAYOUT = "handlerContextMenuLayout"
         const val PANEL_THEME = "panelTheme"
         const val PANEL_ANIMATION = "panelAnimation"
+        const val PANEL_ANIMATION_SPEED = "panelAnimationSpeed"
+        const val MENU_COLOR = "menuSurfaceColor"
+        const val MENU_ALPHA = "menuSurfaceAlpha"
 
         /**
          * What separates one action from the next in [CONTEXT_MENU_ORDER].
@@ -890,6 +893,46 @@ class SharedPref @Inject constructor(
 
     fun setPanelAnimation(value: String) {
         sharedPreferences.edit { putString(PANEL_ANIMATION, PanelAnimation.sanitize(value)) }
+    }
+
+    /**
+     * The long-press menu's own surface colour, or null to take the material's.
+     *
+     * Null by default, and that is the point: the materials are designed palettes and most people
+     * should never have to pick a colour to get a good one. This is for the person who wants their
+     * own, and it is stored as absent rather than as a default so that switching material keeps
+     * working for everyone who has not.
+     */
+    fun getMenuColor(): Int? =
+        if (sharedPreferences.contains(MENU_COLOR)) sharedPreferences.getInt(MENU_COLOR, 0) else null
+
+    fun setMenuColor(value: Int?) {
+        sharedPreferences.edit {
+            if (value == null) remove(MENU_COLOR) else putInt(MENU_COLOR, value)
+        }
+    }
+
+    /** How much of [getMenuColor] survives, 0..255. Ignored when no colour is set. */
+    fun getMenuAlpha(): Int = sharedPreferences.getInt(MENU_ALPHA, 235).coerceIn(0, 255)
+
+    fun setMenuAlpha(value: Int) {
+        sharedPreferences.edit { putInt(MENU_ALPHA, value.coerceIn(0, 255)) }
+    }
+
+    /** The menu's surface as `0xAARRGGBB`, or null where the material supplies it. */
+    fun getMenuSurface(): Long? {
+        val colour = getMenuColor() ?: return null
+        return ((getMenuAlpha().toLong() and 0xFF) shl 24) or (colour.toLong() and 0xFFFFFF)
+    }
+
+    /** How fast the entrances run, as a multiple of their own timing. See [PanelAnimation]. */
+    fun getPanelAnimationSpeed(): Float =
+        PanelAnimation.sanitizeSpeed(sharedPreferences.getFloat(PANEL_ANIMATION_SPEED, 1f))
+
+    fun setPanelAnimationSpeed(value: Float) {
+        sharedPreferences.edit {
+            putFloat(PANEL_ANIMATION_SPEED, PanelAnimation.sanitizeSpeed(value))
+        }
     }
 
     fun getContextMenuLayout(): String =

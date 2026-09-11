@@ -849,4 +849,13 @@
     <string name="fill_shimmer">Shimmer</string>
     <string name="fill_stripes">Stripes</string>
     <string name="fill_glow">Glow</string>
+    <string name="fill_dot_matrix">Dot matrix</string>
+    <string name="fill_nebula">Nebula</string>
+    <string name="fill_cyberpunk">Cyberpunk</string>
+    <string name="fill_matrix_rain">Matrix rain</string>
+    <string name="fill_rune">Rune</string>
+    <string name="panel_animation_speed">Animation speed</string>
+    <string name="context_menu_colour">Colour</string>
+    <string name="context_menu_own_colour">Use my own colour</string>
+    <string name="context_menu_own_colour_desc">Off, the menu takes its colours from the panel style. On, it takes them from the colour below, and its text and dividers follow whether that colour is light or dark.</string>
 </resources>

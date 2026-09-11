@@ -56,18 +56,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.graphics.toArgb
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
 import com.newagedevs.gesturevolume.overlay.panelFrame
 import com.newagedevs.gesturevolume.overlay.ContextMenuCard
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.ColorPickerControl
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
+import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.ContextMenuLayout
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
+import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 
 /**
@@ -115,6 +121,12 @@ fun LongPressMenuScreen(
     var layout by remember { mutableStateOf(preference.getContextMenuLayout()) }
     var panelTheme by remember { mutableStateOf(preference.getPanelTheme()) }
     var panelAnimation by remember { mutableStateOf(preference.getPanelAnimation()) }
+    var animationSpeed by remember { mutableFloatStateOf(preference.getPanelAnimationSpeed()) }
+    var menuColor by remember { mutableStateOf(preference.getMenuColor()?.let { Color(it) }) }
+    var menuAlpha by remember { mutableIntStateOf(preference.getMenuAlpha()) }
+    val menuSurface = remember(menuColor, menuAlpha) {
+        menuColor?.let { ((menuAlpha.toLong() and 0xFF) shl 24) or (it.toArgb().toLong() and 0xFFFFFF) }
+    }
 
     // Bumped whenever the entrance is picked, which is what makes the preview play it again.
     var replay by remember { mutableIntStateOf(0) }
@@ -122,6 +134,7 @@ fun LongPressMenuScreen(
         animation = panelAnimation,
         towardLeft = preference.getHandlerPosition() == "Left",
         replayKey = replay,
+        speed = animationSpeed,
     )
 
     // One wallpaper per visit; see the note in HandlerAppearanceScreen. The menu's own chrome is a
@@ -186,6 +199,7 @@ fun LongPressMenuScreen(
                             .scale(PREVIEW_SCALE)
                             .panelFrame(entrance.value),
                         theme = panelTheme,
+                        surfaceOverride = menuSurface,
                     )
                 }
             }
@@ -228,6 +242,42 @@ fun LongPressMenuScreen(
             )
 
             Spacer(Modifier.height(22.dp))
+            SectionLabel(stringResource(R.string.context_menu_colour))
+            Card {
+                SettingSwitchItem(
+                    title = stringResource(R.string.context_menu_own_colour),
+                    description = stringResource(R.string.context_menu_own_colour_desc),
+                    checked = menuColor != null,
+                    onCheckedChange = { on ->
+                        // Seeded from the material's own surface, so turning it on is a starting
+                        // point rather than a blank. Turning it off forgets the colour entirely —
+                        // see SharedPref.getMenuColor on why absent and default are not the same.
+                        val seed = Color((PanelTheme.menuPalette(panelTheme).surface and 0xFFFFFF).toInt() or (0xFF shl 24))
+                        menuColor = if (on) seed else null
+                        preference.setMenuColor(if (on) seed.toArgb() else null)
+                    },
+                )
+                if (menuColor != null) {
+                    Spacer(Modifier.height(12.dp))
+                    ColorPickerControl(
+                        label = stringResource(R.string.color),
+                        color = menuColor ?: Color.Black,
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        onColorChange = { menuColor = it; preference.setMenuColor(it.toArgb()) },
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    SliderControl(
+                        label = stringResource(R.string.opacity),
+                        value = menuAlpha.toFloat(),
+                        valueRange = 40f..255f,
+                        valueDisplay = "${(menuAlpha / 255f * 100).toInt()}%",
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        onValueChange = { menuAlpha = it.toInt(); preference.setMenuAlpha(it.toInt()) },
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(22.dp))
             PanelAnimationSelector(
                 animation = panelAnimation,
                 onAnimationChange = {
@@ -236,6 +286,12 @@ fun LongPressMenuScreen(
                     // Replays it on the preview above. Picking an entrance from a list of words
                     // is picking blind; the point of the preview is that the word is followed by
                     // the thing it names.
+                    replay++
+                },
+                speed = animationSpeed,
+                onSpeedChange = {
+                    animationSpeed = it
+                    preference.setPanelAnimationSpeed(it)
                     replay++
                 },
             )

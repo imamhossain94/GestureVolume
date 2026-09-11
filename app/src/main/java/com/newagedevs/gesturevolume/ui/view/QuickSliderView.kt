@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import com.newagedevs.gesturevolume.utils.SliderFill
+import com.newagedevs.gesturevolume.utils.PanelAnimation
 
 /**
  * The bar, mid-way through becoming a track, at any point on that journey.
@@ -243,6 +244,9 @@ class QuickSliderView(context: Context) : View(context) {
 
     /** Whether the surface is a pale one, which halves the strength of the glass lighting. */
     private var glassLight = false
+
+    /** The entrance, when one is playing. Held so a second opening can take it over. */
+    private var entranceAnimator: ValueAnimator? = null
 
     /** Which of [SliderFill]'s behaviours the filled portion has. */
     private var fillStyle = SliderFill.SOLID
@@ -502,6 +506,50 @@ class QuickSliderView(context: Context) : View(context) {
         invalidate()
     }
 
+    /**
+     * Plays one of [PanelAnimation]'s entrances on this view.
+     *
+     * On top of the morph, not instead of it: the panel grows out of the bar because that is what
+     * it *is*, and the entrance is what it does while it grows. They compose because the morph
+     * animates the shape that gets drawn and this animates the layer it is drawn into.
+     *
+     * Not for the pull gesture. There a finger is driving the expansion, and a second animation
+     * moving the panel while the user is trying to place it is the panel arguing with them.
+     */
+    fun playEntrance(animation: String, towardLeft: Boolean, speed: Float) {
+        entranceAnimator?.cancel()
+        val id = PanelAnimation.sanitize(animation)
+        entranceAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = PanelAnimation.scaledDurationMs(id, speed).toLong()
+            interpolator = null
+            addUpdateListener {
+                applyFrame(PanelAnimation.frameAt(id, it.animatedValue as Float, towardLeft))
+            }
+            addListener(object : android.animation.AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    // Exactly at rest, whatever the clock did on its last frame. A panel left a
+                    // hundredth of a degree off is a panel that never settles.
+                    applyFrame(PanelAnimation.Frame())
+                    if (entranceAnimator === animation) entranceAnimator = null
+                }
+            })
+            start()
+        }
+    }
+
+    private fun applyFrame(f: PanelAnimation.Frame) {
+        pivotX = width * f.originX
+        pivotY = height * f.originY
+        alpha = f.alpha
+        scaleX = f.scaleX
+        scaleY = f.scaleY
+        translationX = f.translationX * density
+        translationY = f.translationY * density
+        rotation = f.rotationZ
+        rotationX = f.rotationX
+        rotationY = f.rotationY
+    }
+
     private fun restartFillClock() {
         fillClock?.cancel()
         fillClock = null
@@ -529,6 +577,8 @@ class QuickSliderView(context: Context) : View(context) {
         fillClock = null
         valueAnimator?.cancel()
         valueAnimator = null
+        entranceAnimator?.cancel()
+        entranceAnimator = null
     }
 
     /**
@@ -589,21 +639,29 @@ class QuickSliderView(context: Context) : View(context) {
     /** The part of a style that is drawn *over* the fill rather than being its shape. */
     private fun drawFillEffects(canvas: Canvas, fillTop: Float, alpha: Int) {
         if (fillStyle == SliderFill.SOLID) return
-        val height = (drawRect.bottom - fillTop).coerceAtLeast(1f)
 
         canvas.save()
         canvas.clipPath(fillShapePath)
+        if (SliderFill.isPictorial(fillStyle)) {
+            drawPictorialFill(canvas, fillTop, alpha)
+        } else {
+            drawTintedFill(canvas, fillTop, alpha)
+        }
+        canvas.restore()
+    }
 
-        // Everything below is drawn in the *track's* colour, not in white.
-        //
-        // White was the obvious choice and it was wrong: the fill's own default is white, so a
-        // white charging band on it was invisible, and the whole catalogue looked like it did
-        // nothing. The track colour is the one colour in this view guaranteed to contrast with the
-        // fill — it is already what the number and the icon are drawn in over the filled half, for
-        // exactly the same reason.
+    /**
+     * The styles that tint the fill rather than painting over it.
+     *
+     * Drawn in the *track's* colour, not in white. White was the obvious choice and it was wrong:
+     * the fill's own default is white, so a white charging band on it was invisible. The track
+     * colour is the one colour in this view guaranteed to contrast with the fill — it is already
+     * what the number and the icon are drawn in over the filled half, for the same reason.
+     */
+    private fun drawTintedFill(canvas: Canvas, fillTop: Float, alpha: Int) {
         val ink = blendedTrackColor or (0xFF shl 24)
+        val height = (drawRect.bottom - fillTop).coerceAtLeast(1f)
 
-        // A fill that breathes, or one gathered brighter at its top edge.
         val body = SliderFill.bodyGlow(fillStyle, fillPhase)
         if (body > 0f) {
             effectPaint.shader = null
@@ -616,7 +674,6 @@ class QuickSliderView(context: Context) : View(context) {
             }
         }
 
-        // One block brighter than its neighbours, travelling.
         if (SliderFill.hasBlocks(fillStyle)) {
             val count = SliderFill.blockCount(drawRect.height(), density)
             val pitch = drawRect.height() / count.coerceAtLeast(1)
@@ -633,20 +690,18 @@ class QuickSliderView(context: Context) : View(context) {
             }
         }
 
-        // A band travelling along the fill: the charging sweep, and the sheen.
         val sweep = SliderFill.sweepAt(fillStyle, fillPhase)
         if (!sweep.isNaN()) {
             val centre = fillTop + height * sweep
             val half = height * SliderFill.SWEEP_HEIGHT / 2f
             if (centre + half > fillTop && centre - half < drawRect.bottom) {
-                effectPaint.color = ink
-                effectPaint.alpha = alpha
                 val clear = ink and 0x00FFFFFF
                 val peak = (ink and 0x00FFFFFF) or (0x7A shl 24)
+                effectPaint.color = ink
+                effectPaint.alpha = alpha
                 effectPaint.shader = android.graphics.LinearGradient(
                     0f, centre - half, 0f, centre + half,
-                    intArrayOf(clear, peak, clear),
-                    null,
+                    intArrayOf(clear, peak, clear), null,
                     android.graphics.Shader.TileMode.CLAMP,
                 )
                 canvas.drawRect(drawRect.left, centre - half, drawRect.right, centre + half, effectPaint)
@@ -654,7 +709,6 @@ class QuickSliderView(context: Context) : View(context) {
             }
         }
 
-        // Diagonal bands sliding along, the indeterminate-progress look.
         if (fillStyle == SliderFill.STRIPES) {
             effectPaint.shader = null
             effectPaint.color = ink
@@ -674,8 +728,128 @@ class QuickSliderView(context: Context) : View(context) {
                 y += pitch * 2f
             }
         }
+    }
 
-        canvas.restore()
+    /**
+     * The styles that paint their own picture on the fill.
+     *
+     * These carry a palette rather than borrowing the track's colour, because the palette is the
+     * idea: a nebula in one colour is a cloud, and a rain that is not green is just rain. They are
+     * laid over a darkened fill so their own light has something to be light against — a neon line
+     * on a white bar is a grey line.
+     */
+    private fun drawPictorialFill(canvas: Canvas, fillTop: Float, alpha: Int) {
+        val palette = SliderFill.palette(fillStyle)
+        val height = (drawRect.bottom - fillTop).coerceAtLeast(1f)
+        val width = drawRect.width().coerceAtLeast(1f)
+
+        // The ground. Without it every one of these is washed out by whatever colour the fill is.
+        effectPaint.shader = null
+        effectPaint.color = Color.BLACK
+        effectPaint.alpha = (0.82f * alpha).toInt().coerceIn(0, 255)
+        canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+
+        when (fillStyle) {
+            SliderFill.NEBULA -> {
+                // Four soft clouds on their own slow orbits. Radial gradients rather than circles:
+                // a cloud with an edge is a balloon.
+                for (i in palette.indices) {
+                    val seed = SliderFill.pseudoRandom(i * 17 + 3)
+                    val drift = fillPhase * 2f * Math.PI.toFloat() * (0.6f + seed * 0.8f) +
+                        seed * 6.28f
+                    val cx = drawRect.left + width * (0.5f + 0.42f * kotlin.math.cos(drift))
+                    val cy = fillTop + height * (0.5f + 0.42f * kotlin.math.sin(drift * 0.7f))
+                    val radius = width * (1.1f + seed * 0.6f)
+                    effectPaint.shader = android.graphics.RadialGradient(
+                        cx, cy, radius,
+                        intArrayOf(palette[i].toInt(), palette[i].toInt() and 0x00FFFFFF),
+                        null,
+                        android.graphics.Shader.TileMode.CLAMP,
+                    )
+                    effectPaint.alpha = alpha
+                    canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+                }
+                effectPaint.shader = null
+            }
+
+            SliderFill.CYBERPUNK -> {
+                // Scan lines, sliding.
+                effectPaint.shader = null
+                val pitch = 5f * density
+                val offset = (fillPhase * pitch * 2f) % (pitch * 2f)
+                effectPaint.color = palette[0].toInt()
+                effectPaint.alpha = (0.5f * alpha).toInt().coerceIn(0, 255)
+                var y = fillTop + offset - pitch * 2f
+                while (y < drawRect.bottom) {
+                    canvas.drawRect(drawRect.left, y, drawRect.right, y + pitch * 0.45f, effectPaint)
+                    y += pitch * 2f
+                }
+                // A magenta bloom at the fill's edge, which is where the eye goes.
+                effectPaint.shader = android.graphics.LinearGradient(
+                    0f, fillTop, 0f, fillTop + height * 0.3f,
+                    intArrayOf(palette[1].toInt(), palette[1].toInt() and 0x00FFFFFF), null,
+                    android.graphics.Shader.TileMode.CLAMP,
+                )
+                effectPaint.alpha = alpha
+                canvas.drawRect(drawRect.left, fillTop, drawRect.right, fillTop + height * 0.3f, effectPaint)
+                effectPaint.shader = null
+                // And a glitch band, now and then.
+                val glitch = SliderFill.glitchAt(fillStyle, fillPhase)
+                if (!glitch.isNaN()) {
+                    val gy = fillTop + height * glitch
+                    effectPaint.color = palette[2].toInt()
+                    effectPaint.alpha = (0.85f * alpha).toInt().coerceIn(0, 255)
+                    canvas.drawRect(drawRect.left, gy, drawRect.right, gy + 3f * density, effectPaint)
+                }
+            }
+
+            else -> {
+                // The three grid styles. One loop, because what separates them is what goes in a
+                // cell and which way the wave runs, not how the grid is built.
+                val cell = SliderFill.CELL_DP * density
+                val columns = (width / cell).toInt().coerceIn(1, 12)
+                val rows = (height / cell).toInt().coerceIn(1, 80)
+                val cw = width / columns
+                val ch = height / rows
+                effectPaint.shader = null
+                for (col in 0 until columns) {
+                    for (row in 0 until rows) {
+                        val glow = SliderFill.cellGlow(fillStyle, fillPhase, col, row, columns, rows)
+                        if (glow <= 0.02f) continue
+                        val cx = drawRect.left + cw * (col + 0.5f)
+                        val cy = drawRect.bottom - ch * (row + 0.5f)
+                        val shade = palette[((1f - glow) * (palette.size - 1)).toInt().coerceIn(0, palette.size - 1)]
+                        effectPaint.color = shade.toInt()
+                        effectPaint.alpha = (glow * alpha).toInt().coerceIn(0, 255)
+                        when (fillStyle) {
+                            SliderFill.DOT_MATRIX ->
+                                canvas.drawCircle(cx, cy, cw * 0.26f, effectPaint)
+
+                            SliderFill.MATRIX_RAIN ->
+                                canvas.drawRect(
+                                    cx - cw * 0.22f, cy - ch * 0.34f,
+                                    cx + cw * 0.22f, cy + ch * 0.34f, effectPaint
+                                )
+
+                            // A mark rather than a blob: two strokes crossing, which at this size
+                            // reads as carved without needing a font.
+                            else -> {
+                                effectPaint.style = Paint.Style.STROKE
+                                effectPaint.strokeWidth = 1.6f * density
+                                canvas.drawLine(cx, cy - ch * 0.3f, cx, cy + ch * 0.3f, effectPaint)
+                                canvas.drawLine(
+                                    cx - cw * 0.2f, cy - ch * 0.08f,
+                                    cx + cw * 0.2f, cy + ch * 0.16f, effectPaint
+                                )
+                                effectPaint.style = Paint.Style.FILL
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        effectPaint.shader = null
+        effectPaint.style = Paint.Style.FILL
     }
 
     @SuppressLint("ClickableViewAccessibility")

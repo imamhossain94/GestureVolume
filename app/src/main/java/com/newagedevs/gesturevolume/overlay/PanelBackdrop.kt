@@ -28,6 +28,15 @@ import androidx.annotation.RequiresApi
  *
  * The Deck uses two of these, one under the strip and one under the expanded card, because a
  * single rounded rectangle spanning both would also blur the gap between them.
+ *
+ * **On moving it while a panel animates.** [setBounds] is a window relayout, and this class used
+ * to say that a relayout per frame is what makes a window stutter — which is why the panels were
+ * once forbidden from animating anything but their contents, and why their backgrounds sat still
+ * while the things on them moved. The alternative was tried and does not exist: a full-screen
+ * window whose background drawable is inset to the panel's rectangle blurs the *whole window*
+ * regardless of the inset, so the blur region cannot be moved without moving the window. So this
+ * is moved per frame, and everything that can be kept out of that path — the drawable, the blur
+ * radius, redundant frames — is.
  */
 @RequiresApi(Build.VERSION_CODES.S)
 class PanelBackdrop(
@@ -39,6 +48,9 @@ class PanelBackdrop(
     private var dialog: Dialog? = null
     private var shownRadius = -1f
     private var bounds = intArrayOf(0, 0, 1, 1)
+
+    /** Whether the blur is currently switched off, so the radius is pushed only when it flips. */
+    private var shownEmpty: Boolean? = null
 
     /**
      * Puts the window up, blurring nothing yet.
@@ -99,16 +111,22 @@ class PanelBackdrop(
         val next = intArrayOf(left, top, w, h)
         val sameBounds = next.contentEquals(bounds)
         val sameRadius = shownRadius == cornerRadiusPx
-        // The Deck's layout pass runs on every recomposition; only a real move is worth the
-        // relayout, and a relayout per frame of an animation is what makes a window stutter.
-        if (sameBounds && sameRadius) return
+        val sameEmpty = shownEmpty == empty
+        if (sameBounds && sameRadius && sameEmpty) return
 
         bounds = next
+        // Rebuilt only when the radius really changes. During an animation the rectangle moves
+        // every frame and the radius almost never does, and allocating a drawable per frame is
+        // the one part of this that would be worth avoiding even if the relayout were free.
         if (!sameRadius) {
             shownRadius = cornerRadiusPx
             applyBackground(window, cornerRadiusPx)
         }
-        window.setBackgroundBlurRadius(if (empty) 0 else blurRadiusPx)
+        // Likewise: a window attribute, so it is pushed only when it flips.
+        if (!sameEmpty) {
+            shownEmpty = empty
+            window.setBackgroundBlurRadius(if (empty) 0 else blurRadiusPx)
+        }
         applyBounds(window)
     }
 

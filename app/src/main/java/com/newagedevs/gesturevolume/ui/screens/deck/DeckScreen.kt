@@ -37,6 +37,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -117,6 +118,7 @@ fun DeckScreen(
     var autoClose by remember { mutableIntStateOf(store.getAutoCloseSeconds()) }
     var utilitiesFirst by remember { mutableStateOf(store.getUtilitiesFirst()) }
     var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
+    var animationSpeed by remember { mutableFloatStateOf(viewModel.preference.getPanelAnimationSpeed()) }
 
     // One wallpaper per visit; see the note in HandlerAppearanceScreen.
     val bgImage = remember { viewModel.getNextBackground() }
@@ -126,7 +128,7 @@ fun DeckScreen(
     }
     // Bumped whenever the entrance is picked, which is what makes the preview play it again.
     var replay by remember { mutableIntStateOf(0) }
-    val entrance = rememberPanelEntrance(panelAnimation, handlerOnLeft, replay)
+    val entrance = rememberPanelEntrance(panelAnimation, handlerOnLeft, replay, speed = animationSpeed)
     val previewPalette = remember(background, accent, alpha, panelTheme) {
         val forced = PanelTheme.panelSurface(panelTheme)
         DeckPalette(
