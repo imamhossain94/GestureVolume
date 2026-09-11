@@ -100,6 +100,13 @@ private fun FillChip(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 private fun labelFor(id: String): Int = when (id) {
+    SliderFill.LIQUID -> R.string.fill_liquid
+    SliderFill.VU_METER -> R.string.fill_vu_meter
+    SliderFill.WAVEFORM -> R.string.fill_waveform
+    SliderFill.SUNRISE -> R.string.fill_sunrise
+    SliderFill.SPECTRUM -> R.string.fill_spectrum
+    SliderFill.GALAXY -> R.string.fill_galaxy
+    SliderFill.SILK -> R.string.fill_silk
     SliderFill.TIDE_UP -> R.string.fill_tide_up
     SliderFill.TIDE_DOWN -> R.string.fill_tide_down
     SliderFill.PLASMA -> R.string.fill_plasma

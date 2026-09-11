@@ -64,6 +64,27 @@ object SliderFill {
     /** Diagonal bands sliding along it, the way an indeterminate progress bar reads. */
     const val STRIPES = "stripes"
 
+    /** Liquid: deeper below the surface, a sheen on the meniscus, bubbles finding their way up. */
+    const val LIQUID = "liquid"
+
+    /** A level meter: segments lit up to the level, green through amber to red. */
+    const val VU_METER = "vuMeter"
+
+    /** An oscilloscope trace running up the fill, its swing set by the level. */
+    const val WAVEFORM = "waveform"
+
+    /** Warm light for brightness: a sun sitting on the fill line, its rays fanning down. */
+    const val SUNRISE = "sunrise"
+
+    /** The colour wheel, flowing upward. */
+    const val SPECTRUM = "spectrum"
+
+    /** Deep space, with stars at three depths drifting past each other. */
+    const val GALAXY = "galaxy"
+
+    /** Translucent ribbons weaving up the fill. */
+    const val SILK = "silk"
+
     /**
      * Every style, in the order they are offered.
      *
@@ -74,9 +95,11 @@ object SliderFill {
      * options to protect five that were not worth having.
      */
     val ALL = listOf(
-        SOLID, TIDE_UP, TIDE_DOWN, PLASMA, AURORA,
-        HOLOGRAM, EMBER, SONAR, CIRCUIT, DOT_MATRIX,
-        NEBULA, CYBERPUNK, MATRIX_RAIN, RUNE, STRIPES,
+        SOLID, LIQUID, VU_METER, WAVEFORM, SUNRISE,
+        SPECTRUM, GALAXY, SILK, TIDE_UP, AURORA,
+        PLASMA, HOLOGRAM, NEBULA, EMBER, SONAR,
+        CIRCUIT, DOT_MATRIX, CYBERPUNK, MATRIX_RAIN, RUNE,
+        TIDE_DOWN, STRIPES,
     )
 
     fun sanitize(value: String?): String = if (value in ALL) value!! else SOLID
@@ -100,11 +123,25 @@ object SliderFill {
         EMBER -> 3000
         SONAR -> 2200
         CIRCUIT -> 2800
+        LIQUID -> 6000
+        VU_METER -> 900
+        WAVEFORM -> 1600
+        // Slow, and a full turn of the fan is one ray's width: the rays are identical, so moving
+        // by exactly one spacing is a seamless loop however long the cycle is.
+        SUNRISE -> 9000
+        SPECTRUM -> 7000
+        // Long, because the stars travel at whole-number speeds (see the note on loops) and the
+        // slowest layer needs a cycle this long to drift rather than stream.
+        GALAXY -> 24000
+        SILK -> 5200
         else -> 1
     }
 
     /** Whether the top edge of the fill is a wave rather than a straight line. */
-    fun hasWave(id: String): Boolean = sanitize(id) == TIDE_UP || sanitize(id) == TIDE_DOWN
+    fun hasWave(id: String): Boolean = when (sanitize(id)) {
+        TIDE_UP, TIDE_DOWN, LIQUID -> true
+        else -> false
+    }
 
     /**
      * How far the wave's crest sits above the fill line at [x], 0..1 across the track's width.
@@ -116,12 +153,19 @@ object SliderFill {
      */
     fun waveAt(id: String, phase: Float, x: Float): Float {
         if (!hasWave(id)) return 0f
-        val direction = if (sanitize(id) == TIDE_UP) 1f else -1f
+        val sid = sanitize(id)
+        val direction = if (sid == TIDE_DOWN) -1f else 1f
         val p = (phase % 1f + 1f) % 1f
         val travel = p * 2f * PI.toFloat() * direction
+        // Both waves travel a whole number of wavelengths per cycle — one forward, one back — so
+        // the last frame of a cycle is the first frame of the next. The second used to travel at
+        // six tenths of the first, which looked richer and jumped once every cycle: a surface
+        // that twitches every couple of seconds is a surface that looks broken.
         val primary = sin(x * 2f * PI.toFloat() + travel)
-        val secondary = sin(x * 3.7f * PI.toFloat() - travel * 0.6f) * 0.45f
-        return (primary + secondary) / 1.45f
+        val secondary = sin(x * 3.7f * PI.toFloat() - travel) * 0.45f
+        // Liquid carries a smaller, calmer surface than a tide: it is meant to look at rest.
+        val scale = if (sid == LIQUID) 0.5f else 1f
+        return scale * (primary + secondary) / 1.45f
     }
 
     /** How tall the crest of a tide is, in dp. Small: this is a surface, not a flag. */
@@ -136,7 +180,8 @@ object SliderFill {
      */
     fun isPictorial(id: String): Boolean = when (sanitize(id)) {
         DOT_MATRIX, NEBULA, CYBERPUNK, MATRIX_RAIN, RUNE,
-        PLASMA, AURORA, HOLOGRAM, EMBER, SONAR, CIRCUIT -> true
+        PLASMA, AURORA, HOLOGRAM, EMBER, SONAR, CIRCUIT,
+        LIQUID, VU_METER, WAVEFORM, SUNRISE, SPECTRUM, GALAXY, SILK -> true
         else -> false
     }
 
@@ -158,6 +203,13 @@ object SliderFill {
         EMBER -> longArrayOf(0xFFFFE9A8, 0xE6FF9D3D, 0x99FF5A1E)
         SONAR -> longArrayOf(0xFF7CFFB0, 0x8C2ED67A, 0x3D14803F)
         CIRCUIT -> longArrayOf(0xFF8CFFE0, 0xA62ED6A8, 0x4D147A5E)
+        LIQUID -> longArrayOf(0xFF8BEBFF, 0xFF2E9BE6, 0xFF173E9C, 0xCCFFFFFF)
+        VU_METER -> longArrayOf(0xFF3DE68A, 0xFFFFC23D, 0xFFFF4F61, 0xFFFFFFFF)
+        WAVEFORM -> longArrayOf(0xFFEFFEFF, 0x8C4FE3FF)
+        SUNRISE -> longArrayOf(0xFFFFE9A8, 0xFFFFA94D, 0xFFE8553B, 0x4DFFF3CC)
+        SPECTRUM -> longArrayOf(0xFFFF5C8A, 0xFF5CC8FF)
+        GALAXY -> longArrayOf(0xFF120A2E, 0xFF34207A, 0xFFFFFFFF, 0xFFBFD0FF)
+        SILK -> longArrayOf(0xFFFF8FCF, 0xFF8FB5FF, 0xFFA6FFE0)
         else -> longArrayOf(0xFFFFFFFF)
     }
 
@@ -187,7 +239,9 @@ object SliderFill {
                 // Each column falls on its own offset and at its own speed, or the whole thing
                 // descends like a blind rather than like rain.
                 val seed = pseudoRandom(column)
-                val speed = 0.6f + seed * 0.9f
+                // Whole numbers only, so each head is back where it started when the cycle wraps.
+                // A fractional speed made every column jump once a cycle.
+                val speed = 1f + (seed * 2f).toInt()
                 val head = ((p * speed + seed) % 1f)
                 val here = 1f - row.toFloat() / rows
                 val behind = ((here - head) % 1f + 1f) % 1f

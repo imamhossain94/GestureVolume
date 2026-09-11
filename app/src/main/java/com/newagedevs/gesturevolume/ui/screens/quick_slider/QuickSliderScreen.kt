@@ -470,7 +470,7 @@ fun QuickSliderScreen(
                     SliderControl(
                         label = stringResource(R.string.slider_value_margin),
                         value = valueMargin,
-                        valueRange = 0f..60f,
+                        valueRange = 0f..QuickSliderStore.MAX_CONTENT_PADDING,
                         valueDisplay = "${valueMargin.toInt()}dp",
                         borderColor = accent,
                         onValueChange = { valueMargin = it; store.setValueMarginDp(it) }
@@ -488,7 +488,7 @@ fun QuickSliderScreen(
                     SliderControl(
                         label = stringResource(R.string.slider_icon_margin),
                         value = iconMargin,
-                        valueRange = 0f..60f,
+                        valueRange = 0f..QuickSliderStore.MAX_CONTENT_PADDING,
                         valueDisplay = "${iconMargin.toInt()}dp",
                         borderColor = accent,
                         onValueChange = { iconMargin = it; store.setIconMarginDp(it) }
@@ -576,7 +576,6 @@ private fun SliderPreview(
         AndroidView(
                 factory = { ctx -> QuickSliderView(ctx) },
                 update = { view ->
-                    @Suppress("UNUSED_EXPRESSION") replay
                     // Dressed exactly the way the live panel is — see
                     // `OverlayController.openQuickSliderWindow`. It used to skip the theme
                     // entirely, so the preview showed the Solid look whatever was selected, which
@@ -618,7 +617,15 @@ private fun SliderPreview(
                     // reaches by animating, and this one has no reason to animate to.
                     view.setExpansion(1f)
                     view.setCommitted()
-                    view.playEntrance(animation, handlerOnLeft, animationSpeed)
+                    // Only when asked for. `update` runs on every recomposition — every tick of
+                    // every slider on this screen — and replaying the entrance each time is what
+                    // made dragging the sweep look like the panel was stuttering: it was restarting
+                    // its entrance thirty times a second. The tag remembers which request it has
+                    // already played.
+                    if (view.tag != replay) {
+                        view.tag = replay
+                        view.playEntrance(animation, handlerOnLeft, animationSpeed)
+                    }
                 },
             modifier = Modifier
                 .padding(horizontal = 18.dp)

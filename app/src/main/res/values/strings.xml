@@ -840,15 +840,9 @@
     <string name="slider_fill_style">Fill animation</string>
     <string name="slider_fill_style_desc">What the filled part of the track does while the panel is open. The preview above runs it.</string>
     <string name="fill_solid">Solid</string>
-    <string name="fill_battery">Charging</string>
     <string name="fill_tide_up">Tide up</string>
     <string name="fill_tide_down">Tide down</string>
-    <string name="fill_pixel_up">Pixel up</string>
-    <string name="fill_pixel_down">Pixel down</string>
-    <string name="fill_pulse">Pulse</string>
-    <string name="fill_shimmer">Shimmer</string>
     <string name="fill_stripes">Stripes</string>
-    <string name="fill_glow">Glow</string>
     <string name="fill_dot_matrix">Dot matrix</string>
     <string name="fill_nebula">Nebula</string>
     <string name="fill_cyberpunk">Cyberpunk</string>
@@ -868,6 +862,13 @@
     <string name="fill_ember">Ember</string>
     <string name="fill_sonar">Sonar</string>
     <string name="fill_circuit">Circuit</string>
-    <string name="slider_value_margin">Number margin</string>
-    <string name="slider_icon_margin">Icon margin</string>
+    <string name="slider_value_margin">Number top padding</string>
+    <string name="slider_icon_margin">Icon bottom padding</string>
+    <string name="fill_liquid">Liquid</string>
+    <string name="fill_vu_meter">Level meter</string>
+    <string name="fill_waveform">Waveform</string>
+    <string name="fill_sunrise">Sunrise</string>
+    <string name="fill_spectrum">Spectrum</string>
+    <string name="fill_galaxy">Galaxy</string>
+    <string name="fill_silk">Silk</string>
 </resources>

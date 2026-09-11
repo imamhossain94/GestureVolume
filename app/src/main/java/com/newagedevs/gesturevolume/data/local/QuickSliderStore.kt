@@ -87,7 +87,11 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
          * changed; only the part that is painted has. See `QuickSliderView.setDrawnThickness`.
          */
         const val MIN_THICKNESS = 10f
-        const val DEFAULT_THICKNESS = 52f
+        const val DEFAULT_THICKNESS = 20f
+
+        /** Where the number and the icon sit from the panel's ends, until someone moves them. */
+        const val DEFAULT_CONTENT_PADDING = 26f
+        const val MAX_CONTENT_PADDING = 140f
         /** Half the thickness: a track with fully round ends, matching the bar's pill shape. */
         const val DEFAULT_CORNER = 22f
         const val DEFAULT_TRACK_COLOR = 0xFF1C1C20.toInt()
@@ -156,16 +160,20 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     /**
      * How far the number sits from the top of the panel, and the icon from the bottom, in dp.
      *
-     * Adjustable because the panel's own size is: the fourteen and sixteen that were hard-coded
-     * were chosen against a 44dp track, and on a 10dp one they are most of its length while on a
-     * 72dp one the number floats. Measured from where the shape is still full width, so a tab's
-     * sweep is already taken off before this is applied.
+     * Measured from the panel's own top and bottom edges and from nothing else. They used to be
+     * measured from where a tab's sweep ended, which kept them clear of the curve — and meant that
+     * dragging the sweep slider slid the number and the icon up and down the panel with it, which
+     * is two things moving where the user asked for one. Now the sweep changes the outline and
+     * these change the contents, and neither moves the other.
+     *
+     * Defaults with room to spare for the tab the default handler cuts, and a range deep enough to
+     * clear the steepest sweep on the tallest panel.
      */
-    fun getValueMarginDp(): Float = prefs.getFloat(VALUE_MARGIN, 14f).coerceIn(0f, 60f)
-    fun setValueMarginDp(value: Float) = prefs.edit { putFloat(VALUE_MARGIN, value.coerceIn(0f, 60f)) }
+    fun getValueMarginDp(): Float = prefs.getFloat(VALUE_MARGIN, DEFAULT_CONTENT_PADDING).coerceIn(0f, MAX_CONTENT_PADDING)
+    fun setValueMarginDp(value: Float) = prefs.edit { putFloat(VALUE_MARGIN, value.coerceIn(0f, MAX_CONTENT_PADDING)) }
 
-    fun getIconMarginDp(): Float = prefs.getFloat(ICON_MARGIN, 16f).coerceIn(0f, 60f)
-    fun setIconMarginDp(value: Float) = prefs.edit { putFloat(ICON_MARGIN, value.coerceIn(0f, 60f)) }
+    fun getIconMarginDp(): Float = prefs.getFloat(ICON_MARGIN, DEFAULT_CONTENT_PADDING).coerceIn(0f, MAX_CONTENT_PADDING)
+    fun setIconMarginDp(value: Float) = prefs.edit { putFloat(ICON_MARGIN, value.coerceIn(0f, MAX_CONTENT_PADDING)) }
 
     fun getCornerDp(): Float = prefs.getFloat(CORNER, DEFAULT_CORNER).coerceIn(0f, 40f)
     fun setCornerDp(value: Float) = prefs.edit { putFloat(CORNER, value.coerceIn(0f, 40f)) }

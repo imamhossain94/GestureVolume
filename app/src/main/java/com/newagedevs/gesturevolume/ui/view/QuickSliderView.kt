@@ -164,15 +164,14 @@ class QuickSliderView(context: Context) : View(context) {
     private var edgeOnLeft = false
 
     /**
-     * How far the number sits from the top of the shape, and the icon from the bottom, in pixels.
+     * How far the number sits from the top of the panel, and the icon from the bottom, in pixels.
      *
-     * Settings rather than constants because the panel is now anything from a 10dp sliver to a
-     * 72dp slab, and a margin that centres the number on one of those crowds it on another. They
-     * are measured from where the shape is still full width — see [drawContent] — so a tab's sweep
-     * is already accounted for and this is the gap on top of it.
+     * From the panel's own edges, and deliberately not from where a tab's sweep ends: tied to the
+     * sweep, the contents slid up and down whenever the sweep was adjusted. See
+     * `QuickSliderStore.getValueMarginDp`.
      */
-    private var valueMarginPx = 14f * density
-    private var iconMarginPx = 16f * density
+    private var valueMarginPx = 26f * density
+    private var iconMarginPx = 26f * density
 
     fun setContentMargins(valueTopDp: Float, iconBottomDp: Float) {
         valueMarginPx = valueTopDp.coerceAtLeast(0f) * density
@@ -182,6 +181,9 @@ class QuickSliderView(context: Context) : View(context) {
 
     /** Reused by the stripe pass, so a repeating animation allocates nothing per frame. */
     private val stripePath = Path()
+
+    /** Reused by the gradients that slide, for the same reason. */
+    private val effectMatrix = android.graphics.Matrix()
 
     private var trackColor = Color.BLACK
     private var fillColor = Color.WHITE
@@ -747,6 +749,39 @@ class QuickSliderView(context: Context) : View(context) {
      * laid over a darkened fill so their own light has something to be light against — a neon line
      * on a white bar is a grey line.
      */
+    /**
+     * One silk ribbon into [stripePath]: up its left edge, back down its right, closed.
+     *
+     * Its centre line sways and its width breathes, both on whole turns of the fill's clock, so
+     * both are seamless. [widthScale] narrows it about that same centre line, which is how the
+     * folds of light stay on the ribbon they belong to. The two edges walk the same samples, so the
+     * band closes square rather than with a slanted cut at the top.
+     */
+    private fun buildSilkRibbon(fillTop: Float, offset: Float, widthScale: Float) {
+        val track = drawRect.height().coerceAtLeast(1f)
+        val width = drawRect.width()
+        val step = 3f * density
+        val turn = fillPhase * 6.28318f
+        val start = drawRect.bottom + step
+        val count = ((start - (fillTop - step)) / step).toInt().coerceAtLeast(1)
+        stripePath.reset()
+        for (i in 0..count) {
+            val y = start - i * step
+            val k = (drawRect.bottom - y) / track
+            val centre = drawRect.centerX() + width * 0.28f * kotlin.math.sin(k * 5f + turn + offset)
+            val half = widthScale * width * (0.2f + 0.08f * kotlin.math.sin(k * 3f - turn + offset))
+            if (i == 0) stripePath.moveTo(centre - half, y) else stripePath.lineTo(centre - half, y)
+        }
+        for (i in count downTo 0) {
+            val y = start - i * step
+            val k = (drawRect.bottom - y) / track
+            val centre = drawRect.centerX() + width * 0.28f * kotlin.math.sin(k * 5f + turn + offset)
+            val half = widthScale * width * (0.2f + 0.08f * kotlin.math.sin(k * 3f - turn + offset))
+            stripePath.lineTo(centre + half, y)
+        }
+        stripePath.close()
+    }
+
     private fun drawPictorialFill(canvas: Canvas, fillTop: Float, alpha: Int) {
         val palette = SliderFill.palette(fillStyle)
         val height = (drawRect.bottom - fillTop).coerceAtLeast(1f)
@@ -764,10 +799,12 @@ class QuickSliderView(context: Context) : View(context) {
                 // a cloud with an edge is a balloon.
                 for (i in palette.indices) {
                     val seed = SliderFill.pseudoRandom(i * 17 + 3)
-                    val drift = fillPhase * 2f * Math.PI.toFloat() * (0.6f + seed * 0.8f) +
+                    // Whole turns per cycle, so a cloud is exactly where it started when the cycle
+                    // wraps. A fractional speed made every cloud jump once a cycle.
+                    val drift = fillPhase * 2f * Math.PI.toFloat() * (1f + (seed * 2f).toInt()) +
                         seed * 6.28f
                     val cx = drawRect.left + width * (0.5f + 0.42f * kotlin.math.cos(drift))
-                    val cy = fillTop + height * (0.5f + 0.42f * kotlin.math.sin(drift * 0.7f))
+                    val cy = fillTop + height * (0.5f + 0.42f * kotlin.math.sin(drift * 2f + 1.1f))
                     val radius = width * (1.1f + seed * 0.6f)
                     effectPaint.shader = android.graphics.RadialGradient(
                         cx, cy, radius,
@@ -829,8 +866,8 @@ class QuickSliderView(context: Context) : View(context) {
                         val y = r.toFloat() / rows
                         val v = (
                             kotlin.math.sin(x * 5f + t) +
-                                kotlin.math.sin(y * 7f - t * 0.8f) +
-                                kotlin.math.sin((x + y) * 6f + t * 1.3f)
+                                kotlin.math.sin(y * 7f - t) +
+                                kotlin.math.sin((x + y) * 6f + t * 2f)
                             ) / 3f
                         val idx = ((v + 1f) / 2f * (palette.size - 1)).toInt().coerceIn(0, palette.size - 1)
                         effectPaint.color = palette[idx].toInt()
@@ -848,10 +885,10 @@ class QuickSliderView(context: Context) : View(context) {
                 // separates an aurora from a set of coloured bars.
                 for (i in palette.indices) {
                     val seed = SliderFill.pseudoRandom(i * 53 + 11)
-                    val drift = fillPhase * 6.28318f * (0.5f + seed * 0.7f) + seed * 6.28f
+                    val drift = fillPhase * 6.28318f * (1f + (seed * 2f).toInt()) + seed * 6.28f
                     val cx = drawRect.left + width * (0.5f + 0.45f * kotlin.math.sin(drift))
                     val bandWidth = width * (0.32f + seed * 0.3f)
-                    val lean = width * 0.18f * kotlin.math.cos(drift * 0.8f)
+                    val lean = width * 0.18f * kotlin.math.cos(drift + 1.3f)
                     effectPaint.shader = android.graphics.LinearGradient(
                         cx, drawRect.bottom, cx + lean, fillTop,
                         intArrayOf(
@@ -881,7 +918,8 @@ class QuickSliderView(context: Context) : View(context) {
                 // A projected image: scan bands, the colour split either side of them, and a
                 // flicker. The split is the part that sells it — a clean band is a blind.
                 val pitch = 7f * density
-                val offset = (fillPhase * pitch * 3f) % (pitch * 2f)
+                // Two whole periods of the pattern per cycle. Three halves used to wrap mid-band.
+                val offset = (fillPhase * pitch * 4f) % (pitch * 2f)
                 val flicker = if (SliderFill.pseudoRandom((fillPhase * 24f).toInt()) > 0.88f) 0.45f else 1f
                 var y = fillTop + offset - pitch * 2f
                 while (y < drawRect.bottom) {
@@ -912,13 +950,15 @@ class QuickSliderView(context: Context) : View(context) {
                 for (i in 0 until EMBER_COUNT) {
                     val seed = SliderFill.pseudoRandom(i * 97 + 5)
                     val seed2 = SliderFill.pseudoRandom(i * 131 + 17)
-                    val life = ((fillPhase * (0.7f + seed * 0.8f) + seed2) % 1f)
+                    val life = ((fillPhase * (1f + (seed * 2f).toInt()) + seed2) % 1f)
                     val y = drawRect.bottom - height * life
                     if (y < fillTop) continue
                     val sway = kotlin.math.sin(life * 9f + seed * 6.28f) * width * 0.16f
                     val x = drawRect.left + width * (0.2f + seed * 0.6f) + sway
-                    val fade = (1f - life).coerceIn(0f, 1f)
-                    val idx = ((1f - fade) * (palette.size - 1)).toInt().coerceIn(0, palette.size - 1)
+                    // Faded in as well as out. A spark that appeared at full strength at the bottom
+                    // was a pop every time one was born.
+                    val fade = kotlin.math.sin(life * 3.14159f).coerceIn(0f, 1f)
+                    val idx = (life * (palette.size - 1)).toInt().coerceIn(0, palette.size - 1)
                     effectPaint.color = palette[idx].toInt()
                     effectPaint.alpha = (fade * fade * alpha).toInt().coerceIn(0, 255)
                     canvas.drawCircle(x, y, (1.1f + seed2 * 1.6f) * density, effectPaint)
@@ -933,7 +973,8 @@ class QuickSliderView(context: Context) : View(context) {
                 for (i in 0 until 3) {
                     val life = ((fillPhase + i / 3f) % 1f)
                     val radius = width * 0.2f + life * height * 0.9f
-                    val fade = (1f - life)
+                    // Eased in, so a new ring arrives rather than appearing.
+                    val fade = (1f - life) * (life * 6f).coerceAtMost(1f)
                     effectPaint.strokeWidth = (1f + fade * 1.6f) * density
                     effectPaint.color = palette[0].toInt()
                     effectPaint.alpha = (fade * fade * alpha).toInt().coerceIn(0, 255)
@@ -984,6 +1025,275 @@ class QuickSliderView(context: Context) : View(context) {
                     }
                 }
                 effectPaint.style = Paint.Style.FILL
+            }
+
+            SliderFill.LIQUID -> {
+                // Liquid, not paint: deeper below than at the surface, a sheen where the light
+                // catches the meniscus, and bubbles finding their way up through it. The wave on
+                // the surface is the fill's own outline — see SliderFill.hasWave — so the liquid
+                // and its edge move together.
+                val crest = SliderFill.WAVE_AMPLITUDE_DP * density
+                effectPaint.shader = android.graphics.LinearGradient(
+                    0f, fillTop, 0f, drawRect.bottom,
+                    intArrayOf(palette[0].toInt(), palette[1].toInt(), palette[2].toInt()),
+                    floatArrayOf(0f, 0.3f, 1f),
+                    android.graphics.Shader.TileMode.CLAMP,
+                )
+                effectPaint.alpha = alpha
+                canvas.drawRect(drawRect.left, fillTop - crest, drawRect.right, drawRect.bottom, effectPaint)
+                effectPaint.shader = android.graphics.LinearGradient(
+                    0f, fillTop - crest, 0f, fillTop + 12f * density,
+                    intArrayOf(0x8CFFFFFF.toInt(), 0x00FFFFFF), null,
+                    android.graphics.Shader.TileMode.CLAMP,
+                )
+                canvas.drawRect(drawRect.left, fillTop - crest, drawRect.right, fillTop + 12f * density, effectPaint)
+                effectPaint.shader = null
+                effectPaint.style = Paint.Style.STROKE
+                effectPaint.strokeWidth = 1f * density
+                for (i in 0 until BUBBLE_COUNT) {
+                    val seed = SliderFill.pseudoRandom(i * 61 + 7)
+                    val seed2 = SliderFill.pseudoRandom(i * 89 + 23)
+                    val life = (fillPhase * (1f + (seed * 2f).toInt()) + seed2) % 1f
+                    val y = drawRect.bottom - drawRect.height() * life
+                    if (y < fillTop + 3f * density) continue
+                    val x = drawRect.left + width * (0.2f + seed * 0.6f) +
+                        kotlin.math.sin(life * 12.566f + seed * 6.28f) * width * 0.07f
+                    val r = (1.1f + seed2 * 2f) * density
+                    // In gently at the bottom, out gently at the surface: a bubble arrives and
+                    // leaves rather than appearing and vanishing.
+                    val nearTop = ((y - fillTop) / (12f * density)).coerceIn(0f, 1f)
+                    val born = (life * 8f).coerceAtMost(1f)
+                    effectPaint.color = palette[3].toInt()
+                    effectPaint.alpha = (nearTop * born * alpha).toInt().coerceIn(0, 255)
+                    canvas.drawCircle(x, y, r, effectPaint)
+                }
+                effectPaint.style = Paint.Style.FILL
+            }
+
+            SliderFill.VU_METER -> {
+                // A level meter, because that is what a volume fill is. Segments lit from the
+                // bottom up to the level, coloured by how high they sit on the *whole* track — so a
+                // quiet level is all green and only a loud one reaches the red — and a peak segment
+                // floating just under the line and settling back, the way a meter's hold does.
+                effectPaint.shader = null
+                val pitch = 5f * density
+                val seg = pitch * 0.62f
+                val inset = width * 0.14f
+                val track = drawRect.height().coerceAtLeast(1f)
+                var y = drawRect.bottom - pitch * 0.8f
+                while (y + seg > fillTop) {
+                    val onTrack = ((drawRect.bottom - y) / track).coerceIn(0f, 1f)
+                    val colour = when {
+                        onTrack < 0.62f -> palette[0]
+                        onTrack < 0.86f -> palette[1]
+                        else -> palette[2]
+                    }
+                    effectPaint.color = colour.toInt()
+                    effectPaint.alpha = alpha
+                    canvas.drawRoundRect(
+                        drawRect.left + inset, y, drawRect.right - inset, y + seg,
+                        seg / 2f, seg / 2f, effectPaint
+                    )
+                    y -= pitch
+                }
+                val bob = (kotlin.math.sin(fillPhase * 6.28318f) + 1f) / 2f
+                val peakY = fillTop + pitch * (0.5f + bob * 1.6f)
+                effectPaint.color = palette[3].toInt()
+                effectPaint.alpha = alpha
+                canvas.drawRoundRect(
+                    drawRect.left + inset, peakY, drawRect.right - inset, peakY + seg * 0.7f,
+                    seg / 2f, seg / 2f, effectPaint
+                )
+            }
+
+            SliderFill.WAVEFORM -> {
+                // An oscilloscope trace running up the fill, and its swing is the level: louder is
+                // wider. Drawn twice — a broad faint pass for the glow and a fine bright one for
+                // the trace — because a single line reads as a drawing of a wave, and the glow is
+                // what makes it read as a signal.
+                val cx = drawRect.centerX()
+                val swing = width * (0.14f + 0.24f * value)
+                val step = 2f * density
+                val track = drawRect.height().coerceAtLeast(1f)
+                stripePath.reset()
+                var y = drawRect.bottom
+                var started = false
+                while (y >= fillTop - step) {
+                    val k = (drawRect.bottom - y) / track
+                    // Two and three whole cycles of travel per animation cycle: seamless.
+                    val x = cx + swing * (
+                        0.7f * kotlin.math.sin(k * 24f + fillPhase * 12.566f) +
+                            0.3f * kotlin.math.sin(k * 53f - fillPhase * 18.85f)
+                        )
+                    if (!started) {
+                        stripePath.moveTo(x, y)
+                        started = true
+                    } else {
+                        stripePath.lineTo(x, y)
+                    }
+                    y -= step
+                }
+                effectPaint.shader = null
+                effectPaint.style = Paint.Style.STROKE
+                effectPaint.strokeCap = Paint.Cap.ROUND
+                effectPaint.strokeJoin = Paint.Join.ROUND
+                effectPaint.color = palette[1].toInt()
+                effectPaint.alpha = alpha
+                effectPaint.strokeWidth = 5f * density
+                canvas.drawPath(stripePath, effectPaint)
+                effectPaint.color = palette[0].toInt()
+                effectPaint.alpha = alpha
+                effectPaint.strokeWidth = 1.6f * density
+                canvas.drawPath(stripePath, effectPaint)
+                effectPaint.strokeCap = Paint.Cap.BUTT
+                effectPaint.strokeJoin = Paint.Join.MITER
+                effectPaint.style = Paint.Style.FILL
+            }
+
+            SliderFill.SUNRISE -> {
+                // For brightness, which is light: the fill glows from deep amber at the bottom to
+                // pale gold at the level, with a sun sitting on the line and its rays fanning down
+                // into the fill, turning slowly.
+                effectPaint.shader = android.graphics.LinearGradient(
+                    0f, drawRect.bottom, 0f, fillTop,
+                    intArrayOf(palette[2].toInt(), palette[1].toInt(), palette[0].toInt()),
+                    floatArrayOf(0f, 0.6f, 1f),
+                    android.graphics.Shader.TileMode.CLAMP,
+                )
+                effectPaint.alpha = alpha
+                canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+                effectPaint.shader = null
+                val cx = drawRect.centerX()
+                val reach = maxOf(height, width) * 1.4f
+                val rays = 9
+                // The fan spans the whole half-turn below the sun, horizon to horizon, and turns by
+                // one ray's spacing per cycle. The ray turning in at one horizon and the one turning
+                // out at the other are both above the fill line, where the clip hides them, so every
+                // frame of the last cycle is a frame of the next. A fan narrower than the half-turn
+                // let a sliver of ray pop in at its edge once a cycle.
+                val spacing = Math.PI.toFloat() / rays
+                effectPaint.color = palette[3].toInt()
+                effectPaint.alpha = (alpha * 0.6f).toInt().coerceIn(0, 255)
+                for (i in -1..rays) {
+                    val a = (i + fillPhase) * spacing
+                    val half = 0.05f
+                    stripePath.reset()
+                    stripePath.moveTo(cx, fillTop)
+                    stripePath.lineTo(cx + reach * kotlin.math.cos(a - half), fillTop + reach * kotlin.math.sin(a - half))
+                    stripePath.lineTo(cx + reach * kotlin.math.cos(a + half), fillTop + reach * kotlin.math.sin(a + half))
+                    stripePath.close()
+                    canvas.drawPath(stripePath, effectPaint)
+                }
+                effectPaint.shader = android.graphics.RadialGradient(
+                    cx, fillTop, width * 0.9f,
+                    intArrayOf(0xE6FFF6D6.toInt(), 0x00FFF6D6), null,
+                    android.graphics.Shader.TileMode.CLAMP,
+                )
+                effectPaint.alpha = alpha
+                canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+                effectPaint.shader = null
+            }
+
+            SliderFill.SPECTRUM -> {
+                // The colour wheel flowing up through the fill. Saturation held short of full,
+                // because a fully saturated rainbow on a phone screen is a warning label.
+                val stops = 8
+                val colours = IntArray(stops) { i ->
+                    android.graphics.Color.HSVToColor(floatArrayOf(i / (stops - 1f) * 300f, 0.62f, 1f))
+                }
+                val track = drawRect.height().coerceAtLeast(1f)
+                val flow = android.graphics.LinearGradient(
+                    0f, drawRect.bottom, 0f, drawRect.bottom - track,
+                    colours, null, android.graphics.Shader.TileMode.MIRROR,
+                )
+                // Two spans per cycle is one full mirrored period: the loop is seamless.
+                effectMatrix.setTranslate(0f, -fillPhase * track * 2f)
+                flow.setLocalMatrix(effectMatrix)
+                effectPaint.shader = flow
+                effectPaint.alpha = alpha
+                canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+                // A glassy sheen down one side, which is most of what makes it read as a surface
+                // rather than as a gradient.
+                effectPaint.shader = android.graphics.LinearGradient(
+                    drawRect.left, 0f, drawRect.right, 0f,
+                    intArrayOf(0x59FFFFFF, 0x00FFFFFF, 0x00FFFFFF, 0x26FFFFFF),
+                    floatArrayOf(0f, 0.35f, 0.75f, 1f),
+                    android.graphics.Shader.TileMode.CLAMP,
+                )
+                canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+                effectPaint.shader = null
+            }
+
+            SliderFill.GALAXY -> {
+                // Deep space with stars at three depths drifting upward, the near ones faster and
+                // brighter. Parallax is what turns dots into distance.
+                effectPaint.shader = android.graphics.LinearGradient(
+                    0f, drawRect.bottom, 0f, fillTop,
+                    intArrayOf(palette[0].toInt(), palette[1].toInt()), null,
+                    android.graphics.Shader.TileMode.CLAMP,
+                )
+                effectPaint.alpha = alpha
+                canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+                // A faint band of dust through the middle, so the stars are *in* something.
+                effectPaint.shader = android.graphics.RadialGradient(
+                    drawRect.centerX(), (fillTop + drawRect.bottom) / 2f, width * 1.2f,
+                    intArrayOf(0x40A98BFF, 0x00A98BFF), null,
+                    android.graphics.Shader.TileMode.CLAMP,
+                )
+                canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+                effectPaint.shader = null
+                val track = drawRect.height().coerceAtLeast(1f)
+                for (layer in 0 until 3) {
+                    // Whole-number speeds — one, two and three passes a cycle — so the sky is
+                    // exactly where it started when the cycle wraps.
+                    val speed = (layer + 1).toFloat()
+                    for (i in 0 until STARS_PER_LAYER) {
+                        val seed = SliderFill.pseudoRandom(layer * 997 + i * 37 + 1)
+                        val seed2 = SliderFill.pseudoRandom(layer * 571 + i * 53 + 9)
+                        val pos = (seed2 + fillPhase * speed) % 1f
+                        val y = drawRect.bottom - pos * track
+                        if (y < fillTop) continue
+                        val x = drawRect.left + width * (0.06f + seed * 0.88f)
+                        val twinkle = 0.55f + 0.45f * kotlin.math.sin(
+                            fillPhase * 6.28318f * (1f + (seed * 3f).toInt()) + seed * 10f
+                        )
+                        // Faded at both ends of its pass, so a star never blinks into place.
+                        val envelope = kotlin.math.sin(pos * 3.14159f).coerceIn(0f, 1f)
+                        effectPaint.color = if (seed > 0.8f) palette[3].toInt() else palette[2].toInt()
+                        effectPaint.alpha = (twinkle * envelope * (0.45f + layer * 0.27f) * alpha)
+                            .toInt().coerceIn(0, 255)
+                        canvas.drawCircle(x, y, (0.55f + layer * 0.45f) * density, effectPaint)
+                    }
+                }
+            }
+
+            SliderFill.SILK -> {
+                // Satin ribbons weaving up the fill, crossing over each other. Each is laid three
+                // times about its own centre line: the ribbon, then two narrower, fainter folds of
+                // light. Stacked, those make a soft ridge down the middle, which is what makes a
+                // ribbon read as fabric catching the light rather than as a stripe of colour.
+                effectPaint.shader = android.graphics.LinearGradient(
+                    0f, drawRect.bottom, 0f, fillTop,
+                    intArrayOf(0xFF140C26.toInt(), 0xFF2A1A48.toInt()), null,
+                    android.graphics.Shader.TileMode.CLAMP,
+                )
+                effectPaint.alpha = alpha
+                canvas.drawRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom, effectPaint)
+                effectPaint.shader = null
+                for (r in palette.indices) {
+                    val off = r * 2.1f
+                    buildSilkRibbon(fillTop, off, 1f)
+                    effectPaint.color = palette[r].toInt()
+                    effectPaint.alpha = (alpha * 0.58f).toInt().coerceIn(0, 255)
+                    canvas.drawPath(stripePath, effectPaint)
+                    effectPaint.color = Color.WHITE
+                    buildSilkRibbon(fillTop, off, 0.5f)
+                    effectPaint.alpha = (alpha * 0.14f).toInt().coerceIn(0, 255)
+                    canvas.drawPath(stripePath, effectPaint)
+                    buildSilkRibbon(fillTop, off, 0.22f)
+                    effectPaint.alpha = (alpha * 0.2f).toInt().coerceIn(0, 255)
+                    canvas.drawPath(stripePath, effectPaint)
+                }
             }
 
             else -> {
@@ -1223,35 +1533,21 @@ class QuickSliderView(context: Context) : View(context) {
         val ink = if (overFill) blendedTrackColor else fillColor
         val alpha = (contentAlpha * 255f).toInt().coerceIn(0, 255)
 
-        /*
-         * How far in from each end the shape is still full width.
-         *
-         * Zero for a rounded panel, which is full width from top to bottom. A tab is not: its ends
-         * sweep away to nothing, and a number placed a fixed distance from the top of the *window*
-         * lands in the part that has been swept away and comes out with its top sliced off. The
-         * icon at the other end had the same problem. Measured from the shape rather than guessed,
-         * so it follows the sweep as the panel's flare is changed.
-         */
-        val endInset = if (expandedShape == HandlerShape.TAB) {
-            HandlerShape.tabSweepDepth(drawRect.height(), expandedFlare)
-        } else {
-            0f
-        }
-
         if (showValue) {
             textPaint.color = ink
             textPaint.alpha = alpha
             val label = "${(value * 100f).toInt()}"
             // Baseline placed by the font's own metrics rather than a guessed offset, so the
             // number sits the same distance from the top on every device font scale.
-            val y = drawRect.top + endInset + valueMarginPx - textPaint.fontMetrics.ascent
+            // From the panel's top edge and nothing else — see QuickSliderStore.getValueMarginDp.
+            val y = drawRect.top + valueMarginPx - textPaint.fontMetrics.ascent
             canvas.drawText(label, drawRect.centerX(), y, textPaint)
         }
 
         icon?.let { drawable ->
             val size = (drawRect.width() * 0.46f).coerceIn(12f * density, 26f * density)
             val cx = drawRect.centerX()
-            val cy = drawRect.bottom - endInset - iconMarginPx - size / 2f
+            val cy = drawRect.bottom - iconMarginPx - size / 2f
             val wrapped = DrawableCompat.wrap(drawable)
             DrawableCompat.setTint(wrapped, ink)
             wrapped.alpha = alpha
@@ -1282,3 +1578,9 @@ private const val STRIPE_PITCH_DP = 9f
 
 /** How many sparks an ember fill carries. Enough to read as fire, few enough to stay sparks. */
 private const val EMBER_COUNT = 22
+
+/** How many bubbles rise through a liquid fill. Enough to read as fizz, few enough to stay bubbles. */
+private const val BUBBLE_COUNT = 14
+
+/** How many stars each of a galaxy's three depths carries. */
+private const val STARS_PER_LAYER = 16
