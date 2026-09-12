@@ -741,4 +741,6 @@
     <string name="tile_handler_shown">Affichée</string>
     <string name="tile_handler_hidden">Masquée</string>
     <string name="tile_handler_off">Désactivée</string>
+    <string name="about_developer_mission">Pour une touche de volume cassée — et pour ménager celles qui fonctionnent encore.</string>
+    <string name="about_copyright">© %1$s Tous droits réservés</string>
 </resources>

@@ -741,4 +741,6 @@
     <string name="tile_handler_shown">표시</string>
     <string name="tile_handler_hidden">숨김</string>
     <string name="tile_handler_off">꺼짐</string>
+    <string name="about_developer_mission">고장 난 볼륨 버튼을 위해, 그리고 아직 멀쩡한 버튼을 아끼기 위해.</string>
+    <string name="about_copyright">© %1$s 모든 권리 보유</string>
 </resources>

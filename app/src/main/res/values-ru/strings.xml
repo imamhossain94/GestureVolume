@@ -741,4 +741,6 @@
     <string name="tile_handler_shown">Показана</string>
     <string name="tile_handler_hidden">Скрыта</string>
     <string name="tile_handler_off">Выключена</string>
+    <string name="about_developer_mission">Для сломанной кнопки громкости — и чтобы беречь те, что ещё работают.</string>
+    <string name="about_copyright">© %1$s Все права защищены</string>
 </resources>

@@ -128,7 +128,11 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                 tint = MaterialTheme.colorScheme.primary,
                 label = stringResource(R.string.about_developed_in),
                 name = stringResource(R.string.newagedevs),
-                detail = "© ${Calendar.getInstance().get(Calendar.YEAR)} All rights reserved",
+                detail = stringResource(R.string.about_developer_mission),
+                footnote = stringResource(
+                    R.string.about_copyright,
+                    Calendar.getInstance().get(Calendar.YEAR).toString()
+                ),
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -137,7 +141,8 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
             // suggestion first, and the suggestions keep coming.
             CreditCard(
                 icon = Icons.Default.Lightbulb,
-                tint = Color(0xFFF59E0B),
+                // The same colour as the card above it: the two credits belong together.
+                tint = MaterialTheme.colorScheme.primary,
                 label = stringResource(R.string.about_ideas_by),
                 name = stringResource(R.string.about_ideas_name),
                 detail = stringResource(R.string.about_ideas_desc),
@@ -172,7 +177,7 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
     }
 }
 
-/** One credit: a tinted badge, what they did, their name, and a line more. */
+/** One credit: a tinted badge, what they did, their name, a line more, and a quieter footnote. */
 @Composable
 private fun CreditCard(
     icon: ImageVector,
@@ -180,6 +185,7 @@ private fun CreditCard(
     label: String,
     name: String,
     detail: String,
+    footnote: String? = null,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -226,6 +232,22 @@ private fun CreditCard(
                     lineHeight = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                 )
+                if (footnote != null) {
+                    // A short rule in the badge's colour, so the small print reads as small print
+                    // rather than as one more line of the sentence above it.
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 10.dp, bottom = 7.dp)
+                            .size(width = 28.dp, height = 1.dp)
+                            .background(tint.copy(alpha = 0.45f))
+                    )
+                    Text(
+                        text = footnote,
+                        fontSize = 11.sp,
+                        letterSpacing = 0.3.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+                    )
+                }
             }
         }
     }

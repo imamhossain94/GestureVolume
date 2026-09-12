@@ -741,4 +741,6 @@
     <string name="tile_handler_shown">Visível</string>
     <string name="tile_handler_hidden">Oculta</string>
     <string name="tile_handler_off">Desativada</string>
+    <string name="about_developer_mission">Para um botão de volume avariado — e para poupar os que ainda funcionam.</string>
+    <string name="about_copyright">© %1$s Todos os direitos reservados</string>
 </resources>

@@ -741,4 +741,6 @@
     <string name="tile_handler_shown">表示中</string>
     <string name="tile_handler_hidden">非表示</string>
     <string name="tile_handler_off">オフ</string>
+    <string name="about_developer_mission">音量ボタンが壊れた端末のために。そして、まだ使えるボタンを長持ちさせるために。</string>
+    <string name="about_copyright">© %1$s 無断転載を禁じます</string>
 </resources>

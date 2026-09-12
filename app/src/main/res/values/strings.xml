@@ -936,4 +936,6 @@
     <string name="tile_handler_shown">Shown</string>
     <string name="tile_handler_hidden">Hidden</string>
     <string name="tile_handler_off">Off</string>
+    <string name="about_developer_mission">Made for a broken volume button — and to spare the ones that still work.</string>
+    <string name="about_copyright">© %1$s All rights reserved</string>
 </resources>

@@ -741,4 +741,6 @@
     <string name="tile_handler_shown">दिख रहा</string>
     <string name="tile_handler_hidden">छिपा</string>
     <string name="tile_handler_off">बंद</string>
+    <string name="about_developer_mission">टूटे हुए वॉल्यूम बटन के लिए — और जो अब भी चलते हैं, उन्हें बचाने के लिए।</string>
+    <string name="about_copyright">© %1$s सर्वाधिकार सुरक्षित</string>
 </resources>

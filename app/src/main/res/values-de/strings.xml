@@ -741,4 +741,6 @@
     <string name="tile_handler_shown">Angezeigt</string>
     <string name="tile_handler_hidden">Ausgeblendet</string>
     <string name="tile_handler_off">Aus</string>
+    <string name="about_developer_mission">Für eine kaputte Lautstärketaste – und um die zu schonen, die noch funktionieren.</string>
+    <string name="about_copyright">© %1$s Alle Rechte vorbehalten</string>
 </resources>

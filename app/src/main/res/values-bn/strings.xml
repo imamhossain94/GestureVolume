@@ -741,4 +741,6 @@
     <string name="tile_handler_shown">দেখানো</string>
     <string name="tile_handler_hidden">লুকানো</string>
     <string name="tile_handler_off">বন্ধ</string>
+    <string name="about_developer_mission">ভাঙা ভলিউম বোতামের জন্য তৈরি — আর যেগুলো এখনও কাজ করে, সেগুলো বাঁচাতে।</string>
+    <string name="about_copyright">© %1$s সর্বস্বত্ব সংরক্ষিত</string>
 </resources>

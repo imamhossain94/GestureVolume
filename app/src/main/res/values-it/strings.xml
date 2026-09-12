@@ -741,4 +741,6 @@
     <string name="tile_handler_shown">Visibile</string>
     <string name="tile_handler_hidden">Nascosta</string>
     <string name="tile_handler_off">Disattivata</string>
+    <string name="about_developer_mission">Per un tasto del volume rotto, e per risparmiare quelli che funzionano ancora.</string>
+    <string name="about_copyright">© %1$s Tutti i diritti riservati</string>
 </resources>

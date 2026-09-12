@@ -741,4 +741,6 @@
     <string name="tile_handler_shown">Gösteriliyor</string>
     <string name="tile_handler_hidden">Gizli</string>
     <string name="tile_handler_off">Kapalı</string>
+    <string name="about_developer_mission">Bozuk bir ses tuşu için ve hâlâ çalışanları yormamak için.</string>
+    <string name="about_copyright">© %1$s Tüm hakları saklıdır</string>
 </resources>
