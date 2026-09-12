@@ -255,8 +255,16 @@ class HandlerGestureDetector(
          */
         const val SWEEP_DP = 150f
 
-        /** Never let a step get so small that jitter can trigger it. */
-        const val MIN_STEP_DP = 4f
+        /**
+         * The least finger travel one step may cost, whatever the range.
+         *
+         * [SWEEP_DP] on its own scales the sweep to the control, and on a 15-step media stream
+         * that put a step every 10dp: an ordinary flick up the bar crossed ten of them and threw
+         * the volume from a quarter to full, which is a control that cannot be aimed. A step is a
+         * notch the thumb should feel it has chosen, so it costs about a finger's width — a short
+         * swipe is one step, and sweeping a long range is a deliberate drag.
+         */
+        const val STEP_DP = 32f
 
         /**
          * How far an inward swipe must travel before it is allowed to fire.
@@ -361,7 +369,7 @@ class HandlerGestureDetector(
     private var downTime = 0L
 
     // Swipe-to-adjust
-    private var stepPx = MIN_STEP_DP * density
+    private var stepPx = STEP_DP * density
     private var accumPx = 0f
     private var pinnedUp = false
     private var pinnedDown = false
@@ -464,7 +472,7 @@ class HandlerGestureDetector(
      */
     fun setStepCount(steps: Int) {
         val safeSteps = steps.coerceAtLeast(1)
-        stepPx = (SWEEP_DP * density / safeSteps).coerceAtLeast(MIN_STEP_DP * density)
+        stepPx = (SWEEP_DP * density / safeSteps).coerceAtLeast(STEP_DP * density)
     }
 
     fun onTouchEvent(event: MotionEvent): Boolean {
@@ -588,6 +596,10 @@ class HandlerGestureDetector(
                         lastRawY = rawY
                         accumPx = 0f
                         host.onAdjustBegin(if (rawY < downRawY) 1 else -1)
+                        // The first step lands as the stroke is recognised, so a short swipe is one
+                        // step — the thing a swipe up is for. Travel from here buys the next one,
+                        // and only a deliberate drag keeps going.
+                        emit(if (rawY < downRawY) 1 else -1)
                     }
                 }
             }
@@ -638,6 +650,10 @@ class HandlerGestureDetector(
                     pinnedUp = false
                     pinnedDown = false
                     host.onAdjustBegin(if (rawY < downRawY) 1 else -1)
+                    // The first step lands as the stroke is recognised, so a short swipe is one
+                    // step — the thing a swipe up is for. Travel from here buys the next one,
+                    // and only a deliberate drag keeps going.
+                    emit(if (rawY < downRawY) 1 else -1)
                     return
                 }
 

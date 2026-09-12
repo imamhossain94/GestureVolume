@@ -723,16 +723,7 @@
     <string name="about_ideas_by">Идеи функций от друга из Бхарата (Индия)</string>
     <string name="about_ideas_desc">Предложил многие функции этого приложения и продолжает делиться идеями.</string>
     <string name="visibility_title">Видимость</string>
-    <string name="visibility_card_subtitle">Приложения, скриншоты, запись</string>
-    <string name="visibility_intro">Когда полоса уходит с экрана.</string>
-    <string name="visibility_screenshots_title">Скриншоты</string>
-    <string name="visibility_hide_in_screenshots">Скрывать на скриншотах</string>
-    <string name="visibility_hide_in_screenshots_desc">Полоса не попадает на скриншоты, сделанные её собственным действием «Скриншот». Android не предупреждает приложения о скриншоте кнопками телефона, поэтому на таких скриншотах она видна.</string>
-    <string name="visibility_recording_title">Запись экрана</string>
-    <string name="visibility_recording_desc">Android не сообщает приложениям, что экран записывается, поэтому полоса не может скрыться сама. Добавьте плитку «Полоса» в быстрые настройки и нажмите её перед началом записи — или записывайте одно приложение, тогда полосы в записи не будет.</string>
-    <string name="visibility_add_tile">Добавить плитку «Полоса»</string>
-    <string name="visibility_tile_added">Плитка «Полоса» уже в ваших быстрых настройках.</string>
-    <string name="visibility_tile_manual">Откройте быстрые настройки, нажмите на карандаш и перетащите плитку «Полоса».</string>
+    <string name="visibility_card_subtitle">Приложения, где полоса скрыта</string>
     <string name="visibility_apps_title">Скрывать в этих приложениях</string>
     <string name="visibility_apps_desc">Полоса скрывается, пока открыто одно из этих приложений, и возвращается, когда вы из него выходите.</string>
     <string name="visibility_apps_needs_accessibility">Нужна служба специальных возможностей: она сообщает приложению, какое приложение открыто. Нажмите, чтобы включить.</string>

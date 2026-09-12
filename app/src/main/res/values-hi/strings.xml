@@ -723,16 +723,7 @@
     <string name="about_ideas_by">भारत के एक दोस्त के फ़ीचर आइडिया</string>
     <string name="about_ideas_desc">इस ऐप के कई फ़ीचर सुझाए, और नए आइडिया देते रहते हैं।</string>
     <string name="visibility_title">दृश्यता</string>
-    <string name="visibility_card_subtitle">ऐप, स्क्रीनशॉट, रिकॉर्डिंग</string>
-    <string name="visibility_intro">हैंडलर कब हट जाए।</string>
-    <string name="visibility_screenshots_title">स्क्रीनशॉट</string>
-    <string name="visibility_hide_in_screenshots">स्क्रीनशॉट में छिपाएँ</string>
-    <string name="visibility_hide_in_screenshots_desc">हैंडलर की अपनी स्क्रीनशॉट ऐक्शन से लिए गए स्क्रीनशॉट में हैंडलर नहीं दिखता। फ़ोन के बटनों से लिए जाने वाले स्क्रीनशॉट की Android ऐप्स को पहले से कोई सूचना नहीं देता, इसलिए उनमें यह दिखता रहता है।</string>
-    <string name="visibility_recording_title">स्क्रीन रिकॉर्डिंग</string>
-    <string name="visibility_recording_desc">स्क्रीन रिकॉर्ड होने पर Android ऐप्स को नहीं बताता, इसलिए हैंडलर अपने आप नहीं हट सकता। त्वरित सेटिंग में हैंडलर टाइल जोड़ें और रिकॉर्डिंग शुरू करने से पहले उस पर टैप करें — या केवल एक ऐप रिकॉर्ड करें, जिसमें हैंडलर नहीं आता।</string>
-    <string name="visibility_add_tile">हैंडलर टाइल जोड़ें</string>
-    <string name="visibility_tile_added">हैंडलर टाइल आपकी त्वरित सेटिंग में है।</string>
-    <string name="visibility_tile_manual">त्वरित सेटिंग खोलें, पेंसिल पर टैप करें, और हैंडलर टाइल को खींचकर लाएँ।</string>
+    <string name="visibility_card_subtitle">जिन ऐप्स में हैंडलर छिपता है</string>
     <string name="visibility_apps_title">इन ऐप्स में छिपाएँ</string>
     <string name="visibility_apps_desc">इनमें से कोई ऐप खुला होने पर हैंडलर हट जाता है, और ऐप छोड़ते ही वापस आ जाता है।</string>
     <string name="visibility_apps_needs_accessibility">इसके लिए सुलभता सेवा चाहिए, जो ऐप को बताती है कि कौन-सा ऐप खुला है। चालू करने के लिए टैप करें।</string>

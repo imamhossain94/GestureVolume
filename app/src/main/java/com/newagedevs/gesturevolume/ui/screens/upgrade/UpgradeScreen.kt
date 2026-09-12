@@ -49,7 +49,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -72,9 +71,6 @@ private val GoldDeep = Color(0xFFE09400)
 /** Dark enough to read on every stop of the gold, and warmer than black. */
 private val OnGold = Color(0xFF3B2A00)
 
-private val HeroTop = Color(0xFF2A1B5E)
-private val HeroBottom = Color(0xFF4F46E5)
-
 /**
  * What Pro is, and the way to buy it. Reached from the crown on the home screen's bar.
  *
@@ -95,7 +91,7 @@ fun UpgradeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {},
+                title = { Text(stringResource(R.string.upgrade_to_pro)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -104,7 +100,10 @@ fun UpgradeScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
                 modifier = Modifier.statusBarsPadding()
             )
         }
@@ -166,7 +165,11 @@ fun UpgradeScreen(
 }
 
 /**
- * The crown on a night-to-indigo card, under a glow that breathes.
+ * The crown on a card, under a glow that breathes.
+ *
+ * The same surface, corner and padding as the cards on every other screen: the page opens from the
+ * home screen's crown, and a dark gradient panel here read as a different app. What carries Pro is
+ * the gold of the crown itself, against the app's own colours.
  *
  * The glow is the one moving thing on the page, and slow enough to read as light rather than as
  * something asking to be tapped.
@@ -182,15 +185,17 @@ private fun Hero() {
         ),
         label = "glow"
     )
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(Brush.linearGradient(listOf(HeroTop, HeroBottom), Offset.Zero, Offset.Infinite))
-            .padding(horizontal = 24.dp, vertical = 30.dp),
-        contentAlignment = Alignment.Center
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 26.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Box(
                 modifier = Modifier
                     .size(120.dp)
@@ -224,16 +229,16 @@ private fun Hero() {
             Spacer(modifier = Modifier.height(14.dp))
             Text(
                 text = stringResource(R.string.upgrade_title, stringResource(R.string.app_name)),
-                fontSize = 26.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = stringResource(R.string.upgrade_tagline),
-                fontSize = 15.sp,
-                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
         }

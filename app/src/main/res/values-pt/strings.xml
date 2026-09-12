@@ -723,16 +723,7 @@
     <string name="about_ideas_by">Ideias de recursos de um amigo de Bharat (Índia)</string>
     <string name="about_ideas_desc">Sugeriu muitos dos recursos deste app e continua trazendo ideias.</string>
     <string name="visibility_title">Visibilidade</string>
-    <string name="visibility_card_subtitle">Apps, capturas, gravação</string>
-    <string name="visibility_intro">Quando a barra sai do caminho.</string>
-    <string name="visibility_screenshots_title">Capturas de tela</string>
-    <string name="visibility_hide_in_screenshots">Ocultar nas capturas</string>
-    <string name="visibility_hide_in_screenshots_desc">A barra some das capturas feitas com a própria ação Captura de tela. O Android não avisa os apps sobre uma captura feita com os botões do celular, então nelas ela continua aparecendo.</string>
-    <string name="visibility_recording_title">Gravação de tela</string>
-    <string name="visibility_recording_desc">O Android não avisa os apps quando a tela está sendo gravada, então a barra não consegue sair sozinha. Adicione o bloco “Barra” às Configurações rápidas e toque nele antes de começar — ou grave um só app, o que deixa a barra de fora.</string>
-    <string name="visibility_add_tile">Adicionar o bloco “Barra”</string>
-    <string name="visibility_tile_added">O bloco “Barra” está nas suas Configurações rápidas.</string>
-    <string name="visibility_tile_manual">Abra as Configurações rápidas, toque no lápis e arraste o bloco “Barra”.</string>
+    <string name="visibility_card_subtitle">Apps onde a barra se esconde</string>
     <string name="visibility_apps_title">Ocultar nestes apps</string>
     <string name="visibility_apps_desc">A barra sai do caminho enquanto um destes apps está aberto e volta quando você sai dele.</string>
     <string name="visibility_apps_needs_accessibility">Precisa do serviço de acessibilidade, que informa ao app qual app está aberto. Toque para ativar.</string>

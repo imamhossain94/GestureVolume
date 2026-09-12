@@ -723,16 +723,7 @@
     <string name="about_ideas_by">바라트(인도)에서 온 친구의 기능 아이디어</string>
     <string name="about_ideas_desc">이 앱의 많은 기능을 제안했고, 지금도 새로운 아이디어를 내고 있습니다.</string>
     <string name="visibility_title">표시</string>
-    <string name="visibility_card_subtitle">앱, 스크린샷, 녹화</string>
-    <string name="visibility_intro">바가 비켜나는 때.</string>
-    <string name="visibility_screenshots_title">스크린샷</string>
-    <string name="visibility_hide_in_screenshots">스크린샷에서 숨기기</string>
-    <string name="visibility_hide_in_screenshots_desc">바 자체의 스크린샷 동작으로 찍으면 바가 찍히지 않습니다. 휴대폰 버튼으로 찍는 스크린샷은 Android가 앱에 미리 알려주지 않아서 그때는 바가 보입니다.</string>
-    <string name="visibility_recording_title">화면 녹화</string>
-    <string name="visibility_recording_desc">Android는 화면이 녹화되는 것을 앱에 알려주지 않아서 바가 스스로 비켜날 수 없습니다. 빠른 설정에 \'바\' 타일을 추가하고 녹화를 시작하기 전에 누르세요. 앱 하나만 녹화하면 바가 들어가지 않습니다.</string>
-    <string name="visibility_add_tile">\'바\' 타일 추가</string>
-    <string name="visibility_tile_added">\'바\' 타일이 빠른 설정에 있습니다.</string>
-    <string name="visibility_tile_manual">빠른 설정을 열고 연필 아이콘을 누른 뒤 \'바\' 타일을 끌어다 놓으세요.</string>
+    <string name="visibility_card_subtitle">바를 숨길 앱</string>
     <string name="visibility_apps_title">이 앱에서 숨기기</string>
     <string name="visibility_apps_desc">이 앱들 중 하나가 열려 있는 동안 바가 비켜나고, 앱을 나가면 돌아옵니다.</string>
     <string name="visibility_apps_needs_accessibility">접근성 서비스가 필요합니다. 어떤 앱이 열려 있는지 알려줍니다. 눌러서 켜세요.</string>

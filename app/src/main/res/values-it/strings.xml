@@ -723,16 +723,7 @@
     <string name="about_ideas_by">Idee per le funzioni di un amico dal Bharat (India)</string>
     <string name="about_ideas_desc">Ha suggerito molte delle funzioni di questa app e continua a proporre idee.</string>
     <string name="visibility_title">Visibilità</string>
-    <string name="visibility_card_subtitle">App, screenshot, registrazione</string>
-    <string name="visibility_intro">Quando la barra si fa da parte.</string>
-    <string name="visibility_screenshots_title">Screenshot</string>
-    <string name="visibility_hide_in_screenshots">Nascondi negli screenshot</string>
-    <string name="visibility_hide_in_screenshots_desc">La barra esce dagli screenshot fatti con la sua azione Screenshot. Android non avvisa le app di uno screenshot fatto con i tasti del telefono, quindi in quelli si vede ancora.</string>
-    <string name="visibility_recording_title">Registrazione dello schermo</string>
-    <string name="visibility_recording_desc">Android non avvisa le app quando lo schermo viene registrato, quindi la barra non può farsi da parte da sola. Aggiungi il riquadro «Barra» alle Impostazioni rapide e toccalo prima di iniziare, oppure registra una sola app, che lascia fuori la barra.</string>
-    <string name="visibility_add_tile">Aggiungi il riquadro «Barra»</string>
-    <string name="visibility_tile_added">Il riquadro «Barra» è nelle tue Impostazioni rapide.</string>
-    <string name="visibility_tile_manual">Apri le Impostazioni rapide, tocca la matita e trascina dentro il riquadro «Barra».</string>
+    <string name="visibility_card_subtitle">App in cui la barra si nasconde</string>
     <string name="visibility_apps_title">Nascondi in queste app</string>
     <string name="visibility_apps_desc">La barra si fa da parte mentre una di queste app è aperta e torna quando la lasci.</string>
     <string name="visibility_apps_needs_accessibility">Serve il servizio di accessibilità, che dice all’app quale app è aperta. Tocca per attivarlo.</string>

@@ -918,16 +918,7 @@
     <string name="context_menu_per_page_desc">With more than this, the grid becomes pages you swipe between.</string>
     <string name="about_ideas_name" translatable="false">Deepam Rathod</string>
     <string name="visibility_title">Visibility</string>
-    <string name="visibility_card_subtitle">Apps, screenshots, recording</string>
-    <string name="visibility_intro">When the handler steps aside.</string>
-    <string name="visibility_screenshots_title">Screenshots</string>
-    <string name="visibility_hide_in_screenshots">Hide in screenshots</string>
-    <string name="visibility_hide_in_screenshots_desc">The handler steps out of screenshots taken with its own Screenshot action. Android gives apps no warning of a screenshot taken with the phone’s buttons, so those still show it.</string>
-    <string name="visibility_recording_title">Screen recording</string>
-    <string name="visibility_recording_desc">Android doesn’t tell apps when the screen is being recorded, so the handler can’t step aside on its own. Add the Handler tile to Quick Settings and tap it before you start — or record a single app, which leaves the handler out.</string>
-    <string name="visibility_add_tile">Add the Handler tile</string>
-    <string name="visibility_tile_added">The Handler tile is in your Quick Settings.</string>
-    <string name="visibility_tile_manual">Open Quick Settings, tap the pencil, and drag in the Handler tile.</string>
+    <string name="visibility_card_subtitle">Apps the handler hides in</string>
     <string name="visibility_apps_title">Hide in these apps</string>
     <string name="visibility_apps_desc">The handler steps aside while one of these apps is open, and comes back when you leave it.</string>
     <string name="visibility_apps_needs_accessibility">This needs the accessibility service, which tells the app which app is open. Tap to turn it on.</string>

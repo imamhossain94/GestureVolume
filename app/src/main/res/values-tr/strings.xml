@@ -723,16 +723,7 @@
     <string name="about_ideas_by">Bharat\'tan (Hindistan) bir arkadaşın özellik fikirleri</string>
     <string name="about_ideas_desc">Bu uygulamadaki birçok özelliği önerdi ve yeni fikirler getirmeye devam ediyor.</string>
     <string name="visibility_title">Görünürlük</string>
-    <string name="visibility_card_subtitle">Uygulamalar, ekran görüntüleri, kayıt</string>
-    <string name="visibility_intro">Çubuğun ne zaman kenara çekileceği.</string>
-    <string name="visibility_screenshots_title">Ekran görüntüleri</string>
-    <string name="visibility_hide_in_screenshots">Ekran görüntülerinde gizle</string>
-    <string name="visibility_hide_in_screenshots_desc">Çubuk, kendi Ekran görüntüsü eylemiyle alınan görüntülerde yer almaz. Android, telefonun tuşlarıyla alınan bir ekran görüntüsünü uygulamalara önceden bildirmez; bu yüzden onlarda görünmeye devam eder.</string>
-    <string name="visibility_recording_title">Ekran kaydı</string>
-    <string name="visibility_recording_desc">Android, ekranın kaydedildiğini uygulamalara bildirmez; bu yüzden çubuk kendiliğinden kenara çekilemez. Hızlı Ayarlar\'a \"Çubuk\" kutucuğunu ekle ve kayda başlamadan önce ona dokun ya da yalnızca bir uygulamayı kaydet; o zaman çubuk kayda girmez.</string>
-    <string name="visibility_add_tile">\"Çubuk\" kutucuğunu ekle</string>
-    <string name="visibility_tile_added">\"Çubuk\" kutucuğu Hızlı Ayarlar\'ında.</string>
-    <string name="visibility_tile_manual">Hızlı Ayarlar\'ı aç, kaleme dokun ve \"Çubuk\" kutucuğunu sürükle.</string>
+    <string name="visibility_card_subtitle">Çubuğun gizlendiği uygulamalar</string>
     <string name="visibility_apps_title">Bu uygulamalarda gizle</string>
     <string name="visibility_apps_desc">Bu uygulamalardan biri açıkken çubuk kenara çekilir, çıktığında geri gelir.</string>
     <string name="visibility_apps_needs_accessibility">Erişilebilirlik hizmeti gerekir; hangi uygulamanın açık olduğunu uygulamaya bildirir. Açmak için dokun.</string>

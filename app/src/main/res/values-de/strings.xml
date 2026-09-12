@@ -723,16 +723,7 @@
     <string name="about_ideas_by">Funktionsideen von einem Freund aus Bharat (Indien)</string>
     <string name="about_ideas_desc">Hat viele Funktionen dieser App vorgeschlagen – und hat immer neue Ideen.</string>
     <string name="visibility_title">Sichtbarkeit</string>
-    <string name="visibility_card_subtitle">Apps, Screenshots, Aufnahmen</string>
-    <string name="visibility_intro">Wann die Leiste Platz macht.</string>
-    <string name="visibility_screenshots_title">Screenshots</string>
-    <string name="visibility_hide_in_screenshots">In Screenshots ausblenden</string>
-    <string name="visibility_hide_in_screenshots_desc">Die Leiste verschwindet aus Screenshots, die mit ihrer eigenen Screenshot-Aktion aufgenommen werden. Android warnt Apps nicht vor einem Screenshot mit den Tasten des Telefons, darum ist sie auf diesen weiterhin zu sehen.</string>
-    <string name="visibility_recording_title">Bildschirmaufnahme</string>
-    <string name="visibility_recording_desc">Android sagt Apps nicht, wann der Bildschirm aufgenommen wird, darum kann die Leiste nicht von selbst Platz machen. Füge die Kachel „Leiste“ zu den Schnelleinstellungen hinzu und tippe vor dem Start darauf – oder nimm nur eine App auf, dann ist die Leiste nicht dabei.</string>
-    <string name="visibility_add_tile">Kachel „Leiste“ hinzufügen</string>
-    <string name="visibility_tile_added">Die Kachel „Leiste“ ist in deinen Schnelleinstellungen.</string>
-    <string name="visibility_tile_manual">Öffne die Schnelleinstellungen, tippe auf den Stift und ziehe die Kachel „Leiste“ hinein.</string>
+    <string name="visibility_card_subtitle">Apps, in denen die Leiste verschwindet</string>
     <string name="visibility_apps_title">In diesen Apps ausblenden</string>
     <string name="visibility_apps_desc">Die Leiste macht Platz, solange eine dieser Apps geöffnet ist, und kommt zurück, wenn du sie verlässt.</string>
     <string name="visibility_apps_needs_accessibility">Dafür wird der Bedienungshilfedienst gebraucht, der der App sagt, welche App geöffnet ist. Tippe, um ihn einzuschalten.</string>

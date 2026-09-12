@@ -723,16 +723,7 @@
     <string name="about_ideas_by">ভারতের এক বন্ধুর দেওয়া ফিচারের ধারণা</string>
     <string name="about_ideas_desc">এই অ্যাপের অনেক ফিচারের প্রস্তাব দিয়েছেন, এবং নতুন আইডিয়া দিয়েই চলেছেন।</string>
     <string name="visibility_title">দৃশ্যমানতা</string>
-    <string name="visibility_card_subtitle">অ্যাপ, স্ক্রিনশট, রেকর্ডিং</string>
-    <string name="visibility_intro">কখন হ্যান্ডলার সরে যাবে।</string>
-    <string name="visibility_screenshots_title">স্ক্রিনশট</string>
-    <string name="visibility_hide_in_screenshots">স্ক্রিনশটে লুকান</string>
-    <string name="visibility_hide_in_screenshots_desc">হ্যান্ডলারের নিজের স্ক্রিনশট অ্যাকশনে তোলা স্ক্রিনশট থেকে হ্যান্ডলার সরে যায়। ফোনের বোতাম দিয়ে তোলা স্ক্রিনশটের আগে Android অ্যাপকে কোনো সংকেত দেয় না, তাই সেগুলোতে এটি দেখা যায়।</string>
-    <string name="visibility_recording_title">স্ক্রিন রেকর্ডিং</string>
-    <string name="visibility_recording_desc">স্ক্রিন রেকর্ড হচ্ছে কি না, Android অ্যাপকে জানায় না, তাই হ্যান্ডলার নিজে থেকে সরতে পারে না। দ্রুত সেটিংসে হ্যান্ডলার টাইল যোগ করুন এবং রেকর্ড শুরুর আগে সেটিতে ট্যাপ করুন — অথবা শুধু একটি অ্যাপ রেকর্ড করুন, তাতে হ্যান্ডলার আসে না।</string>
-    <string name="visibility_add_tile">হ্যান্ডলার টাইল যোগ করুন</string>
-    <string name="visibility_tile_added">হ্যান্ডলার টাইল আপনার দ্রুত সেটিংসে আছে।</string>
-    <string name="visibility_tile_manual">দ্রুত সেটিংস খুলুন, পেনসিলে ট্যাপ করুন, এবং হ্যান্ডলার টাইলটি টেনে আনুন।</string>
+    <string name="visibility_card_subtitle">যেসব অ্যাপে হ্যান্ডলার লুকায়</string>
     <string name="visibility_apps_title">এই অ্যাপগুলোতে লুকান</string>
     <string name="visibility_apps_desc">এই অ্যাপগুলোর কোনোটি খোলা থাকলে হ্যান্ডলার সরে থাকে, আর বের হলে ফিরে আসে।</string>
     <string name="visibility_apps_needs_accessibility">এর জন্য অ্যাক্সেসিবিলিটি সার্ভিস লাগবে, যা জানায় কোন অ্যাপ খোলা আছে। চালু করতে ট্যাপ করুন।</string>

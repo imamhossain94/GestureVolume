@@ -29,6 +29,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
@@ -205,6 +206,9 @@ class OverlayController(
         /** How long the bar is kept out of a screenshot before and after the shutter. */
         private const val SCREENSHOT_HIDE_BEFORE_MS = 250L
         private const val SCREENSHOT_HIDE_AFTER_MS = 1_000L
+
+        /** How long a held volume key may keep stepping when its release never arrives. */
+        private const val VOLUME_KEY_HOLD_LIMIT_MS = 20_000L
     }
 
     private val windowManager: WindowManager? =
@@ -712,6 +716,48 @@ class OverlayController(
     private val volumeKeysTaken = HashSet<Int>()
 
     /**
+     * The direction a held volume key is stepping in, or 0 while none is held.
+     *
+     * A key the filter took never reaches the input dispatcher, and the platform's repeats are
+     * synthesised there — so holding a volume key gave exactly one step and then silence, while
+     * the system's own slider ramps. This is that repeat, on the platform's own timings, so a
+     * held key feels the same whether the panel took it or the system did.
+     */
+    private var volumeKeyRepeating = 0
+
+    /** A held key whose release never arrives stops here rather than stepping for ever. */
+    private var volumeKeyRepeatUntil = 0L
+
+    private val keyRepeatStartMs = ViewConfiguration.getKeyRepeatTimeout().toLong().coerceIn(200L, 600L)
+    private val keyRepeatDelayMs = ViewConfiguration.getKeyRepeatDelay().toLong().coerceIn(40L, 200L)
+
+    private val volumeKeyRepeatRunnable = object : Runnable {
+        override fun run() {
+            val direction = volumeKeyRepeating
+            if (direction == 0 || destroyed) return
+            // At either end of the range stepping still counts: the level stops moving but the
+            // key is still held and still the panel's, and the panel stays up to show it.
+            if (now() > volumeKeyRepeatUntil || !takesVolumeKeys() || !stepVolumeFromKey(direction)) {
+                stopVolumeKeyRepeat()
+                return
+            }
+            mainHandler.postDelayed(this, keyRepeatDelayMs)
+        }
+    }
+
+    private fun startVolumeKeyRepeat(direction: Int) {
+        volumeKeyRepeating = direction
+        volumeKeyRepeatUntil = now() + VOLUME_KEY_HOLD_LIMIT_MS
+        mainHandler.removeCallbacks(volumeKeyRepeatRunnable)
+        mainHandler.postDelayed(volumeKeyRepeatRunnable, keyRepeatStartMs)
+    }
+
+    private fun stopVolumeKeyRepeat() {
+        volumeKeyRepeating = 0
+        mainHandler.removeCallbacks(volumeKeyRepeatRunnable)
+    }
+
+    /**
      * A volume key from the accessibility service's key filter, before the system has acted on it.
      *
      * This is what Instant means. Through [volumeReceiver] and the settings observer the panel
@@ -733,12 +779,26 @@ class OverlayController(
         }
         // A release belongs to whoever took its press. Taking one whose press went to the system
         // would leave the system holding a key that never comes up.
-        if (event.action == KeyEvent.ACTION_UP) return volumeKeysTaken.remove(event.keyCode)
+        if (event.action == KeyEvent.ACTION_UP) {
+            stopVolumeKeyRepeat()
+            return volumeKeysTaken.remove(event.keyCode)
+        }
         if (event.action != KeyEvent.ACTION_DOWN) return event.keyCode in volumeKeysTaken
-        // Held down, the key repeats as further presses, and each is a step, as it is for the
-        // system's own slider.
+        // A platform that does deliver repeats here: its repeat wins and ours stands down, so a
+        // held key never steps twice for one press.
+        if (event.repeatCount > 0) {
+            if (event.keyCode !in volumeKeysTaken) return false
+            stopVolumeKeyRepeat()
+            return takesVolumeKeys() && stepVolumeFromKey(direction)
+        }
         val taken = takesVolumeKeys() && stepVolumeFromKey(direction)
-        if (taken) volumeKeysTaken += event.keyCode else volumeKeysTaken -= event.keyCode
+        if (taken) {
+            volumeKeysTaken += event.keyCode
+            startVolumeKeyRepeat(direction)
+        } else {
+            volumeKeysTaken -= event.keyCode
+            stopVolumeKeyRepeat()
+        }
         return taken
     }
 
@@ -3398,8 +3458,7 @@ class OverlayController(
     }
 
     /**
-     * A screenshot with nothing of this app in it — unless the user wants the bar in the picture
-     * (Visibility, Hide in screenshots), in which case only the menu and the Deck step out.
+     * A screenshot with nothing of this app in it.
      *
      * The bar is made invisible — the window stays, so nothing is rebuilt — the menu and the Deck
      * are closed, and the shutter is pressed a quarter second later, once the compositor has had a
@@ -3413,15 +3472,12 @@ class OverlayController(
         removeContextMenuNow()
         removeDeckNow()
         hideIndicator()
-        val hideBar = preference.getHideInScreenshots()
-        if (hideBar) handlerView?.visibility = View.INVISIBLE
+        handlerView?.visibility = View.INVISIBLE
         mainHandler.postDelayed({
             if (!service.performSystemAction(HandlerActions.SCREENSHOT)) {
                 showIndicatorMessage(context.getString(R.string.action_unavailable_on_device))
             }
-            if (hideBar) {
-                mainHandler.postDelayed({ handlerView?.visibility = View.VISIBLE }, SCREENSHOT_HIDE_AFTER_MS)
-            }
+            mainHandler.postDelayed({ handlerView?.visibility = View.VISIBLE }, SCREENSHOT_HIDE_AFTER_MS)
         }, SCREENSHOT_HIDE_BEFORE_MS)
     }
 

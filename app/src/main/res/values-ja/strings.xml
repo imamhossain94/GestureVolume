@@ -723,16 +723,7 @@
     <string name="about_ideas_by">バーラト（インド）の友人による機能のアイデア</string>
     <string name="about_ideas_desc">このアプリの多くの機能を提案し、今もアイデアを出し続けています。</string>
     <string name="visibility_title">表示</string>
-    <string name="visibility_card_subtitle">アプリ、スクリーンショット、録画</string>
-    <string name="visibility_intro">バーを隠すタイミング。</string>
-    <string name="visibility_screenshots_title">スクリーンショット</string>
-    <string name="visibility_hide_in_screenshots">スクリーンショットで隠す</string>
-    <string name="visibility_hide_in_screenshots_desc">バー自身のスクリーンショット操作で撮るときは、バーが写りません。本体のボタンで撮るスクリーンショットは Android がアプリに事前に知らせないため、そちらには写ります。</string>
-    <string name="visibility_recording_title">画面録画</string>
-    <string name="visibility_recording_desc">画面が録画されていることを Android はアプリに知らせないため、バーは自動では隠れません。クイック設定に「バー」タイルを追加し、録画を始める前にタップしてください。1つのアプリだけを録画すると、バーは写りません。</string>
-    <string name="visibility_add_tile">「バー」タイルを追加</string>
-    <string name="visibility_tile_added">「バー」タイルはクイック設定にあります。</string>
-    <string name="visibility_tile_manual">クイック設定を開き、鉛筆アイコンをタップして「バー」タイルをドラッグしてください。</string>
+    <string name="visibility_card_subtitle">バーを隠すアプリ</string>
     <string name="visibility_apps_title">これらのアプリで隠す</string>
     <string name="visibility_apps_desc">これらのアプリが開いている間はバーを隠し、アプリを離れると戻ります。</string>
     <string name="visibility_apps_needs_accessibility">ユーザー補助サービスが必要です。開いているアプリをこのアプリに伝えます。タップしてオンにしてください。</string>
