@@ -39,6 +39,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.screens.about.AboutScreen
+import com.newagedevs.gesturevolume.ui.screens.faq.FaqScreen
+import com.newagedevs.gesturevolume.ui.screens.menu.LongPressMenuScreen
 import com.newagedevs.gesturevolume.ui.screens.deck.AppShortcutsScreen
 import com.newagedevs.gesturevolume.ui.screens.deck.ClipboardScreen
 import com.newagedevs.gesturevolume.ui.screens.deck.DeckScreen
@@ -58,6 +60,8 @@ import com.newagedevs.gesturevolume.ui.util.navigateBackOnce
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEffect
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
+import com.newagedevs.gesturevolume.ui.screens.upgrade.UpgradeScreen
+import com.newagedevs.gesturevolume.ui.screens.visibility.VisibilityScreen
 
 /** Routes the Deck may ask the app to open. Anything else in the extra is ignored. */
 private val DEEP_LINK_ROUTES = setOf("deck", "notes", "clipboard", "deck_search", "deck_apps", "deck_quick_dial", "deck_tiles")
@@ -130,6 +134,7 @@ fun MainNavigation(
                 is MainEffect.ShowThemeDialog -> showThemeDialog = true
                 is MainEffect.ShowLanguageDialog -> showLanguageDialog = true
                 is MainEffect.NavigateToTroubleshoot -> navController.navigate("troubleshoot")
+                is MainEffect.NavigateToFaq -> navController.navigate("faq")
                 is MainEffect.OpenAccessibilitySettings -> {
                     viewModel.preference.setAppOpenAdPaused(true)
                     try {
@@ -195,7 +200,35 @@ fun MainNavigation(
                         onNavigateToDeck = {
                             viewModel.maybeShowInterstitialAd()
                             navController.navigate("deck")
+                        },
+                        onNavigateToQuickPanel = {
+                            viewModel.maybeShowInterstitialAd()
+                            navController.navigate("quick_slider")
+                        },
+                        onNavigateToLongPressMenu = {
+                            viewModel.maybeShowInterstitialAd()
+                            navController.navigate("long_press_menu")
+                        },
+                        onNavigateToFaq = { navController.navigate("faq") },
+                        onNavigateToUpgrade = { navController.navigate("upgrade") },
+                        onNavigateToVisibility = {
+                            viewModel.maybeShowInterstitialAd()
+                            navController.navigate("visibility")
                         }
+                    )
+                }
+
+                composable("visibility") {
+                    VisibilityScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.navigateBackOnce() }
+                    )
+                }
+
+                composable("upgrade") {
+                    UpgradeScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.navigateBackOnce() }
                     )
                 }
 
@@ -253,6 +286,9 @@ fun MainNavigation(
                         },
                         onOpenQuickSlider = {
                             navController.navigate("quick_slider")
+                        },
+                        onOpenLongPressMenu = {
+                            navController.navigate("long_press_menu")
                         }
                     )
                 }
@@ -287,6 +323,27 @@ fun MainNavigation(
                     FeedbackScreen(
                         onNavigateBack = {
                             navController.navigateBackOnce()
+                        }
+                    )
+                }
+
+                composable("long_press_menu") {
+                    LongPressMenuScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable("faq") {
+                    FaqScreen(
+                        onNavigateBack = { navController.popBackStack() },
+                        // Replaces this entry rather than stacking on it: the two are alternatives
+                        // for the same problem, and Back from Troubleshoot should return to where
+                        // the user actually came from.
+                        onNavigateToTroubleshoot = {
+                            navController.navigate("troubleshoot") {
+                                popUpTo("faq") { inclusive = true }
+                            }
                         }
                     )
                 }

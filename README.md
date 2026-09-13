@@ -46,7 +46,7 @@ plus a long-press menu whose contents you choose. Around forty actions, grouped 
 | Group | Actions |
 | --- | --- |
 | Handler | Move handler, open menu, hide handler, stop service, open app |
-| Volume & brightness | Volume panel, mute, mute/unmute, music overlay, adaptive brightness |
+| Volume & brightness | Quick panel, volume panel, mute, mute/unmute, music overlay, adaptive brightness |
 | Deck & tools | Open deck, search, timer, calculator, notes, clipboard, media, coin, dice, QR, song search |
 | Device | Flashlight, Do Not Disturb, auto-rotate |
 | Media | Play/pause, next, previous |

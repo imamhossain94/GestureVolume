@@ -3,6 +3,7 @@ package com.newagedevs.gesturevolume.ui.screens.deck
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,7 +36,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,14 +56,24 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.overlay.deck.DeckPalette
+import com.newagedevs.gesturevolume.overlay.deck.DeckPreviewStrip
+import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
+import com.newagedevs.gesturevolume.utils.PanelAnimation
+import kotlinx.coroutines.delay
+import com.newagedevs.gesturevolume.overlay.panelFrame
 import com.newagedevs.gesturevolume.overlay.deck.DeckTiles
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.screens.handler_action.ActionSettingItem
+import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
+import com.newagedevs.gesturevolume.ui.components.PreviewStage
+import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SectionTitle
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.ColorPickerControl
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
+import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.ActionIcon
 import com.newagedevs.gesturevolume.utils.HandlerActions
 
@@ -98,6 +111,7 @@ fun DeckScreen(
     val notesCount = remember(version) { store.getNotes().size }
     val clipboardCount = remember(version) { preference.getClipboardEntries().size }
 
+    var panelTheme by remember { mutableStateOf(viewModel.preference.getPanelTheme()) }
     var width by remember { mutableStateOf(store.getWidthDp()) }
     var height by remember { mutableStateOf(store.getHeightFraction()) }
     var corner by remember { mutableStateOf(store.getCornerRadiusDp()) }
@@ -106,6 +120,51 @@ fun DeckScreen(
     var accent by remember { mutableStateOf(Color(store.getAccentColor())) }
     var autoClose by remember { mutableIntStateOf(store.getAutoCloseSeconds()) }
     var utilitiesFirst by remember { mutableStateOf(store.getUtilitiesFirst()) }
+    var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
+    var animationSpeed by remember { mutableFloatStateOf(viewModel.preference.getPanelAnimationSpeed()) }
+
+    // One wallpaper per visit; see the note in HandlerAppearanceScreen.
+    val bgImage = remember { viewModel.getNextBackground() }
+    val handlerOnLeft = remember { preference.getHandlerPosition() == "Left" }
+    val previewTiles = remember(version) {
+        DeckTiles.visible(store.getTileOrder(), store.getEnabledTiles())
+    }
+    // Bumped whenever the entrance is picked, which is what makes the preview play it again.
+    var replay by remember { mutableIntStateOf(0) }
+    /*
+     * Open, a breath, close, and open again, each time an animation is picked. The Deck leaves the
+     * way it arrived, run backwards, so a preview that only ever played the arrival showed half of
+     * what the choice decides. Ends open, so the page is never left without its preview; picking
+     * again part-way through starts the sequence over.
+     */
+    var previewClosing by remember { mutableStateOf(false) }
+    var demo by remember { mutableIntStateOf(0) }
+    LaunchedEffect(demo) {
+        if (demo == 0) return@LaunchedEffect
+        val millis = PanelAnimation.scaledDurationMs(panelAnimation, animationSpeed).toLong()
+        previewClosing = false
+        replay++
+        delay(millis + DEMO_HOLD_MS)
+        previewClosing = true
+        delay(millis + DEMO_GAP_MS)
+        previewClosing = false
+        replay++
+    }
+    val entrance = rememberPanelEntrance(
+        panelAnimation,
+        handlerOnLeft,
+        replay,
+        closing = previewClosing,
+        speed = animationSpeed,
+    )
+    val previewPalette = remember(background, accent, alpha, panelTheme) {
+        val forced = PanelTheme.panelSurface(panelTheme)
+        DeckPalette(
+            surface = forced?.let { Color(it) } ?: background.copy(alpha = alpha / 255f),
+            accent = accent,
+            surfaceAlpha = if (forced != null) 1f else PanelTheme.surfaceAlpha(panelTheme),
+        )
+    }
 
     val openers = remember(version) { deckOpeners(preference) }
     // Resolved here rather than inside joinToString: stringResource is composable, and a
@@ -129,13 +188,41 @@ fun DeckScreen(
             )
         }
     ) { padding ->
+        // Preview pinned, controls scrolling underneath — the shape the Appearance screen uses.
+        // The Deck had no preview at all, so every colour and every number on this screen was set
+        // blind and checked by going out and opening the thing.
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(top = padding.calculateTopPadding())
         ) {
+            PreviewStage(
+                backgroundImageURL = bgImage,
+                contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp),
+            ) {
+                DeckPreviewStrip(
+                    tiles = previewTiles,
+                    palette = previewPalette,
+                    widthDp = width,
+                    cornerDp = corner,
+                    glass = PanelTheme.hasLitEdge(panelTheme),
+                    modifier = Modifier
+                        .padding(horizontal = 14.dp)
+                        .panelFrame { entrance.value },
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .navigationBarsPadding()
+                    .padding(16.dp)
+            ) {
             // ---- how it opens -------------------------------------------------------------------
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -166,6 +253,37 @@ fun DeckScreen(
                         Text(stringResource(R.string.deck_change_gestures))
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ---- how it moves -------------------------------------------------------------------
+            SectionTitle(stringResource(R.string.deck_animation_title), MaterialTheme.colorScheme.primary)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+            ) {
+                // One choice for how every panel moves, shared with the long-press menu and the
+                // Quick panel, but offered here too: the Deck's own page is where anyone looks for
+                // how the Deck opens and closes, and it was the one page that did not have it.
+                PanelAnimationSelector(
+                    animation = panelAnimation,
+                    onAnimationChange = {
+                        panelAnimation = it
+                        viewModel.preference.setPanelAnimation(it)
+                        demo++
+                    },
+                    speed = animationSpeed,
+                    onSpeedChange = {
+                        animationSpeed = it
+                        viewModel.preference.setPanelAnimationSpeed(it)
+                        demo++
+                    },
+                    title = stringResource(R.string.deck_animation),
+                    description = stringResource(R.string.deck_animation_desc),
+                    modifier = Modifier.padding(16.dp),
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -244,6 +362,14 @@ fun DeckScreen(
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
+                    PanelThemeSelector(
+                        theme = panelTheme,
+                        onThemeChange = {
+                            panelTheme = it
+                            viewModel.preference.setPanelTheme(it)
+                        },
+                    )
+                    ThinDivider()
                     SliderControl(
                         label = stringResource(R.string.deck_width),
                         value = width,
@@ -336,9 +462,14 @@ fun DeckScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 }
+
+/** How long the preview holds the Deck open, and then hidden, between showing its two halves. */
+private const val DEMO_HOLD_MS = 700L
+private const val DEMO_GAP_MS = 350L
 
 /** The gestures currently bound to "Open deck", as label resources, for the summary card. */
 private fun deckOpeners(preference: com.newagedevs.gesturevolume.data.local.SharedPref): List<Int> {

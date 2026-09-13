@@ -46,9 +46,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.service.HandlerGeometry
 import com.newagedevs.gesturevolume.utils.HandlerPresets
+import com.newagedevs.gesturevolume.utils.HandlerShape
 
 /**
  * Where "Reset position" puts the bar horizontally: flush with the default preset's side.
@@ -158,6 +161,57 @@ fun HandlerAppearanceSettingsContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // ---- Shape --------------------------------------------------------------------------
+        // Above the corner radius, and the reason that section is now conditional: corners are a
+        // property of a rectangle, and a tab has none. Showing four radius sliders that the bar
+        // on screen visibly ignores is worse than showing nothing.
+        val isTab = state.shape == HandlerShape.TAB
+
+        AppearanceSection(
+            title = stringResource(R.string.shape_uppercase),
+            summary = stringResource(
+                if (isTab) R.string.shape_tab else R.string.shape_rounded
+            ),
+        ) {
+            ShapeSelector(
+                shape = state.shape,
+                onShapeChange = { state.shape = it },
+            )
+            AnimatedVisibility(
+                visible = isTab,
+                enter = expandVertically(AppearanceMotion.ExpandSize) +
+                    fadeIn(AppearanceMotion.Fade),
+                exit = shrinkVertically(AppearanceMotion.ExpandSize) +
+                    fadeOut(AppearanceMotion.Fade),
+            ) {
+                Column {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                    )
+                    SliderControl(
+                        label = stringResource(R.string.end_sweep),
+                        // Shown as a percentage of the bar's height rather than as the fraction
+                        // it is stored as: "14%" is a length someone can picture against the bar
+                        // in the dock above, where "0.14" is a number about nothing.
+                        value = state.flare * 100f,
+                        valueRange = HandlerShape.MIN_FLARE * 100f..HandlerShape.MAX_FLARE * 100f,
+                        valueDisplay = "${(state.flare * 100f).toInt()}%",
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        onValueChange = { state.flare = it / 100f }
+                    )
+                    Text(
+                        text = stringResource(R.string.end_sweep_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         // ---- Corner radius ------------------------------------------------------------------
         // Five sliders became one plus an opt-in. Four of them were per-corner controls that
         // almost nobody wants and that the fifth silently overwrote.
@@ -166,7 +220,7 @@ fun HandlerAppearanceSettingsContent(
             state.cornerBL == state.cornerBR
         val mixedLabel = stringResource(R.string.per_corner_mixed)
 
-        AppearanceSection(
+        if (!isTab) AppearanceSection(
             title = stringResource(R.string.corner_radius_uppercase),
             summary = if (cornersUniform) "${state.cornerTL.toInt()}dp" else mixedLabel,
         ) {
@@ -362,12 +416,32 @@ fun HandlerAppearanceSettingsContent(
         // ---- Position -----------------------------------------------------------------------
         AppearanceSection(
             title = stringResource(R.string.position_uppercase),
-            summary = "${state.edgeMargin.toInt()}dp",
+            summary = stringResource(
+                if (state.gravity == Gravity.START) R.string.side_left else R.string.side_right
+            ),
         ) {
-            // No Left/Right picker. The bar goes where it is dragged, and which side it is
-            // "on" is a consequence of that rather than a setting — a picker on top could only
-            // ever disagree with where the bar actually is. The two controls below are the whole
-            // of horizontal placement: whether it returns to a side, and how far in that side is.
+            // Which side the bar starts on. There *was* no picker here, on the reasoning that the
+            // side is a consequence of where the bar was dragged rather than a setting, and that a
+            // picker could only disagree with where the bar actually is. That reasoning depended
+            // on this screen having a draggable preview, which it no longer does — so without this
+            // there is no way to put a right-hand bar on the left except to long press the live
+            // one and carry it across, which is a thing you have to already know.
+            //
+            // It writes the x fraction as well as the gravity, so it is a real move rather than a
+            // change of dressing: flush left is 0, flush right is 1, and the edge distance below
+            // does the rest.
+            SideSelector(
+                gravity = state.gravity,
+                onGravityChange = {
+                    state.gravity = it
+                    state.posXFraction = if (it == Gravity.START) 0f else 1f
+                },
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
             Text(
                 text = stringResource(R.string.drag_to_move_hint),
                 style = MaterialTheme.typography.bodySmall,
@@ -516,4 +590,127 @@ private fun PresetChip(
             )
         }
     }
+}
+
+/**
+ * Rounded or tab, as two halves of one pill.
+ *
+ * The same segmented control the side picker uses, for the same reason: two states, neither of
+ * them "off", and the result is visible in the dock above the moment it is tapped. It carries a
+ * line of explanation where the side picker does not, because "tab" is a word for a shape that
+ * only makes sense once you know it has to be touching the edge to look like anything.
+ */
+@Composable
+fun ShapeSelector(
+    shape: String,
+    onShapeChange: (String) -> Unit,
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
+                .padding(3.dp)
+                .selectableGroup(),
+            horizontalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            SideSelectorHalf(
+                label = stringResource(R.string.shape_rounded),
+                selected = shape != HandlerShape.TAB,
+                onClick = { onShapeChange(HandlerShape.ROUNDED) },
+                modifier = Modifier.weight(1f),
+            )
+            SideSelectorHalf(
+                label = stringResource(R.string.shape_tab),
+                selected = shape == HandlerShape.TAB,
+                onClick = { onShapeChange(HandlerShape.TAB) },
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Text(
+            text = stringResource(
+                if (shape == HandlerShape.TAB) R.string.shape_tab_desc else R.string.shape_rounded_desc
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+    }
+}
+
+/**
+ * Left or right, as two halves of one pill.
+ *
+ * A segmented pair rather than a switch, because the two states are places and neither is "off";
+ * and rather than a dropdown, because there are exactly two of them and they are the answer to a
+ * question the user can see the result of immediately in the dock above.
+ */
+@Composable
+private fun SideSelector(
+    gravity: Int,
+    onGravityChange: (Int) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
+            .padding(3.dp)
+            .selectableGroup(),
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        SideSelectorHalf(
+            label = stringResource(R.string.side_left),
+            selected = gravity == Gravity.START,
+            onClick = { onGravityChange(Gravity.START) },
+            modifier = Modifier.weight(1f),
+        )
+        SideSelectorHalf(
+            label = stringResource(R.string.side_right),
+            selected = gravity == Gravity.END,
+            onClick = { onGravityChange(Gravity.END) },
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+internal fun SideSelectorHalf(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val background by animateColorAsState(
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            Color.Transparent
+        },
+        animationSpec = AppearanceMotion.Tint,
+        label = "sideSelectorBackground",
+    )
+    val content by animateColorAsState(
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.onPrimary
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        animationSpec = AppearanceMotion.Tint,
+        label = "sideSelectorContent",
+    )
+
+    Text(
+        text = label,
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .background(background)
+            .padding(vertical = 9.dp),
+        textAlign = TextAlign.Center,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = content,
+    )
 }

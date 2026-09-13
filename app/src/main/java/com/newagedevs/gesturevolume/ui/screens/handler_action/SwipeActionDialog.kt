@@ -41,9 +41,14 @@ fun SwipeActionDialog(
     onSelect: (String) -> Unit
 ) {
     val actionOptions = remember(isSwipeUp) {
+        // The Quick panel heads both lists. It is the one binding here that does not commit the
+        // swipe to a quantity or a direction — it puts a track on screen and lets the user decide
+        // afterwards — so it is the only entry that means the same thing on either arrow, and it
+        // is what both directions default to.
         if (isSwipeUp) {
             listOf(
                 Triple(R.drawable.ic_nothing, HandlerActions.NONE, R.string.action_none),
+                Triple(R.drawable.ic_brightness_up, HandlerActions.OPEN_QUICK_SLIDER, R.string.action_open_quick_slider),
                 Triple(R.drawable.ic_vol_increase, HandlerActions.INCREASE_VOLUME_UI, R.string.action_increase_vol_ui),
                 Triple(R.drawable.ic_vol_plus, HandlerActions.INCREASE_VOLUME, R.string.action_increase_vol),
                 Triple(R.drawable.ic_brightness_up, HandlerActions.INCREASE_BRIGHTNESS, R.string.action_increase_brightness)
@@ -51,6 +56,7 @@ fun SwipeActionDialog(
         } else {
             listOf(
                 Triple(R.drawable.ic_nothing, HandlerActions.NONE, R.string.action_none),
+                Triple(R.drawable.ic_brightness_up, HandlerActions.OPEN_QUICK_SLIDER, R.string.action_open_quick_slider),
                 Triple(R.drawable.ic_vol_decrease, HandlerActions.DECREASE_VOLUME_UI, R.string.action_decrease_vol_ui),
                 Triple(R.drawable.ic_vol_minus, HandlerActions.DECREASE_VOLUME, R.string.action_decrease_vol),
                 Triple(R.drawable.ic_brightness_down, HandlerActions.DECREASE_BRIGHTNESS, R.string.action_decrease_brightness)

@@ -66,6 +66,19 @@ object HandlerActions {
     /** Opens the long-press menu, from any gesture. */
     const val OPEN_MENU = "Open menu"
 
+    /**
+     * Opens the Quick panel — the track that used to be the payload of a long inward swipe.
+     *
+     * It is an action rather than a gesture of its own because sharing the inward swipe with the
+     * Deck is what made the two "conflict": they were one stroke told apart by a distance, and no
+     * amount of arbitration makes a distance visible to a thumb. As an action it sits in its own
+     * slot, decided before the finger goes down, and the two can no longer be confused.
+     *
+     * The panel it opens is *modal in miniature*: it stays up after the gesture ends, takes its
+     * own touches, and closes itself once it has been adjusted. See `OverlayController`.
+     */
+    const val OPEN_QUICK_SLIDER = "Open quick panel"
+
     /** Opens the Deck straight onto its search card. */
     const val OPEN_SEARCH = "Open search"
     const val OPEN_TIMER = "Open timer"
@@ -118,6 +131,10 @@ object HandlerActions {
      */
     val DEFAULT_CONTEXT_MENU: Set<String> = setOf(
         OPEN_DECK,
+        // In the menu as well as on the double tap, because a long press is where people go
+        // looking for it — it is the gesture they can perform deliberately, without timing — and
+        // an entry here costs nothing while a double tap they cannot land costs them the feature.
+        OPEN_QUICK_SLIDER,
         OPEN_VOLUME_UI,
         MUTE_OR_UNMUTE,
         HIDE_HANDLER,
@@ -142,7 +159,7 @@ object HandlerActions {
         INCREASE_BRIGHTNESS, DECREASE_BRIGHTNESS,
         OPEN_VOLUME_UI, MUTE, MUTE_OR_UNMUTE, ACTIVE_MUSIC_OVERLAY, HIDE_HANDLER, OPEN_APP,
         STOP_SERVICE, TOGGLE_AUTO_BRIGHTNESS, REPOSITION,
-        OPEN_DECK, OPEN_MENU, OPEN_SEARCH, OPEN_TIMER, OPEN_CALCULATOR, OPEN_NOTES, OPEN_CLIPBOARD,
+        OPEN_DECK, OPEN_MENU, OPEN_QUICK_SLIDER, OPEN_SEARCH, OPEN_TIMER, OPEN_CALCULATOR, OPEN_NOTES, OPEN_CLIPBOARD,
         OPEN_MEDIA, COIN_TOSS, DICE_ROLL, SCAN_QR, SONG_SEARCH,
         TOGGLE_FLASHLIGHT, TOGGLE_DND, TOGGLE_AUTO_ROTATE,
         MEDIA_PLAY_PAUSE, MEDIA_NEXT, MEDIA_PREVIOUS,
@@ -166,6 +183,21 @@ object HandlerActions {
 
     /** The set form, for the long-press menu's stored selection. */
     fun sanitize(actions: Set<String>): Set<String> = actions.filterTo(mutableSetOf()) { it in KNOWN }
+
+    /**
+     * True when a vertical-swipe binding is one the finger *steers* rather than one it triggers.
+     *
+     * The six volume and brightness identifiers are continuous: the swipe's length is the size of
+     * the change, and the detector reports every step of it. Everything else assignable to a swipe
+     * happens once, at the top of the stroke. Telling them apart is what lets the same slot hold
+     * either — see `OverlayController.resolveAdjustAction`.
+     */
+    fun isAdjustSwipe(action: String): Boolean = action in ADJUST_SWIPES
+
+    private val ADJUST_SWIPES: Set<String> = setOf(
+        INCREASE_VOLUME, INCREASE_VOLUME_UI, DECREASE_VOLUME, DECREASE_VOLUME_UI,
+        INCREASE_BRIGHTNESS, DECREASE_BRIGHTNESS
+    )
 
     /** True when this swipe identifier drives screen brightness rather than media volume. */
     fun isBrightnessSwipe(action: String): Boolean =

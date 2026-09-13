@@ -126,6 +126,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        // Before the service is started, not after. `onResume` writes this too, but the service is
+        // launched from here — one callback earlier — so a service that comes up promptly draws
+        // the bar in the gap between the two and the flag it consults is still false. Setting it
+        // first closes that gap: whenever the bar is created from here on, the answer is already
+        // recorded. See SharedPref.isAppInForeground.
+        viewModel.preference.setAppInForeground(true)
         // Restart the service if the system killed it while the user still wants it running.
         // Doing this from the foreground sidesteps the Android 12+ background-start restrictions.
         viewModel.repairServiceIfNeeded(this)
@@ -135,7 +141,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Hide handler when app is in foreground — use Intent (works even if not bound)
+        // Written here as well as sent, and before the send. The command only reaches a service
+        // that is already up; the flag is what a service starting *after* this point reads, and a
+        // cold start is exactly when the bar used to appear on top of the app.
+        viewModel.preference.setAppInForeground(true)
         sendServiceCommand("hide")
 
         // Resume App Update if needed
@@ -162,7 +171,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        // Show handler when app goes to background — use Intent (works even if not bound)
+        viewModel.preference.setAppInForeground(false)
         sendServiceCommand("show")
         // Nothing half-scheduled outlives the foreground: a prompt that fires as the user is
         // leaving lands on whatever they switched to.

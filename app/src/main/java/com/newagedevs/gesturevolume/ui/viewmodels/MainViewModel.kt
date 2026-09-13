@@ -596,6 +596,9 @@ class MainViewModel @Inject constructor(
             "Troubleshoot" -> viewModelScope.launch {
                 _effect.send(MainEffect.NavigateToTroubleshoot)
             }
+            "FAQ" -> viewModelScope.launch {
+                _effect.send(MainEffect.NavigateToFaq)
+            }
             "Reset" -> viewModelScope.launch {
                 _effect.send(MainEffect.ConfirmResetApp)
             }

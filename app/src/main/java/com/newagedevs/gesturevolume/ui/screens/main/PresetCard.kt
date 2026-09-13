@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,12 +24,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.newagedevs.gesturevolume.utils.HandlerShape
 
 
 @Composable
@@ -41,6 +44,23 @@ fun PresetCard(
     // Visual preview properties to make the card more logical
     previewWidth: Dp = 20.dp,
     previewCorner: Dp = 10.dp,
+    /**
+     * The radius on the side that faces the screen edge, when it differs from [previewCorner].
+     *
+     * The Default bar is rounded on the inside and all but square where it meets the edge, and a
+     * swatch that showed it as a symmetric pill would be advertising a shape the preset does not
+     * apply. Null keeps both sides the same, which is every other preset.
+     */
+    previewOuterCorner: Dp? = null,
+    /**
+     * The outline the swatch is cut to, when the preset is not a rounded rectangle.
+     *
+     * Drawn from [HandlerShape]'s own geometry rather than approximated with a corner radius, so
+     * the card advertises the shape the preset actually applies. A tab drawn as a pill here is
+     * the one thing this swatch exists to prevent.
+     */
+    previewShape: String = HandlerShape.ROUNDED,
+    previewFlare: Float = HandlerShape.DEFAULT_FLARE,
     previewColor: Color = MaterialTheme.colorScheme.primary,
     previewAlpha: Float = 0.8f,
     isSelected: Boolean = false,
@@ -97,13 +117,49 @@ fun PresetCard(
             Spacer(modifier = Modifier.width(10.dp))
 
             // Right: Visual handler preview strip
-            Box(
-                modifier = Modifier
-                    .width(previewWidth)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(previewCorner))
-                    .background(previewColor.copy(alpha = previewAlpha))
-            )
+            if (previewShape == HandlerShape.TAB) {
+                Canvas(
+                    modifier = Modifier
+                        .width(previewWidth)
+                        .fillMaxHeight()
+                ) {
+                    // The swatch sits at the right of the card, so its right edge stands in for
+                    // the screen edge — which is the side a tab's sweeps run to.
+                    val outline = HandlerShape.tabOutline(
+                        size.width,
+                        size.height,
+                        previewFlare,
+                        edgeOnLeft = false,
+                    )
+                    val path = Path().apply {
+                        moveTo(outline[0], outline[1])
+                        var i = 2
+                        while (i < outline.size) {
+                            lineTo(outline[i], outline[i + 1])
+                            i += 2
+                        }
+                        close()
+                    }
+                    drawPath(path, previewColor.copy(alpha = previewAlpha))
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .width(previewWidth)
+                        .fillMaxHeight()
+                        // The swatch sits at the right of the card, so its right edge is the one
+                        // standing in for the screen edge.
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = previewCorner,
+                                bottomStart = previewCorner,
+                                topEnd = previewOuterCorner ?: previewCorner,
+                                bottomEnd = previewOuterCorner ?: previewCorner,
+                            )
+                        )
+                        .background(previewColor.copy(alpha = previewAlpha))
+                )
+            }
         }
     }
 }

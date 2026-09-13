@@ -4,47 +4,37 @@ import android.content.res.Configuration
 import android.view.Gravity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -54,53 +44,41 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.HandlerPresets
-import kotlinx.coroutines.launch
 
 /**
- * Where the sheet rests when the screen opens: a little over half, leaving the preview the rest.
+ * One screen. Preview on top, settings underneath, nothing overlapping.
  *
- * A fraction rather than a fixed dp, so a short phone gets a proportionally short sheet instead of
- * one that swallows it.
- */
-private const val SHEET_PEEK_FRACTION = 0.55f
-
-/**
- * The most of the screen the settings sheet may ever take.
+ * This is the third arrangement of this screen and the first one that is not fighting itself. It
+ * began as two screens — an inline strip at the top of a settings list plus a separate full-screen
+ * preview dialog with its own copy of the placement maths — which disagreed about how big the
+ * screen was and never showed a control and its effect at the same time. That was replaced by a
+ * full-bleed preview with the settings in a bottom sheet floating over it, which fixed the
+ * disagreement and introduced a new one: the sheet covered the bottom half of the very thing it
+ * was editing, so placing the bar low meant swiping the settings away, and adjusting anything
+ * meant bringing them back.
  *
- * Without a cap the sheet expands to whatever its content wants, which for this many sliders is
- * the whole screen — and a settings screen that hides the live preview is the two-screen problem
- * this rework exists to remove. Three quarters still leaves a quarter showing the bar and the
- * wallpaper behind it while any slider is being dragged.
- */
-private const val SHEET_MAX_HEIGHT_FRACTION = 0.75f
-
-/** Material's own drag handle: a 4dp indicator inside 22dp of padding, top and bottom. */
-private val DRAG_HANDLE_HEIGHT = 48.dp
-
-/**
- * One screen, one preview.
+ * What settled it was giving up on previewing *placement* here at all. Placement is stored as a
+ * fraction of the screen, so any preview smaller than the screen either lies about it or has to be
+ * a scale model — and a scale model small enough to leave room for the settings draws a 10dp bar
+ * at four dp, which is too small to judge a corner radius on and too small to drag. Placement
+ * already has a better home: the live bar, where a long press picks it up and puts it down for
+ * real — and the one part of it this screen still owns, which side the bar starts on, is a pair of
+ * buttons in the Position section rather than a drag. So [HandlerPreviewSurface] is now a shallow
+ * dock that shows the handler at its true size on a wallpaper, and it fits at the top of an
+ * ordinary scrolling page.
  *
- * This used to be two: a small inline strip at the top of a scrolling settings list, and a
- * separate full-screen "expanded preview" dialog with its own copy of the placement maths and its
- * own floating buttons. Two previews of the same bar is one too many — they disagreed about how
- * big the screen was, only one of them could actually be dragged, and the settings being adjusted
- * were never visible at the same time as the thing they changed.
- *
- * Now the preview is the screen, and the settings live in a sheet that starts partly open over it,
- * so a slider and its effect are on screen together. The chrome is four things and no more:
+ * The chrome is two things and no more:
  *
  * ```
- *  ←  Appearance                    ?   ✓   ⚙
+ *  ←  Appearance                            ✓
  * ```
  *
- * back · help · apply · settings sheet.
+ * back · apply. The help button went with the rehearsal it was explaining.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,7 +89,6 @@ fun HandlerAppearanceScreen(
 ) {
     val context = LocalContext.current
     val preference = remember { viewModel.preference }
-    val scope = rememberCoroutineScope()
 
     // The stored position is per orientation — see SharedPref.getHandlerPosXFraction — so this
     // screen edits whichever pair matches the way the phone is being held right now.
@@ -119,7 +96,6 @@ fun HandlerAppearanceScreen(
 
     var showDiscardDialog by remember { mutableStateOf(false) }
     var showIconPicker by remember { mutableStateOf(false) }
-    var showHelp by remember { mutableStateOf(false) }
 
     val savedState = remember {
         mutableStateOf(
@@ -136,6 +112,8 @@ fun HandlerAppearanceScreen(
                 cornerTR = preference.getHandlerCornerRadiusTR(),
                 cornerBL = preference.getHandlerCornerRadiusBL(),
                 cornerBR = preference.getHandlerCornerRadiusBR(),
+                shape = preference.getHandlerShape(),
+                flare = preference.getHandlerShapeFlare(),
                 iconRes = preference.getHandlerIconRes(),
                 iconSize = preference.getHandlerIconSize(),
                 iconColor = preference.getHandlerIconColor(),
@@ -148,6 +126,10 @@ fun HandlerAppearanceScreen(
             )
         )
     }
+
+    // One wallpaper per visit, not per recomposition: a backdrop that reshuffled while a colour
+    // was being chosen would be worse than no backdrop at all.
+    val bgImage = remember { viewModel.getNextBackground() }
 
     val state = remember {
         AppearanceStateHolder(
@@ -163,6 +145,8 @@ fun HandlerAppearanceScreen(
             initialCornerTR = savedState.value.cornerTR,
             initialCornerBL = savedState.value.cornerBL,
             initialCornerBR = savedState.value.cornerBR,
+            initialShape = savedState.value.shape,
+            initialFlare = savedState.value.flare,
             initialIconRes = savedState.value.iconRes,
             initialIconSize = savedState.value.iconSize,
             initialIconColor = Color(savedState.value.iconColor),
@@ -175,8 +159,6 @@ fun HandlerAppearanceScreen(
         )
     }
 
-    val bgImage = remember { viewModel.getNextBackground() }
-
     // Resolved in composable scope so it follows a configuration change.
     val appearanceSavedMsg = stringResource(R.string.appearance_saved)
 
@@ -184,20 +166,6 @@ fun HandlerAppearanceScreen(
     val currentState = state.toState()
     val hasUnsavedChanges = currentState != savedState.value
 
-    // Starts partly open, so a slider and the bar it changes are both on screen. Hidden is
-    // allowed — swiping the sheet away is how you reach the bottom of the preview to place the
-    // bar there, and the ⚙ button brings it back.
-    val sheetState = rememberStandardBottomSheetState(
-        initialValue = SheetValue.PartiallyExpanded,
-        skipHiddenState = false
-    )
-    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
-
-    // The drag handle sits above this column and counts towards what the sheet covers, so it
-    // comes off both budgets rather than being added on top of them.
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    val sheetContentHeight = screenHeight * SHEET_MAX_HEIGHT_FRACTION - DRAG_HANDLE_HEIGHT
-    val sheetPeekHeight = screenHeight * SHEET_PEEK_FRACTION
 
     LaunchedEffect(presetId) {
         // Values come from HandlerPresets rather than a when-block here, so the cards that offer
@@ -223,6 +191,8 @@ fun HandlerAppearanceScreen(
         preference.setHandlerCornerRadiusTR(state.cornerTR)
         preference.setHandlerCornerRadiusBL(state.cornerBL)
         preference.setHandlerCornerRadiusBR(state.cornerBR)
+        preference.setHandlerShape(state.shape)
+        preference.setHandlerShapeFlare(state.flare)
         preference.setHandlerIconRes(state.iconRes)
         preference.setHandlerIconSize(state.iconSize)
         preference.setHandlerIconColor(state.iconColor.toArgb())
@@ -304,38 +274,8 @@ fun HandlerAppearanceScreen(
         )
     }
 
-    if (showHelp) {
-        AppearanceHelpDialog(onDismiss = { showHelp = false })
-    }
-
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = sheetPeekHeight,
-        sheetShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-        sheetContainerColor = MaterialTheme.colorScheme.surface,
-        sheetContent = {
-            // Fixed rather than a maximum. BottomSheetScaffold derives its expanded anchor from
-            // the height the sheet reports, and a scrollable child asked for a maximum still
-            // reports its full intrinsic height — which for this many sliders is the whole
-            // screen, exactly what the cap exists to prevent. Giving the column a height makes
-            // the anchor that height, and the scroll happens inside it.
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(sheetContentHeight)
-                    .verticalScroll(rememberScrollState())
-                    // The preview runs under the navigation bar, so the sheet is the one thing
-                    // here that must not: its last slider would otherwise sit under the gesture
-                    // pill.
-                    .navigationBarsPadding()
-            ) {
-                HandlerAppearanceSettingsContent(
-                    state = state,
-                    onShowIconPicker = { showIconPicker = true },
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-            }
-        },
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.appearance)) },
@@ -350,12 +290,6 @@ fun HandlerAppearanceScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showHelp = true }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.HelpOutline,
-                            contentDescription = stringResource(R.string.help)
-                        )
-                    }
                     // Always present, so its place in the bar never moves; live only when there
                     // is something to apply, which is also the whole of the answer to "have I
                     // saved this yet?".
@@ -392,22 +326,6 @@ fun HandlerAppearanceScreen(
                             },
                         )
                     }
-                    // A plain toggle rather than a three-way cycle: the drag handle already owns
-                    // "how far open", so this only has to answer "in the way, or not".
-                    IconButton(onClick = {
-                        scope.launch {
-                            if (sheetState.currentValue == SheetValue.Hidden) {
-                                sheetState.partialExpand()
-                            } else {
-                                sheetState.hide()
-                            }
-                        }
-                    }) {
-                        Icon(
-                            Icons.Default.Tune,
-                            contentDescription = stringResource(R.string.settings_sheet)
-                        )
-                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -417,21 +335,51 @@ fun HandlerAppearanceScreen(
             )
         }
     ) { innerPadding ->
-        // Only the top inset is consumed, and deliberately so on both counts. The sheet floats
-        // over the preview rather than shortening it, because placement is stored as a fraction
-        // of the screen — a preview cropped to whatever the sheet leaves behind would put the bar
-        // somewhere else entirely once applied. And nothing is subtracted at the bottom either:
-        // the live bar is drawn by a window that extends under the navigation bar, so a preview
-        // stopping short of it would misreport how low the bar can go.
-        HandlerPreviewSurface(
-            state = state,
-            viewModel = viewModel,
-            backgroundImageURL = bgImage,
-            onPositionChanged = { state.positionFraction = it },
-            onHorizontalPositionChanged = { state.posXFraction = it },
-            onGravityChanged = { state.gravity = it },
-            modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = innerPadding.calculateTopPadding())
+        ) {
+            // The dock. Fixed, and outside the scroll on purpose: the point of the rework is
+            // that a control and the thing it changes are on screen together, and a preview that
+            // scrolls away with the list is only the old two-screen problem with extra steps.
+            // It sizes itself — 4:3 of whatever width it is given — so there is no height
+            // fraction here to keep in step with it.
+            // Above the preview, matching the Quick panel's screen. The dock shows what the bar
+            // will look like and cannot show what it will do, so the one thing worth saying here
+            // is where the rest of it lives.
+            Text(
+                text = stringResource(R.string.appearance_preview_hint),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp),
+            )
+            HandlerPreviewSurface(
+                state = state,
+                backgroundImageURL = bgImage,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 8.dp),
+            )
+
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+            )
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    // The last control would otherwise sit under the gesture pill.
+                    .navigationBarsPadding()
+                    .padding(top = 16.dp)
+            ) {
+                HandlerAppearanceSettingsContent(
+                    state = state,
+                    onShowIconPicker = { showIconPicker = true },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
     }
 
     if (showIconPicker) {
@@ -443,83 +391,5 @@ fun HandlerAppearanceScreen(
             },
             onDismiss = { showIconPicker = false }
         )
-    }
-}
-
-/**
- * What the four buttons do, and the one setting the drag gesture depends on.
- *
- * These used to be floating cards pinned over the preview — a "long press to move" chip and a
- * "test mode" card — which covered the wallpaper the preview exists to show and could not be
- * dismissed. Behind the `?` they are available when wanted and absent when not.
- */
-@Composable
-private fun AppearanceHelpDialog(onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = stringResource(R.string.appearance_help_title),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
-        },
-        text = {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                HelpEntry(stringResource(R.string.appearance_help_move))
-                HelpEntry(stringResource(R.string.appearance_help_test))
-                HelpEntry(stringResource(R.string.appearance_help_settings))
-                HelpEntry(stringResource(R.string.appearance_help_apply), last = true)
-            }
-        },
-        confirmButton = {
-            Button(onClick = onDismiss, shape = RoundedCornerShape(12.dp)) {
-                Text(stringResource(R.string.got_it))
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(24.dp)
-    )
-}
-
-/**
- * One help entry: the first line is its heading, the rest the explanation.
- *
- * Split here rather than held as two string resources so a translator sees one coherent passage
- * per topic instead of a title stranded from its body.
- */
-@Composable
-private fun HelpEntry(text: String, last: Boolean = false) {
-    val heading = text.substringBefore('\n')
-    val body = text.substringAfter('\n', "")
-    Column {
-        Row(verticalAlignment = Alignment.Top) {
-            Surface(
-                modifier = Modifier
-                    .padding(top = 6.dp)
-                    .size(6.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primary
-            ) {}
-            Spacer(modifier = Modifier.width(10.dp))
-            Column {
-                Text(
-                    text = heading,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                if (body.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = body,
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-        if (!last) Spacer(modifier = Modifier.height(14.dp))
     }
 }

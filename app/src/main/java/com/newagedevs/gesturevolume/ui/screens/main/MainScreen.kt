@@ -59,6 +59,9 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 import com.newagedevs.gesturevolume.R
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.layout.size
+import com.newagedevs.gesturevolume.ui.screens.upgrade.ProGold
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,6 +71,11 @@ fun MainScreen(
     onNavigateToActions: () -> Unit,
     onNavigateToPermissions: () -> Unit,
     onNavigateToDeck: () -> Unit,
+    onNavigateToQuickPanel: () -> Unit,
+    onNavigateToLongPressMenu: () -> Unit,
+    onNavigateToFaq: () -> Unit,
+    onNavigateToUpgrade: () -> Unit,
+    onNavigateToVisibility: () -> Unit,
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
@@ -130,8 +138,15 @@ fun MainScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { (context as? Activity)?.finish() }) {
-                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close))
+                        // The way to Pro, where the close button used to be. Gold, because it is
+                        // the one thing on this bar that is an offer rather than a control.
+                        IconButton(onClick = onNavigateToUpgrade) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_crown_2),
+                                contentDescription = stringResource(R.string.upgrade_to_pro),
+                                tint = ProGold,
+                                modifier = Modifier.size(24.dp)
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -219,6 +234,62 @@ fun MainScreen(
                         Color(0xFFEF4444)
                     ),
                     onClick = onNavigateToDeck
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // The Quick panel: the track the bar opens into. Beside the Deck rather than
+                // buried in Actions, because the two are the bar's two panels and a user looking
+                // for one will look wherever they found the other.
+                NavigationCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),
+                    title = stringResource(R.string.quick_slider_title),
+                    subtitle = stringResource(R.string.quick_panel_card_subtitle),
+                    icon = R.drawable.ic_brightness_up,
+                    gradientColors = listOf(
+                        Color(0xFF06B6D4),
+                        Color(0xFF3B82F6)
+                    ),
+                    onClick = onNavigateToQuickPanel
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // The long-press menu, beside the two panels it sits alongside in use. It was
+                // reachable only from a row buried in Actions, which is where you look for what a
+                // gesture *does* — not for what is inside the thing one of them opens.
+                NavigationCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),
+                    title = stringResource(R.string.context_menu_title),
+                    subtitle = stringResource(R.string.long_press_menu_card_subtitle),
+                    icon = R.drawable.ic_move,
+                    gradientColors = listOf(
+                        Color(0xFF8B5CF6),
+                        Color(0xFFEC4899)
+                    ),
+                    onClick = onNavigateToLongPressMenu
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // When the bar steps aside: over the apps the user picks, and out of its own
+                // screenshots.
+                NavigationCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),
+                    title = stringResource(R.string.visibility_title),
+                    subtitle = stringResource(R.string.visibility_card_subtitle),
+                    icon = R.drawable.ic_visibility_hide,
+                    gradientColors = listOf(
+                        Color(0xFF14B8A6),
+                        Color(0xFF3B82F6)
+                    ),
+                    onClick = onNavigateToVisibility
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))

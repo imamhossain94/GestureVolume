@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.InsetDrawable
 import android.os.*
 import android.util.AttributeSet
@@ -16,6 +15,7 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.widget.TextViewCompat
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.utils.HandlerPresets
+import com.newagedevs.gesturevolume.utils.HandlerShape
 
 class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
 
@@ -49,6 +49,15 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     private var cornerRadiusTopRight: Float = HandlerPresets.DEFAULT.cornerRadius
     private var cornerRadiusBottomLeft: Float = HandlerPresets.DEFAULT.cornerRadius
     private var cornerRadiusBottomRight: Float = HandlerPresets.DEFAULT.cornerRadius
+
+    /**
+     * Which outline the bar is cut to, and how far its ends sweep. See [HandlerShape].
+     *
+     * Held here rather than on the drawable so a rebuild of the background — which happens on
+     * every colour, stroke or inset change — cannot quietly drop the shape back to a rectangle.
+     */
+    private var shapeStyle: String = HandlerShape.ROUNDED
+    private var shapeFlare: Float = HandlerShape.DEFAULT_FLARE
 
     // Stroke properties
     private var strokeColor: Int = Color.GRAY
@@ -199,6 +208,20 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
         cornerRadiusBottomRight = radius
         updateViewAppearance()
     }
+
+    /**
+     * The outline, and how far its ends sweep back into the screen edge.
+     *
+     * @param style one of [HandlerShape.ALL]; anything else falls back to a rounded rectangle.
+     * @param flare fraction of the bar's height each end sweep takes, for [HandlerShape.TAB].
+     */
+    fun setShapeStyle(style: String, flare: Float) {
+        shapeStyle = HandlerShape.sanitize(style)
+        shapeFlare = HandlerShape.sanitizeFlare(flare)
+        updateViewAppearance()
+    }
+
+    fun getShapeStyle(): String = shapeStyle
 
     // ========== Background Color Setters ==========
 
@@ -408,22 +431,26 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     }
 
     private fun updateViewAppearance() {
-        val shape = GradientDrawable().apply {
-            this.shape = GradientDrawable.RECTANGLE
-            this.cornerRadii = floatArrayOf(
-                dpToPx(cornerRadiusTopLeft), dpToPx(cornerRadiusTopLeft),
-                dpToPx(cornerRadiusTopRight), dpToPx(cornerRadiusTopRight),
-                dpToPx(cornerRadiusBottomRight), dpToPx(cornerRadiusBottomRight),
-                dpToPx(cornerRadiusBottomLeft), dpToPx(cornerRadiusBottomLeft)
+        val shape = HandlerShapeDrawable().apply {
+            this.shape = shapeStyle
+            this.flare = shapeFlare
+            // The sweep has to point at whichever side the bar is currently mounted on, and
+            // gravity is the record of that: START means the bar is against the left edge.
+            this.edgeOnLeft = viewGravityPosition == Gravity.START
+            setCornerRadiiPx(
+                dpToPx(cornerRadiusTopLeft),
+                dpToPx(cornerRadiusTopRight),
+                dpToPx(cornerRadiusBottomLeft),
+                dpToPx(cornerRadiusBottomRight)
             )
-
-            val bgColor = Color.argb(
-                backgroundAlpha,
-                Color.red(backgroundColor),
-                Color.green(backgroundColor),
-                Color.blue(backgroundColor)
+            setFillColor(
+                Color.argb(
+                    backgroundAlpha,
+                    Color.red(backgroundColor),
+                    Color.green(backgroundColor),
+                    Color.blue(backgroundColor)
+                )
             )
-            setColor(bgColor)
 
             if (dragCueActive) {
                 // Borrow the icon colour rather than picking one. The user chose it to read
@@ -431,17 +458,19 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
                 // guaranteed to be visible on this particular bar — a fixed accent would
                 // disappear on whichever background happened to match it.
                 setStroke(
-                    dpToPx(strokeWidth.coerceAtLeast(HIGHLIGHT_STROKE_DP)).toInt(),
+                    dpToPx(strokeWidth.coerceAtLeast(HIGHLIGHT_STROKE_DP)),
                     centerIconColor
                 )
             } else {
-                val stColor = Color.argb(
-                    strokeAlpha,
-                    Color.red(strokeColor),
-                    Color.green(strokeColor),
-                    Color.blue(strokeColor)
+                setStroke(
+                    dpToPx(strokeWidth),
+                    Color.argb(
+                        strokeAlpha,
+                        Color.red(strokeColor),
+                        Color.green(strokeColor),
+                        Color.blue(strokeColor)
+                    )
                 )
-                setStroke(dpToPx(strokeWidth).toInt(), stColor)
             }
         }
 

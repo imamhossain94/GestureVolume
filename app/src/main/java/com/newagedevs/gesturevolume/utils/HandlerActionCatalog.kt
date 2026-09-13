@@ -76,6 +76,7 @@ object HandlerActionCatalog {
         Entry(HandlerActions.REPOSITION, res(R.drawable.ic_move), R.string.action_reposition, Group.HANDLER),
         Entry(HandlerActions.OPEN_DECK, ActionIcon.Vector(Icons.Filled.ViewSidebar), R.string.action_open_deck, Group.DECK),
         Entry(HandlerActions.OPEN_MENU, ActionIcon.Vector(Icons.Filled.Menu), R.string.action_open_menu, Group.HANDLER),
+        Entry(HandlerActions.OPEN_QUICK_SLIDER, res(R.drawable.ic_vol_increase), R.string.action_open_quick_slider, Group.VOLUME),
         Entry(HandlerActions.OPEN_VOLUME_UI, res(R.drawable.ic_vol_increase), R.string.action_open_volume_ui, Group.VOLUME),
         Entry(HandlerActions.MUTE, res(R.drawable.ic_mute), R.string.action_mute, Group.VOLUME),
         Entry(HandlerActions.MUTE_OR_UNMUTE, res(R.drawable.ic_mute), R.string.action_mute_unmute, Group.VOLUME),
@@ -150,8 +151,20 @@ object HandlerActionCatalog {
      * [HandlerActions.ALWAYS_IN_CONTEXT_MENU] is unioned in, so the menu can never lose the only
      * way to put the bar away.
      */
-    fun contextMenuEntries(selected: Set<String>): List<Entry> {
-        val shown = selected + HandlerActions.ALWAYS_IN_CONTEXT_MENU
-        return CONTEXT_MENU_CANDIDATES.filter { it.action in shown }
+    /**
+     * The menu's rows, in the user's own order.
+     *
+     * Entries the user has arranged come first, in their order; anything in
+     * [HandlerActions.ALWAYS_IN_CONTEXT_MENU] that they have not placed is appended. Appended
+     * rather than inserted at a fixed index, because the pinned entry is the escape hatch — Hide
+     * handler — and the bottom of the menu is where an escape hatch is least likely to be hit by
+     * a thumb reaching for something else.
+     */
+    fun contextMenuEntries(order: List<String>): List<Entry> {
+        val placed = order.mapNotNull { byAction[it] }.filter { it in CONTEXT_MENU_CANDIDATES }
+        val missing = HandlerActions.ALWAYS_IN_CONTEXT_MENU
+            .filterNot { pinned -> placed.any { it.action == pinned } }
+            .mapNotNull { byAction[it] }
+        return placed + missing
     }
 }

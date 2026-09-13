@@ -43,6 +43,11 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <!-- The launcher, so a bar hidden in chosen apps can tell when the user has gone Home. -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.HOME" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.APP_CALCULATOR" />
@@ -182,6 +187,20 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
+        <!-- The Handler tile: hides and shows the bar from Quick Settings, beside Screen record. -->
+        <service
+            android:name=".service.HandlerTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_gesture"
+            android:label="@string/tile_handler"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
+        </service>
     </application>
 
 </manifest>

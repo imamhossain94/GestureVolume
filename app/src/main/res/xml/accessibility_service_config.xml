@@ -6,16 +6,25 @@
   subscription is set at runtime and is empty unless capture is on; the types below are the most it
   will ever ask for.
 
+  canRequestFilterKeyEvents is for the Quick panel's Instant volume keys. The filter itself is
+  requested at runtime and only while that setting is chosen; even then the service takes the two
+  volume keys and hands every other key straight back.
+
+  typeWindowStateChanged is for hiding the bar in apps the user picks, and is subscribed only while
+  there are any. The service reads which app's window came to the front, its package and class, and
+  nothing inside it.
+
   isAccessibilityTool is false on purpose: this is a convenience feature for everyone, not an
   assistive tool, and the Play listing carries the matching disclosure.
 -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/accessibility_service_description"
     android:summary="@string/accessibility_service_summary"
-    android:accessibilityEventTypes="typeViewTextSelectionChanged|typeViewClicked"
+    android:accessibilityEventTypes="typeViewTextSelectionChanged|typeViewClicked|typeWindowStateChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
     android:notificationTimeout="100"
     android:canRetrieveWindowContent="true"
     android:accessibilityFlags="flagDefault"
     android:canPerformGestures="false"
+    android:canRequestFilterKeyEvents="true"
     android:isAccessibilityTool="false" />

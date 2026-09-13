@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.quick_slider
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -22,6 +24,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -30,6 +33,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,19 +41,38 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.core.graphics.ColorUtils
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.ui.components.PREVIEW_SUBJECT_MAX_HEIGHT
+import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
+import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
+import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
+import com.newagedevs.gesturevolume.ui.components.SliderFillSelector
+import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
+import com.newagedevs.gesturevolume.service.OverlayRuntime
+import com.newagedevs.gesturevolume.utils.HandlerShape
+import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SectionTitle
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.ColorPickerControl
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.ShapeSelector
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
 import com.newagedevs.gesturevolume.ui.view.QuickSliderView
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.IconPickerControl
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.IconPickerDialog
+import com.newagedevs.gesturevolume.utils.QuickSliderIcons
 
 /** The translated name of a slider target. */
 fun sliderTargetLabel(id: String): Int = when (id) {
@@ -59,18 +82,30 @@ fun sliderTargetLabel(id: String): Int = when (id) {
     else -> R.string.slider_target_brightness
 }
 
-fun sliderHapticLabel(id: String): Int = when (id) {
-    QuickSliderStore.HAPTIC_OFF -> R.string.slider_haptic_off
-    QuickSliderStore.HAPTIC_MEDIUM -> R.string.slider_haptic_medium
-    QuickSliderStore.HAPTIC_STRONG -> R.string.slider_haptic_strong
-    else -> R.string.slider_haptic_light
-}
-
 fun sliderOpenerLabel(id: String): Int = when (id) {
     QuickSliderStore.OPEN_OUT -> R.string.slider_open_out
     QuickSliderStore.OPEN_BOTH -> R.string.slider_open_both
     QuickSliderStore.OPEN_OFF -> R.string.slider_open_off
     else -> R.string.slider_open_in
+}
+
+fun sliderVolumeKeysLabel(id: String): Int = when (id) {
+    QuickSliderStore.VOLUME_KEYS_OFF -> R.string.slider_volume_keys_off
+    QuickSliderStore.VOLUME_KEYS_INSTANT -> R.string.slider_volume_keys_instant
+    else -> R.string.slider_volume_keys_follow
+}
+
+private fun sliderVolumeKeysHint(id: String): Int = when (id) {
+    QuickSliderStore.VOLUME_KEYS_OFF -> R.string.slider_volume_keys_off_hint
+    QuickSliderStore.VOLUME_KEYS_INSTANT -> R.string.slider_volume_keys_instant_hint
+    else -> R.string.slider_volume_keys_follow_hint
+}
+
+fun sliderHapticLabel(id: String): Int = when (id) {
+    QuickSliderStore.HAPTIC_OFF -> R.string.slider_haptic_off
+    QuickSliderStore.HAPTIC_MEDIUM -> R.string.slider_haptic_medium
+    QuickSliderStore.HAPTIC_STRONG -> R.string.slider_haptic_strong
+    else -> R.string.slider_haptic_light
 }
 
 /**
@@ -95,17 +130,127 @@ fun QuickSliderScreen(
 ) {
     val store = viewModel.preference.slider
 
+    // One wallpaper per visit; see the note in HandlerAppearanceScreen.
+    val bgImage = remember { viewModel.getNextBackground() }
+
+    // Read once: which side the bar is on is settled on the Appearance screen, and this one has
+    // no way to change it.
+    val handlerOnLeft = remember { viewModel.preference.getHandlerPosition() == "Left" }
+
     var openWith by remember { mutableStateOf(store.getOpenWith()) }
     var target by remember { mutableStateOf(store.getTarget()) }
     var haptic by remember { mutableStateOf(store.getHaptic()) }
     var length by remember { mutableFloatStateOf(store.getLengthDp()) }
     var thickness by remember { mutableFloatStateOf(store.getThicknessDp()) }
-    var corner by remember { mutableFloatStateOf(store.getCornerDp()) }
+    // The bar's colour and corners, read once. Not settings any more — the panel has its own —
+    // but still the shape the morph *starts* from, which is what the preview has to show as the
+    // collapsed end so that the preview and the real opening agree about frame zero.
+    val handlerTrackColor = remember {
+        Color(
+            ColorUtils.setAlphaComponent(
+                viewModel.preference.getHandlerColor(),
+                viewModel.preference.getHandlerBackgroundAlpha().coerceIn(0, 255)
+            )
+        )
+    }
+    var followBar by remember { mutableStateOf(store.getFollowHandlerShape()) }
+    var cornerTL by remember { mutableFloatStateOf(store.getCornerTL()) }
+    var cornerTR by remember { mutableFloatStateOf(store.getCornerTR()) }
+    var cornerBL by remember { mutableFloatStateOf(store.getCornerBL()) }
+    var cornerBR by remember { mutableFloatStateOf(store.getCornerBR()) }
+    var panelShape by remember { mutableStateOf(store.getShape()) }
+    // Seeded from what the panel would work out for itself, so the slider opens where the shape
+    // already is rather than jumping the moment it is touched.
+    var panelFlare by remember {
+        mutableFloatStateOf(
+            if (store.hasShapeFlare()) {
+                store.getShapeFlare()
+            } else {
+                minOf(
+                    viewModel.preference.getHandlerShapeFlare(),
+                    QUICK_PANEL_MAX_FLARE,
+                ).coerceAtLeast(HandlerShape.MIN_FLARE)
+            }
+        )
+    }
+
+    // The bar's own outline, for the preview to show when the panel is set to follow it.
+    val barShape = remember { viewModel.preference.getHandlerShape() }
+    val barFlare = remember { viewModel.preference.getHandlerShapeFlare() }
+    val barCorners = remember {
+        listOf(
+            viewModel.preference.getHandlerCornerRadiusTL(),
+            viewModel.preference.getHandlerCornerRadiusTR(),
+            viewModel.preference.getHandlerCornerRadiusBL(),
+            viewModel.preference.getHandlerCornerRadiusBR(),
+        )
+    }
+    val barWidth = remember { viewModel.preference.getHandlerWidthDp() }
+    var fillStyle by remember { mutableStateOf(store.getFillStyle()) }
+    var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
+    var animationSpeed by remember { mutableFloatStateOf(viewModel.preference.getPanelAnimationSpeed()) }
+    var replay by remember { mutableIntStateOf(0) }
     var trackColor by remember { mutableStateOf(Color(store.getTrackColor())) }
     var fillColor by remember { mutableStateOf(Color(store.getFillColor())) }
     var showValue by remember { mutableStateOf(store.getShowValue()) }
     var showIcon by remember { mutableStateOf(store.getShowIcon()) }
+    var valueMargin by remember { mutableFloatStateOf(store.getValueMarginDp()) }
+    var iconMargin by remember { mutableFloatStateOf(store.getIconMarginDp()) }
     var autoBrightnessOff by remember { mutableStateOf(store.getDisableAutoBrightness()) }
+    var volumeKeys by remember { mutableStateOf(store.getVolumeKeyMode()) }
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var accessibilityOn by remember { mutableStateOf(OverlayRuntime.isAccessibilityEnabled(context)) }
+    var showDisclosure by remember { mutableStateOf(false) }
+    var iconName by remember { mutableStateOf(store.getIconName()) }
+    var iconOpensPanel by remember { mutableStateOf(store.getIconOpensVolumePanel()) }
+    var showIconPicker by remember { mutableStateOf(false) }
+    // Resolved against the target, so Automatic shows the sun the moment brightness is picked.
+    val iconRes = remember(iconName, target) { QuickSliderIcons.resolve(context, iconName, target) }
+
+    // Back from the system's accessibility screen: whatever the user did there is what to show.
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                accessibilityOn = OverlayRuntime.isAccessibilityEnabled(context)
+                viewModel.preference.setAppOpenAdPaused(false)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    if (showDisclosure) {
+        AccessibilityDisclosureDialog(
+            onAccept = {
+                showDisclosure = false
+                viewModel.preference.setAcceptedAccessibilityDisclosure(true)
+                // Paused, so coming back from the system screen is not taken for a fresh launch.
+                viewModel.preference.setAppOpenAdPaused(true)
+                try {
+                    context.startActivity(OverlayRuntime.accessibilitySettingsIntent())
+                } catch (_: Exception) {
+                    viewModel.preference.setAppOpenAdPaused(false)
+                }
+            },
+            onDismiss = { showDisclosure = false }
+        )
+    }
+    if (showIconPicker) {
+        IconPickerDialog(
+            // Automatic is the tile reported as 0, whatever it happens to draw right now.
+            selectedIconRes = if (iconName == QuickSliderStore.ICON_AUTO) 0 else iconRes,
+            options = QuickSliderIcons.CHOICES,
+            automatic = QuickSliderIcons.automatic(target) to R.string.slider_icon_auto,
+            onIconSelected = { res ->
+                iconName = if (res == 0) QuickSliderStore.ICON_AUTO else QuickSliderIcons.nameOf(context, res)
+                store.setIconName(iconName)
+                showIconPicker = false
+            },
+            onDismiss = { showIconPicker = false }
+        )
+    }
+    var panelTheme by remember { mutableStateOf(viewModel.preference.getPanelTheme()) }
 
     val accent = MaterialTheme.colorScheme.primary
 
@@ -129,32 +274,64 @@ fun QuickSliderScreen(
             )
         }
     ) { padding ->
+        // Preview pinned, controls scrolling underneath — the shape the Appearance screen uses.
+        // A preview that scrolls away with the control that changes it is the old two-screen
+        // problem with extra steps: you set a number, lose sight of the thing it applies to, and
+        // have to scroll back to find out what you did.
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                // Top inset only. The bottom one belongs to the scroller below, or the fixed
+                // block gets padded away from the gesture pill it is nowhere near.
+                .padding(top = padding.calculateTopPadding())
         ) {
             Text(
                 text = stringResource(R.string.quick_slider_intro),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp)
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             SliderPreview(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                backgroundImageURL = bgImage,
+                handlerOnLeft = handlerOnLeft,
                 lengthDp = length,
                 thicknessDp = thickness,
-                cornerDp = corner,
                 trackColor = trackColor,
                 fillColor = fillColor,
                 showValue = showValue,
                 showIcon = showIcon,
-                target = target
+                iconRes = iconRes,
+                valueMargin = valueMargin,
+                iconMargin = iconMargin,
+                target = target,
+                panelTheme = panelTheme,
+                fillStyle = fillStyle,
+                followBar = followBar,
+                barShape = barShape,
+                barFlare = barFlare,
+                barCorners = barCorners,
+                barWidthDp = barWidth,
+                shape = panelShape,
+                flare = panelFlare,
+                corners = listOf(cornerTL, cornerTR, cornerBL, cornerBR),
+                animation = panelAnimation,
+                animationSpeed = animationSpeed,
+                replay = replay
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .navigationBarsPadding()
+                    .padding(16.dp)
+            ) {
             SectionTitle(stringResource(R.string.quick_slider_gesture_title), accent)
             Card {
                 Text(
@@ -229,26 +406,101 @@ fun QuickSliderScreen(
                 Sep()
                 SliderControl(
                     label = stringResource(R.string.slider_thickness),
+                    // Starts where the panel's own floor is rather than at 24dp. Below that the
+                    // panel is widened back out when it is built, so the lower half of this slider
+                    // used to move the preview and nothing else.
+                    valueRange = QuickSliderStore.MIN_THICKNESS..72f,
                     value = thickness,
-                    valueRange = 24f..72f,
                     valueDisplay = "${thickness.toInt()}dp",
                     borderColor = accent,
                     onValueChange = { thickness = it; store.setThicknessDp(it) }
                 )
                 Sep()
-                SliderControl(
-                    label = stringResource(R.string.slider_corner),
-                    value = corner,
-                    valueRange = 0f..40f,
-                    valueDisplay = "${corner.toInt()}dp",
-                    borderColor = accent,
-                    onValueChange = { corner = it; store.setCornerDp(it) }
+                SettingSwitchItem(
+                    title = stringResource(R.string.slider_follow_handler),
+                    description = stringResource(R.string.slider_follow_handler_desc),
+                    checked = followBar,
+                    onCheckedChange = { followBar = it; store.setFollowHandlerShape(it) },
                 )
+                // The sweep stays yours either way. Matching the bar settles which shape the
+                // panel is and where its corners sit; how deep the ends cut in is a number about
+                // this panel's own proportions, and a panel four times the bar's width does not
+                // want the bar's answer to it.
+                if (followBar && barShape == HandlerShape.TAB) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    SliderControl(
+                        label = stringResource(R.string.end_sweep),
+                        value = panelFlare * 100f,
+                        valueRange = HandlerShape.MIN_FLARE * 100f..HandlerShape.MAX_FLARE * 100f,
+                        valueDisplay = "${(panelFlare * 100f).toInt()}%",
+                        borderColor = accent,
+                        onValueChange = { panelFlare = it / 100f; store.setShapeFlare(it / 100f) },
+                    )
+                }
+                if (!followBar) {
+                    Sep()
+                    ShapeSelector(
+                        shape = panelShape,
+                        onShapeChange = { panelShape = it; store.setShape(it) },
+                    )
+                    if (panelShape == HandlerShape.TAB) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        SliderControl(
+                            label = stringResource(R.string.end_sweep),
+                            value = panelFlare * 100f,
+                            valueRange = HandlerShape.MIN_FLARE * 100f..HandlerShape.MAX_FLARE * 100f,
+                            valueDisplay = "${(panelFlare * 100f).toInt()}%",
+                            borderColor = accent,
+                            onValueChange = { panelFlare = it / 100f; store.setShapeFlare(it / 100f) },
+                        )
+                    } else {
+                        val setCorners = {
+                            store.setCorners(cornerTL, cornerTR, cornerBL, cornerBR)
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        SliderControl(
+                            label = stringResource(R.string.top_left),
+                            value = cornerTL, valueRange = 0f..60f,
+                            valueDisplay = "${cornerTL.toInt()}dp",
+                            borderColor = accent,
+                            onValueChange = { cornerTL = it; setCorners() },
+                        )
+                        SliderControl(
+                            label = stringResource(R.string.top_right),
+                            value = cornerTR, valueRange = 0f..60f,
+                            valueDisplay = "${cornerTR.toInt()}dp",
+                            borderColor = accent,
+                            onValueChange = { cornerTR = it; setCorners() },
+                        )
+                        SliderControl(
+                            label = stringResource(R.string.bottom_left),
+                            value = cornerBL, valueRange = 0f..60f,
+                            valueDisplay = "${cornerBL.toInt()}dp",
+                            borderColor = accent,
+                            onValueChange = { cornerBL = it; setCorners() },
+                        )
+                        SliderControl(
+                            label = stringResource(R.string.bottom_right),
+                            value = cornerBR, valueRange = 0f..60f,
+                            valueDisplay = "${cornerBR.toInt()}dp",
+                            borderColor = accent,
+                            onValueChange = { cornerBR = it; setCorners() },
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
             SectionTitle(stringResource(R.string.quick_slider_look_title), accent)
             Card {
+                PanelThemeSelector(
+                    theme = panelTheme,
+                    onThemeChange = {
+                        panelTheme = it
+                        viewModel.preference.setPanelTheme(it)
+                    },
+                )
+                Sep()
                 ColorPickerControl(
                     label = stringResource(R.string.slider_track_color),
                     color = trackColor,
@@ -263,12 +515,43 @@ fun QuickSliderScreen(
                     onColorChange = { fillColor = it; store.setFillColor(it.toArgb()) }
                 )
                 Sep()
+                PanelAnimationSelector(
+                    animation = panelAnimation,
+                    onAnimationChange = {
+                        panelAnimation = it
+                        viewModel.preference.setPanelAnimation(it)
+                        replay++
+                    },
+                    speed = animationSpeed,
+                    onSpeedChange = {
+                        animationSpeed = it
+                        viewModel.preference.setPanelAnimationSpeed(it)
+                        replay++
+                    },
+                )
+                Sep()
+                SliderFillSelector(
+                    style = fillStyle,
+                    onStyleChange = { fillStyle = it; store.setFillStyle(it) },
+                )
+                Sep()
                 SettingSwitchItem(
                     title = stringResource(R.string.slider_show_value),
                     description = stringResource(R.string.slider_show_value_desc),
                     checked = showValue,
                     onCheckedChange = { showValue = it; store.setShowValue(it) }
                 )
+                if (showValue) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    SliderControl(
+                        label = stringResource(R.string.slider_value_margin),
+                        value = valueMargin,
+                        valueRange = 0f..QuickSliderStore.MAX_CONTENT_PADDING,
+                        valueDisplay = "${valueMargin.toInt()}dp",
+                        borderColor = accent,
+                        onValueChange = { valueMargin = it; store.setValueMarginDp(it) }
+                    )
+                }
                 Sep()
                 SettingSwitchItem(
                     title = stringResource(R.string.slider_show_icon),
@@ -276,11 +559,79 @@ fun QuickSliderScreen(
                     checked = showIcon,
                     onCheckedChange = { showIcon = it; store.setShowIcon(it) }
                 )
+                if (showIcon) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    SliderControl(
+                        label = stringResource(R.string.slider_icon_margin),
+                        value = iconMargin,
+                        valueRange = 0f..QuickSliderStore.MAX_CONTENT_PADDING,
+                        valueDisplay = "${iconMargin.toInt()}dp",
+                        borderColor = accent,
+                        onValueChange = { iconMargin = it; store.setIconMarginDp(it) }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    IconPickerControl(
+                        label = stringResource(R.string.slider_icon),
+                        selectedIconRes = iconRes,
+                        borderColor = accent,
+                        caption = if (iconName == QuickSliderStore.ICON_AUTO) {
+                            stringResource(R.string.slider_icon_auto)
+                        } else {
+                            null
+                        },
+                        onClick = { showIconPicker = true }
+                    )
+                    if (target != QuickSliderStore.TARGET_BRIGHTNESS) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        SettingSwitchItem(
+                            title = stringResource(R.string.slider_icon_opens_panel),
+                            description = stringResource(R.string.slider_icon_opens_panel_desc),
+                            checked = iconOpensPanel,
+                            onCheckedChange = { iconOpensPanel = it; store.setIconOpensVolumePanel(it) }
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
             SectionTitle(stringResource(R.string.quick_slider_behaviour_title), accent)
             Card {
+                Text(
+                    text = stringResource(R.string.slider_volume_key),
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.slider_volume_key_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                ChipRow(
+                    ids = QuickSliderStore.ALL_VOLUME_KEY_MODES,
+                    label = { stringResource(sliderVolumeKeysLabel(it)) },
+                    selected = { it == volumeKeys },
+                    onClick = { mode ->
+                        volumeKeys = mode
+                        store.setVolumeKeyMode(mode)
+                        // The key filter is asked for only while this says Instant.
+                        OverlayRuntime.accessibilityService?.applyEventSubscription()
+                        if (mode == QuickSliderStore.VOLUME_KEYS_INSTANT && !accessibilityOn) {
+                            showDisclosure = true
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(sliderVolumeKeysHint(volumeKeys)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (volumeKeys == QuickSliderStore.VOLUME_KEYS_INSTANT && !accessibilityOn) {
+                    NeedsAccessibilityForKeys { showDisclosure = true }
+                }
+                Sep()
                 SettingSwitchItem(
                     title = stringResource(R.string.slider_auto_brightness),
                     description = stringResource(R.string.slider_auto_brightness_desc),
@@ -290,6 +641,7 @@ fun QuickSliderScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 }
@@ -303,45 +655,111 @@ fun QuickSliderScreen(
  */
 @Composable
 private fun SliderPreview(
+    modifier: Modifier = Modifier,
     lengthDp: Float,
     thicknessDp: Float,
-    cornerDp: Float,
     trackColor: Color,
     fillColor: Color,
     showValue: Boolean,
     showIcon: Boolean,
-    target: String
+    /** The icon to draw when [showIcon] is on, already resolved against the target. */
+    iconRes: Int,
+    valueMargin: Float,
+    iconMargin: Float,
+    target: String,
+    backgroundImageURL: String,
+    handlerOnLeft: Boolean,
+    /** The panel style, so this shows the material the user is about to get. */
+    panelTheme: String,
+    /** What the fill does. Runs here exactly as it runs on the real panel. */
+    fillStyle: String,
+    /** The entrance, replayed on the preview whenever one is picked. */
+    animation: String,
+    animationSpeed: Float,
+    replay: Int,
+    /** The outline, either the bar's scaled up or the panel's own. */
+    followBar: Boolean,
+    barShape: String,
+    barFlare: Float,
+    barCorners: List<Float>,
+    barWidthDp: Float,
+    shape: String,
+    flare: Float,
+    corners: List<Float>,
 ) {
-    val iconRes = if (target == QuickSliderStore.TARGET_BRIGHTNESS) {
-        R.drawable.ic_brightness_up
-    } else {
-        R.drawable.ic_vol_increase
-    }
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+    // Against the same edge the handler is on, because that is where the panel actually opens —
+    // it grows out of the bar. Centred, it was a picture of a track floating in the middle of the
+    // screen, which is the one place it never appears.
+    val density = LocalDensity.current.density
+    PreviewStage(
+        backgroundImageURL = backgroundImageURL,
+        contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
+        modifier = modifier,
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height((lengthDp + 48f).dp),
-            contentAlignment = Alignment.Center
-        ) {
-            AndroidView(
+        AndroidView(
                 factory = { ctx -> QuickSliderView(ctx) },
                 update = { view ->
-                    view.setColors(trackColor.toArgb(), fillColor.toArgb())
-                    view.setCornerRadiusDp(cornerDp)
+                    // Dressed exactly the way the live panel is — see
+                    // `OverlayController.openQuickSliderWindow`. It used to skip the theme
+                    // entirely, so the preview showed the Solid look whatever was selected, which
+                    // on a picker whose whole job is choosing a look is worse than no preview.
+                    val paleSurface = PanelTheme.panelSurface(panelTheme)
+                    if (paleSurface != null) {
+                        view.setColors(paleSurface.toInt(), PANEL_PREVIEW_LIGHT_INK)
+                        view.setPanelTheme(1f, PanelTheme.hasLitEdge(panelTheme), light = true)
+                    } else {
+                        view.setColors(trackColor.toArgb(), fillColor.toArgb())
+                        view.setPanelTheme(
+                            PanelTheme.surfaceAlpha(panelTheme),
+                            PanelTheme.hasLitEdge(panelTheme),
+                        )
+                    }
+                    // The same resolution the live panel does, for the same reason: following the
+                    // bar means scaled, not copied — see `OverlayController.openQuickSliderWindow`.
+                    val ratio = (thicknessDp / barWidthDp.coerceAtLeast(1f)).coerceIn(1f, 4f)
+                    if (followBar) {
+                        view.setExpandedCorners(
+                            barCorners[0] * ratio, barCorners[1] * ratio,
+                            barCorners[2] * ratio, barCorners[3] * ratio,
+                        )
+                        view.setShapes(barShape, flare, barShape, barFlare, handlerOnLeft)
+                    } else {
+                        view.setExpandedCorners(corners[0], corners[1], corners[2], corners[3])
+                        view.setShapes(shape, flare, shape, flare, handlerOnLeft)
+                    }
+                    view.setFillStyle(fillStyle)
+                    view.setDrawnThickness(thicknessDp * density, handlerOnLeft)
+                    view.setContentMargins(valueMargin, iconMargin)
                     view.setShowValue(showValue)
                     view.setIcon(if (showIcon) iconRes else null)
                     view.setValue(0.6f)
+                    // Both, and neither is optional. QuickSliderView is built to grow out of the
+                    // bar, so it starts collapsed and empty: at expansion 0 it draws no fill, no
+                    // number and no icon, which in a *static* preview is just a black lozenge.
+                    // These two say "this one is already open" — the state every other caller
+                    // reaches by animating, and this one has no reason to animate to.
+                    view.setExpansion(1f)
+                    view.setCommitted()
+                    // Only when asked for. `update` runs on every recomposition — every tick of
+                    // every slider on this screen — and replaying the entrance each time is what
+                    // made dragging the sweep look like the panel was stuttering: it was restarting
+                    // its entrance thirty times a second. The tag remembers which request it has
+                    // already played.
+                    if (view.tag != replay) {
+                        view.tag = replay
+                        view.playEntrance(animation, handlerOnLeft, animationSpeed)
+                    }
                 },
-                modifier = Modifier
-                    .height(lengthDp.dp)
-                    .width(thicknessDp.dp)
-            )
-        }
+            modifier = Modifier
+                .padding(horizontal = 18.dp)
+                // Capped to the stage's clear height, so a 320dp track is shown shortened rather
+                // than bleeding off both ends. What the user is judging here is width, colour and
+                // the shape of the ends; length is a number they set with a slider and read off it.
+                .height(minOf(lengthDp, PREVIEW_SUBJECT_MAX_HEIGHT.value).dp)
+                // The window's floor, not the panel's: the preview is the window, and the panel
+                // is drawn inside it against the edge, exactly as it is on screen.
+                .width(maxOf(thicknessDp, PANEL_PREVIEW_MIN_WINDOW).dp)
+        )
     }
 }
 
@@ -384,6 +802,26 @@ private fun ChipRow(
     }
 }
 
+/** The note under Instant while the accessibility service is off, and the way to turn it on. */
+@Composable
+private fun NeedsAccessibilityForKeys(onClick: () -> Unit) {
+    Spacer(modifier = Modifier.height(10.dp))
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
+    ) {
+        Text(
+            text = stringResource(R.string.slider_volume_keys_needs_accessibility),
+            fontSize = 13.sp,
+            color = MaterialTheme.colorScheme.onErrorContainer,
+            modifier = Modifier.padding(12.dp)
+        )
+    }
+}
+
 @Composable
 private fun Card(content: @Composable ColumnScope.() -> Unit) {
     Surface(
@@ -402,3 +840,18 @@ private fun Sep() {
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
     )
 }
+
+/** Mirrors `OverlayController.PANEL_LIGHT_INK`, so the preview and the panel write in one colour. */
+private val PANEL_PREVIEW_LIGHT_INK = 0xFF15161A.toInt()
+
+/**
+ * Mirrors `OverlayController.PANEL_MAX_FLARE`.
+ *
+ * Duplicated rather than shared because the controller's copy is private to the service and this
+ * one exists only to seed a slider; the number they agree on is a proportion of a panel, not a
+ * contract between them.
+ */
+private const val QUICK_PANEL_MAX_FLARE = 0.22f
+
+/** Mirrors `OverlayController.PANEL_MIN_THICKNESS_DP`: the window's floor, not the panel's. */
+private const val PANEL_PREVIEW_MIN_WINDOW = 48f

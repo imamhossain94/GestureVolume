@@ -77,7 +77,7 @@ object PermissionNeeds {
         // intend to tap, and the pinned entries are added by the catalog rather than chosen, so
         // the stored set alone would miss nothing but could include less than the menu shows.
         val menuActions = HandlerActionCatalog
-            .contextMenuEntries(preference.getContextMenuItems())
+            .contextMenuEntries(preference.getContextMenuOrder())
             .map { it.action }
         return slots + menuActions
     }

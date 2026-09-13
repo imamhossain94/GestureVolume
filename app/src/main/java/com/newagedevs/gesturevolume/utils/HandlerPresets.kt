@@ -63,6 +63,12 @@ object HandlerPresets {
         val strokeColor: Color,
         val strokeWidth: Float,
         val strokeAlpha: Int,
+        /**
+         * The radius every corner takes unless one of the four below overrides it.
+         *
+         * Kept as the single source for the symmetric presets, which is most of them, so that
+         * "this shape is a pill" stays one number rather than four that have to agree.
+         */
         val cornerRadius: Float,
         @param:DrawableRes val iconRes: Int,
         val iconSize: Float,
@@ -72,13 +78,86 @@ object HandlerPresets {
         val edgeMargin: Float,
         val positionFraction: Float,
         /** Non-null only for a preset that is a place as much as a look. See [Placement]. */
-        val placement: Placement? = null
-    )
+        val placement: Placement? = null,
+        /**
+         * Per-corner overrides, for the shapes that are not symmetric.
+         *
+         * A bar flush against a screen edge wants its outer corners square and its inner ones
+         * rounded — that is what makes it read as something attached to the edge rather than
+         * floating near it. Expressed as four nullable overrides rather than four required values
+         * so that the symmetric presets stay one number.
+         */
+        val cornerTopLeft: Float? = null,
+        val cornerTopRight: Float? = null,
+        val cornerBottomLeft: Float? = null,
+        val cornerBottomRight: Float? = null,
+        /**
+         * The outline the bar is cut to. See [HandlerShape].
+         *
+         * Defaulted rather than required because every preset that predates shapes is a rounded
+         * rectangle, and saying so five times would be five chances to say it differently.
+         */
+        val shape: String = HandlerShape.ROUNDED,
+        /** How far a [HandlerShape.TAB]'s ends sweep, as a fraction of the bar's height. */
+        val flare: Float = HandlerShape.DEFAULT_FLARE,
+    ) {
+        val topLeft: Float get() = cornerTopLeft ?: cornerRadius
+        val topRight: Float get() = cornerTopRight ?: cornerRadius
+        val bottomLeft: Float get() = cornerBottomLeft ?: cornerRadius
+        val bottomRight: Float get() = cornerBottomRight ?: cornerRadius
+    }
 
     val ALL: List<Preset> = listOf(
         Preset(
             /**
-             * The out-of-the-box handle: a slim black pill, flush to the right edge, centred.
+             * The dock tab: a bar whose ends sweep back into the side of the phone.
+             *
+             * The one preset here that is not a rounded rectangle, and the reason [HandlerShape]
+             * exists. A pill sits *next to* the screen edge — however flush you push it, the two
+             * corners facing the glass tell you it is a separate object resting against it. A tab
+             * has no corners there at all: its outline runs off the edge and back, so it reads as
+             * part of the phone's own frame, which is the whole effect this shape is for.
+             *
+             * Taller than the pill presets because the sweeps eat into both ends — at 120dp with
+             * a 0.29 flare the straight section is only about 50dp, and a tab needs a flat middle
+             * to read as a handle rather than as a leaf. Opaque black for
+             * the same reason the Edge is: the shape is the whole idea, and a translucent tab
+             * over a busy app is a shape you cannot make out.
+             *
+             * Carries a [Placement] because a tab that is not touching the edge is not a tab. The
+             * sweeps run to where the glass is, and parked in mid-screen they curve away into
+             * nothing.
+             *
+             * The out-of-the-box handle, so changing these values changes what an install with
+             * unset appearance preferences looks like:
+             * [com.newagedevs.gesturevolume.data.local.SharedPref] falls back to this preset for each
+             * of them. Installs from before it became the default keep the bar they had — see
+             * `SharedPref.pinEdgeAppearanceDefaults`.
+             */
+            id = "Dock",
+            nameRes = R.string.preset_dock_title,
+            subtitleRes = R.string.preset_dock_subtitle,
+            gravity = Gravity.END,
+            width = 14f, height = 120f,
+            bgColor = Color.Black, bgAlpha = 255,
+            strokeColor = Color.White, strokeWidth = 0f, strokeAlpha = 200,
+            // Unused by a tab, which has no corners — carried so that switching this preset back
+            // to a rounded shape lands on something sane rather than on four zeroes.
+            cornerRadius = 8f,
+            iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
+            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.5f,
+            placement = Placement(
+                gravity = Gravity.END,
+                posXFraction = 1f,
+                posYFraction = 0.5f,
+                snapToEdge = true
+            ),
+            shape = HandlerShape.TAB,
+            flare = 0.29f
+        ),
+        Preset(
+            /**
+             * The Edge: a slim black pill, flush to the right edge, centred.
              *
              * These numbers are a deliberate copy of the shape the edge-launcher category has
              * settled on — 10dp of width, a little under a hundred tall, fully opaque black, ends
@@ -87,24 +166,20 @@ object HandlerPresets {
              * a dark app's chrome, which is why every app in this category converges on it.
              *
              * A geometric proportion is not anyone's property, and nothing here is copied from
-             * another app's assets or code. The name stays generic for the same reason the Edge
-             * and Notch presets do.
+             * another app's assets or code.
              *
-             * Changing these values changes what an install with unset appearance preferences
-             * looks like, because [com.newagedevs.gesturevolume.data.local.SharedPref] falls back
-             * to this preset for each of them. An install that predates the change keeps the old
-             * indigo bar: see `SharedPref.pinLegacyAppearanceDefaults`, which writes the previous
-             * defaults out explicitly on first run after the update so that only genuinely fresh
-             * installs pick up the new shape.
+             * It was the out-of-the-box handle, under the name Default, until the Dock tab took
+             * that over, and an install from those days keeps it: see
+             * `SharedPref.pinEdgeAppearanceDefaults`.
              */
-            id = "Default",
-            nameRes = R.string.preset_default_title,
-            subtitleRes = R.string.preset_default_subtitle,
+            id = "Edge",
+            nameRes = R.string.preset_edge_title,
+            subtitleRes = R.string.preset_edge_subtitle,
             gravity = Gravity.END,
-            width = 10f, height = 95f,
+            width = 12f, height = 95f,
             bgColor = Color.Black, bgAlpha = 255,
             strokeColor = Color.White, strokeWidth = 0f, strokeAlpha = 200,
-            cornerRadius = 5f,
+            cornerRadius = 10f,
             iconRes = R.drawable.ic_vol_increase, iconSize = 18f, iconColor = Color.White,
             showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.5f,
             placement = Placement(
@@ -112,7 +187,14 @@ object HandlerPresets {
                 posXFraction = 1f,
                 posYFraction = 0.5f,
                 snapToEdge = true
-            )
+            ),
+            // Square where it meets the screen edge, rounded where it faces the app. The two
+            // radii are given as left/right rather than inner/outer because the preset is written
+            // for the right-hand edge it ships against; carried to the left edge by a drag, the
+            // bar keeps these corners and the rounding ends up on the outside. Living with that
+            // is the cost of corners being four plain numbers the user can also edit by hand.
+            cornerTopLeft = 10f, cornerTopRight = 1f,
+            cornerBottomLeft = 10f, cornerBottomRight = 1f
         ),
         Preset(
             id = "Minimal",
@@ -127,16 +209,33 @@ object HandlerPresets {
             showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.12f
         ),
         Preset(
+            /**
+             * The floating bubble: a circle that sits near the edge rather than against it.
+             *
+             * The odd one out on purpose. Every other preset here is a bar — a tall thin thing
+             * welded to the side of the screen — and this is the shape people reach for when they
+             * want the opposite: something round, obviously draggable, and clearly *on top of* the
+             * app rather than part of its frame. A circle is what an assistive on-screen button
+             * has looked like on every platform that has one.
+             *
+             * Three numbers make it a bubble rather than a wide bar. Width and height are equal,
+             * the radius is exactly half of them — anything less is a rounded square — and the
+             * edge margin lifts it off the side, because a circle flush to the edge is a circle
+             * with a slice missing. The alpha is low enough to see the app through it and high
+             * enough to find it on a white screen.
+             */
             id = "Bold",
             nameRes = R.string.preset_bold_title,
             subtitleRes = R.string.preset_bold_subtitle,
             gravity = Gravity.END,
-            width = 40f, height = 100f,
-            bgColor = PREVIEW_PRIMARY, bgAlpha = 217,
-            strokeColor = Color.White, strokeWidth = 1f, strokeAlpha = 255,
-            cornerRadius = 15f,
-            iconRes = R.drawable.ic_move, iconSize = 32f, iconColor = Color.White,
-            showIcon = true, vibrate = true, edgeMargin = 0f, positionFraction = 0.12f
+            width = 46f, height = 46f,
+            bgColor = PREVIEW_ON_SURFACE, bgAlpha = 140,
+            strokeColor = Color.White, strokeWidth = 1.5f, strokeAlpha = 90,
+            cornerRadius = 23f,
+            // The volume glyph rather than the move one. A bubble is round and obviously
+            // draggable already; what it cannot say for itself is what it is *for*.
+            iconRes = R.drawable.ic_vol_increase, iconSize = 24f, iconColor = Color.White,
+            showIcon = true, vibrate = true, edgeMargin = 6f, positionFraction = 0.55f
         ),
         Preset(
             id = "Night",
@@ -147,67 +246,10 @@ object HandlerPresets {
             bgColor = PREVIEW_ON_SURFACE, bgAlpha = 179,
             strokeColor = Color(0xFF374151), strokeWidth = 1f, strokeAlpha = 200,
             cornerRadius = 15f,
+            // No icon. Night is the quiet preset — a dark bar meant to disappear into a dark
+            // app — and a glyph on it is the one thing that would keep catching the eye.
             iconRes = R.drawable.ic_vol_increase, iconSize = 22f, iconColor = Color(0xFF9CA3AF),
-            showIcon = true, vibrate = true, edgeMargin = 0f, positionFraction = 0.12f
-        ),
-        Preset(
-            /**
-             * The slim edge-handle look: a thin translucent pill, flush to the side.
-             *
-             * Deliberately NOT named after the OEM whose edge panel it resembles. The shape is not
-             * anyone's property, but the brand name is, and a preset label is exactly the kind of
-             * incidental trademark use that draws a complaint against a listing.
-             *
-             * Distinct from Minimal, which is the same 10dp width but a full 100dp tall, dark, and
-             * carries a visible stroke. This one is shorter, lighter, and sits lower down the
-             * screen where a thumb rests rather than up near the status bar. The corner radius is
-             * exactly half the width, which is what makes it a true pill rather than a rounded
-             * rectangle.
-             *
-             * It keeps a faint stroke despite the original having none: a white fill at this alpha
-             * disappears entirely against a white app, and a handle you cannot find is not minimal,
-             * it is broken.
-             */
-            id = "Edge",
-            nameRes = R.string.preset_edge_title,
-            subtitleRes = R.string.preset_edge_subtitle,
-            gravity = Gravity.END,
-            width = 10f, height = 70f,
-            bgColor = Color.White, bgAlpha = 153,
-            strokeColor = PREVIEW_ON_SURFACE, strokeWidth = 1f, strokeAlpha = 40,
-            cornerRadius = 5f,
-            iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
-            showIcon = false, vibrate = true, edgeMargin = 0f, positionFraction = 0.35f
-        ),
-        Preset(
-            /**
-             * A slim bar across the top of the screen, beside the camera cutout.
-             *
-             * The one preset that is a placement as much as an appearance: it is centred at the
-             * very top with snapping off, because a wide flat pill that flew to the side would be
-             * neither a notch bar nor a usable edge bar. Swipes still adjust volume from it —
-             * the gesture engine measures vertical travel, not which edge the bar is on.
-             *
-             * Not named after any manufacturer's screen furniture. The shape is not anyone's
-             * property; the brand name would be, and a preset label is exactly the kind of
-             * incidental trademark use that draws a complaint against a listing.
-             */
-            id = "Notch",
-            nameRes = R.string.preset_notch_title,
-            subtitleRes = R.string.preset_notch_subtitle,
-            gravity = Gravity.END,
-            width = 150f, height = 14f,
-            bgColor = Color.Black, bgAlpha = 235,
-            strokeColor = Color.White, strokeWidth = 0.5f, strokeAlpha = 30,
-            cornerRadius = 7f,
-            iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
-            showIcon = false, vibrate = true, edgeMargin = 0f, positionFraction = 0f,
-            placement = Placement(
-                gravity = Gravity.END,
-                posXFraction = 0.5f,
-                posYFraction = 0f,
-                snapToEdge = false
-            )
+            showIcon = false, vibrate = true, edgeMargin = 0f, positionFraction = 0.12f
         ),
         Preset(
             id = "Ghost",
@@ -226,11 +268,14 @@ object HandlerPresets {
     fun byId(id: String?): Preset? = ALL.firstOrNull { it.id == id }
 
     /**
-     * The out-of-the-box handler.
+     * The out-of-the-box handler: the Dock tab.
      *
      * [com.newagedevs.gesturevolume.data.local.SharedPref] falls back to these values for every
-     * unset appearance preference, so a fresh install already *is* the Default preset rather than
-     * merely resembling it, and the appearance screen opens pre-populated with it.
+     * unset appearance preference, so a fresh install already *is* this preset rather than merely
+     * resembling it, and the appearance screen opens pre-populated with it.
      */
-    val DEFAULT: Preset = ALL.first { it.id == "Default" }
+    val DEFAULT: Preset = ALL.first { it.id == "Dock" }
+
+    /** The slim pill that was the default before the Dock. See `SharedPref.pinEdgeAppearanceDefaults`. */
+    val EDGE: Preset = ALL.first { it.id == "Edge" }
 }
