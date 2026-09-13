@@ -315,6 +315,8 @@ class HandlerGestureDetector(
 
     }
 
+    /** Kept rather than read through the constructor's context, which a property getter cannot see. */
+    private val resources = context.resources
     private val density = context.resources.displayMetrics.density
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
 
@@ -327,18 +329,31 @@ class HandlerGestureDetector(
     /**
      * How far the finger must travel to commit to the panel, in pixels.
      *
-     * Read from the display once, when the detector is built. The bar is rebuilt on a
-     * configuration change, so a rotation gets a detector measured against the width it rotated
-     * into. Always clear of [edgeTriggerPx] by a factor of two, whatever the arithmetic produces,
+     * Read from the display each time it is asked, so a rotation is measured against the width it
+     * rotated into — or, for a bar lying along the top or bottom edge, against [inwardSpanPx],
+     * because inward is down the screen there rather than across it. Always clear of [edgeTriggerPx] by a factor of two, whatever the arithmetic produces,
      * so the two thresholds cannot collapse into each other on any display.
      */
-    private val sliderTriggerPx = run {
-        val widthPx = context.resources.displayMetrics.widthPixels.toFloat()
-        (widthPx * SLIDER_TRIGGER_FRACTION)
-            .coerceAtLeast(SLIDER_TRIGGER_MIN_DP * density)
-            .coerceAtMost(widthPx * SLIDER_TRIGGER_MAX_FRACTION)
-            .coerceAtLeast(edgeTriggerPx * 2f)
-    }
+    private val sliderTriggerPx: Float
+        get() {
+            val widthPx = if (inwardSpanPx > 0f) {
+                inwardSpanPx
+            } else {
+                resources.displayMetrics.widthPixels.toFloat()
+            }
+            return (widthPx * SLIDER_TRIGGER_FRACTION)
+                .coerceAtLeast(SLIDER_TRIGGER_MIN_DP * density)
+                .coerceAtMost(widthPx * SLIDER_TRIGGER_MAX_FRACTION)
+                .coerceAtLeast(edgeTriggerPx * 2f)
+        }
+
+    /**
+     * How far the screen reaches in the inward direction, in pixels, when that is not its width.
+     *
+     * Zero means the width. The host sets it for a bar lying along the top or bottom edge, where a
+     * third of the width would be most of the way down a landscape screen.
+     */
+    var inwardSpanPx: Float = 0f
 
     private val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
     /**

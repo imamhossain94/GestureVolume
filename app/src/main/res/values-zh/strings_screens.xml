@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_pick_any">选择所有适用项</string>
+    <string name="feedback_via_email_title">通过你的邮件应用发送</string>
+    <string name="feedback_via_email_desc">点按发送会打开邮件应用并填好你的内容。在那里发送之前，不会发出任何内容。</string>
+    <string name="feedback_details_title">附带的信息</string>
+    <string name="feedback_details_desc">会附上应用版本、设备型号和 Android 版本，以便追查问题。</string>
+</resources>

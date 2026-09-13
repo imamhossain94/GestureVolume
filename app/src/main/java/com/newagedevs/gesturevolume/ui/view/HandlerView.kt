@@ -105,6 +105,12 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
      * wherever it was dragged and the margin is enforced by the drag's own clamp instead.
      */
     private var freeX: Float? = null
+
+    /**
+     * [Gravity.TOP] or [Gravity.BOTTOM] while the bar lies along that screen edge — Dynamic
+     * position, with the phone on its side — and [Gravity.NO_GRAVITY] while it stands upright.
+     */
+    private var lyingEdge: Int = Gravity.NO_GRAVITY
     private var iconVisibleBeforeDragCue: Boolean = true
     private var dragCueActive: Boolean = false
 
@@ -328,6 +334,25 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     }
 
     /**
+     * Lays the bar along the top or bottom edge, or stands it back up with [Gravity.NO_GRAVITY].
+     *
+     * Width and height keep meaning thickness and length, so a lying bar is the upright one turned
+     * on its side: its window, its outline and its dead space all turn with it. Touches are turned
+     * the same way before the gesture engine sees them — see [turnedOnItsSide] — so a swipe along
+     * the bar adjusts and a swipe away from the edge is inward, exactly as on an upright bar.
+     */
+    fun setLyingEdge(edge: Int) {
+        val next = if (edge == Gravity.TOP || edge == Gravity.BOTTOM) edge else Gravity.NO_GRAVITY
+        if (lyingEdge == next) return
+        lyingEdge = next
+        updateLayoutParams()
+        updateInsetsForGravity(viewGravityPosition)
+        applyEdgeMargin()
+    }
+
+    fun isLying(): Boolean = lyingEdge != Gravity.NO_GRAVITY
+
+    /**
      * Inward nudge from the screen edge, for the **previews only**.
      *
      * The live overlay must not use this: there the bar is the root view of a window sized exactly
@@ -363,6 +388,11 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     }
 
     private fun applyEdgeMargin() {
+        if (lyingEdge != Gravity.NO_GRAVITY) {
+            // Only the live overlay lies down, and it moves its window rather than the drawing.
+            translationX = 0f
+            return
+        }
         val absolute = freeX
         if (absolute != null) {
             translationX = absolute - layoutLeftInParent()
@@ -386,6 +416,20 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     }
 
     private fun updateInsetsForGravity(gravity: Int) {
+        if (lyingEdge != Gravity.NO_GRAVITY) {
+            // Lying down, the dead space goes below a bar on the top edge and above one on the
+            // bottom, for the same reason it goes inward on an upright one.
+            val inward = DEFAULT_INSET + inwardPaddingDp
+            insetLeft = 0f
+            insetRight = 0f
+            insetTop = if (lyingEdge == Gravity.TOP) 0f else inward
+            insetBottom = if (lyingEdge == Gravity.TOP) inward else 0f
+            setPadding(0, dpToPx(insetTop).toInt(), 0, dpToPx(insetBottom).toInt())
+            updateViewAppearance()
+            return
+        }
+        insetTop = 0f
+        insetBottom = 0f
         when (gravity) {
             Gravity.START -> {
                 insetLeft = 0f
@@ -420,11 +464,12 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     // ========== Internal Methods ==========
 
     private fun updateLayoutParams() {
+        val lying = lyingEdge != Gravity.NO_GRAVITY
         val layoutParams = LayoutParams(
-            dpToPx(viewWidth).toInt(),
-            dpToPx(viewHeight).toInt()
+            dpToPx(if (lying) viewHeight else viewWidth).toInt(),
+            dpToPx(if (lying) viewWidth else viewHeight).toInt()
         ).apply {
-            gravity = viewGravityPosition
+            gravity = if (lying) lyingEdge else viewGravityPosition
         }
         this.layoutParams = layoutParams
         requestLayout()
@@ -436,7 +481,9 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
             this.flare = shapeFlare
             // The sweep has to point at whichever side the bar is currently mounted on, and
             // gravity is the record of that: START means the bar is against the left edge.
-            this.edgeOnLeft = viewGravityPosition == Gravity.START
+            this.horizontal = lyingEdge != Gravity.NO_GRAVITY
+            // Lying down, the drawable's "left" is the side it turns to face the top edge.
+            this.edgeOnLeft = if (horizontal) lyingEdge == Gravity.TOP else viewGravityPosition == Gravity.START
             setCornerRadiiPx(
                 dpToPx(cornerRadiusTopLeft),
                 dpToPx(cornerRadiusTopRight),
@@ -498,7 +545,72 @@ class HandlerView(context: Context, attrs: AttributeSet? = null) : FrameLayout(c
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val detector = gestureDetector ?: return super.onTouchEvent(event)
-        return detector.onTouchEvent(event) || super.onTouchEvent(event)
+        if (lyingEdge == Gravity.NO_GRAVITY) {
+            return detector.onTouchEvent(event) || super.onTouchEvent(event)
+        }
+        val turned = turnedOnItsSide(event)
+        val handled = try {
+            detector.onTouchEvent(turned)
+        } finally {
+            turned.recycle()
+        }
+        return handled || super.onTouchEvent(event)
+    }
+
+    /**
+     * The touch as an upright bar would have felt it, for a bar lying along the top or bottom.
+     *
+     * In screen coordinates, like every measurement the detector makes, with the axes swapped:
+     * travel along the bar becomes vertical travel — rightward reading as up, so a swipe to the
+     * right raises the level the way a slider does — and travel away from the edge becomes
+     * horizontal, which the host's inward sign then names. Historical samples come across too,
+     * because the detector walks them to step a fast flick more than once.
+     */
+    private fun turnedOnItsSide(event: MotionEvent): MotionEvent {
+        val offsetX = event.rawX - event.x
+        val offsetY = event.rawY - event.y
+        val count = event.pointerCount
+        val properties = Array(count) { i ->
+            MotionEvent.PointerProperties().also { event.getPointerProperties(i, it) }
+        }
+        val coords = Array(count) { MotionEvent.PointerCoords() }
+        fun fill(history: Int) {
+            for (i in 0 until count) {
+                val c = coords[i]
+                if (history < 0) event.getPointerCoords(i, c) else event.getHistoricalPointerCoords(i, history, c)
+                val screenX = c.x + offsetX
+                val screenY = c.y + offsetY
+                c.x = screenY
+                c.y = -screenX
+            }
+        }
+        val history = event.historySize
+        fill(if (history > 0) 0 else -1)
+        val turned = MotionEvent.obtain(
+            event.downTime,
+            if (history > 0) event.getHistoricalEventTime(0) else event.eventTime,
+            event.action,
+            count,
+            properties,
+            coords,
+            event.metaState,
+            event.buttonState,
+            event.xPrecision,
+            event.yPrecision,
+            event.deviceId,
+            event.edgeFlags,
+            event.source,
+            event.flags
+        )
+        for (h in 1 until history) {
+            fill(h)
+            turned.addBatch(event.getHistoricalEventTime(h), coords, event.metaState)
+        }
+        if (history > 0) {
+            fill(-1)
+            turned.addBatch(event.eventTime, coords, event.metaState)
+        }
+        return turned
     }
 
     override fun performClick(): Boolean {

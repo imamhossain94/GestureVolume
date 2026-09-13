@@ -30,11 +30,35 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.newagedevs.gesturevolume.helper.PrivacyChoices
 
+/**
+ * @param isProActivated hides the Privacy choices entry; Pro never initialises the ad SDK.
+ * @param onOpenPrivacyChoices reopens the ad consent form. See [PrivacyChoices].
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AboutScreen(onNavigateBack: () -> Unit) {
+fun AboutScreen(
+    isProActivated: Boolean,
+    onOpenPrivacyChoices: () -> Unit,
+    onNavigateBack: () -> Unit
+) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    var showPrivacyChoices by remember { mutableStateOf(false) }
+    DisposableEffect(lifecycleOwner, isProActivated) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                showPrivacyChoices = PrivacyChoices.isAvailable(context, isProActivated)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     Scaffold(
         topBar = {
@@ -172,6 +196,18 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                 }
             )
 
+            // Reopens the ad consent form, for users who were asked for consent in the first
+            // place. Re-checked on every resume: the ad SDK may finish initialising after this
+            // screen is first drawn.
+            if (showPrivacyChoices) {
+                Spacer(modifier = Modifier.height(12.dp))
+                LinkCard(
+                    icon = Icons.Default.PrivacyTip,
+                    text = stringResource(R.string.privacy_choices),
+                    onClick = onOpenPrivacyChoices
+                )
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
@@ -196,7 +232,9 @@ private fun CreditCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            // The badge heads the card rather than floating beside its middle: the credit under it
+            // runs to several lines, and centred it drifted down level with the small print.
+            verticalAlignment = Alignment.Top
         ) {
             Box(
                 modifier = Modifier

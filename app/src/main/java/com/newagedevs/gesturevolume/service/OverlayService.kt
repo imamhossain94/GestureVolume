@@ -28,11 +28,13 @@ interface OverlayServiceInterface {
 }
 
 /**
- * The foreground-service host for the bar.
+ * The host for the bar, and the only one.
  *
  * Since 1.4.0 everything about the overlay itself — the handler window, its gestures, the
  * long-press menu, the Deck, the indicator — lives in [OverlayController], which this service
- * and [GestureAccessibilityService] share. What is left here is what only a foreground service
+ * runs. [GestureAccessibilityService] reaches that controller through
+ * [OverlayRuntime.activeController] for the volume keys and the app in front, but never draws
+ * anything itself. What is left here is what only a foreground service
  * has: the notification Android requires of one, its channels and buttons, and the service
  * lifecycle that keeps the bar alive across task removal and system restarts.
  */
@@ -64,12 +66,6 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     private lateinit var controller: OverlayController
 
-    /**
-     * True from a handover to the accessibility service until this instance dies. The controller
-     * has been torn down without restoring anything, because the other host carries on.
-     */
-    private var handedOver = false
-
     companion object {
         // v2 channel: low importance (silent, no heads-up). Bumped from the old id so existing
         // installs also move off the intrusive IMPORTANCE_HIGH channel.
@@ -88,12 +84,6 @@ class OverlayService : Service(), OverlayServiceInterface {
         private const val CHANNEL_MINIMAL_ID = "gesture_volume_service_min"
         private const val LEGACY_CHANNEL_ID = "Gesture Volume Channel ID"
         private const val NOTIFICATION_ID = 1
-
-        /**
-         * "Hide, and stop, and touch no preference": the accessibility service is taking over
-         * the bar. Distinct from "stop", which is the user switching the whole thing off.
-         */
-        const val ACTION_HANDOVER = "handover"
     }
 
     private val controllerHost = object : OverlayController.Host {
@@ -187,8 +177,7 @@ class OverlayService : Service(), OverlayServiceInterface {
      * Android has no way to run a foreground service with no notification at all, so this is the
      * honest version of "hide it": minimum importance, which costs it the status-bar icon and puts
      * it at the bottom of the shade. The user can finish the job from the channel's own system
-     * settings, which the Permissions screen links to — or switch to the accessibility host,
-     * which needs no notification at all.
+     * settings, which the Actions screen links to.
      */
     private fun buildNotification(): Notification {
         val hidden = preference.isHandlerHidden()
@@ -278,10 +267,10 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     override fun onDestroy() {
         super.onDestroy()
-        // After a handover the other host owns the brightness hand-back; after a stop, this
-        // instance does. Between the two — a system kill — restoring is the safe choice, and the
-        // restarted instance takes brightness back over on the next swipe.
-        if (::controller.isInitialized) controller.destroy(restoreBrightness = !handedOver)
+        // After a stop this instance owns the brightness hand-back. After a system kill restoring
+        // is still the safe choice, and the restarted instance takes brightness back over on the
+        // next swipe.
+        if (::controller.isInitialized) controller.destroy(restoreBrightness = true)
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
@@ -306,11 +295,17 @@ class OverlayService : Service(), OverlayServiceInterface {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // First, for every command, whatever it is. Each `startForegroundService` call obliges this
+        // service to call `startForeground` again within ten seconds — even when it is already in
+        // the foreground — or the system declares the app not responding. Opening the app sends a
+        // plain start to a service that is usually already running, and that start never re-posted
+        // the notification, so the app froze ten seconds after being opened. Re-posting the same
+        // notification id replaces it in place, so this costs nothing visible.
+        startForegroundService()
         intent?.action?.let { action ->
             LiveDataManager.sendCommand(action)
             when (action) {
                 "stop" -> stopServiceEntirely()
-                ACTION_HANDOVER -> handOver()
                 // Notification-only. "update" tears the handler window down and rebuilds it, which
                 // while the app is in the foreground pops the bar up over the very screen the
                 // setting was changed on. Toggling the notification has nothing to do with the
@@ -343,14 +338,6 @@ class OverlayService : Service(), OverlayServiceInterface {
         // Stopping is not hiding: the bar should be there again the next time the service is
         // started, or the user would turn it on and get nothing.
         preference.setHandlerHidden(false)
-        controller.hide()
-        stopForegroundAndSelf()
-    }
-
-    /** The accessibility service is taking the bar over. Leave, and leave every preference alone. */
-    private fun handOver() {
-        shouldFinish = true
-        handedOver = true
         controller.hide()
         stopForegroundAndSelf()
     }

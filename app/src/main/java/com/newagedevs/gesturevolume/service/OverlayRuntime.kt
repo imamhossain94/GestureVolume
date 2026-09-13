@@ -9,21 +9,17 @@ import android.os.Build
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import androidx.core.content.ContextCompat
-import com.newagedevs.gesturevolume.data.local.SharedPref
-import com.newagedevs.gesturevolume.utils.OverlayHostMode
 
 /**
- * Which process-level thing is drawing the bar right now, and how to reach it.
+ * How to reach the bar and the accessibility service from anywhere in the app.
  *
- * Since 1.4.0 the overlay has two possible hosts. The foreground service is the original: it
- * needs the overlay permission and, because Android will not run one without a notification,
- * a notification. The accessibility service is the new one: while it is enabled the system keeps
- * it bound, an accessibility service may draw its own windows without the overlay permission,
- * and no notification is involved at all — which is the whole reason it exists.
+ * The bar has one host: the foreground service [OverlayService], which needs the overlay
+ * permission and, because Android will not run one without a notification, a notification. The
+ * accessibility service never draws; it performs the system actions and passes the volume keys and
+ * the app in front to the controller the foreground service runs, found through [activeController].
  *
- * Everything that used to talk to `OverlayService` directly — the Activity's show/hide on
- * resume/pause, the notification buttons, the boot receiver, the ViewModel's toggle — now goes
- * through here, so that not one of those call sites has to know which host is up.
+ * Everything that talks to the bar — the Activity's show/hide on resume/pause, the notification
+ * buttons, the boot receiver, the ViewModel's toggle — goes through here.
  */
 object OverlayRuntime {
 
@@ -37,18 +33,12 @@ object OverlayRuntime {
     @Volatile
     var accessibilityService: GestureAccessibilityService? = null
 
-    /** True while the accessibility service is bound, whatever it is hosting. */
-    val isAccessibilityConnected: Boolean get() = accessibilityService != null
-
-    /** True while the accessibility service is the one drawing the bar. */
-    val isAccessibilityHosting: Boolean get() = accessibilityService?.isHostingOverlay == true
-
     /**
-     * The controller drawing the bar, whichever host it belongs to.
+     * The controller drawing the bar, the one [OverlayService] runs.
      *
-     * For the one caller that has to reach it from outside both hosts: the accessibility service's
-     * key filter, which hears the volume keys even while the foreground service is the one drawing
-     * the bar. Written only by the controller itself, as it starts and as it is torn down.
+     * For the callers that have to reach it from outside that service: the accessibility service's
+     * key filter, which hears the volume keys, and its window watcher, which hears which app came
+     * to the front. Written only by the controller itself, as it starts and as it is torn down.
      */
     @Volatile
     var activeController: OverlayController? = null
@@ -89,54 +79,26 @@ object OverlayRuntime {
     fun accessibilitySettingsIntent(): Intent =
         Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
 
-    /**
-     * The host that would actually be used if the overlay were started right now.
-     *
-     * The accessibility route needs both the preference and the bound service; with either
-     * missing the notification route is used, and that route needs the overlay permission.
-     */
-    fun effectiveHost(context: Context, preference: SharedPref): OverlayHostMode? = when {
-        preference.getOverlayHostMode() == OverlayHostMode.ACCESSIBILITY && isAccessibilityConnected ->
-            OverlayHostMode.ACCESSIBILITY
-        Settings.canDrawOverlays(context) -> OverlayHostMode.NOTIFICATION
-        else -> null
-    }
+    /** Whether the bar could be started right now: the foreground service needs the overlay permission. */
+    fun canHostOverlay(context: Context): Boolean = Settings.canDrawOverlays(context)
 
-    /** True when the bar is on screen, or would be but for being hidden: either host is up. */
+    /** True when the bar is on screen, or would be but for being hidden: the foreground service is up. */
     fun isOverlayActive(context: Context): Boolean =
-        isAccessibilityHosting || isServiceRunning(context, OverlayService::class.java)
+        isServiceRunning(context, OverlayService::class.java)
 
-    /**
-     * Brings the overlay up on whichever host applies.
-     *
-     * When the accessibility service takes over from a running foreground service, the latter is
-     * told to hand over — hide and stop without touching any preference — rather than stopped
-     * with `stopService`, so its own teardown does not read as "the user stopped me".
-     */
-    fun startOverlay(context: Context, preference: SharedPref) {
-        when (effectiveHost(context, preference)) {
-            OverlayHostMode.ACCESSIBILITY -> {
-                if (isServiceRunning(context, OverlayService::class.java)) {
-                    sendToForegroundService(context, OverlayService.ACTION_HANDOVER)
-                }
-                accessibilityService?.hostOverlay()
-            }
-            OverlayHostMode.NOTIFICATION -> {
-                accessibilityService?.releaseOverlay()
-                val intent = Intent(context, OverlayService::class.java)
-                try {
-                    ContextCompat.startForegroundService(context, intent)
-                } catch (e: Exception) {
-                    android.util.Log.e("OverlayRuntime", "startForegroundService failed", e)
-                }
-            }
-            null -> Unit
+    /** Brings the bar up in the foreground service, when the overlay permission allows it. */
+    fun startOverlay(context: Context) {
+        if (!canHostOverlay(context)) return
+        val intent = Intent(context, OverlayService::class.java)
+        try {
+            ContextCompat.startForegroundService(context, intent)
+        } catch (e: Exception) {
+            android.util.Log.e("OverlayRuntime", "startForegroundService failed", e)
         }
     }
 
-    /** Takes the overlay down on both hosts. The running preference is the caller's to write. */
+    /** Takes the bar down. The running preference is the caller's to write. */
     fun stopOverlay(context: Context) {
-        accessibilityService?.releaseOverlay()
         try {
             context.stopService(Intent(context, OverlayService::class.java))
         } catch (_: Exception) {
@@ -146,21 +108,12 @@ object OverlayRuntime {
 
     /**
      * Delivers one of the overlay commands — show, hide, user_show, user_hide, update, stop,
-     * refresh_notification — to whichever host is up. Silently does nothing when neither is,
-     * which is what every caller wants: the preference is the durable record, and the next
-     * start reads it.
+     * refresh_notification — to the foreground service. Silently does nothing when it is not
+     * running, which is what every caller wants: the preference is the durable record, and the
+     * next start reads it.
      */
     fun sendCommand(context: Context, action: String) {
-        val a11y = accessibilityService
-        if (a11y != null && a11y.isHostingOverlay) {
-            a11y.handleCommand(action)
-            return
-        }
         if (!isServiceRunning(context, OverlayService::class.java)) return
-        sendToForegroundService(context, action)
-    }
-
-    private fun sendToForegroundService(context: Context, action: String) {
         val intent = Intent(context, OverlayService::class.java).setAction(action)
         try {
             context.startService(intent)

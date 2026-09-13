@@ -18,6 +18,8 @@ import com.newagedevs.gesturevolume.utils.SliderFill
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.floor
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -58,9 +60,26 @@ internal class FillArt(private val density: Float) {
     private val rings = HashMap<Int, RadialGradient>()
     private val grounds = HashMap<String, LinearGradient>()
 
-    fun draw(canvas: Canvas, style: String, r: RectF, fillTop: Float, phase: Float, value: Float, alpha: Int) {
-        if (r.width() <= 0f || r.bottom - fillTop <= 0f) return
-        val p = SliderFill.palette(style)
+    /**
+     * Paints [style] over the fill in [p], its palette: the style's own, or the user's colours
+     * spread over it by [SliderFill.paletteWith].
+     *
+     * Handed in rather than looked up, so that the caller decides whose colours these are and
+     * works that out once rather than on every frame. The palette is baked into the gradients,
+     * tables and images kept here, so one of these is for one set of colours: a caller whose
+     * colours change makes a new one rather than handing this one a different palette.
+     */
+    fun draw(
+        canvas: Canvas,
+        style: String,
+        p: LongArray,
+        r: RectF,
+        fillTop: Float,
+        phase: Float,
+        value: Float,
+        alpha: Int,
+    ) {
+        if (p.isEmpty() || r.width() <= 0f || r.bottom - fillTop <= 0f) return
         val a = alpha / 255f
         when (style) {
             SliderFill.LIQUID -> liquid(canvas, p, r, fillTop, phase, alpha, a)
@@ -78,6 +97,16 @@ internal class FillArt(private val density: Float) {
             SliderFill.CYBERPUNK -> cyberpunk(canvas, p, r, fillTop, phase, alpha, a)
             SliderFill.MATRIX_RAIN -> matrixRain(canvas, p, r, fillTop, phase, alpha, a)
             SliderFill.RUNE -> rune(canvas, p, r, fillTop, phase, alpha, a)
+            SliderFill.FIREFLIES -> fireflies(canvas, p, r, fillTop, phase, alpha, a)
+            SliderFill.SNOWFALL -> snowfall(canvas, p, r, fillTop, phase, alpha, a)
+            SliderFill.HEARTBEAT -> heartbeat(canvas, p, r, fillTop, phase, alpha, a)
+            SliderFill.NEON -> neon(canvas, p, r, fillTop, phase, alpha, a)
+            SliderFill.OCEAN -> ocean(canvas, p, r, fillTop, phase, alpha, a)
+            SliderFill.GRADIENT -> gradient(canvas, p, r, fillTop, phase, alpha, a)
+            SliderFill.CONFETTI -> confetti(canvas, p, r, fillTop, phase, alpha, a)
+            SliderFill.WARP -> warp(canvas, p, r, fillTop, phase, alpha, a)
+            SliderFill.STORM -> storm(canvas, p, r, fillTop, phase, alpha, a)
+            SliderFill.FIREWORKS -> fireworks(canvas, p, r, fillTop, phase, alpha, a)
         }
         paint.shader = null
     }
@@ -971,6 +1000,630 @@ internal class FillArt(private val density: Float) {
         )
     }
 
+    // ---- Fireflies ------------------------------------------------------------------------------
+
+    private fun fireflies(canvas: Canvas, p: LongArray, r: RectF, fillTop: Float, phase: Float, alpha: Int, a: Float) {
+        val w = r.width()
+        val h = (r.bottom - fillTop).coerceAtLeast(1f)
+        val track = r.height().coerceAtLeast(1f)
+        ground(
+            canvas, "fireflyDusk", intArrayOf(0xFF0F2B23.toInt(), 0xFF08170F.toInt(), 0xFF030805.toInt()),
+            floatArrayOf(0f, 0.55f, 1f), r, fillTop, r.bottom, alpha,
+        )
+        // Mist lying over the grass, lit faintly by what flies above it.
+        glow(canvas, r.centerX(), r.bottom, w * 1.5f, min(h, 70f * density), c(p, 1), 0.2f * a)
+        val turn = phase * TAU
+        val reach = 16f * density
+        for (i in 0 until FIREFLY_COUNT) {
+            val s = seed(i * 47 + 5)
+            val s2 = seed(i * 83 + 19)
+            // Each wanders a loop of whole turns, and a different figure from its neighbour's, so
+            // no two of them fly in formation. Placed on the track, not the fill, so they stay put
+            // while the level moves.
+            val x = r.left + w * (0.22f + 0.56f * s) + sin(turn * (1 + i % 2) + s2 * TAU) * w * 0.26f
+            val y = r.bottom - track * (0.04f + 0.92f * s2) + sin(turn * (1 + i % 3) + s * TAU) * reach
+            if (y < fillTop - 10f * density) continue
+            // A blink or two a cycle, dark in between. Cubed, so each one glows up and goes out
+            // slowly instead of switching on like a bulb.
+            val beat = sin(turn * (1 + (s * 2f).toInt()) + s * 11f)
+            if (beat <= 0f) continue
+            val f = beat * beat * beat
+            val color = c(p, i)
+            glow(canvas, x, y, 10f * density, 10f * density, color, 0.6f * f * a)
+            glow(canvas, x, y, 2.6f * density, 2.6f * density, ColorUtils.blendARGB(color, Color.WHITE, 0.55f), f * a)
+        }
+    }
+
+    // ---- Snowfall -------------------------------------------------------------------------------
+
+    private fun snowfall(canvas: Canvas, p: LongArray, r: RectF, fillTop: Float, phase: Float, alpha: Int, a: Float) {
+        val w = r.width()
+        val track = r.height().coerceAtLeast(1f)
+        ground(canvas, "snowNight", intArrayOf(0xFF1D2D50.toInt(), 0xFF0C1429.toInt()), null, r, fillTop, r.bottom, alpha)
+        // Moonlight in the air at the level, and the lying snow catching it at the foot.
+        glow(canvas, r.centerX(), fillTop, w * 1.3f, 46f * density, c(p, 1), 0.22f * a)
+        glow(canvas, r.centerX(), r.bottom + 6f * density, w * 1.4f, 26f * density, c(p, 0), 0.4f * a)
+        val margin = 6f * density
+        val span = track + margin * 2f
+        val turn = phase * TAU
+        for (layer in 0 until 3) {
+            // The far flakes fall once a cycle and the near ones three times: whole passes, so the
+            // loop has no seam, and the difference in speed is what reads as depth.
+            val speed = (layer + 1).toFloat()
+            val color = c(p, 2 - layer)
+            for (i in 0 until SNOW_PER_LAYER[layer]) {
+                val s = seed(layer * 1009 + i * 41 + 7)
+                val s2 = seed(layer * 613 + i * 67 + 13)
+                // Born above the track and gone below it, so no flake appears or vanishes in view.
+                val y = r.top - margin + ((s2 + phase * speed) % 1f) * span
+                if (y < fillTop - margin) continue
+                val x = r.left + w * (0.08f + 0.84f * s) + sin(turn * (layer + 1) + s * TAU) * w * (0.05f + 0.04f * layer)
+                when (layer) {
+                    0 -> {
+                        paint.color = color
+                        paint.alpha = a255(0.45f * a)
+                        canvas.drawCircle(x, y, 0.7f * density, paint)
+                    }
+
+                    1 -> {
+                        paint.color = color
+                        paint.alpha = a255(0.75f * a)
+                        canvas.drawCircle(x, y, 1.15f * density, paint)
+                    }
+
+                    // The near ones out of focus: a soft light, not a dot.
+                    else -> glow(canvas, x, y, 3.6f * density, 3.6f * density, color, 0.95f * a)
+                }
+            }
+        }
+    }
+
+    // ---- Heartbeat: a heart monitor -------------------------------------------------------------
+
+    private var ecgGrid: BitmapShader? = null
+    private var ecgGridPitch = -1
+    private var ecgTrail: LinearGradient? = null
+    private val ecgPath = Path()
+    private val ecgRect = RectF()
+    private var ecgBuilt = false
+
+    private fun heartbeat(canvas: Canvas, p: LongArray, r: RectF, fillTop: Float, phase: Float, alpha: Int, a: Float) {
+        val w = r.width()
+        val h = (r.bottom - fillTop).coerceAtLeast(1f)
+        ground(canvas, "ecgGround", intArrayOf(0xFF071A11.toInt(), 0xFF020A06.toInt()), null, r, fillTop, r.bottom, alpha)
+        // The graph paper, from a tile, pinned to the foot of the track so it never slides.
+        val pitch = (8f * density).toInt().coerceAtLeast(4)
+        val grid = ecgGrid?.takeIf { ecgGridPitch == pitch } ?: buildEcgGrid(pitch, c(p, 1))
+        matrix.setTranslate(r.left, r.bottom)
+        grid.setLocalMatrix(matrix)
+        paint.shader = grid
+        paint.alpha = alpha
+        canvas.drawRect(r.left, fillTop, r.right, r.bottom, paint)
+        paint.shader = null
+
+        val period = ECG_BEAT_DP * density
+        val amp = w * 0.36f
+        // The whole trace is one path, built once for the track; what moves is the light along it.
+        if (!ecgBuilt || ecgRect != r) buildEcg(r, period, amp)
+        // The sweep runs from the foot to a trail's length past the level, so at both ends of the
+        // cycle the lit part of the trace is out of sight and the loop has nowhere to show a seam.
+        val trail = ECG_TRAIL_DP * density
+        val head = r.bottom - phase * (h + trail)
+
+        // The beat just drawn blooms, and dies away over half a beat.
+        val beats = (r.bottom - head) / period - ECG_SPIKE
+        val since = (beats - floor(beats)) * period
+        val bloom = (1f - since / (period * 0.5f)).coerceAtLeast(0f).let { it * it }
+        val spikeY = head + since
+        if (spikeY >= fillTop) glow(canvas, r.centerX(), spikeY, w * 1.3f, 34f * density, c(p, 2), 0.5f * bloom * a)
+
+        val trace = ecgTrail ?: LinearGradient(
+            0f, 0f, 0f, 1f,
+            intArrayOf(c(p, 0) and 0xFFFFFF, c(p, 0), fade(c(p, 0), 0.4f), c(p, 0) and 0xFFFFFF),
+            floatArrayOf(0f, 0.02f, 0.3f, 1f),
+            Shader.TileMode.CLAMP,
+        ).also { ecgTrail = it }
+        matrix.setScale(1f, trail)
+        matrix.postTranslate(0f, head - trail * 0.02f)
+        trace.setLocalMatrix(matrix)
+        line.color = Color.WHITE
+        line.shader = trace
+        line.alpha = a255(0.35f * a)
+        line.strokeWidth = 5f * density
+        canvas.drawPath(ecgPath, line)
+        line.alpha = a255(a)
+        line.strokeWidth = 1.6f * density
+        canvas.drawPath(ecgPath, line)
+        line.shader = null
+
+        val at = (r.bottom - head) / period
+        val hx = r.centerX() + amp * ecgAt(at - floor(at))
+        glow(canvas, hx, head, 9f * density, 9f * density, c(p, 0), (0.55f + 0.45f * bloom) * a)
+        glow(canvas, hx, head, 2.5f * density, 2.5f * density, Color.WHITE, 0.9f * a)
+    }
+
+    /** The trace's swing at [u] through a beat, read off [ECG_KEYS]. */
+    private fun ecgAt(u: Float): Float {
+        var k = 2
+        while (k < ECG_KEYS.size) {
+            if (u <= ECG_KEYS[k]) {
+                val u0 = ECG_KEYS[k - 2]
+                val span = (ECG_KEYS[k] - u0).coerceAtLeast(1e-4f)
+                val f = ((u - u0) / span).coerceIn(0f, 1f)
+                return ECG_KEYS[k - 1] + (ECG_KEYS[k + 1] - ECG_KEYS[k - 1]) * f
+            }
+            k += 2
+        }
+        return 0f
+    }
+
+    private fun buildEcg(r: RectF, period: Float, amp: Float) {
+        ecgPath.reset()
+        val cx = r.centerX()
+        ecgPath.moveTo(cx, r.bottom)
+        var b = 0
+        while (b * period < r.height()) {
+            var k = 2
+            while (k < ECG_KEYS.size) {
+                ecgPath.lineTo(cx + amp * ECG_KEYS[k + 1], r.bottom - (b + ECG_KEYS[k]) * period)
+                k += 2
+            }
+            b++
+        }
+        ecgRect.set(r)
+        ecgBuilt = true
+    }
+
+    private fun buildEcgGrid(pitch: Int, color: Int): BitmapShader {
+        val ink = fade(color, 0.16f)
+        val pixels = IntArray(pitch * pitch) { if (it < pitch || it % pitch == 0) ink else 0 }
+        val tile = Bitmap.createBitmap(pixels, pitch, pitch, Bitmap.Config.ARGB_8888)
+        return BitmapShader(tile, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT).also {
+            ecgGrid = it
+            ecgGridPitch = pitch
+        }
+    }
+
+    // ---- Neon: an arrow sign --------------------------------------------------------------------
+
+    private val neonPts = FloatArray(NEON_MAX * 8)
+
+    private fun neon(canvas: Canvas, p: LongArray, r: RectF, fillTop: Float, phase: Float, alpha: Int, a: Float) {
+        val w = r.width()
+        ground(canvas, "neonWall", intArrayOf(0xFF1A0C26.toInt(), 0xFF090410.toInt()), null, r, fillTop, r.bottom, alpha)
+        val pitch = NEON_PITCH_DP * density
+        val hw = min(w * 0.3f, 16f * density)
+        val hh = hw * 0.55f
+        val cx = r.centerX()
+        val rows = min(((r.bottom - fillTop) / pitch).toInt() + 1, NEON_MAX)
+        val n = p.size
+        // The glass, unlit: every tube faintly there in its own colour. Lines rather than paths,
+        // and one batch a colour, because a tube that is off is not worth a draw of its own.
+        line.strokeWidth = 1.5f * density
+        for (k in 0 until min(n, rows)) {
+            var count = 0
+            var i = k
+            while (i < rows) {
+                count = chevron(neonPts, count, cx, r.bottom - pitch * (i + 0.6f), hw, hh)
+                i += n
+            }
+            line.color = c(p, k)
+            line.alpha = a255(0.16f * a)
+            canvas.drawLines(neonPts, 0, count, line)
+        }
+        // The chase: in every group of four, one tube at full brightness and the two below it
+        // dying away, climbing a group a cycle.
+        for (i in 0 until rows) {
+            val behind = ((phase - i / NEON_GROUP) % 1f + 1f) % 1f
+            var g = 1f - behind / 0.6f
+            if (g <= 0.02f) continue
+            // The odd tube with a tired starter, stuttering as it lights. Whole turns, like the rest.
+            val s = seed(i * 7 + 3)
+            if (s > 0.88f && sin(phase * TAU * 23f + s * 40f) > 0.55f) g *= 0.3f
+            val y = r.bottom - pitch * (i + 0.6f)
+            val color = c(p, i)
+            // Light thrown on the wall, a halo round the glass, and a core gone nearly white with heat.
+            glow(canvas, cx, y, w * 0.95f, pitch * 1.5f, color, 0.4f * g * a)
+            val count = chevron(neonPts, 0, cx, y, hw, hh)
+            line.color = color
+            line.alpha = a255(0.3f * g * a)
+            line.strokeWidth = 5f * density
+            canvas.drawLines(neonPts, 0, count, line)
+            line.color = ColorUtils.blendARGB(color, Color.WHITE, 0.6f * g)
+            line.alpha = a255((0.3f + 0.7f * g) * a)
+            line.strokeWidth = 1.5f * density
+            canvas.drawLines(neonPts, 0, count, line)
+        }
+    }
+
+    /** One arrow's two strokes, written into [pts] from [at]. Returns where the next one starts. */
+    private fun chevron(pts: FloatArray, at: Int, cx: Float, cy: Float, hw: Float, hh: Float): Int {
+        val tip = cy - hh / 2f
+        val foot = cy + hh / 2f
+        pts[at] = cx - hw
+        pts[at + 1] = foot
+        pts[at + 2] = cx
+        pts[at + 3] = tip
+        pts[at + 4] = cx
+        pts[at + 5] = tip
+        pts[at + 6] = cx + hw
+        pts[at + 7] = foot
+        return at + 8
+    }
+
+    // ---- Ocean ----------------------------------------------------------------------------------
+
+    private val swellShaders = arrayOfNulls<LinearGradient>(3)
+    private val crest = Path()
+
+    private fun ocean(canvas: Canvas, p: LongArray, r: RectF, fillTop: Float, phase: Float, alpha: Int, a: Float) {
+        val w = r.width()
+        val h = (r.bottom - fillTop).coerceAtLeast(1f)
+        ground(
+            canvas, "oceanDeep", intArrayOf(0xFF0B4775.toInt(), 0xFF05284F.toInt(), 0xFF020D22.toInt()),
+            floatArrayOf(0f, 0.3f, 1f), r, fillTop, r.bottom, alpha,
+        )
+        // Daylight coming down through the surface.
+        glow(canvas, r.centerX(), fillTop, w * 1.4f, min(h, 60f * density), c(p, 0), 0.22f * a)
+        val amp = 2.6f * density
+        val step = 3f * density
+        val depth = 38f * density
+        // Back to front: each swell lower, nearer and brighter than the one behind it. Translucent,
+        // and fading to nothing below its crest, so the ones behind show through the ones in front.
+        for (layer in 2 downTo 0) {
+            val top = fillTop + (4f + (2 - layer) * 9.5f) * density
+            val color = c(p, layer + 1)
+            path.reset()
+            crest.reset()
+            path.moveTo(r.left, r.bottom)
+            var x = r.left
+            var first = true
+            while (true) {
+                val y = top + amp * swell(layer, ((x - r.left) / w).coerceIn(0f, 1f), phase)
+                if (first) {
+                    crest.moveTo(x, y)
+                    first = false
+                } else {
+                    crest.lineTo(x, y)
+                }
+                path.lineTo(x, y)
+                if (x >= r.right) break
+                x = min(x + step, r.right)
+            }
+            path.lineTo(r.right, r.bottom)
+            path.close()
+            val shader = swellShaders[layer] ?: LinearGradient(
+                0f, 0f, 0f, 1f,
+                intArrayOf(color, fade(color, 0.25f), color and 0xFFFFFF),
+                floatArrayOf(0f, 0.45f, 1f),
+                Shader.TileMode.CLAMP,
+            ).also { swellShaders[layer] = it }
+            matrix.setScale(1f, depth)
+            matrix.postTranslate(0f, top - amp)
+            shader.setLocalMatrix(matrix)
+            paint.shader = shader
+            paint.alpha = alpha
+            canvas.drawPath(path, paint)
+            paint.shader = null
+            // Foam along the crest, brightest on the nearest swell.
+            val foam = (0.6f - 0.18f * layer) * a
+            line.color = c(p, 0)
+            line.alpha = a255(0.25f * foam)
+            line.strokeWidth = 3f * density
+            canvas.drawPath(crest, line)
+            line.alpha = a255(foam)
+            line.strokeWidth = 1f * density
+            canvas.drawPath(crest, line)
+        }
+        // The sun glittering on the nearest crest.
+        val front = fillTop + 23f * density
+        for (i in 0 until 4) {
+            val s = seed(i * 29 + 17)
+            val twinkle = sin(phase * TAU * (2 + i % 2) + s * TAU)
+            if (twinkle <= 0.5f) continue
+            val at = 0.1f + 0.8f * s
+            glow(
+                canvas, r.left + w * at, front + amp * swell(0, at, phase), 4f * density, 2.5f * density,
+                Color.WHITE, (twinkle - 0.5f) * 1.6f * a,
+            )
+        }
+        motes(canvas, r, front + 6f * density, phase, 8, 91, c(p, 0), 0.3f * a, 0.55f)
+    }
+
+    /**
+     * A swell's surface at [at] across the track, in units of its amplitude. Two waves, as with the
+     * tides, each travelling a whole number of wavelengths a cycle; neighbouring swells run opposite
+     * ways, which is what keeps three of them from reading as one surface drawn three times.
+     */
+    private fun swell(layer: Int, at: Float, phase: Float): Float {
+        val t = phase * TAU * (if (layer % 2 == 0) 1f else -1f)
+        return (
+            sin(at * TAU * (0.8f + 0.3f * layer) + t * (1 + layer % 2) + layer * 1.7f) +
+                0.4f * sin(at * TAU * 1.9f - t * 2f + layer)
+            ) / 1.4f
+    }
+
+    // ---- Gradient -------------------------------------------------------------------------------
+
+    private var flowShader: LinearGradient? = null
+
+    private fun gradient(canvas: Canvas, p: LongArray, r: RectF, fillTop: Float, phase: Float, alpha: Int, a: Float) {
+        val w = r.width()
+        val h = (r.bottom - fillTop).coerceAtLeast(1f)
+        val track = r.height().coerceAtLeast(1f)
+        // The palette as one gradient, mirrored so a period is two spans and has no seam, sliding
+        // one period a cycle on a steep diagonal. Sized by the track, so the colours stay where they
+        // are as the level moves over them.
+        val flow = flowShader ?: LinearGradient(
+            0f, 0f, 1f, 0f,
+            IntArray(max(2, p.size)) { c(p, it) or (0xFF shl 24) },
+            null,
+            Shader.TileMode.MIRROR,
+        ).also { flowShader = it }
+        val span = track * 0.55f
+        matrix.setScale(span, 1f)
+        matrix.postTranslate(phase * span * 2f, 0f)
+        matrix.postRotate(-72f)
+        matrix.postTranslate(r.left, r.bottom)
+        flow.setLocalMatrix(matrix)
+        paint.shader = flow
+        paint.alpha = alpha
+        canvas.drawRect(r.left, fillTop, r.right, r.bottom, paint)
+        paint.shader = null
+        // A soft light wandering over it, so the colours read as lit rather than printed.
+        val turn = phase * TAU
+        glow(
+            canvas, r.centerX() + w * 0.35f * sin(turn), fillTop + h * (0.5f + 0.32f * sin(turn * 2f + 1.2f)),
+            w * 1.1f, min(h * 0.45f, 90f * density).coerceAtLeast(w * 0.6f), Color.WHITE, 0.2f * a,
+        )
+        ground(canvas, "gradientLip", intArrayOf(0x59FFFFFF, 0x00FFFFFF), null, r, fillTop, fillTop + 12f * density, alpha)
+        sideSheen(canvas, r, fillTop, alpha)
+    }
+
+    // ---- Confetti -------------------------------------------------------------------------------
+
+    /** Square-ended: a piece of paper with round ends is a grain of rice. */
+    private val confettiPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.BUTT
+    }
+
+    private fun confetti(canvas: Canvas, p: LongArray, r: RectF, fillTop: Float, phase: Float, alpha: Int, a: Float) {
+        val w = r.width()
+        val h = (r.bottom - fillTop).coerceAtLeast(1f)
+        val track = r.height().coerceAtLeast(1f)
+        ground(canvas, "confettiNight", intArrayOf(0xFF26174F.toInt(), 0xFF0D0824.toInt()), null, r, fillTop, r.bottom, alpha)
+        // A spotlight on the level, for the paper to catch.
+        glow(canvas, r.centerX(), fillTop, w * 1.3f, min(h, 70f * density), c(p, 0), 0.16f * a)
+        val margin = 8f * density
+        val span = track + margin * 2f
+        val turn = phase * TAU
+        val length = 3.6f * density
+        confettiPaint.strokeWidth = 2f * density
+        for (i in 0 until CONFETTI_COUNT) {
+            val s = seed(i * 59 + 3)
+            val s2 = seed(i * 97 + 31)
+            val s3 = seed(i * 131 + 7)
+            val speed = 1 + (s * 2f).toInt()
+            // Born above the track and gone below it, so nothing appears in view.
+            val y = r.top - margin + ((s2 + phase * speed) % 1f) * span
+            if (y < fillTop - margin) continue
+            val x = r.left + w * (0.1f + 0.8f * s3) + sin(turn * speed * 2f + s * TAU) * w * 0.12f
+            // Spinning flat and flipping over, both whole turns a cycle. The flip is what makes it
+            // paper: edge-on it is a sliver, face-on it is at its longest and catches the light.
+            val spin = s * TAU + turn * (1 + (s2 * 3f).toInt()) * (if (s3 > 0.5f) 1f else -1f)
+            val flip = abs(cos(turn * (2 + (s3 * 3f).toInt()) + s2 * TAU))
+            val half = length * (0.15f + 0.85f * flip) / 2f
+            val dx = cos(spin) * half
+            val dy = sin(spin) * half
+            val color = c(p, i)
+            val shine = flip * flip * flip * flip
+            if (shine > 0.85f) glow(canvas, x, y, 5f * density, 5f * density, color, 0.35f * (shine - 0.85f) / 0.15f * a)
+            confettiPaint.color = ColorUtils.blendARGB(color, Color.WHITE, 0.55f * shine)
+            confettiPaint.alpha = a255((0.75f + 0.25f * shine) * a)
+            canvas.drawLine(x - dx, y - dy, x + dx, y + dy, confettiPaint)
+        }
+    }
+
+    // ---- Warp: hyperspace -----------------------------------------------------------------------
+
+    private fun warp(canvas: Canvas, p: LongArray, r: RectF, fillTop: Float, phase: Float, alpha: Int, a: Float) {
+        val w = r.width()
+        val h = (r.bottom - fillTop).coerceAtLeast(1f)
+        ground(canvas, "warpVoid", intArrayOf(0xFF080B24.toInt(), 0xFF020309.toInt()), null, r, fillTop, r.bottom, alpha)
+        val cx = r.centerX()
+        val vy = fillTop + h * 0.38f
+        val reach = max(h, w) * 1.3f + 16f * density
+        // Where everything is coming from: a haze, and a brighter heart to it.
+        glow(canvas, cx, vy, w * 1.1f, min(h * 0.5f, 80f * density).coerceAtLeast(w * 0.6f), c(p, 2), 0.5f * a)
+        glow(canvas, cx, vy, w * 0.35f, w * 0.35f, c(p, 1), 0.7f * a)
+        for (i in 0 until WARP_COUNT) {
+            val s = seed(i * 67 + 11)
+            val lf = life(phase, s, seed(i * 23 + 29))
+            // Faded in from the point and out at the far end, so a star finishing its run and the
+            // next one starting are both invisible, whenever in the cycle that falls.
+            val f = min(1f, lf * 5f) * min(1f, (1f - lf) * 6f)
+            if (f <= 0.01f) continue
+            val angle = seed(i * 151 + 5) * TAU
+            // Squeezed across: in a panel this narrow, the stars heading sideways would be gone in
+            // a frame, and the ones heading up and down are the ones there is room to watch.
+            val ex = cos(angle) * 0.55f
+            val ey = sin(angle)
+            // Squared, so a star creeps out of the point and rushes past the edge: approach.
+            val d = lf * lf * reach
+            val tail = d * (1f - 0.45f * lf)
+            val y1 = vy + ey * tail
+            val y2 = vy + ey * d
+            if (max(y1, y2) < fillTop) continue
+            line.color = c(p, i % 2)
+            line.alpha = a255(f * (0.35f + 0.65f * lf) * a)
+            line.strokeWidth = (0.6f + 1.4f * lf) * density
+            canvas.drawLine(cx + ex * tail, y1, cx + ex * d, y2, line)
+        }
+    }
+
+    // ---- Storm ----------------------------------------------------------------------------------
+
+    private val rainPts = FloatArray(RAIN_COUNT * 4)
+    private val boltPath = Path()
+    private val boltRect = RectF()
+    private var boltTop = Float.NaN
+
+    private fun storm(canvas: Canvas, p: LongArray, r: RectF, fillTop: Float, phase: Float, alpha: Int, a: Float) {
+        val w = r.width()
+        val h = (r.bottom - fillTop).coerceAtLeast(1f)
+        val track = r.height().coerceAtLeast(1f)
+        ground(
+            canvas, "stormSky", intArrayOf(0xFF1E2538.toInt(), 0xFF0C0F1A.toInt(), 0xFF05060B.toInt()),
+            floatArrayOf(0f, 0.45f, 1f), r, fillTop, r.bottom, alpha,
+        )
+        // A strike and its restrike, a little after a third of the way in, and a far flash with no
+        // bolt later on. None of them is near the wrap, so the cycle ends as dark as it began.
+        val bolt = max(spike(phase, 0.3f, 0.004f, 0.035f), 0.75f * spike(phase, 0.345f, 0.004f, 0.05f))
+        val sheet = max(bolt, 0.4f * spike(phase, 0.72f, 0.02f, 0.06f))
+        val turn = phase * TAU
+        // The clouds along the level: dark, and lit from inside when the sky flashes.
+        for (i in 0 until 3) {
+            val s = seed(i * 71 + 13)
+            val x = r.left + w * (0.2f + 0.3f * i) + sin(turn + s * TAU) * w * 0.12f
+            val y = fillTop + (8f + 6f * s) * density
+            glow(canvas, x, y, w * 0.75f, 20f * density, 0xFF394461.toInt(), 0.85f * a)
+            glow(canvas, x, y + 6f * density, w * 0.9f, 30f * density, c(p, 1), 0.6f * sheet * a)
+        }
+        if (sheet > 0.01f) {
+            paint.color = c(p, 0)
+            paint.alpha = a255(0.14f * sheet * a)
+            canvas.drawRect(r.left, fillTop, r.right, r.bottom, paint)
+        }
+        if (bolt > 0.02f) {
+            buildBolt(r, fillTop, h)
+            line.color = c(p, 1)
+            line.alpha = a255(0.35f * bolt * a)
+            line.strokeWidth = 5f * density
+            canvas.drawPath(boltPath, line)
+            line.color = c(p, 0)
+            line.alpha = a255(bolt * a)
+            line.strokeWidth = 1.4f * density
+            canvas.drawPath(boltPath, line)
+        }
+        // Rain, in one batch: a streak is not worth a draw of its own. Several whole passes a
+        // cycle, each drop born above the track and gone below it.
+        val length = 7f * density
+        val slant = length * 0.28f
+        val span = track + length * 2f
+        var n = 0
+        for (i in 0 until RAIN_COUNT) {
+            val s = seed(i * 43 + 1)
+            val y = r.top - length + ((seed(i * 79 + 17) + phase * (5 + (s * 3f).toInt())) % 1f) * span
+            if (y < fillTop) continue
+            val x = r.left - slant + (w + slant * 2f) * seed(i * 13 + 5)
+            rainPts[n] = x + slant
+            rainPts[n + 1] = y - length
+            rainPts[n + 2] = x
+            rainPts[n + 3] = y
+            n += 4
+        }
+        if (n > 0) {
+            line.color = fade(c(p, 2), (0.55f + 0.45f * sheet) * a)
+            line.strokeWidth = 0.8f * density
+            canvas.drawLines(rainPts, 0, n, line)
+        }
+    }
+
+    /** 0..1: rising to full at [at] over [rise] of a cycle, then dying over [fall]. */
+    private fun spike(phase: Float, at: Float, rise: Float, fall: Float): Float = when {
+        phase < at - rise || phase > at + fall -> 0f
+        phase < at -> 1f - (at - phase) / rise
+        else -> 1f - (phase - at) / fall
+    }
+
+    /**
+     * The bolt, jagged down from the clouds with a fork off one side. The same bolt every time,
+     * from seeds, and built again only when the fill it hangs from moves.
+     */
+    private fun buildBolt(r: RectF, fillTop: Float, h: Float) {
+        if (boltTop == fillTop && boltRect == r) return
+        boltRect.set(r)
+        boltTop = fillTop
+        boltPath.reset()
+        val w = r.width()
+        val depth = min(h * 0.85f, 160f * density)
+        val top = fillTop + 2f * density
+        var x = r.left + w * 0.55f
+        boltPath.moveTo(x, top)
+        var forkX = x
+        var forkY = top
+        for (k in 1..12) {
+            x = (x + (seed(k * 31 + 7) - 0.5f) * w * 0.45f).coerceIn(r.left + w * 0.15f, r.right - w * 0.15f)
+            val y = top + depth * k / 12f
+            boltPath.lineTo(x, y)
+            if (k == 4) {
+                forkX = x
+                forkY = y
+            }
+        }
+        boltPath.moveTo(forkX, forkY)
+        for (k in 1..4) {
+            forkX = (forkX - w * 0.07f + (seed(k * 53 + 3) - 0.5f) * w * 0.12f).coerceIn(r.left, r.right)
+            boltPath.lineTo(forkX, forkY + depth * 0.06f * k)
+        }
+    }
+
+    // ---- Fireworks ------------------------------------------------------------------------------
+
+    private fun fireworks(canvas: Canvas, p: LongArray, r: RectF, fillTop: Float, phase: Float, alpha: Int, a: Float) {
+        val w = r.width()
+        val h = (r.bottom - fillTop).coerceAtLeast(1f)
+        ground(canvas, "fireworkSky", intArrayOf(0xFF0D1030.toInt(), 0xFF040512.toInt()), null, r, fillTop, r.bottom, alpha)
+        val blast = w * 0.5f + 10f * density
+        line.strokeWidth = 1.2f * density
+        for (b in 0 until FIREWORK_BURSTS) {
+            // Every burst on the same clock, each a third of a cycle behind the last, and each over
+            // well before its own third comes round again: nothing is lit when a burst's clock wraps.
+            val u = ((phase - b.toFloat() / FIREWORK_BURSTS) % 1f + 1f) % 1f
+            if (u >= FIREWORK_LIFE) continue
+            val cx = r.left + w * (0.3f + 0.4f * seed(b * 11 + 1))
+            val cy = fillTop + h * (0.2f + 0.4f * seed(b * 17 + 3))
+            val color = c(p, b)
+            val accent = c(p, b + 1)
+            if (u < FIREWORK_CLIMB) {
+                // The rocket, from under the track, slowing as it reaches the top of its climb.
+                val k = u / FIREWORK_CLIMB
+                val start = r.bottom + 8f * density
+                val y = start + (cy - start) * (1f - (1f - k) * (1f - k))
+                line.color = color
+                line.alpha = a255(0.45f * a)
+                canvas.drawLine(cx, y, cx, y + 10f * density * (1f - k * 0.5f), line)
+                glow(canvas, cx, y, 4f * density, 4f * density, color, 0.9f * a)
+                continue
+            }
+            val e = (u - FIREWORK_CLIMB) / (FIREWORK_LIFE - FIREWORK_CLIMB)
+            val left = 1f - e
+            val radius = blast * (1f - left * left * left)
+            val dying = left * sqrt(left)
+            // Sparks sag as they slow.
+            val drop = e * e * 12f * density
+            // The flash of the break, then the sparks' light on the smoke round them.
+            glow(canvas, cx, cy, blast * 1.4f, blast * 1.4f, color, (0.55f * left * left + 0.15f * dying) * a)
+            for (j in 0 until FIREWORK_SPARKS) {
+                val angle = j * TAU / FIREWORK_SPARKS + seed(b * 7 + j * 3) * 0.35f
+                val ca = cos(angle)
+                val sa = sin(angle)
+                val ox = cx + ca * radius
+                val oy = cy + sa * radius + drop
+                val ink = if (j % 3 == 0) accent else color
+                line.color = ink
+                line.alpha = a255(0.55f * dying * a)
+                canvas.drawLine(cx + ca * radius * 0.72f, cy + sa * radius * 0.72f + drop * 0.7f, ox, oy, line)
+                // The tips, white-hot at the break, glittering as they go out.
+                val glitter = if (e > 0.5f) 0.55f + 0.45f * sin(e * 60f + j * 2.3f) else 1f
+                paint.color = ColorUtils.blendARGB(ink, Color.WHITE, 0.6f * left)
+                paint.alpha = a255(dying * glitter * a)
+                canvas.drawCircle(ox, oy, 1.1f * density, paint)
+            }
+        }
+    }
+
     // ---- Stripes, the one style that tints the fill rather than painting over it ----------------
 
     private var stripeShader: LinearGradient? = null
@@ -1045,11 +1698,57 @@ internal class FillArt(private val density: Float) {
             }
         }
 
+        /** How many fireflies are out. A dozen and a bit: enough for a meadow, few enough to count. */
+        private const val FIREFLY_COUNT = 14
+
+        /** How many flakes fall at each depth, far to near. The near ones are few, as they are. */
+        private val SNOW_PER_LAYER = intArrayOf(16, 11, 6)
+
+        /** The length of track one heartbeat's trace takes, in dp. */
+        private const val ECG_BEAT_DP = 64f
+
+        /** How far behind the monitor's sweep its trace takes to fade, in dp. */
+        private const val ECG_TRAIL_DP = 72f
+
+        /** Where the tall spike sits in a beat, as a fraction of it. */
+        private const val ECG_SPIKE = 0.36f
+
+        /**
+         * One beat of the trace as (fraction up the beat, swing across) pairs: the small wave before,
+         * the dip, the spike and its overshoot, the broad wave after, and flat between. Swing is in
+         * units of the trace's amplitude.
+         */
+        private val ECG_KEYS = floatArrayOf(
+            0f, 0f, 0.12f, 0f, 0.15f, -0.14f, 0.18f, 0f,
+            0.3f, 0f, 0.325f, 0.16f, ECG_SPIKE, -1f, 0.4f, 0.42f, 0.43f, 0f,
+            0.56f, 0f, 0.6f, -0.2f, 0.64f, -0.28f, 0.68f, -0.2f, 0.72f, 0f, 1f, 0f,
+        )
+
+        /** The spacing of the neon arrows, in dp, and how many there can ever be. */
+        private const val NEON_PITCH_DP = 13f
+        private const val NEON_MAX = 64
+
+        /** The chase lights one arrow in this many. */
+        private const val NEON_GROUP = 4f
+
+        private const val CONFETTI_COUNT = 26
+        private const val WARP_COUNT = 34
+        private const val RAIN_COUNT = 44
+
+        /** Bursts a cycle, and how much of their third of it each is climbing and then open. */
+        private const val FIREWORK_BURSTS = 3
+        private const val FIREWORK_CLIMB = 0.14f
+        private const val FIREWORK_LIFE = 0.62f
+        private const val FIREWORK_SPARKS = 14
+
         private val STYLES = setOf(
             SliderFill.LIQUID, SliderFill.VU_METER, SliderFill.WAVEFORM, SliderFill.SUNRISE,
             SliderFill.SPECTRUM, SliderFill.SILK, SliderFill.AURORA, SliderFill.PLASMA,
             SliderFill.HOLOGRAM, SliderFill.SONAR, SliderFill.CIRCUIT, SliderFill.DOT_MATRIX,
             SliderFill.CYBERPUNK, SliderFill.MATRIX_RAIN, SliderFill.RUNE,
+            SliderFill.FIREFLIES, SliderFill.SNOWFALL, SliderFill.HEARTBEAT, SliderFill.NEON,
+            SliderFill.OCEAN, SliderFill.GRADIENT, SliderFill.CONFETTI, SliderFill.WARP,
+            SliderFill.STORM, SliderFill.FIREWORKS,
         )
 
         /** Whether [style] is painted here, ground and all, rather than by the view itself. */

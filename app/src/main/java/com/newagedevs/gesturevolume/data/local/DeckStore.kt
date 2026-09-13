@@ -186,8 +186,8 @@ class DeckStore(private val prefs: SharedPreferences) {
     /**
      * When the running timer ends, as elapsed-realtime millis, or 0 when none is running.
      *
-     * Persisted so a countdown survives the host being rebuilt — a settings save, a handover
-     * between the two services — rather than silently vanishing mid-count.
+     * Persisted so a countdown survives the host being rebuilt — a settings save, or the service
+     * being restarted — rather than silently vanishing mid-count.
      */
     fun getTimerEndAt(): Long = prefs.getLong(TIMER_END_AT, 0L)
     fun setTimerEndAt(value: Long) = prefs.edit { putLong(TIMER_END_AT, value) }

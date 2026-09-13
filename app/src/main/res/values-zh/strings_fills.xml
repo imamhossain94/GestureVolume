@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The animation's own colours, for the settings screen. -->
+    <string name="slider_fill_colors">动画颜色</string>
+    <string name="slider_fill_colors_desc">用你自选的三种颜色代替动画自带的颜色。</string>
+    <string name="slider_fill_colors_unsupported">此动画使用填充颜色绘制，没有可更改的自有颜色。</string>
+    <string name="slider_fill_color_n">颜色 %1$d</string>
+    <string name="slider_fill_colors_reset">重置颜色</string>
+</resources>

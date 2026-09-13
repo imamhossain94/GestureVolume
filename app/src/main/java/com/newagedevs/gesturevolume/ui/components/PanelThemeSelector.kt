@@ -67,7 +67,7 @@ fun PanelThemeSelector(
                 ) {
                     row.forEach { id ->
                         Segment(
-                            label = stringResource(labelFor(id)),
+                            label = stringResource(panelThemeLabel(id)),
                             selected = theme == id,
                             onClick = { onThemeChange(id) },
                             modifier = Modifier.weight(1f),
@@ -84,11 +84,17 @@ fun PanelThemeSelector(
 
 private const val SEGMENTS_PER_ROW = 3
 
-private fun labelFor(id: String): Int = when (id) {
+/** The translated name of a panel style, for the summaries that name the one chosen. */
+fun panelThemeLabel(id: String): Int = when (id) {
     PanelTheme.FROSTED -> R.string.panel_theme_frosted
     PanelTheme.GLASS -> R.string.panel_theme_glass
     PanelTheme.AERO -> R.string.panel_theme_aero
     PanelTheme.VIBRANT -> R.string.panel_theme_vibrant
+    PanelTheme.PAPER -> R.string.panel_theme_paper
+    PanelTheme.MIDNIGHT -> R.string.panel_theme_midnight
+    PanelTheme.AMOLED -> R.string.panel_theme_amoled
+    PanelTheme.ACRYLIC -> R.string.panel_theme_acrylic
+    PanelTheme.AMETHYST -> R.string.panel_theme_amethyst
     else -> R.string.panel_theme_solid
 }
 

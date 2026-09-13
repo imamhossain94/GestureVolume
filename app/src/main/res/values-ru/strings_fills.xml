@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The animation's own colours, for the settings screen. -->
+    <string name="slider_fill_colors">Цвета анимации</string>
+    <string name="slider_fill_colors_desc">Раскрасьте анимацию в три своих цвета вместо её собственных.</string>
+    <string name="slider_fill_colors_unsupported">Эта анимация рисуется цветом заливки, поэтому своих цветов для изменения у неё нет.</string>
+    <string name="slider_fill_color_n">Цвет %1$d</string>
+    <string name="slider_fill_colors_reset">Сбросить цвета</string>
+</resources>

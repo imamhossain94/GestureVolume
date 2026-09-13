@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_pick_any">Scegli tutto ciò che vale</string>
+    <string name="feedback_via_email_title">Inviato dalla tua app email</string>
+    <string name="feedback_via_email_desc">Invia apre la tua app email con il messaggio già compilato. Nulla parte finché non lo invii da lì.</string>
+    <string name="feedback_details_title">Dettagli inclusi</string>
+    <string name="feedback_details_desc">Vengono aggiunti la versione dell\'app, il modello del dispositivo e la versione di Android, per poter individuare il problema.</string>
+</resources>

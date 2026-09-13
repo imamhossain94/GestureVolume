@@ -40,6 +40,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.ui.layout.Placeable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -194,9 +196,15 @@ fun DeckOverlay(
     val expanded = state.expandedTile
     val expandedTile = expanded?.let { DeckTiles.byId(it) }
 
-    // Both grow out of the side they are anchored to, which is where the bar is.
-    val stripOrigin = TransformOrigin(if (model.isLeft) 0f else 1f, 0.5f)
-    val cardOrigin = TransformOrigin(if (model.isLeft) 0f else 1f, 0.5f)
+    // Both grow out of the edge they are anchored to, which is where the bar is: its side, or the
+    // top or bottom for a bar lying along one.
+    val lyingOnTop = model.lyingOnTop
+    val stripOrigin = if (lyingOnTop != null) {
+        TransformOrigin(0.5f, if (lyingOnTop) 0f else 1f)
+    } else {
+        TransformOrigin(if (model.isLeft) 0f else 1f, 0.5f)
+    }
+    val cardOrigin = stripOrigin
 
     val entrance = rememberPanelEntrance(
         animation = model.animation,
@@ -283,17 +291,50 @@ fun DeckOverlay(
         ) { measurables, constraints ->
             val frameW = model.frame.width
             val frameH = model.frame.height
-            val strip = measurables.first { it.layoutId == "strip" }
-                .measure(Constraints(maxWidth = stripWidthPx, maxHeight = max(0, maxStripHeightPx)))
-            val cardMaxW = min(cardWidthPx, frameW - stripWidthPx - edgePx - gapPx * 2).coerceAtLeast(0)
-            val card = measurables.first { it.layoutId == "card" }
-                .measure(Constraints(maxWidth = cardMaxW, maxHeight = max(0, frameH - gapPx * 2)))
+            val stripMeasurable = measurables.first { it.layoutId == "strip" }
+            val cardMeasurable = measurables.first { it.layoutId == "card" }
+            val strip: Placeable
+            val card: Placeable
+            val stripX: Int
+            val stripY: Int
+            val cardX: Int
+            val cardY: Int
+            if (lyingOnTop != null) {
+                // Turned on its side: the strip runs along the top or bottom edge, centred on the
+                // bar and pulled back inside the frame, and the card opens below or above it. The
+                // height budget becomes a width budget, since that is the way the strip now runs.
+                strip = stripMeasurable.measure(
+                    Constraints(
+                        maxWidth = max(0, (frameW * model.config.heightFraction).toInt()),
+                        maxHeight = stripWidthPx,
+                    )
+                )
+                card = cardMeasurable.measure(
+                    Constraints(
+                        maxWidth = min(cardWidthPx, frameW - gapPx * 2).coerceAtLeast(0),
+                        maxHeight = max(0, frameH - strip.height - edgePx - gapPx * 2),
+                    )
+                )
+                val barCenterX = model.anchor.left + model.anchor.width / 2
+                stripX = (barCenterX - strip.width / 2)
+                    .coerceIn(gapPx, max(gapPx, frameW - strip.width - gapPx))
+                stripY = if (lyingOnTop) edgePx else frameH - edgePx - strip.height
+                cardX = (barCenterX - card.width / 2)
+                    .coerceIn(gapPx, max(gapPx, frameW - card.width - gapPx))
+                cardY = if (lyingOnTop) stripY + strip.height + gapPx else stripY - gapPx - card.height
+            } else {
+                strip = stripMeasurable
+                    .measure(Constraints(maxWidth = stripWidthPx, maxHeight = max(0, maxStripHeightPx)))
+                val cardMaxW = min(cardWidthPx, frameW - stripWidthPx - edgePx - gapPx * 2).coerceAtLeast(0)
+                card = cardMeasurable
+                    .measure(Constraints(maxWidth = cardMaxW, maxHeight = max(0, frameH - gapPx * 2)))
 
-            val stripX = if (model.isLeft) edgePx else frameW - edgePx - strip.width
-            val stripY = (model.anchor.top + model.anchor.height / 2 - strip.height / 2)
-                .coerceIn(gapPx, max(gapPx, frameH - strip.height - gapPx))
-            val cardX = if (model.isLeft) stripX + strip.width + gapPx else stripX - gapPx - card.width
-            val cardY = stripY.coerceIn(gapPx, max(gapPx, frameH - card.height - gapPx))
+                stripX = if (model.isLeft) edgePx else frameW - edgePx - strip.width
+                stripY = (model.anchor.top + model.anchor.height / 2 - strip.height / 2)
+                    .coerceIn(gapPx, max(gapPx, frameH - strip.height - gapPx))
+                cardX = if (model.isLeft) stripX + strip.width + gapPx else stripX - gapPx - card.width
+                cardY = stripY.coerceIn(gapPx, max(gapPx, frameH - card.height - gapPx))
+            }
 
             // Reported as two rectangles rather than one enclosing both: the backdrop behind
             // them is a rounded rectangle, and a single one spanning the pair would also blur the
@@ -331,23 +372,43 @@ private fun DeckStrip(
     val stripWidth = with(density) { stripWidthPx.toDp() }
     val shape = RoundedCornerShape(model.config.cornerDp.dp)
 
-    Column(
-        modifier = Modifier
-            .width(stripWidth)
-            .clip(shape)
-            .background(palette.background)
-            .then(if (glass) Modifier.liquidGlass(model.config.cornerDp.dp, palette.light) else Modifier)
-            // Swallows the tap so the root's dismiss does not fire for a press on the strip.
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = {}
-            )
-            .verticalScroll(rememberScrollState())
-            .padding(vertical = 10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
+    val lying = model.lyingOnTop != null
+    val surface = Modifier
+        .clip(shape)
+        .background(palette.background)
+        .then(if (glass) Modifier.liquidGlass(model.config.cornerDp.dp, palette.light) else Modifier)
+        // Swallows the tap so the root's dismiss does not fire for a press on the strip.
+        .clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = {}
+        )
+    // Lying along the top or bottom edge the strip is a row that scrolls sideways; otherwise the
+    // column it has always been. The same contents, in the same order, either way.
+    val stripLayout: @Composable (@Composable () -> Unit) -> Unit = { content ->
+        if (lying) {
+            Row(
+                modifier = Modifier
+                    .height(stripWidth)
+                    .then(surface)
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) { content() }
+        } else {
+            Column(
+                modifier = Modifier
+                    .width(stripWidth)
+                    .then(surface)
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) { content() }
+        }
+    }
+    stripLayout {
         val shortcuts: @Composable () -> Unit = {
             model.quickDial.forEach { entry ->
                 QuickDialButton(entry, palette) { actions.dial(entry) }
@@ -379,11 +440,11 @@ private fun DeckStrip(
 
         if (model.config.utilitiesFirst) {
             tiles()
-            if (hasShortcuts && model.tiles.isNotEmpty()) StripDivider(palette)
+            if (hasShortcuts && model.tiles.isNotEmpty()) StripDivider(palette, lying)
             shortcuts()
         } else {
             shortcuts()
-            if (hasShortcuts && model.tiles.isNotEmpty()) StripDivider(palette)
+            if (hasShortcuts && model.tiles.isNotEmpty()) StripDivider(palette, lying)
             tiles()
         }
     }
@@ -422,12 +483,15 @@ private fun onTileTap(tile: DeckTile, actions: DeckActions) {
 }
 
 @Composable
-private fun StripDivider(palette: DeckPalette) {
+private fun StripDivider(palette: DeckPalette, lying: Boolean = false) {
     Box(
-        modifier = Modifier
-            .padding(vertical = 4.dp)
-            .width(22.dp)
-            .height(1.dp)
+        modifier = (
+            if (lying) {
+                Modifier.padding(horizontal = 4.dp).width(1.dp).height(22.dp)
+            } else {
+                Modifier.padding(vertical = 4.dp).width(22.dp).height(1.dp)
+            }
+            )
             .background(palette.onBackground.copy(alpha = 0.18f))
     )
 }

@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The accessibility service performs the system actions (lock, screenshot, Back, Home, Recents,
-  notifications, quick settings, power menu), can draw the bar without a notification, and — only
-  when the user turns clipboard capture on — reads text selections and Copy presses. The live event
-  subscription is set at runtime and is empty unless capture is on; the types below are the most it
-  will ever ask for.
+  The accessibility service does three things: it performs the system actions (lock, screenshot,
+  Back, Home, Recents, notifications, quick settings, power menu), it can take the two volume keys,
+  and it can see which app is in front. It never draws the bar. The live event subscription is set
+  at runtime and is empty unless the user has picked apps to hide the bar in; the types below are
+  the most it will ever ask for.
 
-  canRequestFilterKeyEvents is for the Quick panel's Instant volume keys. The filter itself is
-  requested at runtime and only while that setting is chosen; even then the service takes the two
+  canRequestFilterKeyEvents is for the Quick panel's Instant volume keys and Hide in screenshots.
+  The filter itself is requested at runtime and only while one of those is chosen; even then the service takes the two
   volume keys and hands every other key straight back.
 
   typeWindowStateChanged is for hiding the bar in apps the user picks, and is subscribed only while
   there are any. The service reads which app's window came to the front, its package and class, and
   nothing inside it.
+
+  canRetrieveWindowContent is false: the service never reads what is inside a window, this app's
+  or any other's.
 
   isAccessibilityTool is false on purpose: this is a convenience feature for everyone, not an
   assistive tool, and the Play listing carries the matching disclosure.
@@ -20,10 +23,10 @@
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/accessibility_service_description"
     android:summary="@string/accessibility_service_summary"
-    android:accessibilityEventTypes="typeViewTextSelectionChanged|typeViewClicked|typeWindowStateChanged"
+    android:accessibilityEventTypes="typeWindowStateChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
     android:notificationTimeout="100"
-    android:canRetrieveWindowContent="true"
+    android:canRetrieveWindowContent="false"
     android:accessibilityFlags="flagDefault"
     android:canPerformGestures="false"
     android:canRequestFilterKeyEvents="true"

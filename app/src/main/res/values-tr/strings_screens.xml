@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_pick_any">Geçerli olanların hepsini seçin</string>
+    <string name="feedback_via_email_title">E-posta uygulamanızdan gönderilir</string>
+    <string name="feedback_via_email_desc">Gönder, notunuz doldurulmuş olarak e-posta uygulamanızı açar. Orada gönderene kadar hiçbir şey gitmez.</string>
+    <string name="feedback_details_title">Eklenen bilgiler</string>
+    <string name="feedback_details_desc">Sorunun izini sürebilmek için uygulama sürümü, cihaz modeliniz ve Android sürümü eklenir.</string>
+</resources>

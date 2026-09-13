@@ -44,7 +44,22 @@ data class AppearanceState(
      * preview drag was horizontally decorative — the bar followed the finger, snapped back to a
      * side on release, and the live overlay never heard about any of it.
      */
-    val posXFraction: Float
+    val posXFraction: Float,
+    /** Whether portrait and landscape share one position. See SharedPref.getHandlerSamePositionBothOrientations. */
+    val samePosition: Boolean = false,
+    /** The same two fractions for the orientation the phone is *not* held in right now. */
+    val otherPositionFraction: Float = positionFraction,
+    val otherPosXFraction: Float = posXFraction,
+    /** Whether the bar follows the phone round its edges. See SharedPref.getHandlerDynamicPosition. */
+    val dynamicPosition: Boolean = false,
+    /**
+     * The preset applied in this editing session and not yet saved, or null.
+     *
+     * Part of the state so that applying a preset counts as a change even when its look is the
+     * one already on screen: the preset also carries behaviour, and Apply has to be reachable to
+     * write it. See [AppearanceStateHolder.appliedPresetId].
+     */
+    val appliedPresetId: String? = null,
 )
 
 class AppearanceStateHolder(
@@ -70,7 +85,11 @@ class AppearanceStateHolder(
     initialEdgeMargin: Float,
     initialSnapToEdge: Boolean,
     initialPositionFraction: Float,
-    initialPosXFraction: Float
+    initialPosXFraction: Float,
+    initialSamePosition: Boolean = false,
+    initialOtherPositionFraction: Float = initialPositionFraction,
+    initialOtherPosXFraction: Float = initialPosXFraction,
+    initialDynamicPosition: Boolean = false,
 ) {
     var gravity by mutableStateOf(initialGravity)
     var width by mutableStateOf(initialWidth)
@@ -98,28 +117,45 @@ class AppearanceStateHolder(
     var snapToEdge by mutableStateOf(initialSnapToEdge)
     var positionFraction by mutableStateOf(initialPositionFraction)
     var posXFraction by mutableStateOf(initialPosXFraction)
+    var samePosition by mutableStateOf(initialSamePosition)
+    var otherPositionFraction by mutableStateOf(initialOtherPositionFraction)
+    var otherPosXFraction by mutableStateOf(initialOtherPosXFraction)
+    var dynamicPosition by mutableStateOf(initialDynamicPosition)
+
+    /**
+     * The id of the last preset applied since the screen opened or was last saved, or null.
+     *
+     * What decides whether saving writes a preset's [HandlerPresets.Behaviour] — its gestures, the
+     * Quick panel, the menu and the panel animation. Set only by [applyPreset], so a user who opens
+     * the screen to change a colour saves a colour and keeps every action they chose elsewhere.
+     */
+    var appliedPresetId by mutableStateOf<String?>(null)
 
     fun toState(): AppearanceState = AppearanceState(
         gravity, width, height, bgColor.toArgb(), bgAlpha,
         strokeColor.toArgb(), strokeWidth, strokeAlpha,
         cornerTL, cornerTR, cornerBL, cornerBR, shape, flare,
         iconRes, iconSize, iconColor.toArgb(), showIcon, vibrate,
-        edgeMargin, snapToEdge, positionFraction, posXFraction
+        edgeMargin, snapToEdge, positionFraction, posXFraction,
+        samePosition, otherPositionFraction, otherPosXFraction, dynamicPosition,
+        appliedPresetId,
     )
 }
 
 /**
- * Writes a preset's appearance onto the holder.
+ * Writes a preset onto the holder: its look, where it puts the bar, and a note that it was applied.
  *
  * Extracted so the deep link from the main screen's preset card and the quick-preset chips in the
  * settings sheet cannot drift apart — they were two copies of the same sixteen assignments.
  *
- * A preset is an **appearance, not a placement** — with one stated exception. It leaves
- * [AppearanceStateHolder.gravity], [AppearanceStateHolder.positionFraction] and
- * [AppearanceStateHolder.posXFraction] alone, because the bar is dragged where the user wants it
- * and picking "Night" to change the colour should not throw that away. A preset that carries a
- * [HandlerPresets.Placement] is the exception, and carries one precisely because where it sits is
- * what it *is*: see the Notch preset.
+ * Every preset sets the bar's height on screen, [HandlerPresets.Preset.positionFraction], in both
+ * orientations, and whether it follows the phone round ([AppearanceStateHolder.dynamicPosition]):
+ * those live in the holder, so the preview shows them and a drag or a switch after applying still
+ * wins. A preset with a [HandlerPresets.Placement] also sets the side and the snap; the bubble has
+ * none and stays on whichever side the bar is.
+ *
+ * The rest of the preset's behaviour is not on this screen at all, so it is not copied here —
+ * [AppearanceStateHolder.appliedPresetId] records the preset, and saving writes its behaviour.
  *
  * Writes only the holder, so applying a preset stays inside the Apply/Discard contract.
  */
@@ -143,20 +179,33 @@ fun AppearanceStateHolder.applyPreset(preset: HandlerPresets.Preset) {
     showIcon = preset.showIcon
     vibrate = preset.vibrate
     edgeMargin = preset.edgeMargin
+    positionFraction = preset.positionFraction
+    otherPositionFraction = preset.positionFraction
+    dynamicPosition = preset.behaviour.dynamicPosition
     preset.placement?.let { placement ->
         gravity = placement.gravity
         posXFraction = placement.posXFraction
-        positionFraction = placement.posYFraction
         snapToEdge = placement.snapToEdge
     }
+    appliedPresetId = preset.id
 }
 
 /**
  * Whether the holder currently matches this preset, so a chip can show as selected.
  *
- * Compares exactly the fields [applyPreset] writes — gravity and the two position fractions are
- * excluded for the same reason it does not write them, otherwise dragging the bar would silently
- * deselect the preset whose colours are still on screen.
+ * Compares the **look** only: the appearance fields [applyPreset] writes, plus the snap for a
+ * preset with a [HandlerPresets.Placement]. Deliberately left out:
+ *
+ *  - Gravity and the position fractions, otherwise dragging the bar would silently deselect the
+ *    preset whose colours are still on screen.
+ *  - Dynamic position and every other part of [HandlerPresets.Behaviour]. The chip answers "is
+ *    this the bar I am looking at?", which is a question about the picture in the preview. The
+ *    behaviour is not shown on this screen and is changed on others; a chip that went dark because
+ *    the user later moved swipe-out to Back, or flipped dynamic position, would be reporting
+ *    something the user cannot see here and cannot fix from here.
+ *
+ * Corners are compared per corner, so a preset with asymmetric corners (the Edge) matches once
+ * applied.
  */
 fun HandlerPresets.Preset.matches(state: AppearanceStateHolder): Boolean =
     (placement == null || state.snapToEdge == placement.snapToEdge) &&
@@ -167,10 +216,10 @@ fun HandlerPresets.Preset.matches(state: AppearanceStateHolder): Boolean =
         state.strokeColor == strokeColor &&
         state.strokeWidth == strokeWidth &&
         state.strokeAlpha == strokeAlpha &&
-        state.cornerTL == cornerRadius &&
-        state.cornerTR == cornerRadius &&
-        state.cornerBL == cornerRadius &&
-        state.cornerBR == cornerRadius &&
+        state.cornerTL == topLeft &&
+        state.cornerTR == topRight &&
+        state.cornerBL == bottomLeft &&
+        state.cornerBR == bottomRight &&
         state.shape == shape &&
         // Only where the shape has ends to sweep. Comparing it on a rounded preset would let a
         // stale flare left over from the tab deselect a chip whose bar is identical on screen.

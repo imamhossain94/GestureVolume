@@ -18,12 +18,6 @@
         <item quantity="many">%1$d сохранено</item>
         <item quantity="other">%1$d сохранено</item>
     </plurals>
-    <plurals name="deck_clipboard_count">
-        <item quantity="one">%1$d запись</item>
-        <item quantity="few">%1$d записи</item>
-        <item quantity="many">%1$d записей</item>
-        <item quantity="other">%1$d записи</item>
-    </plurals>
     <plurals name="deck_tiles_count">
         <item quantity="one">%1$d из %2$d включена</item>
         <item quantity="few">%1$d из %2$d включены</item>

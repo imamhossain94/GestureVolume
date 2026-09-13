@@ -12,10 +12,6 @@
         <item quantity="one">%1$d guardada</item>
         <item quantity="other">%1$d guardadas</item>
     </plurals>
-    <plurals name="deck_clipboard_count">
-        <item quantity="one">%1$d item</item>
-        <item quantity="other">%1$d itens</item>
-    </plurals>
     <plurals name="deck_tiles_count">
         <item quantity="one">%1$d de %2$d ativo</item>
         <item quantity="other">%1$d de %2$d ativos</item>

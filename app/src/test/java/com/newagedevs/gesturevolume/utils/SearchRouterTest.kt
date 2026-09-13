@@ -47,9 +47,9 @@ class SearchRouterTest {
 
     @Test
     fun `plain words go to the web`() {
-        val r = route("weather in dhaka")
+        val r = route("news in dhaka")
         assertTrue(r is SearchRouter.Route.Web)
-        assertEquals("weather in dhaka", (r as SearchRouter.Route.Web).query)
+        assertEquals("news in dhaka", (r as SearchRouter.Route.Web).query)
     }
 
     @Test

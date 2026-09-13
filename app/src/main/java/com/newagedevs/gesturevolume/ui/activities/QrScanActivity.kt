@@ -12,9 +12,6 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.newagedevs.gesturevolume.R
-import com.newagedevs.gesturevolume.data.local.SharedPref
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 /**
  * Scans a QR code or barcode for the Deck and acts on what it finds.
@@ -27,11 +24,7 @@ import javax.inject.Inject
  * Invisible, like [VoiceSearchActivity], and for the same reason: an overlay window cannot
  * receive an Activity result.
  */
-@AndroidEntryPoint
 class QrScanActivity : AppCompatActivity() {
-
-    @Inject
-    lateinit var preference: SharedPref
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,8 +47,8 @@ class QrScanActivity : AppCompatActivity() {
     /**
      * A URL is opened, a phone number dialled, a Wi-Fi or contact code copied.
      *
-     * Everything scanned is put on the clipboard as well, and into the app's own history, so a
-     * code that turns out to be something this app cannot open is not simply lost.
+     * Everything scanned is copied as well, so a code that turns out to be something this app
+     * cannot open is not simply lost.
      */
     private fun handle(barcode: Barcode) {
         val raw = barcode.rawValue?.trim().orEmpty()
@@ -65,7 +58,6 @@ class QrScanActivity : AppCompatActivity() {
             return
         }
         copy(raw)
-        preference.addClipboardEntry(raw)
 
         val opened = when (barcode.valueType) {
             Barcode.TYPE_URL -> open(Intent(Intent.ACTION_VIEW, (barcode.url?.url ?: raw).toUri()))

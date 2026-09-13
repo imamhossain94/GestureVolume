@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="deck_coin_hint">동전을 탭해서 던지세요</string>
+    <string name="deck_coin_streak">%2$s %1$d번 연속</string>
+    <string name="deck_coin_reset">횟수 초기화</string>
+    <string name="deck_coin_showing">동전 %1$s</string>
+    <string name="deck_coin_untossed">동전, 아직 던지지 않음</string>
+</resources>

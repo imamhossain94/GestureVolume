@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">Đã lưu giao diện</string>
     <string name="appearance">Vẻ bề ngoài</string>
-    <string name="appearance_desc">Tùy chỉnh trình xử lý</string>
+    <string name="appearance_desc">Màu, hình dạng, kích thước</string>
     <string name="customize_handler">Tùy chỉnh trình xử lý</string>
     <string name="actions">hành động</string>
-    <string name="actions_desc">Nhấn &amp; cài đặt cử chỉ</string>
+    <string name="actions_desc">Tác dụng của chạm và vuốt</string>
 
     <!-- Navigation -->
     <string name="pro_version">Phiên bản chuyên nghiệp</string>
@@ -236,16 +236,8 @@
     <string name="granted">Giả dụ như vậy</string>
 
     <!-- Presets -->
-    <string name="preset_default_title">Mặc định</string>
-    <string name="preset_default_subtitle">Tay cầm tiêu chuẩn</string>
-    <string name="preset_minimal_title">Tối thiểu</string>
-    <string name="preset_minimal_subtitle">Mỏng &amp; tinh tế</string>
     <string name="preset_bold_title">In đậm</string>
     <string name="preset_bold_subtitle">Lớn &amp; dễ thấy</string>
-    <string name="preset_night_title">Đêm</string>
-    <string name="preset_night_subtitle">Chủ đề tối</string>
-    <string name="preset_ghost_title">Bóng ma</string>
-    <string name="preset_ghost_subtitle">Gần như vô hình</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">Nhấn lại lần nữa để thoát</string>
@@ -341,13 +333,11 @@
     <string name="got_it">Đã hiểu</string>
     <string name="settings_sheet">Cài đặt giao diện</string>
     <string name="remove_ads_support_developer">Gỡ mọi quảng cáo và ủng hộ nhà phát triển</string>
-    <string name="reset_app">Đặt lại ứng dụng</string>
+    <string name="reset_app">Đặt lại</string>
     <string name="reset_app_title">Đặt lại tất cả?</string>
     <string name="reset_app_message">Mọi thiết lập trở về mặc định: giao diện và vị trí của thanh, tất cả hành động chạm và vuốt, menu nhấn giữ, chủ đề và ngôn ngữ. Thanh nổi sẽ tắt và các màn hình chào mừng quay lại.\n\nGiao dịch mua Pro của bạn được giữ nguyên. Không thể hoàn tác.</string>
     <string name="reset_app_confirm">Đặt lại</string>
     <string name="reset_app_done">Đã đặt lại tất cả.</string>
-    <string name="permission_needed_notification">Điều khiển trên thông báo đang bật. Không có quyền này, Hiện, Cài đặt và Dừng sẽ không xuất hiện.</string>
-    <string name="permission_needed_brightness">Bạn đã đặt một hành động độ sáng. Không có quyền này, nó không thể đổi độ sáng.</string>
     <string name="permission_action_required_one">1 quyền cần bạn xử lý</string>
     <string name="permission_action_required_many">%1$d quyền cần bạn xử lý</string>
     <!-- 1.3.5: adaptive volume stream -->
@@ -393,4 +383,81 @@
     <string name="about_developed_in">Được phát triển tại Bangladesh bởi</string>
     <string name="about_ideas_by">Ý tưởng tính năng từ một người bạn đến từ Bharat (Ấn Độ)</string>
     <string name="about_ideas_desc">Đã đề xuất nhiều tính năng trong ứng dụng này và vẫn tiếp tục đưa ra ý tưởng.</string>
+    <string name="quick_panel_card_subtitle">Rãnh độ sáng và âm lượng mà thanh mở ra</string>
+    <string name="long_press_menu_card_subtitle">Các hành động hiện ra khi bạn nhấn giữ thanh</string>
+    <string name="panel_theme_desc">Cách vẽ Deck, Bảng nhanh và menu nhấn giữ. Gloss, Clear và Paper có nền sáng với chữ tối. Frosted, Glass, Gloss, Clear, Acrylic và Amethyst làm mờ màn hình phía sau bảng, cần Android 12 trở lên; nếu hệ thống không làm mờ được, bảng sẽ giữ trong mờ.</string>
+    <string name="deck_card_subtitle">Bảng bên chứa lối tắt, công cụ và tìm kiếm</string>
+    <string name="visibility_card_subtitle">Ứng dụng và ảnh chụp màn hình mà thanh không xuất hiện</string>
+    <string name="visibility_screenshots_title">Ảnh chụp màn hình</string>
+    <string name="hide_in_screenshots_title">Ẩn khỏi ảnh chụp màn hình</string>
+    <string name="hide_in_screenshots_desc">Khi bạn nhấn nút Giảm âm lượng cùng nút Nguồn để chụp màn hình, thanh và các bảng của nó sẽ tạm ẩn trong giây lát, để ảnh chỉ có ứng dụng của bạn chứ không có thanh. Hành động Chụp màn hình luôn loại chúng ra.</string>
+    <string name="hide_in_screenshots_needs_accessibility">Cần dịch vụ hỗ trợ tiếp cận, vì chính nó nhận biết khi nút Giảm âm lượng được nhấn. Chạm để bật trong màn hình Quyền.</string>
+    <string name="hide_in_screenshots_limits">Ảnh chụp từ Cài đặt nhanh, menu nguồn hoặc bằng cử chỉ không báo trước, nên thanh vẫn có thể xuất hiện trong đó. Ô Thanh sẽ cất thanh đi chỉ với một lần chạm.</string>
+    <string name="permission_note_write_settings">Cần quyền Sửa đổi cài đặt hệ thống để thay đổi độ sáng. Chạm để cho phép trong màn hình Quyền.</string>
+    <string name="permission_note_accessibility">Cần dịch vụ hỗ trợ tiếp cận để hoạt động. Chạm để bật trong màn hình Quyền.</string>
+    <string name="permission_note_dnd">Cần quyền truy cập Không làm phiền để hoạt động. Chạm để cho phép trong màn hình Quyền.</string>
+    <string name="position_same_both">Cùng vị trí khi dọc và ngang</string>
+    <string name="position_same_both_desc">Khi tắt, thanh giữ một vị trí riêng cho mỗi hướng cầm điện thoại.</string>
+    <string name="position_portrait">Dọc</string>
+    <string name="position_landscape">Ngang</string>
+    <string name="position_both">Dọc và ngang</string>
+    <string name="position_now">hiện tại</string>
+    <string name="position_from_left">Từ trái</string>
+    <string name="position_from_top">Từ trên</string>
+    <string name="position_snap_off_hint">Đã rời khỏi cạnh nên Bám vào cạnh đã bị tắt. Bật lại để đưa thanh về cạnh gần hơn.</string>
+    <string name="position_sliders_desc">Vị trí tâm của thanh, tính theo tỷ lệ màn hình. Bạn cũng có thể nhấn giữ thanh rồi kéo; vị trí đó được lưu cho hướng cầm điện thoại lúc ấy.</string>
+    <string name="preview_backdrop_change">Đổi nền</string>
+    <string name="context_menu_group_layout">BỐ CỤC VÀ KÍCH THƯỚC</string>
+    <string name="context_menu_group_look">GIAO DIỆN</string>
+    <string name="context_menu_group_items">MỤC</string>
+    <string name="slider_edge_offset_desc">Đưa bảng đang mở lùi vào khỏi cạnh màn hình, tránh cạnh cong hoặc cử chỉ quay lại. Bảng vẫn mở ra từ thanh.</string>
+    <string name="permission_card_desc">Những gì thanh được phép làm: hiển thị trên ứng dụng khác, thực hiện thao tác hệ thống và đổi độ sáng.</string>
+    <string name="permission_chip_overlay">Hiển thị trên ứng dụng</string>
+    <string name="permission_chip_accessibility">Hỗ trợ tiếp cận</string>
+    <string name="permission_chip_settings">Sửa cài đặt</string>
+    <string name="permission_chip_more">+%1$d mục khác</string>
+    <string name="position_dynamic">Vị trí động</string>
+    <string name="position_dynamic_desc">Di chuyển thanh theo màn hình khi bạn xoay điện thoại. Thanh giữ nguyên cạnh của điện thoại và nằm dọc theo cạnh trên hoặc dưới khi xoay ngang, luôn sát mép. Khi tắt, thanh đứng thẳng ở phía màn hình của nó.</string>
+    <string name="position_along_edge">Vị trí dọc theo cạnh</string>
+    <string name="position_along_edge_desc">Nơi phần giữa của thanh nằm dọc theo cạnh, đo khi cầm điện thoại dọc. Khi xoay ngang, thanh vẫn ở cùng chỗ trên mặt kính.</string>
+    <string name="group_content">NỘI DUNG</string>
+    <string name="group_size_shape">KÍCH THƯỚC &amp; HÌNH DẠNG</string>
+    <string name="group_colours">MÀU SẮC</string>
+    <string name="group_animation">HIỆU ỨNG</string>
+    <string name="group_behaviour">HÀNH VI</string>
+    <string name="slider_sound">Âm thanh bước</string>
+    <string name="slider_sound_desc">Một tiếng tích nhẹ ở mỗi bước khi vuốt hoặc kéo. Chế độ thích ứng tăng cao độ theo mức và, trên bảng âm lượng, phát ở đúng âm lượng bạn đang đặt.</string>
+    <string name="slider_sound_off">Tắt</string>
+    <string name="slider_sound_click">Nhấp</string>
+    <string name="slider_sound_adaptive">Thích ứng</string>
+    <string name="slider_content_colors">Màu riêng cho biểu tượng và giá trị</string>
+    <string name="slider_content_colors_desc">Khi tắt, biểu tượng và con số lấy màu của rãnh và phần tô, và đổi màu khi phần tô đi qua.</string>
+    <string name="slider_value_color">Màu giá trị</string>
+    <string name="slider_icon_color">Màu biểu tượng</string>
+    <string name="permission_feature_floating_bar">Thanh nổi</string>
+    <string name="permission_feature_single_tap">Hành động: Nhấn một lần</string>
+    <string name="permission_feature_double_tap">Hành động: Nhấn đúp</string>
+    <string name="permission_feature_triple_tap">Hành động: Nhấn ba lần</string>
+    <string name="permission_feature_long_press">Hành động: Nhấn giữ</string>
+    <string name="permission_feature_swipe_up">Hành động: Vuốt lên</string>
+    <string name="permission_feature_swipe_down">Hành động: Vuốt xuống</string>
+    <string name="permission_feature_swipe_in">Hành động: Vuốt vào trong</string>
+    <string name="permission_feature_swipe_out">Hành động: Vuốt ra ngoài</string>
+    <string name="permission_feature_notification_controls">Hành động: Điều khiển trên thông báo</string>
+    <string name="permission_feature_menu_entry">Menu nhấn giữ: Mục</string>
+    <string name="permission_feature_deck_tile">Deck: Ô</string>
+    <string name="permission_feature_deck_contacts">Tìm kiếm Deck: Danh bạ</string>
+    <string name="permission_feature_deck_direct_call">Tìm kiếm Deck: Gọi trực tiếp</string>
+    <string name="permission_feature_slider_brightness">Thanh trượt nhanh: Độ sáng</string>
+    <string name="permission_feature_slider_instant_keys">Thanh trượt nhanh: Phím âm lượng tức thì</string>
+    <string name="permission_feature_hide_in_screenshots">Hiển thị: Ẩn khỏi ảnh chụp màn hình</string>
+    <string name="permission_feature_hide_in_apps">Hiển thị: Ẩn trong ứng dụng đã chọn</string>
+    <string name="permission_needed_by">Cần cho %1$s</string>
+    <string name="permission_needed_by_more">Cần cho %1$s và %2$d mục khác</string>
+    <string name="permission_needed_by_list">Cần cho những gì bạn đã thiết lập:</string>
+    <string name="nav_card_needs_permission">Cần một quyền</string>
+    <string name="permission_note_notifications">Cần quyền Thông báo để hiển thị các nút điều khiển. Chạm để cho phép trong màn hình Quyền.</string>
+    <string name="permission_note_contacts">Cần quyền Danh bạ để tìm người. Chạm để cho phép trong màn hình Quyền.</string>
+    <string name="permission_note_phone">Cần quyền Điện thoại để gọi trực tiếp. Chạm để cho phép trong màn hình Quyền.</string>
+    <string name="permission_note_overlay">Cần quyền Hiển thị trên các ứng dụng khác để hiện thanh. Chạm để cho phép trong màn hình Quyền.</string>
 </resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_pick_any">해당하는 항목을 모두 선택하세요</string>
+    <string name="feedback_via_email_title">이메일 앱에서 보내집니다</string>
+    <string name="feedback_via_email_desc">보내기를 누르면 내용이 입력된 이메일 앱이 열립니다. 그곳에서 보내기 전까지는 아무것도 전송되지 않습니다.</string>
+    <string name="feedback_details_title">포함되는 정보</string>
+    <string name="feedback_details_desc">문제를 추적할 수 있도록 앱 버전, 기기 모델, Android 버전이 추가됩니다.</string>
+</resources>

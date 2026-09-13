@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_pick_any">जो भी लागू हों, चुनें</string>
+    <string name="feedback_via_email_title">आपके ईमेल ऐप से भेजा जाता है</string>
+    <string name="feedback_via_email_desc">भेजें दबाने पर आपका संदेश भरा हुआ ईमेल ऐप खुलता है। वहाँ भेजने तक कुछ नहीं जाता।</string>
+    <string name="feedback_details_title">शामिल जानकारी</string>
+    <string name="feedback_details_desc">ऐप का संस्करण, आपके डिवाइस का मॉडल और Android संस्करण जोड़ा जाता है, ताकि समस्या का पता लगाया जा सके।</string>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The animation's own colours, for the settings screen. -->
+    <string name="slider_fill_colors">Couleurs de l’animation</string>
+    <string name="slider_fill_colors_desc">Peins l’animation avec trois couleurs de ton choix au lieu des siennes.</string>
+    <string name="slider_fill_colors_unsupported">Cette animation est dessinée avec la couleur de remplissage, elle n’a donc pas de couleurs propres à changer.</string>
+    <string name="slider_fill_color_n">Couleur %1$d</string>
+    <string name="slider_fill_colors_reset">Réinitialiser les couleurs</string>
+</resources>

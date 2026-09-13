@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The Deck's coin toss card. The faces themselves are deck_coin_heads and deck_coin_tails. -->
+    <string name="deck_coin_hint">Tap the coin to toss it</string>
+    <!-- %1$d: how many tosses in a row; %2$s: the face, Heads or Tails. -->
+    <string name="deck_coin_streak">%1$d× %2$s in a row</string>
+    <string name="deck_coin_reset">Reset the tally</string>
+    <!-- %1$s: the face, Heads or Tails. Read by screen readers. -->
+    <string name="deck_coin_showing">Coin showing %1$s</string>
+    <string name="deck_coin_untossed">Coin, not tossed yet</string>
+</resources>

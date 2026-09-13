@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The animation's own colours, for the settings screen. -->
+    <string name="slider_fill_colors">アニメーションの色</string>
+    <string name="slider_fill_colors_desc">アニメーション本来の色の代わりに、好きな3色で描きます。</string>
+    <string name="slider_fill_colors_unsupported">このアニメーションは塗りつぶしの色で描かれるため、変更できる独自の色はありません。</string>
+    <string name="slider_fill_color_n">色 %1$d</string>
+    <string name="slider_fill_colors_reset">色をリセット</string>
+</resources>

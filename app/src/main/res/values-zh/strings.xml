@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">外观已保存</string>
     <string name="appearance">外貌</string>
-    <string name="appearance_desc">自定义处理程序</string>
+    <string name="appearance_desc">颜色、形状与尺寸</string>
     <string name="customize_handler">自定义处理程序</string>
     <string name="actions">行动</string>
-    <string name="actions_desc">点击&amp;手势设置</string>
+    <string name="actions_desc">点按和滑动的操作</string>
 
     <!-- Navigation -->
     <string name="pro_version">专业版</string>
@@ -236,16 +236,8 @@
     <string name="granted">的确</string>
 
     <!-- Presets -->
-    <string name="preset_default_title">默认</string>
-    <string name="preset_default_subtitle">标准手柄</string>
-    <string name="preset_minimal_title">最小</string>
-    <string name="preset_minimal_subtitle">薄&amp;微妙的</string>
     <string name="preset_bold_title">大胆的</string>
     <string name="preset_bold_subtitle">大&amp;可见的</string>
-    <string name="preset_night_title">夜晚</string>
-    <string name="preset_night_subtitle">深色主题</string>
-    <string name="preset_ghost_title">鬼</string>
-    <string name="preset_ghost_subtitle">几乎看不见</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">再次按返回键退出</string>
@@ -341,13 +333,11 @@
     <string name="got_it">知道了</string>
     <string name="settings_sheet">外观设置</string>
     <string name="remove_ads_support_developer">移除所有广告并支持开发者</string>
-    <string name="reset_app">重置应用</string>
+    <string name="reset_app">重置</string>
     <string name="reset_app_title">重置所有内容？</string>
     <string name="reset_app_message">所有设置都会恢复默认：滑条的外观和位置、全部点按和滑动操作、长按菜单、主题和语言。悬浮滑条会被关闭，欢迎页面会重新出现。\n\n你的 Pro 购买会保留。此操作无法撤销。</string>
     <string name="reset_app_confirm">重置</string>
     <string name="reset_app_done">已重置所有内容。</string>
-    <string name="permission_needed_notification">通知栏控制已开启。没有此权限，显示、设置和停止都不会出现。</string>
-    <string name="permission_needed_brightness">你已设置亮度操作。没有此权限，它无法改变亮度。</string>
     <string name="permission_action_required_one">1 项权限需要处理</string>
     <string name="permission_action_required_many">%1$d 项权限需要处理</string>
     <!-- 1.3.5: adaptive volume stream -->
@@ -393,4 +383,81 @@
     <string name="about_developed_in">开发者（孟加拉国）</string>
     <string name="about_ideas_by">来自巴拉特（印度）的朋友提供的功能创意</string>
     <string name="about_ideas_desc">提出了本应用中的许多功能，并持续贡献新创意。</string>
+    <string name="quick_panel_card_subtitle">滑条展开后的亮度与音量轨道</string>
+    <string name="long_press_menu_card_subtitle">长按滑条时提供的操作</string>
+    <string name="panel_theme_desc">Deck、快捷面板和长按菜单的绘制方式。Gloss、Clear 和 Paper 为浅色底配深色文字。Frosted、Glass、Gloss、Clear、Acrylic 和 Amethyst 会模糊面板后方的屏幕，需要 Android 12 或更高版本；系统不支持模糊时，面板保持半透明。</string>
+    <string name="deck_card_subtitle">集合快捷方式、工具与搜索的侧边面板</string>
+    <string name="visibility_card_subtitle">滑条不会出现的应用和截图</string>
+    <string name="visibility_screenshots_title">截图</string>
+    <string name="hide_in_screenshots_title">在截图中隐藏</string>
+    <string name="hide_in_screenshots_desc">当你同时按下音量减键和电源键截屏时，滑条及其面板会短暂隐藏，截图里显示的是你的应用而不是滑条。“截屏”操作始终不会拍到它们。</string>
+    <string name="hide_in_screenshots_needs_accessibility">这需要无障碍服务，由它来侦测音量减键被按下。点按即可在权限页面中开启。</string>
+    <string name="hide_in_screenshots_limits">通过快捷设置、电源菜单或手势截取的截图不会事先通知，因此滑条仍可能出现在其中。点按一下“滑条”磁贴即可将其收起。</string>
+    <string name="permission_note_write_settings">需要“修改系统设置”权限才能调节亮度。点按即可在权限页面中允许。</string>
+    <string name="permission_note_accessibility">需要无障碍服务才能使用。点按即可在权限页面中开启。</string>
+    <string name="permission_note_dnd">需要勿扰模式访问权限才能使用。点按即可在权限页面中允许。</string>
+    <string name="position_same_both">竖屏和横屏使用相同位置</string>
+    <string name="position_same_both_desc">关闭后，滑条会为每种握持方向各自记住位置。</string>
+    <string name="position_portrait">竖屏</string>
+    <string name="position_landscape">横屏</string>
+    <string name="position_both">竖屏和横屏</string>
+    <string name="position_now">当前</string>
+    <string name="position_from_left">距左侧</string>
+    <string name="position_from_top">距顶部</string>
+    <string name="position_snap_off_hint">已离开边缘，因此“吸附到边缘”已关闭。重新开启即可让滑条贴向较近的一侧。</string>
+    <string name="position_sliders_desc">滑条中心所在的位置，以占屏幕的比例表示。你也可以长按滑条并拖动；该位置会按当时手机的方向保存。</string>
+    <string name="preview_backdrop_change">更换背景</string>
+    <string name="context_menu_group_layout">布局与尺寸</string>
+    <string name="context_menu_group_look">外观</string>
+    <string name="context_menu_group_items">项目</string>
+    <string name="slider_edge_offset_desc">让打开的面板离开屏幕边缘，避开曲面边缘或返回手势。面板仍从手柄中展开。</string>
+    <string name="permission_card_desc">手柄可以做的事：显示在其他应用上层、执行系统操作、调节亮度。</string>
+    <string name="permission_chip_overlay">显示在其他应用上层</string>
+    <string name="permission_chip_accessibility">无障碍</string>
+    <string name="permission_chip_settings">修改系统设置</string>
+    <string name="permission_chip_more">另外 %1$d 项</string>
+    <string name="position_dynamic">动态位置</string>
+    <string name="position_dynamic_desc">旋转手机时，手柄随屏幕一起移动。它始终停留在手机的同一条边上，横屏时沿顶部或底部边缘平躺，并始终贴边。关闭时，它会竖直停留在屏幕原来的一侧。</string>
+    <string name="position_along_edge">沿边缘的位置</string>
+    <string name="position_along_edge_desc">手柄中点沿其所在边缘的位置，以竖握手机时为准。横过来后，手柄仍在屏幕上的同一位置。</string>
+    <string name="group_content">内容</string>
+    <string name="group_size_shape">尺寸与形状</string>
+    <string name="group_colours">颜色</string>
+    <string name="group_animation">动画</string>
+    <string name="group_behaviour">行为</string>
+    <string name="slider_sound">步进音效</string>
+    <string name="slider_sound_desc">滑动或拖动时每一步发出轻柔的滴答声。自适应模式下音高随数值升高；在音量面板上，它会以你正在设置的音量播放。</string>
+    <string name="slider_sound_off">关闭</string>
+    <string name="slider_sound_click">咔嗒</string>
+    <string name="slider_sound_adaptive">自适应</string>
+    <string name="slider_content_colors">自定义图标和数值颜色</string>
+    <string name="slider_content_colors_desc">关闭时，图标和数字使用轨道与填充的颜色，并在填充经过时互换。</string>
+    <string name="slider_value_color">数值颜色</string>
+    <string name="slider_icon_color">图标颜色</string>
+    <string name="permission_feature_floating_bar">悬浮条</string>
+    <string name="permission_feature_single_tap">操作：单击</string>
+    <string name="permission_feature_double_tap">操作：双击</string>
+    <string name="permission_feature_triple_tap">操作：三击</string>
+    <string name="permission_feature_long_press">操作：长按</string>
+    <string name="permission_feature_swipe_up">操作：向上滑动</string>
+    <string name="permission_feature_swipe_down">操作：向下滑动</string>
+    <string name="permission_feature_swipe_in">操作：向内滑动</string>
+    <string name="permission_feature_swipe_out">操作：向外滑动</string>
+    <string name="permission_feature_notification_controls">操作：通知栏控制</string>
+    <string name="permission_feature_menu_entry">长按菜单：菜单项</string>
+    <string name="permission_feature_deck_tile">Deck：磁贴</string>
+    <string name="permission_feature_deck_contacts">Deck 搜索：联系人</string>
+    <string name="permission_feature_deck_direct_call">Deck 搜索：直接拨打</string>
+    <string name="permission_feature_slider_brightness">快捷滑块：亮度</string>
+    <string name="permission_feature_slider_instant_keys">快捷滑块：音量键即时响应</string>
+    <string name="permission_feature_hide_in_screenshots">可见性：在截图中隐藏</string>
+    <string name="permission_feature_hide_in_apps">可见性：在所选应用中隐藏</string>
+    <string name="permission_needed_by">%1$s 需要</string>
+    <string name="permission_needed_by_more">%1$s 等 %2$d 项需要</string>
+    <string name="permission_needed_by_list">你设置的以下功能需要：</string>
+    <string name="nav_card_needs_permission">需要一项权限</string>
+    <string name="permission_note_notifications">需要通知权限才能显示控制按钮。点按即可在权限页面中允许。</string>
+    <string name="permission_note_contacts">需要通讯录权限才能查找联系人。点按即可在权限页面中允许。</string>
+    <string name="permission_note_phone">需要电话权限才能直接拨打。点按即可在权限页面中允许。</string>
+    <string name="permission_note_overlay">需要“显示在其他应用之上”权限才能显示悬浮条。点按即可在权限页面中允许。</string>
 </resources>

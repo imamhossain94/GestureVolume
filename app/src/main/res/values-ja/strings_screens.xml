@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_pick_any">当てはまるものをすべて選択</string>
+    <string name="feedback_via_email_title">メールアプリから送信されます</string>
+    <string name="feedback_via_email_desc">送信を押すと、内容が入力された状態でメールアプリが開きます。そこで送信するまで何も送られません。</string>
+    <string name="feedback_details_title">含まれる情報</string>
+    <string name="feedback_details_desc">問題を特定できるよう、アプリのバージョン、端末のモデル、Android のバージョンが追加されます。</string>
+</resources>

@@ -25,6 +25,8 @@ import androidx.compose.ui.res.stringResource
 @Composable
 fun NavigationDrawerContent(
     isProActivated: Boolean,
+    /** Whether to offer "Privacy choices" (ad consent). See PrivacyChoices.isAvailable. */
+    showPrivacyChoices: Boolean = false,
     onMenuItemClick: (String) -> Unit
 ) {
     val context = LocalContext.current
@@ -133,20 +135,26 @@ fun NavigationDrawerContent(
                     label = stringResource(R.string.send_feedback),
                     onClick = { onMenuItemClick("Feedback") }
                 )
-                
-                // Above Troubleshoot, because it is the wider net: most of what sends someone
-                // to this section is a question rather than a fault, and Troubleshoot only helps
-                // with the handful of problems that have a button to press.
-                NavigationDrawerItem(
-                    icon = R.drawable.ic_help,
-                    label = stringResource(R.string.faq),
-                    onClick = { onMenuItemClick("FAQ") }
-                )
+
+                // Ad consent, only where there is a consent answer to change. See PrivacyChoices.
+                if (showPrivacyChoices) {
+                    NavigationDrawerItem(
+                        icon = R.drawable.ic_privacy,
+                        label = stringResource(R.string.privacy_choices),
+                        onClick = { onMenuItemClick("Privacy choices") }
+                    )
+                }
 
                 NavigationDrawerItem(
                     icon = R.drawable.ic_bug,
                     label = stringResource(R.string.troubleshoot),
                     onClick = { onMenuItemClick("Troubleshoot") }
+                )
+
+                NavigationDrawerItem(
+                    icon = R.drawable.ic_help,
+                    label = stringResource(R.string.faq),
+                    onClick = { onMenuItemClick("FAQ") }
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))

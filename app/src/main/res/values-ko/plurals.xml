@@ -9,9 +9,6 @@
     <plurals name="deck_notes_count">
         <item quantity="other">%1$d개 저장됨</item>
     </plurals>
-    <plurals name="deck_clipboard_count">
-        <item quantity="other">%1$d개</item>
-    </plurals>
     <plurals name="deck_tiles_count">
         <item quantity="other">%2$d개 중 %1$d개 켜짐</item>
     </plurals>

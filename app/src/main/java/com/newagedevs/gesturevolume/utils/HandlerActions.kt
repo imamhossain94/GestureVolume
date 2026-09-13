@@ -84,12 +84,10 @@ object HandlerActions {
     const val OPEN_TIMER = "Open timer"
     const val OPEN_CALCULATOR = "Open calculator"
     const val OPEN_NOTES = "Open notes"
-    const val OPEN_CLIPBOARD = "Open clipboard"
     const val OPEN_MEDIA = "Open media controls"
     const val COIN_TOSS = "Coin toss"
     const val DICE_ROLL = "Dice roll"
     const val SCAN_QR = "Scan QR code"
-    const val SONG_SEARCH = "Identify song"
 
     // ---- 1.4.0: device toggles -----------------------------------------------------------------
 
@@ -159,8 +157,8 @@ object HandlerActions {
         INCREASE_BRIGHTNESS, DECREASE_BRIGHTNESS,
         OPEN_VOLUME_UI, MUTE, MUTE_OR_UNMUTE, ACTIVE_MUSIC_OVERLAY, HIDE_HANDLER, OPEN_APP,
         STOP_SERVICE, TOGGLE_AUTO_BRIGHTNESS, REPOSITION,
-        OPEN_DECK, OPEN_MENU, OPEN_QUICK_SLIDER, OPEN_SEARCH, OPEN_TIMER, OPEN_CALCULATOR, OPEN_NOTES, OPEN_CLIPBOARD,
-        OPEN_MEDIA, COIN_TOSS, DICE_ROLL, SCAN_QR, SONG_SEARCH,
+        OPEN_DECK, OPEN_MENU, OPEN_QUICK_SLIDER, OPEN_SEARCH, OPEN_TIMER, OPEN_CALCULATOR, OPEN_NOTES,
+        OPEN_MEDIA, COIN_TOSS, DICE_ROLL, SCAN_QR,
         TOGGLE_FLASHLIGHT, TOGGLE_DND, TOGGLE_AUTO_ROTATE,
         MEDIA_PLAY_PAUSE, MEDIA_NEXT, MEDIA_PREVIOUS,
         LOCK, SCREENSHOT, BACK, HOME, RECENTS, NOTIFICATIONS, QUICK_SETTINGS, POWER_MENU
@@ -178,6 +176,9 @@ object HandlerActions {
      * one-shot migration, because the preferences are also restored from cloud backup: a value
      * written by a newer build can arrive on an older one long after any migration would have
      * run. Reading defensively costs a set lookup and cannot be outrun.
+     *
+     * It is also how an action is retired: a slot still holding an identifier a later build
+     * removed reads as [NONE], and the long-press menu's stored set simply loses it.
      */
     fun sanitize(action: String): String = if (action in KNOWN) action else NONE
 
@@ -231,7 +232,6 @@ object HandlerActions {
         OPEN_TIMER -> "timer"
         OPEN_CALCULATOR -> "calculator"
         OPEN_NOTES -> "notes"
-        OPEN_CLIPBOARD -> "clipboard"
         OPEN_MEDIA -> "media"
         COIN_TOSS -> "coin"
         DICE_ROLL -> "dice"

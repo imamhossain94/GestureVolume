@@ -2,6 +2,7 @@ package com.newagedevs.gesturevolume.ui.view
 
 import android.graphics.Canvas
 import android.graphics.ColorFilter
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PixelFormat
@@ -47,6 +48,20 @@ class HandlerShapeDrawable : Drawable() {
         }
 
     var edgeOnLeft: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            invalidatePath()
+        }
+
+    /**
+     * Lying along the top or bottom edge rather than standing against a side.
+     *
+     * The outline is built as the upright bar it is and then turned on its side by swapping the
+     * axes, so every shape keeps its proportions and a tab's sweeps still run into the edge — which
+     * [edgeOnLeft] then names as the top.
+     */
+    var horizontal: Boolean = false
         set(value) {
             if (field == value) return
             field = value
@@ -117,6 +132,16 @@ class HandlerShapeDrawable : Drawable() {
         val height = bottom - top
         if (width <= 0f || height <= 0f) return
 
+        if (horizontal) {
+            buildOutline(0f, 0f, height, width)
+            // x' = y + left, y' = x + top: the upright bar's thickness runs down the screen.
+            path.transform(Matrix().apply { setValues(floatArrayOf(0f, 1f, left, 1f, 0f, top, 0f, 0f, 1f)) })
+        } else {
+            buildOutline(left, top, width, height)
+        }
+    }
+
+    private fun buildOutline(left: Float, top: Float, width: Float, height: Float) {
         if (shape == HandlerShape.TAB) {
             val outline = HandlerShape.tabOutline(width, height, flare, edgeOnLeft)
             path.moveTo(left + outline[0], top + outline[1])
@@ -128,7 +153,7 @@ class HandlerShapeDrawable : Drawable() {
             // Closes along the screen edge, which is the one straight side of a tab.
             path.close()
         } else {
-            path.addRoundRect(left, top, right, bottom, cornerRadii, Path.Direction.CW)
+            path.addRoundRect(left, top, left + width, top + height, cornerRadii, Path.Direction.CW)
         }
     }
 

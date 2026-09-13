@@ -23,8 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Pause
@@ -69,7 +67,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.utils.AudioStreamResolver
-import com.newagedevs.gesturevolume.utils.ClipboardEntry
 import com.newagedevs.gesturevolume.utils.ExpressionEvaluator
 import kotlinx.coroutines.delay
 import kotlin.random.Random
@@ -85,11 +82,9 @@ fun DeckCardContent(tile: DeckTile, actions: DeckActions, palette: DeckPalette) 
         DeckTiles.TIMER -> TimerCard(actions, palette)
         DeckTiles.CALCULATOR -> CalculatorCard(actions, palette)
         DeckTiles.NOTES -> NotesCard(actions, palette)
-        DeckTiles.CLIPBOARD -> ClipboardCard(actions, palette)
         DeckTiles.CHECKLIST -> ChecklistCard(actions, palette)
-        DeckTiles.COIN -> CoinCard(actions, palette)
+        DeckTiles.COIN -> CoinTossCard(actions, palette)
         DeckTiles.DICE -> DiceCard(actions, palette)
-        DeckTiles.WEATHER -> WeatherCard(actions, palette)
         else -> Text(stringResource(tile.labelRes), color = palette.onBackground)
     }
 }
@@ -577,7 +572,7 @@ private fun CalculatorCard(actions: DeckActions, palette: DeckPalette) {
                 palette = palette,
                 filled = false,
                 enabled = preview != null
-            ) { preview?.let { actions.copy(it, paste = false) } }
+            ) { preview?.let { actions.copy(it) } }
             actions.env.toggles.systemCalculatorIntent()?.let { intent ->
                 DeckButton(text = stringResource(R.string.deck_calc_open_system), palette = palette, filled = false) {
                     actions.close()
@@ -629,7 +624,7 @@ private fun NotesCard(actions: DeckActions, palette: DeckPalette) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .clickable { actions.copy(note.text, paste = false) }
+                    .clickable { actions.copy(note.text) }
                     .padding(vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -643,71 +638,6 @@ private fun NotesCard(actions: DeckActions, palette: DeckPalette) {
                 )
                 IconButton(onClick = { store.removeNote(note.id); version++ }) {
                     Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.deck_delete), tint = palette.subtle, modifier = Modifier.size(18.dp))
-                }
-            }
-        }
-    }
-}
-
-// =================================================================================================
-// Clipboard
-// =================================================================================================
-
-@Composable
-private fun ClipboardCard(actions: DeckActions, palette: DeckPalette) {
-    val preference = actions.env.preference
-    var version by remember { mutableIntStateOf(0) }
-    // Read once, as the card opens: this is the moment the user asked for the clipboard, and the
-    // only moment it is worth spending the system's "pasted from your clipboard" notice on.
-    LaunchedEffect(Unit) {
-        actions.captureClipboard()
-        version++
-    }
-    val entries: List<ClipboardEntry> = remember(version) { preference.getClipboardEntries() }
-    val autoPaste = preference.getClipboardAutoPaste()
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        if (entries.isEmpty()) {
-            DeckHint(stringResource(R.string.deck_clipboard_empty), palette)
-        } else {
-            DeckHint(
-                stringResource(if (autoPaste) R.string.deck_clipboard_tap_paste else R.string.deck_clipboard_tap_copy),
-                palette
-            )
-        }
-        entries.take(8).forEach { entry ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable { actions.copy(entry.text, paste = autoPaste) }
-                    .padding(vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Filled.ContentCopy, contentDescription = null, tint = palette.subtle, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = entry.text,
-                    color = palette.onBackground,
-                    fontSize = 14.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = { preference.removeClipboardEntry(entry.id); version++ }) {
-                    Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.deck_delete), tint = palette.subtle, modifier = Modifier.size(18.dp))
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(6.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DeckButton(text = stringResource(R.string.deck_open_clipboard_screen), palette = palette, filled = false) {
-                actions.openAppScreen("clipboard")
-            }
-            if (entries.isNotEmpty()) {
-                DeckButton(text = stringResource(R.string.deck_clipboard_clear), palette = palette, filled = false) {
-                    preference.clearClipboardEntries()
-                    version++
                 }
             }
         }
@@ -782,53 +712,8 @@ private fun ChecklistCard(actions: DeckActions, palette: DeckPalette) {
 }
 
 // =================================================================================================
-// Coin and dice
+// Dice (the coin toss card lives in CoinTossCard.kt)
 // =================================================================================================
-
-@Composable
-private fun CoinCard(actions: DeckActions, palette: DeckPalette) {
-    val state = actions.env.state
-    val rotation by animateFloatAsState(
-        targetValue = state.coinTosses * 720f + (if (state.coinHeads == false) 180f else 0f),
-        animationSpec = tween(durationMillis = 700),
-        label = "coin"
-    )
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-        Box(
-            modifier = Modifier
-                .size(96.dp)
-                .graphicsLayer { rotationY = rotation; cameraDistance = 12f * density }
-                .clip(CircleShape)
-                .background(palette.accent),
-            contentAlignment = Alignment.Center
-        ) {
-            val showingBack = ((rotation / 180f).toInt() % 2) != 0
-            Text(
-                text = if (showingBack) "T" else "H",
-                color = palette.onAccent,
-                fontSize = 40.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.graphicsLayer { if (showingBack) rotationY = 180f }
-            )
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = when (state.coinHeads) {
-                true -> stringResource(R.string.deck_coin_heads)
-                false -> stringResource(R.string.deck_coin_tails)
-                null -> ""
-            },
-            color = palette.onBackground,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        DeckButton(text = stringResource(R.string.deck_coin_toss), palette = palette, modifier = Modifier.fillMaxWidth()) {
-            state.coinHeads = Random.nextBoolean()
-            state.coinTosses++
-        }
-    }
-}
 
 @Composable
 private fun DiceCard(actions: DeckActions, palette: DeckPalette) {
@@ -884,29 +769,5 @@ private fun DieFace(value: Int, palette: DeckPalette, modifier: Modifier = Modif
                 drawCircle(color = palette.onAccent, radius = r, center = androidx.compose.ui.geometry.Offset(x, y))
             }
         }
-    }
-}
-
-// =================================================================================================
-// Weather — filled in by the weather step; until then the card says what it will be.
-// =================================================================================================
-
-@Composable
-private fun WeatherCard(actions: DeckActions, palette: DeckPalette) {
-    WeatherCardContent(actions, palette)
-}
-
-/** Shared row used by the clipboard and notes screens too. */
-@Composable
-fun CopyRow(text: String, palette: DeckPalette, onCopy: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onCopy)
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = text, color = palette.onBackground, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-        Icon(Icons.Filled.Check, contentDescription = null, tint = palette.subtle, modifier = Modifier.size(16.dp))
     }
 }

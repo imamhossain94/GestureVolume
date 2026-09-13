@@ -53,6 +53,12 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         const val HAPTIC_STRONG = "strong"
         val ALL_HAPTICS = listOf(HAPTIC_OFF, HAPTIC_LIGHT, HAPTIC_MEDIUM, HAPTIC_STRONG)
 
+        /** Whether each step makes a sound, and which. See [getStepSound]. */
+        const val SOUND_OFF = "off"
+        const val SOUND_CLICK = "click"
+        const val SOUND_ADAPTIVE = "adaptive"
+        val ALL_SOUNDS = listOf(SOUND_OFF, SOUND_CLICK, SOUND_ADAPTIVE)
+
         /**
          * What the hardware volume keys do to the panel.
          *
@@ -78,6 +84,10 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val TRACK_COLOR = "sliderTrackColor"
         private const val FILL_COLOR = "sliderFillColor"
         private const val HAPTIC = "sliderHaptic"
+        private const val STEP_SOUND = "sliderStepSound"
+        private const val CONTENT_COLORS_ON = "sliderContentColorsOn"
+        private const val VALUE_COLOR = "sliderValueColor"
+        private const val ICON_COLOR = "sliderIconColor"
         private const val SHOW_VALUE = "sliderShowValue"
         private const val SHOW_ICON = "sliderShowIcon"
         private const val AUTO_BRIGHTNESS_OFF = "sliderDisableAutoBrightness"
@@ -95,6 +105,76 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val ICON_MARGIN = "sliderIconMarginDp"
         private const val ICON = "sliderIcon"
         private const val ICON_OPENS_VOLUME_PANEL = "sliderIconOpensVolumePanel"
+        private const val FILL_COLORS_ON = "sliderFillColorsOn"
+        private val FILL_COLOR_KEYS = arrayOf("sliderFillColor0", "sliderFillColor1", "sliderFillColor2")
+
+        /** How many colours of their own a user gives the fill animations. See [getFillColors]. */
+        const val FILL_COLOR_COUNT = 3
+
+        /**
+         * The animation colours until someone picks their own: cyan, violet and rose.
+         *
+         * Chosen to be worth seeing on the first switch-on, since that is when the user decides
+         * whether the setting is any good — bright enough to glow on the dark grounds the pictures
+         * paint, and far enough apart round the wheel that the blends between them are colours too.
+         */
+        val DEFAULT_FILL_COLORS: IntArray
+            get() = intArrayOf(0xFF4FE3FF.toInt(), 0xFFA77CFF.toInt(), 0xFFFF5CA8.toInt())
+
+        /**
+         * What the panel is set to drive, read straight from [prefs].
+         *
+         * For the one reader with no store to hand: the icon drawn for the "Quick panel" action,
+         * which is drawn in pickers and in the overlay's own menu alike.
+         */
+        fun targetOf(prefs: SharedPreferences): String {
+            val stored = prefs.getString(TARGET, DEFAULT_TARGET) ?: DEFAULT_TARGET
+            return if (stored in ALL_TARGETS) stored else DEFAULT_TARGET
+        }
+
+        /*
+         * The defaults below are the Dock preset's Quick panel — see
+         * `HandlerPresets.DEFAULT.behaviour.slider`, which a unit test holds these to — so a fresh
+         * install opens the panel the default preset describes. An install from before they moved
+         * keeps the ones it had: see [pinPreDockDefaults].
+         */
+
+        /** Media volume: the one quantity everyone who swipes a volume bar is reaching for. */
+        const val DEFAULT_TARGET = TARGET_MEDIA
+
+        /**
+         * Instant: the press itself opens the panel, in place of the system slider. Needs the
+         * accessibility service; without it this behaves like With the system.
+         */
+        const val DEFAULT_VOLUME_KEYS = VOLUME_KEYS_INSTANT
+        const val DEFAULT_EDGE_OFFSET = 0f
+        const val DEFAULT_FOLLOW_HANDLER_SHAPE = true
+        const val DEFAULT_SHOW_VALUE = true
+        const val DEFAULT_SHOW_ICON = true
+
+        /**
+         * The defaults as they stood before the Dock preset's took over, for [pinPreDockDefaults].
+         * Frozen literals on purpose: they record what an existing install was already reading.
+         */
+        private const val PRE_DOCK_TARGET = TARGET_BRIGHTNESS
+        private const val PRE_DOCK_THICKNESS = 20f
+
+        /**
+         * Writes the pre-Dock defaults into [editor] for every key [prefs] does not hold, so an
+         * install that already existed keeps the panel it had. Called once, from `SharedPref`'s
+         * one-shot pin; a fresh install never reaches it.
+         *
+         * The volume keys are pinned only when neither their choice nor the older switch is
+         * stored: an install with the switch still has its answer carried across by
+         * [getVolumeKeyMode], and pinning over it would lose an Off.
+         */
+        fun pinPreDockDefaults(prefs: SharedPreferences, editor: SharedPreferences.Editor) {
+            if (!prefs.contains(TARGET)) editor.putString(TARGET, PRE_DOCK_TARGET)
+            if (!prefs.contains(THICKNESS)) editor.putFloat(THICKNESS, PRE_DOCK_THICKNESS)
+            if (!prefs.contains(VOLUME_KEYS) && !prefs.contains(OPEN_ON_VOLUME_KEY)) {
+                editor.putString(VOLUME_KEYS, VOLUME_KEYS_FOLLOW)
+            }
+        }
 
         const val DEFAULT_LENGTH = 220f
         /**
@@ -107,7 +187,11 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
          * changed; only the part that is painted has. See `QuickSliderView.setDrawnThickness`.
          */
         const val MIN_THICKNESS = 10f
-        const val DEFAULT_THICKNESS = 20f
+        const val DEFAULT_THICKNESS = 24f
+
+        /** The furthest the open panel may stand in from the edge. See [getEdgeOffsetDp]. */
+        const val MAX_EDGE_OFFSET = 48f
+        private const val EDGE_OFFSET = "sliderEdgeOffsetDp"
 
         /** Where the number and the icon sit from the panel's ends, until someone moves them. */
         const val DEFAULT_CONTENT_PADDING = 26f
@@ -146,10 +230,7 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         else -> false
     }
 
-    fun getTarget(): String {
-        val stored = prefs.getString(TARGET, TARGET_BRIGHTNESS) ?: TARGET_BRIGHTNESS
-        return if (stored in ALL_TARGETS) stored else TARGET_BRIGHTNESS
-    }
+    fun getTarget(): String = targetOf(prefs)
 
     fun setTarget(value: String) = prefs.edit { putString(TARGET, value) }
 
@@ -167,6 +248,19 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
      */
     fun getThicknessDp(): Float = prefs.getFloat(THICKNESS, DEFAULT_THICKNESS).coerceIn(MIN_THICKNESS, 72f)
     fun setThicknessDp(value: Float) = prefs.edit { putFloat(THICKNESS, value.coerceIn(MIN_THICKNESS, 72f)) }
+
+    /**
+     * How far the open panel stands in from the screen edge, in dp. Zero by default: flush, the
+     * way it has always opened.
+     *
+     * The panel's own, rather than the bar's edge offset, because the two answer different
+     * questions. The bar's keeps a thin target clear of the back gesture; the panel is a control
+     * several times wider that the thumb drags along, and on a curved screen the part of it over
+     * the curve is the part that is hard to read and harder to aim at. It still grows out of the
+     * bar wherever the bar is; it only comes to rest this much further in.
+     */
+    fun getEdgeOffsetDp(): Float = prefs.getFloat(EDGE_OFFSET, DEFAULT_EDGE_OFFSET).coerceIn(0f, MAX_EDGE_OFFSET)
+    fun setEdgeOffsetDp(value: Float) = prefs.edit { putFloat(EDGE_OFFSET, value.coerceIn(0f, MAX_EDGE_OFFSET)) }
 
     /**
      * The radius the open panel's corners settle at.
@@ -207,7 +301,7 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
      * four radii and the shape below, which is for the person who wants a round pill out of a
      * square bar.
      */
-    fun getFollowHandlerShape(): Boolean = prefs.getBoolean(FOLLOW_HANDLER, true)
+    fun getFollowHandlerShape(): Boolean = prefs.getBoolean(FOLLOW_HANDLER, DEFAULT_FOLLOW_HANDLER_SHAPE)
     fun setFollowHandlerShape(value: Boolean) = prefs.edit { putBoolean(FOLLOW_HANDLER, value) }
 
     /**
@@ -263,14 +357,53 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     fun setHaptic(value: String) = prefs.edit { putString(HAPTIC, value) }
 
     /**
+     * A tick on every step a swipe or a drag moves the panel: one of [ALL_SOUNDS].
+     *
+     * Off by default — sound is the one kind of feedback everyone nearby gets too. Click is one
+     * steady note on the system's own sounds. Adaptive follows the level: its pitch rises with the
+     * value, and on a volume panel it plays on the stream being set, so it is exactly as loud as
+     * the volume it has just chosen. See [com.newagedevs.gesturevolume.utils.StepSound].
+     */
+    fun getStepSound(): String {
+        val stored = prefs.getString(STEP_SOUND, SOUND_OFF) ?: SOUND_OFF
+        return if (stored in ALL_SOUNDS) stored else SOUND_OFF
+    }
+
+    fun setStepSound(value: String) = prefs.edit { putString(STEP_SOUND, value) }
+
+    /**
+     * Whether the number and the icon wear colours of the user's own.
+     *
+     * Off by default, which is the panel as it has always been: both are written in the fill
+     * colour over the empty track and in the track colour over the fill, so they stay legible
+     * wherever the fill line is. On, each keeps one colour the whole way up.
+     */
+    fun getContentColorsEnabled(): Boolean = prefs.getBoolean(CONTENT_COLORS_ON, false)
+    fun setContentColorsEnabled(value: Boolean) = prefs.edit { putBoolean(CONTENT_COLORS_ON, value) }
+
+    fun getValueColor(): Int = prefs.getInt(VALUE_COLOR, DEFAULT_FILL_COLOR)
+    fun setValueColor(value: Int) = prefs.edit { putInt(VALUE_COLOR, value) }
+
+    fun getIconColor(): Int = prefs.getInt(ICON_COLOR, DEFAULT_FILL_COLOR)
+    fun setIconColor(value: Int) = prefs.edit { putInt(ICON_COLOR, value) }
+
+    /** The number's colour when the user has chosen one, or null for the swapping default. */
+    fun getEffectiveValueColor(): Int? = if (getContentColorsEnabled()) getValueColor() else null
+
+    /** The icon's colour when the user has chosen one, or null for the swapping default. */
+    fun getEffectiveIconColor(): Int? = if (getContentColorsEnabled()) getIconColor() else null
+
+    /**
      * What the volume keys do to the panel: one of [ALL_VOLUME_KEY_MODES].
      *
      * Before there was a choice there was a switch, and a switch that was on meant what With the
-     * system means now, so its answer is carried across until a choice is made.
+     * system means now, so its answer is carried across until a choice is made. With neither
+     * stored, [DEFAULT_VOLUME_KEYS].
      */
     fun getVolumeKeyMode(): String {
         val stored = prefs.getString(VOLUME_KEYS, null)
         if (stored in ALL_VOLUME_KEY_MODES) return stored!!
+        if (!prefs.contains(OPEN_ON_VOLUME_KEY)) return DEFAULT_VOLUME_KEYS
         return if (prefs.getBoolean(OPEN_ON_VOLUME_KEY, true)) VOLUME_KEYS_FOLLOW else VOLUME_KEYS_OFF
     }
 
@@ -285,10 +418,41 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     fun getFillStyle(): String = SliderFill.sanitize(prefs.getString(FILL_STYLE, null))
     fun setFillStyle(value: String) = prefs.edit { putString(FILL_STYLE, SliderFill.sanitize(value)) }
 
-    fun getShowValue(): Boolean = prefs.getBoolean(SHOW_VALUE, true)
+    /**
+     * Whether the fill animations are painted in the user's colours rather than their own.
+     *
+     * Off by default: each picture's own palette is the idea of it, and a user should arrive at a
+     * pink matrix rain by asking for one. Switching it off keeps the colours, so switching it back
+     * on is the same choice again rather than the defaults.
+     */
+    fun getFillColorsEnabled(): Boolean = prefs.getBoolean(FILL_COLORS_ON, false)
+    fun setFillColorsEnabled(value: Boolean) = prefs.edit { putBoolean(FILL_COLORS_ON, value) }
+
+    /**
+     * The user's animation colours, always exactly [FILL_COLOR_COUNT], first to last.
+     *
+     * A set of three rather than one per style: see `SliderFill.paletteWith`, which spreads them
+     * over however many colours a style paints with. Not the same thing as [getFillColor], which is
+     * the plain fill under every style.
+     */
+    fun getFillColors(): IntArray {
+        val defaults = DEFAULT_FILL_COLORS
+        return IntArray(FILL_COLOR_COUNT) { prefs.getInt(FILL_COLOR_KEYS[it], defaults[it]) }
+    }
+
+    /** One of the animation colours, by its place in [getFillColors]. Out-of-range places are ignored. */
+    fun setFillColor(index: Int, color: Int) {
+        if (index !in 0 until FILL_COLOR_COUNT) return
+        prefs.edit { putInt(FILL_COLOR_KEYS[index], color) }
+    }
+
+    /** The colours to hand `QuickSliderView.setFillColors`: the user's when switched on, else null. */
+    fun getEffectiveFillColors(): IntArray? = if (getFillColorsEnabled()) getFillColors() else null
+
+    fun getShowValue(): Boolean = prefs.getBoolean(SHOW_VALUE, DEFAULT_SHOW_VALUE)
     fun setShowValue(value: Boolean) = prefs.edit { putBoolean(SHOW_VALUE, value) }
 
-    fun getShowIcon(): Boolean = prefs.getBoolean(SHOW_ICON, true)
+    fun getShowIcon(): Boolean = prefs.getBoolean(SHOW_ICON, DEFAULT_SHOW_ICON)
     fun setShowIcon(value: Boolean) = prefs.edit { putBoolean(SHOW_ICON, value) }
 
     /**

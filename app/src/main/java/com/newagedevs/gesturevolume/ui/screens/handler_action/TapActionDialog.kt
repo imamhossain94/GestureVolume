@@ -175,7 +175,7 @@ private fun ActionGridItem(
                         imageVector = Icons.Filled.Accessibility,
                         contentDescription = stringResource(R.string.action_needs_accessibility_badge),
                         modifier = Modifier.size(10.dp),
-                        tint = content.copy(alpha = 0.7f)
+                        tint = content
                     )
                     Spacer(modifier = Modifier.size(2.dp))
                     Text(

@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">Appearance saved</string>
     <string name="appearance">Appearance</string>
-    <string name="appearance_desc">Customize handler</string>
+    <string name="appearance_desc">Colour, shape &amp; size</string>
     <string name="customize_handler">Customize handler</string>
     <string name="actions">Actions</string>
-    <string name="actions_desc">Tap &amp; gesture settings</string>
+    <string name="actions_desc">What taps &amp; swipes do</string>
 
     <!-- Navigation -->
     <string name="pro_version">Pro Version</string>
@@ -238,16 +238,8 @@
     <string name="granted">Granted</string>
 
     <!-- Presets -->
-    <string name="preset_default_title">Default</string>
-    <string name="preset_default_subtitle">Slim edge pill</string>
-    <string name="preset_minimal_title">Minimal</string>
-    <string name="preset_minimal_subtitle">Thin &amp; subtle</string>
     <string name="preset_bold_title">Bold</string>
     <string name="preset_bold_subtitle">Floating bubble</string>
-    <string name="preset_night_title">Night</string>
-    <string name="preset_night_subtitle">Dark theme</string>
-    <string name="preset_ghost_title">Ghost</string>
-    <string name="preset_ghost_subtitle">Almost invisible</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">Press back again to exit</string>
@@ -369,14 +361,12 @@
 
     <!-- Drawer: premium + reset -->
     <string name="remove_ads_support_developer">Remove all ads and support the developer</string>
-    <string name="reset_app">Reset app</string>
+    <string name="reset_app">Reset</string>
     <string name="reset_app_title">Reset everything?</string>
     <string name="reset_app_message">Every setting goes back to its default: the handler\'s look and position, all tap and swipe actions, the long-press menu, the theme and the language. The floating bar is switched off and the welcome screens come back.\n\nYour Pro purchase is kept. This cannot be undone.</string>
     <string name="reset_app_confirm">Reset</string>
     <string name="reset_app_done">Everything has been reset.</string>
     <!-- "You configured a feature that needs this" banners on the permission cards -->
-    <string name="permission_needed_notification">Notification controls are on. Without this, Show, Settings and Stop will not appear.</string>
-    <string name="permission_needed_brightness">You have set a brightness action. Without this, it cannot change the brightness.</string>
     <string name="permission_action_required_one">1 permission needs your attention</string>
     <string name="permission_action_required_many">%1$d permissions need your attention</string>
     <!-- 1.3.5: adaptive volume stream -->
@@ -395,7 +385,7 @@
     <string name="volume_stream_ring">Ringtone</string>
     <string name="volume_fixed_short">This device has a fixed volume</string>
     <!-- 1.3.5: appearance redesign -->
-    <string name="quick_panel_card_subtitle">Brightness &amp; volume track</string>
+    <string name="quick_panel_card_subtitle">The brightness &amp; volume track the bar opens into</string>
     <string name="context_menu_shown">In the menu</string>
     <string name="context_menu_hidden">Available</string>
     <string name="context_menu_layout_grid">Grid</string>
@@ -408,7 +398,7 @@
     <string name="faq">FAQ</string>
     <string name="faq_desc">Common questions</string>
     <string name="context_menu_layout">Layout</string>
-    <string name="long_press_menu_card_subtitle">What a long press offers</string>
+    <string name="long_press_menu_card_subtitle">The actions offered when you hold the bar</string>
     <string name="faq_q_where_is_bar">Where is the bar? I do not see it.</string>
     <string name="faq_a_where_is_bar">It is hidden while this app is open, so it never covers its own settings. Press home and it comes back. If it is still missing, check that the service is on — the big switch at the top of the home screen — and that the Permissions card is not asking for anything.</string>
     <string name="faq_q_move_bar">How do I move the bar?</string>
@@ -420,13 +410,13 @@
     <string name="faq_q_brightness">Why can I change the volume but not the brightness?</string>
     <string name="faq_a_brightness">Brightness needs the “Modify system settings” permission, which Android keeps separate from everything else. Grant it from the Permissions card. The app also turns adaptive brightness off the first time it writes a brightness value, because the light sensor would otherwise overwrite whatever you set within a second or two.</string>
     <string name="faq_q_accessibility">Why does it ask for the accessibility service?</string>
-    <string name="faq_a_accessibility">Only for the actions Android will not let an ordinary app perform: Back, Home, Recents, screenshot, lock screen, the notification shade and the power menu. Nothing else needs it, and the picker marks those actions so you know before you choose one. It can also draw the bar without a notification — see the next question.</string>
+    <string name="faq_a_accessibility">Only for the actions Android will not let an ordinary app perform: Back, Home, Recents, screenshot, lock screen, the notification shade and the power menu. Nothing else needs it, and the picker marks those actions so you know before you choose one. It is also used, only if you turn them on, for the Instant volume keys, Hide in screenshots and hiding the bar in chosen apps.</string>
     <string name="faq_q_notification">Can I get rid of the ongoing notification?</string>
-    <string name="faq_a_notification">Yes. Turn on “Run without a notification” in Actions. The bar is then drawn by the accessibility service instead of a foreground service, and Android no longer requires a permanent notification. It also tends to survive aggressive battery managers better.</string>
+    <string name="faq_a_notification">Mostly. Turn off “Notification controls” in Actions. Android requires a notification while the bar\'s service runs, so a silent placeholder stays, but it loses its status bar icon and moves to the bottom of the shade. You can hide it completely from the app\'s notification settings.</string>
     <string name="faq_q_quick_panel">What is the Quick panel?</string>
     <string name="faq_a_quick_panel">A track that grows out of the bar for setting brightness or volume. Swipe the bar up or down and it opens beside it, and the same swipe keeps setting the value. It stays on screen afterwards, so you can touch the track to correct an overshoot, and it closes itself once you are done. What it adjusts is set in Quick slider.</string>
     <string name="faq_q_deck">What is the Deck?</string>
-    <string name="faq_a_deck">A panel that slides out beside the bar with your apps, shortcuts and small tools — search, a timer, a calculator, notes, the clipboard and media controls. Swipe the bar inward to open it, or assign “Open deck” to any other gesture.</string>
+    <string name="faq_a_deck">A panel that slides out beside the bar with your apps, shortcuts and small tools — search, a timer, a calculator, notes and media controls. Swipe the bar inward to open it, or assign “Open deck” to any other gesture.</string>
     <string name="faq_q_panel_vs_deck">What is the difference between the Quick panel and the Deck?</string>
     <string name="faq_a_panel_vs_deck">The Quick panel is one slider for one value. The Deck is a whole panel of shortcuts and tools. They open on different gestures — up or down for the panel, inward for the Deck — so they cannot be confused with each other.</string>
     <string name="faq_q_change_gestures">How do I change what a tap or a swipe does?</string>
@@ -442,7 +432,7 @@
     <string name="faq_q_games">The bar gets in the way in games and full-screen video.</string>
     <string name="faq_a_games">Move it somewhere the app you are using does not need — long press and drag — or make it smaller and more transparent under Appearance. The Ghost preset is close to invisible while still being there. For a game you play often, hiding the bar from the long-press menu and bringing it back from the notification afterwards is the cleanest option.</string>
     <string name="panel_theme">Panel style</string>
-    <string name="panel_theme_desc">How the Deck, the Quick panel and the long-press menu are drawn. Gloss and Clear are pale panes with dark text on them. Everything but Solid blurs the screen behind the panel, which needs Android 12 or newer; where the system will not blur, the panel stays translucent.</string>
+    <string name="panel_theme_desc">How the Deck, the Quick panel and the long-press menu are drawn. Gloss, Clear and Paper are pale with dark text on them. Frosted, Glass, Gloss, Clear, Acrylic and Amethyst blur the screen behind the panel, which needs Android 12 or newer; where the system will not blur, the panel stays translucent.</string>
     <string name="panel_theme_solid">Solid</string>
     <string name="panel_theme_frosted">Frosted</string>
     <string name="panel_theme_glass">Glass</string>
@@ -478,12 +468,10 @@
     <string name="action_open_timer">Timer</string>
     <string name="action_open_calculator">Calculator</string>
     <string name="action_open_notes">Notes</string>
-    <string name="action_open_clipboard">Clipboard</string>
     <string name="action_open_media">Media controls</string>
     <string name="action_coin_toss">Coin toss</string>
     <string name="action_dice_roll">Dice roll</string>
     <string name="action_scan_qr">Scan QR code</string>
-    <string name="action_song_search">Identify song</string>
     <string name="action_toggle_flashlight">Flashlight</string>
     <string name="action_toggle_dnd">Do Not Disturb</string>
     <string name="action_toggle_auto_rotate">Auto-rotate</string>
@@ -511,8 +499,6 @@
     <string name="auto_rotate_needs_permission">Allow Modify system settings to toggle auto-rotate</string>
     <string name="accessibility_needed_short">Turn on the GestureVolume accessibility service to use this</string>
     <string name="action_unavailable_on_device">This action is not available on this device</string>
-    <string name="song_search_query">What song is this</string>
-    <string name="song_search_unavailable">Install the Google app to identify songs</string>
 
     <!-- 1.4.0: the two extra tap and swipe slots -->
     <string name="triple_tap_action">Triple tap action</string>
@@ -524,32 +510,23 @@
 
     <!-- 1.4.0: the accessibility service -->
     <string name="accessibility_service_label">GestureVolume</string>
-    <string name="accessibility_service_summary">System shortcuts from the volume bar, and the bar without a notification</string>
-    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also draws the bar without a persistent notification, saves text you copy into the app’s clipboard history, and opens the Quick panel the moment you press a volume key, looking at the two volume keys only. If you choose apps to hide the bar in, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device.</string>
+    <string name="accessibility_service_summary">System shortcuts from the volume bar, instant volume keys and hiding the bar in chosen apps</string>
+    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also opens the Quick panel the moment you press a volume key and keeps the bar out of Volume down + Power screenshots, looking at the two volume keys only. If you choose apps to hide the bar in, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device.</string>
     <string name="accessibility_permission">Accessibility service</string>
-    <string name="accessibility_permission_desc">Optional: performs Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and Power menu, and can draw the bar without a notification.</string>
+    <string name="accessibility_permission_desc">Optional: performs Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and Power menu.</string>
     <string name="accessibility_disclosure_title">Turn on the accessibility service?</string>
-    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for five things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To draw the bar without a persistent notification, if you switch that on.\n\n• To save text you copy into the clipboard history, only if you switch that on.\n\n• To open the Quick panel the moment you press a volume key, only if you set the volume keys to Instant. It looks at the two volume keys and passes every other key straight on.\n\n• To see which app is on screen, only if you choose apps to hide the bar in. It looks at the app’s name and nothing else.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
+    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for three things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To look at the two volume keys, only if you set the volume keys to Instant or turn on Hide in screenshots: to open the Quick panel the moment you press one, or to keep the bar out of a Volume down + Power screenshot. Every other key passes straight on, and no key is recorded.\n\n• To see which app is on screen, only if you choose apps to hide the bar in. It looks at the app’s name and nothing else.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
     <string name="accessibility_disclosure_accept">Open Accessibility settings</string>
     <string name="accessibility_disclosure_decline">Not now</string>
     <string name="accessibility_how_to">In the list, open GestureVolume and switch it on.</string>
-    <string name="permission_needed_accessibility">You have set an action that only the accessibility service can perform. Without it, that action does nothing.</string>
     <string name="accessibility_on">On</string>
     <string name="accessibility_off">Off</string>
 
-    <!-- 1.4.0: who draws the bar -->
-    <string name="overlay_host_title">Run without a notification</string>
-    <string name="overlay_host_desc">Draw the bar from the accessibility service instead of a foreground service, so no ongoing notification is needed. The accessibility service must be on.</string>
-    <string name="overlay_host_needs_accessibility">The accessibility service is off, so the bar is still drawn with a notification. Tap to turn it on.</string>
-    <string name="overlay_host_active">The bar is drawn by the accessibility service. No notification is shown.</string>
-
     <!-- 1.4.0: Do Not Disturb access -->
-    <string name="overlay_permission_covered_desc">Not needed right now: the accessibility service is drawing the handler.</string>
     <string name="dnd_permission">Do Not Disturb access</string>
     <string name="dnd_permission_desc">Optional: lets the bar and the Deck switch Do Not Disturb on and off.</string>
     <string name="dnd_permission_title">Allow Do Not Disturb access?</string>
     <string name="dnd_permission_message">To toggle Do Not Disturb, GestureVolume needs Do Not Disturb access. You will be taken to the system list where you can allow it.</string>
-    <string name="permission_needed_dnd">You have set a Do Not Disturb action. Without this, it cannot switch Do Not Disturb.</string>
     <!-- 1.4.0: the Deck's tiles -->
     <string name="tile_search">Search</string>
     <string name="tile_search_desc">Apps, contacts, sums and the web</string>
@@ -575,8 +552,6 @@
     <string name="tile_calculator_desc">Quick sums, right in the panel</string>
     <string name="tile_notes">Notes</string>
     <string name="tile_notes_desc">Jot something down and keep it</string>
-    <string name="tile_clipboard">Clipboard</string>
-    <string name="tile_clipboard_desc">Recently copied text, ready to paste</string>
     <string name="tile_checklist">Checklist</string>
     <string name="tile_checklist_desc">Tasks and shopping lists</string>
     <string name="tile_coin">Coin toss</string>
@@ -589,10 +564,6 @@
     <string name="tile_lock_desc">Lock the phone</string>
     <string name="tile_qr">Scan QR code</string>
     <string name="tile_qr_desc">Scan a QR code or barcode</string>
-    <string name="tile_song">Identify song</string>
-    <string name="tile_song_desc">Ask Google what is playing nearby</string>
-    <string name="tile_weather">Weather</string>
-    <string name="tile_weather_desc">Local conditions and the day’s forecast</string>
 
     <!-- 1.4.0: inside the Deck -->
     <string name="deck_title">Deck</string>
@@ -614,13 +585,7 @@
     <string name="deck_save">Save</string>
     <string name="deck_notes_empty">No notes yet. Tap a note to copy it.</string>
     <string name="deck_open_all_notes">All notes</string>
-    <string name="deck_clipboard_empty">Nothing here yet. What is on the clipboard is remembered each time the Deck opens.</string>
-    <string name="deck_clipboard_tap_copy">Tap an item to copy it again.</string>
-    <string name="deck_clipboard_tap_paste">Tap an item to paste it into the field underneath.</string>
-    <string name="deck_clipboard_clear">Clear</string>
-    <string name="deck_open_clipboard_screen">Manage</string>
     <string name="deck_copied">Copied</string>
-    <string name="deck_pasted">Pasted</string>
     <string name="deck_checklist_hint">Add an item…</string>
     <string name="deck_add">Add</string>
     <string name="deck_checklist_empty">Nothing on the list.</string>
@@ -633,7 +598,7 @@
     <string name="deck_delete">Delete</string>
     <string name="deck_app_unavailable">That app is no longer installed</string>
     <!-- 1.4.0: Deck settings screens -->
-    <string name="deck_card_subtitle">Shortcuts, tools &amp; search</string>
+    <string name="deck_card_subtitle">A side panel of shortcuts, tools &amp; search</string>
     <string name="deck_open_with_title">OPENS WITH</string>
     <string name="deck_open_with_summary">The Deck opens with: %1$s.</string>
     <string name="deck_open_with_none">No gesture opens the Deck yet. Bind “Open deck” to a tap or a swipe on the Actions screen.</string>
@@ -652,7 +617,6 @@
     <string name="deck_search_row">Search</string>
     <string name="deck_search_row_desc">Sources, providers and numbers</string>
     <string name="deck_notes_row">Notes</string>
-    <string name="deck_clipboard_row">Clipboard history</string>
     <string name="deck_panel_title">PANEL</string>
     <string name="deck_animation_title">ANIMATION</string>
     <string name="deck_animation">Opening and closing animation</string>
@@ -690,16 +654,6 @@
     <string name="notes_empty">No notes yet.</string>
     <string name="notes_new_hint">Write a note…</string>
     <string name="note_edit">Edit note</string>
-    <string name="clipboard_title">Clipboard history</string>
-    <string name="clipboard_intro">Whatever is on the clipboard is remembered each time the Deck opens, newest first. Tap an item to copy it again.</string>
-    <string name="clipboard_capture_title">Capture copied text</string>
-    <string name="clipboard_capture_desc">Let the accessibility service notice when you copy text in other apps and add it here. Only the copied text is read.</string>
-    <string name="clipboard_auto_paste_title">Paste on tap</string>
-    <string name="clipboard_auto_paste_desc">Tapping an item in the Deck pastes it into the field underneath, instead of only copying it.</string>
-    <string name="clipboard_max_items">Keep up to %1$d items</string>
-    <string name="clipboard_empty">Nothing copied yet.</string>
-    <string name="clipboard_clear_all">Clear all</string>
-    <string name="clipboard_needs_accessibility">Needs the accessibility service, which is off.</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="add">Add</string>
@@ -745,36 +699,10 @@
     <string name="search_voice">Voice search</string>
     <string name="search_voice_prompt">Speak now</string>
     <string name="search_voice_unavailable">Voice search is not available on this device</string>
-    <!-- 1.4.0: the weather tile -->
-    <string name="weather_clear">Clear</string>
-    <string name="weather_partly_cloudy">Partly cloudy</string>
-    <string name="weather_overcast">Overcast</string>
-    <string name="weather_fog">Fog</string>
-    <string name="weather_drizzle">Drizzle</string>
-    <string name="weather_rain">Rain</string>
-    <string name="weather_snow">Snow</string>
-    <string name="weather_thunderstorm">Thunderstorm</string>
-    <string name="weather_unknown">—</string>
-    <string name="weather_degrees_c">%1$d°C</string>
-    <string name="weather_degrees_f">%1$d°F</string>
-    <string name="weather_high_low">High %1$s · Low %2$s</string>
-    <string name="weather_feels_like">Feels like %1$s</string>
-    <string name="weather_source">From open-meteo.com, using the last location your phone already had.</string>
-    <string name="weather_needs_location">The weather tile needs approximate location. Nothing but a rounded latitude and longitude ever leaves the device.</string>
-    <string name="weather_no_fix">No location fix yet. Open a map or another app that uses location, then try again.</string>
-    <string name="weather_failed">Could not reach the weather service.</string>
-    <string name="weather_retry">Try again</string>
-    <string name="location_permission">Location</string>
-    <string name="location_permission_desc">Optional: only for the Deck’s weather tile. A rounded latitude and longitude are sent to open-meteo.com and nothing else.</string>
     <!-- 1.4.0: the QR tile -->
     <string name="qr_failed">The scanner could not start</string>
     <string name="qr_empty">Nothing was scanned</string>
     <string name="qr_copied">Copied: %1$s</string>
-    <string name="permission_needed_contacts">Contact search is on. Without this, the Deck’s search cannot find people.</string>
-    <string name="permission_needed_phone">“Call directly” is on. Without this, calls stop at the dialer.</string>
-    <string name="permission_needed_location">The weather tile is on. Without this, it has nowhere to report on.</string>
-    <string name="preset_notch_title">Notch</string>
-    <string name="preset_notch_subtitle">Slim bar across the top</string>
     <!-- The expanding quick slider -->
     <string name="quick_slider_title">Quick slider</string>
     <string name="quick_slider_desc">What the Quick panel adjusts</string>
@@ -918,7 +846,7 @@
     <string name="context_menu_per_page_desc">With more than this, the grid becomes pages you swipe between.</string>
     <string name="about_ideas_name" translatable="false">Deepam Rathod</string>
     <string name="visibility_title">Visibility</string>
-    <string name="visibility_card_subtitle">Apps the handler hides in</string>
+    <string name="visibility_card_subtitle">Apps and screenshots the handler stays out of</string>
     <string name="visibility_apps_title">Hide in these apps</string>
     <string name="visibility_apps_desc">The handler steps aside while one of these apps is open, and comes back when you leave it.</string>
     <string name="visibility_apps_needs_accessibility">This needs the accessibility service, which tells the app which app is open. Tap to turn it on.</string>
@@ -929,4 +857,81 @@
     <string name="tile_handler_off">Off</string>
     <string name="about_developer_mission">Made for a broken volume button — and to spare the ones that still work.</string>
     <string name="about_copyright">© %1$s All rights reserved</string>
+    <string name="panel_theme_paper">Paper</string>
+    <string name="panel_theme_midnight">Midnight</string>
+    <string name="panel_theme_amoled">AMOLED</string>
+    <string name="panel_theme_acrylic">Acrylic</string>
+    <string name="panel_theme_amethyst">Amethyst</string>
+    <string name="visibility_screenshots_title">Screenshots</string>
+    <string name="hide_in_screenshots_title">Hide in screenshots</string>
+    <string name="hide_in_screenshots_desc">When you press Volume down with Power to take a screenshot, the handler and its panels step out of sight for a moment, so the picture shows your app and not the bar. The Screenshot action always leaves them out.</string>
+    <string name="hide_in_screenshots_needs_accessibility">This needs the accessibility service, which is what hears the Volume down press. Tap to turn it on from the Permissions screen.</string>
+    <string name="hide_in_screenshots_limits">Screenshots taken from Quick Settings, the power menu or a gesture give no warning, so the bar can still appear in those. The Handler tile puts it away with one tap.</string>
+    <string name="permission_note_write_settings">Needs Modify system settings to change the brightness. Tap to allow it on the Permissions screen.</string>
+    <string name="permission_note_accessibility">Needs the accessibility service to work. Tap to turn it on from the Permissions screen.</string>
+    <string name="permission_note_dnd">Needs Do Not Disturb access to work. Tap to allow it on the Permissions screen.</string>
+    <string name="position_same_both">Same position in portrait and landscape</string>
+    <string name="position_same_both_desc">Off, the bar keeps a place of its own for each way you hold the phone.</string>
+    <string name="position_portrait">Portrait</string>
+    <string name="position_landscape">Landscape</string>
+    <string name="position_both">Portrait and landscape</string>
+    <string name="position_now">now</string>
+    <string name="position_from_left">From left</string>
+    <string name="position_from_top">From top</string>
+    <string name="position_snap_off_hint">Away from an edge, so Snap to edge was switched off. Turn it back on to send the bar to the nearer side.</string>
+    <string name="position_sliders_desc">Where the middle of the bar sits, as a share of the screen. You can also hold the bar and drag it; that position is saved for the way the phone is held at the time.</string>
+    <string name="preview_backdrop_change">Change the background</string>
+    <string name="context_menu_group_layout">LAYOUT &amp; SIZE</string>
+    <string name="context_menu_group_look">LOOK</string>
+    <string name="context_menu_group_items">ITEMS</string>
+    <string name="slider_edge_offset_desc">Stands the open panel in from the screen edge, clear of a curved edge or the back gesture. It still grows out of the bar.</string>
+    <string name="permission_card_desc">What the bar is allowed to do: draw over other apps, perform system actions and change the brightness.</string>
+    <string name="permission_chip_overlay">Draw over apps</string>
+    <string name="permission_chip_accessibility">Accessibility</string>
+    <string name="permission_chip_settings">Modify settings</string>
+    <string name="permission_chip_more">+%1$d more</string>
+    <string name="position_dynamic">Dynamic position</string>
+    <string name="position_dynamic_desc">Moves the bar with the screen when you rotate the phone. It keeps to the same edge of the phone and lies along the top or bottom in landscape, always resting against the edge. Off, it stays upright on its side of the screen.</string>
+    <string name="position_along_edge">Position along edge</string>
+    <string name="position_along_edge_desc">Where the middle of the bar sits along its edge, measured with the phone upright. Turned on its side, the bar keeps the same place on the glass.</string>
+    <string name="group_content">CONTENT</string>
+    <string name="group_size_shape">SIZE &amp; SHAPE</string>
+    <string name="group_colours">COLOURS</string>
+    <string name="group_animation">ANIMATION</string>
+    <string name="group_behaviour">BEHAVIOUR</string>
+    <string name="slider_sound">Step sound</string>
+    <string name="slider_sound_desc">A soft tick on every step as you swipe or drag. Adaptive rises in pitch with the level and, on a volume panel, plays at the volume you are setting.</string>
+    <string name="slider_sound_off">Off</string>
+    <string name="slider_sound_click">Click</string>
+    <string name="slider_sound_adaptive">Adaptive</string>
+    <string name="slider_content_colors">Own icon &amp; value colours</string>
+    <string name="slider_content_colors_desc">Off, the icon and the number take the track and fill colours, swapping as the fill passes them.</string>
+    <string name="slider_value_color">Value colour</string>
+    <string name="slider_icon_color">Icon colour</string>
+    <string name="permission_feature_floating_bar">The floating bar</string>
+    <string name="permission_feature_single_tap">Actions: Single tap</string>
+    <string name="permission_feature_double_tap">Actions: Double tap</string>
+    <string name="permission_feature_triple_tap">Actions: Triple tap</string>
+    <string name="permission_feature_long_press">Actions: Long press</string>
+    <string name="permission_feature_swipe_up">Actions: Swipe up</string>
+    <string name="permission_feature_swipe_down">Actions: Swipe down</string>
+    <string name="permission_feature_swipe_in">Actions: Swipe in</string>
+    <string name="permission_feature_swipe_out">Actions: Swipe out</string>
+    <string name="permission_feature_notification_controls">Actions: Notification controls</string>
+    <string name="permission_feature_menu_entry">Long-press menu: Entries</string>
+    <string name="permission_feature_deck_tile">Deck: Tiles</string>
+    <string name="permission_feature_deck_contacts">Deck search: Contacts</string>
+    <string name="permission_feature_deck_direct_call">Deck search: Call directly</string>
+    <string name="permission_feature_slider_brightness">Quick slider: Brightness</string>
+    <string name="permission_feature_slider_instant_keys">Quick slider: Instant volume keys</string>
+    <string name="permission_feature_hide_in_screenshots">Visibility: Hide in screenshots</string>
+    <string name="permission_feature_hide_in_apps">Visibility: Hide in chosen apps</string>
+    <string name="permission_needed_by">Needed by %1$s</string>
+    <string name="permission_needed_by_more">Needed by %1$s and %2$d more</string>
+    <string name="permission_needed_by_list">Needed by what you have set up:</string>
+    <string name="nav_card_needs_permission">Needs a permission</string>
+    <string name="permission_note_notifications">Needs the Notifications permission to show the controls. Tap to allow it on the Permissions screen.</string>
+    <string name="permission_note_contacts">Needs the Contacts permission to find people. Tap to allow it on the Permissions screen.</string>
+    <string name="permission_note_phone">Needs the Phone permission to call directly. Tap to allow it on the Permissions screen.</string>
+    <string name="permission_note_overlay">Needs Display over other apps to show the bar. Tap to allow it on the Permissions screen.</string>
 </resources>

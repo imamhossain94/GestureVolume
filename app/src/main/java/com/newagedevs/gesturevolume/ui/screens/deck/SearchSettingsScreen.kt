@@ -1,5 +1,13 @@
 package com.newagedevs.gesturevolume.ui.screens.deck
 
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.newagedevs.gesturevolume.ui.components.PermissionNote
+import com.newagedevs.gesturevolume.utils.PermissionNeeds
+
+import androidx.compose.ui.Alignment
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -79,7 +87,8 @@ fun numberActionLabel(id: String): Int = when (id) {
 @Composable
 fun SearchSettingsScreen(
     viewModel: MainViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onOpenPermissions: (PermissionNeeds.Permission?) -> Unit = {},
 ) {
     val context = LocalContext.current
     val store = viewModel.preference.search
@@ -92,12 +101,34 @@ fun SearchSettingsScreen(
     var directCall by remember { mutableStateOf(store.getDirectCall()) }
     var prefix by remember { mutableStateOf(store.getDialPrefix()) }
 
+    // Re-read on return: either permission can be revoked in system settings while the switch
+    // that needs it stays on, and then the note under that switch is the only sign of it.
+    var contactsGranted by remember {
+        mutableStateOf(PermissionNeeds.hasPermission(context, Manifest.permission.READ_CONTACTS))
+    }
+    var phoneGranted by remember {
+        mutableStateOf(PermissionNeeds.hasPermission(context, Manifest.permission.CALL_PHONE))
+    }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                contactsGranted = PermissionNeeds.hasPermission(context, Manifest.permission.READ_CONTACTS)
+                phoneGranted = PermissionNeeds.hasPermission(context, Manifest.permission.CALL_PHONE)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     val contactsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         indexContacts = granted
+        contactsGranted = granted
         store.setIndexContacts(granted)
     }
     val phoneLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         directCall = granted
+        phoneGranted = granted
         store.setDirectCall(granted)
     }
 
@@ -150,6 +181,12 @@ fun SearchSettingsScreen(
                         }
                     }
                 )
+                if (indexContacts && !contactsGranted) {
+                    PermissionNote(
+                        missing = PermissionNeeds.Permission.CONTACTS,
+                        onOpenPermissions = onOpenPermissions,
+                    )
+                }
                 Sep()
                 SettingSwitchItem(
                     title = stringResource(R.string.search_calculator),
@@ -225,6 +262,12 @@ fun SearchSettingsScreen(
                         }
                     }
                 )
+                if (directCall && !phoneGranted) {
+                    PermissionNote(
+                        missing = PermissionNeeds.Permission.PHONE,
+                        onOpenPermissions = onOpenPermissions,
+                    )
+                }
                 Sep()
                 OutlinedTextField(
                     value = prefix,

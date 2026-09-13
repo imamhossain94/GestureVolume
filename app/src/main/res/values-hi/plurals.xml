@@ -12,10 +12,6 @@
         <item quantity="one">%1$d सहेजा</item>
         <item quantity="other">%1$d सहेजे</item>
     </plurals>
-    <plurals name="deck_clipboard_count">
-        <item quantity="one">%1$d आइटम</item>
-        <item quantity="other">%1$d आइटम</item>
-    </plurals>
     <plurals name="deck_tiles_count">
         <item quantity="one">%2$d में से %1$d चालू</item>
         <item quantity="other">%2$d में से %1$d चालू</item>

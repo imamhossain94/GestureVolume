@@ -84,7 +84,7 @@ fun IconPickerControl(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Change",
                     modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                    tint = MaterialTheme.colorScheme.outline
                 )
             }
         }

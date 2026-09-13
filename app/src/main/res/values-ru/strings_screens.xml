@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_pick_any">Выберите всё подходящее</string>
+    <string name="feedback_via_email_title">Отправляется из почтового приложения</string>
+    <string name="feedback_via_email_desc">Кнопка «Отправить» открывает почтовое приложение с вашим текстом. Ничего не уйдёт, пока вы не отправите письмо там.</string>
+    <string name="feedback_details_title">Что добавляется</string>
+    <string name="feedback_details_desc">Версия приложения, модель устройства и версия Android добавляются, чтобы проблему было проще найти.</string>
+</resources>

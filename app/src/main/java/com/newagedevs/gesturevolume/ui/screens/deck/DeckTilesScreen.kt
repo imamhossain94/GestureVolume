@@ -1,5 +1,14 @@
 package com.newagedevs.gesturevolume.ui.screens.deck
 
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.newagedevs.gesturevolume.ui.components.PermissionNote
+import com.newagedevs.gesturevolume.utils.PermissionNeeds
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -56,8 +65,20 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 @Composable
 fun DeckTilesScreen(
     viewModel: MainViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onOpenPermissions: (PermissionNeeds.Permission?) -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    // Bumped on every return, so the notes under the tiles re-read what was granted meanwhile.
+    var permissionTick by remember { mutableIntStateOf(0) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) permissionTick++
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     val store = viewModel.preference.deck
     var order by remember { mutableStateOf(DeckTiles.ordered(store.getTileOrder()).map { it.id }) }
     var enabled by remember { mutableStateOf(store.getEnabledTiles() ?: DeckTiles.defaultEnabled()) }
@@ -157,6 +178,22 @@ fun DeckTilesScreen(
                                     enabled = if (checked) enabled + tile.id else enabled - tile.id
                                     store.setEnabledTiles(enabled)
                                 }
+                            )
+                        }
+                        // A tile that is on and cannot work yet says so, with the way to fix it.
+                        val missing = remember(tile.id, on, permissionTick) {
+                            if (!on) {
+                                null
+                            } else {
+                                PermissionNeeds.permissionForDeckTile(tile.id)
+                                    ?.takeUnless { PermissionNeeds.isGranted(context, it) }
+                            }
+                        }
+                        if (missing != null) {
+                            PermissionNote(
+                                missing = missing,
+                                onOpenPermissions = onOpenPermissions,
+                                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
                             )
                         }
                         if (index < tiles.lastIndex) {

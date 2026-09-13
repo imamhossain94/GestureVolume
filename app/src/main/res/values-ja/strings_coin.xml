@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="deck_coin_hint">コインをタップして投げる</string>
+    <string name="deck_coin_streak">%2$sが%1$d回連続</string>
+    <string name="deck_coin_reset">回数をリセット</string>
+    <string name="deck_coin_showing">コインは%1$s</string>
+    <string name="deck_coin_untossed">コイン、まだ投げていません</string>
+</resources>

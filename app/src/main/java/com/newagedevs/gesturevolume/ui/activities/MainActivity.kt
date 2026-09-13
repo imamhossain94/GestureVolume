@@ -111,6 +111,8 @@ class MainActivity : AppCompatActivity() {
         // Launch count feeds the review pacing; the old boolean is folded in once.
         viewModel.preference.incrementAppLaunchCount()
         viewModel.preference.migrateReviewState()
+        // Clips saved by the retired clipboard history are deleted rather than left behind.
+        viewModel.preference.removeRetiredClipboardHistory()
 
         // Check for App Updates
         checkForAppUpdate()
@@ -190,8 +192,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendServiceCommand(action: String) {
-        // Routed rather than sent to the foreground service by name: since 1.4.0 the bar may be
-        // drawn by the accessibility service instead, and the runtime knows which host is up.
+        // Routed through the runtime, which sends it only while the foreground service is up.
         if (viewModel.preference.isRunning()) {
             OverlayRuntime.sendCommand(this, action)
         }

@@ -34,7 +34,8 @@ class DeckState {
     // ---- coin and dice --------------------------------------------------------------------------
 
     var coinHeads by mutableStateOf<Boolean?>(null)
-    var coinTosses by mutableIntStateOf(0)
+    /** Heads, tails and the current run, for the session. See [CoinTally]. */
+    var coinTally by mutableStateOf(CoinTally())
     var dice by mutableStateOf<Pair<Int, Int>?>(null)
     var diceRolls by mutableIntStateOf(0)
 

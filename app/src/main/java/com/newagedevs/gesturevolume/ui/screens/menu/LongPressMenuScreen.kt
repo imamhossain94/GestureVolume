@@ -5,29 +5,27 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,7 +35,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,6 +49,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -55,29 +58,33 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.ui.graphics.toArgb
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.R
-import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
-import com.newagedevs.gesturevolume.overlay.panelFrame
 import com.newagedevs.gesturevolume.overlay.ContextMenuCard
+import com.newagedevs.gesturevolume.overlay.panelFrame
+import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
+import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
+import com.newagedevs.gesturevolume.ui.components.PermissionNote
+import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
+import com.newagedevs.gesturevolume.ui.components.PreviewStage
+import com.newagedevs.gesturevolume.ui.components.panelAnimationLabel
+import com.newagedevs.gesturevolume.ui.components.panelAnimationSpeedLabel
+import com.newagedevs.gesturevolume.ui.components.panelThemeLabel
+import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.AppearanceSection
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.ColorPickerControl
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
-import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
-import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
-import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.ContextMenuLayout
-import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
-import com.newagedevs.gesturevolume.utils.PanelTheme
-import com.newagedevs.gesturevolume.utils.HandlerActions
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import com.newagedevs.gesturevolume.utils.ContextMenuStyle
+import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
+import com.newagedevs.gesturevolume.utils.HandlerActions
+import com.newagedevs.gesturevolume.utils.PanelTheme
+import com.newagedevs.gesturevolume.utils.PermissionNeeds
 
 /**
  * Builds the long-press menu: what is in it, what order it is in, and how it is drawn.
@@ -89,10 +96,9 @@ import com.newagedevs.gesturevolume.utils.ContextMenuStyle
  * the user *arranges*, which wants room to see several rows at once while moving one. Neither
  * survives being squeezed into the middle of the screen with a scrim around it.
  *
- * **Why there is no Apply.** The dialog had one, because a dialog is a transaction. A screen is
- * not: everything here is written straight through, like the Quick panel's settings screen, and
- * the menu is rebuilt from preferences the next time it opens. There is nothing that can be half
- * applied, so there is nothing to confirm.
+ * **Why there is no Apply.** Everything here is written straight through, like the Quick panel's
+ * settings screen, and the menu is rebuilt from preferences the next time it opens. There is
+ * nothing that can be half applied, so there is nothing to confirm.
  *
  * **Why it opens with a preview.** Everything below it is a list of names, and a name is a poor
  * description of a menu — the questions people actually have are "how big is it?", "does the last
@@ -100,17 +106,23 @@ import com.newagedevs.gesturevolume.utils.ContextMenuStyle
  * [com.newagedevs.gesturevolume.overlay.ContextMenuCard], not a drawing of one, so it answers
  * them by construction and cannot drift from the thing it depicts.
  *
- * One entry cannot be removed: "Hide handler". Since the floating ✕ that used to appear mid-drag
- * was removed, this menu is the only way to put the bar away from the bar itself, and a picker
- * that let the user delete their last route out would be a trap.
+ * **Why these groups.** Items, size and shape, colours, animation: the order every panel screen
+ * shares, so a setting sits in the same place on each. Collapsible, like the Appearance screen, and
+ * the items open, because what is in the menu is the thing most people came to change.
+ *
+ * One entry cannot be removed: "Hide handler". This menu is the only way to put the bar away from
+ * the bar itself, and a picker that let the user delete their last route out would be a trap.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LongPressMenuScreen(
     viewModel: MainViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
+    onOpenPermissions: (PermissionNeeds.Permission?) -> Unit = {},
 ) {
     val preference = remember { viewModel.preference }
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     val shown = remember {
         val placed = preference.getContextMenuOrder()
@@ -136,6 +148,16 @@ fun LongPressMenuScreen(
         menuColor?.let { ((menuAlpha.toLong() and 0xFF) shl 24) or (it.toArgb().toLong() and 0xFFFFFF) }
     }
 
+    // Re-read on return, for the notes beside entries that need a permission granted elsewhere.
+    var permissionTick by remember { mutableIntStateOf(0) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) permissionTick++
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     // Bumped whenever the entrance is picked, which is what makes the preview play it again.
     var replay by remember { mutableIntStateOf(0) }
     val entrance = rememberPanelEntrance(
@@ -145,10 +167,8 @@ fun LongPressMenuScreen(
         speed = animationSpeed,
     )
 
-    // One wallpaper per visit; see the note in HandlerAppearanceScreen. The menu's own chrome is a
-    // fixed dark card with no theme to follow, so a photograph behind it is the only honest way to
-    // show how much of the screen it covers and how it reads against one.
-    val bgImage = remember { viewModel.getNextBackground() }
+    // One backdrop per visit; see the note in HandlerAppearanceScreen.
+    val backdrop = remember { viewModel.getNextBackground() }
 
     fun persist() = preference.setContextMenuOrder(shown.toList())
 
@@ -175,28 +195,21 @@ fun LongPressMenuScreen(
             )
         }
     ) { padding ->
-        // Preview pinned, controls scrolling underneath — the shape the Appearance screen uses.
-        // The menu is the one panel whose settings all change how it *looks*, so losing sight of
-        // it while you change them is the worst possible arrangement.
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = padding.calculateTopPadding()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Column(
-                modifier = Modifier
-                    .widthIn(max = CONTENT_MAX_WIDTH)
-                    .padding(horizontal = 16.dp)
-            ) {
+        // Preview pinned, controls scrolling beside or beneath it. The menu is the one panel whose
+        // settings all change how it *looks*, so losing sight of it while you change them is the
+        // worst possible arrangement.
+        PreviewSettingsLayout(
+            contentPadding = padding,
+            header = {
                 Text(
                     text = stringResource(R.string.context_menu_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
+                    modifier = Modifier.padding(top = 4.dp),
                 )
-
-                PreviewStage(backgroundImageURL = bgImage) {
+            },
+            preview = { modifier, fillHeight ->
+                PreviewStage(backdrop = backdrop, fillHeight = fillHeight, modifier = modifier) {
                     ContextMenuCard(
                         entries = HandlerActionCatalog.contextMenuEntries(shown.toList()),
                         grid = layout == ContextMenuLayout.GRID,
@@ -211,40 +224,75 @@ fun LongPressMenuScreen(
                         style = menuStyle,
                     )
                 }
+            },
+        ) {
+            val grid = layout == ContextMenuLayout.GRID
+
+            // ---- what is in it ------------------------------------------------------------------
+            AppearanceSection(
+                title = stringResource(R.string.context_menu_group_items),
+                summary = stringResource(R.string.context_menu_count, HandlerActionCatalog.contextMenuEntries(shown.toList()).size),
+                initiallyExpanded = true,
+            ) {
+                SectionLabel(stringResource(R.string.context_menu_shown))
+                if (shown.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.context_menu_empty),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                shown.forEachIndexed { index, action ->
+                    val entry = HandlerActionCatalog.entryFor(action) ?: return@forEachIndexed
+                    ShownRow(
+                        entry = entry,
+                        position = index + 1,
+                        pinned = action in HandlerActions.ALWAYS_IN_CONTEXT_MENU,
+                        canMoveUp = index > 0,
+                        canMoveDown = index < shown.lastIndex,
+                        onMoveUp = { shown.move(index, index - 1); persist() },
+                        onMoveDown = { shown.move(index, index + 1); persist() },
+                        onRemove = { shown.removeAt(index); persist() },
+                    )
+                    @Suppress("UNUSED_VARIABLE") val tick = permissionTick
+                    PermissionNeeds.missingFor(context, preference, action)?.let {
+                        PermissionNote(missing = it, onOpenPermissions = onOpenPermissions)
+                        Spacer(Modifier.height(4.dp))
+                    }
+                }
+
+                if (available.isNotEmpty()) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                    )
+                    SectionLabel(stringResource(R.string.context_menu_hidden))
+                    available.forEach { entry ->
+                        HiddenRow(
+                            entry = entry,
+                            onAdd = { shown.add(entry.action); persist() },
+                        )
+                    }
+                }
             }
 
-            Spacer(Modifier.height(10.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+            Spacer(Modifier.height(12.dp))
 
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .navigationBarsPadding(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-        Column(
-            modifier = Modifier
-                // Capped and centred. Every row here is a label on the left and three small
-                // buttons on the right, and on a landscape phone at full width those two halves
-                // end up a hand's breadth apart with nothing between them.
-                .widthIn(max = CONTENT_MAX_WIDTH)
-                .padding(horizontal = 16.dp)
-        ) {
-            Spacer(Modifier.height(16.dp))
-            SectionLabel(stringResource(R.string.context_menu_layout))
-            LayoutSelector(
-                layout = layout,
-                onLayoutChange = {
-                    layout = it
-                    preference.setContextMenuLayout(it)
-                },
-            )
+            // ---- size & shape: its layout, its size, and how it is divided ----------------------
+            AppearanceSection(
+                title = stringResource(R.string.group_size_shape),
+                summary = "${menuWidth.toInt()} × ${menuHeight.toInt()}dp",
+            ) {
+                SectionLabel(stringResource(R.string.context_menu_layout))
+                LayoutSelector(
+                    layout = layout,
+                    onLayoutChange = {
+                        layout = it
+                        preference.setContextMenuLayout(it)
+                    },
+                )
 
-            val grid = layout == ContextMenuLayout.GRID
-            Spacer(Modifier.height(22.dp))
-            SectionLabel(stringResource(R.string.context_menu_size))
-            Card {
+                Sep()
                 SliderControl(
                     label = stringResource(R.string.context_menu_width),
                     value = menuWidth,
@@ -278,23 +326,19 @@ fun LongPressMenuScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp),
                 )
-            }
 
-            Spacer(Modifier.height(22.dp))
-            SectionLabel(stringResource(R.string.context_menu_lines))
-            Card {
+                Sep()
+                SectionLabel(stringResource(R.string.context_menu_lines))
                 ChoiceChips(
                     options = if (grid) ContextMenuLayout.GRID_LINES else ContextMenuLayout.LIST_LINES,
                     selected = ContextMenuLayout.linesFor(menuLines, grid),
                     label = { stringResource(linesLabel(it)) },
                     onSelect = { menuLines = it; preference.setContextMenuLines(it) },
                 )
-            }
 
-            if (grid) {
-                Spacer(Modifier.height(22.dp))
-                SectionLabel(stringResource(R.string.context_menu_per_page))
-                Card {
+                if (grid) {
+                    Sep()
+                    SectionLabel(stringResource(R.string.context_menu_per_page))
                     ChoiceChips(
                         options = ContextMenuLayout.PER_PAGE_CHOICES,
                         selected = perPage,
@@ -316,18 +360,29 @@ fun LongPressMenuScreen(
                 }
             }
 
-            Spacer(Modifier.height(22.dp))
-            PanelThemeSelector(
-                theme = panelTheme,
-                onThemeChange = {
-                    panelTheme = it
-                    preference.setPanelTheme(it)
-                },
-            )
+            Spacer(Modifier.height(12.dp))
 
-            Spacer(Modifier.height(22.dp))
-            SectionLabel(stringResource(R.string.context_menu_colour))
-            Card {
+            // ---- colours ------------------------------------------------------------------------
+            // The opacity joins the summary only while the menu has a colour of its own; without
+            // one the material decides, and a number would describe nothing on screen.
+            val themeName = stringResource(panelThemeLabel(panelTheme))
+            AppearanceSection(
+                title = stringResource(R.string.group_colours),
+                summary = if (menuColor != null) {
+                    "$themeName · ${(menuAlpha / 255f * 100).toInt()}%"
+                } else {
+                    themeName
+                },
+            ) {
+                PanelThemeSelector(
+                    theme = panelTheme,
+                    onThemeChange = {
+                        panelTheme = it
+                        preference.setPanelTheme(it)
+                    },
+                )
+
+                Sep()
                 SettingSwitchItem(
                     title = stringResource(R.string.context_menu_own_colour),
                     description = stringResource(R.string.context_menu_own_colour_desc),
@@ -361,72 +416,36 @@ fun LongPressMenuScreen(
                 }
             }
 
-            Spacer(Modifier.height(22.dp))
-            PanelAnimationSelector(
-                animation = panelAnimation,
-                onAnimationChange = {
-                    panelAnimation = it
-                    preference.setPanelAnimation(it)
-                    // Replays it on the preview above. Picking an entrance from a list of words
-                    // is picking blind; the point of the preview is that the word is followed by
-                    // the thing it names.
-                    replay++
-                },
-                speed = animationSpeed,
-                onSpeedChange = {
-                    animationSpeed = it
-                    preference.setPanelAnimationSpeed(it)
-                    replay++
-                },
-            )
+            Spacer(Modifier.height(12.dp))
 
-            Spacer(Modifier.height(22.dp))
-            SectionLabel(stringResource(R.string.context_menu_shown))
-            Card {
-                if (shown.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.context_menu_empty),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                shown.forEachIndexed { index, action ->
-                    val entry = HandlerActionCatalog.entryFor(action) ?: return@forEachIndexed
-                    ShownRow(
-                        entry = entry,
-                        position = index + 1,
-                        pinned = action in HandlerActions.ALWAYS_IN_CONTEXT_MENU,
-                        canMoveUp = index > 0,
-                        canMoveDown = index < shown.lastIndex,
-                        onMoveUp = { shown.move(index, index - 1); persist() },
-                        onMoveDown = { shown.move(index, index + 1); persist() },
-                        onRemove = { shown.removeAt(index); persist() },
-                    )
-                }
-            }
-
-            if (available.isNotEmpty()) {
-                Spacer(Modifier.height(22.dp))
-                SectionLabel(stringResource(R.string.context_menu_hidden))
-                Card {
-                    available.forEach { entry ->
-                        HiddenRow(
-                            entry = entry,
-                            onAdd = { shown.add(entry.action); persist() },
-                        )
-                    }
-                }
+            // ---- animation ----------------------------------------------------------------------
+            AppearanceSection(
+                title = stringResource(R.string.group_animation),
+                summary = "${stringResource(panelAnimationLabel(panelAnimation))} · ${panelAnimationSpeedLabel(animationSpeed)}",
+            ) {
+                PanelAnimationSelector(
+                    animation = panelAnimation,
+                    onAnimationChange = {
+                        panelAnimation = it
+                        preference.setPanelAnimation(it)
+                        // Replays it on the preview above. Picking an entrance from a list of words
+                        // is picking blind; the point of the preview is that the word is followed by
+                        // the thing it names.
+                        replay++
+                    },
+                    speed = animationSpeed,
+                    onSpeedChange = {
+                        animationSpeed = it
+                        preference.setPanelAnimationSpeed(it)
+                        replay++
+                    },
+                )
             }
 
             Spacer(Modifier.height(28.dp))
         }
-        }
-        }
     }
 }
-
-/** The widest the settings column gets. Beyond this a row is two halves and a gap. */
-private val CONTENT_MAX_WIDTH = 560.dp
 
 /**
  * How much the preview is shrunk.
@@ -494,14 +513,11 @@ private fun SectionLabel(text: String) {
 }
 
 @Composable
-private fun Card(content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f),
-    ) {
-        Column(modifier = Modifier.padding(12.dp), content = content)
-    }
+private fun Sep() {
+    HorizontalDivider(
+        modifier = Modifier.padding(vertical = 12.dp),
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+    )
 }
 
 /** Grid or list, as two halves of one pill. Mirrors the side picker on the Appearance screen. */
@@ -633,7 +649,7 @@ private fun ShownRow(
                 contentDescription = stringResource(R.string.context_menu_hide_item),
                 modifier = Modifier.size(18.dp),
                 tint = if (pinned) {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                    MaterialTheme.colorScheme.outlineVariant
                 } else {
                     MaterialTheme.colorScheme.error
                 },
@@ -666,7 +682,7 @@ private fun HiddenRow(
                 icon = entry.icon,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         Spacer(Modifier.width(12.dp))

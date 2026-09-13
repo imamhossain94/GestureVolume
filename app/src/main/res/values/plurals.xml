@@ -17,10 +17,6 @@
         <item quantity="one">%1$d saved</item>
         <item quantity="other">%1$d saved</item>
     </plurals>
-    <plurals name="deck_clipboard_count">
-        <item quantity="one">%1$d item</item>
-        <item quantity="other">%1$d items</item>
-    </plurals>
     <plurals name="deck_tiles_count">
         <item quantity="one">%1$d of %2$d on</item>
         <item quantity="other">%1$d of %2$d on</item>

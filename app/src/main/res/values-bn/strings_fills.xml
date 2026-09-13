@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The animation's own colours, for the settings screen. -->
+    <string name="slider_fill_colors">অ্যানিমেশনের রং</string>
+    <string name="slider_fill_colors_desc">অ্যানিমেশনটি তার নিজের রঙের বদলে আপনার বেছে নেওয়া তিনটি রঙে আঁকুন।</string>
+    <string name="slider_fill_colors_unsupported">এই অ্যানিমেশন ভরাটের রঙে আঁকা হয়, তাই বদলানোর মতো নিজস্ব রং নেই।</string>
+    <string name="slider_fill_color_n">রং %1$d</string>
+    <string name="slider_fill_colors_reset">রং রিসেট করুন</string>
+</resources>

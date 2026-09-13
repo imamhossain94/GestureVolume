@@ -14,4 +14,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 sealed interface ActionIcon {
     data class Res(@param:DrawableRes val id: Int) : ActionIcon
     data class Vector(val image: ImageVector) : ActionIcon
+
+    /**
+     * The Quick panel's icon, which depends on what the panel is set to drive: a sun for
+     * brightness, a speaker for a volume.
+     *
+     * Its own case rather than a fixed drawable, because the entry is shared by every picker, the
+     * Actions rows and the long-press menu, and the panel's target is changed on another screen
+     * entirely. A fixed speaker put a volume icon on a gesture that changed the brightness.
+     * Resolved where it is drawn — see `ActionIconImage`.
+     */
+    data object QuickPanel : ActionIcon
 }

@@ -104,7 +104,7 @@ fun ActionSettingItem(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    tint = MaterialTheme.colorScheme.outline
                 )
             }
         }

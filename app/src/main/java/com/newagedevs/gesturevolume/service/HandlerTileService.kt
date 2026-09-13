@@ -38,8 +38,8 @@ class HandlerTileService : TileService() {
         }
         val hide = !preference.isHandlerHidden()
         OverlayRuntime.sendCommand(this, if (hide) "user_hide" else "user_show")
-        // Drawn from what was asked for rather than read back: on the notification route the
-        // command lands a moment later, and the tile would show the old state until it did.
+        // Drawn from what was asked for rather than read back: the command reaches the service
+        // a moment later, and the tile would show the old state until it did.
         render(hide)
     }
 

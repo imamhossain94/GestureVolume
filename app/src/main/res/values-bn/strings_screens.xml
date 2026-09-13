@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_pick_any">যেগুলো প্রযোজ্য সেগুলো বেছে নিন</string>
+    <string name="feedback_via_email_title">আপনার ইমেইল অ্যাপ থেকে পাঠানো হয়</string>
+    <string name="feedback_via_email_desc">পাঠান চাপলে আপনার লেখা সহ ইমেইল অ্যাপ খুলবে। সেখানে পাঠানো না পর্যন্ত কিছুই যায় না।</string>
+    <string name="feedback_details_title">যে তথ্য যুক্ত হয়</string>
+    <string name="feedback_details_desc">অ্যাপের সংস্করণ, আপনার ডিভাইসের মডেল ও Android সংস্করণ যুক্ত হয়, যাতে সমস্যাটি খুঁজে বের করা যায়।</string>
+</resources>

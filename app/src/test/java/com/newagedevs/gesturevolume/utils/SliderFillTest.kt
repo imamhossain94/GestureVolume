@@ -1,6 +1,8 @@
 package com.newagedevs.gesturevolume.utils
 
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -75,6 +77,86 @@ class SliderFillTest {
         SliderFill.ALL.filter { SliderFill.isPictorial(it) }.forEach { id ->
             assertTrue("$id has no colours", SliderFill.palette(id).isNotEmpty())
         }
+    }
+
+    @Test
+    fun `without custom colours a style keeps its own palette`() {
+        SliderFill.ALL.forEach { id ->
+            val own = SliderFill.palette(id)
+            assertArrayEquals("$id with null", own, SliderFill.paletteWith(id, null))
+            assertArrayEquals("$id with none", own, SliderFill.paletteWith(id, IntArray(0)))
+        }
+    }
+
+    @Test
+    fun `custom colours fill every slot and keep each slot's alpha`() {
+        val custom = intArrayOf(0xFFFF0000.toInt(), 0xFF00FF00.toInt(), 0xFF0000FF.toInt())
+        SliderFill.ALL.filter { SliderFill.supportsCustomColors(it) }.forEach { id ->
+            val own = SliderFill.palette(id)
+            val mine = SliderFill.paletteWith(id, custom)
+            assertEquals("$id changed length", own.size, mine.size)
+            for (i in own.indices) {
+                assertEquals("$id slot $i lost its alpha", own[i] ushr 24, mine[i] ushr 24)
+            }
+            // The ends are the user's first and last colours exactly, unless the style's own slot
+            // there is its darkness, which is kept.
+            if (!SliderFill.isGround(own.first())) {
+                assertEquals("$id first slot", 0xFF0000L, mine.first() and 0xFFFFFFL)
+            }
+            if (mine.size > 1 && !SliderFill.isGround(own.last())) {
+                assertEquals("$id last slot", 0x0000FFL, mine.last() and 0xFFFFFFL)
+            }
+            own.forEachIndexed { i, c ->
+                if (SliderFill.isGround(c)) assertEquals("$id ground slot $i was recoloured", c, mine[i])
+            }
+        }
+    }
+
+    @Test
+    fun `slots between the ends are blends of the user's colours`() {
+        // Aurora has four slots, all of them lights: t = 0, 1/3, 2/3, 1 across black to white.
+        val mine = SliderFill.paletteWith(SliderFill.AURORA, intArrayOf(0xFF000000.toInt(), 0xFFFFFFFF.toInt()))
+        assertEquals(0x000000L, mine[0] and 0xFFFFFFL)
+        assertEquals(0x555555L, mine[1] and 0xFFFFFFL)
+        assertEquals(0xAAAAAAL, mine[2] and 0xFFFFFFL)
+        assertEquals(0xFFFFFFL, mine[3] and 0xFFFFFFL)
+        // Three colours over five slots: the middle slot is the middle colour.
+        val confetti = SliderFill.paletteWith(
+            SliderFill.CONFETTI,
+            intArrayOf(0xFFFF0000.toInt(), 0xFF00FF00.toInt(), 0xFF0000FF.toInt()),
+        )
+        assertEquals(0x00FF00L, confetti[2] and 0xFFFFFFL)
+        assertEquals(0x808000L, confetti[1] and 0xFFFFFFL)
+    }
+
+    @Test
+    fun `a style's darkness keeps its colour`() {
+        val own = SliderFill.palette(SliderFill.GALAXY)
+        val mine = SliderFill.paletteWith(SliderFill.GALAXY, intArrayOf(0xFFFFC0CB.toInt()))
+        assertEquals("the sky", own[0], mine[0])
+        assertEquals("the stars", 0xFFC0CBL, mine[2] and 0xFFFFFFL)
+    }
+
+    @Test
+    fun `one custom colour paints every slot`() {
+        val mine = SliderFill.paletteWith(SliderFill.OCEAN, intArrayOf(0x8012ABCD.toInt()))
+        val own = SliderFill.palette(SliderFill.OCEAN)
+        mine.forEachIndexed { i, c ->
+            assertEquals(0x12ABCDL, c and 0xFFFFFFL)
+            assertEquals(own[i] ushr 24, c ushr 24)
+        }
+    }
+
+    @Test
+    fun `only pictorial styles take custom colours`() {
+        listOf(SliderFill.SOLID, SliderFill.TIDE_UP, SliderFill.TIDE_DOWN, SliderFill.STRIPES).forEach {
+            assertFalse(it, SliderFill.supportsCustomColors(it))
+        }
+        listOf(
+            SliderFill.FIREFLIES, SliderFill.SNOWFALL, SliderFill.HEARTBEAT, SliderFill.NEON, SliderFill.OCEAN,
+            SliderFill.GRADIENT, SliderFill.CONFETTI, SliderFill.WARP, SliderFill.STORM, SliderFill.FIREWORKS,
+            SliderFill.GALAXY, SliderFill.NEBULA,
+        ).forEach { assertTrue(it, SliderFill.supportsCustomColors(it)) }
     }
 
     @Test

@@ -11,17 +11,16 @@ import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.PanelAnimation
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
-import com.newagedevs.gesturevolume.utils.ClipboardEntry
 import com.newagedevs.gesturevolume.utils.HandlerPresets
 import com.newagedevs.gesturevolume.utils.HandlerShape
-import com.newagedevs.gesturevolume.utils.OverlayHostMode
-import org.json.JSONArray
-import org.json.JSONObject
 import com.newagedevs.gesturevolume.utils.VolumeStreamMode
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.newagedevs.gesturevolume.utils.ContextMenuStyle
+
+/** The preferences file every setting lives in. Public, for readers with no [SharedPref] to hand. */
+const val PREFERENCES_FILE = "MyPrefs"
 
 @Singleton
 class SharedPref @Inject constructor(
@@ -29,7 +28,7 @@ class SharedPref @Inject constructor(
 ) {
     private val appContext: Context = context.applicationContext
     val sharedPreferences: SharedPreferences =
-        appContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        appContext.getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE)
 
     /** The Deck's own settings and contents. Same file, its own object. */
     val deck: DeckStore by lazy { DeckStore(sharedPreferences) }
@@ -45,6 +44,88 @@ class SharedPref @Inject constructor(
         val freshInstall = sharedPreferences.all.isEmpty()
         pinLegacyAppearanceDefaults(freshInstall)
         pinEdgeAppearanceDefaults(freshInstall)
+        pinPreDockBehaviourDefaults(freshInstall)
+    }
+
+    /**
+     * Freezes the behaviour defaults from before the Dock preset described them onto an install
+     * that already existed, once: the same guard as [pinEdgeAppearanceDefaults], for settings that
+     * are not appearance.
+     *
+     * A fresh install reads [HandlerPresets.DEFAULT]'s [HandlerPresets.Behaviour] for every unset
+     * one of these — nothing on the double tap, dynamic position on, the bar a fifth of the way
+     * down, a media-volume Quick panel 24dp thick that the volume keys open instantly, panels that
+     * slide in, and a menu of nine to a page. An install that never touched those settings has been
+     * reading the old fallbacks instead, and would otherwise wake up to a double tap that stopped
+     * opening the panel and a bar that jumped up the screen. So on the first run after the update,
+     * if the file has anything in it, the old values are written for the keys that are unset.
+     *
+     * Runs after the older pins, so a pre-1.4.0 install keeps the 0.12 position that one wrote.
+     */
+    private fun pinPreDockBehaviourDefaults(freshInstall: Boolean) {
+        if (sharedPreferences.getBoolean(BEHAVIOUR_DEFAULTS_PINNED, false)) return
+
+        sharedPreferences.edit {
+            putBoolean(BEHAVIOUR_DEFAULTS_PINNED, true)
+            if (freshInstall) return@edit
+
+            fun pinFloat(key: String, value: Float) {
+                if (!sharedPreferences.contains(key)) putFloat(key, value)
+            }
+
+            fun pinInt(key: String, value: Int) {
+                if (!sharedPreferences.contains(key)) putInt(key, value)
+            }
+
+            fun pinBoolean(key: String, value: Boolean) {
+                if (!sharedPreferences.contains(key)) putBoolean(key, value)
+            }
+
+            fun pinString(key: String, value: String) {
+                if (!sharedPreferences.contains(key)) putString(key, value)
+            }
+
+            pinFloat(HANDLER_POSITION_FRACTION, PRE_DOCK_POSITION_FRACTION)
+            pinFloat(HANDLER_POS_Y_PORTRAIT, PRE_DOCK_POSITION_FRACTION)
+            pinFloat(HANDLER_POS_Y_LANDSCAPE, PRE_DOCK_POSITION_FRACTION)
+            pinBoolean(HANDLER_DYNAMIC_POSITION, false)
+            pinString(HANDLER_DOUBLE_TAP, HandlerActions.OPEN_QUICK_SLIDER)
+            pinString(PANEL_ANIMATION, PanelAnimation.POP)
+            pinInt(CONTEXT_MENU_PER_PAGE, ContextMenuLayout.PER_PAGE_ALL)
+            QuickSliderStore.pinPreDockDefaults(sharedPreferences, this)
+        }
+    }
+
+    /**
+     * Writes a preset's [HandlerPresets.Behaviour], all but dynamic position and the position.
+     *
+     * Those two are on the Appearance screen and travel through its state holder, so a switch or a
+     * drag made after the preset was applied still wins; everything here is on other screens and
+     * is taken from the preset as it stands. Called only when a preset was applied in that editing
+     * session — see `HandlerAppearanceScreen`.
+     */
+    fun writePresetBehaviour(behaviour: HandlerPresets.Behaviour) {
+        setHandlerSingleTapAction(behaviour.singleTap)
+        setHandlerDoubleTapAction(behaviour.doubleTap)
+        setHandlerTripleTapAction(behaviour.tripleTap)
+        setHandlerLongTapAction(behaviour.longPress)
+        setHandlerSwipeUpAction(behaviour.swipeUp)
+        setHandlerSwipeDownAction(behaviour.swipeDown)
+        setHandlerSwipeInAction(behaviour.swipeIn)
+        setHandlerSwipeOutAction(behaviour.swipeOut)
+
+        slider.setTarget(behaviour.slider.target)
+        slider.setShowValue(behaviour.slider.showValue)
+        slider.setShowIcon(behaviour.slider.showIcon)
+        slider.setLengthDp(behaviour.slider.lengthDp)
+        slider.setThicknessDp(behaviour.slider.thicknessDp)
+        slider.setEdgeOffsetDp(behaviour.slider.edgeOffsetDp)
+        slider.setFollowHandlerShape(behaviour.slider.followHandlerShape)
+        slider.setVolumeKeyMode(behaviour.slider.volumeKeys)
+
+        setPanelAnimation(behaviour.panelAnimation)
+        setContextMenuLayout(behaviour.menuLayout)
+        setContextMenuPerPage(behaviour.menuPerPage)
     }
 
     /**
@@ -219,16 +300,24 @@ class SharedPref @Inject constructor(
         /**
          * Where a fresh install puts the bar vertically, read from the Default preset.
          *
-         * Paired with a horizontal default of 1f — flush right — the preset's 0.5 puts the bar
-         * halfway down the right edge, which is where the thumb rests when the phone is held
-         * normally and where every edge launcher in the category puts its handle. It used to sit
-         * an eighth of the way down to stay clear of a video player's scrubber; being reachable
-         * without a stretch turned out to matter more, and the bar can be dragged anywhere.
+         * Paired with a horizontal default of 1f — flush right — the preset's 0.2 puts the bar a
+         * fifth of the way down the right edge, clear of the status bar and of the part of the
+         * screen a thumb scrolls through. It has been an eighth and a half before this, and the
+         * bar can be dragged anywhere.
          *
-         * An install that predates the change keeps whatever it had: see
-         * [pinLegacyAppearanceDefaults].
+         * An install that predates a change keeps whatever it had: see
+         * [pinLegacyAppearanceDefaults] and [pinPreDockBehaviourDefaults].
          */
         val DEFAULT_POSITION_FRACTION = HandlerPresets.DEFAULT.positionFraction
+
+        /** What [DEFAULT_POSITION_FRACTION] was before the Dock preset's 0.2. Frozen on purpose. */
+        const val PRE_DOCK_POSITION_FRACTION = 0.5f
+
+        /** Set once [pinPreDockBehaviourDefaults] has run. */
+        const val BEHAVIOUR_DEFAULTS_PINNED = "presetBehaviourDefaultsPinned"
+
+        /** The Default preset's behaviour: what a fresh install reads for each unset action and panel setting. */
+        val DEFAULT_BEHAVIOUR: HandlerPresets.Behaviour = HandlerPresets.DEFAULT.behaviour
 
         /**
          * The appearance defaults as they stood through 1.3.x, before the Default preset became
@@ -272,24 +361,24 @@ class SharedPref @Inject constructor(
         const val HANDLER_HIDDEN = "handlerHidden"
         const val APP_IN_FOREGROUND = "appInForeground"
         const val HANDLER_HIDDEN_APPS = "handlerHiddenApps"
+        const val HIDE_IN_SCREENSHOTS = "hideInScreenshots"
+        const val HANDLER_POS_SAME_BOTH = "handlerPosSameBothOrientations"
+        const val HANDLER_DYNAMIC_POSITION = "handlerDynamicPosition"
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
         const val VOLUME_STREAM_MODE = "handlerVolumeStreamMode"
         const val HANDLER_EDGE_SWIPE_MENU = "handlerEdgeSwipeMenu"
 
-        // 1.4.0: the two extra tap and swipe slots, and who draws the bar.
+        // 1.4.0: the two extra tap and swipe slots.
         const val HANDLER_TRIPLE_TAP = "handlerTripleTap"
         const val HANDLER_SWIPE_IN = "handlerSwipeIn"
         const val HANDLER_SWIPE_OUT = "handlerSwipeOut"
-        const val OVERLAY_HOST_MODE = "overlayHostMode"
         const val ASKED_ACCESSIBILITY = "askedAccessibility"
 
-        // 1.4.0: clipboard history.
-        const val CLIPBOARD_ENTRIES = "clipboardEntries"
-        const val CLIPBOARD_CAPTURE = "clipboardCapture"
-        const val CLIPBOARD_AUTO_PASTE = "clipboardAutoPaste"
-        const val CLIPBOARD_MAX_ITEMS = "clipboardMaxItems"
-        const val DEFAULT_CLIPBOARD_MAX_ITEMS = 25
-        const val CLIPBOARD_MAX_ITEMS_LIMIT = 100
+        /**
+         * What the retired clipboard history kept: the saved clips and its two settings. Never
+         * read, only deleted, by [removeRetiredClipboardHistory].
+         */
+        private val RETIRED_CLIPBOARD_KEYS = listOf("clipboardEntries", "clipboardAutoPaste", "clipboardMaxItems")
 
         /**
          * Prefix for the pre-mute level, keyed per framework stream type.
@@ -518,11 +607,47 @@ class SharedPref @Inject constructor(
 
     // ---- free positioning, per orientation --------------------------------------------------
 
+    // With one position for both orientations, landscape reads and writes portrait's pair. Decided
+    // here, in the keys, so the overlay, the drag and the Appearance screen all follow the switch
+    // without one of them having to remember to ask about it.
     private fun posXKey(isPortrait: Boolean) =
-        if (isPortrait) HANDLER_POS_X_PORTRAIT else HANDLER_POS_X_LANDSCAPE
+        if (isPortrait || getHandlerSamePositionBothOrientations() || getHandlerDynamicPosition()) HANDLER_POS_X_PORTRAIT else HANDLER_POS_X_LANDSCAPE
 
     private fun posYKey(isPortrait: Boolean) =
-        if (isPortrait) HANDLER_POS_Y_PORTRAIT else HANDLER_POS_Y_LANDSCAPE
+        if (isPortrait || getHandlerSamePositionBothOrientations() || getHandlerDynamicPosition()) HANDLER_POS_Y_PORTRAIT else HANDLER_POS_Y_LANDSCAPE
+
+    /**
+     * Whether the bar keeps one position however the phone is held, rather than one each.
+     *
+     * Off by default, which is how positions have been stored since the bar could be put anywhere:
+     * a bar halfway down the left edge of a phone held upright is not where the same hand wants it
+     * with the phone on its side. On is for the person who wants it "at the top, in the middle"
+     * and means that in both.
+     */
+    fun getHandlerSamePositionBothOrientations(): Boolean =
+        sharedPreferences.getBoolean(HANDLER_POS_SAME_BOTH, false)
+
+    fun setHandlerSamePositionBothOrientations(value: Boolean) {
+        sharedPreferences.edit { putBoolean(HANDLER_POS_SAME_BOTH, value) }
+    }
+
+    /**
+     * Whether the bar keeps to the same edge of the *phone* as the screen rotates.
+     *
+     * On, the portrait pair is the only position there is: a side, and a place along it. With the
+     * phone on its side that edge of the phone is the top or the bottom of the screen, so that is
+     * where the bar goes, lying along it at the same place — see
+     * [com.newagedevs.gesturevolume.service.HandlerGeometry.dynamicEdge]. Off, which is how it has
+     * always been, the bar stands upright against a screen side in every orientation. While it is
+     * on, reads and writes go to the portrait keys, for the same reason as
+     * [getHandlerSamePositionBothOrientations].
+     */
+    fun getHandlerDynamicPosition(): Boolean =
+        sharedPreferences.getBoolean(HANDLER_DYNAMIC_POSITION, DEFAULT_BEHAVIOUR.dynamicPosition)
+
+    fun setHandlerDynamicPosition(value: Boolean) {
+        sharedPreferences.edit { putBoolean(HANDLER_DYNAMIC_POSITION, value) }
+    }
 
     /**
      * Horizontal position of the bar's **centre**, as a fraction (0..1) of the usable width.
@@ -636,6 +761,23 @@ class SharedPref @Inject constructor(
     }
 
     /**
+     * Whether the bar and its panels step out of sight when Volume down is pressed, so a screenshot
+     * taken with Volume down and Power does not have them in it.
+     *
+     * On by default. Android tells an app nothing when the buttons take a screenshot, and the Power
+     * half of the chord never reaches an accessibility service at all; Volume down does, and it
+     * arrives before the system has worked out that a chord is happening. So the bar goes on the
+     * one press it can see, for the moment a chord could still follow. Needs the accessibility
+     * service, which asks for the volume keys while this is on — see
+     * `GestureAccessibilityService.applyEventSubscription`.
+     */
+    fun getHideInScreenshots(): Boolean = sharedPreferences.getBoolean(HIDE_IN_SCREENSHOTS, true)
+
+    fun setHideInScreenshots(value: Boolean) {
+        sharedPreferences.edit { putBoolean(HIDE_IN_SCREENSHOTS, value) }
+    }
+
+    /**
      * Whether the bar shows the volume level, as a percentage, while a swipe is adjusting it.
      *
      * On by default: the swipe changes something the user cannot otherwise see without the system
@@ -689,7 +831,7 @@ class SharedPref @Inject constructor(
                 HandlerActions.NONE
             }
         }
-        return HandlerActions.OPEN_DECK
+        return DEFAULT_BEHAVIOUR.swipeIn
     }
 
     fun setHandlerSwipeInAction(value: String) {
@@ -703,7 +845,7 @@ class SharedPref @Inject constructor(
      */
     fun getHandlerSwipeOutAction(): String =
         HandlerActions.sanitize(
-            sharedPreferences.getString(HANDLER_SWIPE_OUT, HandlerActions.NONE) ?: HandlerActions.NONE
+            sharedPreferences.getString(HANDLER_SWIPE_OUT, DEFAULT_BEHAVIOUR.swipeOut) ?: DEFAULT_BEHAVIOUR.swipeOut
         )
 
     fun setHandlerSwipeOutAction(value: String) {
@@ -712,7 +854,7 @@ class SharedPref @Inject constructor(
 
     fun getHandlerTripleTapAction(): String =
         HandlerActions.sanitize(
-            sharedPreferences.getString(HANDLER_TRIPLE_TAP, HandlerActions.NONE) ?: HandlerActions.NONE
+            sharedPreferences.getString(HANDLER_TRIPLE_TAP, DEFAULT_BEHAVIOUR.tripleTap) ?: DEFAULT_BEHAVIOUR.tripleTap
         )
 
     fun setHandlerTripleTapAction(value: String) {
@@ -720,108 +862,15 @@ class SharedPref @Inject constructor(
     }
 
     /**
-     * Which service draws the bar. See [OverlayHostMode].
+     * Deletes what the retired clipboard history left behind in preferences.
      *
-     * The accessibility route by default, and this default costs an install that has not granted
-     * accessibility exactly nothing: `OverlayRuntime.effectiveHost` needs the service to be bound
-     * as well as preferred, and falls back to the notification route when it is not. So this
-     * decides only what happens once the user does grant it — and then it should be used, for
-     * three reasons.
-     *
-     * It draws where the other route cannot. `TYPE_ACCESSIBILITY_OVERLAY` is shown over the
-     * Settings app and the other privileged screens where the platform hides
-     * `TYPE_APPLICATION_OVERLAY` outright — so with the notification route the bar simply vanishes
-     * in Settings, which reads as the app crashing.
-     *
-     * It needs no overlay permission and no notification. Android will not run a foreground
-     * service without an ongoing notification, and a permanent notification for a floating bar is
-     * the single most common complaint about apps of this kind.
-     *
-     * And it removes the conflict. With both permissions granted and this defaulting the other
-     * way, the app took the notification route while the user was looking at a granted
-     * accessibility permission and an ongoing notification, and concluded — correctly — that the
-     * two were fighting.
+     * The feature is gone, but the clips an upgrading user saved with it would otherwise stay in
+     * preferences, and in their cloud backup, with nothing left to show or clear them. A no-op once
+     * they are gone, so it is safe on every launch.
      */
-    fun getOverlayHostMode(): OverlayHostMode =
-        OverlayHostMode.fromStored(
-            sharedPreferences.getString(OVERLAY_HOST_MODE, OverlayHostMode.ACCESSIBILITY.name)
-        )
-
-    fun setOverlayHostMode(mode: OverlayHostMode) {
-        sharedPreferences.edit { putString(OVERLAY_HOST_MODE, mode.name) }
-    }
-
-    // ---- clipboard history ----------------------------------------------------------------------
-
-    /**
-     * Whether the accessibility service watches for copied text. Off by default: it is the one
-     * thing the service does that reads anything, and the user opts in from the Clipboard screen.
-     */
-    fun getClipboardCaptureEnabled(): Boolean =
-        sharedPreferences.getBoolean(CLIPBOARD_CAPTURE, false)
-
-    fun setClipboardCaptureEnabled(value: Boolean) {
-        sharedPreferences.edit { putBoolean(CLIPBOARD_CAPTURE, value) }
-    }
-
-    /** Whether tapping a clip in the Deck pastes it into the focused field, rather than only copying. */
-    fun getClipboardAutoPaste(): Boolean =
-        sharedPreferences.getBoolean(CLIPBOARD_AUTO_PASTE, false)
-
-    fun setClipboardAutoPaste(value: Boolean) {
-        sharedPreferences.edit { putBoolean(CLIPBOARD_AUTO_PASTE, value) }
-    }
-
-    fun getClipboardMaxItems(): Int =
-        sharedPreferences.getInt(CLIPBOARD_MAX_ITEMS, DEFAULT_CLIPBOARD_MAX_ITEMS)
-            .coerceIn(5, CLIPBOARD_MAX_ITEMS_LIMIT)
-
-    fun setClipboardMaxItems(value: Int) {
-        sharedPreferences.edit { putInt(CLIPBOARD_MAX_ITEMS, value.coerceIn(5, CLIPBOARD_MAX_ITEMS_LIMIT)) }
-    }
-
-    /** The history, newest first. Stored as one JSON array; a few dozen short strings at most. */
-    fun getClipboardEntries(): List<ClipboardEntry> {
-        val raw = sharedPreferences.getString(CLIPBOARD_ENTRIES, null) ?: return emptyList()
-        return runCatching {
-            val array = JSONArray(raw)
-            List(array.length()) { i ->
-                val o = array.getJSONObject(i)
-                ClipboardEntry(o.getLong("id"), o.getString("text"), o.optLong("time"))
-            }
-        }.getOrDefault(emptyList())
-    }
-
-    private fun putClipboardEntries(entries: List<ClipboardEntry>) {
-        val array = JSONArray()
-        entries.forEach { e ->
-            array.put(JSONObject().put("id", e.id).put("text", e.text).put("time", e.timeMillis))
-        }
-        sharedPreferences.edit { putString(CLIPBOARD_ENTRIES, array.toString()) }
-    }
-
-    /**
-     * Records a clip at the top of the history.
-     *
-     * A text already in the list moves to the top rather than appearing twice, and the list is
-     * trimmed to the configured size from the bottom — the oldest goes first.
-     */
-    fun addClipboardEntry(text: String): ClipboardEntry? {
-        val trimmed = text.trim()
-        if (trimmed.isEmpty()) return null
-        val now = System.currentTimeMillis()
-        val entry = ClipboardEntry(id = now, text = trimmed, timeMillis = now)
-        val rest = getClipboardEntries().filterNot { it.text == trimmed }
-        putClipboardEntries((listOf(entry) + rest).take(getClipboardMaxItems()))
-        return entry
-    }
-
-    fun removeClipboardEntry(id: Long) {
-        putClipboardEntries(getClipboardEntries().filterNot { it.id == id })
-    }
-
-    fun clearClipboardEntries() {
-        sharedPreferences.edit { remove(CLIPBOARD_ENTRIES) }
+    fun removeRetiredClipboardHistory() {
+        if (RETIRED_CLIPBOARD_KEYS.none { sharedPreferences.contains(it) }) return
+        sharedPreferences.edit { RETIRED_CLIPBOARD_KEYS.forEach { remove(it) } }
     }
 
     /** Whether the accessibility disclosure has been shown and accepted once. */
@@ -965,12 +1014,15 @@ class SharedPref @Inject constructor(
     /**
      * How the floating panels arrive. See [PanelAnimation].
      *
-     * One setting for the menu and the Deck, for the same reason the panel style is one setting
-     * for all three: they are the same app putting the same kind of surface on the same screen,
-     * and two of them arriving differently is not a choice anybody made on purpose.
+     * One setting for the menu, the Quick panel and the Deck, for the same reason the panel style
+     * is one setting for all three: they are the same app putting the same kind of surface on the
+     * same screen, and two of them arriving differently is not a choice anybody made on purpose.
+     * Unset, the Default preset's; stored but unrecognised, [PanelAnimation.sanitize]'s.
      */
     fun getPanelAnimation(): String =
-        PanelAnimation.sanitize(sharedPreferences.getString(PANEL_ANIMATION, null))
+        PanelAnimation.sanitize(
+            sharedPreferences.getString(PANEL_ANIMATION, null) ?: DEFAULT_BEHAVIOUR.panelAnimation
+        )
 
     fun setPanelAnimation(value: String) {
         sharedPreferences.edit { putString(PANEL_ANIMATION, PanelAnimation.sanitize(value)) }
@@ -1017,7 +1069,9 @@ class SharedPref @Inject constructor(
     }
 
     fun getContextMenuLayout(): String =
-        ContextMenuLayout.sanitize(sharedPreferences.getString(CONTEXT_MENU_LAYOUT, null))
+        ContextMenuLayout.sanitize(
+            sharedPreferences.getString(CONTEXT_MENU_LAYOUT, null) ?: DEFAULT_BEHAVIOUR.menuLayout
+        )
 
     fun setContextMenuLayout(value: String) {
         sharedPreferences.edit { putString(CONTEXT_MENU_LAYOUT, value) }
@@ -1051,7 +1105,7 @@ class SharedPref @Inject constructor(
     }
 
     fun getContextMenuPerPage(): Int = ContextMenuLayout.sanitizePerPage(
-        sharedPreferences.getInt(CONTEXT_MENU_PER_PAGE, ContextMenuLayout.PER_PAGE_ALL)
+        sharedPreferences.getInt(CONTEXT_MENU_PER_PAGE, DEFAULT_BEHAVIOUR.menuPerPage)
     )
 
     fun setContextMenuPerPage(value: Int) {
@@ -1076,8 +1130,8 @@ class SharedPref @Inject constructor(
     // Tap actions
     fun getHandlerSingleTapAction(): String =
         HandlerActions.sanitize(
-            sharedPreferences.getString(HANDLER_SINGLE_TAP, "Open volume UI")
-                ?: "Open volume UI"
+            sharedPreferences.getString(HANDLER_SINGLE_TAP, DEFAULT_BEHAVIOUR.singleTap)
+                ?: DEFAULT_BEHAVIOUR.singleTap
         )
 
     fun setHandlerSingleTapAction(value: String) {
@@ -1085,22 +1139,20 @@ class SharedPref @Inject constructor(
     }
 
     /**
-     * What a double tap does. The Quick panel, unless the user has said otherwise.
+     * What a double tap does. Nothing, unless the user has said otherwise.
      *
-     * The panel needs a slot of its own, and this is the one it can have without taking anything.
-     * Long press is reposition — the only way to move the bar, and not worth trading. Single tap is
-     * the gesture most likely to be hit by accident. A double tap was bound to nothing at all, and
-     * costs nothing to give away: `isDoubleTapArmed` means a single tap now waits out the
-     * double-tap timeout, but the single tap is `None` by default too, so on a fresh install there
-     * is no action being delayed.
+     * It used to open the Quick panel. The Default preset puts the panel on both vertical swipes
+     * instead, and leaving the double tap unbound is what lets the single tap — the system volume
+     * panel — fire at once rather than wait out the double-tap timeout (`isDoubleTapArmed`).
+     * Installs from before keep the panel here: see [pinPreDockBehaviourDefaults].
      *
      * Read through the same `sanitize` as every other slot, so an install that arrives from a
-     * newer build with something unrecognised here falls back to None rather than to this default.
+     * newer build with something unrecognised here falls back to None.
      */
     fun getHandlerDoubleTapAction(): String =
         HandlerActions.sanitize(
-            sharedPreferences.getString(HANDLER_DOUBLE_TAP, HandlerActions.OPEN_QUICK_SLIDER)
-                ?: HandlerActions.OPEN_QUICK_SLIDER
+            sharedPreferences.getString(HANDLER_DOUBLE_TAP, DEFAULT_BEHAVIOUR.doubleTap)
+                ?: DEFAULT_BEHAVIOUR.doubleTap
         )
 
     fun setHandlerDoubleTapAction(value: String) {
@@ -1113,8 +1165,8 @@ class SharedPref @Inject constructor(
     // owning the gesture.
     fun getHandlerLongTapAction(): String =
         HandlerActions.sanitize(
-            sharedPreferences.getString(HANDLER_LONG_TAP, HandlerActions.REPOSITION)
-                ?: HandlerActions.REPOSITION
+            sharedPreferences.getString(HANDLER_LONG_TAP, DEFAULT_BEHAVIOUR.longPress)
+                ?: DEFAULT_BEHAVIOUR.longPress
         )
 
     fun setHandlerLongTapAction(value: String) {
@@ -1133,8 +1185,8 @@ class SharedPref @Inject constructor(
      */
     fun getHandlerSwipeUpAction(): String =
         HandlerActions.sanitize(
-            sharedPreferences.getString(HANDLER_SWIPE_UP, HandlerActions.OPEN_QUICK_SLIDER)
-                ?: HandlerActions.OPEN_QUICK_SLIDER
+            sharedPreferences.getString(HANDLER_SWIPE_UP, DEFAULT_BEHAVIOUR.swipeUp)
+                ?: DEFAULT_BEHAVIOUR.swipeUp
         )
 
     fun setHandlerSwipeUpAction(value: String) {
@@ -1147,8 +1199,8 @@ class SharedPref @Inject constructor(
     /** The other half of the pair. See [getHandlerSwipeUpAction]. */
     fun getHandlerSwipeDownAction(): String =
         HandlerActions.sanitize(
-            sharedPreferences.getString(HANDLER_SWIPE_DOWN, HandlerActions.OPEN_QUICK_SLIDER)
-                ?: HandlerActions.OPEN_QUICK_SLIDER
+            sharedPreferences.getString(HANDLER_SWIPE_DOWN, DEFAULT_BEHAVIOUR.swipeDown)
+                ?: DEFAULT_BEHAVIOUR.swipeDown
         )
 
     fun setHandlerSwipeDownAction(value: String) {
@@ -1546,6 +1598,23 @@ class SharedPref @Inject constructor(
             clear()
             putBoolean(PRO_FEATURE_ACTIVATION, keptPro)
             if (keptInstallTime > 0L) putLong(FIRST_INSTALL_TIME, keptInstallTime)
+            // A reset is a factory state, not an upgrade. The file is not empty after it — the
+            // purchase is kept — so without these the next launch would read it as an existing
+            // install and pin the defaults of older versions over the ones just restored.
+            putBoolean(APPEARANCE_DEFAULTS_PINNED, true)
+            putBoolean(EDGE_DEFAULTS_PINNED, true)
+            putBoolean(BEHAVIOUR_DEFAULTS_PINNED, true)
         }
     }
+
+    // ========== INTERSTITIAL PACING INPUTS (read by utils.AdPacing) ==========
+    // Read-only views of values kept above, so the pacing policy can live outside this class.
+
+    fun getSessionInterstitialCount(): Int = sessionInterstitialCount
+
+    fun getLastInterstitialAdTimeMillis(): Long =
+        sharedPreferences.getLong(LAST_INTERSTITIAL_AD_TIME, -1L).coerceAtLeast(0L)
+
+    fun getLastAppOpenAdTimeMillis(): Long =
+        sharedPreferences.getLong(LAST_APP_OPEN_AD_TIME, -1L).coerceAtLeast(0L)
 }

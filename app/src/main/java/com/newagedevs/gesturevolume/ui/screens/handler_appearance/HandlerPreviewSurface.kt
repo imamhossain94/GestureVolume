@@ -44,8 +44,9 @@ import com.newagedevs.gesturevolume.ui.view.HandlerView
 @Composable
 fun HandlerPreviewSurface(
     state: AppearanceStateHolder,
-    backgroundImageURL: String,
+    backdrop: Int,
     modifier: Modifier = Modifier,
+    fillHeight: Boolean = false,
 ) {
     var handlerViewRef by remember { mutableStateOf<HandlerView?>(null) }
 
@@ -89,7 +90,7 @@ fun HandlerPreviewSurface(
         }
     }
 
-    PreviewStage(backgroundImageURL = backgroundImageURL, modifier = modifier) {
+    PreviewStage(backdrop = backdrop, modifier = modifier, fillHeight = fillHeight) {
         AndroidView(
             factory = { ctx ->
                 FrameLayout(ctx).apply {

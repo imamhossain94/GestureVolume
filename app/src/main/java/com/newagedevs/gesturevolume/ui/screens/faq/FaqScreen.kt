@@ -14,9 +14,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -91,32 +91,43 @@ fun FaqScreen(
             )
         }
     ) { padding ->
+        // The home screen's frame exactly: the Scaffold's padding on every side (which carries the
+        // camera cutout in landscape), then a column centred at the same widest width with the same
+        // 16dp either side, so the cards start and end where the home screen's do.
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = padding.calculateTopPadding())
-                .verticalScroll(rememberScrollState())
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp)
+                .padding(padding)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(4.dp))
+            Column(
+                modifier = Modifier
+                    .widthIn(max = CONTENT_MAX_WIDTH)
+                    .padding(horizontal = 16.dp)
+            ) {
+                Spacer(Modifier.height(4.dp))
 
-            ENTRIES.forEach { entry ->
-                FaqItem(
-                    question = stringResource(entry.question),
-                    answer = stringResource(entry.answer),
-                    // Only one entry has somewhere to go, and it is the one whose answer is "there
-                    // is a screen for this" rather than a paragraph.
-                    actionLabel = entry.actionLabel?.let { stringResource(it) },
-                    onAction = onNavigateToTroubleshoot,
-                )
-                Spacer(Modifier.height(8.dp))
+                ENTRIES.forEach { entry ->
+                    FaqItem(
+                        question = stringResource(entry.question),
+                        answer = stringResource(entry.answer),
+                        // Only one entry has somewhere to go, and it is the one whose answer is
+                        // "there is a screen for this" rather than a paragraph.
+                        actionLabel = entry.actionLabel?.let { stringResource(it) },
+                        onAction = onNavigateToTroubleshoot,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                }
+
+                Spacer(Modifier.height(24.dp))
             }
-
-            Spacer(Modifier.height(24.dp))
         }
     }
 }
+
+/** The home screen's widest column, so this list is centred the same way on its side. */
+private val CONTENT_MAX_WIDTH = 920.dp
 
 private data class FaqEntry(
     @param:StringRes val question: Int,

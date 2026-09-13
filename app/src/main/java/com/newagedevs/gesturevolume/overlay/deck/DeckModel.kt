@@ -55,6 +55,11 @@ data class DeckModel(
     val panelTheme: String = com.newagedevs.gesturevolume.utils.PanelTheme.SOLID,
     /** How the Deck arrives. See [com.newagedevs.gesturevolume.utils.PanelAnimation]. */
     val animation: String = com.newagedevs.gesturevolume.utils.PanelAnimation.POP,
+    /**
+     * Set when the bar lies along the top (true) or bottom (false) edge — Dynamic position with
+     * the phone on its side — so the strip lies along that edge too. Null for an upright bar.
+     */
+    val lyingOnTop: Boolean? = null,
 )
 
 /**
@@ -86,18 +91,8 @@ interface DeckActions {
     /** Opens one of the app's own screens, by navigation route. */
     fun openAppScreen(route: String)
 
-    /** Copies [text]; with [paste] also pastes it into the field under the Deck, when possible. */
-    fun copy(text: String, paste: Boolean)
-
-    /**
-     * Reads whatever is on the clipboard into the history.
-     *
-     * Called only when the clipboard card is opened, never on every Deck opening: Android 12+
-     * shows the system's own "pasted from your clipboard" notice each time an app reads the
-     * clipboard, and a notice on every flick of the bar would be intolerable. Opening the
-     * clipboard card is the one moment the user has actually asked for the clipboard.
-     */
-    fun captureClipboard()
+    /** Copies [text] and says so: the calculator's answer, or a saved note. */
+    fun copy(text: String)
 
     fun message(text: String)
 

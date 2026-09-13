@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.content.BroadcastReceiver
@@ -93,16 +92,13 @@ import com.newagedevs.gesturevolume.utils.QuickSliderIcons
  * overlay and the Deck. Everything that is drawn over other apps and everything that happens
  * when it is touched.
  *
- * Extracted from `OverlayService` in 1.4.0 so that two hosts can share it. The foreground service
- * owns a notification and the accessibility service owns nothing, but the bar they draw is the
- * same bar, and a second copy of fifteen hundred lines of gesture and geometry code is how the
- * two would drift apart by the second release. The only things that differ between the hosts
- * are the [windowType] their windows use and what happens when the user asks to stop — which is
- * exactly what the constructor takes.
+ * Extracted from `OverlayService` in 1.4.0, which runs it: the service keeps the notification
+ * and the service lifecycle, and this keeps the bar. The accessibility service never draws; it
+ * reaches this controller through [OverlayRuntime.activeController] to hand it the volume keys
+ * and the app in front.
  *
- * Every window this creates uses [windowType]: `TYPE_APPLICATION_OVERLAY` from the foreground
- * service, which needs the overlay permission, or `TYPE_ACCESSIBILITY_OVERLAY` from the
- * accessibility service, which does not.
+ * Every window this creates uses [windowType], which is `TYPE_APPLICATION_OVERLAY` and needs the
+ * overlay permission.
  */
 class OverlayController(
     private val context: Context,
@@ -114,7 +110,7 @@ class OverlayController(
     interface Host {
         /**
          * Something the notification shows — the Show/Hide button, the hidden line — has changed.
-         * The foreground service re-posts; the accessibility service has no notification.
+         * The foreground service re-posts it.
          */
         fun onNotificationStateChanged()
 
@@ -174,6 +170,9 @@ class OverlayController(
          */
         private const val PANEL_MIN_THICKNESS_DP = 48f
 
+        /** Room left around the Quick panel inside its window for the entrance to move in. See QuickSliderView.setPanelRoom. */
+        const val PANEL_ENTRANCE_ROOM_DP = 36f
+
         /** The ink a pale panel writes in: dark enough to read on frosted glass, not pure black. */
         private const val PANEL_LIGHT_INK = 0xFF15161A.toInt()
 
@@ -206,6 +205,19 @@ class OverlayController(
         /** How long the bar is kept out of a screenshot before and after the shutter. */
         private const val SCREENSHOT_HIDE_BEFORE_MS = 250L
         private const val SCREENSHOT_HIDE_AFTER_MS = 1_000L
+
+        /**
+         * How long Volume down keeps the bar out of sight, for a Volume down + Power screenshot.
+         *
+         * At least [CAPTURE_GUARD_MIN_MS] from the press, which covers the system's own wait for
+         * the second key of the chord and the capture after it; [CAPTURE_GUARD_AFTER_RELEASE_MS]
+         * past the release, for a chord whose keys come up before the shutter; and never more than
+         * [CAPTURE_GUARD_MAX_MS] from the press, so a volume key held to ramp the level is not a
+         * key that hides the panel showing the ramp.
+         */
+        private const val CAPTURE_GUARD_MIN_MS = 380L
+        private const val CAPTURE_GUARD_AFTER_RELEASE_MS = 160L
+        private const val CAPTURE_GUARD_MAX_MS = 750L
 
         /** How long a held volume key may keep stepping when its release never arrives. */
         private const val VOLUME_KEY_HOLD_LIMIT_MS = 20_000L
@@ -295,6 +307,12 @@ class OverlayController(
      * of a drag is a new GradientDrawable per frame.
      */
     private var handlerDressedLeft: Boolean? = null
+
+    /**
+     * [Gravity.TOP] or [Gravity.BOTTOM] while the bar lies along that edge — Dynamic position with
+     * the phone on its side — else [Gravity.NO_GRAVITY]. Cached for the reason [handlerDressedLeft] is.
+     */
+    private var handlerDressedLying: Int = Gravity.NO_GRAVITY
 
     // ---- long-press context menu -----------------------------------------------------------
 
@@ -403,6 +421,10 @@ class OverlayController(
     private var sliderHapticMs = 0L
     private var sliderHapticAmplitude = 0
 
+    /** The tick each step makes, and which one this panel was opened with. See QuickSliderStore.getStepSound. */
+    private val stepSound = com.newagedevs.gesturevolume.utils.StepSound(context)
+    private var sliderSound = QuickSliderStore.SOUND_OFF
+
     // ---- indicator -------------------------------------------------------------------------
 
     private var indicatorView: View? = null
@@ -447,7 +469,7 @@ class OverlayController(
         override fun onDisplayRemoved(displayId: Int) = Unit
         override fun onDisplayChanged(displayId: Int) {
             mainHandler.post {
-                val now = HandlerGeometry.read(context, windowManager)
+                val now = readFrame()
                 if (now == null || now != frame) applyHandlerGeometry()
             }
         }
@@ -781,6 +803,7 @@ class OverlayController(
         // would leave the system holding a key that never comes up.
         if (event.action == KeyEvent.ACTION_UP) {
             stopVolumeKeyRepeat()
+            if (event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) releaseCaptureGuard()
             return volumeKeysTaken.remove(event.keyCode)
         }
         if (event.action != KeyEvent.ACTION_DOWN) return event.keyCode in volumeKeysTaken
@@ -791,6 +814,9 @@ class OverlayController(
             stopVolumeKeyRepeat()
             return takesVolumeKeys() && stepVolumeFromKey(direction)
         }
+        // Before the key is taken or handed back, and whichever it is: a screenshot's Volume down
+        // is the same press either way, and the system decides it was a chord only afterwards.
+        if (event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) beginCaptureGuard()
         val taken = takesVolumeKeys() && stepVolumeFromKey(direction)
         if (taken) {
             volumeKeysTaken += event.keyCode
@@ -859,9 +885,102 @@ class OverlayController(
             }
             return
         }
+        // Not while Volume down might be half of a screenshot: the panel would open straight into
+        // the picture. The level has already moved; the panel showing it follows the moment the
+        // chance of a chord has passed. See [beginCaptureGuard].
+        if (captureGuardActive) {
+            pendingKeyPanel = res
+            return
+        }
         // A panel showing something else, brightness, makes way for the one the key is about.
         if (sliderView != null) hideQuickSlider()
         if (openQuickSliderWindow(QuickSliderStore.TARGET_MEDIA)) animateQuickSliderOpen()
+    }
+
+    // ---- screenshots taken with the buttons ----------------------------------------------------
+
+    /** True while Volume down is keeping every window of this app out of sight. */
+    private var captureGuardActive = false
+    private var captureGuardDownAt = 0L
+
+    /** Until when the Screenshot action is keeping the bar out of sight itself. */
+    private var cleanShotUntil = 0L
+
+    /** A panel a volume key asked for while the guard was up, to open when it comes down. */
+    private var pendingKeyPanel: VolumeController.Resolution? = null
+
+    private val endCaptureGuardRunnable = Runnable { endCaptureGuard() }
+
+    /**
+     * Volume down went down: take everything out of sight for as long as it could still be half of
+     * a Volume down + Power screenshot.
+     *
+     * There is no better signal to be had. Android sends no warning of a screenshot, the Power key
+     * is never offered to an accessibility service, and the capture follows the chord closely
+     * enough that anything shown when Power lands is in it — which is how a volume press opened the
+     * Quick panel full size into every screenshot taken with the buttons. Volume down arrives here
+     * before the system has even decided a chord is happening, so going now is in time.
+     *
+     * Invisible, not faded. These are whole windows and nothing is under a finger during a key
+     * press, so there is no gesture to strand, and every one of them — bar, panel, menu, Deck and
+     * the glass behind them — goes and comes back in one frame.
+     */
+    private fun beginCaptureGuard() {
+        if (destroyed || !preference.getHideInScreenshots()) return
+        if (handlerView == null) return
+        // Only the bar on its own. A panel, the menu or the Deck already on screen means the user
+        // is in the middle of using it — pressing the rocker at an open volume panel is how it is
+        // used — and blinking it out on every press, or holding the next press back, is a worse
+        // trade than the rare screenshot taken of an open panel. The Deck is also a focused
+        // window, and hiding it would take the keyboard away from its search field.
+        if (sliderView != null || sliderCollapse != null || deckRoot != null || contextMenuHost != null) return
+        // The Screenshot action is already keeping the bar out of its own picture, on its own clock.
+        if (now() < cleanShotUntil) return
+        captureGuardDownAt = now()
+        mainHandler.removeCallbacks(endCaptureGuardRunnable)
+        mainHandler.postDelayed(endCaptureGuardRunnable, CAPTURE_GUARD_MAX_MS)
+        if (captureGuardActive) return
+        captureGuardActive = true
+        setShownForCapture(false)
+    }
+
+    /** Volume down came up: the guard ends shortly, unless its minimum has not run yet. */
+    private fun releaseCaptureGuard() {
+        if (!captureGuardActive) return
+        val held = now() - captureGuardDownAt
+        val remaining = maxOf(CAPTURE_GUARD_MIN_MS - held, CAPTURE_GUARD_AFTER_RELEASE_MS)
+        // Only ever brought forward: the ceiling set on the press still stands.
+        if (held + remaining >= CAPTURE_GUARD_MAX_MS) return
+        mainHandler.removeCallbacks(endCaptureGuardRunnable)
+        mainHandler.postDelayed(endCaptureGuardRunnable, remaining)
+    }
+
+    private fun endCaptureGuard() {
+        mainHandler.removeCallbacks(endCaptureGuardRunnable)
+        if (!captureGuardActive) return
+        captureGuardActive = false
+        if (destroyed) return
+        setShownForCapture(true)
+        pendingKeyPanel?.let { res ->
+            pendingKeyPanel = null
+            // Asked again, not assumed: in the moment the guard was up the screen may have gone
+            // off, the lock screen come up or a call begun, and none of those want a panel.
+            if (takesVolumeKeys()) showPanelForVolumeKey(res)
+        }
+    }
+
+    private fun setShownForCapture(shown: Boolean) {
+        val visibility = if (shown) View.VISIBLE else View.INVISIBLE
+        handlerView?.visibility = visibility
+        sliderView?.visibility = visibility
+        retiringSliders.forEach { it.first.visibility = visibility }
+        deckRoot?.visibility = visibility
+        contextMenuHost?.view?.visibility = visibility
+        // Only ever hidden here: whether a readout is showing is its own timer's business.
+        if (!shown) indicatorView?.visibility = View.INVISIBLE
+        listOf(sliderBackdrop, menuBackdrop, deckStripBackdrop, deckCardBackdrop).forEach {
+            it?.setSuppressed(!shown)
+        }
     }
 
     // =============================================================================================
@@ -878,7 +997,7 @@ class OverlayController(
      * Takes every window down and releases every callback.
      *
      * @param restoreBrightness whether adaptive brightness this app switched off is handed back.
-     *   False when another host is about to carry on drawing the bar.
+     *   False only when something else is about to carry on drawing the bar.
      */
     fun destroy(restoreBrightness: Boolean = true) {
         if (destroyed) return
@@ -898,6 +1017,7 @@ class OverlayController(
         runCatching { context.contentResolver.unregisterContentObserver(volumeWatcher) }
         runCatching { context.unregisterReceiver(volumeReceiver) }
         // Lets a write already queued land, then ends the thread.
+        stepSound.release()
         audioThread?.quitSafely()
         audioThread = null
 
@@ -913,7 +1033,7 @@ class OverlayController(
     }
 
     /**
-     * The command vocabulary both hosts answer to.
+     * The command vocabulary the foreground service answers to.
      *
      * "show"/"hide" are the *transient* pair: the app sends them as it comes to the foreground and
      * leaves again, and the boot/update receiver sends "show" too. None of that is the user asking
@@ -1148,14 +1268,15 @@ class OverlayController(
         }
 
     /**
-     * Shrinks a window's containing frame by the system bars and the cutout, so x = 0 means
-     * "flush with the edge the user can actually touch" — in portrait, in landscape where the
-     * navigation bar takes a side, and on cutout devices. This is what stops the bar from
-     * landing on the navigation bar after a rotation.
+     * Shrinks a window's containing frame by the camera cutout, and by nothing else, so x = 0 means
+     * "flush with the glass" in every rotation without a bar ever sliding under the camera.
+     *
+     * The system bars are deliberately not fitted: see [readFrame]. The bar, its panels and its
+     * menus are drawn over the status bar and the navigation bar, as an edge handle is.
      */
     private fun fitUsableFrame(params: WindowManager.LayoutParams) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            params.setFitInsetsTypes(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
+            params.setFitInsetsTypes(WindowInsets.Type.displayCutout())
             params.setFitInsetsSides(
                 WindowInsets.Side.LEFT or WindowInsets.Side.TOP or
                     WindowInsets.Side.RIGHT or WindowInsets.Side.BOTTOM
@@ -1182,16 +1303,43 @@ class OverlayController(
         cornerRadiusPx: Float,
         strength: Float = 1f,
     ) {
-        val f = frame
+        val origin = usableFrameOrigin()
         setBounds(
-            left + (f?.insetLeft ?: 0),
-            top + (f?.insetTop ?: 0),
+            left + origin[0],
+            top + origin[1],
             width,
             height,
             cornerRadiusPx,
             strength,
         )
     }
+
+    /**
+     * Where the usable frame's top left corner actually is on screen.
+     *
+     * From the measured frame — see [readFrame] — and not from the insets the system reports,
+     * which on a Moto build in landscape include a status bar that overlay windows are laid out
+     * right over, so every blur sat a status bar's height below its panel. Not from the bar's
+     * on-screen location either, which was tried: a window the window manager moves without
+     * resizing does not refresh that location, so after a rotation it named where the bar had
+     * been, and the glass under a panel on the bottom edge landed above it.
+     */
+    private fun usableFrameOrigin(): IntArray {
+        val f = frame
+        return intArrayOf(f?.insetLeft ?: 0, f?.insetTop ?: 0)
+    }
+
+    /**
+     * The frame every window here is placed in: the whole display, less only the camera cutout.
+     *
+     * Not less the status bar and the navigation bar. Asked to keep clear of those, the window
+     * manager did so only some of the time on a Moto build in landscape — the same bar, asked for
+     * the same place, was drawn flush against the edge one moment and a bar's height short of it
+     * the next, which is the gap under a bar on the bottom edge and over one on the top. Asked to
+     * keep clear of the cutout alone it has nothing to be inconsistent about, and the bar sits flush
+     * against the glass in every rotation, over the system bars, the way an edge handle should.
+     */
+    private fun readFrame(): HandlerGeometry.Frame? = HandlerGeometry.read(context, windowManager)
 
     /**
      * A pane of blurred glass, sized later by whoever is going to sit on it.
@@ -1251,19 +1399,21 @@ class OverlayController(
     private fun snapToNearestEdge() {
         val params = handlerParams ?: return
         val currentFrame = frame ?: return
-        val target = HandlerGeometry.snapX(
-            params.x,
-            currentFrame.usableWidth,
-            params.width,
-            dragEdgeMarginPx
-        )
-        if (target == params.x) {
+        // A bar lying along the top or bottom snaps to the nearer of those two instead: the same
+        // rule, turned on its side.
+        val lying = handlerIsLying()
+        val target = if (lying) {
+            HandlerGeometry.snapX(params.y, currentFrame.usableHeight, params.height, dragEdgeMarginPx)
+        } else {
+            HandlerGeometry.snapX(params.x, currentFrame.usableWidth, params.width, dragEdgeMarginPx)
+        }
+        val from = if (lying) params.y else params.x
+        if (target == from) {
             persistPosition()
             return
         }
 
         cancelSnap()
-        val from = params.x
         snapAnimator = ValueAnimator.ofInt(from, target).apply {
             duration = ANIM_DURATION_MS
             interpolator = DecelerateInterpolator()
@@ -1271,7 +1421,7 @@ class OverlayController(
                 // Re-read every frame: the window can be torn down mid-animation by a settings
                 // save, a rotation, or "Hide handler" from the menu that opened on the same press.
                 val live = handlerParams ?: return@addUpdateListener
-                live.x = animation.animatedValue as Int
+                if (lying) live.y = animation.animatedValue as Int else live.x = animation.animatedValue as Int
                 updateHandlerLayout(live)
             }
             addListener(object : AnimatorListenerAdapter() {
@@ -1312,6 +1462,11 @@ class OverlayController(
         val currentFrame = frame ?: return
         val isPortrait = currentFrame.isPortrait
 
+        if (preference.getHandlerDynamicPosition()) {
+            persistDynamicPosition(params, currentFrame)
+            return
+        }
+
         preference.setHandlerPosXFraction(
             isPortrait,
             HandlerGeometry.xToFraction(params.x, currentFrame.usableWidth, params.width)
@@ -1336,9 +1491,57 @@ class OverlayController(
      * layout, so this is guarded rather than called blindly from the per-frame drag path.
      */
     private fun dressHandlerFor(isLeft: Boolean) {
+        if (handlerDressedLying != Gravity.NO_GRAVITY) {
+            handlerDressedLying = Gravity.NO_GRAVITY
+            handlerView?.setLyingEdge(Gravity.NO_GRAVITY)
+        }
         if (handlerDressedLeft == isLeft) return
         handlerDressedLeft = isLeft
         handlerView?.setViewGravity(if (isLeft) Gravity.START else Gravity.END)
+    }
+
+    /** Lays the bar along the top or bottom edge, for Dynamic position. Guarded like [dressHandlerFor]. */
+    private fun dressHandlerLying(onTop: Boolean) {
+        val edge = if (onTop) Gravity.TOP else Gravity.BOTTOM
+        if (handlerDressedLying == edge) return
+        handlerDressedLying = edge
+        handlerView?.setLyingEdge(edge)
+    }
+
+    private fun handlerIsLying(): Boolean = handlerDressedLying != Gravity.NO_GRAVITY
+
+    /**
+     * Which side the Quick panel's screen edge is on, in the panel's own upright terms: the bar's
+     * side for an upright bar, and for one lying along the top edge, its left — which is the top.
+     */
+    private fun quickPanelEdgeLeft(): Boolean =
+        if (handlerIsLying()) handlerDressedLying == Gravity.TOP else handlerIsLeft()
+
+    /**
+     * Writes where a bar that follows the phone has come to rest, as the upright side and place
+     * along it that it stands for — the only position Dynamic position keeps. See
+     * [HandlerGeometry.uprightFromEdge].
+     */
+    private fun persistDynamicPosition(params: WindowManager.LayoutParams, currentFrame: HandlerGeometry.Frame) {
+        val lying = handlerIsLying()
+        val edge = when {
+            lying && HandlerGeometry.xToIsLeft(params.y, currentFrame.usableHeight, params.height) ->
+                HandlerGeometry.Edge.TOP
+            lying -> HandlerGeometry.Edge.BOTTOM
+            HandlerGeometry.xToIsLeft(params.x, currentFrame.usableWidth, params.width) -> HandlerGeometry.Edge.LEFT
+            else -> HandlerGeometry.Edge.RIGHT
+        }
+        val along = if (lying) {
+            HandlerGeometry.xToFraction(params.x, currentFrame.usableWidth, params.width)
+        } else {
+            HandlerGeometry.yToFraction(params.y, currentFrame.usableHeight, params.height)
+        }
+        val (uprightLeft, uprightAlong) = HandlerGeometry.uprightFromEdge(
+            edge, along, HandlerGeometry.quarterTurns(currentFrame)
+        ) ?: return
+        preference.setHandlerPosXFraction(true, if (uprightLeft) 0f else 1f)
+        preference.setHandlerPosYFraction(true, uprightAlong)
+        preference.setHandlerPosition(if (uprightLeft) "Left" else "Right")
     }
 
     private fun updateHandlerLayout(params: WindowManager.LayoutParams) {
@@ -1369,7 +1572,7 @@ class OverlayController(
         dismissQuickSliderNow()
 
         val params = handlerParams ?: return
-        val currentFrame = HandlerGeometry.read(context, windowManager) ?: return
+        val currentFrame = readFrame() ?: return
         frame = currentFrame
 
         val barHeightPx = dpToPx(preference.getHandlerHeightDp())
@@ -1421,19 +1624,53 @@ class OverlayController(
         // stored fraction is still the source of truth for *which side* — this only removes the
         // drift a rotation would otherwise introduce, where a bar flush against a 1080px-wide
         // frame reappears a proportional distance into a 2400px-wide one.
-        params.x = if (preference.getHandlerSnapToEdge()) {
-            HandlerGeometry.snapX(storedX, currentFrame.usableWidth, barWidthPx, edgeMarginPx)
+        if (preference.getHandlerDynamicPosition()) {
+            // Follows the phone: the upright side and place, carried round to whichever screen
+            // edge is that same edge of the phone now. Always resting on it — a bar that follows an
+            // edge has nowhere else to be.
+            val (edge, along) = HandlerGeometry.dynamicEdge(
+                uprightIsLeft = preference.getHandlerPosXFraction(true) < 0.5f,
+                along = preference.getHandlerPosYFraction(true),
+                turns = HandlerGeometry.quarterTurns(currentFrame),
+            )
+            if (edge.isHorizontal) {
+                // Turned on its side: the length runs across the screen, the thickness down it.
+                params.width = barHeightPx
+                params.height = barWidthPx
+                params.x = HandlerGeometry.fractionToX(along, currentFrame.usableWidth, barHeightPx)
+                params.y = HandlerGeometry.sideToX(
+                    edge == HandlerGeometry.Edge.TOP, currentFrame.usableHeight, barWidthPx, edgeMarginPx
+                )
+                dressHandlerLying(onTop = edge == HandlerGeometry.Edge.TOP)
+                gestureDetector?.inwardSpanPx = currentFrame.usableHeight.toFloat()
+            } else {
+                params.width = barWidthPx
+                params.height = barHeightPx
+                params.x = HandlerGeometry.sideToX(
+                    edge == HandlerGeometry.Edge.LEFT, currentFrame.usableWidth, barWidthPx, edgeMarginPx
+                )
+                params.y = HandlerGeometry.fractionToY(along, currentFrame.usableHeight, barHeightPx)
+                dressHandlerFor(edge == HandlerGeometry.Edge.LEFT)
+                gestureDetector?.inwardSpanPx = 0f
+            }
         } else {
-            HandlerGeometry.clampX(storedX, currentFrame.usableWidth, barWidthPx, edgeMarginPx)
-        }
-        params.y = HandlerGeometry.fractionToY(
-            preference.getHandlerPosYFraction(isPortrait),
-            currentFrame.usableHeight,
-            barHeightPx
-        )
+            params.width = barWidthPx
+            params.height = barHeightPx
+            gestureDetector?.inwardSpanPx = 0f
+            params.x = if (preference.getHandlerSnapToEdge()) {
+                HandlerGeometry.snapX(storedX, currentFrame.usableWidth, barWidthPx, edgeMarginPx)
+            } else {
+                HandlerGeometry.clampX(storedX, currentFrame.usableWidth, barWidthPx, edgeMarginPx)
+            }
+            params.y = HandlerGeometry.fractionToY(
+                preference.getHandlerPosYFraction(isPortrait),
+                currentFrame.usableHeight,
+                barHeightPx
+            )
 
-        // Which way the bar dresses follows where it ended up, not a stored side.
-        dressHandlerFor(HandlerGeometry.xToIsLeft(params.x, currentFrame.usableWidth, barWidthPx))
+            // Which way the bar dresses follows where it ended up, not a stored side.
+            dressHandlerFor(HandlerGeometry.xToIsLeft(params.x, currentFrame.usableWidth, barWidthPx))
+        }
 
         val view = handlerView ?: return
         if (view.isAttachedToWindow) {
@@ -1466,6 +1703,7 @@ class OverlayController(
         // The next bar is a new view with its own dressing; a stale cache here would skip the
         // setViewGravity that gives it one.
         handlerDressedLeft = null
+        handlerDressedLying = Gravity.NO_GRAVITY
     }
 
     /** Whether the bar's centre is nearer the left edge, from live geometry rather than a stored side. */
@@ -1583,12 +1821,30 @@ class OverlayController(
             dragStartX = params?.x ?: 0
             dragStartY = params?.y ?: 0
             dragEdgeMarginPx = dpToPx(preference.getHandlerEdgeMarginDp())
-            dragSnapToEdge = preference.getHandlerSnapToEdge()
+            // A bar that follows the phone always comes to rest on an edge.
+            dragSnapToEdge = preference.getHandlerSnapToEdge() || preference.getHandlerDynamicPosition()
         }
 
         override fun onDragUpdate(offsetXPx: Float, offsetYPx: Float) {
             val params = handlerParams ?: return
             val currentFrame = frame ?: return
+            if (handlerIsLying()) {
+                // The detector felt this drag the way an upright bar would — see HandlerView's
+                // turnedOnItsSide — so the axes are turned back before they move the window.
+                val maxX = (currentFrame.usableWidth - params.width).coerceAtLeast(0)
+                params.x = (dragStartX - offsetYPx).roundToInt().coerceIn(0, maxX)
+                params.y = HandlerGeometry.clampX(
+                    (dragStartY + offsetXPx).roundToInt(),
+                    currentFrame.usableHeight,
+                    params.height,
+                    dragEdgeMarginPx
+                )
+                updateHandlerLayout(params)
+                dressHandlerLying(
+                    onTop = HandlerGeometry.xToIsLeft(params.y, currentFrame.usableHeight, params.height)
+                )
+                return
+            }
             val maxY = (currentFrame.usableHeight - params.height).coerceAtLeast(0)
 
             // The WINDOW is moved, not the view. This view is the root of a window sized exactly to
@@ -1635,6 +1891,9 @@ class OverlayController(
             // written only when a drag or a snap ends and is therefore stale mid-drag and after a
             // rotation. xToIsLeft decides by the bar's centre, so a bar parked mid-screen still
             // gets a definite answer, and it is the answer its visible dressing already gives.
+            // Lying along the top, inward is down the screen, which the turned touch reports as
+            // rightward; along the bottom it is up the screen.
+            if (handlerIsLying()) return if (handlerDressedLying == Gravity.TOP) 1 else -1
             return if (handlerIsLeft()) 1 else -1
         }
 
@@ -1792,9 +2051,22 @@ class OverlayController(
 
     private fun stepBrightness(direction: Int): Boolean {
         val fraction = brightness.step(direction) ?: return false
+        val percent = (fraction * 100).roundToInt()
+        // The sun on the readout, and the level on the bar as a volume swipe puts it there. It
+        // used to be words alone in the middle of the screen, so a brightness swipe looked like a
+        // different feature from the volume one it sits beside, and said nothing on the bar the
+        // thumb was actually on.
         showIndicatorMessage(
-            context.getString(R.string.brightness_percent, (fraction * 100).roundToInt())
+            context.getString(R.string.brightness_percent, percent),
+            icon = if (direction > 0) R.drawable.ic_brightness_up else R.drawable.ic_brightness_down,
         )
+        if (preference.getShowVolumePercent()) {
+            handlerView?.let { bar ->
+                mainHandler.removeCallbacks(clearVolumePercentRunnable)
+                bar.setVolumePercent(percent)
+                mainHandler.postDelayed(clearVolumePercentRunnable, VOLUME_PERCENT_VISIBLE_MS)
+            }
+        }
         return true
     }
 
@@ -1816,19 +2088,26 @@ class OverlayController(
      * user would otherwise be adjusting it blind. Also every "that needs a permission" and "torch
      * on" message the bar has to say.
      */
-    fun showIndicatorMessage(text: String, durationMs: Long = INDICATOR_VISIBLE_MS) {
+    fun showIndicatorMessage(
+        text: String,
+        durationMs: Long = INDICATOR_VISIBLE_MS,
+        /** A glyph ahead of the words, when there is one that says what they are about. */
+        @DrawableRes icon: Int? = null,
+    ) {
         if (destroyed) return
         val wm = windowManager ?: return
         mainHandler.removeCallbacks(hideIndicatorRunnable)
+        val density = context.resources.displayMetrics.density
 
         if (indicatorView == null) {
-            val density = context.resources.displayMetrics.density
             val padH = (20 * density).toInt()
             val padV = (14 * density).toInt()
 
             val label = TextView(context).apply {
                 setTextColor(Color.WHITE)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                gravity = Gravity.CENTER_VERTICAL
+                compoundDrawablePadding = (10 * density).toInt()
                 setPadding(padH, padV, padH, padV)
                 background = GradientDrawable().apply {
                     shape = GradientDrawable.RECTANGLE
@@ -1860,7 +2139,19 @@ class OverlayController(
             indicatorLabel = label
         }
 
-        indicatorLabel?.text = text
+        indicatorLabel?.let { label ->
+            label.text = text
+            // Every message sets the glyph or clears it, so a brightness sun never lingers on the
+            // "needs a permission" line that happens to follow it.
+            val glyph = icon?.let { res ->
+                ContextCompat.getDrawable(context, res)?.mutate()?.apply {
+                    val size = (20 * density).toInt()
+                    setBounds(0, 0, size, size)
+                    setTint(Color.WHITE)
+                }
+            }
+            label.setCompoundDrawablesRelative(glyph, null, null, null)
+        }
         indicatorView?.visibility = View.VISIBLE
         mainHandler.postDelayed(hideIndicatorRunnable, durationMs)
     }
@@ -2101,12 +2392,35 @@ class OverlayController(
             else -> 0
         }
 
+        // A tick on each step, if asked for. Adaptive plays on the stream being set, so it is as
+        // loud as the level it announces, and rises in pitch with it; Click is one steady note on
+        // the system's own sounds. Loaded here so the first step is not the one that waits for it.
+        sliderSound = settings.getStepSound()
+        if (sliderSound != QuickSliderStore.SOUND_OFF) {
+            stepSound.prepare(
+                if (sliderSound == QuickSliderStore.SOUND_ADAPTIVE) {
+                    com.newagedevs.gesturevolume.utils.StepSound.usageFor(sliderTarget, sliderResolution?.stream)
+                } else {
+                    android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION
+                }
+            )
+        }
+
         // The bar as *drawn*, which is not the same as the window it lives in: that window is
         // widened to MIN_TOUCH_WIDTH_DP so there is something to aim at, and the bar is pushed
         // against its outer edge with the difference left as dead space. Morphing out of the
         // window instead of the bar is how a 10dp Edge preset would flick to 28dp wide on the
         // first frame.
-        val drawnWidthPx = dpToPx(preference.getHandlerWidthDp()).coerceIn(1, barParams.width)
+        //
+        // A bar lying along the top or bottom edge opens the panel lying along that edge too: the
+        // same upright panel, drawn through a quarter turn — see QuickSliderView.setTurned.
+        val barLying = handlerIsLying()
+        val barThicknessPx = if (barLying) barParams.height else barParams.width
+        val barLengthPx = if (barLying) barParams.width else barParams.height
+        val drawnWidthPx = dpToPx(preference.getHandlerWidthDp()).coerceIn(1, barThicknessPx)
+        // Lying down: which edge, and where in its window the bar is drawn, pressed against it.
+        val panelOnTop = barLying && handlerDressedLying == Gravity.TOP
+        val drawnTopPx = if (panelOnTop) barParams.y else barParams.y + barParams.height - drawnWidthPx
 
         // Floored at the bar's own size so the collapsed rect fits inside the window, and at
         // PANEL_MIN_THICKNESS_DP because this is now a control the user aims at with a thumb
@@ -2129,13 +2443,17 @@ class OverlayController(
             dpToPx(PANEL_MIN_THICKNESS_DP),
             drawnWidthPx,
         )
+        // Along the edge the panel lies on: down the screen upright, across it lying down.
+        val edgeSpanPx = (if (barLying) currentFrame.usableWidth else currentFrame.usableHeight).coerceAtLeast(1)
         val lengthPx = dpToPx(settings.getLengthDp())
-            .coerceAtMost(currentFrame.usableHeight.coerceAtLeast(1))
-            .coerceAtLeast(barParams.height)
+            .coerceAtMost(edgeSpanPx)
+            .coerceAtLeast(barLengthPx.coerceAtMost(edgeSpanPx))
         val isLeft = handlerIsLeft()
 
         // Absolute screen coordinates of the drawn bar, from the window and which way it faces.
         val drawnLeft = if (isLeft) barParams.x else barParams.x + barParams.width - drawnWidthPx
+        // Which way the panel's edge faces, in its own upright terms: the top edge is its left.
+        val panelEdgeLeft = if (barLying) panelOnTop else isLeft
 
         // The panel is the bar, grown — and it grows into its *own* shape and colour rather than
         // keeping the bar's.
@@ -2235,27 +2553,35 @@ class OverlayController(
         // The *collapsed* colour stays the bar's either way. That is what the panel grows out of,
         // and the blend between the two is the morph; starting it anywhere else would make the
         // first frame jump to a colour the bar never had.
-        val paleSurface = PanelTheme.panelSurface(theme)
+        val forcedSurface = PanelTheme.panelSurface(theme)
+        // Pale or dark is the material's to say, not whether it brings a surface: Midnight and
+        // AMOLED insist on one too, and a dark one wants white ink and full-strength lighting.
+        val lightMaterial = PanelTheme.isLight(theme)
 
         val view = QuickSliderView(context).apply {
-            if (paleSurface != null) {
+            if (forcedSurface != null) {
                 // The user's fill colour still wins wherever it can be seen. Only one that would
-                // vanish into a pale pane — white on frosted white, which is the default — is
-                // replaced, the same rule the Deck applies to its accent.
+                // vanish into the pane — white on frosted white, which is the default, or black on
+                // AMOLED — is replaced, the same rule the Deck applies to its accent.
                 val chosenFill = settings.getFillColor()
-                val fill = if (isTooPaleFor(chosenFill, paleSurface.toInt())) PANEL_LIGHT_INK else chosenFill
-                setColors(paleSurface.toInt(), fill)
+                val fill = when {
+                    !isTooPaleFor(chosenFill, forcedSurface.toInt()) -> chosenFill
+                    lightMaterial -> PANEL_LIGHT_INK
+                    else -> Color.WHITE
+                }
+                setColors(forcedSurface.toInt(), fill)
                 // 1f, because the material's own alpha is already in that colour. Thinning it by
                 // the multiplier as well would fade the pane twice.
-                setPanelTheme(1f, PanelTheme.hasLitEdge(theme), light = true)
+                setPanelTheme(1f, PanelTheme.hasLitEdge(theme), light = lightMaterial)
             } else {
                 setColors(settings.getTrackColor(), settings.getFillColor())
                 setPanelTheme(PanelTheme.surfaceAlpha(theme), PanelTheme.hasLitEdge(theme))
             }
             setExpandedCorners(panelCornerTL, panelCornerTR, panelCornerBL, panelCornerBR)
             setCollapsedAppearance(handlerColor, barCornerTL, barCornerTR, barCornerBL, barCornerBR)
-            setShapes(panelShape, panelFlare, barShape, barFlare, isLeft)
-            setDrawnThickness(panelThicknessPx.toFloat(), isLeft)
+            setTurned(barLying)
+            setShapes(panelShape, panelFlare, barShape, barFlare, panelEdgeLeft)
+            setDrawnThickness(panelThicknessPx.toFloat(), panelEdgeLeft)
             setContentMargins(settings.getValueMarginDp(), settings.getIconMarginDp())
             setIcon(if (settings.getShowIcon()) quickSliderIcon(sliderTarget) else null)
             // A volume panel only. From a brightness panel the system's volume sheet would be a
@@ -2263,13 +2589,17 @@ class OverlayController(
             iconTapEnabled = settings.getShowIcon() && settings.getIconOpensVolumePanel() &&
                 sliderTarget != QuickSliderStore.TARGET_BRIGHTNESS
             setFillStyle(settings.getFillStyle())
+            // The user's own colours for the animation, or null for the style's palette.
+            setFillColors(settings.getEffectiveFillColors())
             setShowValue(settings.getShowValue())
+            // The user's own colours for the number and the icon, or null to swap with the fill.
+            setContentColors(settings.getEffectiveValueColor(), settings.getEffectiveIconColor())
             setValue(openValue)
         }
 
         val params = WindowManager.LayoutParams(
-            thicknessPx,
-            lengthPx,
+            if (barLying) lengthPx else thicknessPx,
+            if (barLying) thicknessPx else lengthPx,
             windowType,
             // Touchable, unlike every other window this class puts up. FLAG_NOT_TOUCH_MODAL keeps
             // everything outside the panel working normally, and WATCH_OUTSIDE_TOUCH is what lets
@@ -2285,22 +2615,82 @@ class OverlayController(
             // first frame of the morph jump sideways to meet it. The window grows inward from the
             // bar's own side, then gets clamped into the frame; the collapsed rect below is
             // computed after that clamp, so the bar's position survives whatever the clamp did.
-            val wantX = if (isLeft) drawnLeft else drawnLeft + drawnWidthPx - thicknessPx
-            x = wantX.coerceIn(0, (currentFrame.usableWidth - thicknessPx).coerceAtLeast(0))
-            val barCenterY = barParams.y + barParams.height / 2
-            y = (barCenterY - lengthPx / 2)
-                .coerceIn(0, (currentFrame.usableHeight - lengthPx).coerceAtLeast(0))
+            // Stood in from the edge by the panel's own offset, toward the middle of the screen.
+            // The collapsed rect below is measured from wherever this lands, so the morph still
+            // starts exactly on the bar and only its resting place moves.
+            val edgeOffsetPx = dpToPx(settings.getEdgeOffsetDp())
+            if (barLying) {
+                // The same rule turned on its side: stood off the top or bottom edge by the offset,
+                // centred along the bar.
+                val wantY = if (panelOnTop) {
+                    drawnTopPx + edgeOffsetPx
+                } else {
+                    drawnTopPx + drawnWidthPx - thicknessPx - edgeOffsetPx
+                }
+                y = wantY.coerceIn(0, (currentFrame.usableHeight - thicknessPx).coerceAtLeast(0))
+                val barCenterX = barParams.x + barParams.width / 2
+                x = (barCenterX - lengthPx / 2)
+                    .coerceIn(0, (currentFrame.usableWidth - lengthPx).coerceAtLeast(0))
+            } else {
+                val wantX = if (isLeft) {
+                    drawnLeft + edgeOffsetPx
+                } else {
+                    drawnLeft + drawnWidthPx - thicknessPx - edgeOffsetPx
+                }
+                x = wantX.coerceIn(0, (currentFrame.usableWidth - thicknessPx).coerceAtLeast(0))
+                val barCenterY = barParams.y + barParams.height / 2
+                y = (barCenterY - lengthPx / 2)
+                    .coerceIn(0, (currentFrame.usableHeight - lengthPx).coerceAtLeast(0))
+            }
+
+            // Room for the entrance to move in, taken only where the screen has it, so the window
+            // never has to be pulled back inside the frame and the panel never shifts with it.
+            // x and y above are the panel's own place; the window grows around it.
+            val room = dpToPx(PANEL_ENTRANCE_ROOM_DP)
+            val frameW = currentFrame.usableWidth
+            val frameH = currentFrame.usableHeight
+            if (barLying) {
+                val left = minOf(room, x).coerceAtLeast(0)
+                val right = minOf(room, frameW - x - lengthPx).coerceAtLeast(0)
+                val inward = (if (panelOnTop) minOf(room, frameH - y - thicknessPx) else minOf(room, y)).coerceAtLeast(0)
+                x -= left
+                width = lengthPx + left + right
+                if (!panelOnTop) y -= inward
+                height = thicknessPx + inward
+                // The panel's upright top is the window's right, and its bottom the window's left.
+                view.setPanelRoom(top = right, bottom = left, inward = inward)
+            } else {
+                val top = minOf(room, y).coerceAtLeast(0)
+                val bottom = minOf(room, frameH - y - lengthPx).coerceAtLeast(0)
+                val inward = (if (isLeft) minOf(room, frameW - x - thicknessPx) else minOf(room, x)).coerceAtLeast(0)
+                if (!isLeft) x -= inward
+                width = thicknessPx + inward
+                y -= top
+                height = lengthPx + top + bottom
+                view.setPanelRoom(top = top, bottom = bottom, inward = inward)
+            }
             fitUsableFrame(this)
         }
 
         // Window coordinates, from the two absolutes, so the rect lands on the bar even where the
         // clamps above moved the window off its preferred spot.
-        view.setCollapsedRect(
-            (drawnLeft - params.x).toFloat(),
-            (barParams.y - params.y).toFloat(),
-            (drawnLeft - params.x + drawnWidthPx).toFloat(),
-            (barParams.y - params.y + barParams.height).toFloat()
-        )
+        if (barLying) {
+            // In the panel's upright frame, which is the window turned a quarter: window (x, y) is
+            // upright (y, width - x).
+            val x0 = (barParams.x - params.x).toFloat()
+            val x1 = x0 + barParams.width
+            val y0 = (drawnTopPx - params.y).toFloat()
+            val y1 = y0 + drawnWidthPx
+            val w = params.width.toFloat()
+            view.setCollapsedRect(y0, w - x1, y1, w - x0)
+        } else {
+            view.setCollapsedRect(
+                (drawnLeft - params.x).toFloat(),
+                (barParams.y - params.y).toFloat(),
+                (drawnLeft - params.x + drawnWidthPx).toFloat(),
+                (barParams.y - params.y + barParams.height).toFloat()
+            )
+        }
         view.setExpansion(0f)
         view.listener = quickSliderListener
         view.setOnTouchOutside { hideQuickSlider() }
@@ -2394,7 +2784,7 @@ class OverlayController(
         sliderCollapse?.cancel()
         view.playEntrance(
             preference.getPanelAnimation(),
-            handlerIsLeft(),
+            quickPanelEdgeLeft(),
             preference.getPanelAnimationSpeed(),
         )
         val animator = ValueAnimator.ofFloat(0f, 1f).apply {
@@ -2552,6 +2942,13 @@ class OverlayController(
         // No buzz for a step the system refused. The tick is feedback about the control moving,
         // and a control pinned at an end that keeps ticking tells the user it is still moving.
         if (applied && sliderHapticMs > 0L) vibrateQuick(sliderHapticMs, sliderHapticAmplitude)
+        // The same rule for the sound: a refused step makes none.
+        if (applied && sliderSound != QuickSliderStore.SOUND_OFF) {
+            stepSound.play(
+                step / sliderSteps.toFloat(),
+                adaptive = sliderSound == QuickSliderStore.SOUND_ADAPTIVE,
+            )
+        }
     }
 
     /**
@@ -2749,6 +3146,7 @@ class OverlayController(
         if (entries.isEmpty()) return
 
         val anchor = IntRect(params.x, params.y, params.x + params.width, params.y + params.height)
+        val menuBarLying = handlerIsLying()
         val frameSize = IntSize(currentFrame.usableWidth, currentFrame.usableHeight)
 
         val menuHost = OverlayComposeHost(context)
@@ -2772,6 +3170,7 @@ class OverlayController(
                     entries = entries,
                     anchor = anchor,
                     frame = frameSize,
+                    lying = menuBarLying,
                     grid = grid,
                     style = style,
                     theme = panelTheme,
@@ -2867,9 +3266,8 @@ class OverlayController(
     /**
      * Opens the Deck beside the bar, straight onto [tile] when one is named.
      *
-     * One window, focusable: the search field and the notes need the keyboard, and Android hands
-     * the clipboard only to a focused window, which is what lets the history be brought up to
-     * date the moment the Deck appears. The bar's own window stays where it is underneath.
+     * One window, focusable: the search field and the notes need the keyboard. The bar's
+     * own window stays where it is underneath.
      */
     fun showDeck(tile: String? = null) {
         if (destroyed) return
@@ -2883,7 +3281,7 @@ class OverlayController(
             return
         }
 
-        val currentFrame = frame ?: HandlerGeometry.read(context, wm)?.also { frame = it } ?: return
+        val currentFrame = frame ?: readFrame()?.also { frame = it } ?: return
         val params = handlerParams
         val barWidth = params?.width ?: dpToPx(preference.getHandlerWidthDp())
         val barHeight = params?.height ?: dpToPx(preference.getHandlerHeightDp())
@@ -2902,7 +3300,9 @@ class OverlayController(
             anchor = IntRect(barX, barY, barX + barWidth, barY + barHeight),
             frameSize = IntSize(currentFrame.usableWidth, currentFrame.usableHeight),
             isLeft = HandlerGeometry.xToIsLeft(barX, currentFrame.usableWidth, barWidth),
-            initialTile = tile
+            initialTile = tile,
+            // A bar lying along the top or bottom edge lays the strip along that edge too.
+            lyingOnTop = if (params != null && handlerIsLying()) handlerDressedLying == Gravity.TOP else null,
         )
         deckState.expandedTile = tile
 
@@ -3089,7 +3489,8 @@ class OverlayController(
         anchor: IntRect,
         frameSize: IntSize,
         isLeft: Boolean,
-        initialTile: String?
+        initialTile: String?,
+        lyingOnTop: Boolean? = null,
     ): DeckModel {
         val store = preference.deck
         val background = Color.argb(
@@ -3126,7 +3527,8 @@ class OverlayController(
             anchor = anchor,
             frame = frameSize,
             isLeft = isLeft,
-            initialTile = initialTile
+            initialTile = initialTile,
+            lyingOnTop = lyingOnTop,
         )
     }
 
@@ -3154,23 +3556,6 @@ class OverlayController(
         }
         appShortcutCache = packages to resolved
         return resolved
-    }
-
-    /**
-     * Records what is on the clipboard into the history.
-     *
-     * Called when the clipboard card opens, and only then. Reading the clipboard needs a focused
-     * window — which the Deck's is — but Android 12+ also posts its own "pasted from your
-     * clipboard" notice on every read, so doing this on each Deck opening would put a system
-     * toast on screen every time the user flicked the bar. Opening the clipboard card is the one
-     * moment the user has asked for the clipboard, and the notice belongs there.
-     */
-    private fun captureClipboardIntoHistory() {
-        val manager = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
-        val text = runCatching {
-            manager.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString()
-        }.getOrNull() ?: return
-        if (text.isNotBlank()) preference.addClipboardEntry(text)
     }
 
     private val deckActions = object : DeckActions {
@@ -3214,26 +3599,11 @@ class OverlayController(
             )
         }
 
-        override fun copy(text: String, paste: Boolean) {
+        override fun copy(text: String) {
             val manager = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
             runCatching { manager?.setPrimaryClip(ClipData.newPlainText("GestureVolume", text)) }
-            val service = OverlayRuntime.accessibilityService
-            if (paste && service != null) {
-                // Focus has to return to the field under the Deck before the paste can land, so
-                // the Deck closes first and the paste follows a beat later.
-                hideDeck()
-                mainHandler.postDelayed({
-                    val pasted = service.pasteIntoFocusedField(text)
-                    showIndicatorMessage(
-                        context.getString(if (pasted) R.string.deck_pasted else R.string.deck_copied)
-                    )
-                }, 350L)
-            } else {
-                showIndicatorMessage(context.getString(R.string.deck_copied))
-            }
+            showIndicatorMessage(context.getString(R.string.deck_copied))
         }
-
-        override fun captureClipboard() = captureClipboardIntoHistory()
 
         override fun message(text: String) = showIndicatorMessage(text)
 
@@ -3368,7 +3738,6 @@ class OverlayController(
             HandlerActions.MEDIA_NEXT -> toggles.mediaNext()
             HandlerActions.MEDIA_PREVIOUS -> toggles.mediaPrevious()
             HandlerActions.SCAN_QR -> openQrScanner()
-            HandlerActions.SONG_SEARCH -> songSearch()
             in HandlerActions.ACCESSIBILITY_ACTIONS -> performSystemAction(action)
         }
     }
@@ -3469,6 +3838,9 @@ class OverlayController(
             showIndicatorMessage(context.getString(R.string.action_unavailable_on_device))
             return
         }
+        // Held so a Volume down press in the meantime cannot bring the bar back into this picture.
+        cleanShotUntil = now() + SCREENSHOT_HIDE_BEFORE_MS + SCREENSHOT_HIDE_AFTER_MS
+        endCaptureGuard()
         removeContextMenuNow()
         removeDeckNow()
         hideIndicator()
@@ -3490,22 +3862,6 @@ class OverlayController(
         val intent = Intent(context, com.newagedevs.gesturevolume.ui.activities.QrScanActivity::class.java)
         if (!launchActivity(intent)) {
             showIndicatorMessage(context.getString(R.string.qr_failed))
-        }
-    }
-
-    /**
-     * "What's this song?" — the Google app's music search, which listens and names what is
-     * playing nearby. A plain web search asking the same question when the Google app is absent.
-     */
-    private fun songSearch() {
-        val direct = Intent("com.google.android.googlequicksearchbox.MUSIC_SEARCH")
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        if (launchActivity(direct)) return
-        val fallback = Intent(Intent.ACTION_WEB_SEARCH)
-            .putExtra(SearchManager.QUERY, context.getString(R.string.song_search_query))
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        if (!launchActivity(fallback)) {
-            showIndicatorMessage(context.getString(R.string.song_search_unavailable))
         }
     }
 

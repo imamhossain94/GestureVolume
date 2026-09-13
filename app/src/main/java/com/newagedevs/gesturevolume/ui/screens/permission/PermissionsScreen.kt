@@ -1,14 +1,16 @@
 package com.newagedevs.gesturevolume.ui.screens.permission
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,21 +21,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.BrightnessHigh
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.DoNotDisturbOn
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -46,14 +48,17 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,20 +67,31 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
-import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
+import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
+import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
+import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.DeviceToggles
-import com.newagedevs.gesturevolume.utils.OverlayHostMode
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
-import androidx.compose.ui.res.stringResource
-import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.PermissionNeeds.Permission
+import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Every permission the app can use, each with where it stands and the button that grants it.
+ *
+ * @param highlight the permission the user was sent here for, from a note beside a setting or the
+ *   home screen's card. Its card is scrolled into view and flashed — a primary border and tint that
+ *   pulse three times over 1.8 seconds and then settle to a steady outline — so the user sees at a
+ *   glance which button is theirs to press. Once per arrival: coming back from the system screen
+ *   the button opened, or turning the phone, does not flash it again. With animations switched off
+ *   in the system settings the card goes straight to the steady outline.
+ */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun PermissionsScreen(
     viewModel: MainViewModel = hiltViewModel(),
+    highlight: Permission? = null,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -105,14 +121,11 @@ fun PermissionsScreen(
     var phoneGranted by remember {
         mutableStateOf(PermissionNeeds.hasPermission(context, Manifest.permission.CALL_PHONE))
     }
-    var locationGranted by remember {
-        mutableStateOf(PermissionNeeds.hasPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION))
-    }
     var showAccessibilityDisclosure by remember { mutableStateOf(false) }
 
-    // Which of the optional permissions this user's own configuration has made necessary. Read
-    // as state so it re-reads on resume alongside everything else — an action changed on the
-    // Actions screen has to be reflected here the moment the user comes back.
+    // Which permissions this user's own configuration has made necessary, and what for. Read as
+    // state so it re-reads on resume alongside everything else — an action changed on the Actions
+    // screen has to be reflected here the moment the user comes back.
     var needs by remember { mutableStateOf(PermissionNeeds.read(context, viewModel.preference)) }
 
     // Everything on this screen is granted outside the app, so the only honest moment to re-read
@@ -127,7 +140,6 @@ fun PermissionsScreen(
                 dndAccessGranted = PermissionNeeds.hasNotificationPolicyAccess(context)
                 contactsGranted = PermissionNeeds.hasPermission(context, Manifest.permission.READ_CONTACTS)
                 phoneGranted = PermissionNeeds.hasPermission(context, Manifest.permission.CALL_PHONE)
-                locationGranted = PermissionNeeds.hasPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
                 needs = PermissionNeeds.read(context, viewModel.preference)
                 viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
             }
@@ -139,15 +151,37 @@ fun PermissionsScreen(
         }
     }
 
+    // ---- the highlight -------------------------------------------------------------------------
+    var highlightShown by rememberSaveable { mutableStateOf(false) }
+    val flash = remember { Animatable(if (highlightShown) HIGHLIGHT_REST else 0f) }
+    val requesters = remember { Permission.entries.associateWith { BringIntoViewRequester() } }
+    LaunchedEffect(highlight) {
+        val target = highlight ?: return@LaunchedEffect
+        if (highlightShown) return@LaunchedEffect
+        highlightShown = true
+        // Past the screen's own slide in, so the scroll and the flash are both seen.
+        delay(HIGHLIGHT_START_DELAY_MS)
+        requesters.getValue(target).bringIntoView()
+        if (animationsDisabled(context)) {
+            flash.snapTo(HIGHLIGHT_REST)
+            return@LaunchedEffect
+        }
+        repeat(HIGHLIGHT_PULSES) { pulse ->
+            flash.animateTo(1f, tween(HIGHLIGHT_HALF_PULSE_MS, easing = FastOutSlowInEasing))
+            val low = if (pulse == HIGHLIGHT_PULSES - 1) HIGHLIGHT_REST else HIGHLIGHT_TROUGH
+            flash.animateTo(low, tween(HIGHLIGHT_HALF_PULSE_MS, easing = FastOutSlowInEasing))
+        }
+    }
+    fun highlightOf(permission: Permission): Float = if (permission == highlight) flash.value else 0f
+    fun cardModifier(permission: Permission): Modifier =
+        Modifier.bringIntoViewRequester(requesters.getValue(permission))
+
     val contactsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { contactsGranted = it }
     val phoneLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { phoneGranted = it }
-    val locationLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { locationGranted = it }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -256,24 +290,21 @@ fun PermissionsScreen(
                 modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
             )
 
-            // Overlay Permission. Not needed while the accessibility service draws the bar, and
-            // the card says so rather than nagging for a permission nothing would use.
-            val overlayCoveredByAccessibility =
-                viewModel.preference.getOverlayHostMode() == OverlayHostMode.ACCESSIBILITY &&
-                    accessibilityEnabled
+            // Overlay Permission. The bar is always drawn by the foreground service, which
+            // cannot draw it without this.
             PermissionCard(
                 title = stringResource(R.string.overlay_permission),
-                description = stringResource(
-                    if (overlayCoveredByAccessibility) R.string.overlay_permission_covered_desc
-                    else R.string.overlay_permission_desc
-                ),
+                description = stringResource(R.string.overlay_permission_desc),
                 icon = Icons.Default.Settings,
-                isGranted = overlayPermissionGranted || overlayCoveredByAccessibility,
+                isGranted = overlayPermissionGranted,
                 borderColor = if (overlayPermissionGranted) {
                     Color(0xFF10B981)
                 } else {
                     Color(0xFFF97316)
                 },
+                warning = neededBy(needs, Permission.OVERLAY),
+                modifier = cardModifier(Permission.OVERLAY),
+                highlight = highlightOf(Permission.OVERLAY),
                 onRequestPermission = {
                     val intent = Intent(
                         Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -297,21 +328,22 @@ fun PermissionsScreen(
                 modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
             )
 
-            // Modify system settings — only needed for the brightness actions.
+            // Modify system settings — the brightness actions, the brightness panel and tile, and
+            // auto-rotate.
             PermissionCard(
                 title = stringResource(R.string.write_settings_permission),
                 description = stringResource(R.string.write_settings_permission_desc),
                 icon = Icons.Default.BrightnessHigh,
                 isGranted = writeSettingsGranted,
                 isOptional = true,
-                warning = if (needs.writeSettingsMissing) {
-                    stringResource(R.string.permission_needed_brightness)
-                } else null,
+                warning = neededBy(needs, Permission.WRITE_SETTINGS),
                 borderColor = if (writeSettingsGranted) {
                     Color(0xFF10B981)
                 } else {
                     Color(0xFF8B5CF6)
                 },
+                modifier = cardModifier(Permission.WRITE_SETTINGS),
+                highlight = highlightOf(Permission.WRITE_SETTINGS),
                 onRequestPermission = {
                     val intent = Intent(
                         Settings.ACTION_MANAGE_WRITE_SETTINGS,
@@ -328,22 +360,22 @@ fun PermissionsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // The accessibility service: the system actions, the no-notification host, and the
-            // opt-in clipboard capture. Granted on the system's own list, after the disclosure.
+            // The accessibility service: the system actions, the opt-in volume keys, and the
+            // opt-in app watching. Granted on the system's own list, after the disclosure.
             PermissionCard(
                 title = stringResource(R.string.accessibility_permission),
                 description = stringResource(R.string.accessibility_permission_desc),
                 icon = Icons.Default.Accessibility,
                 isGranted = accessibilityEnabled,
                 isOptional = true,
-                warning = if (needs.accessibilityMissing) {
-                    stringResource(R.string.permission_needed_accessibility)
-                } else null,
+                warning = neededBy(needs, Permission.ACCESSIBILITY),
                 borderColor = if (accessibilityEnabled) {
                     Color(0xFF10B981)
                 } else {
                     Color(0xFF8B5CF6)
                 },
+                modifier = cardModifier(Permission.ACCESSIBILITY),
+                highlight = highlightOf(Permission.ACCESSIBILITY),
                 onRequestPermission = { showAccessibilityDisclosure = true },
                 onDisablePermission = {
                     // Switched off on the same system list it was switched on.
@@ -358,21 +390,21 @@ fun PermissionsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Do Not Disturb access — only the Do Not Disturb toggle uses it.
+            // Do Not Disturb access — the Do Not Disturb action and tile.
             PermissionCard(
                 title = stringResource(R.string.dnd_permission),
                 description = stringResource(R.string.dnd_permission_desc),
                 icon = Icons.Default.DoNotDisturbOn,
                 isGranted = dndAccessGranted,
                 isOptional = true,
-                warning = if (needs.dndMissing) {
-                    stringResource(R.string.permission_needed_dnd)
-                } else null,
+                warning = neededBy(needs, Permission.NOTIFICATION_POLICY),
                 borderColor = if (dndAccessGranted) {
                     Color(0xFF10B981)
                 } else {
                     Color(0xFF8B5CF6)
                 },
+                modifier = cardModifier(Permission.NOTIFICATION_POLICY),
+                highlight = highlightOf(Permission.NOTIFICATION_POLICY),
                 onRequestPermission = {
                     viewModel.preference.setAppOpenAdPaused(true)
                     try {
@@ -395,14 +427,14 @@ fun PermissionsScreen(
                     icon = Icons.Default.Notifications,
                     isGranted = notificationsGranted,
                     isOptional = true,
-                    warning = if (needs.notificationMissing) {
-                        stringResource(R.string.permission_needed_notification)
-                    } else null,
+                    warning = neededBy(needs, Permission.NOTIFICATIONS),
                     borderColor = if (notificationsGranted) {
                         Color(0xFF10B981)
                     } else {
                         Color(0xFF8B5CF6)
                     },
+                    modifier = cardModifier(Permission.NOTIFICATIONS),
+                    highlight = highlightOf(Permission.NOTIFICATIONS),
                     onRequestPermission = {
                         notificationPermissionLauncher.launch(
                             Manifest.permission.POST_NOTIFICATIONS
@@ -420,8 +452,10 @@ fun PermissionsScreen(
                 icon = Icons.Default.Contacts,
                 isGranted = contactsGranted,
                 isOptional = true,
-                warning = if (needs.contactsMissing) stringResource(R.string.permission_needed_contacts) else null,
+                warning = neededBy(needs, Permission.CONTACTS),
                 borderColor = if (contactsGranted) Color(0xFF10B981) else Color(0xFF8B5CF6),
+                modifier = cardModifier(Permission.CONTACTS),
+                highlight = highlightOf(Permission.CONTACTS),
                 onRequestPermission = { contactsLauncher.launch(Manifest.permission.READ_CONTACTS) }
             )
 
@@ -434,29 +468,18 @@ fun PermissionsScreen(
                 icon = Icons.Default.Phone,
                 isGranted = phoneGranted,
                 isOptional = true,
-                warning = if (needs.phoneMissing) stringResource(R.string.permission_needed_phone) else null,
+                warning = neededBy(needs, Permission.PHONE),
                 borderColor = if (phoneGranted) Color(0xFF10B981) else Color(0xFF8B5CF6),
+                modifier = cardModifier(Permission.PHONE),
+                highlight = highlightOf(Permission.PHONE),
                 onRequestPermission = { phoneLauncher.launch(Manifest.permission.CALL_PHONE) }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Location — only the weather tile uses it, and only coarsely.
-            PermissionCard(
-                title = stringResource(R.string.location_permission),
-                description = stringResource(R.string.location_permission_desc),
-                icon = Icons.Default.LocationOn,
-                isGranted = locationGranted,
-                isOptional = true,
-                warning = if (needs.locationMissing) stringResource(R.string.permission_needed_location) else null,
-                borderColor = if (locationGranted) Color(0xFF10B981) else Color(0xFF8B5CF6),
-                onRequestPermission = { locationLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION) }
-            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             // All Set Card
-            if (overlayPermissionGranted || overlayCoveredByAccessibility) {
+            if (overlayPermissionGranted) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -496,3 +519,34 @@ fun PermissionsScreen(
         }
     }
 }
+
+/**
+ * Why an ungranted permission matters to this user right now: every setting they have switched on
+ * that waits on it, one per line. Null when nothing does.
+ */
+@Composable
+private fun neededBy(needs: PermissionNeeds.Needs, permission: Permission): String? {
+    val features = needs.featuresFor(permission)
+    if (features.isEmpty()) return null
+    val names = features.map { stringResource(it.labelRes) }
+    return stringResource(R.string.permission_needed_by_list) + names.joinToString(separator = "") { "\n• $it" }
+}
+
+/** True when the system's animator duration scale is off: the highlight then simply appears. */
+private fun animationsDisabled(context: Context): Boolean =
+    runCatching {
+        Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+    }.getOrDefault(false)
+
+/** Long enough for the navigation's own transition to finish before the list scrolls. */
+private const val HIGHLIGHT_START_DELAY_MS = 350L
+
+/** Three pulses of 300 ms up and 300 ms down: 1.8 seconds in all. */
+private const val HIGHLIGHT_PULSES = 3
+private const val HIGHLIGHT_HALF_PULSE_MS = 300
+
+/** How far each pulse falls back between peaks. */
+private const val HIGHLIGHT_TROUGH = 0.1f
+
+/** Where the highlight settles once the pulses are done: a steady outline on the card. */
+private const val HIGHLIGHT_REST = 0.45f

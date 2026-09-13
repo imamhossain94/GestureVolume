@@ -19,6 +19,8 @@ import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.helper.ApplovinAdsManager
+import com.newagedevs.gesturevolume.helper.PrivacyChoices
+import com.newagedevs.gesturevolume.utils.AdPacing
 import com.newagedevs.gesturevolume.helper.extensions.openAppStore
 import com.newagedevs.gesturevolume.helper.extensions.shareApp
 import com.newagedevs.gesturevolume.livedata.LiveDataManager
@@ -31,7 +33,6 @@ import com.newagedevs.gesturevolume.utils.ActionIcon
 import com.newagedevs.gesturevolume.utils.Constants
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.HandlerActions
-import com.newagedevs.gesturevolume.utils.OverlayHostMode
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -89,7 +90,6 @@ class MainViewModel @Inject constructor(
             swipeInActionIcon = getActionIcon(preference.getHandlerSwipeInAction()),
             swipeOutActionIcon = getActionIcon(preference.getHandlerSwipeOutAction()),
             isHandlerHidden = preference.isHandlerHidden(),
-            overlayHostMode = preference.getOverlayHostMode(),
             theme = preference.getTheme(),
             language = preference.getLanguage()
         )
@@ -129,7 +129,6 @@ class MainViewModel @Inject constructor(
             MainEvent.DismissDndPrompt ->
                 _state.value = _state.value.copy(showDndPrompt = false)
             is MainEvent.SetHandlerHidden -> setHandlerHidden(event.hidden, event.context)
-            is MainEvent.SetOverlayHostMode -> setOverlayHostMode(event.mode, event.context)
             is MainEvent.ResetAllSettings -> resetAllSettings(event.context)
             MainEvent.ShowProDialog -> showProDialog()
         }
@@ -143,8 +142,8 @@ class MainViewModel @Inject constructor(
             hasOverlayPermission = hasOverlay,
             hasWriteSettingsPermission = Settings.System.canWrite(context),
             isAccessibilityEnabled = OverlayRuntime.isAccessibilityEnabled(context),
-            overlayHostMode = preference.getOverlayHostMode(),
             missingPermissionCount = needs.missingCount,
+            permissionNeeds = needs,
             // Refreshed here because this runs on every ON_RESUME, and the bar can be hidden from
             // the overlay's own menu or the notification while the app sits in the background.
             isHandlerHidden = preference.isHandlerHidden()
@@ -170,30 +169,6 @@ class MainViewModel @Inject constructor(
         _state.value = _state.value.copy(isHandlerHidden = hidden)
         if (!preference.isRunning()) return
         OverlayRuntime.sendCommand(context, if (hidden) "user_hide" else "refresh_notification")
-    }
-
-    /**
-     * Switches the bar between its two hosts.
-     *
-     * Takes effect at once when the bar is running: [OverlayRuntime.startOverlay] hands the bar
-     * from the foreground service to the accessibility service or back, so the user sees the
-     * notification appear or disappear the moment they flip the switch rather than on the next
-     * start. The accessibility route silently falls back to the notification one while the
-     * service is off; the Actions screen says so beside the switch.
-     */
-    private fun setOverlayHostMode(mode: OverlayHostMode, context: Context) {
-        preference.setOverlayHostMode(mode)
-        _state.value = _state.value.copy(overlayHostMode = mode)
-        if (mode == OverlayHostMode.ACCESSIBILITY && !OverlayRuntime.isAccessibilityEnabled(context)) {
-            _state.value = _state.value.copy(showAccessibilityPrompt = true)
-        }
-        if (preference.isRunning()) {
-            OverlayRuntime.startOverlay(context, preference)
-            // The bar is kept out of the way while the app is in front; the fresh host must be
-            // told so too, or a handover mid-settings pops the bar over this screen.
-            OverlayRuntime.sendCommand(context, "hide")
-        }
-        updatePermissionsStatus(context)
     }
 
     /**
@@ -242,12 +217,12 @@ class MainViewModel @Inject constructor(
     }
 
     private fun toggleService(isRunning: Boolean, context: Context) {
-        // One hard gate: some host must be able to draw. The overlay permission serves the
-        // notification route; the accessibility service, when it is on and chosen, needs neither.
+        // One hard gate: the bar is drawn by the foreground service, which needs the overlay
+        // permission.
         // The notification permission is asked for separately, below, and never blocks: the old
         // code refused to start the service at all when POST_NOTIFICATIONS was declined, which
         // made the toggle fail silently.
-        if (isRunning && OverlayRuntime.effectiveHost(context, preference) == null) {
+        if (isRunning && !OverlayRuntime.canHostOverlay(context)) {
             preference.setRunning(false)
             _state.value = _state.value.copy(isRunning = false)
 
@@ -284,13 +259,11 @@ class MainViewModel @Inject constructor(
      *
      * Android 13+ stops showing the dialog after two refusals, so repeating the request on every
      * start would be a no-op that reads as a bug. Skipped entirely when the user has already
-     * turned the notification off in settings, or when the accessibility service is the one
-     * drawing the bar — there would be nothing to post.
+     * turned the notification off in settings — there would be nothing to post.
      */
     private fun maybeAskForNotificationPermission(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
         if (!preference.getShowNotification()) return
-        if (OverlayRuntime.effectiveHost(context, preference) == OverlayHostMode.ACCESSIBILITY) return
         if (preference.hasAskedNotificationPermission()) return
         if (
             ContextCompat.checkSelfPermission(
@@ -304,21 +277,21 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * Show an interstitial at a break point — a screen transition, or the moment the user switches
-     * the service on — gated by the SharedPref cooldowns, the per-session cap and the post-install
-     * grace period.
+     * Show an interstitial at a break point, if [AdPacing] allows it.
      *
-     * Interstitial is by far the top-earning format ($3.10 eCPM) yet it fired only on the service
-     * toggle before, so it barely showed; a few genuine break points lift revenue while the caps
-     * protect retention. During the grace period it does not fire at all, service start included.
+     * The caller has to say *why* ([trigger]), and only the completed actions listed in AdPacing
+     * can pass: the service switched on and connected, or settings explicitly saved. Screen
+     * transitions and anything reached by Back are refused by name. On top of that come the hard
+     * guards — the launch window, the quiet period after an app-open ad, another ad on screen, a
+     * permission or consent flow in progress — and the older cooldowns, per-session cap and
+     * post-install grace period.
      */
-    fun maybeShowInterstitialAd() {
-        if (_state.value.isProActivated) return
-        if (preference.shouldShowInterstitialAd()) {
-            adsManager?.showInterstitialAd(
-                loaded = { preference.saveInterstitialAdTime() }
-            )
-        }
+    fun maybeShowInterstitialAd(trigger: AdPacing.Trigger) {
+        val isPro = _state.value.isProActivated
+        if (!AdPacing.mayShowInterstitial(preference, trigger, isPro)) return
+        adsManager?.showInterstitialAd(
+            loaded = { preference.saveInterstitialAdTime() }
+        )
     }
 
     /**
@@ -328,15 +301,8 @@ class MainViewModel @Inject constructor(
      *   never connects cannot leave it armed for the next caller.
      */
     private fun startOverlayService(context: Context, announceWithAd: Boolean = false) {
-        val hostMode = OverlayRuntime.effectiveHost(context, preference) ?: return
-        OverlayRuntime.startOverlay(context, preference)
-
-        if (hostMode == OverlayHostMode.ACCESSIBILITY) {
-            // Nothing to bind to: the accessibility service is not ours to connect to, and the
-            // bar is already up. Setup is finished, which is the moment the ad was waiting for.
-            if (announceWithAd) maybeShowInterstitialAd()
-            return
-        }
+        if (!OverlayRuntime.canHostOverlay(context)) return
+        OverlayRuntime.startOverlay(context)
 
         val service = Intent(context, OverlayService::class.java)
         serviceConnection = object : ServiceConnection {
@@ -345,7 +311,7 @@ class MainViewModel @Inject constructor(
                 isBound = true
                 // The service is bound and the handler is configured and ready, which is the
                 // moment setup is finished — the one full-screen ad the grace period allows.
-                if (announceWithAd) maybeShowInterstitialAd()
+                if (announceWithAd) maybeShowInterstitialAd(AdPacing.Trigger.SERVICE_STARTED)
             }
 
             override fun onServiceDisconnected(name: ComponentName) {
@@ -372,7 +338,7 @@ class MainViewModel @Inject constructor(
         }
         overlayService = null
 
-        // Both hosts, directly rather than via intents, to avoid LiveDataManager loops.
+        // Directly rather than via intents, to avoid LiveDataManager loops.
         OverlayRuntime.stopOverlay(context)
     }
 
@@ -386,7 +352,7 @@ class MainViewModel @Inject constructor(
     fun repairServiceIfNeeded(context: Context) {
         if (!preference.isRunning()) return
         if (OverlayRuntime.isOverlayActive(context)) return
-        if (OverlayRuntime.effectiveHost(context, preference) == null) return
+        if (!OverlayRuntime.canHostOverlay(context)) return
         startOverlayService(context)
     }
 
@@ -417,8 +383,8 @@ class MainViewModel @Inject constructor(
                         // Nothing depends on the binding but the ad and the reset.
                     }
                 }
-            } else if (!OverlayRuntime.isAccessibilityHosting) {
-                // Neither host is up — sync state
+            } else {
+                // The service is not up — sync state
                 _state.value = _state.value.copy(isRunning = false)
             }
         }
@@ -551,7 +517,8 @@ class MainViewModel @Inject constructor(
     private fun getActionIcon(action: String): ActionIcon =
         HandlerActionCatalog.entryFor(action)?.icon ?: ActionIcon.Res(R.drawable.ic_nothing)
 
-    private fun getSwipeUpIcon(action: String): ActionIcon = ActionIcon.Res(
+    private fun getSwipeUpIcon(action: String): ActionIcon =
+        if (action == HandlerActions.OPEN_QUICK_SLIDER) ActionIcon.QuickPanel else ActionIcon.Res(
         when (action) {
             HandlerActions.NONE -> R.drawable.ic_nothing
             HandlerActions.INCREASE_VOLUME -> R.drawable.ic_vol_plus
@@ -561,7 +528,8 @@ class MainViewModel @Inject constructor(
         }
     )
 
-    private fun getSwipeDownIcon(action: String): ActionIcon = ActionIcon.Res(
+    private fun getSwipeDownIcon(action: String): ActionIcon =
+        if (action == HandlerActions.OPEN_QUICK_SLIDER) ActionIcon.QuickPanel else ActionIcon.Res(
         when (action) {
             HandlerActions.NONE -> R.drawable.ic_nothing
             HandlerActions.DECREASE_VOLUME -> R.drawable.ic_vol_minus
@@ -590,6 +558,8 @@ class MainViewModel @Inject constructor(
                     _effect.send(MainEffect.ShowToast(context.getString(R.string.cannot_open_play_store)))
                 }
             }
+            // Reopens the ad consent form; the helper shows its own toast if it cannot.
+            "Privacy choices" -> PrivacyChoices.show(context, preference)
             "About" -> viewModelScope.launch {
                 _effect.send(MainEffect.NavigateToAbout)
             }
@@ -698,7 +668,7 @@ class MainViewModel @Inject constructor(
                 "show" -> {
                     // Handle show command - could restart or show overlay
                     if (!_state.value.isRunning &&
-                        OverlayRuntime.effectiveHost(activity, preference) != null
+                        OverlayRuntime.canHostOverlay(activity)
                     ) {
                         preference.setRunning(true)
                         startOverlayService(activity)
@@ -732,33 +702,15 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getNextBackground(): String {
-        val backgrounds = listOf(
-            "https://images.pexels.com/photos/1226302/pexels-photo-1226302.jpeg",
-            "https://images.pexels.com/photos/1366630/pexels-photo-1366630.jpeg",
-            "https://images.pexels.com/photos/14584298/pexels-photo-14584298.jpeg",
-            "https://images.pexels.com/photos/20462015/pexels-photo-20462015.jpeg",
-            "https://images.pexels.com/photos/2406450/pexels-photo-2406450.jpeg",
-            "https://images.pexels.com/photos/3722752/pexels-photo-3722752.jpeg",
-            "https://images.pexels.com/photos/109998/pexels-photo-109998.jpeg",
-            "https://images.pexels.com/photos/1172675/pexels-photo-1172675.jpeg",
-            "https://images.pexels.com/photos/1809644/pexels-photo-1809644.jpeg",
-            "https://images.pexels.com/photos/40896/larch-conifer-cone-branch-tree-40896.jpeg",
-            "https://images.pexels.com/photos/60597/dahlia-red-blossom-bloom-60597.jpeg",
-            "https://images.pexels.com/photos/73813/balkan-anemone-flower-blossom-bloom-73813.jpeg",
-            "https://images.pexels.com/photos/27551220/pexels-photo-27551220.jpeg",
-            "https://images.pexels.com/photos/103659/cosmea-blossom-bloom-cosmos-103659.jpeg",
-            "https://images.pexels.com/photos/10747640/pexels-photo-10747640.jpeg",
-            "https://images.pexels.com/photos/1671431/pexels-photo-1671431.jpeg",
-            "https://images.pexels.com/photos/2224401/pexels-photo-2224401.jpeg"
-        )
-
+    fun getNextBackground(): Int {
+        // Drawn backdrops rather than downloaded photographs; see PreviewBackdrops. Still one per
+        // visit, and still the next one each time, so the same colour is not always judged
+        // against the same picture.
+        val count = com.newagedevs.gesturevolume.ui.components.PreviewBackdrops.COUNT
         val lastIndex = preference.sharedPreferences.getInt("last_bg_index", -1)
-        val nextIndex = (lastIndex + 1) % backgrounds.size
-
+        val nextIndex = (lastIndex + 1).mod(count)
         preference.sharedPreferences.edit { putInt("last_bg_index", nextIndex) }
-
-        return backgrounds[nextIndex]
+        return nextIndex
     }
 
     fun setTheme(theme: Int) {

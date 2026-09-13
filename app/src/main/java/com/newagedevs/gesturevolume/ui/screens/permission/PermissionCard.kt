@@ -1,5 +1,7 @@
 package com.newagedevs.gesturevolume.ui.screens.permission
 
+import androidx.compose.ui.graphics.lerp
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,12 +53,25 @@ fun PermissionCard(
      */
     warning: String? = null,
     onRequestPermission: () -> Unit,
-    onDisablePermission: (() -> Unit)? = null
+    onDisablePermission: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    /**
+     * 0 to 1: how strongly the card is marked as the one the user was sent here for. Drawn as a
+     * primary border and a primary-container tint, both scaled by it, so an animated value pulses.
+     */
+    highlight: Float = 0f
 ) {
+    val amount = highlight.coerceIn(0f, 1f)
+    val base = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+        color = if (amount > 0f) lerp(base, MaterialTheme.colorScheme.primaryContainer, amount) else base,
+        border = if (amount > 0f) {
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = amount))
+        } else {
+            null
+        }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(

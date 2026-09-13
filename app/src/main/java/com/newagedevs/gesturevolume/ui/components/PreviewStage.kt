@@ -2,65 +2,87 @@ package com.newagedevs.gesturevolume.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Wallpaper
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.ColorPainter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import com.newagedevs.gesturevolume.R
 
 /**
  * The card every "here is what it will look like" preview sits in.
  *
- * One composable rather than two nearly-identical ones, because the handler's preview and the
- * Quick panel's preview are answering the same question about two things the user sets up on
- * consecutive screens, and the moment they stop looking alike the app stops looking like one app.
+ * One composable rather than several nearly-identical ones, because the handler's preview, the
+ * Quick panel's, the Deck's and the menu's are answering the same question about things the user
+ * sets up on neighbouring screens, and the moment they stop looking alike the app stops looking
+ * like one app.
  *
- * **Why a photograph.** Both subjects are translucent by default and both have an opacity slider.
- * Judged against a flat colour, opacity is a number; judged against a photograph, it is the thing
- * the user is actually choosing — how much of their wallpaper shows through the bar on their home
- * screen. The surface colour underneath is not a fallback so much as the answer for the seconds
- * before the image arrives, and for a device that is offline when it does not.
+ * **Why a picture behind it.** Every subject here is translucent by default and has an opacity
+ * control. Judged against a flat colour, opacity is a number; judged against a picture, it is the
+ * thing the user is actually choosing — how much of their screen shows through. The pictures are
+ * [PreviewBackdrops]: drawn, quiet, and mid-toned, so the subject stays the subject. The small
+ * button in the corner moves to the next one, because a colour that reads on one screen may not on
+ * another, and the only way to know is to look.
+ *
+ * @param backdrop which of [PreviewBackdrops] to start on.
+ * @param fillHeight fill the height it is given instead of taking [PREVIEW_STAGE_HEIGHT] — for the
+ *   landscape arrangement, where the preview has a column of its own. See [PreviewSettingsLayout].
  */
 @Composable
 fun PreviewStage(
-    backgroundImageURL: String,
+    backdrop: Int,
     modifier: Modifier = Modifier,
     contentAlignment: Alignment = Alignment.Center,
+    fillHeight: Boolean = false,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    var index by rememberSaveable { mutableIntStateOf(backdrop) }
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(PREVIEW_STAGE_HEIGHT),
+            .then(if (fillHeight) Modifier.fillMaxHeight() else Modifier.height(PREVIEW_STAGE_HEIGHT)),
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f),
     ) {
         Box(contentAlignment = contentAlignment) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(backgroundImageURL)
-                    .crossfade(400)
-                    .build(),
-                // Transparent rather than a colour, so what shows through before the image lands
-                // is the Surface above — one backdrop that fades into another, not two.
-                placeholder = ColorPainter(androidx.compose.ui.graphics.Color.Transparent),
-                error = ColorPainter(androidx.compose.ui.graphics.Color.Transparent),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
+            PreviewBackdrop(index = index, modifier = Modifier.fillMaxSize())
             content()
+            Surface(
+                onClick = { index = (index + 1) % PreviewBackdrops.COUNT },
+                shape = CircleShape,
+                color = Color.Black.copy(alpha = 0.28f),
+                contentColor = Color.White,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(8.dp)
+                    .size(32.dp),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Default.Wallpaper,
+                        contentDescription = stringResource(R.string.preview_backdrop_change),
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+            }
         }
     }
 }
@@ -79,7 +101,7 @@ val PREVIEW_STAGE_HEIGHT = 230.dp
  * The breathing room the subject leaves at the top and bottom of the stage.
  *
  * Both subjects here are tall and thin and both are capped against it, so neither runs off the
- * ends of the wallpaper it is being judged against — a track bleeding off both edges reads as a
+ * ends of the picture it is being judged against — a track bleeding off both edges reads as a
  * cropped photograph rather than as an object standing on one.
  */
 val PREVIEW_STAGE_INSET = 26.dp

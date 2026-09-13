@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ad consent (GDPR / Google UMP): reopen the consent form from About and the drawer. -->
+    <string name="privacy_choices">Opções de privacidade</string>
+    <string name="privacy_choices_error">Não foi possível abrir as opções de privacidade. Tente novamente mais tarde.</string>
+</resources>

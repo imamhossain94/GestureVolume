@@ -88,6 +88,13 @@ class QuickSliderView(context: Context) : View(context) {
 
     private val density = context.resources.displayMetrics.density
 
+    init {
+        // The same depth the Deck and the menu turn through (see PanelEntrance.panelFrame), so a
+        // flip or a tilt has the same perspective on every panel. The default is so close that a
+        // tall, narrow panel turned sixty degrees swings its far end out past its own window.
+        cameraDistance = 18f * density * context.resources.displayMetrics.densityDpi
+    }
+
     private val trackPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -119,6 +126,112 @@ class QuickSliderView(context: Context) : View(context) {
         applyExpandedRect()
         rebuildPath()
         invalidate()
+    }
+
+    /**
+     * Lying along the top or bottom edge, for a bar that follows the phone (Dynamic position).
+     *
+     * Everything in this class is written for an upright panel and stays that way. The window is
+     * turned on its side instead, and this view draws and hears touches through a quarter turn:
+     * its upright bottom at the window's left, so the fill grows rightward the way a slider does,
+     * and its upright left against the top edge. The number and the icon are turned back so they
+     * still read. Callers hand [setCollapsedRect] upright coordinates; the glass comes back out in
+     * window coordinates, as it always has.
+     */
+    private var turned = false
+
+    fun setTurned(value: Boolean) {
+        if (turned == value) return
+        turned = value
+        applyExpandedRect()
+        rebuildPath()
+        invalidate()
+    }
+
+    /**
+     * Room around the panel inside its window, in upright pixels: above it, below it, and on its
+     * inward side, away from the screen edge.
+     *
+     * The entrances move the panel — a slide, a drop, a swing — and a window sized exactly to the
+     * panel clips every one of those at its own edge, so half of them looked like no animation at
+     * all. The window is that much larger and the panel is drawn inside it. A touch in that room
+     * is treated as a tap outside the panel, which is what it looks like.
+     */
+    private var roomTop = 0
+    private var roomBottom = 0
+    private var roomInward = 0
+
+    fun setPanelRoom(top: Int, bottom: Int, inward: Int) {
+        roomTop = top.coerceAtLeast(0)
+        roomBottom = bottom.coerceAtLeast(0)
+        roomInward = inward.coerceAtLeast(0)
+        applyExpandedRect()
+        rebuildPath()
+        invalidate()
+    }
+
+    /** The visible band of the panel during a wipe, as fractions of its height. See PanelAnimation.Frame. */
+    private var revealFrom = 0f
+    private var revealTo = 1f
+
+    /** The number's and the icon's own colours, or null to swap with the fill. See [setContentColors]. */
+    private var valueInk: Int? = null
+    private var iconInk: Int? = null
+
+    fun setContentColors(value: Int?, icon: Int?) {
+        if (valueInk == value && iconInk == icon) return
+        valueInk = value
+        iconInk = icon
+        invalidate()
+    }
+
+    /** Set when a touch began in the room around the panel, so the rest of that touch is ignored. */
+    private var touchInRoom = false
+
+    /** The panel's own upright width and height, whichever way its window lies. */
+    private val logicalWidth: Int get() = if (turned) height else width
+    private val logicalHeight: Int get() = if (turned) width else height
+
+    private val turnMatrix = android.graphics.Matrix()
+
+    override fun draw(canvas: Canvas) {
+        val wiping = revealFrom > 0f || revealTo < 1f
+        if (!turned && !wiping) {
+            super.draw(canvas)
+            return
+        }
+        canvas.save()
+        if (turned) {
+            // Upright (u, v) lands at window (width - v, u).
+            canvas.translate(width.toFloat(), 0f)
+            canvas.rotate(90f)
+        }
+        if (wiping) {
+            // The wipe entrances show a band of the panel rather than moving it: clipped, not
+            // scaled, the way PanelEntrance.panelFrame clips the Deck and the menu.
+            val top = drawRect.top + drawRect.height() * revealFrom
+            val bottom = drawRect.top + drawRect.height() * revealTo
+            if (bottom <= top) {
+                canvas.restore()
+                return
+            }
+            canvas.clipRect(-BIG_CLIP, top, BIG_CLIP, bottom)
+        }
+        super.draw(canvas)
+        canvas.restore()
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (!turned) return super.dispatchTouchEvent(event)
+        // The inverse of the turn draw() applies: window (x, y) is upright (y, width - x).
+        turnMatrix.setValues(floatArrayOf(0f, 1f, 0f, -1f, 0f, width.toFloat(), 0f, 0f, 1f))
+        val upright = MotionEvent.obtain(event)
+        upright.transform(turnMatrix)
+        return try {
+            super.dispatchTouchEvent(upright)
+        } finally {
+            upright.recycle()
+        }
     }
 
     /** [collapsedRect] and [expandedRect] interpolated by [expansion]. What actually gets drawn. */
@@ -184,8 +297,25 @@ class QuickSliderView(context: Context) : View(context) {
 
     /** Reused by the gradients that slide, for the same reason. */
 
-    /** The pictures most fill styles paint. See [FillArt]. */
-    private val fillArt by lazy { FillArt(density) }
+    /**
+     * The pictures most fill styles paint. See [FillArt].
+     *
+     * Made on first use and thrown away when the animation colours change: it caches gradients,
+     * images and colour tables with the palette baked into them, and a new one is the one way to be
+     * sure none of those is left in the old colours.
+     */
+    private var fillArtOrNull: FillArt? = null
+    private val fillArt: FillArt
+        get() = fillArtOrNull ?: FillArt(density).also { fillArtOrNull = it }
+
+    /** The user's animation colours, or null for each style's own. See [setFillColors]. */
+    private var fillColors: IntArray? = null
+
+    /**
+     * The palette the current style is painted with, worked out when the style or the colours
+     * change rather than on every frame: [SliderFill.paletteWith] makes a new array each call.
+     */
+    private var fillPalette: LongArray = SliderFill.palette(SliderFill.SOLID)
 
     private var trackColor = Color.BLACK
     private var fillColor = Color.WHITE
@@ -378,10 +508,18 @@ class QuickSliderView(context: Context) : View(context) {
             glass.onGlass(0f, 0f, 0f, 0f, 0f, 0f)
             return
         }
-        glass.onGlass(
-            glassFinal.left, glassFinal.top, glassFinal.right, glassFinal.bottom,
-            finalCorner, currentGlassStrength(),
-        )
+        if (turned) {
+            // Out of the upright frame and into the window's, which is where the glass lives.
+            glass.onGlass(
+                width - glassFinal.bottom, glassFinal.left, width - glassFinal.top, glassFinal.right,
+                finalCorner, currentGlassStrength(),
+            )
+        } else {
+            glass.onGlass(
+                glassFinal.left, glassFinal.top, glassFinal.right, glassFinal.bottom,
+                finalCorner, currentGlassStrength(),
+            )
+        }
     }
 
     /** How much of its resting place the panel covers this frame, through morph and entrance. */
@@ -392,6 +530,11 @@ class QuickSliderView(context: Context) : View(context) {
             glassBounds.set(drawRect.left, drawRect.top + depth, drawRect.right, drawRect.bottom - depth)
         } else {
             glassBounds.set(drawRect)
+        }
+        if (revealFrom > 0f || revealTo < 1f) {
+            val h = drawRect.height()
+            glassBounds.top = maxOf(glassBounds.top, drawRect.top + h * revealFrom)
+            glassBounds.bottom = minOf(glassBounds.bottom, drawRect.top + h * revealTo)
         }
         if (glassBounds.isEmpty) return 0f
         val m = matrix
@@ -714,9 +857,27 @@ class QuickSliderView(context: Context) : View(context) {
         val next = SliderFill.sanitize(style)
         if (next == fillStyle) return
         fillStyle = next
+        fillPalette = SliderFill.paletteWith(next, fillColors)
         fillPhase = 0f
         fillPathDirty = true
         restartFillClock()
+        invalidate()
+    }
+
+    /**
+     * The colours the pictorial fills are painted in: the user's, spread over each style's own
+     * palette by [SliderFill.paletteWith], or null for the style's own.
+     *
+     * The styles drawn in the fill and track colours ignore these, since those colours are already
+     * the user's. Setting the same colours again does nothing, so a caller can apply its settings
+     * on every change without throwing away the pictures' caches each time.
+     */
+    fun setFillColors(colors: IntArray?) {
+        val next = colors?.takeIf { it.isNotEmpty() }?.copyOf()
+        if (next.contentEquals(fillColors)) return
+        fillColors = next
+        fillPalette = SliderFill.paletteWith(fillStyle, next)
+        fillArtOrNull = null
         invalidate()
     }
 
@@ -752,16 +913,40 @@ class QuickSliderView(context: Context) : View(context) {
     }
 
     private fun applyFrame(f: PanelAnimation.Frame) {
-        pivotX = width * f.originX
-        pivotY = height * f.originY
         alpha = f.alpha
-        scaleX = f.scaleX
-        scaleY = f.scaleY
-        translationX = f.translationX * density
-        translationY = f.translationY * density
         rotation = f.rotationZ
-        rotationX = f.rotationX
-        rotationY = f.rotationY
+        if (revealFrom != f.revealFrom || revealTo != f.revealTo) {
+            revealFrom = f.revealFrom
+            revealTo = f.revealTo
+            invalidate()
+        }
+        // About the panel, not the window: the window has room around the panel for the entrance
+        // to move in, and a pivot at the window's centre would swing the panel about a point
+        // beside it.
+        val rect = if (expandedRect.isEmpty) RectF(0f, 0f, logicalWidth.toFloat(), logicalHeight.toFloat()) else expandedRect
+        val pivotU = rect.left + rect.width() * f.originX
+        val pivotV = rect.top + rect.height() * f.originY
+        if (turned) {
+            // The entrance is written for an upright panel, so it is turned with the drawing:
+            // upright x runs down the window and upright y runs right to left.
+            pivotX = width - pivotV
+            pivotY = pivotU
+            scaleX = f.scaleY
+            scaleY = f.scaleX
+            translationX = -f.translationY * density
+            translationY = f.translationX * density
+            rotationX = f.rotationY
+            rotationY = -f.rotationX
+        } else {
+            pivotX = pivotU
+            pivotY = pivotV
+            scaleX = f.scaleX
+            scaleY = f.scaleY
+            translationX = f.translationX * density
+            translationY = f.translationY * density
+            rotationX = f.rotationX
+            rotationY = f.rotationY
+        }
         reportGlass()
     }
 
@@ -868,10 +1053,10 @@ class QuickSliderView(context: Context) : View(context) {
      */
     private fun drawPictorialFill(canvas: Canvas, fillTop: Float, alpha: Int) {
         if (FillArt.handles(fillStyle)) {
-            fillArt.draw(canvas, fillStyle, drawRect, fillTop, fillPhase, value, alpha)
+            fillArt.draw(canvas, fillStyle, fillPalette, drawRect, fillTop, fillPhase, value, alpha)
             return
         }
-        val palette = SliderFill.palette(fillStyle)
+        val palette = fillPalette
         val height = (drawRect.bottom - fillTop).coerceAtLeast(1f)
         val width = drawRect.width().coerceAtLeast(1f)
 
@@ -896,8 +1081,8 @@ class QuickSliderView(context: Context) : View(context) {
                     val drift = fillPhase * 2f * Math.PI.toFloat() * (1f + (seed * 2f).toInt()) +
                         seed * 6.28f
                     val cx = drawRect.left + width * (0.5f + 0.42f * kotlin.math.cos(drift))
-                    val cy = fillTop + height * (0.5f + 0.42f * kotlin.math.sin(drift * 2f + 1.1f))
-                    val radius = width * (1.1f + seed * 0.6f)
+                    val cy = fillTop + logicalHeight * (0.5f + 0.42f * kotlin.math.sin(drift * 2f + 1.1f))
+                    val radius = logicalWidth * (1.1f + seed * 0.6f)
                     effectPaint.shader = android.graphics.RadialGradient(
                         cx, cy, radius,
                         intArrayOf(palette[i].toInt(), palette[i].toInt() and 0x00FFFFFF),
@@ -920,7 +1105,7 @@ class QuickSliderView(context: Context) : View(context) {
                     val life = ((fillPhase * (1f + (seed * 2f).toInt()) + seed2) % 1f)
                     val y = drawRect.bottom - height * life
                     if (y < fillTop) continue
-                    val sway = kotlin.math.sin(life * 9f + seed * 6.28f) * width * 0.16f
+                    val sway = kotlin.math.sin(life * 9f + seed * 6.28f) * logicalWidth * 0.16f
                     val x = drawRect.left + width * (0.2f + seed * 0.6f) + sway
                     // Faded in as well as out. A spark that appeared at full strength at the bottom
                     // was a pop every time one was born.
@@ -988,6 +1173,25 @@ class QuickSliderView(context: Context) : View(context) {
             onTouchOutside?.invoke()
             return true
         }
+        // A touch in the room left around the panel for its entrance is a touch beside the panel,
+        // and does what a tap outside it does.
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+            val slack = ICON_TOUCH_SLACK_DP * density
+            touchInRoom = !drawRect.isEmpty && (
+                event.x < drawRect.left - slack || event.x > drawRect.right + slack ||
+                    event.y < drawRect.top - slack || event.y > drawRect.bottom + slack
+                )
+            if (touchInRoom) {
+                onTouchOutside?.invoke()
+                return true
+            }
+        }
+        if (touchInRoom) {
+            if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
+                touchInRoom = false
+            }
+            return true
+        }
         if (!interactive) return false
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
@@ -1051,14 +1255,19 @@ class QuickSliderView(context: Context) : View(context) {
     }
 
     private fun applyExpandedRect() {
-        val w = width.toFloat()
-        val h = height.toFloat()
+        val w = logicalWidth.toFloat()
+        val h = logicalHeight.toFloat()
         if (w <= 0f || h <= 0f) return
-        val drawn = if (drawnThicknessPx <= 0f) w else drawnThicknessPx.coerceAtMost(w)
+        // The room around the panel comes off the window first; the panel is what is left, pressed
+        // against the screen edge as it always has been.
+        val across = (w - roomInward).coerceAtLeast(1f)
+        val top = roomTop.toFloat().coerceAtMost(h - 1f)
+        val bottom = (h - roomBottom).coerceAtLeast(top + 1f)
+        val drawn = if (drawnThicknessPx <= 0f) across else drawnThicknessPx.coerceAtMost(across)
         if (drawnOnLeft) {
-            expandedRect.set(0f, 0f, drawn, h)
+            expandedRect.set(0f, top, drawn, bottom)
         } else {
-            expandedRect.set(w - drawn, 0f, w, h)
+            expandedRect.set(w - drawn, top, w, bottom)
         }
     }
 
@@ -1234,14 +1443,25 @@ class QuickSliderView(context: Context) : View(context) {
         val alpha = (contentAlpha * 255f).toInt().coerceIn(0, 255)
 
         if (showValue) {
-            textPaint.color = ink
+            textPaint.color = valueInk ?: ink
             textPaint.alpha = alpha
             val label = "${(value * 100f).toInt()}"
             // Baseline placed by the font's own metrics rather than a guessed offset, so the
             // number sits the same distance from the top on every device font scale.
             // From the panel's top edge and nothing else — see QuickSliderStore.getValueMarginDp.
-            val y = drawRect.top + valueMarginPx - textPaint.fontMetrics.ascent
-            canvas.drawText(label, drawRect.centerX(), y, textPaint)
+            if (turned) {
+                // Lying down, the number is turned back upright about its own centre, which sits
+                // the same distance in from the panel's end.
+                val metrics = textPaint.fontMetrics
+                val cy = drawRect.top + valueMarginPx + textPaint.measureText(label) / 2f
+                canvas.save()
+                canvas.rotate(-90f, drawRect.centerX(), cy)
+                canvas.drawText(label, drawRect.centerX(), cy - (metrics.ascent + metrics.descent) / 2f, textPaint)
+                canvas.restore()
+            } else {
+                val y = drawRect.top + valueMarginPx - textPaint.fontMetrics.ascent
+                canvas.drawText(label, drawRect.centerX(), y, textPaint)
+            }
         }
 
         icon?.let { drawable ->
@@ -1250,12 +1470,12 @@ class QuickSliderView(context: Context) : View(context) {
             val cy = iconCenterY(size)
             // Pressed, a soft disc behind the glyph in the same ink, so the tap is seen to land.
             if (iconPressed) {
-                iconPressPaint.color = ink
+                iconPressPaint.color = iconInk ?: ink
                 iconPressPaint.alpha = (alpha * 0.22f).toInt()
                 canvas.drawCircle(cx, cy, size * 0.85f, iconPressPaint)
             }
             val wrapped = DrawableCompat.wrap(drawable)
-            DrawableCompat.setTint(wrapped, ink)
+            DrawableCompat.setTint(wrapped, iconInk ?: ink)
             wrapped.alpha = alpha
             wrapped.setBounds(
                 (cx - size / 2f).toInt(),
@@ -1263,7 +1483,14 @@ class QuickSliderView(context: Context) : View(context) {
                 (cx + size / 2f).toInt(),
                 (cy + size / 2f).toInt()
             )
-            wrapped.draw(canvas)
+            if (turned) {
+                canvas.save()
+                canvas.rotate(-90f, cx, cy)
+                wrapped.draw(canvas)
+                canvas.restore()
+            } else {
+                wrapped.draw(canvas)
+            }
         }
     }
 }
@@ -1275,6 +1502,9 @@ class QuickSliderView(context: Context) : View(context) {
  * press of a nudge button arrives while the first is still travelling.
  */
 private const val VALUE_GLIDE_MS = 130L
+
+/** Far enough to take a clip off a canvas in one direction, whatever the panel's size. */
+private const val BIG_CLIP = 100_000f
 
 /** How far outside the drawn icon a touch still counts as on it, in dp. */
 private const val ICON_TOUCH_SLACK_DP = 8f

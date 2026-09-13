@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="deck_coin_hint">انقر على العملة لرميها</string>
+    <string name="deck_coin_streak">%2$s ‏%1$d× على التوالي</string>
+    <string name="deck_coin_reset">إعادة ضبط العدّ</string>
+    <string name="deck_coin_showing">العملة تُظهر %1$s</string>
+    <string name="deck_coin_untossed">العملة، لم تُرمَ بعد</string>
+</resources>

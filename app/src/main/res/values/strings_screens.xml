@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Feedback screen. -->
+    <string name="feedback_pick_any">Pick any that apply</string>
+    <string name="feedback_via_email_title">Sent from your email app</string>
+    <string name="feedback_via_email_desc">Send opens your email app with your note filled in. Nothing goes out until you send it there.</string>
+    <string name="feedback_details_title">Details included</string>
+    <string name="feedback_details_desc">The app version, your device model and Android version are added, so a problem can be tracked down.</string>
+</resources>

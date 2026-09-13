@@ -5,7 +5,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
-import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.DoNotDisturbOn
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.FlashlightOn
@@ -76,7 +75,7 @@ object HandlerActionCatalog {
         Entry(HandlerActions.REPOSITION, res(R.drawable.ic_move), R.string.action_reposition, Group.HANDLER),
         Entry(HandlerActions.OPEN_DECK, ActionIcon.Vector(Icons.Filled.ViewSidebar), R.string.action_open_deck, Group.DECK),
         Entry(HandlerActions.OPEN_MENU, ActionIcon.Vector(Icons.Filled.Menu), R.string.action_open_menu, Group.HANDLER),
-        Entry(HandlerActions.OPEN_QUICK_SLIDER, res(R.drawable.ic_vol_increase), R.string.action_open_quick_slider, Group.VOLUME),
+        Entry(HandlerActions.OPEN_QUICK_SLIDER, ActionIcon.QuickPanel, R.string.action_open_quick_slider, Group.VOLUME),
         Entry(HandlerActions.OPEN_VOLUME_UI, res(R.drawable.ic_vol_increase), R.string.action_open_volume_ui, Group.VOLUME),
         Entry(HandlerActions.MUTE, res(R.drawable.ic_mute), R.string.action_mute, Group.VOLUME),
         Entry(HandlerActions.MUTE_OR_UNMUTE, res(R.drawable.ic_mute), R.string.action_mute_unmute, Group.VOLUME),
@@ -86,12 +85,10 @@ object HandlerActionCatalog {
         Entry(HandlerActions.OPEN_TIMER, ActionIcon.Vector(Icons.Filled.Timer), R.string.action_open_timer, Group.DECK),
         Entry(HandlerActions.OPEN_CALCULATOR, ActionIcon.Vector(Icons.Filled.Calculate), R.string.action_open_calculator, Group.DECK),
         Entry(HandlerActions.OPEN_NOTES, ActionIcon.Vector(Icons.Filled.EditNote), R.string.action_open_notes, Group.DECK),
-        Entry(HandlerActions.OPEN_CLIPBOARD, ActionIcon.Vector(Icons.Filled.ContentPaste), R.string.action_open_clipboard, Group.DECK),
         Entry(HandlerActions.OPEN_MEDIA, ActionIcon.Vector(Icons.Filled.MusicNote), R.string.action_open_media, Group.DECK),
         Entry(HandlerActions.COIN_TOSS, ActionIcon.Vector(Icons.Filled.Paid), R.string.action_coin_toss, Group.DECK),
         Entry(HandlerActions.DICE_ROLL, ActionIcon.Vector(Icons.Filled.Casino), R.string.action_dice_roll, Group.DECK),
         Entry(HandlerActions.SCAN_QR, ActionIcon.Vector(Icons.Filled.QrCodeScanner), R.string.action_scan_qr, Group.DECK),
-        Entry(HandlerActions.SONG_SEARCH, ActionIcon.Vector(Icons.Filled.MusicNote), R.string.action_song_search, Group.DECK),
         Entry(HandlerActions.TOGGLE_FLASHLIGHT, ActionIcon.Vector(Icons.Filled.FlashlightOn), R.string.action_toggle_flashlight, Group.DEVICE),
         Entry(HandlerActions.TOGGLE_DND, ActionIcon.Vector(Icons.Filled.DoNotDisturbOn), R.string.action_toggle_dnd, Group.DEVICE),
         Entry(HandlerActions.TOGGLE_AUTO_ROTATE, ActionIcon.Vector(Icons.Filled.ScreenRotation), R.string.action_toggle_auto_rotate, Group.DEVICE),

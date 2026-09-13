@@ -12,10 +12,6 @@
         <item quantity="one">%1$dটি সেভ করা</item>
         <item quantity="other">%1$dটি সেভ করা</item>
     </plurals>
-    <plurals name="deck_clipboard_count">
-        <item quantity="one">%1$dটি আইটেম</item>
-        <item quantity="other">%1$dটি আইটেম</item>
-    </plurals>
     <plurals name="deck_tiles_count">
         <item quantity="one">%2$dটির মধ্যে %1$dটি চালু</item>
         <item quantity="other">%2$dটির মধ্যে %1$dটি চালু</item>

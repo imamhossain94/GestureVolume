@@ -7,7 +7,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import android.content.Context
+import com.newagedevs.gesturevolume.data.local.QuickSliderStore
+import com.newagedevs.gesturevolume.data.local.PREFERENCES_FILE
 import com.newagedevs.gesturevolume.utils.ActionIcon
+import com.newagedevs.gesturevolume.utils.QuickSliderIcons
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 
 /**
@@ -34,6 +38,20 @@ fun ActionIconImage(
             val context = LocalContext.current
             Icon(
                 painter = painterResource(context.safeDrawableIdOrDefault(icon.id)),
+                contentDescription = contentDescription,
+                modifier = modifier,
+                tint = tint
+            )
+        }
+        ActionIcon.QuickPanel -> {
+            // Read as it is drawn, from the panel's own setting, so the picker, the Actions rows
+            // and the long-press menu all say what the panel will actually change.
+            val context = LocalContext.current
+            val target = QuickSliderStore.targetOf(
+                context.getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE)
+            )
+            Icon(
+                painter = painterResource(QuickSliderIcons.automatic(target)),
                 contentDescription = contentDescription,
                 modifier = modifier,
                 tint = tint

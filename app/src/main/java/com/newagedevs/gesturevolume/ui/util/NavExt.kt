@@ -1,5 +1,7 @@
 package com.newagedevs.gesturevolume.ui.util
 
+import com.newagedevs.gesturevolume.utils.PermissionNeeds
+
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 
@@ -17,3 +19,10 @@ fun NavController.navigateBackOnce() {
         popBackStack()
     }
 }
+
+/**
+ * The Permissions screen's route, optionally naming the permission to scroll to and flash there.
+ * The plain "permissions" route stays valid, so a caller with nothing to point at keeps working.
+ */
+fun permissionsRoute(highlight: PermissionNeeds.Permission? = null): String =
+    if (highlight == null) "permissions" else "permissions?highlight=${highlight.name}"

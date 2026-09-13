@@ -71,7 +71,7 @@ fun PanelAnimationSelector(
         ) {
             PanelAnimation.ALL.forEach { id ->
                 AnimationChip(
-                    label = stringResource(labelFor(id)),
+                    label = stringResource(panelAnimationLabel(id)),
                     selected = animation == id,
                     // Fires even when it is already the selected one, on purpose: tapping the
                     // chip that is already on is how you watch the animation a second time.
@@ -89,7 +89,7 @@ fun PanelAnimationSelector(
                 // number of milliseconds would be a lie about fifteen of the sixteen.
                 value = speed,
                 valueRange = PanelAnimation.MIN_SPEED..PanelAnimation.MAX_SPEED,
-                valueDisplay = String.format(java.util.Locale.US, "%.1f×", speed),
+                valueDisplay = panelAnimationSpeedLabel(speed),
                 borderColor = MaterialTheme.colorScheme.primary,
                 onValueChange = onSpeedChange,
             )
@@ -132,7 +132,8 @@ private fun AnimationChip(
     )
 }
 
-private fun labelFor(id: String): Int = when (id) {
+/** The translated name of an entrance, for the summaries that name the one chosen. */
+fun panelAnimationLabel(id: String): Int = when (id) {
     PanelAnimation.FADE -> R.string.anim_fade
     PanelAnimation.POP -> R.string.anim_pop
     PanelAnimation.SPRING -> R.string.anim_spring
@@ -152,4 +153,7 @@ private fun labelFor(id: String): Int = when (id) {
 }
 
 /** Unused here, but it keeps the "every id has a label" promise checkable. */
-internal val PANEL_ANIMATION_LABELS: List<Int> = PanelAnimation.ALL.map(::labelFor)
+internal val PANEL_ANIMATION_LABELS: List<Int> = PanelAnimation.ALL.map(::panelAnimationLabel)
+
+/** The speed as a multiple, the way the slider shows it and the group summaries repeat it. */
+fun panelAnimationSpeedLabel(speed: Float): String = String.format(java.util.Locale.US, "%.1f×", speed)

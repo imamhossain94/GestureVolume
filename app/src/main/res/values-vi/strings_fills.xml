@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The animation's own colours, for the settings screen. -->
+    <string name="slider_fill_colors">Màu hoạt ảnh</string>
+    <string name="slider_fill_colors_desc">Tô hoạt ảnh bằng ba màu bạn tự chọn thay cho màu vốn có.</string>
+    <string name="slider_fill_colors_unsupported">Hoạt ảnh này được vẽ bằng màu tô, nên không có màu riêng để thay đổi.</string>
+    <string name="slider_fill_color_n">Màu %1$d</string>
+    <string name="slider_fill_colors_reset">Đặt lại màu</string>
+</resources>

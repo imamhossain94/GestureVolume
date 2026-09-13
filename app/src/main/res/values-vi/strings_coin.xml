@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="deck_coin_hint">Chạm vào đồng xu để tung</string>
+    <string name="deck_coin_streak">%1$d× %2$s liên tiếp</string>
+    <string name="deck_coin_reset">Đặt lại bộ đếm</string>
+    <string name="deck_coin_showing">Đồng xu hiện %1$s</string>
+    <string name="deck_coin_untossed">Đồng xu chưa được tung</string>
+</resources>

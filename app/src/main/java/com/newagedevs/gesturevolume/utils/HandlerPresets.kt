@@ -4,9 +4,13 @@ import android.view.Gravity
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 
 /**
- * The appearance presets, defined once.
+ * The handler presets, defined once: Dock (the default), Edge and Bold.
+ *
+ * A preset is a look for the bar plus a [Behaviour] — its gestures, the Quick panel, the menu and
+ * the panel animation — and every one of them puts the bar a fifth of the way down the screen.
  *
  * These used to live as a `when (presetId)` block inside the appearance screen's LaunchedEffect.
  * Moving them here gives the screen one place to read from, and keeps the identifiers that select
@@ -35,20 +39,97 @@ object HandlerPresets {
     private val PREVIEW_ON_SURFACE = Color(0xFF1F2937)
 
     /**
-     * Where a preset puts the bar, for the few that are a *place* as much as a look.
+     * Which side a preset puts the bar against, for the ones that have to touch an edge.
      *
-     * Presets are otherwise appearance only — see [com.newagedevs.gesturevolume.ui.screens.handler_appearance.applyPreset],
-     * which deliberately leaves placement alone so that picking "Night" to change the colour does
-     * not throw away a bar the user dragged where they wanted it. The exception is a preset whose
-     * whole identity is where it sits: a bar across the top beside the camera cutout is not the
-     * Default bar in a different colour, and applying it without moving it would produce a wide
-     * flat pill stuck to the side, which is nothing anyone asked for.
+     * Every preset sets the bar's height on screen — see [Preset.positionFraction] — but only a
+     * shape that runs into the edge also needs a side and a snap: a tab parked mid-screen curves
+     * away into nothing. The bubble carries none, so applying it keeps whichever side the bar is on.
      */
     data class Placement(
         val gravity: Int,
         val posXFraction: Float,
-        val posYFraction: Float,
         val snapToEdge: Boolean
+    )
+
+    /**
+     * What the open Quick panel is, as a preset sets it.
+     *
+     * Plain values with [com.newagedevs.gesturevolume.data.local.QuickSliderStore]'s identifiers,
+     * so a preset can be compared and tested without preferences to write it to.
+     */
+    data class SliderBehaviour(
+        /** One of `QuickSliderStore.ALL_TARGETS`. */
+        val target: String,
+        val showValue: Boolean,
+        val showIcon: Boolean,
+        val lengthDp: Float,
+        val thicknessDp: Float,
+        val edgeOffsetDp: Float,
+        /** Whether the panel is cut to the bar's own outline. See `QuickSliderStore.getFollowHandlerShape`. */
+        val followHandlerShape: Boolean,
+        /** One of `QuickSliderStore.ALL_VOLUME_KEY_MODES`. */
+        val volumeKeys: String,
+    )
+
+    /**
+     * Everything a preset sets beyond the look of the bar: what its gestures do, the Quick panel,
+     * the long-press menu, how panels arrive, and whether the bar follows the phone round its edges.
+     *
+     * Data only. It is written to preferences by the Appearance screen when a preset applied there
+     * is saved, and never merely because the screen was saved — see `HandlerAppearanceScreen`.
+     * The Default preset's behaviour is also what a fresh install reads for each of these settings.
+     */
+    data class Behaviour(
+        /** See `SharedPref.getHandlerDynamicPosition`. */
+        val dynamicPosition: Boolean,
+        /** [HandlerActions] identifiers, one per gesture slot. */
+        val singleTap: String,
+        val doubleTap: String,
+        val tripleTap: String,
+        val longPress: String,
+        val swipeUp: String,
+        val swipeDown: String,
+        val swipeIn: String,
+        val swipeOut: String,
+        val slider: SliderBehaviour,
+        /** One of [PanelAnimation.ALL]; shared by the menu, the Quick panel and the Deck. */
+        val panelAnimation: String,
+        /** [ContextMenuLayout.GRID] or [ContextMenuLayout.LIST]. */
+        val menuLayout: String,
+        /**
+         * Entries on one page of the grid menu, one of [ContextMenuLayout.PER_PAGE_CHOICES].
+         * Nine at the default width's three columns is a 3×3 page.
+         */
+        val menuPerPage: Int,
+    )
+
+    /** Where every preset puts the bar's centre: a fifth of the way down the usable height. */
+    const val POSITION_FRACTION = 0.20f
+
+    /** The behaviour the edge presets share. Bold differs only where it says so. */
+    private val EDGE_BEHAVIOUR = Behaviour(
+        dynamicPosition = true,
+        singleTap = HandlerActions.OPEN_VOLUME_UI,
+        doubleTap = HandlerActions.NONE,
+        tripleTap = HandlerActions.NONE,
+        longPress = HandlerActions.REPOSITION,
+        swipeUp = HandlerActions.OPEN_QUICK_SLIDER,
+        swipeDown = HandlerActions.OPEN_QUICK_SLIDER,
+        swipeIn = HandlerActions.OPEN_DECK,
+        swipeOut = HandlerActions.NONE,
+        slider = SliderBehaviour(
+            target = QuickSliderStore.TARGET_MEDIA,
+            showValue = true,
+            showIcon = true,
+            lengthDp = 220f,
+            thicknessDp = 24f,
+            edgeOffsetDp = 0f,
+            followHandlerShape = true,
+            volumeKeys = QuickSliderStore.VOLUME_KEYS_INSTANT,
+        ),
+        panelAnimation = PanelAnimation.SLIDE,
+        menuLayout = ContextMenuLayout.GRID,
+        menuPerPage = 9,
     )
 
     data class Preset(
@@ -76,8 +157,11 @@ object HandlerPresets {
         val showIcon: Boolean,
         val vibrate: Boolean,
         val edgeMargin: Float,
+        /** Vertical position of the bar's centre, 0..1 of the usable height, in both orientations. */
         val positionFraction: Float,
-        /** Non-null only for a preset that is a place as much as a look. See [Placement]. */
+        /** What the preset sets beyond the bar's look. See [Behaviour]. */
+        val behaviour: Behaviour,
+        /** Non-null only for a preset that has to sit against an edge. See [Placement]. */
         val placement: Placement? = null,
         /**
          * Per-corner overrides, for the shapes that are not symmetric.
@@ -145,11 +229,11 @@ object HandlerPresets {
             // to a rounded shape lands on something sane rather than on four zeroes.
             cornerRadius = 8f,
             iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
-            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.5f,
+            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = POSITION_FRACTION,
+            behaviour = EDGE_BEHAVIOUR,
             placement = Placement(
                 gravity = Gravity.END,
                 posXFraction = 1f,
-                posYFraction = 0.5f,
                 snapToEdge = true
             ),
             shape = HandlerShape.TAB,
@@ -157,12 +241,11 @@ object HandlerPresets {
         ),
         Preset(
             /**
-             * The Edge: a slim black pill, flush to the right edge, centred.
+             * The Edge: a slim black pill, flush to the right edge.
              *
              * These numbers are a deliberate copy of the shape the edge-launcher category has
              * settled on — 10dp of width, a little under a hundred tall, fully opaque black, ends
-             * rounded to a half-width radius, sitting at the vertical middle where a thumb rests
-             * without reaching. It is the shape that reads as "grab here" while disappearing into
+             * rounded to a half-width radius. It is the shape that reads as "grab here" while disappearing into
              * a dark app's chrome, which is why every app in this category converges on it.
              *
              * A geometric proportion is not anyone's property, and nothing here is copied from
@@ -181,11 +264,11 @@ object HandlerPresets {
             strokeColor = Color.White, strokeWidth = 0f, strokeAlpha = 200,
             cornerRadius = 10f,
             iconRes = R.drawable.ic_vol_increase, iconSize = 18f, iconColor = Color.White,
-            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.5f,
+            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = POSITION_FRACTION,
+            behaviour = EDGE_BEHAVIOUR,
             placement = Placement(
                 gravity = Gravity.END,
                 posXFraction = 1f,
-                posYFraction = 0.5f,
                 snapToEdge = true
             ),
             // Square where it meets the screen edge, rounded where it faces the app. The two
@@ -195,18 +278,6 @@ object HandlerPresets {
             // is the cost of corners being four plain numbers the user can also edit by hand.
             cornerTopLeft = 10f, cornerTopRight = 1f,
             cornerBottomLeft = 10f, cornerBottomRight = 1f
-        ),
-        Preset(
-            id = "Minimal",
-            nameRes = R.string.preset_minimal_title,
-            subtitleRes = R.string.preset_minimal_subtitle,
-            gravity = Gravity.END,
-            width = 10f, height = 100f,
-            bgColor = PREVIEW_ON_SURFACE, bgAlpha = 102,
-            strokeColor = Color.White, strokeWidth = 1f, strokeAlpha = 200,
-            cornerRadius = 5f,
-            iconRes = R.drawable.ic_vol_increase, iconSize = 18f, iconColor = Color.White,
-            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.12f
         ),
         Preset(
             /**
@@ -235,44 +306,32 @@ object HandlerPresets {
             // The volume glyph rather than the move one. A bubble is round and obviously
             // draggable already; what it cannot say for itself is what it is *for*.
             iconRes = R.drawable.ic_vol_increase, iconSize = 24f, iconColor = Color.White,
-            showIcon = true, vibrate = true, edgeMargin = 6f, positionFraction = 0.55f
-        ),
-        Preset(
-            id = "Night",
-            nameRes = R.string.preset_night_title,
-            subtitleRes = R.string.preset_night_subtitle,
-            gravity = Gravity.END,
-            width = 30f, height = 100f,
-            bgColor = PREVIEW_ON_SURFACE, bgAlpha = 179,
-            strokeColor = Color(0xFF374151), strokeWidth = 1f, strokeAlpha = 200,
-            cornerRadius = 15f,
-            // No icon. Night is the quiet preset — a dark bar meant to disappear into a dark
-            // app — and a glyph on it is the one thing that would keep catching the eye.
-            iconRes = R.drawable.ic_vol_increase, iconSize = 22f, iconColor = Color(0xFF9CA3AF),
-            showIcon = false, vibrate = true, edgeMargin = 0f, positionFraction = 0.12f
-        ),
-        Preset(
-            id = "Ghost",
-            nameRes = R.string.preset_ghost_title,
-            subtitleRes = R.string.preset_ghost_subtitle,
-            gravity = Gravity.END,
-            width = 20f, height = 100f,
-            bgColor = PREVIEW_ON_SURFACE, bgAlpha = 26,
-            strokeColor = Color.White, strokeWidth = 0.5f, strokeAlpha = 5,
-            cornerRadius = 12f,
-            iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
-            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = 0.12f
+            showIcon = true, vibrate = true, edgeMargin = 8f, positionFraction = POSITION_FRACTION,
+            // Held still rather than carried round the phone, and a Quick panel as thick as the
+            // bubble and standing off the edge by the same 8dp, so it opens out of the circle.
+            behaviour = EDGE_BEHAVIOUR.copy(
+                dynamicPosition = false,
+                slider = EDGE_BEHAVIOUR.slider.copy(thicknessDp = 46f, edgeOffsetDp = 8f),
+            )
         )
     )
 
+    /**
+     * The preset with this id, or null.
+     *
+     * Null for anything unknown, which includes the retired Minimal, Night and Ghost: a deep link
+     * or back-stack entry still naming one of those simply applies nothing.
+     */
     fun byId(id: String?): Preset? = ALL.firstOrNull { it.id == id }
 
     /**
      * The out-of-the-box handler: the Dock tab.
      *
      * [com.newagedevs.gesturevolume.data.local.SharedPref] falls back to these values for every
-     * unset appearance preference, so a fresh install already *is* this preset rather than merely
-     * resembling it, and the appearance screen opens pre-populated with it.
+     * unset appearance preference, and for the behaviour settings its [Behaviour] names — gestures,
+     * dynamic position, the Quick panel, the menu's page and the panel animation — so a fresh
+     * install already *is* this preset rather than merely resembling it. Installs from before these
+     * behaviour defaults keep what they had: see `SharedPref.pinPreDockBehaviourDefaults`.
      */
     val DEFAULT: Preset = ALL.first { it.id == "Dock" }
 

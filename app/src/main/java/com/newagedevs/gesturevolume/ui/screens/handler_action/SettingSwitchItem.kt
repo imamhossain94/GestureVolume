@@ -45,6 +45,9 @@ fun SettingSwitchItem(
             Text(
                 text = description,
                 fontSize = 12.sp,
+                // Set rather than inherited: the theme's body style carries a line height sized for
+                // its own larger text, which spaced these twelve-point lines a line apart.
+                lineHeight = 16.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

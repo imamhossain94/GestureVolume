@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_pick_any">اختر كل ما ينطبق</string>
+    <string name="feedback_via_email_title">تُرسل من تطبيق البريد لديك</string>
+    <string name="feedback_via_email_desc">يفتح زر الإرسال تطبيق البريد مع ملاحظتك جاهزة. لا يُرسل شيء حتى تضغط إرسال هناك.</string>
+    <string name="feedback_details_title">تفاصيل مضمّنة</string>
+    <string name="feedback_details_desc">يُضاف إصدار التطبيق وطراز جهازك وإصدار Android، ليسهل تتبّع المشكلة.</string>
+</resources>

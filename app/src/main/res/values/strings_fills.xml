@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fill animations added after the first set. Kept apart from strings.xml so they can be
+         translated as one batch. -->
+    <string name="fill_fireflies">Fireflies</string>
+    <string name="fill_snowfall">Snowfall</string>
+    <string name="fill_heartbeat">Heartbeat</string>
+    <string name="fill_neon">Neon</string>
+    <string name="fill_ocean">Ocean</string>
+    <string name="fill_gradient">Gradient</string>
+    <string name="fill_confetti">Confetti</string>
+    <string name="fill_warp">Warp</string>
+    <string name="fill_storm">Storm</string>
+    <string name="fill_fireworks">Fireworks</string>
+
+    <!-- The animation's own colours, for the settings screen. -->
+    <string name="slider_fill_colors">Animation colours</string>
+    <string name="slider_fill_colors_desc">Paint the animation in three colours of your own instead of its own.</string>
+    <string name="slider_fill_colors_unsupported">This animation is drawn in the fill colour, so it has no colours of its own to change.</string>
+    <string name="slider_fill_color_n">Colour %1$d</string>
+    <string name="slider_fill_colors_reset">Reset colours</string>
+</resources>

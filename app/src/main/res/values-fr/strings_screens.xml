@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_pick_any">Choisissez tout ce qui s\'applique</string>
+    <string name="feedback_via_email_title">Envoyé depuis votre app de messagerie</string>
+    <string name="feedback_via_email_desc">Envoyer ouvre votre app de messagerie avec votre message prérempli. Rien ne part tant que vous ne l\'envoyez pas.</string>
+    <string name="feedback_details_title">Informations jointes</string>
+    <string name="feedback_details_desc">La version de l\'app, le modèle de l\'appareil et la version d\'Android sont ajoutés, pour pouvoir retrouver le problème.</string>
+</resources>

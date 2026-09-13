@@ -24,13 +24,6 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
-    <!--
-      Optional, coarse only, and only for the Deck's weather tile: the last fix the phone already
-      has is read, rounded to two decimals, and sent to open-meteo.com. No fine location, no
-      background location, and nothing is stored.
-    -->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
     <!-- The flashlight tile. Declared optional so the app still installs on devices without one. -->
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
 
@@ -70,7 +63,6 @@
         <intent>
             <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
         </intent>
-        <package android:name="com.google.android.googlequicksearchbox" />
     </queries>
 
     <!--
@@ -169,8 +161,10 @@
 
         <!--
           The accessibility service. Performs the system actions (lock, screenshot, Back, Home,
-          Recents, notifications, quick settings, power menu), optionally draws the bar so that no
-          notification is needed, and optionally captures copied text for the clipboard history.
+          Recents, notifications, quick settings, power menu), optionally takes the two volume keys
+          for the Quick panel's Instant mode and Hide in screenshots, and optionally notes which app
+          is in front so the bar can hide in apps the user picks. It never draws the bar, and
+          never reads what is inside a window.
           Everything it does is opt-in from inside the app, and the user switches it on themselves
           in system settings after an in-app disclosure. See res/xml/accessibility_service_config.
         -->

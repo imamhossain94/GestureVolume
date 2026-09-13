@@ -1,5 +1,8 @@
 package com.newagedevs.gesturevolume.ui.activities
 
+import com.newagedevs.gesturevolume.ui.util.permissionsRoute
+import com.newagedevs.gesturevolume.utils.PermissionNeeds
+
 import android.Manifest
 import android.content.Intent
 import android.os.Build
@@ -42,7 +45,6 @@ import com.newagedevs.gesturevolume.ui.screens.about.AboutScreen
 import com.newagedevs.gesturevolume.ui.screens.faq.FaqScreen
 import com.newagedevs.gesturevolume.ui.screens.menu.LongPressMenuScreen
 import com.newagedevs.gesturevolume.ui.screens.deck.AppShortcutsScreen
-import com.newagedevs.gesturevolume.ui.screens.deck.ClipboardScreen
 import com.newagedevs.gesturevolume.ui.screens.deck.DeckScreen
 import com.newagedevs.gesturevolume.ui.screens.deck.DeckTilesScreen
 import com.newagedevs.gesturevolume.ui.screens.deck.NotesScreen
@@ -60,11 +62,12 @@ import com.newagedevs.gesturevolume.ui.util.navigateBackOnce
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEffect
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
+import com.newagedevs.gesturevolume.helper.PrivacyChoices
 import com.newagedevs.gesturevolume.ui.screens.upgrade.UpgradeScreen
 import com.newagedevs.gesturevolume.ui.screens.visibility.VisibilityScreen
 
 /** Routes the Deck may ask the app to open. Anything else in the extra is ignored. */
-private val DEEP_LINK_ROUTES = setOf("deck", "notes", "clipboard", "deck_search", "deck_apps", "deck_quick_dial", "deck_tiles")
+private val DEEP_LINK_ROUTES = setOf("deck", "notes", "deck_search", "deck_apps", "deck_quick_dial", "deck_tiles")
 
 @Composable
 fun MainNavigation(
@@ -98,7 +101,7 @@ fun MainNavigation(
         ActivityResultContracts.RequestPermission()
     ) { }
 
-    // A route the Deck asked for — "manage notes", "manage clipboard" — arrives on the Activity
+    // A route the Deck asked for — "all notes", "tiles" — arrives on the Activity
     // and is consumed here, once, so a rotation does not navigate a second time.
     val activity = context as? MainActivity
     val pendingRoute = activity?.pendingRoute?.value
@@ -179,49 +182,36 @@ fun MainNavigation(
                 }
 
                 composable("main") {
+                    // No interstitials on any of these. Opening a screen is the start of a task, not
+                    // the end of one, and an ad here landed before the screen the user asked for.
+                    // Interstitials now wait for a completed action; see AdPacing for the list.
                     MainScreen(
                         viewModel = viewModel,
                         onNavigateToAppearance = { presetId ->
-                            // Interstitial at a genuine screen transition (capped + cooled down).
-                            viewModel.maybeShowInterstitialAd()
                             if (presetId != null) {
                                 navController.navigate("appearance?preset=$presetId")
                             } else {
                                 navController.navigate("appearance")
                             }
                         },
-                        onNavigateToActions = {
-                            viewModel.maybeShowInterstitialAd()
-                            navController.navigate("actions")
+                        onNavigateToActions = { navController.navigate("actions") },
+                        onNavigateToPermissions = { permission ->
+                            navController.navigate(permissionsRoute(permission))
                         },
-                        onNavigateToPermissions = {
-                            navController.navigate("permissions")
-                        },
-                        onNavigateToDeck = {
-                            viewModel.maybeShowInterstitialAd()
-                            navController.navigate("deck")
-                        },
-                        onNavigateToQuickPanel = {
-                            viewModel.maybeShowInterstitialAd()
-                            navController.navigate("quick_slider")
-                        },
-                        onNavigateToLongPressMenu = {
-                            viewModel.maybeShowInterstitialAd()
-                            navController.navigate("long_press_menu")
-                        },
+                        onNavigateToDeck = { navController.navigate("deck") },
+                        onNavigateToQuickPanel = { navController.navigate("quick_slider") },
+                        onNavigateToLongPressMenu = { navController.navigate("long_press_menu") },
                         onNavigateToFaq = { navController.navigate("faq") },
                         onNavigateToUpgrade = { navController.navigate("upgrade") },
-                        onNavigateToVisibility = {
-                            viewModel.maybeShowInterstitialAd()
-                            navController.navigate("visibility")
-                        }
+                        onNavigateToVisibility = { navController.navigate("visibility") }
                     )
                 }
 
                 composable("visibility") {
                     VisibilityScreen(
                         viewModel = viewModel,
-                        onNavigateBack = { navController.navigateBackOnce() }
+                        onNavigateBack = { navController.navigateBackOnce() },
+                        onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
                     )
                 }
 
@@ -241,7 +231,11 @@ fun MainNavigation(
                 }
 
                 composable("deck_tiles") {
-                    DeckTilesScreen(viewModel = viewModel, onNavigateBack = { navController.navigateBackOnce() })
+                    DeckTilesScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.navigateBackOnce() },
+                        onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
+                    )
                 }
 
                 composable("deck_apps") {
@@ -253,15 +247,15 @@ fun MainNavigation(
                 }
 
                 composable("deck_search") {
-                    SearchSettingsScreen(viewModel = viewModel, onNavigateBack = { navController.navigateBackOnce() })
+                    SearchSettingsScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.navigateBackOnce() },
+                        onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
+                    )
                 }
 
                 composable("notes") {
                     NotesScreen(viewModel = viewModel, onNavigateBack = { navController.navigateBackOnce() })
-                }
-
-                composable("clipboard") {
-                    ClipboardScreen(viewModel = viewModel, onNavigateBack = { navController.navigateBackOnce() })
                 }
 
                 composable(
@@ -289,6 +283,9 @@ fun MainNavigation(
                         },
                         onOpenLongPressMenu = {
                             navController.navigate("long_press_menu")
+                        },
+                        onOpenPermissions = {
+                            navController.navigate(permissionsRoute(it))
                         }
                     )
                 }
@@ -298,13 +295,20 @@ fun MainNavigation(
                         viewModel = viewModel,
                         onNavigateBack = {
                             navController.navigateBackOnce()
-                        }
+                        },
+                        onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
                     )
                 }
 
-                composable("permissions") {
+                // The highlight is optional, so the plain "permissions" route still matches.
+                composable(
+                    "permissions?highlight={highlight}",
+                    arguments = listOf(androidx.navigation.navArgument("highlight") { nullable = true })
+                ) { backStackEntry ->
+                    val highlight = backStackEntry.arguments?.getString("highlight")
                     PermissionsScreen(
                         viewModel = viewModel,
+                        highlight = PermissionNeeds.Permission.entries.firstOrNull { it.name == highlight },
                         onNavigateBack = {
                             navController.navigateBackOnce()
                         }
@@ -313,6 +317,10 @@ fun MainNavigation(
 
                 composable("about") {
                     AboutScreen(
+                        isProActivated = state.isProActivated,
+                        onOpenPrivacyChoices = {
+                            PrivacyChoices.show(context, viewModel.preference)
+                        },
                         onNavigateBack = {
                             navController.navigateBackOnce()
                         }
@@ -330,7 +338,8 @@ fun MainNavigation(
                 composable("long_press_menu") {
                     LongPressMenuScreen(
                         viewModel = viewModel,
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
                     )
                 }
 

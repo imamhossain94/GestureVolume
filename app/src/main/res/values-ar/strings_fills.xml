@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The animation's own colours, for the settings screen. -->
+    <string name="slider_fill_colors">ألوان الحركة</string>
+    <string name="slider_fill_colors_desc">لوّن الحركة بثلاثة ألوان من اختيارك بدلًا من ألوانها الأصلية.</string>
+    <string name="slider_fill_colors_unsupported">تُرسم هذه الحركة بلون التعبئة، لذا ليست لها ألوان خاصة يمكن تغييرها.</string>
+    <string name="slider_fill_color_n">اللون %1$d</string>
+    <string name="slider_fill_colors_reset">إعادة ضبط الألوان</string>
+</resources>

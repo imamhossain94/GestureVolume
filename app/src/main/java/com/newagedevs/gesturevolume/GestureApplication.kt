@@ -22,6 +22,7 @@ import com.applovin.sdk.AppLovinSdkConfiguration
 import com.applovin.sdk.AppLovinSdkInitializationConfiguration
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.helper.AdRevenueTracker
+import com.newagedevs.gesturevolume.utils.AdPacing
 import com.newagedevs.gesturevolume.utils.Constants
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -55,6 +56,13 @@ class GestureApplication : Application() {
         // does exactly that on its first ON_START. This is what the post-install ad grace period
         // counts from.
         preferences.initInstallTimeIfNeeded()
+
+        // Stamps every return to the foreground, which starts the interstitial launch window
+        // (AdPacing.FOREGROUND_QUIET_MS). The process lifecycle rather than MainActivity.onStart:
+        // an interstitial is itself an Activity, and returning from one must not count as a launch.
+        ProcessLifecycleOwner.get().lifecycle.addObserver(LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_START) AdPacing.Session.onAppForeground()
+        })
 
         if (BuildConfig.DEBUG && preferences.isInAdGracePeriod()) {
             val minutes = preferences.getAdGraceRemainingMillis() / 60_000
@@ -148,12 +156,42 @@ class GestureApplication : Application() {
             }
         }
 
+        /**
+         * The activity whose start brought the process to the foreground, by class name.
+         *
+         * The process lifecycle starts for *any* of this app's activities, and two of them — the QR
+         * scanner and voice search — are transparent helpers the Deck launches on top of whatever
+         * app the user is in. An app-open ad shown then would cover another app, which is the kind
+         * of out-of-context ad Play's policy forbids. So an app-open ad is shown only when the
+         * app's own main screen is the one being opened.
+         */
+        private var startedActivity: String? = null
+
+        private val activityTracker = object : android.app.Application.ActivityLifecycleCallbacks {
+            override fun onActivityStarted(activity: android.app.Activity) {
+                startedActivity = activity.javaClass.name
+            }
+            override fun onActivityCreated(activity: android.app.Activity, savedInstanceState: android.os.Bundle?) = Unit
+            override fun onActivityResumed(activity: android.app.Activity) = Unit
+            override fun onActivityPaused(activity: android.app.Activity) = Unit
+            override fun onActivityStopped(activity: android.app.Activity) = Unit
+            override fun onActivitySaveInstanceState(activity: android.app.Activity, outState: android.os.Bundle) = Unit
+            override fun onActivityDestroyed(activity: android.app.Activity) = Unit
+        }
+
         init {
+            // Before the process observer, so the activity is known by the time ON_START arrives.
+            registerActivityLifecycleCallbacks(activityTracker)
             ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleObserver)
             loadAd()
         }
 
         private fun shouldShowAd(): Boolean {
+            // Only over the app's own main screen. See [startedActivity].
+            if (startedActivity != com.newagedevs.gesturevolume.ui.activities.MainActivity::class.java.name) {
+                return false
+            }
+
             // Don't show on first launch
             if (preferences.isFirstLaunch()) {
                 preferences.setFirstLaunchCompleted()
@@ -238,6 +276,7 @@ class GestureApplication : Application() {
 
         override fun onAdDisplayed(ad: MaxAd) {
             isShowingAd = true
+            AdPacing.Session.onAppOpenAdShowing(true)
             // Save the time when app open ad was displayed
             preferences.saveAppOpenAdTime()
             Log.d("GestureApp", "App open ad displayed")
@@ -249,6 +288,8 @@ class GestureApplication : Application() {
 
         override fun onAdHidden(ad: MaxAd) {
             isShowingAd = false
+            // Also stamps the dismissal, which starts the interstitial quiet period.
+            AdPacing.Session.onAppOpenAdShowing(false)
             Log.d("GestureApp", "App open ad hidden")
             // Load next ad
             loadAd()
@@ -263,6 +304,7 @@ class GestureApplication : Application() {
 
         fun destroy() {
             try {
+                unregisterActivityLifecycleCallbacks(activityTracker)
                 ProcessLifecycleOwner.get().lifecycle.removeObserver(lifecycleObserver)
                 appOpenAd?.destroy()
                 appOpenAd = null

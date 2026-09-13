@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ad consent (GDPR / Google UMP): reopen the consent form from About and the drawer. -->
+    <string name="privacy_choices">개인정보 보호 선택</string>
+    <string name="privacy_choices_error">개인정보 보호 선택을 열 수 없습니다. 나중에 다시 시도하세요.</string>
+</resources>

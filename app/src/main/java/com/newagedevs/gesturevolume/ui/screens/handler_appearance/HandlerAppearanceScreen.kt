@@ -47,8 +47,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.HandlerPresets
+import com.newagedevs.gesturevolume.utils.AdPacing
+import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
 
 /**
  * One screen. Preview on top, settings underneath, nothing overlapping.
@@ -122,14 +125,18 @@ fun HandlerAppearanceScreen(
                 edgeMargin = preference.getHandlerEdgeMarginDp(),
                 snapToEdge = preference.getHandlerSnapToEdge(),
                 positionFraction = preference.getHandlerPosYFraction(isPortrait),
-                posXFraction = preference.getHandlerPosXFraction(isPortrait)
+                posXFraction = preference.getHandlerPosXFraction(isPortrait),
+                samePosition = preference.getHandlerSamePositionBothOrientations(),
+                otherPositionFraction = preference.getHandlerPosYFraction(!isPortrait),
+                otherPosXFraction = preference.getHandlerPosXFraction(!isPortrait),
+                dynamicPosition = preference.getHandlerDynamicPosition(),
             )
         )
     }
 
     // One wallpaper per visit, not per recomposition: a backdrop that reshuffled while a colour
     // was being chosen would be worse than no backdrop at all.
-    val bgImage = remember { viewModel.getNextBackground() }
+    val backdrop = remember { viewModel.getNextBackground() }
 
     val state = remember {
         AppearanceStateHolder(
@@ -155,7 +162,11 @@ fun HandlerAppearanceScreen(
             initialEdgeMargin = savedState.value.edgeMargin,
             initialSnapToEdge = savedState.value.snapToEdge,
             initialPositionFraction = savedState.value.positionFraction,
-            initialPosXFraction = savedState.value.posXFraction
+            initialPosXFraction = savedState.value.posXFraction,
+            initialSamePosition = savedState.value.samePosition,
+            initialOtherPositionFraction = savedState.value.otherPositionFraction,
+            initialOtherPosXFraction = savedState.value.otherPosXFraction,
+            initialDynamicPosition = savedState.value.dynamicPosition,
         )
     }
 
@@ -169,10 +180,10 @@ fun HandlerAppearanceScreen(
 
     LaunchedEffect(presetId) {
         // Values come from HandlerPresets rather than a when-block here, so the cards that offer
-        // these presets on the main screen can preview exactly what applying one will do.
-        // A preset is an appearance, not a placement. It deliberately leaves gravity and both
-        // position fractions alone: the bar is dragged where the user wants it, and picking
-        // "Night" to change the colour should not also throw that away.
+        // these presets on the main screen can preview exactly what applying one will do. Applied
+        // to the holder only, so the deep link is still an offer: Apply writes the preset, look
+        // and behaviour both, and Back can still discard it. An id this build does not know — a
+        // retired preset, say — applies nothing.
         HandlerPresets.byId(presetId)?.let { state.applyPreset(it) }
     }
 
@@ -208,11 +219,42 @@ fun HandlerAppearanceScreen(
         // And writing it unconditionally would let a colour change undo a drag: the bar is
         // reachable while this screen sits in the background, so the values loaded when it opened
         // can be stale by the time Apply is pressed.
-        if (state.positionFraction != savedState.value.positionFraction) {
+        //
+        // The switch first, because it decides which keys the writes below land in: with one
+        // position for both orientations, landscape's pair is portrait's. The other orientation is
+        // written before this one, so where the two keys are the same key, the pair the user was
+        // looking at is the one that stays.
+        val saved = savedState.value
+        // A preset applied in this session. It sets the position in both orientations, so the
+        // position is written as if the switches had changed: the values this screen loaded can be
+        // stale, and a preset landing on the height already stored must still reach both keys.
+        val appliedPreset = HandlerPresets.byId(state.appliedPresetId)
+        // Dynamic position before anything else: while it is on, both orientations read and write
+        // the portrait pair, which is the side and the place along it that the bar carries round.
+        val dynamicChanged = state.dynamicPosition != saved.dynamicPosition
+        preference.setHandlerDynamicPosition(state.dynamicPosition)
+        val sameChanged = state.samePosition != saved.samePosition || dynamicChanged || appliedPreset != null
+        preference.setHandlerSamePositionBothOrientations(state.samePosition)
+        // Written whenever the switch changed as well: turning it off hands landscape its own keys
+        // back, and they must hold what the sliders showed rather than whatever was there before.
+        if (state.dynamicPosition) {
+            // The upright place is portrait's pair, whichever way the phone is held right now.
+            val uprightY = if (isPortrait) state.positionFraction else state.otherPositionFraction
+            preference.setHandlerPosYFraction(true, uprightY)
+            preference.setHandlerPosXFraction(true, if (state.gravity == Gravity.START) 0f else 1f)
+        } else if (!state.samePosition) {
+            if (sameChanged || state.otherPositionFraction != saved.otherPositionFraction) {
+                preference.setHandlerPosYFraction(!isPortrait, state.otherPositionFraction)
+            }
+            if (sameChanged || state.otherPosXFraction != saved.otherPosXFraction) {
+                preference.setHandlerPosXFraction(!isPortrait, state.otherPosXFraction)
+            }
+        }
+        if (!state.dynamicPosition && (sameChanged || state.positionFraction != saved.positionFraction)) {
             preference.setHandlerPosYFraction(isPortrait, state.positionFraction)
             preference.setHandlerPositionFraction(state.positionFraction)
         }
-        if (state.posXFraction != savedState.value.posXFraction) {
+        if (!state.dynamicPosition && (sameChanged || state.posXFraction != saved.posXFraction)) {
             preference.setHandlerPosXFraction(isPortrait, state.posXFraction)
         }
 
@@ -220,7 +262,18 @@ fun HandlerAppearanceScreen(
             preference.setAllCornerRadii(state.cornerTL)
         }
 
-        savedState.value = currentState
+        // The rest of the preset — actions, Quick panel, menu, animation — only when one was
+        // applied since the screen opened or was last saved. Saving a colour change on its own
+        // must not put back actions the user chose on the Actions screen.
+        if (appliedPreset != null) {
+            preference.writePresetBehaviour(appliedPreset.behaviour)
+            // The key filter is asked for only while something needs it, and the volume keys may
+            // just have been set to Instant.
+            OverlayRuntime.accessibilityService?.applyEventSubscription()
+        }
+        state.appliedPresetId = null
+
+        savedState.value = state.toState()
         viewModel.sendUpdateToService(context)
         viewModel.showToast(appearanceSavedMsg)
     }
@@ -313,7 +366,13 @@ fun HandlerAppearanceScreen(
                         label = "applyTickTint",
                     )
                     IconButton(
-                        onClick = { saveChanges() },
+                        onClick = {
+                            saveChanges()
+                            // A break point: the user finished and saved, and stays on this screen.
+                            // Only here, not in the discard dialog's Apply, which Back opens and
+                            // which leaves the screen.
+                            viewModel.maybeShowInterstitialAd(AdPacing.Trigger.SETTINGS_APPLIED)
+                        },
                         enabled = hasUnsavedChanges
                     ) {
                         Icon(
@@ -335,50 +394,37 @@ fun HandlerAppearanceScreen(
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = innerPadding.calculateTopPadding())
-        ) {
-            // The dock. Fixed, and outside the scroll on purpose: the point of the rework is
-            // that a control and the thing it changes are on screen together, and a preview that
-            // scrolls away with the list is only the old two-screen problem with extra steps.
-            // It sizes itself — 4:3 of whatever width it is given — so there is no height
-            // fraction here to keep in step with it.
+        // The dock pinned, and outside the scroll on purpose: the point of the rework is that a
+        // control and the thing it changes are on screen together. Above the settings upright,
+        // beside them on its side; see PreviewSettingsLayout.
+        PreviewSettingsLayout(
+            contentPadding = innerPadding,
             // Above the preview, matching the Quick panel's screen. The dock shows what the bar
             // will look like and cannot show what it will do, so the one thing worth saying here
             // is where the rest of it lives.
-            Text(
-                text = stringResource(R.string.appearance_preview_hint),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp),
-            )
-            HandlerPreviewSurface(
-                state = state,
-                backgroundImageURL = bgImage,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 8.dp),
-            )
-
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-            )
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    // The last control would otherwise sit under the gesture pill.
-                    .navigationBarsPadding()
-                    .padding(top = 16.dp)
-            ) {
-                HandlerAppearanceSettingsContent(
-                    state = state,
-                    onShowIconPicker = { showIconPicker = true },
-                    modifier = Modifier.padding(horizontal = 16.dp)
+            header = {
+                Text(
+                    text = stringResource(R.string.appearance_preview_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp),
                 )
-                Spacer(modifier = Modifier.height(24.dp))
-            }
+            },
+            preview = { modifier, fillHeight ->
+                HandlerPreviewSurface(
+                    state = state,
+                    backdrop = backdrop,
+                    fillHeight = fillHeight,
+                    modifier = modifier,
+                )
+            },
+        ) {
+            HandlerAppearanceSettingsContent(
+                state = state,
+                isPortrait = isPortrait,
+                onShowIconPicker = { showIconPicker = true },
+            )
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 

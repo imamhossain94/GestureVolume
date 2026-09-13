@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="deck_coin_hint">টস করতে কয়েনে ট্যাপ করুন</string>
+    <string name="deck_coin_streak">পরপর %1$d× %2$s</string>
+    <string name="deck_coin_reset">গণনা রিসেট করুন</string>
+    <string name="deck_coin_showing">কয়েনে দেখাচ্ছে %1$s</string>
+    <string name="deck_coin_untossed">কয়েন, এখনও টস করা হয়নি</string>
+</resources>

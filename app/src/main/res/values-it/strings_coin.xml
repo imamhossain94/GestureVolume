@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="deck_coin_hint">Tocca la moneta per lanciarla</string>
+    <string name="deck_coin_streak">%1$d× %2$s di fila</string>
+    <string name="deck_coin_reset">Azzera il conteggio</string>
+    <string name="deck_coin_showing">Moneta su %1$s</string>
+    <string name="deck_coin_untossed">Moneta, non ancora lanciata</string>
+</resources>

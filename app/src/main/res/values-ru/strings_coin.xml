@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="deck_coin_hint">Нажмите на монету, чтобы бросить её</string>
+    <string name="deck_coin_streak">%2$s %1$d× подряд</string>
+    <string name="deck_coin_reset">Сбросить счёт</string>
+    <string name="deck_coin_showing">Монета: %1$s</string>
+    <string name="deck_coin_untossed">Монета ещё не брошена</string>
+</resources>

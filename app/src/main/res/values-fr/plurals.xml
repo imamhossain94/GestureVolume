@@ -12,10 +12,6 @@
         <item quantity="one">%1$d enregistrée</item>
         <item quantity="other">%1$d enregistrées</item>
     </plurals>
-    <plurals name="deck_clipboard_count">
-        <item quantity="one">%1$d élément</item>
-        <item quantity="other">%1$d éléments</item>
-    </plurals>
     <plurals name="deck_tiles_count">
         <item quantity="one">%1$d sur %2$d activée</item>
         <item quantity="other">%1$d sur %2$d activées</item>

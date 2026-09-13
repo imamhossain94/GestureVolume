@@ -23,9 +23,9 @@ import kotlin.math.roundToInt
  *     display — which is exactly where the navigation bar lives. That is the reported
  *     "overlay jumps to the navigation bar after rotating" bug.
  *
- *  2. **Insets are read, never assumed.** The usable frame excludes the system bars and the display
- *     cutout, so "the left edge" means the left edge of the area the user can actually touch,
- *     in every rotation.
+ *  2. **Insets are read, never assumed.** The usable frame excludes the display cutout — and only
+ *     the cutout, since the bar is drawn over the system bars (see `OverlayController.readFrame`) —
+ *     so "the left edge" means the edge of the glass beside the camera, in every rotation.
  *
  *  3. **Horizontal is a fraction too, and it is stored per orientation.** Once the bar can sit
  *     anywhere rather than against one of two edges, x needs the same rotation-proof treatment as
@@ -43,7 +43,12 @@ object HandlerGeometry {
         val insetTop: Int,
         val insetRight: Int,
         val insetBottom: Int,
-        val density: Float
+        val density: Float,
+        /**
+         * The display's [Surface] rotation. Part of the frame so a half turn — the same size and,
+         * often, the same insets — still reads as a change and moves a bar that follows the phone.
+         */
+        val rotation: Int = Surface.ROTATION_0
     ) {
         val usableWidth: Int get() = (displayWidth - insetLeft - insetRight).coerceAtLeast(0)
         val usableHeight: Int get() = (displayHeight - insetTop - insetBottom).coerceAtLeast(0)
@@ -64,10 +69,10 @@ object HandlerGeometry {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val metrics = wm.currentWindowMetrics
             val bounds = metrics.bounds
-            // ignoringVisibility: a bar that is transiently hidden (immersive video, for example)
-            // must not make the handler jump and then jump back.
+            // The cutout alone, matching the only insets the overlay windows fit. Ignoring visibility
+            // for the same reason as ever: nothing about the frame should change with a transient bar.
             val insets = metrics.windowInsets.getInsetsIgnoringVisibility(
-                WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout()
+                WindowInsets.Type.displayCutout()
             )
             return Frame(
                 displayWidth = bounds.width(),
@@ -76,7 +81,8 @@ object HandlerGeometry {
                 insetTop = insets.top,
                 insetRight = insets.right,
                 insetBottom = insets.bottom,
-                density = density
+                density = density,
+                rotation = wm.defaultDisplay.rotation
             )
         }
 
@@ -97,7 +103,8 @@ object HandlerGeometry {
             // Which physical side a 3-button nav bar lands on in landscape is OEM-dependent, and
             // pre-R the decor frame already accounts for it, so only the portrait case is modelled.
             insetBottom = if (landscape) 0 else systemDimen(uiContext, "navigation_bar_height"),
-            density = density
+            density = density,
+            rotation = rotation
         )
     }
 
@@ -213,6 +220,62 @@ object HandlerGeometry {
     fun xToIsLeft(x: Int, usableWidth: Int, barWidth: Int): Boolean {
         if (usableWidth <= 0) return true
         return (x + barWidth / 2f) < usableWidth / 2f
+    }
+
+    /** A screen edge the bar can rest against. */
+    enum class Edge {
+        LEFT, TOP, RIGHT, BOTTOM;
+
+        /** Top and bottom, where the bar lies along the edge rather than standing up. */
+        val isHorizontal: Boolean get() = this == TOP || this == BOTTOM
+    }
+
+    /**
+     * Quarter turns from upright, 0..3, for Dynamic position.
+     *
+     * Upright is portrait, which is rotation 0 on a phone. A device whose natural orientation is
+     * landscape — most tablets — is portrait at [Surface.ROTATION_90], so the count starts there.
+     * Either way, one more quarter turn of the display is one more step around the edges.
+     */
+    fun quarterTurns(frame: Frame): Int {
+        val sideways = frame.rotation == Surface.ROTATION_90 || frame.rotation == Surface.ROTATION_270
+        val naturalPortrait = frame.isPortrait != sideways
+        val upright = if (naturalPortrait) Surface.ROTATION_0 else Surface.ROTATION_90
+        return Math.floorMod(frame.rotation - upright, 4)
+    }
+
+    /**
+     * Where a bar stored upright on one side, [along] its length, belongs after [turns] quarter
+     * turns: the screen edge that is now the same edge of the phone, and how far along it.
+     *
+     * Measured against Edge Deck's Dynamic position on a real phone. At [Surface.ROTATION_90] a
+     * handle on the right edge in portrait is on the top edge, lying down, over the same stretch of
+     * glass: the top of the phone is now at the left of the screen, so the distance along is
+     * unchanged. At [Surface.ROTATION_270] the phone is turned the other way, the right edge is the
+     * bottom, and the distance runs from the other end. [along] runs top to bottom on a side and
+     * left to right on the top or bottom, the way the stored fractions already do.
+     */
+    fun dynamicEdge(uprightIsLeft: Boolean, along: Float, turns: Int): Pair<Edge, Float> =
+        when (Math.floorMod(turns, 4)) {
+            1 -> (if (uprightIsLeft) Edge.BOTTOM else Edge.TOP) to along
+            2 -> (if (uprightIsLeft) Edge.RIGHT else Edge.LEFT) to 1f - along
+            3 -> (if (uprightIsLeft) Edge.TOP else Edge.BOTTOM) to 1f - along
+            else -> (if (uprightIsLeft) Edge.LEFT else Edge.RIGHT) to along
+        }
+
+    /**
+     * The inverse of [dynamicEdge]: the upright side, and the place along it, of a bar resting on
+     * [edge]. Null for an edge that is the phone's own top or bottom at this rotation, which a
+     * bar that follows the phone never rests on.
+     */
+    fun uprightFromEdge(edge: Edge, along: Float, turns: Int): Pair<Boolean, Float>? {
+        val flipped = Math.floorMod(turns, 4) >= 2
+        for (left in booleanArrayOf(true, false)) {
+            if (dynamicEdge(left, 0f, turns).first == edge) {
+                return left to (if (flipped) 1f - along else along).coerceIn(0f, 1f)
+            }
+        }
+        return null
     }
 
     /** Matches [com.newagedevs.gesturevolume.data.local.SharedPref.getHandlerPositionFraction]. */

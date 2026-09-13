@@ -3,7 +3,6 @@ package com.newagedevs.gesturevolume.ui.viewmodels
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.utils.ActionIcon
 import com.newagedevs.gesturevolume.utils.HandlerActions
-import com.newagedevs.gesturevolume.utils.OverlayHostMode
 
 data class MainState(
     val isRunning: Boolean = false,
@@ -31,8 +30,6 @@ data class MainState(
     val hasWriteSettingsPermission: Boolean = false,
     /** Whether the accessibility service is switched on in system settings. */
     val isAccessibilityEnabled: Boolean = false,
-    /** Which service the user asked to draw the bar. */
-    val overlayHostMode: OverlayHostMode = OverlayHostMode.NOTIFICATION,
     /**
      * How many permissions the user's own configuration has made necessary but which are not
      * granted — see [com.newagedevs.gesturevolume.utils.PermissionNeeds].
@@ -41,6 +38,12 @@ data class MainState(
      * having to open it and compare every row against what they set elsewhere.
      */
     val missingPermissionCount: Int = 0,
+    /**
+     * Every missing permission and the setting that wants it. Refreshed with the count above, on
+     * every return to the home screen, so its cards warn about what the other screens just changed.
+     */
+    val permissionNeeds: com.newagedevs.gesturevolume.utils.PermissionNeeds.Needs =
+        com.newagedevs.gesturevolume.utils.PermissionNeeds.Needs(),
     /**
      * True when the user has put the bar away with "Hide handler".
      *

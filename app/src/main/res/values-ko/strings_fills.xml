@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The animation's own colours, for the settings screen. -->
+    <string name="slider_fill_colors">애니메이션 색상</string>
+    <string name="slider_fill_colors_desc">애니메이션 고유 색 대신 직접 고른 세 가지 색으로 칠합니다.</string>
+    <string name="slider_fill_colors_unsupported">이 애니메이션은 채움 색상으로 그려지므로 바꿀 고유 색이 없습니다.</string>
+    <string name="slider_fill_color_n">색상 %1$d</string>
+    <string name="slider_fill_colors_reset">색상 초기화</string>
+</resources>

@@ -39,6 +39,7 @@ import com.applovin.sdk.AppLovinSdk
 import com.applovin.sdk.AppLovinSdkUtils
 import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.AdPacing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -368,16 +369,21 @@ class ApplovinAdsManager(
         }
 
         override fun onAdDisplayFailed(maxAd: MaxAd, error: MaxError) {
+            AdPacing.Session.onInterstitialShowing(false)
             if (!context.isFinishing && !context.isDestroyed) {
                 preloadInterstitialAd()
             }
         }
 
-        override fun onAdDisplayed(maxAd: MaxAd) {}
+        // Tracked so no other full-screen ad can be requested while this one is up. See AdPacing.
+        override fun onAdDisplayed(maxAd: MaxAd) {
+            AdPacing.Session.onInterstitialShowing(true)
+        }
 
         override fun onAdClicked(maxAd: MaxAd) {}
 
         override fun onAdHidden(maxAd: MaxAd) {
+            AdPacing.Session.onInterstitialShowing(false)
             if (!context.isFinishing && !context.isDestroyed) {
                 preloadInterstitialAd()
             }

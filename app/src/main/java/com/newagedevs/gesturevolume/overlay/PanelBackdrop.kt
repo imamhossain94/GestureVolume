@@ -70,8 +70,14 @@ class PanelBackdrop(
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM or
+                // Unclamped. Without it the window manager pulls a dialog back above the
+                // navigation bar, so the glass under a panel lying along the bottom edge — which
+                // sits right on top of that bar — was lifted a panel's height above it.
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         )
+        // And fitted to nothing, for the same reason: these are display coordinates. See setBounds.
+        window.attributes = window.attributes.apply { setFitInsetsTypes(0) }
         window.setDimAmount(0f)
         d.setCancelable(false)
         d.setCanceledOnTouchOutside(false)
@@ -146,6 +152,18 @@ class PanelBackdrop(
             window.setBackgroundBlurRadius(blurPx)
         }
         if (!sameBounds) applyBounds(window)
+    }
+
+    /**
+     * Takes the glass out of sight without taking the window away, and puts it back.
+     *
+     * For the moment a screenshot might be taken: the panel over it goes invisible, and glass left
+     * behind would be a blurred rectangle in the picture with nothing on it. Not a dismissal,
+     * because a window added again would stack in front of the panel it belongs under.
+     */
+    fun setSuppressed(suppressed: Boolean) {
+        val decor = dialog?.window?.decorView ?: return
+        decor.visibility = if (suppressed) View.INVISIBLE else View.VISIBLE
     }
 
     fun dismiss() {

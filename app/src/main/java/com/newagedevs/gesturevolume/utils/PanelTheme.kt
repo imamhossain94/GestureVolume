@@ -50,7 +50,33 @@ object PanelTheme {
      */
     const val VIBRANT = "vibrant"
 
-    val ALL = listOf(SOLID, FROSTED, GLASS, AERO, VIBRANT)
+    /**
+     * An opaque off-white card with no blur: a sheet of paper.
+     *
+     * The pale counterpart to [SOLID], for the phones that will not blur at all and the people who
+     * would rather their panel did not change with whatever it happens to be over.
+     */
+    const val PAPER = "paper"
+
+    /** A deep blue-black card, opaque. Solid's colour for people who find grey drab. */
+    const val MIDNIGHT = "midnight"
+
+    /**
+     * True black, opaque, with a hairline edge. On an OLED screen the pixels are simply off, so the
+     * panel costs no light and looks cut out of the display rather than laid on it.
+     */
+    const val AMOLED = "amoled"
+
+    /**
+     * A warm, smoky tint over a medium blur: acrylic rather than glass. Darker than Frosted and
+     * coloured, so what shows through reads as a wash under the tint instead of as the screen.
+     */
+    const val ACRYLIC = "acrylic"
+
+    /** Violet-tinted glass with a lit rim: Glass, with a colour held in it. */
+    const val AMETHYST = "amethyst"
+
+    val ALL = listOf(SOLID, FROSTED, GLASS, AERO, VIBRANT, PAPER, MIDNIGHT, AMOLED, ACRYLIC, AMETHYST)
 
     fun sanitize(value: String?): String = if (value in ALL) value!! else SOLID
 
@@ -74,6 +100,8 @@ object PanelTheme {
         // The heaviest, because this material gives up more of its own fill than any other and
         // the blur is the only thing left holding it together.
         VIBRANT -> 44
+        ACRYLIC -> 32
+        AMETHYST -> 40
         else -> 0
     }
 
@@ -96,33 +124,40 @@ object PanelTheme {
     }
 
     /** Whether the panel draws the bright gradient edge that reads as a lit rim of glass. */
-    fun hasLitEdge(theme: String): Boolean = theme == GLASS || theme == AERO
+    fun hasLitEdge(theme: String): Boolean = theme == GLASS || theme == AERO || theme == AMETHYST
 
     /**
      * Whether this material is a pale one, and so wants dark content on it.
      *
      * The overlays otherwise force a dark palette on purpose — see `OverlayTheme` — because a
-     * light card over a dark app is a glare. These two materials are the deliberate exception:
-     * they are pale *because* the reference look is, and they carry their own dark text with them
+     * light card over a dark app is a glare. These materials are the deliberate exception: they
+     * are pale *because* the reference look is, and they carry their own dark text with them
      * rather than inheriting white and disappearing.
      */
-    fun isLight(theme: String): Boolean = theme == AERO || theme == VIBRANT
+    fun isLight(theme: String): Boolean = theme == AERO || theme == VIBRANT || theme == PAPER
 
     /**
-     * The surface a pale material insists on, or null where the panel keeps the user's own colour.
+     * The surface a material insists on, or null where the panel keeps the user's own colour.
      *
      * [surfaceAlpha] is a multiplier because the Deck and the Quick panel carry a colour somebody
      * chose, and thinning it is a change this object is entitled to make. Replacing it is not — so
-     * only the two materials that are *defined* by being pale return anything here. Fading a dark
-     * bar toward transparent gives grey; it never gives a pane of glass, and a Deck that stayed
-     * charcoal while the menu beside it turned to frost was the whole complaint.
+     * only the materials that are *defined* by their colour return anything here: the pale ones,
+     * and the tinted ones whose tint is the whole idea. Fading a dark bar toward transparent gives
+     * grey; it never gives a pane of glass, and a Deck that stayed charcoal while the menu beside it
+     * turned to frost was the whole complaint.
      *
      * Where this is non-null the alpha is already in it, and [surfaceAlpha] must not be applied on
-     * top or the surface is thinned twice.
+     * top or the surface is thinned twice. Whether it wants dark ink is [isLight], not whether this
+     * is null: Midnight and AMOLED insist on a colour too, and a dark one.
      */
     fun panelSurface(theme: String): Long? = when (theme) {
         AERO -> 0x8CD6E6F4
         VIBRANT -> 0xA6F7F7FA
+        PAPER -> 0xF7F8F7F4
+        MIDNIGHT -> 0xF50D1330
+        AMOLED -> 0xFF000000
+        ACRYLIC -> 0xA82B2430
+        AMETHYST -> 0x6B3B2463
         else -> null
     }
 
@@ -224,6 +259,48 @@ object PanelTheme {
             chip = 0x14000000,
             divider = 0x1A000000,
             border = 0x66FFFFFF,
+        )
+        PAPER -> MenuPalette(
+            surface = 0xF7F8F7F4,
+            onSurface = 0xF21A1A1E,
+            onSurfaceDim = 0x9E1A1A1E,
+            chip = 0x10000000,
+            divider = 0x17000000,
+            // Paper has no blur behind it to say where it stops, so the edge carries that alone.
+            border = 0x24000000,
+        )
+        MIDNIGHT -> MenuPalette(
+            surface = 0xF50D1330,
+            onSurface = 0xF5E8ECFF,
+            onSurfaceDim = 0xB8C9D1F5,
+            chip = 0x2E6C7CFF,
+            divider = 0x248C9CFF,
+            border = 0x3D6C7CFF,
+        )
+        AMOLED -> MenuPalette(
+            surface = 0xFF000000,
+            onSurface = 0xFFFFFFFF,
+            onSurfaceDim = 0xB3FFFFFF,
+            chip = 0x1FFFFFFF,
+            divider = 0x1FFFFFFF,
+            // The only thing on true black that says where the card ends.
+            border = 0x33FFFFFF,
+        )
+        ACRYLIC -> MenuPalette(
+            surface = 0xA82B2430,
+            onSurface = 0xF5FFF7F0,
+            onSurfaceDim = 0xC2FFEFE3,
+            chip = 0x26FFE9D6,
+            divider = 0x1FFFE9D6,
+            border = 0x33FFE9D6,
+        )
+        AMETHYST -> MenuPalette(
+            surface = 0x6B3B2463,
+            onSurface = 0xFFFFFFFF,
+            onSurfaceDim = 0xD1F1E6FF,
+            chip = 0x33E7D4FF,
+            divider = 0x29E7D4FF,
+            border = 0x40E7D4FF,
         )
         else -> MenuPalette(
             surface = 0xF41C1C20,

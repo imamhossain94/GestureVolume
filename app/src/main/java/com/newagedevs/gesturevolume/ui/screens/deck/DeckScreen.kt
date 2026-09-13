@@ -1,26 +1,22 @@
 package com.newagedevs.gesturevolume.ui.screens.deck
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import com.newagedevs.gesturevolume.ui.components.PermissionNote
+import com.newagedevs.gesturevolume.ui.util.permissionsRoute
+import com.newagedevs.gesturevolume.utils.PermissionNeeds
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.EditNote
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -58,31 +53,39 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.overlay.deck.DeckPalette
 import com.newagedevs.gesturevolume.overlay.deck.DeckPreviewStrip
-import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
-import com.newagedevs.gesturevolume.utils.PanelAnimation
-import kotlinx.coroutines.delay
-import com.newagedevs.gesturevolume.overlay.panelFrame
 import com.newagedevs.gesturevolume.overlay.deck.DeckTiles
+import com.newagedevs.gesturevolume.overlay.panelFrame
+import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
-import com.newagedevs.gesturevolume.ui.screens.handler_action.ActionSettingItem
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
-import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
-import com.newagedevs.gesturevolume.ui.screens.handler_action.SectionTitle
+import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
+import com.newagedevs.gesturevolume.ui.components.PreviewStage
+import com.newagedevs.gesturevolume.ui.components.panelAnimationLabel
+import com.newagedevs.gesturevolume.ui.components.panelAnimationSpeedLabel
+import com.newagedevs.gesturevolume.ui.components.panelThemeLabel
+import com.newagedevs.gesturevolume.ui.screens.handler_action.ActionSettingItem
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.AppearanceSection
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.ColorPickerControl
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
-import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.ActionIcon
-import com.newagedevs.gesturevolume.utils.HandlerActions
+import com.newagedevs.gesturevolume.utils.PanelAnimation
+import com.newagedevs.gesturevolume.utils.PanelTheme
+import kotlinx.coroutines.delay
 
 /**
- * The Deck's home in the app: what it holds, how it looks, and how it opens.
+ * The Deck's home in the app: what it holds, how it looks, and how it moves.
  *
  * Every control writes straight to the preference. The Deck reads its settings each time it
  * opens, so there is nothing to apply and nothing to discard; a slider moved here is a Deck
  * changed the next time it is pulled out.
+ *
+ * Grouped behind collapsible headers in the order every panel screen shares — content, size and
+ * shape, colours, animation, behaviour — so a setting sits in the same place whichever panel it
+ * belongs to. The page opens on what the Deck holds, which is why most people come here; the rest
+ * are a tap away rather than a scroll past.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,7 +112,15 @@ fun DeckScreen(
     val appsCount = remember(version) { store.getAppShortcuts().size }
     val quickDialCount = remember(version) { store.getQuickDial().size }
     val notesCount = remember(version) { store.getNotes().size }
-    val clipboardCount = remember(version) { preference.getClipboardEntries().size }
+
+    // What the tiles and the search switched on from here still need, re-read on every return.
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val deckNeeds = remember(version) {
+        PermissionNeeds.read(context, preference).forScreen(PermissionNeeds.Screen.DECK)
+    }
+    val tilesNeed = deckNeeds.firstOrNull { it.feature == PermissionNeeds.Feature.DECK_TILE }?.permission
+    val searchNeed = deckNeeds.firstOrNull { it.feature != PermissionNeeds.Feature.DECK_TILE }?.permission
+    val openPermissions: (PermissionNeeds.Permission) -> Unit = { onNavigate(permissionsRoute(it)) }
 
     var panelTheme by remember { mutableStateOf(viewModel.preference.getPanelTheme()) }
     var width by remember { mutableStateOf(store.getWidthDp()) }
@@ -123,8 +134,8 @@ fun DeckScreen(
     var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
     var animationSpeed by remember { mutableFloatStateOf(viewModel.preference.getPanelAnimationSpeed()) }
 
-    // One wallpaper per visit; see the note in HandlerAppearanceScreen.
-    val bgImage = remember { viewModel.getNextBackground() }
+    // One backdrop per visit; see the note in HandlerAppearanceScreen.
+    val backdrop = remember { viewModel.getNextBackground() }
     val handlerOnLeft = remember { preference.getHandlerPosition() == "Left" }
     val previewTiles = remember(version) {
         DeckTiles.visible(store.getTileOrder(), store.getEnabledTiles())
@@ -166,11 +177,6 @@ fun DeckScreen(
         )
     }
 
-    val openers = remember(version) { deckOpeners(preference) }
-    // Resolved here rather than inside joinToString: stringResource is composable, and a
-    // non-inline lambda is not a composable context.
-    val openerNames = openers.map { stringResource(it) }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -188,85 +194,180 @@ fun DeckScreen(
             )
         }
     ) { padding ->
-        // Preview pinned, controls scrolling underneath — the shape the Appearance screen uses.
-        // The Deck had no preview at all, so every colour and every number on this screen was set
-        // blind and checked by going out and opening the thing.
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = padding.calculateTopPadding())
+        // Preview pinned, controls scrolling beside or beneath it. The Deck had no preview at all,
+        // so every colour and every number on this screen was set blind and checked by going out
+        // and opening the thing.
+        PreviewSettingsLayout(
+            contentPadding = padding,
+            preview = { modifier, fillHeight ->
+                PreviewStage(
+                    backdrop = backdrop,
+                    contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
+                    fillHeight = fillHeight,
+                    modifier = modifier,
+                ) {
+                    DeckPreviewStrip(
+                        tiles = previewTiles,
+                        palette = previewPalette,
+                        widthDp = width,
+                        cornerDp = corner,
+                        glass = PanelTheme.hasLitEdge(panelTheme),
+                        modifier = Modifier
+                            .padding(horizontal = 14.dp)
+                            .panelFrame { entrance.value },
+                    )
+                }
+            },
         ) {
-            PreviewStage(
-                backgroundImageURL = bgImage,
-                contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp),
+            // ---- content ------------------------------------------------------------------------
+            // What the Deck holds, and which half of it comes first.
+            AppearanceSection(
+                title = stringResource(R.string.group_content),
+                summary = pluralStringResource(R.plurals.deck_tiles_count, tilesOn, tilesOn, DeckTiles.ALL.size),
+                initiallyExpanded = true,
             ) {
-                DeckPreviewStrip(
-                    tiles = previewTiles,
-                    palette = previewPalette,
-                    widthDp = width,
-                    cornerDp = corner,
-                    glass = PanelTheme.hasLitEdge(panelTheme),
-                    modifier = Modifier
-                        .padding(horizontal = 14.dp)
-                        .panelFrame { entrance.value },
+                ActionSettingItem(
+                    label = stringResource(R.string.deck_tiles_row),
+                    description = stringResource(R.string.deck_tiles_intro),
+                    value = pluralStringResource(R.plurals.deck_tiles_count, tilesOn, tilesOn, DeckTiles.ALL.size),
+                    icon = ActionIcon.Vector(Icons.Filled.Widgets),
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onClick = { onNavigate("deck_tiles") }
+                )
+                tilesNeed?.let { PermissionNote(missing = it, onOpenPermissions = openPermissions) }
+                Divider()
+                ActionSettingItem(
+                    label = stringResource(R.string.deck_apps_row),
+                    description = stringResource(R.string.deck_apps_intro),
+                    value = pluralStringResource(R.plurals.deck_apps_pinned_count, appsCount, appsCount),
+                    icon = ActionIcon.Vector(Icons.Filled.Apps),
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onClick = { onNavigate("deck_apps") }
+                )
+                Divider()
+                ActionSettingItem(
+                    label = stringResource(R.string.deck_quick_dial_row),
+                    description = stringResource(R.string.deck_quick_dial_intro),
+                    value = pluralStringResource(R.plurals.deck_quick_dial_count, quickDialCount, quickDialCount),
+                    icon = ActionIcon.Vector(Icons.Filled.Call),
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onClick = { onNavigate("deck_quick_dial") }
+                )
+                Divider()
+                ActionSettingItem(
+                    label = stringResource(R.string.deck_search_row),
+                    description = stringResource(R.string.tile_search_desc),
+                    value = stringResource(R.string.deck_search_row_desc),
+                    icon = ActionIcon.Vector(Icons.Filled.Search),
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onClick = { onNavigate("deck_search") }
+                )
+                searchNeed?.let { PermissionNote(missing = it, onOpenPermissions = openPermissions) }
+                Divider()
+                ActionSettingItem(
+                    label = stringResource(R.string.deck_notes_row),
+                    description = stringResource(R.string.tile_notes_desc),
+                    value = pluralStringResource(R.plurals.deck_notes_count, notesCount, notesCount),
+                    icon = ActionIcon.Vector(Icons.Filled.EditNote),
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onClick = { onNavigate("notes") }
+                )
+                Divider()
+                // The order of what is listed above, so it lives with the list rather than with
+                // the panel's looks.
+                SettingSwitchItem(
+                    title = stringResource(R.string.deck_utilities_first),
+                    description = stringResource(R.string.deck_utilities_first_desc),
+                    checked = utilitiesFirst,
+                    onCheckedChange = { utilitiesFirst = it; store.setUtilitiesFirst(it) }
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .navigationBarsPadding()
-                    .padding(16.dp)
+            // ---- size & shape -------------------------------------------------------------------
+            AppearanceSection(
+                title = stringResource(R.string.group_size_shape),
+                summary = "${width.toInt()}dp · ${(height * 100).toInt()}% · ${corner.toInt()}dp",
             ) {
-            // ---- how it opens -------------------------------------------------------------------
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = if (openerNames.isEmpty()) {
-                                stringResource(R.string.deck_open_with_none)
-                            } else {
-                                stringResource(R.string.deck_open_with_summary, openerNames.joinToString(", "))
-                            },
-                            fontSize = 14.sp,
-                            lineHeight = 20.sp,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
-                    TextButton(onClick = { onNavigate("actions") }, modifier = Modifier.align(Alignment.End)) {
-                        Text(stringResource(R.string.deck_change_gestures))
-                    }
-                }
+                SliderControl(
+                    label = stringResource(R.string.deck_width),
+                    value = width,
+                    valueRange = 48f..96f,
+                    valueDisplay = "${width.toInt()}dp",
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onValueChange = { width = it; store.setWidthDp(it) }
+                )
+                ThinDivider()
+                SliderControl(
+                    label = stringResource(R.string.deck_height),
+                    value = height,
+                    valueRange = 0.3f..0.95f,
+                    valueDisplay = "${(height * 100).toInt()}%",
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onValueChange = { height = it; store.setHeightFraction(it) }
+                )
+                ThinDivider()
+                SliderControl(
+                    label = stringResource(R.string.deck_corner),
+                    value = corner,
+                    valueRange = 0f..48f,
+                    valueDisplay = "${corner.toInt()}dp",
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onValueChange = { corner = it; store.setCornerRadiusDp(it) }
+                )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // ---- how it moves -------------------------------------------------------------------
-            SectionTitle(stringResource(R.string.deck_animation_title), MaterialTheme.colorScheme.primary)
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+            // ---- colours ------------------------------------------------------------------------
+            // The material first, because it decides how much of the colours under it shows.
+            AppearanceSection(
+                title = stringResource(R.string.group_colours),
+                summary = "${stringResource(panelThemeLabel(panelTheme))} · ${(alpha / 255f * 100).toInt()}%",
+            ) {
+                PanelThemeSelector(
+                    theme = panelTheme,
+                    onThemeChange = {
+                        panelTheme = it
+                        viewModel.preference.setPanelTheme(it)
+                    },
+                )
+                ThinDivider()
+                ColorPickerControl(
+                    label = stringResource(R.string.deck_background),
+                    color = background,
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onColorChange = { background = it; store.setBackgroundColor(it.toArgb()) }
+                )
+                ThinDivider()
+                SliderControl(
+                    label = stringResource(R.string.opacity),
+                    value = alpha.toFloat(),
+                    valueRange = 60f..255f,
+                    valueDisplay = "${(alpha / 255f * 100).toInt()}%",
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onValueChange = { alpha = it.toInt(); store.setBackgroundAlpha(alpha) }
+                )
+                ThinDivider()
+                ColorPickerControl(
+                    label = stringResource(R.string.deck_accent),
+                    color = accent,
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onColorChange = { accent = it; store.setAccentColor(it.toArgb()) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // ---- animation ----------------------------------------------------------------------
+            AppearanceSection(
+                title = stringResource(R.string.group_animation),
+                summary = "${stringResource(panelAnimationLabel(panelAnimation))} · ${panelAnimationSpeedLabel(animationSpeed)}",
             ) {
                 // One choice for how every panel moves, shared with the long-press menu and the
                 // Quick panel, but offered here too: the Deck's own page is where anyone looks for
-                // how the Deck opens and closes, and it was the one page that did not have it.
+                // how the Deck opens and closes.
                 PanelAnimationSelector(
                     animation = panelAnimation,
                     onAnimationChange = {
@@ -282,187 +383,38 @@ fun DeckScreen(
                     },
                     title = stringResource(R.string.deck_animation),
                     description = stringResource(R.string.deck_animation_desc),
-                    modifier = Modifier.padding(16.dp),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // ---- behaviour ----------------------------------------------------------------------
+            AppearanceSection(
+                title = stringResource(R.string.group_behaviour),
+                summary = if (autoClose == 0) {
+                    stringResource(R.string.deck_auto_close_never)
+                } else {
+                    stringResource(R.string.deck_auto_close_seconds, autoClose)
+                },
+            ) {
+                Text(
+                    text = stringResource(R.string.deck_auto_close),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+                Text(
+                    text = stringResource(R.string.deck_auto_close_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                AutoCloseChips(
+                    selected = autoClose,
+                    onSelect = { autoClose = it; store.setAutoCloseSeconds(it) },
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            // ---- contents -----------------------------------------------------------------------
-            SectionTitle(stringResource(R.string.deck_contents_title), MaterialTheme.colorScheme.primary)
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    ActionSettingItem(
-                        label = stringResource(R.string.deck_tiles_row),
-                        description = stringResource(R.string.deck_tiles_intro),
-                        value = pluralStringResource(R.plurals.deck_tiles_count, tilesOn, tilesOn, DeckTiles.ALL.size),
-                        icon = ActionIcon.Vector(Icons.Filled.Widgets),
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onClick = { onNavigate("deck_tiles") }
-                    )
-                    Divider()
-                    ActionSettingItem(
-                        label = stringResource(R.string.deck_apps_row),
-                        description = stringResource(R.string.deck_apps_intro),
-                        value = pluralStringResource(R.plurals.deck_apps_pinned_count, appsCount, appsCount),
-                        icon = ActionIcon.Vector(Icons.Filled.Apps),
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onClick = { onNavigate("deck_apps") }
-                    )
-                    Divider()
-                    ActionSettingItem(
-                        label = stringResource(R.string.deck_quick_dial_row),
-                        description = stringResource(R.string.deck_quick_dial_intro),
-                        value = pluralStringResource(R.plurals.deck_quick_dial_count, quickDialCount, quickDialCount),
-                        icon = ActionIcon.Vector(Icons.Filled.Call),
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onClick = { onNavigate("deck_quick_dial") }
-                    )
-                    Divider()
-                    ActionSettingItem(
-                        label = stringResource(R.string.deck_search_row),
-                        description = stringResource(R.string.tile_search_desc),
-                        value = stringResource(R.string.deck_search_row_desc),
-                        icon = ActionIcon.Vector(Icons.Filled.Search),
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onClick = { onNavigate("deck_search") }
-                    )
-                    Divider()
-                    ActionSettingItem(
-                        label = stringResource(R.string.deck_notes_row),
-                        description = stringResource(R.string.tile_notes_desc),
-                        value = pluralStringResource(R.plurals.deck_notes_count, notesCount, notesCount),
-                        icon = ActionIcon.Vector(Icons.Filled.EditNote),
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onClick = { onNavigate("notes") }
-                    )
-                    Divider()
-                    ActionSettingItem(
-                        label = stringResource(R.string.deck_clipboard_row),
-                        description = stringResource(R.string.tile_clipboard_desc),
-                        value = pluralStringResource(R.plurals.deck_clipboard_count, clipboardCount, clipboardCount),
-                        icon = ActionIcon.Vector(Icons.Filled.ContentPaste),
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onClick = { onNavigate("clipboard") }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // ---- panel --------------------------------------------------------------------------
-            SectionTitle(stringResource(R.string.deck_panel_title), MaterialTheme.colorScheme.primary)
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    PanelThemeSelector(
-                        theme = panelTheme,
-                        onThemeChange = {
-                            panelTheme = it
-                            viewModel.preference.setPanelTheme(it)
-                        },
-                    )
-                    ThinDivider()
-                    SliderControl(
-                        label = stringResource(R.string.deck_width),
-                        value = width,
-                        valueRange = 48f..96f,
-                        valueDisplay = "${width.toInt()}dp",
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onValueChange = { width = it; store.setWidthDp(it) }
-                    )
-                    ThinDivider()
-                    SliderControl(
-                        label = stringResource(R.string.deck_height),
-                        value = height,
-                        valueRange = 0.3f..0.95f,
-                        valueDisplay = "${(height * 100).toInt()}%",
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onValueChange = { height = it; store.setHeightFraction(it) }
-                    )
-                    ThinDivider()
-                    SliderControl(
-                        label = stringResource(R.string.deck_corner),
-                        value = corner,
-                        valueRange = 0f..48f,
-                        valueDisplay = "${corner.toInt()}dp",
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onValueChange = { corner = it; store.setCornerRadiusDp(it) }
-                    )
-                    ThinDivider()
-                    SliderControl(
-                        label = stringResource(R.string.opacity),
-                        value = alpha.toFloat(),
-                        valueRange = 60f..255f,
-                        valueDisplay = "${(alpha / 255f * 100).toInt()}%",
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onValueChange = { alpha = it.toInt(); store.setBackgroundAlpha(alpha) }
-                    )
-                    ThinDivider()
-                    ColorPickerControl(
-                        label = stringResource(R.string.deck_background),
-                        color = background,
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onColorChange = { background = it; store.setBackgroundColor(it.toArgb()) }
-                    )
-                    ThinDivider()
-                    ColorPickerControl(
-                        label = stringResource(R.string.deck_accent),
-                        color = accent,
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onColorChange = { accent = it; store.setAccentColor(it.toArgb()) }
-                    )
-                    ThinDivider()
-                    Text(
-                        text = stringResource(R.string.deck_auto_close),
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                    Text(
-                        text = stringResource(R.string.deck_auto_close_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
-                        listOf(0, 5, 10, 20, 30).forEach { seconds ->
-                            val selected = autoClose == seconds
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = if (selected) MaterialTheme.colorScheme.primaryContainer
-                                else MaterialTheme.colorScheme.surfaceVariant,
-                                onClick = { autoClose = seconds; store.setAutoCloseSeconds(seconds) }
-                            ) {
-                                Text(
-                                    text = if (seconds == 0) stringResource(R.string.deck_auto_close_never)
-                                    else stringResource(R.string.deck_auto_close_seconds, seconds),
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                    fontSize = 13.sp,
-                                    color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                    ThinDivider()
-                    SettingSwitchItem(
-                        title = stringResource(R.string.deck_utilities_first),
-                        description = stringResource(R.string.deck_utilities_first_desc),
-                        checked = utilitiesFirst,
-                        onCheckedChange = { utilitiesFirst = it; store.setUtilitiesFirst(it) }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            }
         }
     }
 }
@@ -471,17 +423,33 @@ fun DeckScreen(
 private const val DEMO_HOLD_MS = 700L
 private const val DEMO_GAP_MS = 350L
 
-/** The gestures currently bound to "Open deck", as label resources, for the summary card. */
-private fun deckOpeners(preference: com.newagedevs.gesturevolume.data.local.SharedPref): List<Int> {
-    val result = mutableListOf<Int>()
-    if (preference.getHandlerSingleTapAction() == HandlerActions.OPEN_DECK) result += R.string.deck_open_with_single_tap
-    if (preference.getHandlerDoubleTapAction() == HandlerActions.OPEN_DECK) result += R.string.deck_open_with_double_tap
-    if (preference.getHandlerTripleTapAction() == HandlerActions.OPEN_DECK) result += R.string.deck_open_with_triple_tap
-    if (preference.getHandlerLongTapAction() == HandlerActions.OPEN_DECK) result += R.string.deck_open_with_long_press
-    if (preference.getHandlerSwipeInAction() == HandlerActions.OPEN_DECK) result += R.string.deck_open_with_swipe_in
-    if (preference.getHandlerSwipeOutAction() == HandlerActions.OPEN_DECK) result += R.string.deck_open_with_swipe_out
-    if (HandlerActions.OPEN_DECK in preference.getContextMenuItems()) result += R.string.deck_open_with_menu
-    return result
+/** Never, or after so many seconds. Wraps, so five chips fit a narrow column in landscape. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun AutoCloseChips(selected: Int, onSelect: (Int) -> Unit) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        listOf(0, 5, 10, 20, 30).forEach { seconds ->
+            val on = selected == seconds
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = if (on) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.surfaceVariant,
+                onClick = { onSelect(seconds) }
+            ) {
+                Text(
+                    text = if (seconds == 0) stringResource(R.string.deck_auto_close_never)
+                    else stringResource(R.string.deck_auto_close_seconds, seconds),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    fontSize = 13.sp,
+                    color = if (on) MaterialTheme.colorScheme.onPrimaryContainer
+                    else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
 }
 
 @Composable

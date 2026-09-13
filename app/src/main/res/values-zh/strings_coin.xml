@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="deck_coin_hint">点击硬币来抛</string>
+    <string name="deck_coin_streak">连续 %1$d 次%2$s</string>
+    <string name="deck_coin_reset">重置计数</string>
+    <string name="deck_coin_showing">硬币显示%1$s</string>
+    <string name="deck_coin_untossed">硬币，尚未抛出</string>
+</resources>

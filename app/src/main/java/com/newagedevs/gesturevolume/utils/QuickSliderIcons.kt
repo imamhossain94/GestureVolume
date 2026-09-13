@@ -36,12 +36,32 @@ object QuickSliderIcons {
     fun automatic(target: String): Int =
         if (target == QuickSliderStore.TARGET_BRIGHTNESS) R.drawable.ic_brightness_up else R.drawable.ic_vol_increase
 
-    /** The drawable for a stored choice, or [automatic]'s for one this build no longer has. */
+    /** The glyphs that say "volume". A brightness panel wearing one is saying the wrong thing. */
+    private val VOLUME_GLYPHS = setOf(
+        R.drawable.ic_vol_increase, R.drawable.ic_vol_decrease, R.drawable.ic_vol_plus,
+        R.drawable.ic_vol_minus, R.drawable.ic_mute, R.drawable.ic_music_ui,
+    )
+
+    /** The glyphs that say "brightness", for the same mistake the other way round. */
+    private val BRIGHTNESS_GLYPHS = setOf(R.drawable.ic_brightness_up, R.drawable.ic_brightness_down)
+
+    /**
+     * The drawable for a stored choice, or [automatic]'s for one this build no longer has.
+     *
+     * Also [automatic]'s for a choice that names the *other* control. The icon is picked once, but
+     * the panel is opened on brightness and on volume alike — the volume keys open it on media
+     * whatever it is set to, and switching the target keeps the icon — so a speaker picked for a
+     * volume panel was left on a brightness one, which then showed no sun at all.
+     */
     @DrawableRes
     fun resolve(context: Context, name: String, target: String): Int {
         if (name == QuickSliderStore.ICON_AUTO) return automatic(target)
         val id = context.resources.getIdentifier(name, "drawable", context.packageName)
-        return if (id != 0) id else automatic(target)
+        if (id == 0) return automatic(target)
+        val brightness = target == QuickSliderStore.TARGET_BRIGHTNESS
+        if (brightness && id in VOLUME_GLYPHS) return automatic(target)
+        if (!brightness && id in BRIGHTNESS_GLYPHS) return automatic(target)
+        return id
     }
 
     /** The name a picked drawable is stored under. */

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The animation's own colours, for the settings screen. -->
+    <string name="slider_fill_colors">Animasyon renkleri</string>
+    <string name="slider_fill_colors_desc">Animasyonu kendi renkleri yerine seçtiğin üç renkle boya.</string>
+    <string name="slider_fill_colors_unsupported">Bu animasyon dolgu rengiyle çizilir, bu yüzden değiştirilecek kendi renkleri yoktur.</string>
+    <string name="slider_fill_color_n">Renk %1$d</string>
+    <string name="slider_fill_colors_reset">Renkleri sıfırla</string>
+</resources>

@@ -59,7 +59,7 @@ fun SliderFillSelector(
         ) {
             SliderFill.ALL.forEach { id ->
                 FillChip(
-                    label = stringResource(labelFor(id)),
+                    label = stringResource(sliderFillLabel(id)),
                     selected = style == id,
                     onClick = { onStyleChange(id) },
                 )
@@ -99,7 +99,8 @@ private fun FillChip(label: String, selected: Boolean, onClick: () -> Unit) {
     )
 }
 
-private fun labelFor(id: String): Int = when (id) {
+/** The translated name of a fill animation, for the summaries that name the one chosen. */
+fun sliderFillLabel(id: String): Int = when (id) {
     SliderFill.LIQUID -> R.string.fill_liquid
     SliderFill.VU_METER -> R.string.fill_vu_meter
     SliderFill.WAVEFORM -> R.string.fill_waveform
@@ -121,5 +122,15 @@ private fun labelFor(id: String): Int = when (id) {
     SliderFill.MATRIX_RAIN -> R.string.fill_matrix_rain
     SliderFill.RUNE -> R.string.fill_rune
     SliderFill.STRIPES -> R.string.fill_stripes
+    SliderFill.FIREFLIES -> R.string.fill_fireflies
+    SliderFill.SNOWFALL -> R.string.fill_snowfall
+    SliderFill.HEARTBEAT -> R.string.fill_heartbeat
+    SliderFill.NEON -> R.string.fill_neon
+    SliderFill.OCEAN -> R.string.fill_ocean
+    SliderFill.GRADIENT -> R.string.fill_gradient
+    SliderFill.CONFETTI -> R.string.fill_confetti
+    SliderFill.WARP -> R.string.fill_warp
+    SliderFill.STORM -> R.string.fill_storm
+    SliderFill.FIREWORKS -> R.string.fill_fireworks
     else -> R.string.fill_solid
 }

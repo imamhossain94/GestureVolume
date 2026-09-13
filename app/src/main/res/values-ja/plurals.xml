@@ -9,9 +9,6 @@
     <plurals name="deck_notes_count">
         <item quantity="other">%1$d 件保存済み</item>
     </plurals>
-    <plurals name="deck_clipboard_count">
-        <item quantity="other">%1$d 件</item>
-    </plurals>
     <plurals name="deck_tiles_count">
         <item quantity="other">%2$d 件中 %1$d 件オン</item>
     </plurals>

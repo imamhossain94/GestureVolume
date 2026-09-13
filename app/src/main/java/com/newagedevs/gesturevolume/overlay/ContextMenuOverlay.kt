@@ -77,12 +77,15 @@ import com.newagedevs.gesturevolume.utils.ContextMenuStyle
  *
  * @param anchor the bar's window rectangle, in pixels relative to the usable frame.
  * @param frame the usable frame, in pixels.
+ * @param lying whether the bar lies along the top or bottom edge (Dynamic position, landscape),
+ *   in which case the card opens below or above it rather than beside it.
  */
 @Composable
 fun ContextMenuOverlay(
     entries: List<HandlerActionCatalog.Entry>,
     anchor: IntRect,
     frame: IntSize,
+    lying: Boolean = false,
     grid: Boolean,
     /** Size, lines and page size, from the settings. See [ContextMenuStyle]. */
     style: ContextMenuStyle = ContextMenuStyle(),
@@ -197,10 +200,23 @@ fun ContextMenuOverlay(
                         spaceLeft >= needed -> false
                         else -> spaceRight >= spaceLeft
                     }
-                    val x = (if (right) anchor.right + gapPx else anchor.left - cardW - gapPx)
-                        .coerceIn(gapPx, (frame.width - cardW - gapPx).coerceAtLeast(gapPx))
-                    val y = (anchor.top + anchor.height / 2 - cardH / 2)
-                        .coerceIn(gapPx, (frame.height - cardH - gapPx).coerceAtLeast(gapPx))
+                    // A bar lying along the top or bottom edge opens the card below or above
+                    // itself, centred on it — the same rule as beside an upright bar, turned.
+                    val below = anchor.top + anchor.height / 2 < frame.height / 2
+                    val x = (
+                        when {
+                            lying -> anchor.left + anchor.width / 2 - cardW / 2
+                            right -> anchor.right + gapPx
+                            else -> anchor.left - cardW - gapPx
+                        }
+                    ).coerceIn(gapPx, (frame.width - cardW - gapPx).coerceAtLeast(gapPx))
+                    val y = (
+                        when {
+                            !lying -> anchor.top + anchor.height / 2 - cardH / 2
+                            below -> anchor.bottom + gapPx
+                            else -> anchor.top - cardH - gapPx
+                        }
+                    ).coerceIn(gapPx, (frame.height - cardH - gapPx).coerceAtLeast(gapPx))
                     placedRect = IntRect(x, y, x + cardW, y + cardH)
                     layout(constraints.maxWidth, constraints.maxHeight) {
                         placeable.place(x, y)

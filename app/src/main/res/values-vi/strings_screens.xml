@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feedback_pick_any">Chọn tất cả mục phù hợp</string>
+    <string name="feedback_via_email_title">Gửi từ ứng dụng email của bạn</string>
+    <string name="feedback_via_email_desc">Nút Gửi mở ứng dụng email với nội dung đã điền sẵn. Không có gì được gửi cho đến khi bạn gửi ở đó.</string>
+    <string name="feedback_details_title">Thông tin kèm theo</string>
+    <string name="feedback_details_desc">Phiên bản ứng dụng, mẫu thiết bị và phiên bản Android được thêm vào để dễ tìm ra sự cố.</string>
+</resources>

@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">تم حفظ المظهر</string>
     <string name="appearance">مظهر</string>
-    <string name="appearance_desc">تخصيص المعالج</string>
+    <string name="appearance_desc">اللون والشكل والحجم</string>
     <string name="customize_handler">تخصيص المعالج</string>
     <string name="actions">الإجراءات</string>
-    <string name="actions_desc">اضغط &amp; إعدادات الإيماءات</string>
+    <string name="actions_desc">وظائف النقر والسحب</string>
 
     <!-- Navigation -->
     <string name="pro_version">النسخة الاحترافية</string>
@@ -236,16 +236,8 @@
     <string name="granted">ممنوح</string>
 
     <!-- Presets -->
-    <string name="preset_default_title">تقصير</string>
-    <string name="preset_default_subtitle">مقبض قياسي</string>
-    <string name="preset_minimal_title">الحد الأدنى</string>
-    <string name="preset_minimal_subtitle">رقيقة وأمبير. دقيق</string>
     <string name="preset_bold_title">عريض</string>
     <string name="preset_bold_subtitle">كبير &amp; مرئي</string>
-    <string name="preset_night_title">ليلة</string>
-    <string name="preset_night_subtitle">موضوع مظلم</string>
-    <string name="preset_ghost_title">شبح</string>
-    <string name="preset_ghost_subtitle">غير مرئية تقريبا</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">اضغط على زر الرجوع مرة أخرى للخروج</string>
@@ -341,13 +333,11 @@
     <string name="got_it">فهمت</string>
     <string name="settings_sheet">إعدادات المظهر</string>
     <string name="remove_ads_support_developer">أزل كل الإعلانات وادعم المطوّر</string>
-    <string name="reset_app">إعادة ضبط التطبيق</string>
+    <string name="reset_app">إعادة الضبط</string>
     <string name="reset_app_title">إعادة ضبط كل شيء؟</string>
     <string name="reset_app_message">يعود كل إعداد إلى قيمته الافتراضية: شكل الشريط وموضعه، وكل إجراءات النقر والتمرير، وقائمة الضغط المطوّل، والمظهر واللغة. سيتم إيقاف الشريط العائم وستعود شاشات الترحيب.\n\nيُحتفظ بشرائك للنسخة المدفوعة. لا يمكن التراجع عن هذا.</string>
     <string name="reset_app_confirm">إعادة الضبط</string>
     <string name="reset_app_done">تمت إعادة ضبط كل شيء.</string>
-    <string name="permission_needed_notification">أزرار الإشعار مفعّلة. بدون هذا، لن تظهر «إظهار» و«الإعدادات» و«إيقاف».</string>
-    <string name="permission_needed_brightness">لقد عيّنت إجراء سطوع. بدون هذا، لن يتمكن من تغيير السطوع.</string>
     <string name="permission_action_required_one">إذن واحد يحتاج انتباهك</string>
     <string name="permission_action_required_many">%1$d أذونات تحتاج انتباهك</string>
     <!-- 1.3.5: adaptive volume stream -->
@@ -393,4 +383,81 @@
     <string name="about_developed_in">طُوِّر في بنغلاديش بواسطة</string>
     <string name="about_ideas_by">أفكار الميزات من صديق من بهارات (الهند)</string>
     <string name="about_ideas_desc">اقترح كثيرًا من ميزات هذا التطبيق، ولا تزال أفكاره تتوالى.</string>
+    <string name="quick_panel_card_subtitle">مسار السطوع والصوت الذي ينفتح إليه الشريط</string>
+    <string name="long_press_menu_card_subtitle">الإجراءات المتاحة عند الضغط المطوّل على الشريط</string>
+    <string name="panel_theme_desc">طريقة رسم Deck واللوحة السريعة وقائمة الضغط المطوّل. Gloss و Clear و Paper فاتحة بنص داكن. Frosted و Glass و Gloss و Clear و Acrylic و Amethyst تُضبّب الشاشة خلف اللوحة، وهذا يتطلب Android 12 أو أحدث؛ وحيث لا يدعم النظام التضبيب، تبقى اللوحة شبه شفافة.</string>
+    <string name="deck_card_subtitle">لوحة جانبية للاختصارات والأدوات والبحث</string>
+    <string name="visibility_card_subtitle">التطبيقات ولقطات الشاشة التي لا يظهر فيها الشريط</string>
+    <string name="visibility_screenshots_title">لقطات الشاشة</string>
+    <string name="hide_in_screenshots_title">الإخفاء في لقطات الشاشة</string>
+    <string name="hide_in_screenshots_desc">عندما تضغط زر خفض الصوت مع زر التشغيل لالتقاط لقطة شاشة، يختفي الشريط ولوحاته عن الأنظار للحظة، فتُظهر الصورة تطبيقك لا الشريط. أما إجراء «لقطة شاشة» فيستبعدها دائمًا.</string>
+    <string name="hide_in_screenshots_needs_accessibility">يتطلب ذلك خدمة إمكانية الوصول، فهي التي تلتقط ضغطة زر خفض الصوت. انقر لتفعيلها من شاشة الأذونات.</string>
+    <string name="hide_in_screenshots_limits">لقطات الشاشة المأخوذة من الإعدادات السريعة أو قائمة التشغيل أو بإيماءة لا تُنذر مسبقًا، لذا قد يظهر الشريط فيها. مربع «الشريط» يُخفيه بنقرة واحدة.</string>
+    <string name="permission_note_write_settings">يتطلب إذن «تعديل إعدادات النظام» لتغيير السطوع. انقر للسماح به من شاشة الأذونات.</string>
+    <string name="permission_note_accessibility">يتطلب خدمة إمكانية الوصول ليعمل. انقر لتفعيلها من شاشة الأذونات.</string>
+    <string name="permission_note_dnd">يتطلب الوصول إلى «عدم الإزعاج» ليعمل. انقر للسماح به من شاشة الأذونات.</string>
+    <string name="position_same_both">الموضع نفسه في الوضعين العمودي والأفقي</string>
+    <string name="position_same_both_desc">عند الإيقاف، يحتفظ الشريط بمكان خاص به لكل طريقة تمسك بها الهاتف.</string>
+    <string name="position_portrait">عمودي</string>
+    <string name="position_landscape">أفقي</string>
+    <string name="position_both">عمودي وأفقي</string>
+    <string name="position_now">الحالي</string>
+    <string name="position_from_left">من اليسار</string>
+    <string name="position_from_top">من الأعلى</string>
+    <string name="position_snap_off_hint">ابتعد الشريط عن الحافة، لذا أُوقف خيار «المحاذاة إلى الحافة». أعد تفعيله لإرسال الشريط إلى الجانب الأقرب.</string>
+    <string name="position_sliders_desc">موضع منتصف الشريط كنسبة من الشاشة. يمكنك أيضًا الضغط مطوّلًا على الشريط وسحبه؛ ويُحفظ ذلك الموضع لاتجاه الهاتف في تلك اللحظة.</string>
+    <string name="preview_backdrop_change">تغيير الخلفية</string>
+    <string name="context_menu_group_layout">التخطيط والحجم</string>
+    <string name="context_menu_group_look">المظهر</string>
+    <string name="context_menu_group_items">العناصر</string>
+    <string name="slider_edge_offset_desc">يُبعد اللوحة المفتوحة عن حافة الشاشة، بعيدًا عن الحافة المنحنية أو إيماءة الرجوع. وتظل تنبثق من الشريط.</string>
+    <string name="permission_card_desc">ما يُسمح للشريط بفعله: الظهور فوق التطبيقات الأخرى، وتنفيذ إجراءات النظام، وتغيير السطوع.</string>
+    <string name="permission_chip_overlay">الظهور فوق التطبيقات</string>
+    <string name="permission_chip_accessibility">إمكانية الوصول</string>
+    <string name="permission_chip_settings">تعديل الإعدادات</string>
+    <string name="permission_chip_more">+%1$d أخرى</string>
+    <string name="position_dynamic">الموضع الديناميكي</string>
+    <string name="position_dynamic_desc">ينقل الشريط مع الشاشة عند تدوير الهاتف. يبقى على الحافة نفسها من الهاتف ويستلقي على طول الحافة العلوية أو السفلية في الوضع الأفقي، ملاصقًا للحافة دائمًا. عند إيقافه يبقى الشريط قائمًا على جانبه من الشاشة.</string>
+    <string name="position_along_edge">الموضع على طول الحافة</string>
+    <string name="position_along_edge_desc">مكان منتصف الشريط على طول حافته، مقيسًا والهاتف في الوضع العمودي. عند تدوير الهاتف يبقى الشريط في المكان نفسه من الشاشة.</string>
+    <string name="group_content">المحتوى</string>
+    <string name="group_size_shape">الحجم والشكل</string>
+    <string name="group_colours">الألوان</string>
+    <string name="group_animation">الحركة</string>
+    <string name="group_behaviour">السلوك</string>
+    <string name="slider_sound">صوت الخطوة</string>
+    <string name="slider_sound_desc">نقرة خفيفة مع كل خطوة أثناء السحب. في الوضع التكيفي ترتفع النغمة مع المستوى، وفي لوحة الصوت تُشغَّل بمستوى الصوت الذي تضبطه.</string>
+    <string name="slider_sound_off">إيقاف</string>
+    <string name="slider_sound_click">نقرة</string>
+    <string name="slider_sound_adaptive">تكيفي</string>
+    <string name="slider_content_colors">ألوان خاصة للأيقونة والقيمة</string>
+    <string name="slider_content_colors_desc">عند الإيقاف تأخذ الأيقونة والرقم لوني المسار والتعبئة، ويتبادلان عندما تمر التعبئة فوقهما.</string>
+    <string name="slider_value_color">لون القيمة</string>
+    <string name="slider_icon_color">لون الأيقونة</string>
+    <string name="permission_feature_floating_bar">الشريط العائم</string>
+    <string name="permission_feature_single_tap">الإجراءات: نقرة واحدة</string>
+    <string name="permission_feature_double_tap">الإجراءات: نقر مزدوج</string>
+    <string name="permission_feature_triple_tap">الإجراءات: نقر ثلاثي</string>
+    <string name="permission_feature_long_press">الإجراءات: ضغط مطوّل</string>
+    <string name="permission_feature_swipe_up">الإجراءات: التمرير لأعلى</string>
+    <string name="permission_feature_swipe_down">الإجراءات: التمرير لأسفل</string>
+    <string name="permission_feature_swipe_in">الإجراءات: التمرير للداخل</string>
+    <string name="permission_feature_swipe_out">الإجراءات: التمرير للخارج</string>
+    <string name="permission_feature_notification_controls">الإجراءات: أزرار الإشعار</string>
+    <string name="permission_feature_menu_entry">قائمة الضغط المطوّل: العناصر</string>
+    <string name="permission_feature_deck_tile">Deck: المربعات</string>
+    <string name="permission_feature_deck_contacts">بحث Deck: جهات الاتصال</string>
+    <string name="permission_feature_deck_direct_call">بحث Deck: الاتصال مباشرة</string>
+    <string name="permission_feature_slider_brightness">المنزلق السريع: السطوع</string>
+    <string name="permission_feature_slider_instant_keys">المنزلق السريع: أزرار الصوت الفورية</string>
+    <string name="permission_feature_hide_in_screenshots">الظهور: الإخفاء في لقطات الشاشة</string>
+    <string name="permission_feature_hide_in_apps">الظهور: الإخفاء في التطبيقات المختارة</string>
+    <string name="permission_needed_by">يحتاجه %1$s</string>
+    <string name="permission_needed_by_more">يحتاجه %1$s و%2$d غيره</string>
+    <string name="permission_needed_by_list">تحتاجه الإعدادات التي اخترتها:</string>
+    <string name="nav_card_needs_permission">يحتاج إلى إذن</string>
+    <string name="permission_note_notifications">يتطلب إذن الإشعارات لإظهار الأزرار. انقر للسماح به من شاشة الأذونات.</string>
+    <string name="permission_note_contacts">يتطلب إذن جهات الاتصال للعثور على الأشخاص. انقر للسماح به من شاشة الأذونات.</string>
+    <string name="permission_note_phone">يتطلب إذن الهاتف للاتصال مباشرة. انقر للسماح به من شاشة الأذونات.</string>
+    <string name="permission_note_overlay">يتطلب «العرض على التطبيقات الأخرى» لإظهار الشريط. انقر للسماح به من شاشة الأذونات.</string>
 </resources>

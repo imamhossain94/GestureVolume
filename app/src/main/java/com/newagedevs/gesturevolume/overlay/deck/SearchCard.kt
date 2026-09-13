@@ -153,7 +153,7 @@ fun SearchCard(actions: DeckActions, palette: DeckPalette) {
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
                     .background(palette.chip)
-                    .clickable { actions.copy(calc.result, paste = false) }
+                    .clickable { actions.copy(calc.result) }
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -284,7 +284,7 @@ private fun submit(
 ) {
     when (route) {
         is SearchRouter.Route.Empty -> Unit
-        is SearchRouter.Route.Calculation -> actions.copy(route.result, paste = false)
+        is SearchRouter.Route.Calculation -> actions.copy(route.result)
         is SearchRouter.Route.PhoneNumber -> openNumber(actions, route.digits, route.action)
         is SearchRouter.Route.Web -> {
             val provider = if (defaultProvider in providers) defaultProvider else providers.firstOrNull()

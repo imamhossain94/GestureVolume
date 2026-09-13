@@ -2,13 +2,11 @@ package com.newagedevs.gesturevolume.overlay.deck
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Checklist
-import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.DoNotDisturbOn
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.FlashlightOn
@@ -21,7 +19,6 @@ import androidx.compose.material.icons.filled.Screenshot
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.VolumeUp
-import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.newagedevs.gesturevolume.R
@@ -80,15 +77,12 @@ object DeckTiles {
     const val TIMER = "timer"
     const val CALCULATOR = "calculator"
     const val NOTES = "notes"
-    const val CLIPBOARD = "clipboard"
     const val CHECKLIST = "checklist"
     const val COIN = "coin"
     const val DICE = "dice"
     const val SCREENSHOT = "screenshot"
     const val LOCK = "lock"
     const val QR = "qr"
-    const val SONG = "song"
-    const val WEATHER = "weather"
 
     val ALL: List<DeckTile> = listOf(
         DeckTile(SEARCH, R.string.tile_search, R.string.tile_search_desc, Icons.Filled.Search, DeckTileKind.PANEL, defaultOn = true),
@@ -103,15 +97,12 @@ object DeckTiles {
         DeckTile(TIMER, R.string.tile_timer, R.string.tile_timer_desc, Icons.Filled.Timer, DeckTileKind.PANEL, defaultOn = true),
         DeckTile(CALCULATOR, R.string.tile_calculator, R.string.tile_calculator_desc, Icons.Filled.Calculate, DeckTileKind.PANEL),
         DeckTile(NOTES, R.string.tile_notes, R.string.tile_notes_desc, Icons.Filled.EditNote, DeckTileKind.PANEL, defaultOn = true),
-        DeckTile(CLIPBOARD, R.string.tile_clipboard, R.string.tile_clipboard_desc, Icons.Filled.ContentPaste, DeckTileKind.PANEL, defaultOn = true),
         DeckTile(CHECKLIST, R.string.tile_checklist, R.string.tile_checklist_desc, Icons.Filled.Checklist, DeckTileKind.PANEL),
         DeckTile(COIN, R.string.tile_coin, R.string.tile_coin_desc, Icons.Filled.Paid, DeckTileKind.PANEL),
         DeckTile(DICE, R.string.tile_dice, R.string.tile_dice_desc, Icons.Filled.Casino, DeckTileKind.PANEL),
         DeckTile(SCREENSHOT, R.string.tile_screenshot, R.string.tile_screenshot_desc, Icons.Filled.Screenshot, DeckTileKind.LAUNCH, HandlerActions.SCREENSHOT, needsAccessibility = true),
         DeckTile(LOCK, R.string.tile_lock, R.string.tile_lock_desc, Icons.Filled.Lock, DeckTileKind.LAUNCH, HandlerActions.LOCK, needsAccessibility = true),
-        DeckTile(QR, R.string.tile_qr, R.string.tile_qr_desc, Icons.Filled.QrCodeScanner, DeckTileKind.LAUNCH, HandlerActions.SCAN_QR),
-        DeckTile(SONG, R.string.tile_song, R.string.tile_song_desc, Icons.Filled.Audiotrack, DeckTileKind.LAUNCH, HandlerActions.SONG_SEARCH),
-        DeckTile(WEATHER, R.string.tile_weather, R.string.tile_weather_desc, Icons.Filled.WbSunny, DeckTileKind.PANEL)
+        DeckTile(QR, R.string.tile_qr, R.string.tile_qr_desc, Icons.Filled.QrCodeScanner, DeckTileKind.LAUNCH, HandlerActions.SCAN_QR)
     )
 
     private val byId: Map<String, DeckTile> = ALL.associateBy { it.id }

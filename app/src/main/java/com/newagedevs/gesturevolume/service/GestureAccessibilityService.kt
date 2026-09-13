@@ -4,42 +4,38 @@ import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.ComponentName
 import android.content.Intent
-import android.content.res.Configuration
 import android.os.Build
 import android.view.KeyEvent
-import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
-import androidx.core.content.ContextCompat
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.data.local.SharedPref
-import com.newagedevs.gesturevolume.livedata.LiveDataManager
 import com.newagedevs.gesturevolume.utils.HandlerActions
-import com.newagedevs.gesturevolume.utils.OverlayHostMode
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 /**
- * The accessibility service, back after its 1.3.4 retirement and doing four things.
+ * The accessibility service, back after its 1.3.4 retirement and doing three things. It never
+ * draws the bar: that is always [OverlayService], with the overlay permission and its notification.
  *
  * **It performs the system actions** — lock the screen, take a screenshot, Back, Home, Recents,
  * the notification shade, quick settings, the power menu. Every one of these is a
  * `performGlobalAction`, and there is no other route to any of them for an app that is not the
  * system.
  *
- * **It can draw the bar.** While enabled, the system keeps this service bound, it may add windows
- * of its own without the overlay permission, and no foreground service — and therefore no
- * notification — is involved. That is the "run without a notification" option on the Actions
- * screen: with it on, [OverlayRuntime] hands the overlay to this service and stops
- * [OverlayService]. With it off, this service performs actions and nothing else.
+ * **It can catch the volume keys**, when the user sets the Quick panel to open on them instantly,
+ * or turns on Hide in screenshots. The platform tells an app that is not in the foreground about a
+ * volume change half a second after the press; a key filter is handed the press itself. Off unless
+ * one of those settings is chosen, and even then it takes the two volume keys and hands every other
+ * key straight back.
  *
- * **It can read copied text**, when the user turns clipboard capture on, by watching text
- * selection and the Copy button. Off by default; the event subscription is empty until it is
- * switched on, so the service sees nothing it has no reason to.
+ * **It can see which app is on screen**, when the user has picked apps for the bar to step aside
+ * in. It reads the package and class of the window that came to the front and nothing inside it.
  *
- * **It can catch the volume keys**, when the user sets the Quick panel to open on them instantly.
- * The platform tells an app that is not in the foreground about a volume change half a second
- * after the press; a key filter is handed the press itself. Off unless that setting is chosen,
- * and even then it takes the two volume keys and hands every other key straight back.
+ * **It never reads what is inside a window**, this app's or any other's. The service declares
+ * `canRetrieveWindowContent="false"`, so no window content is available to it at all.
+ *
+ * Everything it hears is passed to the controller the foreground service is running, through
+ * [OverlayRuntime.activeController].
  *
  * It is declared `isAccessibilityTool="false"`: this is a convenience feature, and the Play
  * listing carries the disclosure that says so.
@@ -50,88 +46,22 @@ class GestureAccessibilityService : AccessibilityService() {
     @Inject
     lateinit var preference: SharedPref
 
-    private var controller: OverlayController? = null
-
-    /** True while this service, rather than the foreground service, is drawing the bar. */
-    val isHostingOverlay: Boolean get() = controller != null
-
-    private val host = object : OverlayController.Host {
-        // No notification to keep in step: that is the point of this host.
-        override fun onNotificationStateChanged() = Unit
-
-        override fun onStopRequested() = stopByUser()
-    }
-
     override fun onServiceConnected() {
         super.onServiceConnected()
         OverlayRuntime.accessibilityService = this
         applyEventSubscription()
-        if (preference.isRunning() && preference.getOverlayHostMode() == OverlayHostMode.ACCESSIBILITY) {
-            OverlayRuntime.startOverlay(this, preference)
-        }
-    }
-
-    /** Starts drawing the bar from this service. Idempotent. */
-    fun hostOverlay() {
-        if (controller != null) return
-        controller = OverlayController(
-            context = this,
-            windowType = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            preference = preference,
-            host = host
-        ).also { it.show() }
-    }
-
-    /**
-     * Stops drawing the bar from this service.
-     *
-     * @param restoreBrightness false when another host is about to carry on: adaptive brightness
-     *   that this app switched off stays off until whichever host is last stops for good.
-     */
-    fun releaseOverlay(restoreBrightness: Boolean = true) {
-        controller?.destroy(restoreBrightness)
-        controller = null
-    }
-
-    /** The same command vocabulary [OverlayService] answers to, for [OverlayRuntime.sendCommand]. */
-    fun handleCommand(action: String) {
-        LiveDataManager.sendCommand(action)
-        when (action) {
-            "stop" -> stopByUser()
-            // Notification-only; nothing to do here.
-            "refresh_notification" -> Unit
-            else -> controller?.handleCommand(action)
-        }
-    }
-
-    private fun stopByUser() {
-        preference.setRunning(false)
-        // Stopping is not hiding: the bar should be there again the next time the service is
-        // started, or the user would turn it on and get nothing.
-        preference.setHandlerHidden(false)
-        releaseOverlay()
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        controller?.onConfigurationChanged()
     }
 
     /**
      * Subscribes to exactly the events the current settings need.
      *
-     * With clipboard capture off and no apps for the bar to step aside in, that is nothing at all.
-     * The XML declaration has to name the event types the service *may* use, so the honest
-     * version of "not looking" is to set the live subscription to zero here rather than to
-     * receive and discard.
+     * With no apps for the bar to step aside in, that is nothing at all. The XML declaration has
+     * to name the event types the service *may* use, so the honest version of "not looking" is to
+     * set the live subscription to zero here rather than to receive and discard.
      */
     fun applyEventSubscription() {
         val info = runCatching { serviceInfo }.getOrNull() ?: return
         var types = 0
-        if (preference.getClipboardCaptureEnabled()) {
-            types = types or AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED or
-                AccessibilityEvent.TYPE_VIEW_CLICKED
-        }
         // Which app is in front, and only while the user has picked apps for the bar to step aside
         // in. Nothing about the window is read but its package and class.
         val watchApps = preference.getHandlerHiddenApps().isNotEmpty()
@@ -142,12 +72,14 @@ class GestureAccessibilityService : AccessibilityService() {
         // sends its window change moments before its first dialog or pane sends another. With
         // one, the app itself would be lost, so there is none while watching for the app in front.
         info.notificationTimeout = if (watchApps) 0L else 100L
-        // Keys only while the volume keys are set to Instant. With the flag on, every key press on
-        // the device is offered here before anything else sees it; this takes the two volume keys
-        // and hands every other straight back, but the honest version of not looking is not to
-        // ask, the same as for the events above.
+        // Keys only while the volume keys are set to Instant, or the bar is set to step out of
+        // screenshots, which it does on the Volume down half of the chord. With the flag on, every
+        // key press on the device is offered here before anything else sees it; this takes the two
+        // volume keys and hands every other straight back, but the honest version of not looking
+        // is not to ask, the same as for the events above.
         val filterKeys =
-            preference.slider.getVolumeKeyMode() == QuickSliderStore.VOLUME_KEYS_INSTANT
+            preference.slider.getVolumeKeyMode() == QuickSliderStore.VOLUME_KEYS_INSTANT ||
+                preference.getHideInScreenshots()
         info.flags = if (filterKeys) {
             info.flags or AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS
         } else {
@@ -155,20 +87,15 @@ class GestureAccessibilityService : AccessibilityService() {
         }
         runCatching { serviceInfo = info }
         // No longer watching, so the app the bar was stepping aside for no longer counts.
-        if (!watchApps) (controller ?: OverlayRuntime.activeController)?.clearForegroundApp()
+        if (!watchApps) OverlayRuntime.activeController?.clearForegroundApp()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
-        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            foregroundAppOf(event)?.let { app ->
-                (controller ?: OverlayRuntime.activeController)?.onForegroundApp(app)
-            }
-            return
+        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
+        foregroundAppOf(event)?.let { app ->
+            OverlayRuntime.activeController?.onForegroundApp(app)
         }
-        if (!preference.getClipboardCaptureEnabled()) return
-        controller?.let { ClipboardCapture.onEvent(this, event, preference) }
-            ?: ClipboardCapture.onEvent(this, event, preference)
     }
 
     /** Whether each window class seen is an activity, remembered so each is asked about once. */
@@ -195,18 +122,19 @@ class GestureAccessibilityService : AccessibilityService() {
 
     /**
      * The two volume keys, before the system acts on them, while the Quick panel is set to open
-     * on them instantly. Every other key goes straight back. See [applyEventSubscription] for when
-     * keys are asked for at all, and `OverlayController.onVolumeKey` for when one is taken.
+     * on them instantly or the bar is set to stay out of screenshots. Every other key goes straight
+     * back. See [applyEventSubscription] for when keys are asked for at all, and
+     * `OverlayController.onVolumeKey` for when one is taken.
      *
-     * Passed to whichever controller is drawing the bar, which need not be this service's own:
-     * on the notification route the foreground service draws it and this service only listens.
+     * Passed to the controller the foreground service is running; with the bar not running there is
+     * none, and the key goes on to the system untouched.
      */
     override fun onKeyEvent(event: KeyEvent?): Boolean {
         event ?: return false
         if (event.keyCode != KeyEvent.KEYCODE_VOLUME_UP &&
             event.keyCode != KeyEvent.KEYCODE_VOLUME_DOWN
         ) return false
-        val target = controller ?: OverlayRuntime.activeController ?: return false
+        val target = OverlayRuntime.activeController ?: return false
         return runCatching { target.onVolumeKey(event) }.getOrDefault(false)
     }
 
@@ -235,62 +163,14 @@ class GestureAccessibilityService : AccessibilityService() {
         return runCatching { performGlobalAction(id) }.getOrDefault(false)
     }
 
-    /**
-     * Pastes [text] into whatever field has input focus, in whichever app is in front.
-     *
-     * Two attempts. `ACTION_PASTE` on the focused node is what the platform's own Paste does and
-     * keeps the field's undo history intact; when a field refuses it, the text is set outright
-     * with the clipboard's content appended to what was there. Needs `canRetrieveWindowContent`,
-     * which the service declares for exactly this and the capture above.
-     *
-     * @return false when nothing has focus, which is the usual reason: the Deck was open, and the
-     *   caller should close it and try again once focus has returned to the app underneath.
-     */
-    fun pasteIntoFocusedField(text: CharSequence): Boolean {
-        val root = runCatching { rootInActiveWindow }.getOrNull() ?: return false
-        val focused = runCatching {
-            root.findFocus(android.view.accessibility.AccessibilityNodeInfo.FOCUS_INPUT)
-        }.getOrNull() ?: return false
-        if (!focused.isEditable) return false
-        val pasted = runCatching {
-            focused.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_PASTE)
-        }.getOrDefault(false)
-        if (pasted) return true
-        val existing = focused.text?.toString().orEmpty()
-        val args = android.os.Bundle().apply {
-            putCharSequence(
-                android.view.accessibility.AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
-                existing + text
-            )
-        }
-        return runCatching {
-            focused.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_SET_TEXT, args)
-        }.getOrDefault(false)
-    }
-
     override fun onUnbind(intent: Intent?): Boolean {
-        val wasHosting = isHostingOverlay
         // Nothing will report the app in front any more, so the bar must not stay away for one.
-        if (!wasHosting) OverlayRuntime.activeController?.clearForegroundApp()
-        // Another host is about to carry on, or nothing is; either way the brightness hand-back
-        // belongs to the one that stops for good.
-        releaseOverlay(restoreBrightness = !preference.isRunning())
-        OverlayRuntime.accessibilityService = null
-        if (wasHosting && preference.isRunning()) {
-            // The user switched the service off in system settings while it was drawing the bar.
-            // Fall back to the notification route. Android 12+ may refuse a foreground start from
-            // here; the preference still says running, so the next app launch repairs it.
-            try {
-                ContextCompat.startForegroundService(this, Intent(this, OverlayService::class.java))
-            } catch (e: Exception) {
-                android.util.Log.e("GestureA11yService", "fallback start failed", e)
-            }
-        }
+        OverlayRuntime.activeController?.clearForegroundApp()
+        if (OverlayRuntime.accessibilityService === this) OverlayRuntime.accessibilityService = null
         return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
-        releaseOverlay(restoreBrightness = !preference.isRunning())
         if (OverlayRuntime.accessibilityService === this) OverlayRuntime.accessibilityService = null
         super.onDestroy()
     }

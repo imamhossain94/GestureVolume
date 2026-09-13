@@ -23,7 +23,7 @@ import com.newagedevs.gesturevolume.R
  *
  * Shown every time the app is about to open the accessibility settings for the service, not only
  * the first: the list of things the service does is the whole of the consent, and a user who
- * bound Lock screen a month ago and is now switching on "run without a notification" is agreeing
+ * bound Lock screen a month ago and is now choosing apps to hide the bar in is agreeing
  * to something new. It names each use, says what is not read, and says how to turn it off again.
  */
 @Composable

@@ -1,7 +1,6 @@
 package com.newagedevs.gesturevolume.ui.viewmodels
 
 import android.content.Context
-import com.newagedevs.gesturevolume.utils.OverlayHostMode
 
 sealed class MainEvent {
     data class ToggleService(val isRunning: Boolean, val context: Context) : MainEvent()
@@ -32,9 +31,6 @@ sealed class MainEvent {
 
     /** Show or hide the bar deliberately, from the app rather than from the notification. */
     data class SetHandlerHidden(val hidden: Boolean, val context: Context) : MainEvent()
-
-    /** Which service draws the bar. Takes effect at once when the bar is running. */
-    data class SetOverlayHostMode(val mode: OverlayHostMode, val context: Context) : MainEvent()
 
     /** Wipe every setting back to factory defaults. Confirmed in the UI before it gets here. */
     data class ResetAllSettings(val context: Context) : MainEvent()

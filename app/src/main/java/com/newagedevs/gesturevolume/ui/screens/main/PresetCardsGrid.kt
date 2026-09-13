@@ -38,14 +38,18 @@ private data class PresetConfig(
     val outerCorner: Dp? = null,
     /** See [PresetCard]. Rounded unless the preset is cut to something else. */
     val shape: String = HandlerShape.ROUNDED,
-    val flare: Float = HandlerShape.DEFAULT_FLARE
+    val flare: Float = HandlerShape.DEFAULT_FLARE,
+    /** See [PresetCard]: the floating bubble, drawn as a circle held off the edge. */
+    val round: Boolean = false
 )
 
 @Composable
 fun PresetCardsGrid(
     viewModel: MainViewModel,
     context: Context,
-    onNavigateToAppearance: (String) -> Unit
+    onNavigateToAppearance: (String) -> Unit,
+    /** How many cards a row holds: two upright, four on its side to match the grid above. */
+    columns: Int = 2,
 ) {
     val primary = MaterialTheme.colorScheme.primary
     val onSurface = MaterialTheme.colorScheme.onSurface
@@ -67,16 +71,10 @@ fun PresetCardsGrid(
             // idea drawn at a size where it is legible.
             PresetConfig("Edge", R.string.preset_edge_title, R.string.preset_edge_subtitle, Icons.Default.Settings,
                 listOf(primary, primary), 12.dp, 10.dp, ComposeColor.Black, 0.9f, outerCorner = 4.dp),
-            PresetConfig("Minimal", R.string.preset_minimal_title, R.string.preset_minimal_subtitle, Icons.Default.LinearScale,
-                listOf(primary, primary), 8.dp, 6.dp, onSurface, 0.4f),
             // A circle, because Bold is one now. Equal width and a radius of half it is what the
             // swatch has to say; PresetCard draws the height, so the two are matched there.
             PresetConfig("Bold", R.string.preset_bold_title, R.string.preset_bold_subtitle, Icons.Default.Adjust,
-                listOf(primary, primary), 34.dp, 17.dp, onSurface, 0.55f),
-            PresetConfig("Night", R.string.preset_night_title, R.string.preset_night_subtitle, Icons.Default.DarkMode,
-                listOf(primary, primary), 22.dp, 10.dp, onSurface, 0.7f),
-            PresetConfig("Ghost", R.string.preset_ghost_title, R.string.preset_ghost_subtitle, Icons.Default.HideSource,
-                listOf(primary, primary), 16.dp, 8.dp, onSurface, 0.1f),
+                listOf(primary, primary), 34.dp, 17.dp, onSurface, 0.55f, round = true),
         )
     }
 
@@ -84,15 +82,22 @@ fun PresetCardsGrid(
     // indices — `presets[6]`, `presets[4]` — which is a layout that silently reorders itself when
     // a preset is inserted and crashes outright when one is removed. Two removals is exactly what
     // happened, so the grid now follows whatever the list holds.
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        presets.chunked(2).forEach { row ->
+    // The same gap as the cards above, so the presets sit on the same grid lines.
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        presets.chunked(columns.coerceAtLeast(1)).forEach { row ->
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                // The cards in a row share the tallest one's height, so a two-line description
+                // beside a one-line one does not leave the row ragged.
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 row.forEach { preset ->
                     PresetCard(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
                         title = stringResource(preset.nameRes),
                         subtitle = stringResource(preset.subtitleRes),
                         icon = preset.icon,
@@ -104,12 +109,13 @@ fun PresetCardsGrid(
                         previewOuterCorner = preset.outerCorner,
                         previewShape = preset.shape,
                         previewFlare = preset.flare,
+                        previewRound = preset.round,
                         onClick = { onNavigateToAppearance(preset.id) }
                     )
                 }
-                // An odd count leaves the last card half-width rather than stretched across the
-                // row, so every card in the grid is the same size.
-                if (row.size == 1) Spacer(modifier = Modifier.weight(1f))
+                // A short last row keeps its cards at one column's width rather than stretched
+                // across the row, so every card in the grid is the same size.
+                repeat(columns - row.size) { Spacer(modifier = Modifier.weight(1f)) }
             }
         }
     }

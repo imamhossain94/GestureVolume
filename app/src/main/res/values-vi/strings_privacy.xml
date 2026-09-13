@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ad consent (GDPR / Google UMP): reopen the consent form from About and the drawer. -->
+    <string name="privacy_choices">Lựa chọn quyền riêng tư</string>
+    <string name="privacy_choices_error">Không thể mở lựa chọn quyền riêng tư. Vui lòng thử lại sau.</string>
+</resources>

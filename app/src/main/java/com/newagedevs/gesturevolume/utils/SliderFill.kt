@@ -85,6 +85,36 @@ object SliderFill {
     /** Satin ribbons weaving up the fill, a sheen sliding across each as it turns. */
     const val SILK = "silk"
 
+    /** A summer dusk under trees: soft lights wandering, each glowing up and going out on its own beat. */
+    const val FIREFLIES = "fireflies"
+
+    /** Snow on a winter night, falling at three depths, the near flakes larger and softer. */
+    const val SNOWFALL = "snowfall"
+
+    /** A heart monitor: a trace swept up the fill over a faint grid, flaring as each beat is drawn. */
+    const val HEARTBEAT = "heartbeat"
+
+    /** A neon sign: a stack of arrows pointing up, lighting in a chase over the glow they throw. */
+    const val NEON = "neon"
+
+    /** The sea: swells layered one behind another under the level, foam on their crests. */
+    const val OCEAN = "ocean"
+
+    /** Three colours flowing into each other on a slow diagonal. The plainest place for a palette. */
+    const val GRADIENT = "gradient"
+
+    /** Confetti tumbling down, each piece catching the light as it turns. */
+    const val CONFETTI = "confetti"
+
+    /** Hyperspace: stars streaking out of a point on the fill, stretching as they come closer. */
+    const val WARP = "warp"
+
+    /** A storm: slanting rain, and now and then a bolt that lights the clouds from inside. */
+    const val STORM = "storm"
+
+    /** Fireworks: bursts of sparks opening in turn, falling a little as they fade. */
+    const val FIREWORKS = "fireworks"
+
     /**
      * Every style, in the order they are offered.
      *
@@ -100,6 +130,8 @@ object SliderFill {
         PLASMA, HOLOGRAM, NEBULA, EMBER, SONAR,
         CIRCUIT, DOT_MATRIX, CYBERPUNK, MATRIX_RAIN, RUNE,
         TIDE_DOWN, STRIPES,
+        FIREFLIES, SNOWFALL, HEARTBEAT, NEON, OCEAN,
+        GRADIENT, CONFETTI, WARP, STORM, FIREWORKS,
     )
 
     fun sanitize(value: String?): String = if (value in ALL) value!! else SOLID
@@ -134,6 +166,22 @@ object SliderFill {
         // slowest layer needs a cycle this long to drift rather than stream.
         GALAXY -> 24000
         SILK -> 7000
+        // Slow: a firefly that darts is a midge.
+        FIREFLIES -> 8000
+        // Long for the same reason as the galaxy: the far flakes fall once a cycle, and once in
+        // anything shorter is a flurry rather than a snowfall.
+        SNOWFALL -> 12000
+        // One sweep of the trace, which carries a beat and a half: about a resting pulse.
+        HEARTBEAT -> 2400
+        // The chase climbs one group of arrows a cycle.
+        NEON -> 1600
+        OCEAN -> 6000
+        GRADIENT -> 8000
+        CONFETTI -> 6000
+        WARP -> 3000
+        // One bolt a cycle. Any more often and it is a strobe, not a storm.
+        STORM -> 6000
+        FIREWORKS -> 4800
         else -> 1
     }
 
@@ -181,9 +229,18 @@ object SliderFill {
     fun isPictorial(id: String): Boolean = when (sanitize(id)) {
         DOT_MATRIX, NEBULA, CYBERPUNK, MATRIX_RAIN, RUNE,
         PLASMA, AURORA, HOLOGRAM, EMBER, SONAR, CIRCUIT,
-        LIQUID, VU_METER, WAVEFORM, SUNRISE, SPECTRUM, GALAXY, SILK -> true
+        LIQUID, VU_METER, WAVEFORM, SUNRISE, SPECTRUM, GALAXY, SILK,
+        FIREFLIES, SNOWFALL, HEARTBEAT, NEON, OCEAN, GRADIENT, CONFETTI, WARP, STORM, FIREWORKS -> true
         else -> false
     }
+
+    /**
+     * Whether the user's own animation colours can stand in for the style's.
+     *
+     * Exactly the pictorial ones. The rest are drawn in the fill's and the track's colours, which
+     * the user already chooses; a second set of colours for them would be a setting that does nothing.
+     */
+    fun supportsCustomColors(id: String): Boolean = isPictorial(id)
 
     /**
      * The colours a pictorial style paints with, brightest first, as `0xAARRGGBB`.
@@ -210,7 +267,77 @@ object SliderFill {
         SPECTRUM -> longArrayOf(0xFFFF9AD5, 0xFFB79CFF, 0xFF8CD9FF, 0xFF8CFFD1, 0xFFFFE98C, 0xFFFFB38C)
         GALAXY -> longArrayOf(0xFF120A2E, 0xFF34207A, 0xFFFFFFFF, 0xFFBFD0FF)
         SILK -> longArrayOf(0xFFFF7AA8, 0xFFFFB08A, 0xFFC3A0FF)
+        // The new styles keep their grounds out of the palette and only their lights in it, so a
+        // user's colours recolour the lights and the night behind them stays night.
+        FIREFLIES -> longArrayOf(0xFFF4FF7A, 0xFFB6F24A, 0xFFFFC857)
+        SNOWFALL -> longArrayOf(0xFFFFFFFF, 0xFFD6ECFF, 0xFF9CC4FF)
+        HEARTBEAT -> longArrayOf(0xFF9CFFC8, 0xFF2EE68A, 0xFFFF5C7A)
+        NEON -> longArrayOf(0xFFFF4FD8, 0xFF4FE8FF, 0xFFB36BFF)
+        OCEAN -> longArrayOf(0xFFCFFFF8, 0xCC3FD6D0, 0xB31E8FD6, 0x99255CC4)
+        GRADIENT -> longArrayOf(0xFFFFC46B, 0xFFFF6B8B, 0xFF7B6BFF)
+        CONFETTI -> longArrayOf(0xFFFFE066, 0xFF7CFF8A, 0xFF5CE1E6, 0xFFFF6B9D, 0xFF9B7BFF)
+        WARP -> longArrayOf(0xFFFFFFFF, 0xFFA8C8FF, 0xFF7A5CFF)
+        STORM -> longArrayOf(0xFFF2F4FF, 0xFFA9B8FF, 0x996F86C8)
+        FIREWORKS -> longArrayOf(0xFFFFE08A, 0xFFFF5C8A, 0xFF5CD6FF, 0xFFB98CFF)
         else -> longArrayOf(0xFFFFFFFF)
+    }
+
+    /**
+     * [palette] for [id], recoloured with the user's [custom] colours when there are any.
+     *
+     * The same length as the style's own, because a style reaches for its colours by slot — the
+     * third light, the rim — and a shorter palette would hand it the wrong one. Slot `i` of `n`
+     * takes its colour from `i / (n - 1)` of the way along the user's colours, so the first slot is
+     * their first colour, the last their last, and the ones between are blends: three colours
+     * spread over a style that paints with six still read as those three.
+     *
+     * Only the colour is taken. Each slot keeps the alpha the style gave it, because that alpha is
+     * how much of the fill shows through — part of the picture, not part of its colour.
+     *
+     * And a slot that is nearly black keeps its colour too. Several of the older styles carry their
+     * night or their deep water in the palette alongside their lights, and recolouring that turned
+     * Galaxy's sky into a pastel wash with the stars lost in it. What the user is choosing is the
+     * colour of the light, and the dark it shines in is what lets it read as light at all.
+     */
+    fun paletteWith(id: String, custom: IntArray?): LongArray {
+        val base = palette(id)
+        if (custom == null || custom.isEmpty()) return base
+        val n = base.size
+        return LongArray(n) { i ->
+            if (isGround(base[i])) return@LongArray base[i]
+            val t = if (n == 1) 0f else i.toFloat() / (n - 1)
+            val g = t * (custom.size - 1)
+            val k = g.toInt().coerceIn(0, maxOf(custom.size - 2, 0))
+            val rgb = if (custom.size == 1) {
+                custom[0] and 0xFFFFFF
+            } else {
+                blendRgb(custom[k], custom[k + 1], (g - k).coerceIn(0f, 1f))
+            }
+            (base[i] and 0xFF000000L) or rgb.toLong()
+        }
+    }
+
+    /**
+     * Whether a palette slot is a style's darkness rather than one of its lights: perceived
+     * brightness under [GROUND_LUMINANCE], with the usual weights and alpha ignored.
+     */
+    fun isGround(colour: Long): Boolean {
+        val r = ((colour shr 16) and 0xFF) / 255f
+        val g = ((colour shr 8) and 0xFF) / 255f
+        val b = (colour and 0xFF) / 255f
+        return 0.2126f * r + 0.7152f * g + 0.0722f * b < GROUND_LUMINANCE
+    }
+
+    private const val GROUND_LUMINANCE = 0.12f
+
+    /** The colour part of [from] and [to] mixed, [f] of the way. Alpha dropped. Plain maths, no framework. */
+    private fun blendRgb(from: Int, to: Int, f: Float): Int {
+        fun channel(shift: Int): Int {
+            val a = (from shr shift) and 0xFF
+            val b = (to shr shift) and 0xFF
+            return (a + (b - a) * f + 0.5f).toInt().coerceIn(0, 255)
+        }
+        return (channel(16) shl 16) or (channel(8) shl 8) or channel(0)
     }
 
     /** How wide one cell of a grid style is, in dp. */

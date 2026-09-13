@@ -53,8 +53,8 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import java.text.DateFormat
 import java.util.Date
 
-/** Copies [text] and says so. Used by the notes and clipboard screens. */
-internal fun copyToClipboard(context: Context, text: String) {
+/** Copies [text] and says so. */
+private fun copyText(context: Context, text: String) {
     val manager = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
     runCatching { manager?.setPrimaryClip(ClipData.newPlainText("GestureVolume", text)) }
     Toast.makeText(context, context.getString(R.string.deck_copied), Toast.LENGTH_SHORT).show()
@@ -176,7 +176,7 @@ fun NotesScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { copyToClipboard(context, note.text) }
+                                .clickable { copyText(context, note.text) }
                                 .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {

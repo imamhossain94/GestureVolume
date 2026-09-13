@@ -49,9 +49,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import com.newagedevs.gesturevolume.R
-import com.newagedevs.gesturevolume.service.HandlerGeometry
 import com.newagedevs.gesturevolume.utils.HandlerPresets
 import com.newagedevs.gesturevolume.utils.HandlerShape
+import kotlin.math.roundToInt
 
 /**
  * Where "Reset position" puts the bar horizontally: flush with the default preset's side.
@@ -66,18 +66,22 @@ private val DEFAULT_POS_X_FRACTION: Float =
  * The appearance controls.
  *
  * Every control this screen has ever had is still here; what changed is how much of it is on screen
- * at once. Each group is now collapsed behind a header that summarises its current value, so the
- * screen opens as seven readable lines instead of a thirty-control wall, and the preset row at the
- * top makes the common case — "give me a look I like" — a single tap that never opens a group at
- * all.
+ * at once. Each group is collapsed behind a header that summarises its current value, and the
+ * preset row at the top makes the common case — "give me a look I like" — a single tap that never
+ * opens a group at all.
  *
- * Section order is by how often a group is the reason someone opened this screen. Background leads
- * and opens by default; Position, which used to be first, is four paragraphs of prose about drag
- * behaviour and is the least likely reason anyone came here.
+ * The groups follow the order the panel screens share — content, size and shape, colours,
+ * behaviour — and each holds one kind of thing, so a setting is where it would be on any of them.
+ * That splits what used to be an Icon group and a Stroke group: the icon's switch, size and colour
+ * now sit under Content, Size & shape and Colours, and so do the stroke's width and colour. Position,
+ * which only the bar has, comes last: it is four paragraphs of prose about drag behaviour and the
+ * least likely reason anyone came here.
  */
 @Composable
 fun HandlerAppearanceSettingsContent(
     state: AppearanceStateHolder,
+    /** Which of the two positions is the one the phone is being held in. */
+    isPortrait: Boolean,
     onShowIconPicker: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -100,38 +104,62 @@ fun HandlerAppearanceSettingsContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ---- Background ---------------------------------------------------------------------
+        // Read by more than one group below. Corners are a property of a rectangle, and a tab has
+        // none: showing four radius sliders that the bar on screen visibly ignores is worse than
+        // showing nothing, so Size & shape swaps them for the sweep while the bar is a tab.
+        val isTab = state.shape == HandlerShape.TAB
+        val cornersUniform = state.cornerTL == state.cornerTR &&
+            state.cornerTR == state.cornerBL &&
+            state.cornerBL == state.cornerBR
+        val mixedLabel = stringResource(R.string.per_corner_mixed)
+
+        // ---- Content ------------------------------------------------------------------------
+        // What the bar carries. The icon's size and colour are in the groups for sizes and
+        // colours, each shown only while there is an icon for them to change.
         AppearanceSection(
-            title = stringResource(R.string.background_uppercase),
-            summary = "${((state.bgAlpha / 255f) * 100).toInt()}%",
+            title = stringResource(R.string.group_content),
+            summary = stringResource(if (state.showIcon) R.string.show_icon else R.string.icon_none),
             initiallyExpanded = true,
         ) {
-            ColorPickerControl(
-                label = stringResource(R.string.color),
-                color = state.bgColor,
+            SwitchControl(
+                label = stringResource(R.string.show_icon),
+                checked = state.showIcon,
                 borderColor = MaterialTheme.colorScheme.primary,
-                onColorChange = { state.bgColor = it }
+                onCheckedChange = { state.showIcon = it }
             )
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 12.dp),
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-            )
-            SliderControl(
-                label = stringResource(R.string.opacity),
-                value = state.bgAlpha.toFloat(),
-                valueRange = 0f..255f,
-                valueDisplay = "${((state.bgAlpha / 255f) * 100).toInt()}%",
-                borderColor = MaterialTheme.colorScheme.primary,
-                onValueChange = { state.bgAlpha = it.toInt() }
-            )
+
+            // Was a bare `if`, which popped the icon controls in instantly while the section
+            // around them was still animating open. Same spec as the section, so a nested reveal
+            // reads as one motion rather than two.
+            AnimatedVisibility(
+                visible = state.showIcon,
+                enter = expandVertically(animationSpec = AppearanceMotion.ExpandSize) +
+                    fadeIn(animationSpec = AppearanceMotion.Fade),
+                exit = shrinkVertically(animationSpec = AppearanceMotion.ExpandSize) +
+                    fadeOut(animationSpec = AppearanceMotion.Fade),
+            ) {
+                Column {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                    )
+                    IconPickerControl(
+                        label = stringResource(R.string.icon),
+                        selectedIconRes = state.iconRes,
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        onClick = { onShowIconPicker() }
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // ---- Dimensions ---------------------------------------------------------------------
+        // ---- Size & shape -------------------------------------------------------------------
         AppearanceSection(
-            title = stringResource(R.string.dimensions_uppercase),
-            summary = "${state.width.toInt()} × ${state.height.toInt()}dp",
+            title = stringResource(R.string.group_size_shape),
+            summary = "${state.width.toInt()} × ${state.height.toInt()}dp · " +
+                stringResource(if (isTab) R.string.shape_tab else R.string.shape_rounded),
         ) {
             SliderControl(
                 label = stringResource(R.string.width),
@@ -157,22 +185,11 @@ fun HandlerAppearanceSettingsContent(
                 borderColor = MaterialTheme.colorScheme.primary,
                 onValueChange = { state.height = it }
             )
-        }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // ---- Shape --------------------------------------------------------------------------
-        // Above the corner radius, and the reason that section is now conditional: corners are a
-        // property of a rectangle, and a tab has none. Showing four radius sliders that the bar
-        // on screen visibly ignores is worse than showing nothing.
-        val isTab = state.shape == HandlerShape.TAB
-
-        AppearanceSection(
-            title = stringResource(R.string.shape_uppercase),
-            summary = stringResource(
-                if (isTab) R.string.shape_tab else R.string.shape_rounded
-            ),
-        ) {
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
             ShapeSelector(
                 shape = state.shape,
                 onShapeChange = { state.shape = it },
@@ -208,129 +225,121 @@ fun HandlerAppearanceSettingsContent(
                     )
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // ---- Corner radius ------------------------------------------------------------------
-        // Five sliders became one plus an opt-in. Four of them were per-corner controls that
-        // almost nobody wants and that the fifth silently overwrote.
-        val cornersUniform = state.cornerTL == state.cornerTR &&
-            state.cornerTR == state.cornerBL &&
-            state.cornerBL == state.cornerBR
-        val mixedLabel = stringResource(R.string.per_corner_mixed)
-
-        if (!isTab) AppearanceSection(
-            title = stringResource(R.string.corner_radius_uppercase),
-            summary = if (cornersUniform) "${state.cornerTL.toInt()}dp" else mixedLabel,
-        ) {
-            // Seeded open when the stored corners already differ, so an install that arrives with
-            // four different values lands on the controls that explain what it is showing.
-            var perCorner by rememberSaveable { mutableStateOf(!cornersUniform) }
-
-            SliderControl(
-                label = stringResource(R.string.all_corners),
-                // Reads the real corner rather than a shadow field, so it can no longer claim a
-                // value the bar does not have.
-                value = state.cornerTL,
-                valueRange = 0f..50f,
-                valueDisplay = if (cornersUniform) "${state.cornerTL.toInt()}dp" else mixedLabel,
-                borderColor = MaterialTheme.colorScheme.primary,
-                onValueChange = { value ->
-                    state.cornerTL = value
-                    state.cornerTR = value
-                    state.cornerBL = value
-                    state.cornerBR = value
-                }
-            )
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 12.dp),
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-            )
-            SwitchControl(
-                label = stringResource(R.string.per_corner),
-                checked = perCorner,
-                borderColor = MaterialTheme.colorScheme.primary,
-                onCheckedChange = { perCorner = it }
-            )
-
+            // Corner radius, for the rounded shape only. Five sliders became one plus an opt-in:
+            // four of them were per-corner controls that almost nobody wants and that the fifth
+            // silently overwrote.
             AnimatedVisibility(
-                visible = perCorner,
-                enter = expandVertically(animationSpec = AppearanceMotion.ExpandSize) +
-                    fadeIn(animationSpec = AppearanceMotion.Fade),
-                exit = shrinkVertically(animationSpec = AppearanceMotion.ExpandSize) +
-                    fadeOut(animationSpec = AppearanceMotion.Fade),
+                visible = !isTab,
+                enter = expandVertically(AppearanceMotion.ExpandSize) +
+                    fadeIn(AppearanceMotion.Fade),
+                exit = shrinkVertically(AppearanceMotion.ExpandSize) +
+                    fadeOut(AppearanceMotion.Fade),
             ) {
                 Column {
+                    // Seeded open when the stored corners already differ, so an install that
+                    // arrives with four different values lands on the controls that explain what
+                    // it is showing.
+                    var perCorner by rememberSaveable { mutableStateOf(!cornersUniform) }
+
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
                     SliderControl(
-                        label = stringResource(R.string.top_left),
+                        label = stringResource(R.string.all_corners),
+                        // Reads the real corner rather than a shadow field, so it can no longer
+                        // claim a value the bar does not have.
                         value = state.cornerTL,
                         valueRange = 0f..50f,
-                        valueDisplay = "${state.cornerTL.toInt()}dp",
+                        valueDisplay = if (cornersUniform) "${state.cornerTL.toInt()}dp" else mixedLabel,
                         borderColor = MaterialTheme.colorScheme.primary,
-                        onValueChange = { state.cornerTL = it }
+                        onValueChange = { value ->
+                            state.cornerTL = value
+                            state.cornerTR = value
+                            state.cornerBL = value
+                            state.cornerBR = value
+                        }
                     )
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
-                    SliderControl(
-                        label = stringResource(R.string.top_right),
-                        value = state.cornerTR,
-                        valueRange = 0f..50f,
-                        valueDisplay = "${state.cornerTR.toInt()}dp",
+                    SwitchControl(
+                        label = stringResource(R.string.per_corner),
+                        checked = perCorner,
                         borderColor = MaterialTheme.colorScheme.primary,
-                        onValueChange = { state.cornerTR = it }
+                        onCheckedChange = { perCorner = it }
                     )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SliderControl(
-                        label = stringResource(R.string.bottom_left),
-                        value = state.cornerBL,
-                        valueRange = 0f..50f,
-                        valueDisplay = "${state.cornerBL.toInt()}dp",
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onValueChange = { state.cornerBL = it }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SliderControl(
-                        label = stringResource(R.string.bottom_right),
-                        value = state.cornerBR,
-                        valueRange = 0f..50f,
-                        valueDisplay = "${state.cornerBR.toInt()}dp",
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onValueChange = { state.cornerBR = it }
-                    )
+
+                    AnimatedVisibility(
+                        visible = perCorner,
+                        enter = expandVertically(animationSpec = AppearanceMotion.ExpandSize) +
+                            fadeIn(animationSpec = AppearanceMotion.Fade),
+                        exit = shrinkVertically(animationSpec = AppearanceMotion.ExpandSize) +
+                            fadeOut(animationSpec = AppearanceMotion.Fade),
+                    ) {
+                        Column {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 12.dp),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                            )
+                            SliderControl(
+                                label = stringResource(R.string.top_left),
+                                value = state.cornerTL,
+                                valueRange = 0f..50f,
+                                valueDisplay = "${state.cornerTL.toInt()}dp",
+                                borderColor = MaterialTheme.colorScheme.primary,
+                                onValueChange = { state.cornerTL = it }
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 12.dp),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                            )
+                            SliderControl(
+                                label = stringResource(R.string.top_right),
+                                value = state.cornerTR,
+                                valueRange = 0f..50f,
+                                valueDisplay = "${state.cornerTR.toInt()}dp",
+                                borderColor = MaterialTheme.colorScheme.primary,
+                                onValueChange = { state.cornerTR = it }
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 12.dp),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                            )
+                            SliderControl(
+                                label = stringResource(R.string.bottom_left),
+                                value = state.cornerBL,
+                                valueRange = 0f..50f,
+                                valueDisplay = "${state.cornerBL.toInt()}dp",
+                                borderColor = MaterialTheme.colorScheme.primary,
+                                onValueChange = { state.cornerBL = it }
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 12.dp),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                            )
+                            SliderControl(
+                                label = stringResource(R.string.bottom_right),
+                                value = state.cornerBR,
+                                valueRange = 0f..50f,
+                                valueDisplay = "${state.cornerBR.toInt()}dp",
+                                borderColor = MaterialTheme.colorScheme.primary,
+                                onValueChange = { state.cornerBR = it }
+                            )
+                        }
+                    }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // ---- Stroke -------------------------------------------------------------------------
-        AppearanceSection(
-            title = stringResource(R.string.stroke_uppercase),
-            summary = "${state.strokeWidth.toInt()}dp · ${((state.strokeAlpha / 255f) * 100).toInt()}%",
-        ) {
-            ColorPickerControl(
-                label = stringResource(R.string.color),
-                color = state.strokeColor,
-                borderColor = MaterialTheme.colorScheme.primary,
-                onColorChange = { state.strokeColor = it }
-            )
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
+            // Headed, because "Width" a few rows under the bar's own width would read as the
+            // same thing twice.
+            SubgroupLabel(stringResource(R.string.stroke_uppercase))
             SliderControl(
                 label = stringResource(R.string.width),
                 value = state.strokeWidth,
@@ -339,34 +348,7 @@ fun HandlerAppearanceSettingsContent(
                 borderColor = MaterialTheme.colorScheme.primary,
                 onValueChange = { state.strokeWidth = it }
             )
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 12.dp),
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-            )
-            SliderControl(
-                label = stringResource(R.string.opacity),
-                value = state.strokeAlpha.toFloat(),
-                valueRange = 0f..255f,
-                valueDisplay = "${((state.strokeAlpha / 255f) * 100).toInt()}%",
-                borderColor = MaterialTheme.colorScheme.primary,
-                onValueChange = { state.strokeAlpha = it.toInt() }
-            )
-        }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // ---- Icon ---------------------------------------------------------------------------
-        AppearanceSection(title = stringResource(R.string.icon_settings)) {
-            SwitchControl(
-                label = stringResource(R.string.show_icon),
-                checked = state.showIcon,
-                borderColor = MaterialTheme.colorScheme.primary,
-                onCheckedChange = { state.showIcon = it }
-            )
-
-            // Was a bare `if`, which popped the four icon controls in instantly while the section
-            // around them was still animating open. Same spec as the section, so a nested reveal
-            // reads as one motion rather than two.
             AnimatedVisibility(
                 visible = state.showIcon,
                 enter = expandVertically(animationSpec = AppearanceMotion.ExpandSize) +
@@ -375,26 +357,6 @@ fun HandlerAppearanceSettingsContent(
                     fadeOut(animationSpec = AppearanceMotion.Fade),
             ) {
                 Column {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    IconPickerControl(
-                        label = stringResource(R.string.icon),
-                        selectedIconRes = state.iconRes,
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onClick = { onShowIconPicker() }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    ColorPickerControl(
-                        label = stringResource(R.string.icon_color),
-                        color = state.iconColor,
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        onColorChange = { state.iconColor = it }
-                    )
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
@@ -413,28 +375,121 @@ fun HandlerAppearanceSettingsContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // ---- Colours ------------------------------------------------------------------------
+        AppearanceSection(
+            title = stringResource(R.string.group_colours),
+            summary = "${((state.bgAlpha / 255f) * 100).toInt()}% · ${((state.strokeAlpha / 255f) * 100).toInt()}%",
+        ) {
+            // Headed, for the same reason as the stroke's width: two "Color" and two "Opacity"
+            // rows in one group need to say which is which.
+            SubgroupLabel(stringResource(R.string.background_uppercase))
+            ColorPickerControl(
+                label = stringResource(R.string.color),
+                color = state.bgColor,
+                borderColor = MaterialTheme.colorScheme.primary,
+                onColorChange = { state.bgColor = it }
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
+            SliderControl(
+                label = stringResource(R.string.opacity),
+                value = state.bgAlpha.toFloat(),
+                valueRange = 0f..255f,
+                valueDisplay = "${((state.bgAlpha / 255f) * 100).toInt()}%",
+                borderColor = MaterialTheme.colorScheme.primary,
+                onValueChange = { state.bgAlpha = it.toInt() }
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
+            SubgroupLabel(stringResource(R.string.stroke_uppercase))
+            ColorPickerControl(
+                label = stringResource(R.string.color),
+                color = state.strokeColor,
+                borderColor = MaterialTheme.colorScheme.primary,
+                onColorChange = { state.strokeColor = it }
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
+            SliderControl(
+                label = stringResource(R.string.opacity),
+                value = state.strokeAlpha.toFloat(),
+                valueRange = 0f..255f,
+                valueDisplay = "${((state.strokeAlpha / 255f) * 100).toInt()}%",
+                borderColor = MaterialTheme.colorScheme.primary,
+                onValueChange = { state.strokeAlpha = it.toInt() }
+            )
+
+            AnimatedVisibility(
+                visible = state.showIcon,
+                enter = expandVertically(animationSpec = AppearanceMotion.ExpandSize) +
+                    fadeIn(animationSpec = AppearanceMotion.Fade),
+                exit = shrinkVertically(animationSpec = AppearanceMotion.ExpandSize) +
+                    fadeOut(animationSpec = AppearanceMotion.Fade),
+            ) {
+                Column {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                    )
+                    ColorPickerControl(
+                        label = stringResource(R.string.icon_color),
+                        color = state.iconColor,
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        onColorChange = { state.iconColor = it }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // ---- Behaviour ----------------------------------------------------------------------
+        AppearanceSection(
+            title = stringResource(R.string.group_behaviour),
+            // Named while it is on; off, the header is left to speak for itself.
+            summary = if (state.vibrate) stringResource(R.string.vibrate_on_click) else null,
+        ) {
+            SwitchControl(
+                label = stringResource(R.string.vibrate_on_click),
+                checked = state.vibrate,
+                borderColor = MaterialTheme.colorScheme.primary,
+                onCheckedChange = { state.vibrate = it }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         // ---- Position -----------------------------------------------------------------------
         AppearanceSection(
             title = stringResource(R.string.position_uppercase),
-            summary = stringResource(
-                if (state.gravity == Gravity.START) R.string.side_left else R.string.side_right
-            ),
+            summary = if (state.dynamicPosition) {
+                stringResource(R.string.position_dynamic)
+            } else if (state.samePosition || !state.snapToEdge) {
+                "${(state.posXFraction * 100).roundToInt()}% · ${(state.positionFraction * 100).roundToInt()}%"
+            } else {
+                stringResource(if (state.gravity == Gravity.START) R.string.side_left else R.string.side_right)
+            },
         ) {
-            // Which side the bar starts on. There *was* no picker here, on the reasoning that the
-            // side is a consequence of where the bar was dragged rather than a setting, and that a
-            // picker could only disagree with where the bar actually is. That reasoning depended
-            // on this screen having a draggable preview, which it no longer does — so without this
-            // there is no way to put a right-hand bar on the left except to long press the live
-            // one and carry it across, which is a thing you have to already know.
-            //
-            // It writes the x fraction as well as the gravity, so it is a real move rather than a
-            // change of dressing: flush left is 0, flush right is 1, and the edge distance below
-            // does the rest.
+            // Set when a slider moved the bar off an edge and switched snapping off to let it stay
+            // there, so the user is told why a switch they did not touch has changed.
+            var snapTurnedOff by rememberSaveable { mutableStateOf(false) }
+
+            // Which side, in both orientations at once. The quick answer for most people, and
+            // the only way a right-hand bar reaches the left without being carried across.
             SideSelector(
                 gravity = state.gravity,
                 onGravityChange = {
+                    val x = if (it == Gravity.START) 0f else 1f
                     state.gravity = it
-                    state.posXFraction = if (it == Gravity.START) 0f else 1f
+                    state.posXFraction = x
+                    state.otherPosXFraction = x
                 },
             )
 
@@ -442,29 +497,136 @@ fun HandlerAppearanceSettingsContent(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
+            // Edge Deck's Dynamic position: the bar keeps to the same edge of the phone, so turning
+            // it on its side lays the bar along the top or the bottom of the screen.
+            SwitchControl(
+                label = stringResource(R.string.position_dynamic),
+                checked = state.dynamicPosition,
+                borderColor = MaterialTheme.colorScheme.primary,
+                onCheckedChange = { state.dynamicPosition = it }
+            )
             Text(
-                text = stringResource(R.string.drag_to_move_hint),
+                text = stringResource(R.string.position_dynamic_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 16.sp
             )
-
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
-            SwitchControl(
-                label = stringResource(R.string.snap_to_edge),
-                checked = state.snapToEdge,
-                borderColor = MaterialTheme.colorScheme.primary,
-                onCheckedChange = { state.snapToEdge = it }
-            )
-            Text(
-                text = stringResource(R.string.snap_to_edge_desc),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                lineHeight = 16.sp
-            )
+            if (state.dynamicPosition) {
+                // One place, along the side chosen above, measured upright. Same-position and
+                // snapping have nothing to say here: there is one position, always on an edge.
+                val uprightY = if (isPortrait) state.positionFraction else state.otherPositionFraction
+                SliderControl(
+                    label = stringResource(R.string.position_along_edge),
+                    value = uprightY,
+                    valueRange = 0f..1f,
+                    valueDisplay = "${(uprightY * 100).roundToInt()}%",
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onValueChange = {
+                        state.positionFraction = it
+                        state.otherPositionFraction = it
+                    }
+                )
+                Text(
+                    text = stringResource(R.string.position_along_edge_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 16.sp
+                )
+            } else {
+                SwitchControl(
+                    label = stringResource(R.string.position_same_both),
+                    checked = state.samePosition,
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onCheckedChange = { state.samePosition = it }
+                )
+                Text(
+                    text = stringResource(R.string.position_same_both_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 16.sp
+                )
+
+                // Where exactly, as two shares of the screen. What the example asks for — halfway
+                // down the left edge upright, the middle of the top edge on its side — is two pairs of
+                // numbers, and a drag can only ever set the pair for the way the phone is held.
+                val moveX: (Float, Boolean) -> Unit = { x, current ->
+                    if (current) {
+                        state.posXFraction = x
+                        state.gravity = if (x < 0.5f) Gravity.START else Gravity.END
+                    } else {
+                        state.otherPosXFraction = x
+                    }
+                    // Snapping would send a bar placed mid-screen straight back to the nearer side.
+                    if (state.snapToEdge && x > SNAP_EDGE_BAND && x < 1f - SNAP_EDGE_BAND) {
+                        state.snapToEdge = false
+                        snapTurnedOff = true
+                    }
+                }
+                if (state.samePosition) {
+                    PositionSliders(
+                        title = stringResource(R.string.position_both),
+                        x = state.posXFraction,
+                        y = state.positionFraction,
+                        onX = { moveX(it, true) },
+                        onY = { state.positionFraction = it },
+                    )
+                } else {
+                    val now = stringResource(R.string.position_now)
+                    val portrait = stringResource(R.string.position_portrait)
+                    val landscape = stringResource(R.string.position_landscape)
+                    PositionSliders(
+                        title = if (isPortrait) "$portrait · $now" else portrait,
+                        x = if (isPortrait) state.posXFraction else state.otherPosXFraction,
+                        y = if (isPortrait) state.positionFraction else state.otherPositionFraction,
+                        onX = { moveX(it, isPortrait) },
+                        onY = { if (isPortrait) state.positionFraction = it else state.otherPositionFraction = it },
+                    )
+                    PositionSliders(
+                        title = if (!isPortrait) "$landscape · $now" else landscape,
+                        x = if (!isPortrait) state.posXFraction else state.otherPosXFraction,
+                        y = if (!isPortrait) state.positionFraction else state.otherPositionFraction,
+                        onX = { moveX(it, !isPortrait) },
+                        onY = { if (!isPortrait) state.positionFraction = it else state.otherPositionFraction = it },
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.position_sliders_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 16.sp,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                )
+                SwitchControl(
+                    label = stringResource(R.string.snap_to_edge),
+                    checked = state.snapToEdge,
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    onCheckedChange = {
+                        state.snapToEdge = it
+                        snapTurnedOff = false
+                    }
+                )
+                Text(
+                    text = stringResource(
+                        if (snapTurnedOff && !state.snapToEdge) R.string.position_snap_off_hint else R.string.snap_to_edge_desc
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (snapTurnedOff && !state.snapToEdge) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    lineHeight = 16.sp
+                )
+            }
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 12.dp),
@@ -489,32 +651,22 @@ fun HandlerAppearanceSettingsContent(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
-            // A way back for anyone who drags the bar somewhere awkward. Both axes now — putting
-            // the bar back in the middle of the height it is already lost behind is no rescue.
+            // A way back for anyone who drags the bar somewhere awkward. Both axes, and both
+            // orientations — the bar the user cannot reach may not be the one they are looking at.
             TextButton(
                 onClick = {
                     // The same corner a fresh install starts in, so "Reset" and "new install"
                     // cannot disagree about where the bar belongs.
-                    state.positionFraction = HandlerGeometry.DEFAULT_POSITION_FRACTION
+                    state.positionFraction = HandlerPresets.DEFAULT.positionFraction
                     state.posXFraction = DEFAULT_POS_X_FRACTION
+                    state.otherPositionFraction = HandlerPresets.DEFAULT.positionFraction
+                    state.otherPosXFraction = DEFAULT_POS_X_FRACTION
                     state.gravity = if (DEFAULT_POS_X_FRACTION < 0.5f) Gravity.START else Gravity.END
                 },
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Text(stringResource(R.string.reset_position))
             }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // ---- Behaviour ----------------------------------------------------------------------
-        AppearanceSection(title = stringResource(R.string.behavior_uppercase)) {
-            SwitchControl(
-                label = stringResource(R.string.vibrate_on_click),
-                checked = state.vibrate,
-                borderColor = MaterialTheme.colorScheme.primary,
-                onCheckedChange = { state.vibrate = it }
-            )
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -525,7 +677,8 @@ fun HandlerAppearanceSettingsContent(
  * One preset in the quick row.
  *
  * Tapping it only writes the holder, so it stays inside the existing Apply/Discard contract: the
- * bar previews immediately, the tick lights, and nothing reaches the live overlay until Apply.
+ * bar previews immediately, the tick lights, and nothing reaches the live overlay until Apply —
+ * which then writes the preset's behaviour as well as its look. See [applyPreset].
  *
  * The press feedback is a `graphicsLayer` scale rather than a size change, so however far the
  * spring overshoots it cannot reflow the row around it.
@@ -590,6 +743,61 @@ private fun PresetChip(
             )
         }
     }
+}
+
+/**
+ * A heading inside a group, over controls whose own label ("Color", "Width") only says which
+ * thing it changes when it is read under one.
+ */
+@Composable
+private fun SubgroupLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.padding(bottom = 6.dp)
+    )
+}
+
+/**
+ * How close to a side a slider may leave the bar and still count as against it: the band where
+ * Snap to edge is left alone, because it would put the bar exactly where it already nearly is.
+ */
+private const val SNAP_EDGE_BAND = 0.06f
+
+/** One orientation's position: how far across and how far down the middle of the bar sits. */
+@Composable
+private fun PositionSliders(
+    title: String,
+    x: Float,
+    y: Float,
+    onX: (Float) -> Unit,
+    onY: (Float) -> Unit,
+) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.padding(top = 14.dp, bottom = 6.dp)
+    )
+    SliderControl(
+        label = stringResource(R.string.position_from_left),
+        value = x * 100f,
+        valueRange = 0f..100f,
+        valueDisplay = "${(x * 100f).roundToInt()}%",
+        borderColor = MaterialTheme.colorScheme.primary,
+        onValueChange = { onX((it / 100f).coerceIn(0f, 1f)) }
+    )
+    SliderControl(
+        label = stringResource(R.string.position_from_top),
+        value = y * 100f,
+        valueRange = 0f..100f,
+        valueDisplay = "${(y * 100f).roundToInt()}%",
+        borderColor = MaterialTheme.colorScheme.primary,
+        onValueChange = { onY((it / 100f).coerceIn(0f, 1f)) }
+    )
 }
 
 /**
