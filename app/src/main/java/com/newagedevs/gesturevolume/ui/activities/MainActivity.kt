@@ -73,6 +73,14 @@ class MainActivity : AppCompatActivity() {
 
         enableEdgeToEdge()
 
+        // Before the first composition, not only from the collector below, which runs after it.
+        // The home screen reads the manager once as it draws; after a rotation that read found the
+        // manager built for the Activity just destroyed, whose loads all stop at its isDestroyed
+        // check, and nothing redrew when the new one arrived.
+        if (!viewModel.state.value.isProActivated) {
+            viewModel.initializeAdsManager(this)
+        }
+
         setContent {
             // Read configVersion so Compose recomposes when locale changes
             val version = configVersion.intValue

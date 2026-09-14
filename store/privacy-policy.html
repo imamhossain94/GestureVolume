@@ -66,7 +66,7 @@
   <p>When on, it is used only for these purposes:</p>
   <ol>
     <li><strong>System actions you assign to the bar</strong> — lock screen, screenshot, Back, Home, recent apps, notification shade, quick settings and power menu. Android offers no other way for an app to perform these.</li>
-    <li><strong>Volume keys</strong>, only if you set the Quick slider's volume keys to <em>Instant</em> or turn on <em>Hide in screenshots</em>: the service looks at presses of the two volume keys — to open the Quick panel straight away, or to hide the bar while a Volume-down + Power screenshot is taken. Every other key is passed straight on and is not recorded.</li>
+    <li><strong>Volume keys</strong>, only if you set the Quick slider's volume keys to <em>Instant</em>: the service looks at presses of the two volume keys, to open the Quick panel straight away. While a Volume down press is waiting, it also notes whether the system's screenshot screen has come up (its package name only), so a screenshot taken with the buttons does not open the panel. Every other key is passed straight on and is not recorded.</li>
     <li><strong>Hiding the bar in apps you choose</strong>, only if you pick any: the service notes which app is on screen (its package name) so the bar can step aside, and reads nothing inside that app.</li>
   </ol>
   <p>The service is configured so it cannot read the content of your screen. It does not capture text you copy or type, does not keep a log of the apps you use, and <strong>nothing it observes is transmitted off your device</strong>.</p>

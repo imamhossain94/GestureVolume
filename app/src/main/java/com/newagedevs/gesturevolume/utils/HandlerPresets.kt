@@ -65,6 +65,10 @@ object HandlerPresets {
         val lengthDp: Float,
         val thicknessDp: Float,
         val edgeOffsetDp: Float,
+        /** How far the number sits from the panel's top. See `QuickSliderStore.getValueMarginDp`. */
+        val valueMarginDp: Float,
+        /** How far the icon sits from the panel's bottom. */
+        val iconMarginDp: Float,
         /** Whether the panel is cut to the bar's own outline. See `QuickSliderStore.getFollowHandlerShape`. */
         val followHandlerShape: Boolean,
         /** One of `QuickSliderStore.ALL_VOLUME_KEY_MODES`. */
@@ -118,18 +122,29 @@ object HandlerPresets {
         swipeIn = HandlerActions.OPEN_DECK,
         swipeOut = HandlerActions.NONE,
         slider = SliderBehaviour(
-            target = QuickSliderStore.TARGET_MEDIA,
+            target = QuickSliderStore.TARGET_ADAPTIVE,
             showValue = true,
             showIcon = true,
             lengthDp = 220f,
             thicknessDp = 24f,
             edgeOffsetDp = 0f,
+            valueMarginDp = 26f,
+            iconMarginDp = 26f,
             followHandlerShape = true,
             volumeKeys = QuickSliderStore.VOLUME_KEYS_INSTANT,
         ),
         panelAnimation = PanelAnimation.SLIDE,
         menuLayout = ContextMenuLayout.GRID,
         menuPerPage = 9,
+    )
+
+    /**
+     * The Dock's: the edge behaviour with a panel four dp thicker, and the number and the icon
+     * further in from its ends. The tab's sweeps curve the panel's ends away, and at the Edge's
+     * 26dp the number and icon sat on the curve rather than on the flat.
+     */
+    private val DOCK_BEHAVIOUR = EDGE_BEHAVIOUR.copy(
+        slider = EDGE_BEHAVIOUR.slider.copy(thicknessDp = 28f, valueMarginDp = 35f, iconMarginDp = 35f),
     )
 
     data class Preset(
@@ -230,7 +245,7 @@ object HandlerPresets {
             cornerRadius = 8f,
             iconRes = R.drawable.ic_vol_increase, iconSize = 16f, iconColor = Color.White,
             showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = POSITION_FRACTION,
-            behaviour = EDGE_BEHAVIOUR,
+            behaviour = DOCK_BEHAVIOUR,
             placement = Placement(
                 gravity = Gravity.END,
                 posXFraction = 1f,

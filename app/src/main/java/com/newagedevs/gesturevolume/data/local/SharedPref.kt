@@ -120,6 +120,8 @@ class SharedPref @Inject constructor(
         slider.setLengthDp(behaviour.slider.lengthDp)
         slider.setThicknessDp(behaviour.slider.thicknessDp)
         slider.setEdgeOffsetDp(behaviour.slider.edgeOffsetDp)
+        slider.setValueMarginDp(behaviour.slider.valueMarginDp)
+        slider.setIconMarginDp(behaviour.slider.iconMarginDp)
         slider.setFollowHandlerShape(behaviour.slider.followHandlerShape)
         slider.setVolumeKeyMode(behaviour.slider.volumeKeys)
 
@@ -361,7 +363,6 @@ class SharedPref @Inject constructor(
         const val HANDLER_HIDDEN = "handlerHidden"
         const val APP_IN_FOREGROUND = "appInForeground"
         const val HANDLER_HIDDEN_APPS = "handlerHiddenApps"
-        const val HIDE_IN_SCREENSHOTS = "hideInScreenshots"
         const val HANDLER_POS_SAME_BOTH = "handlerPosSameBothOrientations"
         const val HANDLER_DYNAMIC_POSITION = "handlerDynamicPosition"
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
@@ -758,23 +759,6 @@ class SharedPref @Inject constructor(
 
     fun setHandlerHiddenApps(value: Set<String>) {
         sharedPreferences.edit { putStringSet(HANDLER_HIDDEN_APPS, value.toSet()) }
-    }
-
-    /**
-     * Whether the bar and its panels step out of sight when Volume down is pressed, so a screenshot
-     * taken with Volume down and Power does not have them in it.
-     *
-     * On by default. Android tells an app nothing when the buttons take a screenshot, and the Power
-     * half of the chord never reaches an accessibility service at all; Volume down does, and it
-     * arrives before the system has worked out that a chord is happening. So the bar goes on the
-     * one press it can see, for the moment a chord could still follow. Needs the accessibility
-     * service, which asks for the volume keys while this is on — see
-     * `GestureAccessibilityService.applyEventSubscription`.
-     */
-    fun getHideInScreenshots(): Boolean = sharedPreferences.getBoolean(HIDE_IN_SCREENSHOTS, true)
-
-    fun setHideInScreenshots(value: Boolean) {
-        sharedPreferences.edit { putBoolean(HIDE_IN_SCREENSHOTS, value) }
     }
 
     /**

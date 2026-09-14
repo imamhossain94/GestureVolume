@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,13 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.newagedevs.gesturevolume.R
 
 /**
  * One way into a part of the app, from the home screen.
@@ -32,9 +28,10 @@ import com.newagedevs.gesturevolume.R
  *   chip and a subtitle that takes the lines it needs rather than always two. Upright, six of these
  *   stack three rows deep above the fold, and at full size they pushed everything under them off
  *   the screen. On its side there is width to spare and the full size reads better.
- * @param needsPermission a setting on this card's screen is waiting on a permission. The card gets
- *   an error badge beside its arrow and a one-line hint that takes the subtitle's first line, so
- *   the card keeps its height and the grid stays even whichever cards are warning.
+ *
+ * Carries no permission warning of its own. It used to badge any card whose screen held a setting
+ * waiting on a permission, which put one missing grant on three or four cards at once; the
+ * Permissions card below the grid is the one place that says so.
  */
 @Composable
 fun NavigationCard(
@@ -45,7 +42,6 @@ fun NavigationCard(
     gradientColors: List<Color>,
     stacked: Boolean = false,
     compact: Boolean = false,
-    needsPermission: Boolean = false,
     onClick: () -> Unit
 ) {
     Card(
@@ -76,10 +72,6 @@ fun NavigationCard(
                         )
                     }
                     Spacer(modifier = Modifier.weight(1f))
-                    if (needsPermission) {
-                        PermissionBadge(size = if (compact) 18.dp else 20.dp)
-                        Spacer(modifier = Modifier.width(4.dp))
-                    }
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
@@ -96,7 +88,6 @@ fun NavigationCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (needsPermission) PermissionHint()
                 Text(
                     text = subtitle,
                     fontSize = 12.sp,
@@ -105,9 +96,8 @@ fun NavigationCard(
                     // Two lines reserved at full size, so cards sharing a row stay the same height
                     // whichever has the shorter description. Compact, the row evens the heights
                     // out itself, so a one-line subtitle no longer carries an empty second line.
-                    // With the permission hint above it, the hint is the first of those two.
-                    minLines = if (compact || needsPermission) 1 else 2,
-                    maxLines = if (needsPermission) 1 else 2,
+                    minLines = if (compact) 1 else 2,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
@@ -135,19 +125,14 @@ fun NavigationCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (needsPermission) PermissionHint()
                 Text(
                     text = subtitle,
                     fontSize = 12.sp,
                     lineHeight = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    maxLines = if (needsPermission) 1 else 2,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-            }
-            if (needsPermission) {
-                Spacer(modifier = Modifier.width(8.dp))
-                PermissionBadge(size = 20.dp)
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -157,29 +142,4 @@ fun NavigationCard(
             )
         }
     }
-}
-
-/** The error mark beside the arrow. Decorative: [PermissionHint] says it in words. */
-@Composable
-private fun PermissionBadge(size: Dp) {
-    Icon(
-        imageVector = Icons.Filled.Error,
-        contentDescription = null,
-        modifier = Modifier.size(size),
-        tint = MaterialTheme.colorScheme.error
-    )
-}
-
-/** "Needs a permission", in the error colour, one line. Read out with the card's title. */
-@Composable
-private fun PermissionHint() {
-    Text(
-        text = stringResource(R.string.nav_card_needs_permission),
-        fontSize = 12.sp,
-        lineHeight = 16.sp,
-        fontWeight = FontWeight.Medium,
-        color = MaterialTheme.colorScheme.error,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
-    )
 }

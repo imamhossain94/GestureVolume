@@ -123,9 +123,12 @@ object HandlerActions {
     /**
      * What the long-press menu offers before the user has chosen otherwise.
      *
-     * Deliberately short. The menu opens on a gesture the user is holding, often one-handed, so
-     * a handful of entries that can be hit without looking beat ten that need aiming. Everything
-     * else is one toggle away in settings.
+     * Nine: one full page of the grid, three by three at the default width, which is what the
+     * default preset's menu shows to a page. Seven left two holes in the bottom row. The menu opens
+     * on a gesture the user is holding, often one-handed, so it stays at a page that can be hit
+     * without looking rather than a list that needs scrolling. Everything else is one toggle away
+     * in settings. The two that fill the page need no permission, so a fresh install's menu raises
+     * no warning.
      */
     val DEFAULT_CONTEXT_MENU: Set<String> = setOf(
         OPEN_DECK,
@@ -135,6 +138,8 @@ object HandlerActions {
         OPEN_QUICK_SLIDER,
         OPEN_VOLUME_UI,
         MUTE_OR_UNMUTE,
+        TOGGLE_FLASHLIGHT,
+        MEDIA_PLAY_PAUSE,
         HIDE_HANDLER,
         STOP_SERVICE,
         OPEN_APP

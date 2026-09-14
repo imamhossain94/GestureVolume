@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.annotation.DrawableRes
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.data.local.SharedPref
@@ -79,6 +80,7 @@ import com.newagedevs.gesturevolume.utils.PanelAnimation
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.VolumeController
+import com.newagedevs.gesturevolume.utils.VolumeStreamMode
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -206,21 +208,21 @@ class OverlayController(
         private const val SCREENSHOT_HIDE_BEFORE_MS = 250L
         private const val SCREENSHOT_HIDE_AFTER_MS = 1_000L
 
-        /**
-         * How long Volume down keeps the bar out of sight, for a Volume down + Power screenshot.
-         *
-         * At least [CAPTURE_GUARD_MIN_MS] from the press, which covers the system's own wait for
-         * the second key of the chord and the capture after it; [CAPTURE_GUARD_AFTER_RELEASE_MS]
-         * past the release, for a chord whose keys come up before the shutter; and never more than
-         * [CAPTURE_GUARD_MAX_MS] from the press, so a volume key held to ramp the level is not a
-         * key that hides the panel showing the ramp.
-         */
-        private const val CAPTURE_GUARD_MIN_MS = 380L
-        private const val CAPTURE_GUARD_AFTER_RELEASE_MS = 160L
-        private const val CAPTURE_GUARD_MAX_MS = 750L
-
         /** How long a held volume key may keep stepping when its release never arrives. */
         private const val VOLUME_KEY_HOLD_LIMIT_MS = 20_000L
+
+        /**
+         * How long a released Volume down waits before it acts, for the system's screenshot window
+         * to come up if the press was half of Volume down + Power. Measured on a Motorola Edge 50
+         * Fusion: the capture 8ms after the press reached the key filter, the screenshot window
+         * focused 140ms after the press, and the keys let go 240ms after it.
+         */
+        private const val VOLUME_DOWN_SETTLE_MS = 250L
+
+        /** Where a taken Volume down stands. See [onVolumeKey]. */
+        private const val WAIT_NONE = 0
+        private const val WAIT_HELD = 1
+        private const val WAIT_RELEASED = 2
     }
 
     private val windowManager: WindowManager? =
@@ -608,12 +610,13 @@ class OverlayController(
         /*
          * The panel, where the user has asked for it, and the readout on the bar otherwise.
          *
-         * Opened on the volume target whatever the panel is configured for: a press of the volume
-         * rocker that brought up a brightness slider would be answering a question nobody asked.
-         * So media is also the stream listened to when media is what would open.
+         * Opened on the adaptive volume whatever the panel is configured for: a press of the volume
+         * rocker that brought up a brightness slider would be answering a question nobody asked,
+         * and one that brought up media in a call would show a level the rocker had not moved. So
+         * the adaptive volume is also the stream listened to when it is what would open.
          */
         val openPanel = preference.slider.getOpenOnVolumeKey()
-        val res = if (openPanel) volume.media() else volume.resolve(preference.getVolumeStreamMode())
+        val res = if (openPanel) adaptiveVolume() else volume.resolve(preference.getVolumeStreamMode())
         if (stream != null && stream != res.stream) return
         val percent = volume.percent(res) ?: return
         val seen = lastSeenVolume[res.stream]
@@ -626,7 +629,7 @@ class OverlayController(
         if (handlerView == null) return
 
         if (openPanel) {
-            showQuickSliderPanel(QuickSliderStore.TARGET_MEDIA)
+            showQuickSliderPanel(QuickSliderStore.TARGET_ADAPTIVE)
             return
         }
         showVolumePercentOnHandler(percent, res)
@@ -767,11 +770,11 @@ class OverlayController(
         }
     }
 
-    private fun startVolumeKeyRepeat(direction: Int) {
+    private fun startVolumeKeyRepeat(direction: Int, firstDelayMs: Long = keyRepeatStartMs) {
         volumeKeyRepeating = direction
         volumeKeyRepeatUntil = now() + VOLUME_KEY_HOLD_LIMIT_MS
         mainHandler.removeCallbacks(volumeKeyRepeatRunnable)
-        mainHandler.postDelayed(volumeKeyRepeatRunnable, keyRepeatStartMs)
+        mainHandler.postDelayed(volumeKeyRepeatRunnable, firstDelayMs)
     }
 
     private fun stopVolumeKeyRepeat() {
@@ -789,9 +792,16 @@ class OverlayController(
      * ask for that. So the service asks while the setting says Instant, and passes the two volume
      * keys here.
      *
-     * @return true when the panel took the key: the level has moved one index, the panel is up
-     *   and showing it, and the system's own slider stays away. False hands it back to the system
-     *   exactly as if nothing had looked.
+     * Volume down, with no panel open, does nothing until it is let go or held. It is also half of
+     * the Volume down + Power screenshot, and some phones hand the filter that press even though
+     * the system is about to take a picture with it: acting on the press put a panel opening, and
+     * a notch less volume, into every screenshot taken with the buttons. Held back, the bar is
+     * just the bar while the picture is taken. Volume up, and either key at a panel already open,
+     * still act on the press.
+     *
+     * @return true when the panel took the key: the level has moved one index (or will, for a
+     *   Volume down waiting on its release), the panel is up and showing it, and the system's own
+     *   slider stays away. False hands it back to the system exactly as if nothing had looked.
      */
     fun onVolumeKey(event: KeyEvent): Boolean {
         val direction = when (event.keyCode) {
@@ -803,8 +813,15 @@ class OverlayController(
         // would leave the system holding a key that never comes up.
         if (event.action == KeyEvent.ACTION_UP) {
             stopVolumeKeyRepeat()
-            if (event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) releaseCaptureGuard()
-            return volumeKeysTaken.remove(event.keyCode)
+            val taken = volumeKeysTaken.remove(event.keyCode)
+            // Let go before it counted as held: the press it stood for lands in a moment, unless the
+            // system's screenshot comes up first. See [onSystemWindowShown].
+            if (direction < 0 && volumeDownWait == WAIT_HELD && taken) {
+                volumeDownWait = WAIT_RELEASED
+                mainHandler.removeCallbacks(volumeDownHoldRunnable)
+                mainHandler.postDelayed(volumeDownSettleRunnable, VOLUME_DOWN_SETTLE_MS)
+            }
+            return taken
         }
         if (event.action != KeyEvent.ACTION_DOWN) return event.keyCode in volumeKeysTaken
         // A platform that does deliver repeats here: its repeat wins and ours stands down, so a
@@ -812,12 +829,22 @@ class OverlayController(
         if (event.repeatCount > 0) {
             if (event.keyCode !in volumeKeysTaken) return false
             stopVolumeKeyRepeat()
+            if (direction < 0) finishVolumeDownWait()
             return takesVolumeKeys() && stepVolumeFromKey(direction)
         }
-        // Before the key is taken or handed back, and whichever it is: a screenshot's Volume down
-        // is the same press either way, and the system decides it was a chord only afterwards.
-        if (event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) beginCaptureGuard()
-        val taken = takesVolumeKeys() && stepVolumeFromKey(direction)
+        if (!takesVolumeKeys()) {
+            volumeKeysTaken -= event.keyCode
+            stopVolumeKeyRepeat()
+            if (direction < 0) finishVolumeDownWait()
+            return false
+        }
+        if (direction < 0 && sliderView == null) {
+            volumeKeysTaken += event.keyCode
+            stopVolumeKeyRepeat()
+            beginVolumeDownWait()
+            return true
+        }
+        val taken = stepVolumeFromKey(direction)
         if (taken) {
             volumeKeysTaken += event.keyCode
             startVolumeKeyRepeat(direction)
@@ -826,6 +853,57 @@ class OverlayController(
             stopVolumeKeyRepeat()
         }
         return taken
+    }
+
+    /** [WAIT_NONE], or a taken Volume down waiting to be let go or held ([WAIT_HELD]), or let go and
+     * waiting out [VOLUME_DOWN_SETTLE_MS] ([WAIT_RELEASED]). */
+    private var volumeDownWait = WAIT_NONE
+
+    /** Still down at the repeat timeout: a hold, so it steps now and keeps stepping. */
+    private val volumeDownHoldRunnable = Runnable {
+        if (volumeDownWait != WAIT_HELD || destroyed) return@Runnable
+        finishVolumeDownWait()
+        if (takesVolumeKeys() && stepVolumeFromKey(-1)) startVolumeKeyRepeat(-1, keyRepeatDelayMs)
+    }
+
+    /** Let go, and no screenshot came up: the press was only a press. */
+    private val volumeDownSettleRunnable = Runnable {
+        if (volumeDownWait != WAIT_RELEASED || destroyed) return@Runnable
+        finishVolumeDownWait()
+        if (takesVolumeKeys()) stepVolumeFromKey(-1)
+    }
+
+    private fun beginVolumeDownWait() {
+        finishVolumeDownWait()
+        volumeDownWait = WAIT_HELD
+        mainHandler.postDelayed(volumeDownHoldRunnable, keyRepeatStartMs)
+        OverlayRuntime.accessibilityService?.setWatchingSystemWindows(true)
+    }
+
+    /** Ends a waiting Volume down, whatever came of it, and stops looking at the system's windows. */
+    private fun finishVolumeDownWait() {
+        mainHandler.removeCallbacks(volumeDownHoldRunnable)
+        mainHandler.removeCallbacks(volumeDownSettleRunnable)
+        if (volumeDownWait == WAIT_NONE) return
+        volumeDownWait = WAIT_NONE
+        OverlayRuntime.accessibilityService?.setWatchingSystemWindows(false)
+    }
+
+    /**
+     * A window of the system's came up, from the accessibility service, while a Volume down was
+     * waiting.
+     *
+     * Nothing in the key events says a press is half of Volume down + Power: the release arrives
+     * as usual and unmarked, and the system has already taken the picture by then. What does show
+     * is the screenshot's own window, a tenth of a second after the capture and before the keys
+     * come up. So a system window arriving in that moment ends the press with nothing done: no
+     * step, and no panel opening over the screenshot's preview. The rare other system window —
+     * the shade pulled down with a finger while the key is held — costs one press of Volume down.
+     */
+    fun onSystemWindowShown() {
+        if (volumeDownWait == WAIT_NONE || destroyed) return
+        if (BuildConfig.DEBUG) android.util.Log.d("GVKeys", "volume down dropped: system window came up")
+        finishVolumeDownWait()
     }
 
     /**
@@ -847,18 +925,19 @@ class OverlayController(
         if (!power.isInteractive) return false
         val keyguard = context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
         if (keyguard?.isKeyguardLocked == true) return false
-        return quickSliderIsWritable(QuickSliderStore.TARGET_MEDIA)
+        return quickSliderIsWritable(QuickSliderStore.TARGET_ADAPTIVE)
     }
 
     /**
-     * Moves media one index for a key press and shows it on the panel.
+     * Moves the adaptive volume one index for a key press, and shows it on the panel. In a call the
+     * keys never get here — see [takesVolumeKeys] — so this is media, or an alarm that is going off.
      *
      * @return false when the system refused the step, so the key can go to the system instead.
      *   The usual refusal is the headphone safe-volume limit, and the warning the user has to
      *   accept before going louder is the system's to show, not the panel's to hide.
      */
     private fun stepVolumeFromKey(direction: Int): Boolean {
-        val res = volume.media()
+        val res = adaptiveVolume()
         val current = volume.level(res) ?: return false
         val target = (current + direction).coerceIn(res.minIndex, res.maxIndex)
         if (target != current) {
@@ -885,102 +964,9 @@ class OverlayController(
             }
             return
         }
-        // Not while Volume down might be half of a screenshot: the panel would open straight into
-        // the picture. The level has already moved; the panel showing it follows the moment the
-        // chance of a chord has passed. See [beginCaptureGuard].
-        if (captureGuardActive) {
-            pendingKeyPanel = res
-            return
-        }
         // A panel showing something else, brightness, makes way for the one the key is about.
         if (sliderView != null) hideQuickSlider()
-        if (openQuickSliderWindow(QuickSliderStore.TARGET_MEDIA)) animateQuickSliderOpen()
-    }
-
-    // ---- screenshots taken with the buttons ----------------------------------------------------
-
-    /** True while Volume down is keeping every window of this app out of sight. */
-    private var captureGuardActive = false
-    private var captureGuardDownAt = 0L
-
-    /** Until when the Screenshot action is keeping the bar out of sight itself. */
-    private var cleanShotUntil = 0L
-
-    /** A panel a volume key asked for while the guard was up, to open when it comes down. */
-    private var pendingKeyPanel: VolumeController.Resolution? = null
-
-    private val endCaptureGuardRunnable = Runnable { endCaptureGuard() }
-
-    /**
-     * Volume down went down: take everything out of sight for as long as it could still be half of
-     * a Volume down + Power screenshot.
-     *
-     * There is no better signal to be had. Android sends no warning of a screenshot, the Power key
-     * is never offered to an accessibility service, and the capture follows the chord closely
-     * enough that anything shown when Power lands is in it — which is how a volume press opened the
-     * Quick panel full size into every screenshot taken with the buttons. Volume down arrives here
-     * before the system has even decided a chord is happening, so going now is in time.
-     *
-     * Invisible, not faded. These are whole windows and nothing is under a finger during a key
-     * press, so there is no gesture to strand, and every one of them — bar, panel, menu, Deck and
-     * the glass behind them — goes and comes back in one frame.
-     */
-    private fun beginCaptureGuard() {
-        if (destroyed || !preference.getHideInScreenshots()) return
-        if (handlerView == null) return
-        // Only the bar on its own. A panel, the menu or the Deck already on screen means the user
-        // is in the middle of using it — pressing the rocker at an open volume panel is how it is
-        // used — and blinking it out on every press, or holding the next press back, is a worse
-        // trade than the rare screenshot taken of an open panel. The Deck is also a focused
-        // window, and hiding it would take the keyboard away from its search field.
-        if (sliderView != null || sliderCollapse != null || deckRoot != null || contextMenuHost != null) return
-        // The Screenshot action is already keeping the bar out of its own picture, on its own clock.
-        if (now() < cleanShotUntil) return
-        captureGuardDownAt = now()
-        mainHandler.removeCallbacks(endCaptureGuardRunnable)
-        mainHandler.postDelayed(endCaptureGuardRunnable, CAPTURE_GUARD_MAX_MS)
-        if (captureGuardActive) return
-        captureGuardActive = true
-        setShownForCapture(false)
-    }
-
-    /** Volume down came up: the guard ends shortly, unless its minimum has not run yet. */
-    private fun releaseCaptureGuard() {
-        if (!captureGuardActive) return
-        val held = now() - captureGuardDownAt
-        val remaining = maxOf(CAPTURE_GUARD_MIN_MS - held, CAPTURE_GUARD_AFTER_RELEASE_MS)
-        // Only ever brought forward: the ceiling set on the press still stands.
-        if (held + remaining >= CAPTURE_GUARD_MAX_MS) return
-        mainHandler.removeCallbacks(endCaptureGuardRunnable)
-        mainHandler.postDelayed(endCaptureGuardRunnable, remaining)
-    }
-
-    private fun endCaptureGuard() {
-        mainHandler.removeCallbacks(endCaptureGuardRunnable)
-        if (!captureGuardActive) return
-        captureGuardActive = false
-        if (destroyed) return
-        setShownForCapture(true)
-        pendingKeyPanel?.let { res ->
-            pendingKeyPanel = null
-            // Asked again, not assumed: in the moment the guard was up the screen may have gone
-            // off, the lock screen come up or a call begun, and none of those want a panel.
-            if (takesVolumeKeys()) showPanelForVolumeKey(res)
-        }
-    }
-
-    private fun setShownForCapture(shown: Boolean) {
-        val visibility = if (shown) View.VISIBLE else View.INVISIBLE
-        handlerView?.visibility = visibility
-        sliderView?.visibility = visibility
-        retiringSliders.forEach { it.first.visibility = visibility }
-        deckRoot?.visibility = visibility
-        contextMenuHost?.view?.visibility = visibility
-        // Only ever hidden here: whether a readout is showing is its own timer's business.
-        if (!shown) indicatorView?.visibility = View.INVISIBLE
-        listOf(sliderBackdrop, menuBackdrop, deckStripBackdrop, deckCardBackdrop).forEach {
-            it?.setSuppressed(!shown)
-        }
+        if (openQuickSliderWindow(QuickSliderStore.TARGET_ADAPTIVE)) animateQuickSliderOpen()
     }
 
     // =============================================================================================
@@ -1021,6 +1007,7 @@ class OverlayController(
         audioThread?.quitSafely()
         audioThread = null
 
+        finishVolumeDownWait()
         longPressHandler.removeCallbacks(longPressedRunnable)
         mainHandler.removeCallbacksAndMessages(null)
 
@@ -2187,11 +2174,24 @@ class OverlayController(
     }
 
     private fun quickSliderResolution(target: String): VolumeController.Resolution? = when (target) {
+        QuickSliderStore.TARGET_ADAPTIVE -> adaptiveVolume()
         QuickSliderStore.TARGET_MEDIA -> volume.media()
         QuickSliderStore.TARGET_RING -> volume.forStream(AudioManager.STREAM_RING)
         QuickSliderStore.TARGET_ALARM -> volume.forStream(AudioManager.STREAM_ALARM)
         else -> null
     }
+
+    /**
+     * The volume the rocker would move right now: the call's in a call, the ringer while it rings,
+     * whatever is playing, and media when nothing is.
+     *
+     * Always Follow playback, whatever the Volume stream setting says. That setting is how hard a
+     * *swipe* on the bar adapts, and "Media only" there is somebody keeping their swipes on media;
+     * a panel set to the adaptive volume has been asked to adapt in so many words. Resolved once,
+     * as the panel opens, for the reason [VolumeController.resolve] gives.
+     */
+    private fun adaptiveVolume(): VolumeController.Resolution =
+        volume.resolve(VolumeStreamMode.FOLLOW_PLAYBACK)
 
     @DrawableRes
     private fun quickSliderIcon(target: String): Int =
@@ -3838,9 +3838,6 @@ class OverlayController(
             showIndicatorMessage(context.getString(R.string.action_unavailable_on_device))
             return
         }
-        // Held so a Volume down press in the meantime cannot bring the bar back into this picture.
-        cleanShotUntil = now() + SCREENSHOT_HIDE_BEFORE_MS + SCREENSHOT_HIDE_AFTER_MS
-        endCaptureGuard()
         removeContextMenuNow()
         removeDeckNow()
         hideIndicator()

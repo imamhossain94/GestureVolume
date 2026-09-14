@@ -410,7 +410,7 @@
     <string name="faq_q_brightness">Why can I change the volume but not the brightness?</string>
     <string name="faq_a_brightness">Brightness needs the “Modify system settings” permission, which Android keeps separate from everything else. Grant it from the Permissions card. The app also turns adaptive brightness off the first time it writes a brightness value, because the light sensor would otherwise overwrite whatever you set within a second or two.</string>
     <string name="faq_q_accessibility">Why does it ask for the accessibility service?</string>
-    <string name="faq_a_accessibility">Only for the actions Android will not let an ordinary app perform: Back, Home, Recents, screenshot, lock screen, the notification shade and the power menu. Nothing else needs it, and the picker marks those actions so you know before you choose one. It is also used, only if you turn them on, for the Instant volume keys, Hide in screenshots and hiding the bar in chosen apps.</string>
+    <string name="faq_a_accessibility">Only for the actions Android will not let an ordinary app perform: Back, Home, Recents, screenshot, lock screen, the notification shade and the power menu. Nothing else needs it, and the picker marks those actions so you know before you choose one. It is also used, only if you turn them on, for the Instant volume keys and hiding the bar in chosen apps.</string>
     <string name="faq_q_notification">Can I get rid of the ongoing notification?</string>
     <string name="faq_a_notification">Mostly. Turn off “Notification controls” in Actions. Android requires a notification while the bar\'s service runs, so a silent placeholder stays, but it loses its status bar icon and moves to the bottom of the shade. You can hide it completely from the app\'s notification settings.</string>
     <string name="faq_q_quick_panel">What is the Quick panel?</string>
@@ -511,11 +511,11 @@
     <!-- 1.4.0: the accessibility service -->
     <string name="accessibility_service_label">GestureVolume</string>
     <string name="accessibility_service_summary">System shortcuts from the volume bar, instant volume keys and hiding the bar in chosen apps</string>
-    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also opens the Quick panel the moment you press a volume key and keeps the bar out of Volume down + Power screenshots, looking at the two volume keys only. If you choose apps to hide the bar in, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device.</string>
+    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also opens the Quick panel the moment you press a volume key, looking at the two volume keys only. If you choose apps to hide the bar in, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.</string>
     <string name="accessibility_permission">Accessibility service</string>
     <string name="accessibility_permission_desc">Optional: performs Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and Power menu.</string>
     <string name="accessibility_disclosure_title">Turn on the accessibility service?</string>
-    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for three things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To look at the two volume keys, only if you set the volume keys to Instant or turn on Hide in screenshots: to open the Quick panel the moment you press one, or to keep the bar out of a Volume down + Power screenshot. Every other key passes straight on, and no key is recorded.\n\n• To see which app is on screen, only if you choose apps to hide the bar in. It looks at the app’s name and nothing else.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
+    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for three things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To look at the two volume keys, only if you set the volume keys to Instant: to open the Quick panel the moment you press one. Every other key passes straight on, and no key is recorded. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.\n\n• To see which app is on screen, only if you choose apps to hide the bar in. It looks at the app’s name and nothing else.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
     <string name="accessibility_disclosure_accept">Open Accessibility settings</string>
     <string name="accessibility_disclosure_decline">Not now</string>
     <string name="accessibility_how_to">In the list, open GestureVolume and switch it on.</string>
@@ -719,6 +719,8 @@
     <string name="slider_open_off">Off</string>
     <string name="slider_target">Adjusts</string>
     <string name="slider_target_brightness">Brightness</string>
+    <string name="slider_target_adaptive">Adaptive volume</string>
+    <string name="slider_target_adaptive_hint">Call volume during a call, the ringer while it rings, otherwise whatever is playing. Media when nothing is.</string>
     <string name="slider_target_media">Media volume</string>
     <string name="slider_target_ring">Ring volume</string>
     <string name="slider_target_alarm">Alarm volume</string>
@@ -846,11 +848,14 @@
     <string name="context_menu_per_page_desc">With more than this, the grid becomes pages you swipe between.</string>
     <string name="about_ideas_name" translatable="false">Deepam Rathod</string>
     <string name="visibility_title">Visibility</string>
-    <string name="visibility_card_subtitle">Apps and screenshots the handler stays out of</string>
+    <string name="visibility_card_subtitle">Apps the handler stays out of</string>
     <string name="visibility_apps_title">Hide in these apps</string>
     <string name="visibility_apps_desc">The handler steps aside while one of these apps is open, and comes back when you leave it.</string>
     <string name="visibility_apps_needs_accessibility">This needs the accessibility service, which tells the app which app is open. Tap to turn it on.</string>
     <string name="visibility_apps_chosen">HIDDEN IN</string>
+    <string name="visibility_tab_chosen">Hidden in (%1$d)</string>
+    <string name="visibility_tab_all">All apps</string>
+    <string name="visibility_chosen_empty">No apps chosen yet. Tick one in All apps and the handler steps aside while it is open.</string>
     <string name="tile_handler">Handler</string>
     <string name="tile_handler_shown">Shown</string>
     <string name="tile_handler_hidden">Hidden</string>
@@ -862,11 +867,6 @@
     <string name="panel_theme_amoled">AMOLED</string>
     <string name="panel_theme_acrylic">Acrylic</string>
     <string name="panel_theme_amethyst">Amethyst</string>
-    <string name="visibility_screenshots_title">Screenshots</string>
-    <string name="hide_in_screenshots_title">Hide in screenshots</string>
-    <string name="hide_in_screenshots_desc">When you press Volume down with Power to take a screenshot, the handler and its panels step out of sight for a moment, so the picture shows your app and not the bar. The Screenshot action always leaves them out.</string>
-    <string name="hide_in_screenshots_needs_accessibility">This needs the accessibility service, which is what hears the Volume down press. Tap to turn it on from the Permissions screen.</string>
-    <string name="hide_in_screenshots_limits">Screenshots taken from Quick Settings, the power menu or a gesture give no warning, so the bar can still appear in those. The Handler tile puts it away with one tap.</string>
     <string name="permission_note_write_settings">Needs Modify system settings to change the brightness. Tap to allow it on the Permissions screen.</string>
     <string name="permission_note_accessibility">Needs the accessibility service to work. Tap to turn it on from the Permissions screen.</string>
     <string name="permission_note_dnd">Needs Do Not Disturb access to work. Tap to allow it on the Permissions screen.</string>
@@ -917,14 +917,13 @@
     <string name="permission_feature_swipe_down">Actions: Swipe down</string>
     <string name="permission_feature_swipe_in">Actions: Swipe in</string>
     <string name="permission_feature_swipe_out">Actions: Swipe out</string>
-    <string name="permission_feature_notification_controls">Actions: Notification controls</string>
+    <string name="permission_feature_notification_controls">Permissions: Notification controls</string>
     <string name="permission_feature_menu_entry">Long-press menu: Entries</string>
     <string name="permission_feature_deck_tile">Deck: Tiles</string>
     <string name="permission_feature_deck_contacts">Deck search: Contacts</string>
     <string name="permission_feature_deck_direct_call">Deck search: Call directly</string>
     <string name="permission_feature_slider_brightness">Quick slider: Brightness</string>
     <string name="permission_feature_slider_instant_keys">Quick slider: Instant volume keys</string>
-    <string name="permission_feature_hide_in_screenshots">Visibility: Hide in screenshots</string>
     <string name="permission_feature_hide_in_apps">Visibility: Hide in chosen apps</string>
     <string name="permission_needed_by">Needed by %1$s</string>
     <string name="permission_needed_by_more">Needed by %1$s and %2$d more</string>

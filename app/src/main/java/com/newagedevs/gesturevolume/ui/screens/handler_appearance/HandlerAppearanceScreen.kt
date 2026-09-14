@@ -130,6 +130,7 @@ fun HandlerAppearanceScreen(
                 otherPositionFraction = preference.getHandlerPosYFraction(!isPortrait),
                 otherPosXFraction = preference.getHandlerPosXFraction(!isPortrait),
                 dynamicPosition = preference.getHandlerDynamicPosition(),
+                showVolumePercent = preference.getShowVolumePercent(),
             )
         )
     }
@@ -167,6 +168,7 @@ fun HandlerAppearanceScreen(
             initialOtherPositionFraction = savedState.value.otherPositionFraction,
             initialOtherPosXFraction = savedState.value.otherPosXFraction,
             initialDynamicPosition = savedState.value.dynamicPosition,
+            initialShowVolumePercent = savedState.value.showVolumePercent,
         )
     }
 
@@ -211,6 +213,7 @@ fun HandlerAppearanceScreen(
         preference.setHandlerVibrateOnClick(state.vibrate)
         preference.setHandlerEdgeMarginDp(state.edgeMargin)
         preference.setHandlerSnapToEdge(state.snapToEdge)
+        preference.setShowVolumePercent(state.showVolumePercent)
 
         // Position is written only when this screen actually changed it — a preview drag or Reset
         // position. Two reasons. It goes to the per-orientation pair the overlay really reads,

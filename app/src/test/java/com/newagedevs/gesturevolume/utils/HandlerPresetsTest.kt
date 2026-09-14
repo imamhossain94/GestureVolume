@@ -40,7 +40,7 @@ class HandlerPresetsTest {
             assertEquals(id, HandlerActions.OPEN_DECK, b.swipeIn)
             assertEquals(id, HandlerActions.NONE, b.swipeOut)
 
-            assertEquals(id, QuickSliderStore.TARGET_MEDIA, b.slider.target)
+            assertEquals(id, QuickSliderStore.TARGET_ADAPTIVE, b.slider.target)
             assertTrue(id, b.slider.showValue)
             assertTrue(id, b.slider.showIcon)
             assertEquals(id, 220f, b.slider.lengthDp, 0f)
@@ -63,10 +63,21 @@ class HandlerPresetsTest {
         listOf(HandlerPresets.DEFAULT, HandlerPresets.EDGE).forEach { preset ->
             val b = preset.behaviour
             assertTrue(preset.id, b.dynamicPosition)
-            assertEquals(preset.id, 24f, b.slider.thicknessDp, 0f)
             assertEquals(preset.id, 0f, b.slider.edgeOffsetDp, 0f)
             assertEquals(preset.id, 0f, preset.edgeMargin, 0f)
         }
+    }
+
+    @Test
+    fun `the Dock's panel is thicker than the Edge's, with its number and icon further in`() {
+        val dock = HandlerPresets.DEFAULT.behaviour.slider
+        assertEquals(28f, dock.thicknessDp, 0f)
+        assertEquals(35f, dock.valueMarginDp, 0f)
+        assertEquals(35f, dock.iconMarginDp, 0f)
+        val edge = HandlerPresets.EDGE.behaviour.slider
+        assertEquals(24f, edge.thicknessDp, 0f)
+        assertEquals(26f, edge.valueMarginDp, 0f)
+        assertEquals(26f, edge.iconMarginDp, 0f)
     }
 
     @Test
@@ -97,6 +108,8 @@ class HandlerPresetsTest {
                 lengthDp = QuickSliderStore.DEFAULT_LENGTH,
                 thicknessDp = QuickSliderStore.DEFAULT_THICKNESS,
                 edgeOffsetDp = QuickSliderStore.DEFAULT_EDGE_OFFSET,
+                valueMarginDp = QuickSliderStore.DEFAULT_VALUE_MARGIN,
+                iconMarginDp = QuickSliderStore.DEFAULT_ICON_MARGIN,
                 followHandlerShape = QuickSliderStore.DEFAULT_FOLLOW_HANDLER_SHAPE,
                 volumeKeys = QuickSliderStore.DEFAULT_VOLUME_KEYS,
             ),

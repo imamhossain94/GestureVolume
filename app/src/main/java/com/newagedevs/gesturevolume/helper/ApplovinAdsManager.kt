@@ -1,11 +1,16 @@
 package com.newagedevs.gesturevolume.helper
 
 import android.app.Activity
+import android.content.res.ColorStateList
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.RippleDrawable
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -13,6 +18,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -22,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -59,6 +67,9 @@ class ApplovinAdsManager(
     init {
         preloadInterstitialAd()
     }
+
+    /** Whether this manager was built for [activity], rather than for one since destroyed. */
+    fun isBoundTo(activity: Activity): Boolean = context === activity
 
     private companion object {
         const val SDK_READY_POLL_MS = 1000L
@@ -139,6 +150,9 @@ class ApplovinAdsManager(
     ) {
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
+        // Read here, in composition, so a theme change restyles the ad on the next update.
+        val colorScheme = MaterialTheme.colorScheme
+        val style = remember(colorScheme) { NativeAdStyle.from(colorScheme) }
 
         var nativeAdLoader by remember { mutableStateOf<MaxNativeAdLoader?>(null) }
         var nativeAd by remember { mutableStateOf<MaxAd?>(null) }
@@ -285,6 +299,7 @@ class ApplovinAdsManager(
                     nativeAdView?.let { adView ->
                         // Remove from previous parent if exists
                         (adView.parent as? FrameLayout)?.removeView(adView)
+                        styleNativeAdView(adView, style)
                         container.addView(adView)
                     }
                 }
@@ -296,6 +311,7 @@ class ApplovinAdsManager(
     private fun createNativeAdBinder(): MaxNativeAdViewBinder {
         return MaxNativeAdViewBinder.Builder(R.layout.view_small_native_ads)
             .setTitleTextViewId(R.id.title_text_view)
+            .setIconImageViewId(R.id.icon_image_view)
             .setBodyTextViewId(R.id.body_text_view)
             .setAdvertiserTextViewId(R.id.advertiser_text_view)
             .setMediaContentViewGroupId(R.id.media_view_container)
@@ -308,6 +324,77 @@ class ApplovinAdsManager(
     // Function to create a native ad view
     private fun createNativeAdView(context: Activity): MaxNativeAdView {
         return MaxNativeAdView(createNativeAdBinder(), context)
+    }
+
+    /**
+     * The home cards' colours, taken from the Compose theme for the native ad's views.
+     *
+     * The same roles [com.newagedevs.gesturevolume.ui.screens.main.NavigationCard] and the
+     * Permissions card use: the title in onSurfaceVariant, secondary text at 70% of it, the Ad chip
+     * in the status chips' primary on a 10% primary fill, the icon on the icon chip's 12% fill, and
+     * the button a filled primary one.
+     */
+    private data class NativeAdStyle(
+        val title: Int,
+        val secondary: Int,
+        val accent: Int,
+        val onAccent: Int,
+        val accentFill: Int,
+        val chipFill: Int,
+        val mediaFill: Int,
+        val ripple: Int,
+    ) {
+        companion object {
+            fun from(colors: ColorScheme) = NativeAdStyle(
+                title = colors.onSurfaceVariant.toArgb(),
+                secondary = colors.onSurfaceVariant.copy(alpha = 0.7f).toArgb(),
+                accent = colors.primary.toArgb(),
+                onAccent = colors.onPrimary.toArgb(),
+                accentFill = colors.primary.copy(alpha = 0.10f).toArgb(),
+                chipFill = colors.primary.copy(alpha = 0.12f).toArgb(),
+                mediaFill = colors.onSurface.copy(alpha = 0.06f).toArgb(),
+                ripple = colors.onPrimary.copy(alpha = 0.24f).toArgb(),
+            )
+        }
+    }
+
+    /**
+     * Paints the rendered native ad in [style], so it reads as one of the home screen's cards.
+     *
+     * Done here rather than in the layout's XML because the app's theme is Compose's: it follows
+     * the in-app Light/Dark choice, which colour resources cannot see, and applying it after the
+     * network has filled the views means nothing the network sets overrides it.
+     */
+    private fun styleNativeAdView(adView: MaxNativeAdView, style: NativeAdStyle) {
+        val density = adView.resources.displayMetrics.density
+        fun rounded(color: Int, radiusDp: Float) = GradientDrawable().apply {
+            setColor(color)
+            cornerRadius = radiusDp * density
+        }
+        adView.findViewById<TextView>(R.id.title_text_view)?.setTextColor(style.title)
+        adView.findViewById<TextView>(R.id.advertiser_text_view)?.setTextColor(style.secondary)
+        adView.findViewById<TextView>(R.id.body_text_view)?.setTextColor(style.secondary)
+        adView.findViewById<TextView>(R.id.ad_indicator_text_view)?.apply {
+            setTextColor(style.accent)
+            background = rounded(style.accentFill, 50f)
+        }
+        adView.findViewById<View>(R.id.icon_chip)?.apply {
+            background = rounded(style.chipFill, 10f)
+            clipToOutline = true
+        }
+        adView.findViewById<View>(R.id.media_view_container)?.apply {
+            background = rounded(style.mediaFill, 12f)
+            clipToOutline = true
+        }
+        adView.findViewById<Button>(R.id.cta_button)?.apply {
+            backgroundTintList = null
+            setTextColor(style.onAccent)
+            background = RippleDrawable(
+                ColorStateList.valueOf(style.ripple),
+                rounded(style.accent, 12f),
+                rounded(style.accent, 12f),
+            )
+        }
     }
 
     private fun preloadInterstitialAd() {

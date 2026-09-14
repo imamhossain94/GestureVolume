@@ -67,7 +67,7 @@ Paste on tap.
 
 **Done.**
 - The in-app disclosure and service description list exactly three uses — system actions, the two
-  volume keys (Instant and Hide in screenshots) and hiding the bar in chosen apps — in English and 11
+  volume keys (Instant) and hiding the bar in chosen apps — in English and 11
   translations (Arabic, Vietnamese and Chinese show the English text).
 - `accessibility_service_config.xml` declares only `typeWindowStateChanged`, with
   `canRetrieveWindowContent="false"`.
@@ -95,16 +95,18 @@ affirmative consent, an accurate declaration and a video.
   and can no longer read window content.
 - **Running without a notification** — the bar is always hosted by the foreground service with the
   overlay permission; the accessibility service draws nothing.
+- **Hide in screenshots** — the key filter no longer hides the bar on Volume down; the Deck's
+  Screenshot tile takes a picture with the bar out of it.
 
 **Remaining, each off by default and behind its own setting:**
 
 | Use | Review sensitivity | Mitigation |
 | --- | --- | --- |
 | System actions (lock, screenshot, Back, Home…) | Low — the textbook accepted use | — |
-| Volume-key filtering | Medium — key interception | Only the two volume keys, others passed through, nothing recorded; filter requested only while Instant or Hide in screenshots is on |
+| Volume-key filtering | Medium — key interception | Only the two volume keys, others passed through, nothing recorded; filter requested only while Instant is on; for the quarter second a Volume down press is undecided, window-state events are checked for the System UI package only, so a button screenshot does not open the panel |
 | Foreground app detection | Low | Package name only, only while apps are chosen, no history, no window content |
 
-**If the review still objects:** drop *Hide in screenshots* and *Instant* volume keys (this removes
+**If the review still objects:** drop the *Instant* volume keys (this removes
 `canRequestFilterKeyEvents`), leaving only system actions and hide-in-apps.
 
 ### 6. Special-use foreground service
@@ -153,10 +155,10 @@ keys — check it in a build with the real keys.
 
 ## Before you submit — checklist
 
-- [ ] Paste `privacy-policy.html` at the privacy URL and `terms-and-conditions.html` at the terms URL (Blogger › Edit post › HTML view)
+- [x] Paste `privacy-policy.html` at the privacy URL and `terms-and-conditions.html` at the terms URL (Blogger › Edit post › HTML view) — live pages checked 14 September 2026, both dated 13 September 2026
 - [ ] Update the Data safety form from `play-listing-en.md` (no weather row)
-- [ ] Paste the new Accessibility API declaration (three uses) and upload its video
-- [ ] Complete the Foreground service declaration and upload its video
+- [ ] Paste the new Accessibility API declaration (three uses) and upload its video — video recorded: https://drive.google.com/file/d/1FIes_6bU4usJcwVVLh0mfX5py25D84Ks/view?usp=sharing
+- [ ] Complete the Foreground service declaration and upload its video — video recorded: https://drive.google.com/file/d/1bO_3olqE8H6aPhh2rDlBRNyfrtitxQXT/view?usp=sharing
 - [ ] Remove any Play Console "Sensitive permissions" declaration for location if one was filed
 - [ ] Enable Google UMP as the CMP in the AppLovin MAX dashboard (Privacy › CMP)
 - [ ] Content rating: mark "contains ads"; target audience 13+

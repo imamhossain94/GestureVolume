@@ -65,7 +65,7 @@ It began as a way to save a worn-out volume rocker, and it still is one.
 
 ▸ QUICK SLIDER
 A full-height track that grows out of the bar. Set the level in one move, then it tucks itself away.
-• Media, ring or alarm volume, or brightness
+• Adaptive volume — the call's volume in a call, otherwise whatever is playing — or media, ring or alarm volume, or brightness
 • Animated fills — waves, aurora, plasma, galaxy and more — in your own colours
 • Choose the icon and number colours, entrance animation and haptics
 • Optional step sound: a click, or an adaptive tick that rises with the level
@@ -88,13 +88,12 @@ Glass, frosted, paper, midnight, AMOLED and more panel styles, with over a dozen
 
 ▸ VISIBILITY
 • Hide the bar in apps you choose
-• Keep the bar out of Volume-down + Power screenshots
 • Quick Settings tile to hide or show it
 
 ▸ ACCESSIBILITY SERVICE
 Gesture Volume includes an optional AccessibilityService. It is off until you turn it on in Settings › Accessibility, and the app first shows you what it is for. It is used only for what you switch on:
 1. Performing the system actions you assign — lock screen, screenshot, Back, Home, recent apps, notifications, quick settings, power menu.
-2. Watching the two volume keys, to open the Quick slider instantly or hide the bar from screenshots.
+2. Watching the two volume keys, to open the Quick slider instantly.
 3. Noticing which app is open, to hide the bar in apps you chose.
 It cannot read your screen, does not capture what you copy or type, and nothing it sees leaves your phone. Turn it off any time.
 
@@ -117,7 +116,7 @@ and it must match the in-app disclosure and the declaration below.
 ```
 🎚 Quick slider — a full-height track that grows out of the bar, with animated fills, your own colours and an optional adaptive step sound
 🔄 Dynamic position — the bar follows your phone's edge when you rotate
-👁 Visibility — hide the bar in chosen apps and keep it out of screenshots
+👁 Visibility — hide the bar in chosen apps
 🪟 New panel styles and entrance animations
 🪙 A redesigned coin toss
 🔐 Privacy choices — change your ad consent any time
@@ -167,6 +166,8 @@ Also record a short video showing: the disclosure dialog, turning the service on
 action performing Lock screen, choosing an app to hide the bar in, and the service being switched
 off again.
 
+Video (recorded 14 September 2026, ads-off release build): https://drive.google.com/file/d/1FIes_6bU4usJcwVVLh0mfX5py25D84Ks/view?usp=sharing
+
 ```
 Gesture Volume is an on-screen edge bar for volume, brightness and shortcuts. Its AccessibilityService is optional and off by default. The user turns it on in Settings › Accessibility only after an in-app disclosure dialog listing every use below, which they must accept. isAccessibilityTool is false: this is a convenience feature, not an assistive technology. The bar itself is drawn by a foreground service with the overlay permission, not by the accessibility service.
 
@@ -174,11 +175,11 @@ The service is used for three purposes, each tied to a feature the user chooses:
 
 1. System actions the user assigns to the bar: GLOBAL_ACTION_LOCK_SCREEN, GLOBAL_ACTION_TAKE_SCREENSHOT, GLOBAL_ACTION_BACK, GLOBAL_ACTION_HOME, GLOBAL_ACTION_RECENTS, GLOBAL_ACTION_NOTIFICATIONS, GLOBAL_ACTION_QUICK_SETTINGS and GLOBAL_ACTION_POWER_DIALOG. No other API allows an app to perform these.
 
-2. Volume keys, only when the user sets the Quick slider's volume keys to Instant or turns on Hide in screenshots: key-event filtering is requested at runtime, only KEYCODE_VOLUME_UP and KEYCODE_VOLUME_DOWN are acted on, every other key is returned unconsumed, and no key is recorded. Used to open the app's volume slider immediately, and to hide the bar while a Volume-down + Power screenshot is taken.
+2. Volume keys, only when the user sets the Quick slider's volume keys to Instant: key-event filtering is requested at runtime, only KEYCODE_VOLUME_UP and KEYCODE_VOLUME_DOWN are acted on, every other key is returned unconsumed, and no key is recorded. Used to open the app's volume slider immediately. For the quarter second a Volume-down press is undecided, the service also subscribes to TYPE_WINDOW_STATE_CHANGED and checks only whether the event's package is com.android.systemui, so a Volume-down + Power screenshot does not open the slider.
 
 3. Hiding the bar in apps the user selects, only when they select any: the service subscribes to TYPE_WINDOW_STATE_CHANGED and reads the event's package name to know when one of those apps is in front. No history is kept.
 
-canRetrieveWindowContent is false: the service cannot read window content, and it does not capture copied or typed text. It subscribes to no accessibility events other than TYPE_WINDOW_STATE_CHANGED, and only while the user has chosen apps to hide the bar in. No data obtained through the API is transmitted off the device, sold, or used for advertising. The app remains fully usable with the service disabled.
+canRetrieveWindowContent is false: the service cannot read window content, and it does not capture copied or typed text. It subscribes to no accessibility events other than TYPE_WINDOW_STATE_CHANGED, and only while the user has chosen apps to hide the bar in or, with Instant volume keys, for the quarter second a Volume-down press is undecided. No data obtained through the API is transmitted off the device, sold, or used for advertising. The app remains fully usable with the service disabled.
 ```
 
 ---
@@ -194,6 +195,8 @@ The foreground service keeps the user-visible edge bar on screen while other app
 Attach a short video of the bar being switched on, used over another app, and stopped from the
 notification.
 
+Video (recorded 14 September 2026, ads-off release build): https://drive.google.com/file/d/1bO_3olqE8H6aPhh2rDlBRNyfrtitxQXT/view?usp=sharing
+
 ---
 
 ## Store graphics — what to shoot
@@ -207,7 +210,7 @@ Nine phone screenshots, in this order; the first three decide installs.
 5. The Deck's search card with a sum answered inline
 6. Appearance, with the live preview and presets
 7. The long-press menu beside the bar, on a glass panel style
-8. Visibility: apps list and the screenshot switch
+8. Visibility: the chosen apps beside all apps
 9. The Deck's coin toss mid-flip
 
 Feature graphic (1024×500): the bar at the right edge with the Quick slider grown out of it, on a
@@ -225,7 +228,7 @@ simplest with mediated ads).
 ```
 The AccessibilityService is optional and disabled by default; the bar is drawn by a foreground service, not by the accessibility service. Its primary use is letting users assign system actions — lock screen, screenshot, Back, Home, recents, notification shade, quick settings and power menu — to the app's edge bar; these are only reachable through performGlobalAction.
 
-Two further uses each sit behind their own in-app setting, both off by default: acting on the two volume keys to open the app's slider or keep the bar out of screenshots, and noticing the foreground app's package name to hide the bar in apps the user picked.
+Two further uses each sit behind their own in-app setting, both off by default: acting on the two volume keys to open the app's slider, and noticing the foreground app's package name to hide the bar in apps the user picked.
 
-Before the user is sent to Settings › Accessibility, a disclosure dialog names all three uses, states that nothing else is read and nothing leaves the device, and explains how to turn the service off; the user must accept it. canRetrieveWindowContent is false, the service does not capture copied or typed text, subscribes only to window-state changes and only while apps are chosen, transmits nothing, and the app works fully with the service off.
+Before the user is sent to Settings › Accessibility, a disclosure dialog names all three uses, states that nothing else is read and nothing leaves the device, and explains how to turn the service off; the user must accept it. canRetrieveWindowContent is false, the service does not capture copied or typed text, subscribes only to window-state changes, and only while apps are chosen or a Volume-down press is undecided, transmits nothing, and the app works fully with the service off.
 ```

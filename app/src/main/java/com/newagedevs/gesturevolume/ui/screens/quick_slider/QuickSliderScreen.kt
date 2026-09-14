@@ -76,6 +76,7 @@ import com.newagedevs.gesturevolume.utils.SliderFill
 
 /** The translated name of a slider target. */
 fun sliderTargetLabel(id: String): Int = when (id) {
+    QuickSliderStore.TARGET_ADAPTIVE -> R.string.slider_target_adaptive
     QuickSliderStore.TARGET_MEDIA -> R.string.slider_target_media
     QuickSliderStore.TARGET_RING -> R.string.slider_target_ring
     QuickSliderStore.TARGET_ALARM -> R.string.slider_target_alarm
@@ -345,6 +346,15 @@ fun QuickSliderScreen(
                     selected = { it == target },
                     onClick = { target = it; store.setTarget(it) }
                 )
+                // "Adaptive" alone does not say what it adapts to, and the answer is the reason to
+                // pick it: the call's volume during a call, rather than media going up under it.
+                if (target == QuickSliderStore.TARGET_ADAPTIVE) {
+                    Text(
+                        text = stringResource(R.string.slider_target_adaptive_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 // A brightness panel with nothing allowed to change the brightness opens, says so in
                 // a line in the middle of the screen, and closes. Said here too, with the way out.
                 if (target == QuickSliderStore.TARGET_BRIGHTNESS && !canWriteSettings) {

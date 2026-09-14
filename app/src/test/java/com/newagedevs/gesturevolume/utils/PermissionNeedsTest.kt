@@ -135,19 +135,12 @@ class PermissionNeedsTest {
     }
 
     @Test
-    fun `both visibility settings need the accessibility service`() {
-        val needs = PermissionNeeds.compute(
-            Config(hideInScreenshots = true, hideInApps = true),
-            Grants(accessibility = false)
-        )
-        assertEquals(
-            listOf(Feature.HIDE_IN_SCREENSHOTS, Feature.HIDE_IN_APPS),
-            needs.featuresFor(Permission.ACCESSIBILITY)
-        )
-        // One permission, however many features want it.
+    fun `hiding the bar in apps needs the accessibility service`() {
+        val needs = PermissionNeeds.compute(Config(hideInApps = true), Grants(accessibility = false))
+        assertEquals(listOf(Feature.HIDE_IN_APPS), needs.featuresFor(Permission.ACCESSIBILITY))
         assertEquals(1, needs.missingCount)
-        assertEquals(2, needs.forScreen(Screen.VISIBILITY).size)
-        assertTrue(compute(Config(hideInScreenshots = false, hideInApps = false), Grants(accessibility = false)).isEmpty())
+        assertEquals(1, needs.forScreen(Screen.VISIBILITY).size)
+        assertTrue(compute(Config(hideInApps = false), Grants(accessibility = false)).isEmpty())
     }
 
     @Test
@@ -205,9 +198,10 @@ class PermissionNeedsTest {
             needs.permissions
         )
         assertEquals(Need(Permission.OVERLAY, Feature.FLOATING_BAR), needs.first)
+        assertEquals(listOf(Feature.SWIPE_UP), needs.forScreen(Screen.ACTIONS).map { it.feature })
         assertEquals(
-            listOf(Feature.SWIPE_UP, Feature.NOTIFICATION_CONTROLS),
-            needs.forScreen(Screen.ACTIONS).map { it.feature }
+            listOf(Feature.NOTIFICATION_CONTROLS),
+            needs.forScreen(Screen.PERMISSIONS).map { it.feature }
         )
         assertTrue(needs.forScreen(Screen.APPEARANCE).isEmpty())
     }
