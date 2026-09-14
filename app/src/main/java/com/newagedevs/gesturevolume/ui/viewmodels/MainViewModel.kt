@@ -626,13 +626,20 @@ class MainViewModel @Inject constructor(
     }
 
     fun initializeAdsManager(activity: Activity) {
+        if (com.newagedevs.gesturevolume.BuildConfig.ADS_DISABLED) return
         if (_state.value.isProActivated) {
             adsManager?.destroyAds()
             adsManager = null
             return
         }
 
-        if (adsManager == null) {
+        // Rebuilt for every new Activity, not only the first. This ViewModel outlives a rotation and
+        // the Activity does not: a manager kept from before one is bound to a destroyed Activity,
+        // and every load it attempts stops at its isDestroyed check, so after turning the phone
+        // the native ad went and never came back.
+        val current = adsManager
+        if (current == null || !current.isBoundTo(activity)) {
+            current?.destroyAds()
             adsManager = ApplovinAdsManager(activity)
         }
     }

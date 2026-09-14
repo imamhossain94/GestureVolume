@@ -12,6 +12,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -70,6 +72,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
+import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.DeviceToggles
@@ -122,6 +125,7 @@ fun PermissionsScreen(
         mutableStateOf(PermissionNeeds.hasPermission(context, Manifest.permission.CALL_PHONE))
     }
     var showAccessibilityDisclosure by remember { mutableStateOf(false) }
+    var showNotification by remember { mutableStateOf(viewModel.preference.getShowNotification()) }
 
     // Which permissions this user's own configuration has made necessary, and what for. Read as
     // state so it re-reads on resume alongside everything else — an action changed on the Actions
@@ -443,6 +447,35 @@ fun PermissionsScreen(
                 )
             }
 
+            // What the notification carries, under the permission that lets it be posted. It was
+            // a switch among the gesture settings on the Actions screen, where nothing beside it
+            // was about notifications. Shown on every version: below Android 13 there is no
+            // permission card above it, but there is still a notification.
+            Spacer(modifier = Modifier.height(16.dp))
+            NotificationControlsCard(
+                checked = showNotification,
+                onCheckedChange = { on ->
+                    showNotification = on
+                    viewModel.preference.setShowNotification(on)
+                    // The service owns the notification, so it is the only thing that can re-post
+                    // it on the other channel. Notification only: a full update would rebuild the
+                    // bar for nothing.
+                    viewModel.refreshServiceNotification(context)
+                    // On with notifications blocked is now a need, named on the card above.
+                    needs = PermissionNeeds.read(context, viewModel.preference)
+                    viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
+                },
+                onOpenChannelSettings = {
+                    // The app-open ad is already paused for as long as this screen is open.
+                    runCatching {
+                        context.startActivity(
+                            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                        )
+                    }
+                },
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             // Contacts — only the Deck's search uses it.
@@ -516,6 +549,47 @@ fun PermissionsScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+/**
+ * Whether the ongoing notification carries Show, Settings and Stop, and, once it is off, the way to
+ * the system's channel settings: Android will not run a foreground service without a notification,
+ * so switching the controls off leaves a silent placeholder that only the system can hide.
+ */
+@Composable
+private fun NotificationControlsCard(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    onOpenChannelSettings: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            SettingSwitchItem(
+                title = stringResource(R.string.show_notification_title),
+                description = stringResource(R.string.show_notification_desc),
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+            )
+            if (!checked) {
+                TextButton(
+                    onClick = onOpenChannelSettings,
+                    contentPadding = PaddingValues(0.dp),
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.show_notification_off_hint),
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         }
     }
 }

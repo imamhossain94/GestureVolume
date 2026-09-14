@@ -2,8 +2,6 @@ package com.newagedevs.gesturevolume.ui.screens.main
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.RowScope
@@ -27,6 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -45,7 +44,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -184,12 +182,10 @@ fun MainScreen(
                         .widthIn(max = CONTENT_MAX_WIDTH)
                         .padding(horizontal = 16.dp)
                 ) {
-                    // What the view model re-read on the last return here: the cards below warn
-                    // for their own screens, and the Permissions card for all of them.
+                    // What the view model re-read on the last return here. Only the Permissions card
+                    // warns: a badge on every card whose screen held a waiting setting put the same
+                    // warning in three or four places at once, and read as each of them being broken.
                     val permissionNeeds = state.permissionNeeds
-                    val needsPermission = { screen: PermissionNeeds.Screen ->
-                        permissionNeeds.forScreen(screen).isNotEmpty()
-                    }
                     val serviceCard: @Composable (Modifier) -> Unit = { modifier ->
                         ServiceControlCard(
                             modifier = modifier,
@@ -206,7 +202,6 @@ fun MainScreen(
                             gradientColors = listOf(Color(0xFF6366F1), Color(0xFF8B5CF6)),
                             stacked = true,
                             compact = !wide,
-                            needsPermission = needsPermission(PermissionNeeds.Screen.APPEARANCE),
                             onClick = { onNavigateToAppearance(null) }
                         )
                     }
@@ -219,7 +214,6 @@ fun MainScreen(
                             gradientColors = listOf(Color(0xFF10B981), Color(0xFF06B6D4)),
                             stacked = true,
                             compact = !wide,
-                            needsPermission = needsPermission(PermissionNeeds.Screen.ACTIONS),
                             onClick = onNavigateToActions
                         )
                     }
@@ -234,7 +228,6 @@ fun MainScreen(
                             gradientColors = listOf(Color(0xFFF59E0B), Color(0xFFEF4444)),
                             stacked = true,
                             compact = !wide,
-                            needsPermission = needsPermission(PermissionNeeds.Screen.DECK),
                             onClick = onNavigateToDeck
                         )
                     }
@@ -247,7 +240,6 @@ fun MainScreen(
                             gradientColors = listOf(Color(0xFF06B6D4), Color(0xFF3B82F6)),
                             stacked = true,
                             compact = !wide,
-                            needsPermission = needsPermission(PermissionNeeds.Screen.QUICK_SLIDER),
                             onClick = onNavigateToQuickPanel
                         )
                     }
@@ -262,7 +254,6 @@ fun MainScreen(
                             gradientColors = listOf(Color(0xFF8B5CF6), Color(0xFFEC4899)),
                             stacked = true,
                             compact = !wide,
-                            needsPermission = needsPermission(PermissionNeeds.Screen.LONG_PRESS_MENU),
                             onClick = onNavigateToLongPressMenu
                         )
                     }
@@ -275,7 +266,6 @@ fun MainScreen(
                             gradientColors = listOf(Color(0xFF14B8A6), Color(0xFF3B82F6)),
                             stacked = true,
                             compact = !wide,
-                            needsPermission = needsPermission(PermissionNeeds.Screen.VISIBILITY),
                             onClick = onNavigateToVisibility
                         )
                     }
@@ -394,21 +384,6 @@ fun MainScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    if (!state.isProActivated) {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f))
-                        ) {
-                            viewModel.adsManager?.NativeAdWidget(
-                                modifier = Modifier.wrapContentHeight()
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-
                     Text(
                         text = stringResource(R.string.quick_presets),
                         fontSize = 13.sp,
@@ -428,6 +403,29 @@ fun MainScreen(
                             onNavigateToAppearance(presetId)
                         }
                     )
+
+                    // Last, after everything the screen is for. It sat between the Permissions card
+                    // and the presets, where it split the settings in two and was the first thing
+                    // under the cards a user came here to use.
+                    if (!state.isProActivated && !com.newagedevs.gesturevolume.BuildConfig.ADS_DISABLED) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        // The same card as every other on this screen, surface and corner and no
+                        // border or shadow, so the ad sits in the grid rather than on top of it. What
+                        // is inside takes its colours from the theme as well: see
+                        // ApplovinAdsManager.styleNativeAdView.
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                        ) {
+                            viewModel.adsManager?.NativeAdWidget(
+                                modifier = Modifier.wrapContentHeight()
+                            )
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
                 }

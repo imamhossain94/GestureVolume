@@ -151,6 +151,26 @@ fun HandlerAppearanceSettingsContent(
                     )
                 }
             }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
+            // With the icon, not with the actions it used to sit among: while a swipe changes the
+            // level, the number takes the icon's place in the middle of the bar, so it is part of
+            // what the bar carries.
+            SwitchControl(
+                label = stringResource(R.string.show_volume_percent_title),
+                checked = state.showVolumePercent,
+                borderColor = MaterialTheme.colorScheme.primary,
+                onCheckedChange = { state.showVolumePercent = it }
+            )
+            Text(
+                text = stringResource(R.string.show_volume_percent_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 16.sp
+            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))

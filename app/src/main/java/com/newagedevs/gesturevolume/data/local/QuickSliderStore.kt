@@ -41,10 +41,18 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
 
         /** What the slider drives. */
         const val TARGET_BRIGHTNESS = "brightness"
+
+        /**
+         * The volume that matters right now, worked out as the panel opens: the call's during a
+         * call, the ringer while it rings, otherwise whatever is playing, and media when nothing
+         * is. What the rocker itself would move, so the panel never shows a level the call is not
+         * at. See `OverlayController.adaptiveVolume`.
+         */
+        const val TARGET_ADAPTIVE = "adaptive"
         const val TARGET_MEDIA = "media"
         const val TARGET_RING = "ring"
         const val TARGET_ALARM = "alarm"
-        val ALL_TARGETS = listOf(TARGET_BRIGHTNESS, TARGET_MEDIA, TARGET_RING, TARGET_ALARM)
+        val ALL_TARGETS = listOf(TARGET_BRIGHTNESS, TARGET_ADAPTIVE, TARGET_MEDIA, TARGET_RING, TARGET_ALARM)
 
         /** How hard each step buzzes. */
         const val HAPTIC_OFF = "off"
@@ -139,8 +147,11 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
          * keeps the ones it had: see [pinPreDockDefaults].
          */
 
-        /** Media volume: the one quantity everyone who swipes a volume bar is reaching for. */
-        const val DEFAULT_TARGET = TARGET_MEDIA
+        /**
+         * The adaptive volume: media, which is what everyone who swipes a volume bar is usually
+         * reaching for, and the call's own volume when there is a call to turn down.
+         */
+        const val DEFAULT_TARGET = TARGET_ADAPTIVE
 
         /**
          * Instant: the press itself opens the panel, in place of the system slider. Needs the
@@ -187,14 +198,15 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
          * changed; only the part that is painted has. See `QuickSliderView.setDrawnThickness`.
          */
         const val MIN_THICKNESS = 10f
-        const val DEFAULT_THICKNESS = 24f
+        const val DEFAULT_THICKNESS = 28f
 
         /** The furthest the open panel may stand in from the edge. See [getEdgeOffsetDp]. */
         const val MAX_EDGE_OFFSET = 48f
         private const val EDGE_OFFSET = "sliderEdgeOffsetDp"
 
-        /** Where the number and the icon sit from the panel's ends, until someone moves them. */
-        const val DEFAULT_CONTENT_PADDING = 26f
+        /** Where the number sits from the panel's top, and the icon from its bottom, until moved. */
+        const val DEFAULT_VALUE_MARGIN = 35f
+        const val DEFAULT_ICON_MARGIN = 35f
         const val MAX_CONTENT_PADDING = 140f
         /** Half the thickness: a track with fully round ends, matching the bar's pill shape. */
         const val DEFAULT_CORNER = 22f
@@ -283,10 +295,10 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
      * Defaults with room to spare for the tab the default handler cuts, and a range deep enough to
      * clear the steepest sweep on the tallest panel.
      */
-    fun getValueMarginDp(): Float = prefs.getFloat(VALUE_MARGIN, DEFAULT_CONTENT_PADDING).coerceIn(0f, MAX_CONTENT_PADDING)
+    fun getValueMarginDp(): Float = prefs.getFloat(VALUE_MARGIN, DEFAULT_VALUE_MARGIN).coerceIn(0f, MAX_CONTENT_PADDING)
     fun setValueMarginDp(value: Float) = prefs.edit { putFloat(VALUE_MARGIN, value.coerceIn(0f, MAX_CONTENT_PADDING)) }
 
-    fun getIconMarginDp(): Float = prefs.getFloat(ICON_MARGIN, DEFAULT_CONTENT_PADDING).coerceIn(0f, MAX_CONTENT_PADDING)
+    fun getIconMarginDp(): Float = prefs.getFloat(ICON_MARGIN, DEFAULT_ICON_MARGIN).coerceIn(0f, MAX_CONTENT_PADDING)
     fun setIconMarginDp(value: Float) = prefs.edit { putFloat(ICON_MARGIN, value.coerceIn(0f, MAX_CONTENT_PADDING)) }
 
     fun getCornerDp(): Float = prefs.getFloat(CORNER, DEFAULT_CORNER).coerceIn(0f, 40f)

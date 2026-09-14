@@ -1,16 +1,12 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,7 +34,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -53,10 +48,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -78,27 +71,6 @@ import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.AppearanceSection
 import androidx.compose.runtime.mutableIntStateOf
-
-/** Whether Android currently lets this app post notifications. Always true below Android 13. */
-private fun hasNotificationPermission(context: android.content.Context): Boolean =
-    Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-
-/** The fallback route once the system prompt has been exhausted. */
-private fun openAppNotificationSettings(context: android.content.Context, viewModel: MainViewModel) {
-    viewModel.preference.setAppOpenAdPaused(true)
-    try {
-        context.startActivity(
-            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-        )
-    } catch (_: Exception) {
-        viewModel.preference.setAppOpenAdPaused(false)
-    }
-}
 
 /** Starts a system settings screen, pausing the app-open ad for the round trip. */
 private fun openSystemScreen(context: android.content.Context, viewModel: MainViewModel, intent: Intent) {
@@ -140,14 +112,10 @@ fun HandlerActionsScreen(
     // Read once into local state rather than on every recomposition: these are plain SharedPref
     // booleans with no observable wrapper, so the switch's own state is what drives the UI and the
     // preference is written behind it.
-    var showVolumePercent by remember { mutableStateOf(viewModel.preference.getShowVolumePercent()) }
     var volumeStreamMode by remember { mutableStateOf(viewModel.preference.getVolumeStreamMode()) }
     var showVolumeStreamDialog by remember { mutableStateOf(false) }
     var contextMenuItems by remember { mutableStateOf(viewModel.preference.getContextMenuOrder()) }
     var contextMenuLayout by remember { mutableStateOf(viewModel.preference.getContextMenuLayout()) }
-    var showNotification by remember { mutableStateOf(viewModel.preference.getShowNotification()) }
-    var notificationsAllowed by remember { mutableStateOf(hasNotificationPermission(context)) }
-    var showNotificationWarning by remember { mutableStateOf(false) }
 
     // Bumped on every return, so the notes under the actions re-read what has been granted since:
     // every one of those permissions is given on a system screen this one cannot hear back from.
@@ -159,37 +127,14 @@ fun HandlerActionsScreen(
         }
     }
 
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        notificationsAllowed = granted
-        if (!granted) openAppNotificationSettings(context, viewModel)
-    }
-
-    /**
-     * Asks, or sends the user to system settings when asking is no longer possible.
-     *
-     * After two refusals Android stops showing the dialog and the request returns immediately —
-     * a button that appears to do nothing. The launcher's callback covers that case too, so this
-     * is correct whether the prompt is still available or not.
-     */
-    fun requestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        } else {
-            openAppNotificationSettings(context, viewModel)
-        }
-    }
-
-    // Coming back from a system screen this screen sent the user to — the notification channel
-    // settings, the WRITE_SETTINGS grant, the accessibility list — has to lift the app-open ad
+    // Coming back from a system screen this screen sent the user to — the WRITE_SETTINGS grant,
+    // the Do Not Disturb access, the accessibility list — has to lift the app-open ad
     // pause those set. Without this the pause was set and never cleared, silencing app-open ads
     // for the rest of the install.
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.preference.setAppOpenAdPaused(false)
-                notificationsAllowed = hasNotificationPermission(context)
                 sliderTarget = viewModel.preference.slider.getTarget()
                 permissionTick++
                 viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
@@ -204,47 +149,6 @@ fun HandlerActionsScreen(
     ) {
         viewModel.preference.setAppOpenAdPaused(false)
         viewModel.onEvent(MainEvent.WriteSettingsResult(context))
-    }
-
-    if (showNotificationWarning) {
-        AlertDialog(
-            onDismissRequest = { showNotificationWarning = false },
-            title = {
-                Text(
-                    text = stringResource(R.string.notification_permission_needed_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(R.string.notification_permission_needed_message),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showNotificationWarning = false
-                        requestNotificationPermission()
-                    },
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(stringResource(R.string.grant_permission_action))
-                }
-            },
-            dismissButton = {
-                OutlinedButton(
-                    onClick = { showNotificationWarning = false },
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(stringResource(R.string.not_now))
-                }
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(24.dp)
-        )
     }
 
     // Asked only when a brightness action is actually chosen — never at startup.
@@ -529,72 +433,6 @@ fun HandlerActionsScreen(
                         showProBadge = false,
                         onClick = { showVolumeStreamDialog = true }
                     )
-
-                    RowDivider()
-
-                    SettingSwitchItem(
-                        title = stringResource(R.string.show_volume_percent_title),
-                        description = stringResource(R.string.show_volume_percent_desc),
-                        checked = showVolumePercent,
-                        onCheckedChange = {
-                            showVolumePercent = it
-                            viewModel.preference.setShowVolumePercent(it)
-                        }
-                    )
-
-                    RowDivider()
-
-                    SettingSwitchItem(
-                        title = stringResource(R.string.show_notification_title),
-                        description = stringResource(R.string.show_notification_desc),
-                        checked = showNotification,
-                        onCheckedChange = {
-                            showNotification = it
-                            viewModel.preference.setShowNotification(it)
-                            // The service owns the notification, so it is the only thing that
-                            // can re-post it on the other channel. Notification only: a full
-                            // update would rebuild the handler and pop it up over this screen.
-                            viewModel.refreshServiceNotification(context)
-                            // Switching the controls on while Android is blocking
-                            // notifications produces nothing at all, with no hint as to why.
-                            // Say so at the moment the switch is flipped.
-                            if (it && !notificationsAllowed) showNotificationWarning = true
-                        }
-                    )
-
-                    // And keep saying so afterwards, because the dialog above is dismissible
-                    // and the permission can be revoked from system settings long after this
-                    // switch was last touched.
-                    if (showNotification && !notificationsAllowed) {
-                        PermissionNote(
-                            text = stringResource(R.string.notification_permission_warning_inline),
-                            onClick = { onOpenPermissions(PermissionNeeds.Permission.NOTIFICATIONS) },
-                        )
-                    }
-
-                    // Only once the switch is off is there anything left to explain: Android
-                    // will not run a foreground service with no notification at all, so the
-                    // last step belongs to the system's own channel settings.
-                    if (!showNotification) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        TextButton(
-                            onClick = {
-                                openSystemScreen(
-                                    context, viewModel,
-                                    Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                                        .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                                )
-                            },
-                            contentPadding = PaddingValues(0.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.show_notification_off_hint),
-                                fontSize = 12.sp,
-                                textAlign = TextAlign.Start,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
                 }
             }
 

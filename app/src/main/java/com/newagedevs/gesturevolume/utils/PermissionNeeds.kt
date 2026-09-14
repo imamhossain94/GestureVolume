@@ -22,8 +22,8 @@ import com.newagedevs.gesturevolume.service.OverlayRuntime
  * notification controls on, used to succeed quietly and then do nothing, with the explanation
  * living on a screen the user had no reason to visit. So the answer is computed here, once, as a
  * list of [Need]s — a permission and the [Feature] that wants it — and every place that warns
- * reads the same list: the Permissions card and the navigation cards on the home screen, the notes
- * beside settings, and the permission cards on the Permissions screen.
+ * reads the same list: the Permissions card on the home screen, the Deck screen, the notes beside
+ * settings, and the permission cards on the Permissions screen.
  *
  * The decision itself is [compute], a pure function of a [Config] snapshot and the [Grants], so it
  * can be tested without a device. [read] is the thin Android half that fills both in.
@@ -41,8 +41,8 @@ object PermissionNeeds {
         PHONE,
     }
 
-    /** The home screen card whose screen holds a setting. [HOME] is the app itself. */
-    enum class Screen { HOME, APPEARANCE, ACTIONS, DECK, QUICK_SLIDER, LONG_PRESS_MENU, VISIBILITY }
+    /** The screen that holds a setting. [HOME] is the app itself. */
+    enum class Screen { HOME, APPEARANCE, ACTIONS, DECK, QUICK_SLIDER, LONG_PRESS_MENU, VISIBILITY, PERMISSIONS }
 
     /** A setting that can make a permission necessary, and where the user finds it. */
     enum class Feature(val screen: Screen, @param:StringRes val labelRes: Int) {
@@ -55,14 +55,13 @@ object PermissionNeeds {
         SWIPE_DOWN(Screen.ACTIONS, R.string.permission_feature_swipe_down),
         SWIPE_IN(Screen.ACTIONS, R.string.permission_feature_swipe_in),
         SWIPE_OUT(Screen.ACTIONS, R.string.permission_feature_swipe_out),
-        NOTIFICATION_CONTROLS(Screen.ACTIONS, R.string.permission_feature_notification_controls),
+        NOTIFICATION_CONTROLS(Screen.PERMISSIONS, R.string.permission_feature_notification_controls),
         LONG_PRESS_MENU_ENTRY(Screen.LONG_PRESS_MENU, R.string.permission_feature_menu_entry),
         DECK_TILE(Screen.DECK, R.string.permission_feature_deck_tile),
         DECK_SEARCH_CONTACTS(Screen.DECK, R.string.permission_feature_deck_contacts),
         DECK_DIRECT_CALL(Screen.DECK, R.string.permission_feature_deck_direct_call),
         QUICK_SLIDER_BRIGHTNESS(Screen.QUICK_SLIDER, R.string.permission_feature_slider_brightness),
         QUICK_SLIDER_INSTANT_KEYS(Screen.QUICK_SLIDER, R.string.permission_feature_slider_instant_keys),
-        HIDE_IN_SCREENSHOTS(Screen.VISIBILITY, R.string.permission_feature_hide_in_screenshots),
         HIDE_IN_APPS(Screen.VISIBILITY, R.string.permission_feature_hide_in_apps),
     }
 
@@ -79,7 +78,6 @@ object PermissionNeeds {
         val deckTiles: Set<String> = emptySet(),
         val sliderTarget: String = QuickSliderStore.TARGET_MEDIA,
         val volumeKeyMode: String = QuickSliderStore.VOLUME_KEYS_OFF,
-        val hideInScreenshots: Boolean = false,
         /** True when the bar is set to step aside for at least one app. */
         val hideInApps: Boolean = false,
         val notificationControls: Boolean = false,
@@ -185,7 +183,6 @@ object PermissionNeeds {
         if (config.volumeKeyMode == QuickSliderStore.VOLUME_KEYS_INSTANT) {
             need(Permission.ACCESSIBILITY, Feature.QUICK_SLIDER_INSTANT_KEYS)
         }
-        if (config.hideInScreenshots) need(Permission.ACCESSIBILITY, Feature.HIDE_IN_SCREENSHOTS)
         if (config.hideInApps) need(Permission.ACCESSIBILITY, Feature.HIDE_IN_APPS)
         if (config.notificationControls) need(Permission.NOTIFICATIONS, Feature.NOTIFICATION_CONTROLS)
 
@@ -215,7 +212,6 @@ object PermissionNeeds {
         deckTiles = preference.deck.getEnabledTiles() ?: DeckTiles.defaultEnabled(),
         sliderTarget = preference.slider.getTarget(),
         volumeKeyMode = preference.slider.getVolumeKeyMode(),
-        hideInScreenshots = preference.getHideInScreenshots(),
         hideInApps = preference.getHandlerHiddenApps().isNotEmpty(),
         notificationControls = preference.getShowNotification(),
         searchContacts = preference.search.getIndexContacts(),

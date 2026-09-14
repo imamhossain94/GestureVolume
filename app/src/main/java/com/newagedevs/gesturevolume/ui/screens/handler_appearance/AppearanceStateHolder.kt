@@ -52,6 +52,8 @@ data class AppearanceState(
     val otherPosXFraction: Float = posXFraction,
     /** Whether the bar follows the phone round its edges. See SharedPref.getHandlerDynamicPosition. */
     val dynamicPosition: Boolean = false,
+    /** Whether the bar shows the level while a swipe changes it. See SharedPref.getShowVolumePercent. */
+    val showVolumePercent: Boolean = true,
     /**
      * The preset applied in this editing session and not yet saved, or null.
      *
@@ -90,6 +92,7 @@ class AppearanceStateHolder(
     initialOtherPositionFraction: Float = initialPositionFraction,
     initialOtherPosXFraction: Float = initialPosXFraction,
     initialDynamicPosition: Boolean = false,
+    initialShowVolumePercent: Boolean = true,
 ) {
     var gravity by mutableStateOf(initialGravity)
     var width by mutableStateOf(initialWidth)
@@ -121,6 +124,7 @@ class AppearanceStateHolder(
     var otherPositionFraction by mutableStateOf(initialOtherPositionFraction)
     var otherPosXFraction by mutableStateOf(initialOtherPosXFraction)
     var dynamicPosition by mutableStateOf(initialDynamicPosition)
+    var showVolumePercent by mutableStateOf(initialShowVolumePercent)
 
     /**
      * The id of the last preset applied since the screen opened or was last saved, or null.
@@ -138,6 +142,7 @@ class AppearanceStateHolder(
         iconRes, iconSize, iconColor.toArgb(), showIcon, vibrate,
         edgeMargin, snapToEdge, positionFraction, posXFraction,
         samePosition, otherPositionFraction, otherPosXFraction, dynamicPosition,
+        showVolumePercent,
         appliedPresetId,
     )
 }

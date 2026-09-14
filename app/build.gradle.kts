@@ -50,6 +50,10 @@ android {
         versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // `-PnoAds` builds a copy with every ad switched off — the SDK is never started — for
+        // recording store and policy videos. Pro stays locked; only the ads go.
+        buildConfigField("boolean", "ADS_DISABLED", project.hasProperty("noAds").toString())
     }
 
     signingConfigs {

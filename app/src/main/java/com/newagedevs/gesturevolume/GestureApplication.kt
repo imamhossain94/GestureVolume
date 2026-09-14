@@ -85,6 +85,8 @@ class GestureApplication : Application() {
      */
     fun initializeAdsIfNeeded() {
         if (hasInitializedAds) return
+        // A build made with -PnoAds, for recording videos: no SDK, so no ad of any kind.
+        if (BuildConfig.ADS_DISABLED) return
         if (preferences.isProFeatureActivated()) return
         hasInitializedAds = true
         initializeAppLovinSdk()

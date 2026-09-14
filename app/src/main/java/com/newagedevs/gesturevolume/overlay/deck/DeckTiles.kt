@@ -87,7 +87,9 @@ object DeckTiles {
     val ALL: List<DeckTile> = listOf(
         DeckTile(SEARCH, R.string.tile_search, R.string.tile_search_desc, Icons.Filled.Search, DeckTileKind.PANEL, defaultOn = true),
         DeckTile(FLASHLIGHT, R.string.tile_flashlight, R.string.tile_flashlight_desc, Icons.Filled.FlashlightOn, DeckTileKind.TOGGLE, HandlerActions.TOGGLE_FLASHLIGHT, defaultOn = true),
-        DeckTile(DND, R.string.tile_dnd, R.string.tile_dnd_desc, Icons.Filled.DoNotDisturbOn, DeckTileKind.TOGGLE, HandlerActions.TOGGLE_DND, defaultOn = true),
+        // Third, where Do Not Disturb was: the way to a screenshot with the bar out of it, now that
+        // Volume down no longer takes the bar out of sight for the buttons' own.
+        DeckTile(SCREENSHOT, R.string.tile_screenshot, R.string.tile_screenshot_desc, Icons.Filled.Screenshot, DeckTileKind.LAUNCH, HandlerActions.SCREENSHOT, needsAccessibility = true, defaultOn = true),
         DeckTile(ROTATION, R.string.tile_rotation, R.string.tile_rotation_desc, Icons.Filled.ScreenRotation, DeckTileKind.TOGGLE, HandlerActions.TOGGLE_AUTO_ROTATE),
         DeckTile(WIFI, R.string.tile_wifi, R.string.tile_wifi_desc, Icons.Filled.Wifi, DeckTileKind.LAUNCH),
         DeckTile(BLUETOOTH, R.string.tile_bluetooth, R.string.tile_bluetooth_desc, Icons.Filled.Bluetooth, DeckTileKind.LAUNCH),
@@ -100,7 +102,7 @@ object DeckTiles {
         DeckTile(CHECKLIST, R.string.tile_checklist, R.string.tile_checklist_desc, Icons.Filled.Checklist, DeckTileKind.PANEL),
         DeckTile(COIN, R.string.tile_coin, R.string.tile_coin_desc, Icons.Filled.Paid, DeckTileKind.PANEL),
         DeckTile(DICE, R.string.tile_dice, R.string.tile_dice_desc, Icons.Filled.Casino, DeckTileKind.PANEL),
-        DeckTile(SCREENSHOT, R.string.tile_screenshot, R.string.tile_screenshot_desc, Icons.Filled.Screenshot, DeckTileKind.LAUNCH, HandlerActions.SCREENSHOT, needsAccessibility = true),
+        DeckTile(DND, R.string.tile_dnd, R.string.tile_dnd_desc, Icons.Filled.DoNotDisturbOn, DeckTileKind.TOGGLE, HandlerActions.TOGGLE_DND),
         DeckTile(LOCK, R.string.tile_lock, R.string.tile_lock_desc, Icons.Filled.Lock, DeckTileKind.LAUNCH, HandlerActions.LOCK, needsAccessibility = true),
         DeckTile(QR, R.string.tile_qr, R.string.tile_qr_desc, Icons.Filled.QrCodeScanner, DeckTileKind.LAUNCH, HandlerActions.SCAN_QR)
     )

@@ -162,7 +162,7 @@
         <!--
           The accessibility service. Performs the system actions (lock, screenshot, Back, Home,
           Recents, notifications, quick settings, power menu), optionally takes the two volume keys
-          for the Quick panel's Instant mode and Hide in screenshots, and optionally notes which app
+          for the Quick panel's Instant mode, and optionally notes which app
           is in front so the bar can hide in apps the user picks. It never draws the bar, and
           never reads what is inside a window.
           Everything it does is opt-in from inside the app, and the user switches it on themselves

@@ -22,11 +22,10 @@ import javax.inject.Inject
  * `performGlobalAction`, and there is no other route to any of them for an app that is not the
  * system.
  *
- * **It can catch the volume keys**, when the user sets the Quick panel to open on them instantly,
- * or turns on Hide in screenshots. The platform tells an app that is not in the foreground about a
- * volume change half a second after the press; a key filter is handed the press itself. Off unless
- * one of those settings is chosen, and even then it takes the two volume keys and hands every other
- * key straight back.
+ * **It can catch the volume keys**, when the user sets the Quick panel to open on them instantly.
+ * The platform tells an app that is not in the foreground about a volume change half a second after
+ * the press; a key filter is handed the press itself. Off unless that is chosen, and even then it
+ * takes the two volume keys and hands every other key straight back.
  *
  * **It can see which app is on screen**, when the user has picked apps for the bar to step aside
  * in. It reads the package and class of the window that came to the front and nothing inside it.
@@ -65,21 +64,21 @@ class GestureAccessibilityService : AccessibilityService() {
         // Which app is in front, and only while the user has picked apps for the bar to step aside
         // in. Nothing about the window is read but its package and class.
         val watchApps = preference.getHandlerHiddenApps().isNotEmpty()
-        if (watchApps) types = types or AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+        // Also, for the moment a Volume down press is waiting, whether a window of the system's own
+        // comes up: see [setWatchingSystemWindows].
+        val watchWindows = watchApps || watchingSystemWindows
+        if (watchWindows) types = types or AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
         info.eventTypes = types
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
         // A timeout keeps only the last event of each type in a burst, and an app coming forward
         // sends its window change moments before its first dialog or pane sends another. With
         // one, the app itself would be lost, so there is none while watching for the app in front.
-        info.notificationTimeout = if (watchApps) 0L else 100L
-        // Keys only while the volume keys are set to Instant, or the bar is set to step out of
-        // screenshots, which it does on the Volume down half of the chord. With the flag on, every
-        // key press on the device is offered here before anything else sees it; this takes the two
-        // volume keys and hands every other straight back, but the honest version of not looking
-        // is not to ask, the same as for the events above.
-        val filterKeys =
-            preference.slider.getVolumeKeyMode() == QuickSliderStore.VOLUME_KEYS_INSTANT ||
-                preference.getHideInScreenshots()
+        info.notificationTimeout = if (watchWindows) 0L else 100L
+        // Keys only while the volume keys are set to Instant. With the flag on, every key press on
+        // the device is offered here before anything else sees it; this takes the two volume keys
+        // and hands every other straight back, but the honest version of not looking is not to
+        // ask, the same as for the events above.
+        val filterKeys = preference.slider.getVolumeKeyMode() == QuickSliderStore.VOLUME_KEYS_INSTANT
         info.flags = if (filterKeys) {
             info.flags or AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS
         } else {
@@ -90,9 +89,28 @@ class GestureAccessibilityService : AccessibilityService() {
         if (!watchApps) OverlayRuntime.activeController?.clearForegroundApp()
     }
 
+    /**
+     * Whether a Volume down press is waiting to learn if it was half of a screenshot.
+     *
+     * The controller sets it from the press until it decides what the press was, a quarter of a
+     * second or so, and nothing is read from the events it lets in but their package: a window of
+     * the system's coming up in that moment is, on a Volume down + Power press, the screenshot.
+     * See `OverlayController.onSystemWindowShown`.
+     */
+    private var watchingSystemWindows = false
+
+    fun setWatchingSystemWindows(on: Boolean) {
+        if (watchingSystemWindows == on) return
+        watchingSystemWindows = on
+        applyEventSubscription()
+    }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
+        if (watchingSystemWindows && event.packageName?.toString() == SYSTEM_UI_PACKAGE) {
+            OverlayRuntime.activeController?.onSystemWindowShown()
+        }
         foregroundAppOf(event)?.let { app ->
             OverlayRuntime.activeController?.onForegroundApp(app)
         }
@@ -120,10 +138,14 @@ class GestureAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() = Unit
 
+    private companion object {
+        /** Where the screenshot's own window comes from. */
+        const val SYSTEM_UI_PACKAGE = "com.android.systemui"
+    }
+
     /**
      * The two volume keys, before the system acts on them, while the Quick panel is set to open
-     * on them instantly or the bar is set to stay out of screenshots. Every other key goes straight
-     * back. See [applyEventSubscription] for when keys are asked for at all, and
+     * on them instantly. Every other key goes straight back. See [applyEventSubscription] for when keys are asked for at all, and
      * `OverlayController.onVolumeKey` for when one is taken.
      *
      * Passed to the controller the foreground service is running; with the bar not running there is
