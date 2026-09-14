@@ -22,9 +22,11 @@ class ReviewPrompterTest {
         lastAskVersion: Int = 0,
         versionCode: Int = 30,
         launchCount: Int = ReviewPrompter.MIN_LAUNCHES,
+        happyMoments: Int = ReviewPrompter.MIN_HAPPY_MOMENTS,
         installedAt: Long = now - ReviewPrompter.MIN_AGE_MS - 1,
         lastAskAt: Long = 0L,
         lastAdAt: Long = 0L,
+        lastTroubleAt: Long = 0L,
         at: Long = now
     ) = ReviewPrompter.Signals(
         serviceRunning = serviceRunning,
@@ -33,11 +35,30 @@ class ReviewPrompterTest {
         lastAskVersion = lastAskVersion,
         versionCode = versionCode,
         launchCount = launchCount,
+        happyMoments = happyMoments,
         installedAt = installedAt,
         lastAskAt = lastAskAt,
         lastAdAt = lastAdAt,
+        lastTroubleAt = lastTroubleAt,
         now = at
     )
+
+    @Test
+    fun `never asks before enough happy moments`() {
+        assertFalse(
+            ReviewPrompter.shouldAsk(eligible(happyMoments = ReviewPrompter.MIN_HAPPY_MOMENTS - 1))
+        )
+    }
+
+    @Test
+    fun `never asks in the week after the user went looking for help`() {
+        assertFalse(
+            ReviewPrompter.shouldAsk(eligible(lastTroubleAt = now - ReviewPrompter.TROUBLE_QUIET_MS + 1))
+        )
+        assertTrue(
+            ReviewPrompter.shouldAsk(eligible(lastTroubleAt = now - ReviewPrompter.TROUBLE_QUIET_MS))
+        )
+    }
 
     @Test
     fun `asks when every condition is met`() {

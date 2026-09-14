@@ -380,6 +380,11 @@
     <string name="upgrade_restore">Khôi phục giao dịch</string>
     <string name="upgrade_thanks_title">Bạn đã là Pro</string>
     <string name="upgrade_thanks_desc">Cảm ơn bạn đã ủng hộ ứng dụng. Hãy tận hưởng không quảng cáo.</string>
+    <string name="support_nudge_title">Bạn thích %1$s chứ?</string>
+    <string name="support_nudge_message">%1$s miễn phí, và quảng cáo giúp nó luôn miễn phí. Nếu ứng dụng đã có chỗ đứng trên điện thoại của bạn, nâng cấp Pro sẽ gỡ mọi quảng cáo và ủng hộ trực tiếp nhà phát triển độc lập tạo ra nó. Trả một lần %2$s, không đăng ký.</string>
+    <string name="support_nudge_confirm">Ủng hộ và bỏ quảng cáo</string>
+    <string name="support_nudge_later">Để sau</string>
+    <string name="support_nudge_never">Đừng hỏi lại</string>
     <string name="about_developed_in">Được phát triển tại Bangladesh bởi</string>
     <string name="about_ideas_by">Ý tưởng tính năng từ một người bạn đến từ Bharat (Ấn Độ)</string>
     <string name="about_ideas_desc">Đã đề xuất nhiều tính năng trong ứng dụng này và vẫn tiếp tục đưa ra ý tưởng.</string>
@@ -402,6 +407,7 @@
     <string name="position_snap_off_hint">Đã rời khỏi cạnh nên Bám vào cạnh đã bị tắt. Bật lại để đưa thanh về cạnh gần hơn.</string>
     <string name="position_sliders_desc">Vị trí tâm của thanh, tính theo tỷ lệ màn hình. Bạn cũng có thể nhấn giữ thanh rồi kéo; vị trí đó được lưu cho hướng cầm điện thoại lúc ấy.</string>
     <string name="preview_backdrop_change">Đổi nền</string>
+    <string name="preview_backdrop_random">Màu ngẫu nhiên</string>
     <string name="context_menu_group_layout">BỐ CỤC VÀ KÍCH THƯỚC</string>
     <string name="context_menu_group_look">GIAO DIỆN</string>
     <string name="context_menu_group_items">MỤC</string>

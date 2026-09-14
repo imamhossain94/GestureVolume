@@ -58,10 +58,17 @@ class GestureApplication : Application() {
         preferences.initInstallTimeIfNeeded()
 
         // Stamps every return to the foreground, which starts the interstitial launch window
-        // (AdPacing.FOREGROUND_QUIET_MS). The process lifecycle rather than MainActivity.onStart:
-        // an interstitial is itself an Activity, and returning from one must not count as a launch.
+        // (AdPacing.FOREGROUND_QUIET_MS), and every trip to the background, which an app-open ad
+        // measures its time away from (AdPacing.MIN_TIME_AWAY_MS). The process lifecycle rather
+        // than MainActivity's: an interstitial is itself an Activity, and returning from one must
+        // not count as a launch. Registered before AppOpenManager's observer, so both stamps are
+        // current by the time it decides.
         ProcessLifecycleOwner.get().lifecycle.addObserver(LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_START) AdPacing.Session.onAppForeground()
+            when (event) {
+                Lifecycle.Event.ON_START -> AdPacing.Session.onAppForeground()
+                Lifecycle.Event.ON_STOP -> AdPacing.Session.onAppBackground()
+                else -> Unit
+            }
         })
 
         if (BuildConfig.DEBUG && preferences.isInAdGracePeriod()) {
@@ -200,11 +207,6 @@ class GestureApplication : Application() {
                 return false
             }
 
-            // Check if user is pro
-            if (preferences.isProFeatureActivated()) {
-                return false
-            }
-
             // Check if ad is ready
             if (appOpenAd?.isReady != true) {
                 return false
@@ -220,17 +222,12 @@ class GestureApplication : Application() {
                 return false
             }
 
-            // Check if app open ads are paused (e.g., during permission request screens)
-            if (preferences.isAppOpenAdPaused()) {
-                return false
-            }
-
-            // Check cooldown using the new method
-            val shouldShow = preferences.shouldShowAppOpenAd()
+            // Pro, grace period, a permission flow in progress, another ad on screen, the
+            // cooldown, the daily cap and a too-short time away: see AdPacing.
+            val shouldShow = AdPacing.mayShowAppOpen(preferences, preferences.isProFeatureActivated())
 
             if (!shouldShow && BuildConfig.DEBUG) {
-                val remaining = preferences.getAppOpenAdCooldownRemaining()
-                Log.d("GestureApp", "App open ad cooldown: $remaining seconds remaining")
+                Log.d("GestureApp", "App open ad held back by AdPacing (${preferences.getAppOpenAdsToday()} today)")
             }
 
             return shouldShow

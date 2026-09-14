@@ -7,9 +7,10 @@ import org.junit.Test
 import java.util.concurrent.TimeUnit
 
 /**
- * Interstitial pacing fails *open* in the way users notice: a missed guard is an ad on the Back
- * button or on top of a cold start. Each test below spoils exactly one condition of an otherwise
- * allowed moment, so a guard that stops guarding shows up here rather than in a policy strike.
+ * Ad pacing fails *open* in the way users notice: a missed guard is an ad on the Back button, on
+ * top of a cold start, or on every return from the settings page. Each test below spoils exactly
+ * one condition of an otherwise allowed moment, so a guard that stops guarding shows up here rather
+ * than in a policy strike.
  */
 class AdPacingTest {
 
@@ -23,6 +24,7 @@ class AdPacingTest {
         systemFlowInProgress: Boolean = false,
         fullScreenAdShowing: Boolean = false,
         sessionInterstitialCount: Int = 0,
+        interstitialsToday: Int = 0,
         lastInterstitialAt: Long = 0L,
         lastAnyAdAt: Long = 0L,
         lastAppOpenAt: Long = 0L,
@@ -35,10 +37,34 @@ class AdPacingTest {
         systemFlowInProgress = systemFlowInProgress,
         fullScreenAdShowing = fullScreenAdShowing,
         sessionInterstitialCount = sessionInterstitialCount,
+        interstitialsToday = interstitialsToday,
         lastInterstitialAt = lastInterstitialAt,
         lastAnyAdAt = lastAnyAdAt,
         lastAppOpenAt = lastAppOpenAt,
         foregroundAt = foregroundAt,
+        now = at
+    )
+
+    /** A return to the app where an app-open ad is allowed on every axis. */
+    private fun appOpen(
+        isPro: Boolean = false,
+        inGracePeriod: Boolean = false,
+        systemFlowInProgress: Boolean = false,
+        fullScreenAdShowing: Boolean = false,
+        appOpenToday: Int = 0,
+        lastAppOpenAt: Long = 0L,
+        lastAnyAdAt: Long = 0L,
+        backgroundAt: Long = now - TimeUnit.MINUTES.toMillis(10),
+        at: Long = now
+    ) = AdPacing.AppOpenSignals(
+        isPro = isPro,
+        inGracePeriod = inGracePeriod,
+        systemFlowInProgress = systemFlowInProgress,
+        fullScreenAdShowing = fullScreenAdShowing,
+        appOpenToday = appOpenToday,
+        lastAppOpenAt = lastAppOpenAt,
+        lastAnyAdAt = lastAnyAdAt,
+        backgroundAt = backgroundAt,
         now = at
     )
 
@@ -50,8 +76,13 @@ class AdPacingTest {
     }
 
     @Test
-    fun `shows after the service is switched on`() {
-        assertTrue(AdPacing.mayShowInterstitial(allowed(trigger = Trigger.SERVICE_STARTED)))
+    fun `shows at every major completed interaction`() {
+        listOf(
+            Trigger.SERVICE_STARTED,
+            Trigger.SETTINGS_APPLIED,
+            Trigger.GESTURE_ASSIGNED,
+            Trigger.QUICK_DIAL_ADDED
+        ).forEach { assertTrue(it.name, AdPacing.mayShowInterstitial(allowed(trigger = it))) }
     }
 
     // ---- break points ------------------------------------------------------------------------
@@ -106,7 +137,7 @@ class AdPacingTest {
         assertFalse(AdPacing.mayShowInterstitial(allowed(fullScreenAdShowing = true)))
     }
 
-    // ---- cooldowns, cap, grace ---------------------------------------------------------------
+    // ---- cooldowns, caps, grace --------------------------------------------------------------
 
     @Test
     fun `respects the interstitial cooldown`() {
@@ -141,6 +172,20 @@ class AdPacingTest {
     }
 
     @Test
+    fun `respects the daily interstitial cap`() {
+        assertFalse(
+            AdPacing.mayShowInterstitial(
+                allowed(interstitialsToday = AdPacing.MAX_INTERSTITIALS_PER_DAY)
+            )
+        )
+        assertTrue(
+            AdPacing.mayShowInterstitial(
+                allowed(interstitialsToday = AdPacing.MAX_INTERSTITIALS_PER_DAY - 1)
+            )
+        )
+    }
+
+    @Test
     fun `never during the post-install grace period`() {
         assertFalse(AdPacing.mayShowInterstitial(allowed(inGracePeriod = true)))
     }
@@ -164,6 +209,65 @@ class AdPacingTest {
             AdPacing.mayShowInterstitial(
                 allowed(lastInterstitialAt = now + TimeUnit.HOURS.toMillis(1))
             )
+        )
+    }
+
+    // ---- app-open ads ------------------------------------------------------------------------
+
+    @Test
+    fun `app-open shows on a real return when every condition is met`() {
+        assertTrue(AdPacing.mayShowAppOpen(appOpen()))
+    }
+
+    @Test
+    fun `app-open shows on a cold start, which has no background stamp`() {
+        assertTrue(AdPacing.mayShowAppOpen(appOpen(backgroundAt = 0L)))
+    }
+
+    @Test
+    fun `app-open never on a quick hop out and back`() {
+        assertFalse(
+            AdPacing.mayShowAppOpen(appOpen(backgroundAt = now - AdPacing.MIN_TIME_AWAY_MS + 1))
+        )
+        assertTrue(
+            AdPacing.mayShowAppOpen(appOpen(backgroundAt = now - AdPacing.MIN_TIME_AWAY_MS))
+        )
+    }
+
+    @Test
+    fun `app-open respects its cooldown`() {
+        assertFalse(
+            AdPacing.mayShowAppOpen(appOpen(lastAppOpenAt = now - AdPacing.APP_OPEN_COOLDOWN_MS + 1))
+        )
+        assertTrue(
+            AdPacing.mayShowAppOpen(appOpen(lastAppOpenAt = now - AdPacing.APP_OPEN_COOLDOWN_MS))
+        )
+    }
+
+    @Test
+    fun `app-open respects the gap after any ad`() {
+        assertFalse(
+            AdPacing.mayShowAppOpen(appOpen(lastAnyAdAt = now - AdPacing.MIN_GAP_AFTER_ANY_AD_MS + 1))
+        )
+    }
+
+    @Test
+    fun `app-open respects the daily cap`() {
+        assertFalse(AdPacing.mayShowAppOpen(appOpen(appOpenToday = AdPacing.MAX_APP_OPEN_PER_DAY)))
+    }
+
+    @Test
+    fun `app-open never over another ad, in grace, mid permission flow or for pro`() {
+        assertFalse(AdPacing.mayShowAppOpen(appOpen(fullScreenAdShowing = true)))
+        assertFalse(AdPacing.mayShowAppOpen(appOpen(inGracePeriod = true)))
+        assertFalse(AdPacing.mayShowAppOpen(appOpen(systemFlowInProgress = true)))
+        assertFalse(AdPacing.mayShowAppOpen(appOpen(isPro = true)))
+    }
+
+    @Test
+    fun `app-open a clock moved backwards does not open the gates`() {
+        assertFalse(
+            AdPacing.mayShowAppOpen(appOpen(lastAppOpenAt = now + TimeUnit.HOURS.toMillis(1)))
         )
     }
 }

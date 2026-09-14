@@ -65,7 +65,8 @@ class BillingManager @Inject constructor(
         .enableAutoServiceReconnection()
         .build()
 
-    private val _lifetimePrice = MutableStateFlow(ProductPrice("$7.99", 7.99, "USD"))
+    // Shown only until Play returns the real, localised price. Keep in step with the Play Console product.
+    private val _lifetimePrice = MutableStateFlow(ProductPrice("$2.99", 2.99, "USD"))
     val lifetimePrice: StateFlow<ProductPrice> = _lifetimePrice.asStateFlow()
 
     private val _isRestoring = MutableStateFlow(false)

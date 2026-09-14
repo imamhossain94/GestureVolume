@@ -2,6 +2,8 @@ package com.newagedevs.gesturevolume.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -18,11 +21,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.newagedevs.gesturevolume.R
@@ -38,9 +43,9 @@ import com.newagedevs.gesturevolume.R
  * **Why a picture behind it.** Every subject here is translucent by default and has an opacity
  * control. Judged against a flat colour, opacity is a number; judged against a picture, it is the
  * thing the user is actually choosing — how much of their screen shows through. The pictures are
- * [PreviewBackdrops]: drawn, quiet, and mid-toned, so the subject stays the subject. The small
- * button in the corner moves to the next one, because a colour that reads on one screen may not on
- * another, and the only way to know is to look.
+ * [PreviewBackdrops]: drawn, quiet, and mid-toned, so the subject stays the subject. The two small
+ * buttons in the corner move to the next one, or repaint the one showing in a random colour,
+ * because a colour that reads on one screen may not on another, and the only way to know is to look.
  *
  * @param backdrop which of [PreviewBackdrops] to start on.
  * @param fillHeight fill the height it is given instead of taking [PREVIEW_STAGE_HEIGHT] — for the
@@ -55,6 +60,9 @@ fun PreviewStage(
     content: @Composable BoxScope.() -> Unit,
 ) {
     var index by rememberSaveable { mutableIntStateOf(backdrop) }
+    // The seed of a random colour laid over whichever pattern is showing, kept so rotation redraws
+    // the same one; null while the pattern wears its own colour.
+    var colorSeed by rememberSaveable { mutableStateOf<Long?>(null) }
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -63,26 +71,50 @@ fun PreviewStage(
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f),
     ) {
         Box(contentAlignment = contentAlignment) {
-            PreviewBackdrop(index = index, modifier = Modifier.fillMaxSize())
+            PreviewBackdrop(
+                index = index,
+                colorSeed = colorSeed,
+                modifier = Modifier.fillMaxSize(),
+            )
             content()
-            Surface(
-                onClick = { index = (index + 1) % PreviewBackdrops.COUNT },
-                shape = CircleShape,
-                color = Color.Black.copy(alpha = 0.28f),
-                contentColor = Color.White,
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(8.dp)
-                    .size(32.dp),
+                    .padding(8.dp),
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.Wallpaper,
-                        contentDescription = stringResource(R.string.preview_backdrop_change),
-                        modifier = Modifier.size(16.dp),
-                    )
-                }
+                // Two independent controls: the first changes only the pattern, the second only
+                // its colour, so a colour that has been found is kept while patterns are tried.
+                StageButton(
+                    icon = Icons.Default.Wallpaper,
+                    description = stringResource(R.string.preview_backdrop_change),
+                    onClick = { index = (index + 1) % PreviewBackdrops.COUNT },
+                )
+                StageButton(
+                    icon = Icons.Default.Palette,
+                    description = stringResource(R.string.preview_backdrop_random),
+                    onClick = { colorSeed = kotlin.random.Random.nextLong() },
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun StageButton(icon: ImageVector, description: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = CircleShape,
+        color = Color.Black.copy(alpha = 0.28f),
+        contentColor = Color.White,
+        modifier = Modifier.size(32.dp),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = description,
+                modifier = Modifier.size(16.dp),
+            )
         }
     }
 }

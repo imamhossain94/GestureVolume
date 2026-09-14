@@ -132,13 +132,20 @@ fun QuickDialScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        if (name.isNotBlank() && number.isNotBlank()) {
+                        val added = name.isNotBlank() && number.isNotBlank()
+                        if (added) {
                             store.addQuickDial(name, number)
                             entries = store.getQuickDial()
                         }
                         name = ""
                         number = ""
                         showAdd = false
+                        // A happy moment: a contact was added and the dialog is closed.
+                        if (added) {
+                            viewModel.onHappyMoment(
+                                com.newagedevs.gesturevolume.utils.AdPacing.Trigger.QUICK_DIAL_ADDED
+                            )
+                        }
                     },
                     enabled = name.isNotBlank() && number.isNotBlank(),
                     shape = RoundedCornerShape(12.dp)

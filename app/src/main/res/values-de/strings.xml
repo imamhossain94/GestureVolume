@@ -652,6 +652,11 @@
     <string name="upgrade_restore">Kauf wiederherstellen</string>
     <string name="upgrade_thanks_title">Du hast Pro</string>
     <string name="upgrade_thanks_desc">Danke, dass du die App unterstützt. Viel Spaß – ganz ohne Werbung.</string>
+    <string name="support_nudge_title">Gefällt dir %1$s?</string>
+    <string name="support_nudge_message">%1$s ist kostenlos, und die Werbung sorgt dafür, dass es so bleibt. Wenn die App einen festen Platz auf deinem Handy hat, entfernt Pro jede Werbung und unterstützt direkt den unabhängigen Entwickler dahinter. Einmalig %2$s, kein Abo.</string>
+    <string name="support_nudge_confirm">Unterstützen &amp; werbefrei</string>
+    <string name="support_nudge_later">Vielleicht später</string>
+    <string name="support_nudge_never">Nicht mehr fragen</string>
     <string name="about_developed_in">Entwickelt in Bangladesch von</string>
     <string name="about_ideas_by">Funktionsideen von einem Freund aus Bharat (Indien)</string>
     <string name="about_ideas_desc">Hat viele Funktionen dieser App vorgeschlagen – und hat immer neue Ideen.</string>
@@ -687,6 +692,7 @@
     <string name="position_snap_off_hint">Nicht mehr am Rand, daher wurde „Am Rand einrasten“ ausgeschaltet. Schalte es wieder ein, um die Leiste an die nähere Seite zu schicken.</string>
     <string name="position_sliders_desc">Wo die Mitte der Leiste sitzt, als Anteil des Bildschirms. Du kannst die Leiste auch gedrückt halten und ziehen; diese Position wird für die Haltung gespeichert, in der das Handy gerade ist.</string>
     <string name="preview_backdrop_change">Hintergrund ändern</string>
+    <string name="preview_backdrop_random">Zufällige Farbe</string>
     <string name="context_menu_group_layout">LAYOUT &amp; GRÖSSE</string>
     <string name="context_menu_group_look">AUSSEHEN</string>
     <string name="context_menu_group_items">EINTRÄGE</string>

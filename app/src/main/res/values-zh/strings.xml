@@ -380,6 +380,11 @@
     <string name="upgrade_restore">恢复购买</string>
     <string name="upgrade_thanks_title">您已是 Pro 用户</string>
     <string name="upgrade_thanks_desc">感谢您对应用的支持，尽享无广告体验。</string>
+    <string name="support_nudge_title">喜欢 %1$s 吗？</string>
+    <string name="support_nudge_message">%1$s 是免费的，广告让它保持免费。如果它已经成为你手机上常用的应用，升级到 Pro 可以去除所有广告，并直接支持开发它的独立开发者。一次性 %2$s，无需订阅。</string>
+    <string name="support_nudge_confirm">支持并去除广告</string>
+    <string name="support_nudge_later">以后再说</string>
+    <string name="support_nudge_never">不再询问</string>
     <string name="about_developed_in">开发者（孟加拉国）</string>
     <string name="about_ideas_by">来自巴拉特（印度）的朋友提供的功能创意</string>
     <string name="about_ideas_desc">提出了本应用中的许多功能，并持续贡献新创意。</string>
@@ -402,6 +407,7 @@
     <string name="position_snap_off_hint">已离开边缘，因此“吸附到边缘”已关闭。重新开启即可让滑条贴向较近的一侧。</string>
     <string name="position_sliders_desc">滑条中心所在的位置，以占屏幕的比例表示。你也可以长按滑条并拖动；该位置会按当时手机的方向保存。</string>
     <string name="preview_backdrop_change">更换背景</string>
+    <string name="preview_backdrop_random">随机颜色</string>
     <string name="context_menu_group_layout">布局与尺寸</string>
     <string name="context_menu_group_look">外观</string>
     <string name="context_menu_group_items">项目</string>

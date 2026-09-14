@@ -17,14 +17,19 @@ import java.util.concurrent.TimeUnit
  *     one shot.
  *
  *  2. **Asking is only worth doing when the answer is likely to be positive.** A prompt fired at
- *     a random moment samples a random mood. The gates below wait for evidence the app is working
- *     out for this person before spending one of those attempts.
+ *     a random moment samples a random mood. So it is never fired on launch or resume: it is only
+ *     ever considered at a *happy moment* — the user just finished something and it worked (see
+ *     MainEffect.HappyMoment) — and even then only with evidence the app is working out for them.
  *
  * The evidence used, in order of how much it means:
  *
- *  - **The service is running right now.** This is the strongest signal the app has. Turning the
- *    overlay on requires clearing a system permission screen, and leaving it on means the user
- *    kept a permanent floating control on their screen. Nobody does that for an app they dislike.
+ *  - **The service is running right now.** Turning the overlay on requires clearing a system
+ *    permission screen, and leaving it on means the user kept a permanent floating control on
+ *    their screen. Nobody does that for an app they dislike.
+ *  - **Happy moments**, counted: saves, gestures assigned, contacts added. One is a try; several
+ *    are someone making the app their own.
+ *  - **No recent trouble.** A visit to Troubleshoot or Feedback in the last week means something
+ *    went wrong; that is the worst week to ask for stars.
  *  - **Days since install**, not launches alone. Someone who opened the app five times in one
  *    evening is setting it up, not enjoying it; the same five launches across a week is a habit.
  *  - **Launch count**, as a floor under the above.
@@ -36,6 +41,12 @@ object ReviewPrompter {
 
     /** Enough returns to distinguish a keeper from a try-once install. */
     const val MIN_LAUNCHES = 5
+
+    /** Finished, successful actions before the first ask. The current one counts. */
+    const val MIN_HAPPY_MOMENTS = 3
+
+    /** Quiet period after the user went looking for help. Shared with [SupportPrompter]. */
+    val TROUBLE_QUIET_MS = TimeUnit.DAYS.toMillis(7)
 
     /**
      * Gap between attempts.
@@ -53,7 +64,7 @@ object ReviewPrompter {
      * Quiet period after any ad.
      *
      * An interstitial followed by "enjoying the app?" reads as a shakedown and reliably earns one
-     * star. This app shows app-open ads on resume, which is exactly when the review check runs.
+     * star.
      */
     val AD_QUIET_MS = TimeUnit.MINUTES.toMillis(3)
 
@@ -71,9 +82,11 @@ object ReviewPrompter {
         val lastAskVersion: Int,
         val versionCode: Int,
         val launchCount: Int,
+        val happyMoments: Int,
         val installedAt: Long,
         val lastAskAt: Long,
         val lastAdAt: Long,
+        val lastTroubleAt: Long,
         val now: Long
     )
 
@@ -84,6 +97,7 @@ object ReviewPrompter {
         if (askCount >= MAX_ASKS) return false
         if (lastAskVersion == versionCode) return false
         if (launchCount < MIN_LAUNCHES) return false
+        if (happyMoments < MIN_HAPPY_MOMENTS) return false
 
         // Zero means the stamp was never written. Treated as "too new" rather than "infinitely
         // old", so a missing stamp can never be the reason a prompt fires.
@@ -94,10 +108,12 @@ object ReviewPrompter {
         // comparisons below, not after.
         if (now < installedAt) return false
         if (lastAskAt > 0L && now < lastAskAt) return false
+        if (lastTroubleAt > 0L && now < lastTroubleAt) return false
 
         if (now - installedAt < MIN_AGE_MS) return false
         if (lastAskAt > 0L && now - lastAskAt < MIN_GAP_MS) return false
         if (lastAdAt > 0L && now - lastAdAt < AD_QUIET_MS) return false
+        if (lastTroubleAt > 0L && now - lastTroubleAt < TROUBLE_QUIET_MS) return false
 
         return true
     }
@@ -121,9 +137,11 @@ object ReviewPrompter {
             lastAskVersion = preference.getReviewLastAskVersion(),
             versionCode = versionCode,
             launchCount = preference.getAppLaunchCount(),
+            happyMoments = preference.getHappyMomentCount(),
             installedAt = preference.getFirstInstallTimeMillis(),
             lastAskAt = preference.getReviewLastAskTime(),
             lastAdAt = preference.getLastAnyAdTimeMillis(),
+            lastTroubleAt = preference.getLastTroubleTime(),
             now = now
         )
     )

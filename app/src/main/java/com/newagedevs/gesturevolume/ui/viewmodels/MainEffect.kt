@@ -1,9 +1,16 @@
 package com.newagedevs.gesturevolume.ui.viewmodels
 
 import com.newagedevs.gesturevolume.manager.BillingManager
+import com.newagedevs.gesturevolume.utils.AdPacing
 
 sealed class MainEffect {
     data class ShowToast(val message: String) : MainEffect()
+
+    /**
+     * The user just finished something and it worked. The one moment a review, a support nudge or
+     * an interstitial may follow — at most one of them, chosen in MainNavigation.
+     */
+    data class HappyMoment(val trigger: AdPacing.Trigger) : MainEffect()
     data class ProductDetailsLoaded(val details: BillingManager.ProductPrice) : MainEffect()
     object RequestOverlayPermission : MainEffect()
 

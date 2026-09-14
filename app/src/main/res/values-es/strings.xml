@@ -652,6 +652,11 @@
     <string name="upgrade_restore">Restaurar compra</string>
     <string name="upgrade_thanks_title">Ya eres Pro</string>
     <string name="upgrade_thanks_desc">Gracias por apoyar la app. Disfrútala sin anuncios.</string>
+    <string name="support_nudge_title">¿Te gusta %1$s?</string>
+    <string name="support_nudge_message">%1$s es gratis, y los anuncios son lo que lo mantiene así. Si se ha ganado un sitio en tu teléfono, pasarte a Pro elimina todos los anuncios y apoya directamente al desarrollador independiente que lo crea. %2$s una sola vez, sin suscripción.</string>
+    <string name="support_nudge_confirm">Apoyar y quitar anuncios</string>
+    <string name="support_nudge_later">Quizás más tarde</string>
+    <string name="support_nudge_never">No volver a preguntar</string>
     <string name="about_developed_in">Desarrollado en Bangladés por</string>
     <string name="about_ideas_by">Ideas de funciones de un amigo de Bharat (India)</string>
     <string name="about_ideas_desc">Sugirió muchas de las funciones de esta app y sigue aportando ideas.</string>
@@ -687,6 +692,7 @@
     <string name="position_snap_off_hint">Lejos del borde, así que se desactivó Ajustar al borde. Vuelve a activarlo para llevar la barra al lado más cercano.</string>
     <string name="position_sliders_desc">Dónde queda el centro de la barra, como proporción de la pantalla. También puedes mantener pulsada la barra y arrastrarla; esa posición se guarda para la orientación que tenga el teléfono en ese momento.</string>
     <string name="preview_backdrop_change">Cambiar el fondo</string>
+    <string name="preview_backdrop_random">Color aleatorio</string>
     <string name="context_menu_group_layout">DISEÑO Y TAMAÑO</string>
     <string name="context_menu_group_look">ASPECTO</string>
     <string name="context_menu_group_items">ELEMENTOS</string>

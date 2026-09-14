@@ -380,6 +380,11 @@
     <string name="upgrade_restore">استعادة الشراء</string>
     <string name="upgrade_thanks_title">أنت مشترك Pro</string>
     <string name="upgrade_thanks_desc">شكرًا لدعمك التطبيق. استمتع به بلا إعلانات.</string>
+    <string name="support_nudge_title">هل يعجبك %1$s؟</string>
+    <string name="support_nudge_message">تطبيق %1$s مجاني، والإعلانات هي ما يبقيه كذلك. إن كان قد استحق مكانًا على هاتفك، فالترقية إلى Pro تزيل كل الإعلانات وتدعم مباشرةً المطوّر المستقل الذي يبنيه. %2$s مرة واحدة، دون اشتراك.</string>
+    <string name="support_nudge_confirm">ادعم وتخلّص من الإعلانات</string>
+    <string name="support_nudge_later">ربما لاحقًا</string>
+    <string name="support_nudge_never">لا تسألني مجددًا</string>
     <string name="about_developed_in">طُوِّر في بنغلاديش بواسطة</string>
     <string name="about_ideas_by">أفكار الميزات من صديق من بهارات (الهند)</string>
     <string name="about_ideas_desc">اقترح كثيرًا من ميزات هذا التطبيق، ولا تزال أفكاره تتوالى.</string>
@@ -402,6 +407,7 @@
     <string name="position_snap_off_hint">ابتعد الشريط عن الحافة، لذا أُوقف خيار «المحاذاة إلى الحافة». أعد تفعيله لإرسال الشريط إلى الجانب الأقرب.</string>
     <string name="position_sliders_desc">موضع منتصف الشريط كنسبة من الشاشة. يمكنك أيضًا الضغط مطوّلًا على الشريط وسحبه؛ ويُحفظ ذلك الموضع لاتجاه الهاتف في تلك اللحظة.</string>
     <string name="preview_backdrop_change">تغيير الخلفية</string>
+    <string name="preview_backdrop_random">لون عشوائي</string>
     <string name="context_menu_group_layout">التخطيط والحجم</string>
     <string name="context_menu_group_look">المظهر</string>
     <string name="context_menu_group_items">العناصر</string>

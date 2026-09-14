@@ -652,6 +652,11 @@
     <string name="upgrade_restore">কেনাকাটা পুনরুদ্ধার করুন</string>
     <string name="upgrade_thanks_title">আপনি এখন Pro</string>
     <string name="upgrade_thanks_desc">অ্যাপটিকে সহায়তা করার জন্য ধন্যবাদ। বিজ্ঞাপন ছাড়া উপভোগ করুন।</string>
+    <string name="support_nudge_title">%1$s ভালো লাগছে?</string>
+    <string name="support_nudge_message">%1$s বিনামূল্যে, আর বিজ্ঞাপনই একে বিনামূল্যে রাখে। যদি এটি আপনার ফোনে জায়গা করে নিয়ে থাকে, Pro নিলে সব বিজ্ঞাপন সরে যাবে এবং যে স্বাধীন ডেভেলপার এটি তৈরি করেন তিনি সরাসরি সহায়তা পাবেন। একবারই %2$s, কোনো সাবস্ক্রিপশন নেই।</string>
+    <string name="support_nudge_confirm">সমর্থন করুন ও বিজ্ঞাপন সরান</string>
+    <string name="support_nudge_later">পরে দেখব</string>
+    <string name="support_nudge_never">আর জিজ্ঞেস করবেন না</string>
     <string name="about_developed_in">বাংলাদেশে ডেভেলপ করেছে</string>
     <string name="about_ideas_by">ভারতের এক বন্ধুর দেওয়া ফিচারের ধারণা</string>
     <string name="about_ideas_desc">এই অ্যাপের অনেক ফিচারের প্রস্তাব দিয়েছেন, এবং নতুন আইডিয়া দিয়েই চলেছেন।</string>
@@ -687,6 +692,7 @@
     <string name="position_snap_off_hint">প্রান্ত থেকে সরে গেছে, তাই প্রান্তে আটকান বন্ধ করা হয়েছে। বারটিকে কাছের পাশে পাঠাতে আবার চালু করুন।</string>
     <string name="position_sliders_desc">স্ক্রিনের অনুপাতে বারের মাঝখান কোথায় থাকে। বারটি চেপে ধরে টেনেও সরাতে পারেন; সেই অবস্থান ফোন তখন যেভাবে ধরা আছে তার জন্য সংরক্ষিত হয়।</string>
     <string name="preview_backdrop_change">পটভূমি বদলান</string>
+    <string name="preview_backdrop_random">এলোমেলো রং</string>
     <string name="context_menu_group_layout">লেআউট ও আকার</string>
     <string name="context_menu_group_look">চেহারা</string>
     <string name="context_menu_group_items">আইটেম</string>

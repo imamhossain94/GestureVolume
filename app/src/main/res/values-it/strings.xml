@@ -652,6 +652,11 @@
     <string name="upgrade_restore">Ripristina acquisto</string>
     <string name="upgrade_thanks_title">Sei Pro</string>
     <string name="upgrade_thanks_desc">Grazie per il tuo sostegno all\'app. Goditela senza pubblicità.</string>
+    <string name="support_nudge_title">Ti piace %1$s?</string>
+    <string name="support_nudge_message">%1$s è gratuita, e sono le pubblicità a mantenerla tale. Se si è guadagnata un posto sul tuo telefono, passare a Pro rimuove tutte le pubblicità e sostiene direttamente lo sviluppatore indipendente che la crea. %2$s una sola volta, senza abbonamento.</string>
+    <string name="support_nudge_confirm">Sostieni e rimuovi le pubblicità</string>
+    <string name="support_nudge_later">Forse più tardi</string>
+    <string name="support_nudge_never">Non chiedere più</string>
     <string name="about_developed_in">Sviluppato in Bangladesh da</string>
     <string name="about_ideas_by">Idee per le funzioni di un amico dal Bharat (India)</string>
     <string name="about_ideas_desc">Ha suggerito molte delle funzioni di questa app e continua a proporre idee.</string>
@@ -687,6 +692,7 @@
     <string name="position_snap_off_hint">Lontana dal bordo, quindi Aggancia al bordo è stato disattivato. Riattivalo per mandare la barra sul lato più vicino.</string>
     <string name="position_sliders_desc">Dove si trova il centro della barra, in proporzione allo schermo. Puoi anche tenere premuta la barra e trascinarla; quella posizione viene salvata per l’orientamento del telefono in quel momento.</string>
     <string name="preview_backdrop_change">Cambia lo sfondo</string>
+    <string name="preview_backdrop_random">Colore casuale</string>
     <string name="context_menu_group_layout">LAYOUT E DIMENSIONI</string>
     <string name="context_menu_group_look">ASPETTO</string>
     <string name="context_menu_group_items">ELEMENTI</string>
