@@ -830,6 +830,11 @@
     <string name="upgrade_restore">Restore purchase</string>
     <string name="upgrade_thanks_title">You\'re Pro</string>
     <string name="upgrade_thanks_desc">Thank you for supporting the app. Enjoy it ad-free.</string>
+    <string name="support_nudge_title">Enjoying %1$s?</string>
+    <string name="support_nudge_message">%1$s is free, and the ads are what keep it that way. If it has earned a place on your phone, going Pro removes every ad and directly supports the independent developer who builds it. %2$s once, no subscription.</string>
+    <string name="support_nudge_confirm">Support &amp; go ad-free</string>
+    <string name="support_nudge_later">Maybe later</string>
+    <string name="support_nudge_never">Don\'t ask again</string>
     <string name="about_developed_in">Developed in Bangladesh by</string>
     <string name="about_ideas_by">Feature ideas by a friend from Bharat (India)</string>
     <string name="about_ideas_desc">Suggested many of the features in this app, and keeps the ideas coming.</string>
@@ -881,6 +886,7 @@
     <string name="position_snap_off_hint">Away from an edge, so Snap to edge was switched off. Turn it back on to send the bar to the nearer side.</string>
     <string name="position_sliders_desc">Where the middle of the bar sits, as a share of the screen. You can also hold the bar and drag it; that position is saved for the way the phone is held at the time.</string>
     <string name="preview_backdrop_change">Change the background</string>
+    <string name="preview_backdrop_random">Random colour</string>
     <string name="context_menu_group_layout">LAYOUT &amp; SIZE</string>
     <string name="context_menu_group_look">LOOK</string>
     <string name="context_menu_group_items">ITEMS</string>

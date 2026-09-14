@@ -652,6 +652,11 @@
     <string name="upgrade_restore">Restaurer l\'achat</string>
     <string name="upgrade_thanks_title">Vous êtes Pro</string>
     <string name="upgrade_thanks_desc">Merci de soutenir l\'application. Profitez-en sans publicité.</string>
+    <string name="support_nudge_title">Vous appréciez %1$s ?</string>
+    <string name="support_nudge_message">%1$s est gratuit, et ce sont les publicités qui le permettent. S’il a gagné sa place sur votre téléphone, passer à Pro retire toutes les publicités et soutient directement le développeur indépendant qui le crée. %2$s une seule fois, sans abonnement.</string>
+    <string name="support_nudge_confirm">Soutenir et retirer les pubs</string>
+    <string name="support_nudge_later">Plus tard</string>
+    <string name="support_nudge_never">Ne plus demander</string>
     <string name="about_developed_in">Développé au Bangladesh par</string>
     <string name="about_ideas_by">Idées de fonctionnalités d\'un ami de Bharat (Inde)</string>
     <string name="about_ideas_desc">A suggéré bon nombre des fonctionnalités de cette application, et continue d\'en proposer.</string>
@@ -687,6 +692,7 @@
     <string name="position_snap_off_hint">Écartée du bord, donc Aimanter au bord a été désactivé. Réactive-le pour envoyer la barre du côté le plus proche.</string>
     <string name="position_sliders_desc">L’emplacement du centre de la barre, en proportion de l’écran. Tu peux aussi maintenir la barre et la faire glisser ; cette position est enregistrée pour l’orientation du téléphone à ce moment-là.</string>
     <string name="preview_backdrop_change">Changer l’arrière-plan</string>
+    <string name="preview_backdrop_random">Couleur aléatoire</string>
     <string name="context_menu_group_layout">DISPOSITION ET TAILLE</string>
     <string name="context_menu_group_look">APPARENCE</string>
     <string name="context_menu_group_items">ÉLÉMENTS</string>

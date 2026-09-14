@@ -374,7 +374,7 @@ fun HandlerAppearanceScreen(
                             // A break point: the user finished and saved, and stays on this screen.
                             // Only here, not in the discard dialog's Apply, which Back opens and
                             // which leaves the screen.
-                            viewModel.maybeShowInterstitialAd(AdPacing.Trigger.SETTINGS_APPLIED)
+                            viewModel.onHappyMoment(AdPacing.Trigger.SETTINGS_APPLIED)
                         },
                         enabled = hasUnsavedChanges
                     ) {

@@ -35,8 +35,8 @@ import com.google.android.play.core.review.ReviewManagerFactory
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        /** Let the screen settle — and any app-open ad finish — before considering a prompt. */
-        private const val REVIEW_SETTLE_DELAY_MS = 2_500L
+        /** Lets the happy moment's own feedback — a toast, a closing dialog — land before the sheet. */
+        private const val REVIEW_SETTLE_DELAY_MS = 700L
 
         /** A navigation route to open on arrival, from the Deck's "manage" buttons. */
         const val EXTRA_ROUTE = "route"
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
      */
     private var updateFlowActive = false
 
-    private val reviewRunnable = Runnable { showInAppReviewIfNeeded() }
+    private val reviewRunnable = Runnable { launchReviewFlow() }
     private val reviewHandler = android.os.Handler(android.os.Looper.getMainLooper())
 
     // Bumped in onConfigurationChanged to trigger recomposition with new locale strings
@@ -171,12 +171,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Deliberately delayed and deliberately not in onCreate. At launch this would land on top
-        // of the splash screen, the update check, and the app-open ad — which is what made the
-        // old prompt feel like it came out of nowhere. Waiting for a settled, still-open screen
-        // costs nothing and is the whole difference between a prompt and an ambush.
-        reviewHandler.removeCallbacks(reviewRunnable)
-        reviewHandler.postDelayed(reviewRunnable, REVIEW_SETTLE_DELAY_MS)
+        // No review check here any more. On resume it sampled whatever mood the user opened the
+        // app in, which from their side looked random; it now waits for a happy moment instead.
+        // See askForReviewIfHappy.
     }
 
     override fun onPause() {
@@ -225,17 +222,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showInAppReviewIfNeeded() {
-        if (isFinishing || isDestroyed) return
-
-        val versionCode = BuildConfig.VERSION_CODE
+    /**
+     * Called at a happy moment (MainEffect.HappyMoment). Asks for a review if [ReviewPrompter]
+     * says this user has earned it, and says whether it did, so the moment is not also spent on a
+     * support nudge or an ad.
+     */
+    fun askForReviewIfHappy(): Boolean {
+        if (isFinishing || isDestroyed) return false
         if (!ReviewPrompter.shouldAsk(
                 preference = viewModel.preference,
                 serviceRunning = viewModel.preference.isRunning(),
                 updateFlowActive = updateFlowActive,
-                versionCode = versionCode
+                versionCode = BuildConfig.VERSION_CODE
             )
-        ) return
+        ) return false
+
+        reviewHandler.removeCallbacks(reviewRunnable)
+        reviewHandler.postDelayed(reviewRunnable, REVIEW_SETTLE_DELAY_MS)
+        return true
+    }
+
+    private fun launchReviewFlow() {
+        if (isFinishing || isDestroyed) return
+        val versionCode = BuildConfig.VERSION_CODE
 
         val manager = ReviewManagerFactory.create(this)
         manager.requestReviewFlow().addOnCompleteListener { task ->

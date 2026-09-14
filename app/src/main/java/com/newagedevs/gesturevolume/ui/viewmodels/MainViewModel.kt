@@ -21,6 +21,7 @@ import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.helper.ApplovinAdsManager
 import com.newagedevs.gesturevolume.helper.PrivacyChoices
 import com.newagedevs.gesturevolume.utils.AdPacing
+import com.newagedevs.gesturevolume.utils.SupportPrompter
 import com.newagedevs.gesturevolume.helper.extensions.openAppStore
 import com.newagedevs.gesturevolume.helper.extensions.shareApp
 import com.newagedevs.gesturevolume.livedata.LiveDataManager
@@ -295,6 +296,25 @@ class MainViewModel @Inject constructor(
     }
 
     /**
+     * A happy moment: the user finished something and it worked. Counted — it is the evidence the
+     * review and the support nudge wait for — and handed to MainNavigation, which picks at most one
+     * of a review, a support nudge or an interstitial to follow it.
+     */
+    fun onHappyMoment(trigger: AdPacing.Trigger) {
+        preference.recordHappyMoment()
+        viewModelScope.launch { _effect.send(MainEffect.HappyMoment(trigger)) }
+    }
+
+    /** Whether to show the support-the-developer nudge now; recorded as asked when it says yes. */
+    fun maybeShowSupportNudge(): Boolean {
+        if (!SupportPrompter.shouldAsk(preference, _state.value.isProActivated)) return false
+        preference.recordSupportAsk()
+        return true
+    }
+
+    fun optOutOfSupportNudge() = preference.setSupportOptedOut(true)
+
+    /**
      * @param announceWithAd true only when the user just switched the service on themselves. The
      *   silent repair path calls this too, and a system-killed service quietly coming back is not
      *   a moment to show anybody an ad. Carried as a parameter rather than a field so a bind that
@@ -484,15 +504,21 @@ class MainViewModel @Inject constructor(
                 _state.value = _state.value.copy(swipeOutAction = action, swipeOutActionIcon = getActionIcon(action))
             }
         }
+        var prompted = false
         if (HandlerActions.needsAccessibility(action) && !OverlayRuntime.isAccessibilityEnabled(context)) {
             _state.value = _state.value.copy(showAccessibilityPrompt = true)
+            prompted = true
         }
         if (HandlerActions.needsNotificationPolicy(action) &&
             !PermissionNeeds.hasNotificationPolicyAccess(context)
         ) {
             _state.value = _state.value.copy(showDndPrompt = true)
+            prompted = true
         }
         updatePermissionsStatus(context)
+        // A happy moment: the choice is made and written. Not when it raised a permission prompt,
+        // which a review, a nudge or an ad would cover.
+        if (!prompted) onHappyMoment(AdPacing.Trigger.GESTURE_ASSIGNED)
     }
 
     /** The disclosure was accepted: open the system list. */

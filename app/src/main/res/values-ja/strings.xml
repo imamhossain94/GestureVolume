@@ -652,6 +652,11 @@
     <string name="upgrade_restore">購入を復元</string>
     <string name="upgrade_thanks_title">Pro をご利用中です</string>
     <string name="upgrade_thanks_desc">アプリを応援していただきありがとうございます。広告なしでお楽しみください。</string>
+    <string name="support_nudge_title">%1$s を気に入っていただけましたか？</string>
+    <string name="support_nudge_message">%1$s は無料で、広告によって無料のまま提供されています。お使いのスマホに欠かせないアプリになっていたら、Pro にアップグレードするとすべての広告が消え、開発している個人開発者を直接応援できます。%2$s の買い切りで、サブスクリプションはありません。</string>
+    <string name="support_nudge_confirm">応援して広告をなくす</string>
+    <string name="support_nudge_later">あとで</string>
+    <string name="support_nudge_never">今後表示しない</string>
     <string name="about_developed_in">開発者（バングラデシュ）</string>
     <string name="about_ideas_by">バーラト（インド）の友人による機能のアイデア</string>
     <string name="about_ideas_desc">このアプリの多くの機能を提案し、今もアイデアを出し続けています。</string>
@@ -687,6 +692,7 @@
     <string name="position_snap_off_hint">端から離れたため、「端にスナップ」をオフにしました。オンに戻すと、バーが近い側の端に移動します。</string>
     <string name="position_sliders_desc">バーの中心の位置を、画面に対する割合で示します。バーを長押ししてドラッグすることもできます。その位置は、そのときの端末の向きに対して保存されます。</string>
     <string name="preview_backdrop_change">背景を変更</string>
+    <string name="preview_backdrop_random">ランダムな色</string>
     <string name="context_menu_group_layout">レイアウトとサイズ</string>
     <string name="context_menu_group_look">見た目</string>
     <string name="context_menu_group_items">項目</string>

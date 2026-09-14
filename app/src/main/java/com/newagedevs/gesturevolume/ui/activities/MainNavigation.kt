@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
@@ -83,6 +84,7 @@ fun MainNavigation(
     var showThemeDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
+    var showSupportDialog by remember { mutableStateOf(false) }
 
     val resetDoneMsg = stringResource(R.string.reset_app_done)
 
@@ -131,6 +133,15 @@ fun MainNavigation(
                         notificationPermissionLauncher.launch(
                             android.Manifest.permission.POST_NOTIFICATIONS
                         )
+                    }
+                }
+                // At most one thing per happy moment, the most valuable first: a review when the
+                // app has earned one, else now and then a nudge towards Pro, else an ad.
+                is MainEffect.HappyMoment -> {
+                    when {
+                        activity?.askForReviewIfHappy() == true -> Unit
+                        viewModel.maybeShowSupportNudge() -> { showSupportDialog = true }
+                        else -> viewModel.maybeShowInterstitialAd(effect.trigger)
                     }
                 }
                 is MainEffect.ConfirmResetApp -> showResetDialog = true
@@ -328,6 +339,8 @@ fun MainNavigation(
                 }
 
                 composable("feedback") {
+                    // Something may have gone wrong: holds back the review and the support nudge.
+                    LaunchedEffect(Unit) { viewModel.preference.recordTrouble() }
                     FeedbackScreen(
                         onNavigateBack = {
                             navController.navigateBackOnce()
@@ -358,6 +371,8 @@ fun MainNavigation(
                 }
 
                 composable("troubleshoot") {
+                    // Something went wrong: holds back the review and the support nudge.
+                    LaunchedEffect(Unit) { viewModel.preference.recordTrouble() }
                     TroubleshootScreen(
                         onNavigateBack = {
                             navController.navigateBackOnce()
@@ -416,6 +431,63 @@ fun MainNavigation(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(stringResource(R.string.cancel))
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(24.dp)
+            )
+        }
+
+        // The support-the-developer nudge. Friendly and easy to leave: "Maybe later" and a tap
+        // outside both just close it, and "Don't ask again" means exactly that. See SupportPrompter.
+        if (showSupportDialog) {
+            val price by viewModel.billingManager.lifetimePrice.collectAsState()
+            val appName = stringResource(R.string.app_name)
+            AlertDialog(
+                onDismissRequest = { showSupportDialog = false },
+                title = {
+                    Text(
+                        text = stringResource(R.string.support_nudge_title, appName),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                },
+                text = {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.support_nudge_message, appName, price.formattedPrice),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextButton(
+                            onClick = {
+                                showSupportDialog = false
+                                viewModel.optOutOfSupportNudge()
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(stringResource(R.string.support_nudge_never))
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showSupportDialog = false
+                            navController.navigate("upgrade")
+                        },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.support_nudge_confirm))
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = { showSupportDialog = false },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.support_nudge_later))
                     }
                 },
                 containerColor = MaterialTheme.colorScheme.surface,

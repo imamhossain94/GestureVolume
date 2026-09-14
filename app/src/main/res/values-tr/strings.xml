@@ -652,6 +652,11 @@
     <string name="upgrade_restore">Satın alımı geri yükle</string>
     <string name="upgrade_thanks_title">Artık Pro\'sunuz</string>
     <string name="upgrade_thanks_desc">Uygulamayı desteklediğiniz için teşekkürler. Reklamsız keyfini çıkarın.</string>
+    <string name="support_nudge_title">%1$s hoşunuza gitti mi?</string>
+    <string name="support_nudge_message">%1$s ücretsiz ve onu böyle tutan şey reklamlar. Telefonunuzda yer edindiyse Pro’ya geçmek tüm reklamları kaldırır ve uygulamayı geliştiren bağımsız geliştiriciyi doğrudan destekler. Tek seferlik %2$s, abonelik yok.</string>
+    <string name="support_nudge_confirm">Destekle ve reklamları kaldır</string>
+    <string name="support_nudge_later">Belki sonra</string>
+    <string name="support_nudge_never">Bir daha sorma</string>
     <string name="about_developed_in">Bangladeş\'te geliştirildi</string>
     <string name="about_ideas_by">Bharat\'tan (Hindistan) bir arkadaşın özellik fikirleri</string>
     <string name="about_ideas_desc">Bu uygulamadaki birçok özelliği önerdi ve yeni fikirler getirmeye devam ediyor.</string>
@@ -687,6 +692,7 @@
     <string name="position_snap_off_hint">Kenardan uzakta olduğu için Kenara yapış kapatıldı. Çubuğu yakın kenara göndermek için yeniden aç.</string>
     <string name="position_sliders_desc">Çubuğun ortasının ekranın ne kadarında durduğu. Çubuğu basılı tutup sürükleyebilirsin de; o konum, telefonun o anki tutuluş yönü için kaydedilir.</string>
     <string name="preview_backdrop_change">Arka planı değiştir</string>
+    <string name="preview_backdrop_random">Rastgele renk</string>
     <string name="context_menu_group_layout">DÜZEN VE BOYUT</string>
     <string name="context_menu_group_look">GÖRÜNÜM</string>
     <string name="context_menu_group_items">ÖĞELER</string>

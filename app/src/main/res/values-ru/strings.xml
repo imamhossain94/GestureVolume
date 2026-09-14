@@ -652,6 +652,11 @@
     <string name="upgrade_restore">Восстановить покупку</string>
     <string name="upgrade_thanks_title">У вас Pro</string>
     <string name="upgrade_thanks_desc">Спасибо за поддержку приложения! Пользуйтесь без рекламы.</string>
+    <string name="support_nudge_title">Нравится %1$s?</string>
+    <string name="support_nudge_message">%1$s бесплатно, и именно реклама позволяет ему таким оставаться. Если приложение прижилось на вашем телефоне, Pro уберёт всю рекламу и напрямую поддержит независимого разработчика, который его создаёт. %2$s один раз, без подписки.</string>
+    <string name="support_nudge_confirm">Поддержать и убрать рекламу</string>
+    <string name="support_nudge_later">Может, позже</string>
+    <string name="support_nudge_never">Больше не спрашивать</string>
     <string name="about_developed_in">Разработано в Бангладеш</string>
     <string name="about_ideas_by">Идеи функций от друга из Бхарата (Индия)</string>
     <string name="about_ideas_desc">Предложил многие функции этого приложения и продолжает делиться идеями.</string>
@@ -687,6 +692,7 @@
     <string name="position_snap_off_hint">Полоса отошла от края, поэтому «Прилипание к краю» выключено. Включите его снова, чтобы отправить полосу к ближайшей стороне.</string>
     <string name="position_sliders_desc">Где находится середина полосы — в долях экрана. Полосу также можно удерживать и перетаскивать; это положение сохраняется для текущей ориентации телефона.</string>
     <string name="preview_backdrop_change">Сменить фон</string>
+    <string name="preview_backdrop_random">Случайный цвет</string>
     <string name="context_menu_group_layout">РАСПОЛОЖЕНИЕ И РАЗМЕР</string>
     <string name="context_menu_group_look">ВНЕШНИЙ ВИД</string>
     <string name="context_menu_group_items">ПУНКТЫ</string>

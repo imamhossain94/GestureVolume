@@ -652,6 +652,11 @@
     <string name="upgrade_restore">खरीदारी पुनर्स्थापित करें</string>
     <string name="upgrade_thanks_title">आप Pro हैं</string>
     <string name="upgrade_thanks_desc">ऐप का साथ देने के लिए धन्यवाद। बिना विज्ञापनों के आनंद लें।</string>
+    <string name="support_nudge_title">क्या आपको %1$s पसंद आ रहा है?</string>
+    <string name="support_nudge_message">%1$s मुफ़्त है, और विज्ञापन ही इसे मुफ़्त रखते हैं। अगर इसने आपके फ़ोन में जगह बना ली है, तो Pro लेने से सारे विज्ञापन हट जाते हैं और इसे बनाने वाले स्वतंत्र डेवलपर को सीधा सहयोग मिलता है। एक बार %2$s, कोई सदस्यता नहीं।</string>
+    <string name="support_nudge_confirm">सहयोग करें और विज्ञापन हटाएँ</string>
+    <string name="support_nudge_later">शायद बाद में</string>
+    <string name="support_nudge_never">फिर से न पूछें</string>
     <string name="about_developed_in">बांग्लादेश में विकसित</string>
     <string name="about_ideas_by">भारत के एक दोस्त के फ़ीचर आइडिया</string>
     <string name="about_ideas_desc">इस ऐप के कई फ़ीचर सुझाए, और नए आइडिया देते रहते हैं।</string>
@@ -687,6 +692,7 @@
     <string name="position_snap_off_hint">किनारे से दूर है, इसलिए किनारे पर टिकाएँ बंद कर दिया गया। बार को पास वाले किनारे पर भेजने के लिए इसे फिर चालू करें।</string>
     <string name="position_sliders_desc">बार का बीच वाला हिस्सा स्क्रीन के अनुपात में कहाँ है। आप बार को दबाए रखकर खींच भी सकते हैं; वह स्थिति फ़ोन को उस समय जिस तरह पकड़ा गया है, उसके लिए सहेजी जाती है।</string>
     <string name="preview_backdrop_change">पृष्ठभूमि बदलें</string>
+    <string name="preview_backdrop_random">यादृच्छिक रंग</string>
     <string name="context_menu_group_layout">लेआउट और आकार</string>
     <string name="context_menu_group_look">रूप</string>
     <string name="context_menu_group_items">आइटम</string>

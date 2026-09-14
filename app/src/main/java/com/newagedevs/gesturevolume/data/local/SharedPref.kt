@@ -257,14 +257,11 @@ class SharedPref @Inject constructor(
         const val LAST_APP_OPEN_AD_TIME = "lastAppOpenAdTime"
         const val LAST_INTERSTITIAL_AD_TIME = "lastInterstitialAdTime"
         const val LAST_ANY_AD_TIME = "lastAnyAdTime"
-
-        // Cooldown periods in milliseconds
-        // App-open dropped 60m → 25m: app-open earns ~$0.42 eCPM (≈40× banner), so more
-        // qualified resumes is real lift. Interstitial 90s → 3m to stay retention-safe now
-        // that interstitials also fire at screen transitions (it's the top earner, $3.10 eCPM).
-        const val APP_OPEN_AD_COOLDOWN = 25 * 60 * 1000L // 25 minutes
-        const val INTERSTITIAL_AD_COOLDOWN = 3 * 60 * 1000L // 3 minutes
-        const val MIN_TIME_BETWEEN_ANY_ADS = 90 * 1000L // 90 seconds between any ad types
+        // Daily full-screen ad counts, and the local day they belong to. Cooldowns and caps
+        // themselves live in utils.AdPacing.
+        const val AD_COUNT_DAY = "adCountDay"
+        const val APP_OPEN_ADS_TODAY = "appOpenAdsToday"
+        const val INTERSTITIALS_TODAY = "interstitialsToday"
 
         // Post-install grace period. Setup is the one stretch where a full-screen ad is most
         // likely to cost us the user outright: they are bouncing in and out of system permission
@@ -273,10 +270,6 @@ class SharedPref @Inject constructor(
         // session plus the "come back and finish it later" pass without meaningfully denting
         // lifetime impressions.
         const val AD_GRACE_PERIOD = 2 * 60 * 60 * 1000L // 2 hours from first launch
-
-        // Cap interstitials per app session (in-memory; resets on process restart) so the
-        // added screen-transition triggers can't stack up within one sitting.
-        const val MAX_INTERSTITIALS_PER_SESSION = 5
 
         // Appearance settings keys
         const val HANDLER_BACKGROUND_ALPHA = "handlerBackgroundAlpha"
@@ -349,6 +342,12 @@ class SharedPref @Inject constructor(
         const val REVIEW_ASK_COUNT = "reviewAskCount"
         const val REVIEW_LAST_ASK_TIME = "reviewLastAskTime"
         const val REVIEW_LAST_ASK_VERSION = "reviewLastAskVersion"
+        // Happy moments, trouble and the Pro support nudge. See utils.ReviewPrompter / SupportPrompter.
+        const val HAPPY_MOMENT_COUNT = "happyMomentCount"
+        const val LAST_TROUBLE_TIME = "lastTroubleTime"
+        const val SUPPORT_ASK_COUNT = "supportAskCount"
+        const val SUPPORT_LAST_ASK_TIME = "supportLastAskTime"
+        const val SUPPORT_OPTED_OUT = "supportOptedOut"
         const val APP_OPEN_AD_PAUSED = "appOpenAdPaused"
 
         // Free positioning. Stored per orientation: a single pair cannot serve both, because
@@ -479,6 +478,40 @@ class SharedPref @Inject constructor(
     
     fun setHasShownReview(value: Boolean) {
         sharedPreferences.edit { putBoolean(HAS_SHOWN_REVIEW, value) }
+    }
+
+    // ---- happy moments, trouble, and the support nudge ----------------------------------------
+
+    /** Finished, successful actions ever: saves, gestures assigned, contacts added. */
+    fun getHappyMomentCount(): Int = sharedPreferences.getInt(HAPPY_MOMENT_COUNT, 0)
+
+    fun recordHappyMoment() {
+        sharedPreferences.edit { putInt(HAPPY_MOMENT_COUNT, getHappyMomentCount() + 1) }
+    }
+
+    /** When the user last opened Troubleshoot or Feedback, as epoch millis. 0 when never. */
+    fun getLastTroubleTime(): Long = sharedPreferences.getLong(LAST_TROUBLE_TIME, 0L)
+
+    fun recordTrouble(now: Long = System.currentTimeMillis()) {
+        sharedPreferences.edit { putLong(LAST_TROUBLE_TIME, now) }
+    }
+
+    fun getSupportAskCount(): Int = sharedPreferences.getInt(SUPPORT_ASK_COUNT, 0)
+
+    fun getSupportLastAskTime(): Long = sharedPreferences.getLong(SUPPORT_LAST_ASK_TIME, 0L)
+
+    fun recordSupportAsk(now: Long = System.currentTimeMillis()) {
+        sharedPreferences.edit {
+            putInt(SUPPORT_ASK_COUNT, getSupportAskCount() + 1)
+            putLong(SUPPORT_LAST_ASK_TIME, now)
+        }
+    }
+
+    /** The user tapped "Don't ask again" on the support nudge. */
+    fun isSupportOptedOut(): Boolean = sharedPreferences.getBoolean(SUPPORT_OPTED_OUT, false)
+
+    fun setSupportOptedOut(value: Boolean) {
+        sharedPreferences.edit { putBoolean(SUPPORT_OPTED_OUT, value) }
     }
 
     // Pro feature
@@ -1259,9 +1292,14 @@ class SharedPref @Inject constructor(
      */
     fun saveAppOpenAdTime() {
         val currentTime = System.currentTimeMillis()
+        val count = getAppOpenAdsToday(currentTime) + 1
+        val interstitials = getInterstitialsToday(currentTime)
         sharedPreferences.edit {
             putLong(LAST_APP_OPEN_AD_TIME, currentTime)
             putLong(LAST_ANY_AD_TIME, currentTime)
+            putLong(AD_COUNT_DAY, adDay(currentTime))
+            putInt(APP_OPEN_ADS_TODAY, count)
+            putInt(INTERSTITIALS_TODAY, interstitials)
         }
     }
 
@@ -1272,125 +1310,29 @@ class SharedPref @Inject constructor(
     fun saveInterstitialAdTime() {
         val currentTime = System.currentTimeMillis()
         sessionInterstitialCount++
+        val count = getInterstitialsToday(currentTime) + 1
+        val appOpens = getAppOpenAdsToday(currentTime)
         sharedPreferences.edit {
             putLong(LAST_INTERSTITIAL_AD_TIME, currentTime)
             putLong(LAST_ANY_AD_TIME, currentTime)
+            putLong(AD_COUNT_DAY, adDay(currentTime))
+            putInt(INTERSTITIALS_TODAY, count)
+            putInt(APP_OPEN_ADS_TODAY, appOpens)
         }
     }
 
-    /**
-     * Check if app open ad should be shown
-     * Returns true if:
-     * 1. 60 minutes have passed since last app open ad
-     * 2. 90 seconds have passed since any ad (app open or interstitial)
-     * 3. Not first launch
-     */
-    fun shouldShowAppOpenAd(): Boolean {
-        if (isFirstLaunch()) {
-            return false
-        }
+    /** App-open ads shown on the local calendar day of [now]. */
+    fun getAppOpenAdsToday(now: Long = System.currentTimeMillis()): Int = countToday(APP_OPEN_ADS_TODAY, now)
 
-        // Nothing full-screen until the user has had a chance to finish setting up.
-        if (isInAdGracePeriod()) {
-            return false
-        }
+    /** Interstitials shown on the local calendar day of [now]. */
+    fun getInterstitialsToday(now: Long = System.currentTimeMillis()): Int = countToday(INTERSTITIALS_TODAY, now)
 
-        val currentTime = System.currentTimeMillis()
-        val lastAppOpenAdTime = sharedPreferences.getLong(LAST_APP_OPEN_AD_TIME, -1L)
-        val lastAnyAdTime = sharedPreferences.getLong(LAST_ANY_AD_TIME, -1L)
+    // A count stamped with an earlier day is yesterday's, and reads as zero.
+    private fun countToday(key: String, now: Long): Int =
+        if (sharedPreferences.getLong(AD_COUNT_DAY, -1L) == adDay(now)) sharedPreferences.getInt(key, 0) else 0
 
-        // Check if 60 minutes have passed since last app open ad
-        val appOpenCooldownPassed = lastAppOpenAdTime == -1L ||
-                (currentTime - lastAppOpenAdTime) >= APP_OPEN_AD_COOLDOWN
-
-        // Check if 90 seconds have passed since any ad
-        val anyAdCooldownPassed = lastAnyAdTime == -1L ||
-                (currentTime - lastAnyAdTime) >= MIN_TIME_BETWEEN_ANY_ADS
-
-        return appOpenCooldownPassed && anyAdCooldownPassed
-    }
-
-    /**
-     * Whether an interstitial may be shown at all right now.
-     *
-     * Returns true when the install is out of its grace period, the per-session cap has room,
-     * three minutes have passed since the last interstitial and ninety seconds since any ad.
-     *
-     * The grace period has no exceptions. It previously let the service-start interstitial
-     * through on the reasoning that finishing setup is a natural stop rather than an
-     * interruption — but the whole point of the first two hours is that nothing takes the screen,
-     * and one full-screen ad is exactly what the user remembers from a first session. Native
-     * placements carry the revenue during grace.
-     */
-    fun shouldShowInterstitialAd(): Boolean {
-        // Nothing full-screen mid-setup. No exceptions.
-        if (isInAdGracePeriod()) {
-            return false
-        }
-
-        // Respect the per-session cap before anything else.
-        if (sessionInterstitialCount >= MAX_INTERSTITIALS_PER_SESSION) {
-            return false
-        }
-
-        val currentTime = System.currentTimeMillis()
-        val lastInterstitialAdTime = sharedPreferences.getLong(LAST_INTERSTITIAL_AD_TIME, -1L)
-        val lastAnyAdTime = sharedPreferences.getLong(LAST_ANY_AD_TIME, -1L)
-
-        // Check if 90 seconds have passed since last interstitial ad
-        val interstitialCooldownPassed = lastInterstitialAdTime == -1L ||
-                (currentTime - lastInterstitialAdTime) >= INTERSTITIAL_AD_COOLDOWN
-
-        // Check if 90 seconds have passed since any ad
-        val anyAdCooldownPassed = lastAnyAdTime == -1L ||
-                (currentTime - lastAnyAdTime) >= MIN_TIME_BETWEEN_ANY_ADS
-
-        return interstitialCooldownPassed && anyAdCooldownPassed
-    }
-
-    /**
-     * Get time remaining until next app open ad can be shown (in seconds)
-     * Returns 0 if ad can be shown now
-     */
-    fun getAppOpenAdCooldownRemaining(): Long {
-        val currentTime = System.currentTimeMillis()
-        val lastAppOpenAdTime = sharedPreferences.getLong(LAST_APP_OPEN_AD_TIME, -1L)
-        val lastAnyAdTime = sharedPreferences.getLong(LAST_ANY_AD_TIME, -1L)
-
-        if (lastAppOpenAdTime == -1L && lastAnyAdTime == -1L) return 0
-
-        val appOpenRemaining = if (lastAppOpenAdTime != -1L) {
-            maxOf(0, APP_OPEN_AD_COOLDOWN - (currentTime - lastAppOpenAdTime))
-        } else 0
-
-        val anyAdRemaining = if (lastAnyAdTime != -1L) {
-            maxOf(0, MIN_TIME_BETWEEN_ANY_ADS - (currentTime - lastAnyAdTime))
-        } else 0
-
-        return maxOf(appOpenRemaining, anyAdRemaining) / 1000 // Convert to seconds
-    }
-
-    /**
-     * Get time remaining until next interstitial ad can be shown (in seconds)
-     * Returns 0 if ad can be shown now
-     */
-    fun getInterstitialAdCooldownRemaining(): Long {
-        val currentTime = System.currentTimeMillis()
-        val lastInterstitialAdTime = sharedPreferences.getLong(LAST_INTERSTITIAL_AD_TIME, -1L)
-        val lastAnyAdTime = sharedPreferences.getLong(LAST_ANY_AD_TIME, -1L)
-
-        if (lastInterstitialAdTime == -1L && lastAnyAdTime == -1L) return 0
-
-        val interstitialRemaining = if (lastInterstitialAdTime != -1L) {
-            maxOf(0, INTERSTITIAL_AD_COOLDOWN - (currentTime - lastInterstitialAdTime))
-        } else 0
-
-        val anyAdRemaining = if (lastAnyAdTime != -1L) {
-            maxOf(0, MIN_TIME_BETWEEN_ANY_ADS - (currentTime - lastAnyAdTime))
-        } else 0
-
-        return maxOf(interstitialRemaining, anyAdRemaining) / 1000 // Convert to seconds
-    }
+    private fun adDay(now: Long): Long =
+        (now + java.util.TimeZone.getDefault().getOffset(now)) / java.util.concurrent.TimeUnit.DAYS.toMillis(1)
 
     // ========== APPEARANCE SETTINGS ==========
 
@@ -1571,6 +1513,10 @@ class SharedPref @Inject constructor(
      *    already paid to be rid of for however long that takes — and offline, indefinitely.
      *  - **The first-install timestamp.** It only gates the post-install ad grace period, so
      *    clearing it would hand out a fresh two ad-free hours for every tap of Reset.
+     *  - **The ad history** — last shown times and today's counts — for the same reason: a reset
+     *    must not clear the cooldowns and daily caps.
+     *  - **The review and support-nudge history**, including "Don't ask again": a reset must not
+     *    start the asking over.
      *
      * Everything else goes, first-launch flag included: the walkthrough is part of what a factory
      * state looks like.
@@ -1578,10 +1524,26 @@ class SharedPref @Inject constructor(
     fun resetAll() {
         val keptPro = isProFeatureActivated()
         val keptInstallTime = getFirstInstallTimeMillis()
+        val keptLongs = listOf(
+            LAST_APP_OPEN_AD_TIME, LAST_INTERSTITIAL_AD_TIME, LAST_ANY_AD_TIME, AD_COUNT_DAY,
+            REVIEW_LAST_ASK_TIME, SUPPORT_LAST_ASK_TIME, LAST_TROUBLE_TIME
+        )
+            .filter { sharedPreferences.contains(it) }
+            .associateWith { sharedPreferences.getLong(it, 0L) }
+        val keptInts = listOf(
+            APP_OPEN_ADS_TODAY, INTERSTITIALS_TODAY,
+            REVIEW_ASK_COUNT, REVIEW_LAST_ASK_VERSION, SUPPORT_ASK_COUNT
+        )
+            .filter { sharedPreferences.contains(it) }
+            .associateWith { sharedPreferences.getInt(it, 0) }
+        val keptOptOut = isSupportOptedOut()
         sharedPreferences.edit {
             clear()
             putBoolean(PRO_FEATURE_ACTIVATION, keptPro)
             if (keptInstallTime > 0L) putLong(FIRST_INSTALL_TIME, keptInstallTime)
+            keptLongs.forEach { (key, value) -> putLong(key, value) }
+            keptInts.forEach { (key, value) -> putInt(key, value) }
+            if (keptOptOut) putBoolean(SUPPORT_OPTED_OUT, true)
             // A reset is a factory state, not an upgrade. The file is not empty after it — the
             // purchase is kept — so without these the next launch would read it as an existing
             // install and pin the defaults of older versions over the ones just restored.

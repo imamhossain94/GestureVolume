@@ -652,6 +652,11 @@
     <string name="upgrade_restore">Restaurar compra</string>
     <string name="upgrade_thanks_title">Você é Pro</string>
     <string name="upgrade_thanks_desc">Obrigado por apoiar o app. Aproveite sem anúncios.</string>
+    <string name="support_nudge_title">Está gostando do %1$s?</string>
+    <string name="support_nudge_message">O %1$s é gratuito, e são os anúncios que o mantêm assim. Se ele conquistou um lugar no seu celular, o Pro remove todos os anúncios e apoia diretamente o desenvolvedor independente que o cria. %2$s uma única vez, sem assinatura.</string>
+    <string name="support_nudge_confirm">Apoiar e remover anúncios</string>
+    <string name="support_nudge_later">Talvez depois</string>
+    <string name="support_nudge_never">Não perguntar de novo</string>
     <string name="about_developed_in">Desenvolvido em Bangladesh por</string>
     <string name="about_ideas_by">Ideias de recursos de um amigo de Bharat (Índia)</string>
     <string name="about_ideas_desc">Sugeriu muitos dos recursos deste app e continua trazendo ideias.</string>
@@ -687,6 +692,7 @@
     <string name="position_snap_off_hint">Longe da borda, por isso Encaixar na borda foi desativado. Ative de novo para mandar a barra para o lado mais próximo.</string>
     <string name="position_sliders_desc">Onde fica o centro da barra, como proporção da tela. Você também pode manter a barra pressionada e arrastá-la; essa posição é salva para a orientação em que o celular estiver no momento.</string>
     <string name="preview_backdrop_change">Mudar o fundo</string>
+    <string name="preview_backdrop_random">Cor aleatória</string>
     <string name="context_menu_group_layout">LAYOUT E TAMANHO</string>
     <string name="context_menu_group_look">APARÊNCIA</string>
     <string name="context_menu_group_items">ITENS</string>
