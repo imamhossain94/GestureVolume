@@ -21,16 +21,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Swipe
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import com.newagedevs.gesturevolume.ui.motion.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.newagedevs.gesturevolume.ui.motion.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.newagedevs.gesturevolume.ui.motion.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -64,12 +66,17 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.ui.screens.quick_slider.sliderTargetLabel
 import com.newagedevs.gesturevolume.utils.ActionIcon
 import com.newagedevs.gesturevolume.utils.AudioStreamCatalog
+import com.newagedevs.gesturevolume.utils.BarBehaviour
 import com.newagedevs.gesturevolume.utils.DeviceToggles
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
+import com.newagedevs.gesturevolume.ui.components.actionDisplayName
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.AppearanceSection
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
+import com.newagedevs.gesturevolume.ui.view.TapTiming
+import com.newagedevs.gesturevolume.ui.screens.app_gestures.appGesturesSummary
 import androidx.compose.runtime.mutableIntStateOf
 
 /** Starts a system settings screen, pausing the app-open ad for the round trip. */
@@ -89,6 +96,7 @@ fun HandlerActionsScreen(
     onNavigateBack: () -> Unit,
     onOpenQuickSlider: () -> Unit = {},
     onOpenLongPressMenu: () -> Unit = {},
+    onOpenAppGestures: () -> Unit = {},
     onOpenPermissions: (PermissionNeeds.Permission?) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -114,6 +122,10 @@ fun HandlerActionsScreen(
     // preference is written behind it.
     var volumeStreamMode by remember { mutableStateOf(viewModel.preference.getVolumeStreamMode()) }
     var showVolumeStreamDialog by remember { mutableStateOf(false) }
+    var swipeStepPercent by remember { mutableStateOf(viewModel.preference.getSwipeStepPercent()) }
+    var doubleTapMs by remember { mutableIntStateOf(viewModel.preference.getDoubleTapMs()) }
+    var longPressMs by remember { mutableIntStateOf(viewModel.preference.getLongPressMs()) }
+    var showSwipeStepDialog by remember { mutableStateOf(false) }
     var contextMenuItems by remember { mutableStateOf(viewModel.preference.getContextMenuOrder()) }
     var contextMenuLayout by remember { mutableStateOf(viewModel.preference.getContextMenuLayout()) }
 
@@ -226,6 +238,28 @@ fun HandlerActionsScreen(
                 openSystemScreen(context, viewModel, DeviceToggles(context).dndAccessIntent())
             },
             onDismiss = { viewModel.onEvent(MainEvent.DismissDndPrompt) }
+        )
+    }
+
+    if (showSwipeStepDialog) {
+        ChoiceDialog(
+            title = stringResource(R.string.swipe_amount_title),
+            options = BarBehaviour.SWIPE_STEP_PERCENTS,
+            selected = swipeStepPercent,
+            label = { swipeAmountLabel(it) },
+            description = { percent ->
+                if (percent == BarBehaviour.SWIPE_STEP_BY_LENGTH) {
+                    stringResource(R.string.swipe_amount_by_length_desc)
+                } else {
+                    stringResource(R.string.swipe_amount_percent_desc, percent)
+                }
+            },
+            onDismiss = { showSwipeStepDialog = false },
+            onConfirm = { picked ->
+                swipeStepPercent = picked
+                viewModel.preference.setSwipeStepPercent(picked)
+                showSwipeStepDialog = false
+            }
         )
     }
 
@@ -357,6 +391,20 @@ fun HandlerActionsScreen(
 
                     RowDivider()
 
+                    // Beside the two swipes it tunes. Only the volume and brightness bindings move
+                    // by an amount; everything else a swipe can hold fires once whatever this says.
+                    ActionSettingItem(
+                        label = stringResource(R.string.swipe_amount_title),
+                        description = stringResource(R.string.swipe_amount_desc),
+                        value = swipeAmountLabel(swipeStepPercent),
+                        icon = ActionIcon.Vector(Icons.Filled.Swipe),
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        showProBadge = false,
+                        onClick = { showSwipeStepDialog = true }
+                    )
+
+                    RowDivider()
+
                     ActionSettingItem(
                         label = stringResource(R.string.swipe_in_action),
                         description = stringResource(R.string.swipe_in_desc),
@@ -396,6 +444,21 @@ fun HandlerActionsScreen(
                         onClick = onOpenQuickSlider
                     )
                     actionNote(HandlerActions.OPEN_QUICK_SLIDER)
+
+                    RowDivider()
+
+                    // Last in the gestures, because it is about all of the gestures above: which of
+                    // them work differently in particular apps.
+                    @Suppress("UNUSED_VARIABLE") val tick = permissionTick
+                    ActionSettingItem(
+                        label = stringResource(R.string.app_gestures_title),
+                        description = stringResource(R.string.app_gestures_row_desc),
+                        value = appGesturesSummary(viewModel.preference.appGestures),
+                        icon = ActionIcon.Vector(Icons.Filled.Apps),
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        showProBadge = false,
+                        onClick = onOpenAppGestures
+                    )
                 }
             }
 
@@ -432,6 +495,48 @@ fun HandlerActionsScreen(
                         borderColor = MaterialTheme.colorScheme.primary,
                         showProBadge = false,
                         onClick = { showVolumeStreamDialog = true }
+                    )
+
+                    RowDivider()
+
+                    // Tap timing: the automatic figures until moved, then the user's own. Read by
+                    // the bar when it is next put up, which is the moment this screen is left.
+                    Text(
+                        text = stringResource(R.string.tap_timing_desc),
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    SliderControl(
+                        label = stringResource(R.string.tap_timing_double),
+                        value = (if (doubleTapMs > 0) doubleTapMs.toLong() else TapTiming.automaticDoubleTapMs).toFloat(),
+                        valueRange = TapTiming.MIN_DOUBLE_TAP_MS.toFloat()..TapTiming.MAX_DOUBLE_TAP_MS.toFloat(),
+                        valueDisplay = stringResource(
+                            R.string.tap_timing_value,
+                            if (doubleTapMs > 0) doubleTapMs else TapTiming.automaticDoubleTapMs.toInt()
+                        ),
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        step = 25f,
+                        onValueChange = {
+                            doubleTapMs = it.toInt()
+                            viewModel.preference.setDoubleTapMs(doubleTapMs)
+                        },
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    SliderControl(
+                        label = stringResource(R.string.tap_timing_long),
+                        value = (if (longPressMs > 0) longPressMs.toLong() else TapTiming.automaticLongPressMs).toFloat(),
+                        valueRange = TapTiming.MIN_LONG_PRESS_MS.toFloat()..TapTiming.MAX_LONG_PRESS_MS.toFloat(),
+                        valueDisplay = stringResource(
+                            R.string.tap_timing_value,
+                            if (longPressMs > 0) longPressMs else TapTiming.automaticLongPressMs.toInt()
+                        ),
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        step = 50f,
+                        onValueChange = {
+                            longPressMs = it.toInt()
+                            viewModel.preference.setLongPressMs(longPressMs)
+                        },
                     )
                 }
             }
@@ -576,8 +681,16 @@ fun HandlerActionsScreen(
  * because the identifier is what the preference stores. The catalog knows the label.
  */
 @Composable
-private fun actionLabel(action: String): String =
-    HandlerActionCatalog.entryFor(action)?.let { stringResource(it.labelRes) } ?: action
+private fun actionLabel(action: String): String = actionDisplayName(action)
+
+/** "By how far you swipe", or "10% per swipe". */
+@Composable
+private fun swipeAmountLabel(percent: Int): String =
+    if (percent == BarBehaviour.SWIPE_STEP_BY_LENGTH) {
+        stringResource(R.string.swipe_amount_by_length)
+    } else {
+        stringResource(R.string.swipe_amount_percent, percent)
+    }
 
 @Composable
 private fun RowDivider() {

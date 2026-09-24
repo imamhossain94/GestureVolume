@@ -10,12 +10,14 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.provider.MediaStore
 import android.provider.Settings
 import android.view.KeyEvent
 
 /**
  * The device-level toggles the bar and the Deck can flip: the torch, Do Not Disturb, auto-rotate,
- * and the media transport keys.
+ * ring and vibrate, and the media transport keys — and the system sheets and apps for the things an
+ * app may no longer switch itself, Wi-Fi and Bluetooth among them.
  *
  * One object rather than four, for the reason [VolumeController] is one object: every one of
  * these is an OEM-modified corner of Android that is documented to throw on some devices, and the
@@ -194,6 +196,55 @@ class DeviceToggles(private val context: Context) {
         }
 
     fun bluetoothSettingsIntent(): Intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+
+    /** The Internet panel — mobile data and Wi-Fi on one sheet — on Android 10+, else the network screen. */
+    fun internetPanelIntent(): Intent =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY)
+        } else {
+            Intent(Settings.ACTION_WIRELESS_SETTINGS)
+        }
+
+    // ---- ring / vibrate ------------------------------------------------------------------------
+
+    /**
+     * Flips the ringer between ring and vibrate, and from silent back to ring.
+     *
+     * Never *to* silent: from Android 7 that is a Do Not Disturb change, which needs the access the
+     * Do Not Disturb toggle asks for and which this action does not. Leaving silent is the same
+     * change the other way, so on a phone whose silent mode is Do Not Disturb underneath it throws
+     * without that access — and reports null, so the caller can say why.
+     *
+     * @return [AudioManager.RINGER_MODE_NORMAL] or [AudioManager.RINGER_MODE_VIBRATE], whichever
+     *   actually took, or null when the platform refused.
+     */
+    fun toggleRingVibrate(): Int? {
+        val manager = audio ?: return null
+        return runCatching {
+            val next = if (manager.ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+                AudioManager.RINGER_MODE_VIBRATE
+            } else {
+                AudioManager.RINGER_MODE_NORMAL
+            }
+            manager.ringerMode = next
+            // Read back: some builds take the write without complaint and keep the mode they had.
+            manager.ringerMode.takeIf { it == next }
+        }.getOrNull()
+    }
+
+    // ---- the assistant and the camera ----------------------------------------------------------
+
+    /**
+     * Ways to start the voice assistant, in the order to try them.
+     *
+     * Voice command asks for the assistant already listening; not every assistant takes it, and
+     * those that do not usually take the plain assist intent instead.
+     */
+    fun voiceAssistantIntents(): List<Intent> =
+        listOf(Intent(Intent.ACTION_VOICE_COMMAND), Intent(Intent.ACTION_ASSIST))
+
+    /** The camera app, ready for a photo. */
+    fun cameraIntent(): Intent = Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA)
 
     /** The system calculator, via its app category; null when the device has none. */
     fun systemCalculatorIntent(): Intent? {

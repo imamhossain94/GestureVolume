@@ -116,6 +116,19 @@ object SliderFill {
     const val FIREWORKS = "fireworks"
 
     /**
+     * A grid of pixels lit up to the level, a pattern running through them — the one style with
+     * settings of its own: its pattern, speed, pixels across, gap, roundness, glow and how much of an
+     * unlit pixel shows. See [PixelFill].
+     */
+    const val PIXELS = "pixels"
+
+    /**
+     * The track painted by a small program on the graphics chip — molten rock, liquid chrome, a
+     * lava lamp — with settings of its own like [PIXELS]. Android 13 and later only. See [ShaderFill].
+     */
+    const val SHADER = "shader"
+
+    /**
      * Every style, in the order they are offered.
      *
      * Five earlier ones — a charging band, two block walls, a breath and a sheen — are gone rather
@@ -125,7 +138,7 @@ object SliderFill {
      * options to protect five that were not worth having.
      */
     val ALL = listOf(
-        SOLID, LIQUID, VU_METER, WAVEFORM, SUNRISE,
+        SOLID, PIXELS, SHADER, LIQUID, VU_METER, WAVEFORM, SUNRISE,
         SPECTRUM, GALAXY, SILK, TIDE_UP, AURORA,
         PLASMA, HOLOGRAM, NEBULA, EMBER, SONAR,
         CIRCUIT, DOT_MATRIX, CYBERPUNK, MATRIX_RAIN, RUNE,
@@ -182,6 +195,10 @@ object SliderFill {
         // One bolt a cycle. Any more often and it is a strobe, not a storm.
         STORM -> 6000
         FIREWORKS -> 4800
+        // Its own pattern and speed decide; see PixelFill.cycleMs(Style).
+        PIXELS -> PixelFill.cycleMs(PixelFill.SPECTRUM)
+        // Only a tick: a shader keeps its own time, which runs on rather than looping.
+        SHADER -> 10_000
         else -> 1
     }
 
@@ -237,10 +254,12 @@ object SliderFill {
     /**
      * Whether the user's own animation colours can stand in for the style's.
      *
-     * Exactly the pictorial ones. The rest are drawn in the fill's and the track's colours, which
-     * the user already chooses; a second set of colours for them would be a setting that does nothing.
+     * The pictorial ones, [SHADER], and [PIXELS], whose colourful patterns take them (its single-colour ones
+     * do not: see [PixelFill.supportsCustomColors]). The rest are drawn in the fill's and the track's
+     * colours, which the user already chooses; a second set of colours for them would be a setting
+     * that does nothing.
      */
-    fun supportsCustomColors(id: String): Boolean = isPictorial(id)
+    fun supportsCustomColors(id: String): Boolean = isPictorial(id) || sanitize(id) == PIXELS || sanitize(id) == SHADER
 
     /**
      * The colours a pictorial style paints with, brightest first, as `0xAARRGGBB`.
@@ -299,8 +318,10 @@ object SliderFill {
      * Galaxy's sky into a pastel wash with the stars lost in it. What the user is choosing is the
      * colour of the light, and the dark it shines in is what lets it read as light at all.
      */
-    fun paletteWith(id: String, custom: IntArray?): LongArray {
-        val base = palette(id)
+    fun paletteWith(id: String, custom: IntArray?): LongArray = recolour(palette(id), custom)
+
+    /** [base] recoloured with [custom], by the rules [paletteWith] describes. Shared with [ShaderFill]. */
+    fun recolour(base: LongArray, custom: IntArray?): LongArray {
         if (custom == null || custom.isEmpty()) return base
         val n = base.size
         return LongArray(n) { i ->

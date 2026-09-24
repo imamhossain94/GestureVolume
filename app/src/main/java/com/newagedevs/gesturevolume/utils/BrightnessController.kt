@@ -149,11 +149,17 @@ class BrightnessController(private val context: Context) {
      *   value is already pinned at an end. A `null` tells the gesture detector to stop banking
      *   travel, so the user does not have to un-swipe before the control responds again.
      */
-    fun step(direction: Int): Float? {
+    fun step(direction: Int): Float? = stepBy(direction, 1f / STEPS)
+
+    /**
+     * Moves brightness by [fraction] of its range at once — one [step] is a twenty-fourth — for a
+     * swipe set to move by a fixed amount rather than by its length. The same contract as [step].
+     */
+    fun stepBy(direction: Int, fraction: Float): Float? {
         if (!canWrite()) return null
         val current = rawBrightness() ?: return null
         val span = (maxBrightness - minBrightness).coerceAtLeast(1)
-        val delta = (span.toFloat() / STEPS).coerceAtLeast(1f)
+        val delta = (span * fraction).coerceAtLeast(1f)
 
         val target = (current + direction * delta)
             .toInt()

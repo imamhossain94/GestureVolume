@@ -91,9 +91,16 @@ class MainViewModel @Inject constructor(
             swipeInActionIcon = getActionIcon(preference.getHandlerSwipeInAction()),
             swipeOutActionIcon = getActionIcon(preference.getHandlerSwipeOutAction()),
             isHandlerHidden = preference.isHandlerHidden(),
+            hasUnseenWhatsNew = preference.hasUnseenWhatsNew(),
             theme = preference.getTheme(),
             language = preference.getLanguage()
         )
+    }
+
+    /** What's new was opened: the marker on the home screen goes until the next update. */
+    fun markWhatsNewSeen() {
+        preference.markWhatsNewSeen()
+        _state.value = _state.value.copy(hasUnseenWhatsNew = false)
     }
 
     /**
@@ -541,29 +548,15 @@ class MainViewModel @Inject constructor(
      * in the list — showed the do-nothing icon on the main screen for as long as it has existed.
      */
     private fun getActionIcon(action: String): ActionIcon =
-        HandlerActionCatalog.entryFor(action)?.icon ?: ActionIcon.Res(R.drawable.ic_nothing)
+        HandlerActionCatalog.displayEntryFor(action)?.icon ?: ActionIcon.Res(R.drawable.ic_nothing)
 
-    private fun getSwipeUpIcon(action: String): ActionIcon =
-        if (action == HandlerActions.OPEN_QUICK_SLIDER) ActionIcon.QuickPanel else ActionIcon.Res(
-        when (action) {
-            HandlerActions.NONE -> R.drawable.ic_nothing
-            HandlerActions.INCREASE_VOLUME -> R.drawable.ic_vol_plus
-            HandlerActions.INCREASE_VOLUME_UI -> R.drawable.ic_vol_increase
-            HandlerActions.INCREASE_BRIGHTNESS -> R.drawable.ic_brightness_up
-            else -> R.drawable.ic_nothing
-        }
-    )
+    /**
+     * The same lookup. Swipe up and down had a hand-written list of their five choices, which
+     * showed the do-nothing icon for everything else — and a vertical swipe can now hold anything.
+     */
+    private fun getSwipeUpIcon(action: String): ActionIcon = getActionIcon(action)
 
-    private fun getSwipeDownIcon(action: String): ActionIcon =
-        if (action == HandlerActions.OPEN_QUICK_SLIDER) ActionIcon.QuickPanel else ActionIcon.Res(
-        when (action) {
-            HandlerActions.NONE -> R.drawable.ic_nothing
-            HandlerActions.DECREASE_VOLUME -> R.drawable.ic_vol_minus
-            HandlerActions.DECREASE_VOLUME_UI -> R.drawable.ic_vol_decrease
-            HandlerActions.DECREASE_BRIGHTNESS -> R.drawable.ic_brightness_down
-            else -> R.drawable.ic_nothing
-        }
-    )
+    private fun getSwipeDownIcon(action: String): ActionIcon = getActionIcon(action)
 
     fun handleMenuOption(option: String, context: Context) {
         when (option) {
@@ -594,6 +587,9 @@ class MainViewModel @Inject constructor(
             }
             "FAQ" -> viewModelScope.launch {
                 _effect.send(MainEffect.NavigateToFaq)
+            }
+            "What's new" -> viewModelScope.launch {
+                _effect.send(MainEffect.NavigateToWhatsNew)
             }
             "Reset" -> viewModelScope.launch {
                 _effect.send(MainEffect.ConfirmResetApp)

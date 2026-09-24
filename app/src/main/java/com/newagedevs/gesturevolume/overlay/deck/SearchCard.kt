@@ -50,6 +50,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.SearchStore
+import com.newagedevs.gesturevolume.utils.NumberIntents
 import com.newagedevs.gesturevolume.utils.SearchRouter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -298,35 +299,12 @@ private fun submit(
     }
 }
 
-/**
- * Opens a number in whichever app the setting names, falling back to the dialer.
- *
- * WhatsApp and Telegram take a `wa.me` / `t.me` link rather than a package-specific intent, so a
- * user without the app gets a web page rather than a crash — and the number needs its country
- * code, which is why the prefix setting exists.
- */
+/** Opens a number in whichever app the setting names, falling back to the dialer. See [NumberIntents]. */
 private fun openNumber(actions: DeckActions, number: String, action: String) {
     val env = actions.env
     val context = env.context
-    val prefix = env.preference.search.getDialPrefix()
     actions.close()
-    val intent = when (action) {
-        SearchStore.NUMBER_SMS ->
-            Intent(Intent.ACTION_SENDTO, "smsto:${SearchRouter.normalizeNumber(number)}".toUri())
-        SearchStore.NUMBER_WHATSAPP ->
-            Intent(Intent.ACTION_VIEW, "https://wa.me/${SearchRouter.toInternational(number, prefix)}".toUri())
-        SearchStore.NUMBER_TELEGRAM ->
-            Intent(Intent.ACTION_VIEW, "https://t.me/+${SearchRouter.toInternational(number, prefix)}".toUri())
-        else -> {
-            val direct = env.preference.search.getDirectCall() &&
-                ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) ==
-                PackageManager.PERMISSION_GRANTED
-            Intent(
-                if (direct) Intent.ACTION_CALL else Intent.ACTION_DIAL,
-                "tel:${SearchRouter.normalizeNumber(number)}".toUri()
-            )
-        }
-    }
+    val intent = NumberIntents.intentFor(context, env.preference.search, number, action)
     if (!actions.launch(intent)) {
         actions.message(context.getString(R.string.action_unavailable_on_device))
     }

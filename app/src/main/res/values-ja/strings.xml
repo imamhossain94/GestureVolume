@@ -415,12 +415,9 @@
     <string name="swipe_out_action">外側スワイプの動作</string>
     <string name="swipe_out_desc">バーから画面の端へスワイプ</string>
     <string name="accessibility_service_label">GestureVolume</string>
-    <string name="accessibility_service_summary">音量バーからのシステム操作、音量キーの即時操作、選んだアプリでのバー非表示</string>
-    <string name="accessibility_service_description">GestureVolume は、フローティングバーに割り当てたシステム操作 — 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知シェード、クイック設定、電源メニュー — を実行するためにユーザー補助サービスを使います。ご希望であれば、音量キーを押した瞬間にクイックスライダーを開きます。そのとき見るのは2つの音量キーだけです。バーを隠すアプリを選んだ場合は、画面に表示中のアプリ名を確認します。それ以外は何も読み取らず、何も収集せず、すべてこの端末にとどまります。 音量下キーの押下を保留している間は、システムのスクリーンショットが表示されたかどうかも確認し、ボタンで撮ったスクリーンショットでスライダーが開かないようにします。</string>
     <string name="accessibility_permission">ユーザー補助サービス</string>
     <string name="accessibility_permission_desc">任意: 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知、クイック設定、電源メニューを実行します。</string>
     <string name="accessibility_disclosure_title">ユーザー補助サービスをオンにしますか？</string>
-    <string name="accessibility_disclosure_message">GestureVolume は Android のユーザー補助サービスを次の3つに使います。いずれも任意です:\n\n• バーに割り当てたシステム操作の実行: 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知、クイック設定、電源メニュー。\n\n• オンにした場合にかぎり、音量キーを押した瞬間にクイックスライダーを開くため。見るのは2つの音量キーだけで、それ以外のキーはそのまま通し、キーの記録は一切しません。 音量下キーの押下を保留している間は、システムのスクリーンショットが表示されたかどうかも確認し、ボタンで撮ったスクリーンショットでスライダーが開かないようにします。\n\n• 画面に表示中のアプリを知るため（バーを隠すアプリを選んだ場合のみ）。見るのはアプリ名だけです。\n\nそれ以外は何も読み取らず、収集しません。端末の外へは何も出ません。設定 › ユーザー補助 からいつでもオフにできます。</string>
     <string name="accessibility_disclosure_accept">ユーザー補助設定を開く</string>
     <string name="accessibility_disclosure_decline">今はしない</string>
     <string name="accessibility_how_to">一覧から GestureVolume を開いてオンにしてください。</string>

@@ -216,6 +216,24 @@ class PermissionNeedsTest {
     }
 
     @Test
+    fun `an app's own gestures need the accessibility service, and whatever their actions need`() {
+        val config = Config(appGestureActions = listOf(HandlerActions.INCREASE_BRIGHTNESS, HandlerActions.MUTE))
+        assertEquals(
+            listOf(
+                Need(Permission.WRITE_SETTINGS, Feature.APP_GESTURES),
+                Need(Permission.ACCESSIBILITY, Feature.APP_GESTURES),
+            ),
+            compute(config, Grants(writeSettings = false, accessibility = false))
+        )
+        assertTrue(compute(config, Grants()).isEmpty())
+    }
+
+    @Test
+    fun `no app with gestures of its own needs nothing for them`() {
+        assertTrue(compute(Config(appGestureActions = emptyList()), Grants(accessibility = false)).isEmpty())
+    }
+
+    @Test
     fun `plain actions and unknown tiles need nothing`() {
         assertTrue(PermissionNeeds.permissionsFor(HandlerActions.MUTE, QuickSliderStore.TARGET_BRIGHTNESS).isEmpty())
         assertTrue(PermissionNeeds.permissionsFor(HandlerActions.OPEN_DECK, QuickSliderStore.TARGET_BRIGHTNESS).isEmpty())

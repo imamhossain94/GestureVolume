@@ -3,15 +3,16 @@
   The accessibility service does three things: it performs the system actions (lock, screenshot,
   Back, Home, Recents, notifications, quick settings, power menu), it can take the two volume keys,
   and it can see which app is in front. It never draws the bar. The live event subscription is set
-  at runtime and is empty unless the user has picked apps to hide the bar in; the types below are
-  the most it will ever ask for.
+  at runtime and is empty unless the user has picked apps to hide the bar in or given apps gestures
+  of their own; the types below are the most it will ever ask for.
 
   canRequestFilterKeyEvents is for the Quick panel's Instant volume keys. The filter itself is
   requested at runtime and only while Instant is chosen; even then the service takes the two volume
   keys and hands every other key straight back.
 
-  typeWindowStateChanged is for hiding the bar in apps the user picks, and is subscribed only while
-  there are any; and, with Instant volume keys, for the moment a Volume down press is undecided, when
+  typeWindowStateChanged is for hiding the bar in apps the user picks and for gestures the user has
+  changed for particular apps, and is subscribed only while there are any; and, with Instant volume
+  keys, for the moment a Volume down press is undecided, when
   only the event's package is checked, to tell a Volume down + Power screenshot from a press. The service reads which app's window came to the front, its package and class, and
   nothing inside it.
 

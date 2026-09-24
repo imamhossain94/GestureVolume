@@ -3,12 +3,15 @@ package com.newagedevs.gesturevolume.data.local
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
 import android.view.Gravity
 import androidx.compose.ui.graphics.toArgb
+import com.newagedevs.gesturevolume.utils.BarBehaviour
 import com.newagedevs.gesturevolume.utils.ContextMenuLayout
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.PanelAnimation
+import com.newagedevs.gesturevolume.utils.ReleaseNotes
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.HandlerPresets
@@ -39,13 +42,35 @@ class SharedPref @Inject constructor(
     /** The expanding quick slider's settings. Same file, its own object. */
     val slider: QuickSliderStore by lazy { QuickSliderStore(sharedPreferences) }
 
+    /** Gestures that do something else in chosen apps. Same file, its own object. */
+    val appGestures: AppGestureStore by lazy { AppGestureStore(sharedPreferences) }
+
     init {
         // Read before either pin writes its flag, which would make every install look lived-in.
         val freshInstall = sharedPreferences.all.isEmpty()
         pinLegacyAppearanceDefaults(freshInstall)
         pinEdgeAppearanceDefaults(freshInstall)
         pinPreDockBehaviourDefaults(freshInstall)
+        // A fresh install has nothing new to be told about: everything is new. Only an update
+        // marks What's new as unread.
+        if (freshInstall) markWhatsNewSeen()
     }
+
+    /** The version whose What's new was last opened, or null when it never has been. */
+    fun getWhatsNewSeenVersion(): String? = sharedPreferences.getString(WHATS_NEW_SEEN, null)
+
+    /** What's new has been read for the version installed now. */
+    fun markWhatsNewSeen() {
+        sharedPreferences.edit { putString(WHATS_NEW_SEEN, ReleaseNotes.normalize(BuildConfig.VERSION_NAME)) }
+    }
+
+    /**
+     * Whether the installed version has notes the user has not opened yet: after an update, until
+     * What's new is opened. A version with no notes has nothing to be unread.
+     */
+    fun hasUnseenWhatsNew(): Boolean =
+        ReleaseNotes.releaseFor(BuildConfig.VERSION_NAME) != null &&
+            getWhatsNewSeenVersion() != ReleaseNotes.normalize(BuildConfig.VERSION_NAME)
 
     /**
      * Freezes the behaviour defaults from before the Dock preset described them onto an install
@@ -367,6 +392,13 @@ class SharedPref @Inject constructor(
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
         const val VOLUME_STREAM_MODE = "handlerVolumeStreamMode"
         const val HANDLER_EDGE_SWIPE_MENU = "handlerEdgeSwipeMenu"
+        const val SWIPE_STEP_PERCENT = "handlerSwipeStepPercent"
+        const val KEYBOARD_BEHAVIOUR = "handlerKeyboardBehaviour"
+        const val SHOW_ONLY_WHILE_MEDIA = "handlerShowOnlyWhileMedia"
+        const val SHOW_ONLY_WHILE_CALL = "handlerShowOnlyWhileCall"
+        const val WHATS_NEW_SEEN = "whatsNewSeenVersion"
+        const val DOUBLE_TAP_MS = "handlerDoubleTapMs"
+        const val LONG_PRESS_MS = "handlerLongPressMs"
 
         // 1.4.0: the two extra tap and swipe slots.
         const val HANDLER_TRIPLE_TAP = "handlerTripleTap"
@@ -805,6 +837,79 @@ class SharedPref @Inject constructor(
 
     fun setShowVolumePercent(value: Boolean) {
         sharedPreferences.edit { putBoolean(SHOW_VOLUME_PERCENT, value) }
+    }
+
+    /**
+     * How much one swipe up or down moves the volume or the brightness:
+     * [BarBehaviour.SWIPE_STEP_BY_LENGTH], or a percentage of the range that each swipe moves by
+     * once, however long it is.
+     *
+     * By length is the default and what the bar has always done — a step for every finger's width
+     * of travel. A fixed amount is for the thumb that flicks: an ordinary flick crossed four or five
+     * of those steps, a third of the range, where the user had meant one nudge.
+     */
+    fun getSwipeStepPercent(): Int =
+        sharedPreferences.getInt(SWIPE_STEP_PERCENT, BarBehaviour.SWIPE_STEP_BY_LENGTH)
+            .takeIf { it in BarBehaviour.SWIPE_STEP_PERCENTS } ?: BarBehaviour.SWIPE_STEP_BY_LENGTH
+
+    fun setSwipeStepPercent(value: Int) {
+        sharedPreferences.edit {
+            putInt(
+                SWIPE_STEP_PERCENT,
+                value.takeIf { it in BarBehaviour.SWIPE_STEP_PERCENTS } ?: BarBehaviour.SWIPE_STEP_BY_LENGTH
+            )
+        }
+    }
+
+    /**
+     * What the bar does while the on-screen keyboard is open: [BarBehaviour.KEYBOARD_MOVE] it up
+     * clear of the keys, [BarBehaviour.KEYBOARD_HIDE] it until the keyboard closes, or
+     * [BarBehaviour.KEYBOARD_STAY] where it is.
+     *
+     * Move is the default. Left where it was, a bar low on the screen lay over the keyboard's edge
+     * keys — the one place on screen the user is certain to be touching — and a bar is only ever
+     * moved when the keyboard would actually cover it.
+     */
+    fun getKeyboardBehaviour(): String =
+        sharedPreferences.getString(KEYBOARD_BEHAVIOUR, BarBehaviour.KEYBOARD_MOVE)
+            ?.takeIf { it in BarBehaviour.KEYBOARD_BEHAVIOURS } ?: BarBehaviour.KEYBOARD_MOVE
+
+    fun setKeyboardBehaviour(value: String) {
+        sharedPreferences.edit {
+            putString(
+                KEYBOARD_BEHAVIOUR,
+                value.takeIf { it in BarBehaviour.KEYBOARD_BEHAVIOURS } ?: BarBehaviour.KEYBOARD_MOVE
+            )
+        }
+    }
+
+    /**
+     * Show the bar only while something is playing. With this or [getShowOnlyWhileCall] on, the bar
+     * steps aside whenever none of the chosen conditions holds; with both off, the default, it is
+     * always there.
+     */
+    fun getShowOnlyWhileMedia(): Boolean = sharedPreferences.getBoolean(SHOW_ONLY_WHILE_MEDIA, false)
+
+    fun setShowOnlyWhileMedia(value: Boolean) {
+        sharedPreferences.edit { putBoolean(SHOW_ONLY_WHILE_MEDIA, value) }
+    }
+
+    /**
+     * How long the second tap of a double tap may take to arrive, in ms, or 0 for automatic —
+     * the platform's window, raised for a target at the screen edge. See `TapTiming`.
+     */
+    fun getDoubleTapMs(): Int = sharedPreferences.getInt(DOUBLE_TAP_MS, 0).coerceAtLeast(0)
+    fun setDoubleTapMs(value: Int) = sharedPreferences.edit { putInt(DOUBLE_TAP_MS, value.coerceAtLeast(0)) }
+
+    /** How long a hold is before it is a long press, in ms, or 0 for the platform's own. */
+    fun getLongPressMs(): Int = sharedPreferences.getInt(LONG_PRESS_MS, 0).coerceAtLeast(0)
+    fun setLongPressMs(value: Int) = sharedPreferences.edit { putInt(LONG_PRESS_MS, value.coerceAtLeast(0)) }
+
+    /** Show the bar only while a call is on or the phone is ringing. See [getShowOnlyWhileMedia]. */
+    fun getShowOnlyWhileCall(): Boolean = sharedPreferences.getBoolean(SHOW_ONLY_WHILE_CALL, false)
+
+    fun setShowOnlyWhileCall(value: Boolean) {
+        sharedPreferences.edit { putBoolean(SHOW_ONLY_WHILE_CALL, value) }
     }
 
     /**
@@ -1537,8 +1642,12 @@ class SharedPref @Inject constructor(
             .filter { sharedPreferences.contains(it) }
             .associateWith { sharedPreferences.getInt(it, 0) }
         val keptOptOut = isSupportOptedOut()
+        // Which What's new was read is not a setting either: a reset should not announce the
+        // update again.
+        val keptWhatsNewSeen = getWhatsNewSeenVersion()
         sharedPreferences.edit {
             clear()
+            if (keptWhatsNewSeen != null) putString(WHATS_NEW_SEEN, keptWhatsNewSeen)
             putBoolean(PRO_FEATURE_ACTIVATION, keptPro)
             if (keptInstallTime > 0L) putLong(FIRST_INSTALL_TIME, keptInstallTime)
             keptLongs.forEach { (key, value) -> putLong(key, value) }

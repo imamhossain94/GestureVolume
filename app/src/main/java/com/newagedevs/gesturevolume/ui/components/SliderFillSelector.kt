@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.components
 
+import android.os.Build
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 
 /**
@@ -57,7 +59,8 @@ fun SliderFillSelector(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            SliderFill.ALL.forEach { id ->
+            // Shaders only where the system runs an app's own: Android 13 and later.
+            SliderFill.ALL.filter { it != SliderFill.SHADER || Build.VERSION.SDK_INT >= ShaderFill.MIN_SDK }.forEach { id ->
                 FillChip(
                     label = stringResource(sliderFillLabel(id)),
                     selected = style == id,
@@ -69,7 +72,7 @@ fun SliderFillSelector(
 }
 
 @Composable
-private fun FillChip(label: String, selected: Boolean, onClick: () -> Unit) {
+internal fun FillChip(label: String, selected: Boolean, onClick: () -> Unit) {
     val container by animateColorAsState(
         targetValue = if (selected) {
             MaterialTheme.colorScheme.primary
@@ -132,5 +135,7 @@ fun sliderFillLabel(id: String): Int = when (id) {
     SliderFill.WARP -> R.string.fill_warp
     SliderFill.STORM -> R.string.fill_storm
     SliderFill.FIREWORKS -> R.string.fill_fireworks
+    SliderFill.PIXELS -> R.string.fill_pixels
+    SliderFill.SHADER -> R.string.fill_shader
     else -> R.string.fill_solid
 }

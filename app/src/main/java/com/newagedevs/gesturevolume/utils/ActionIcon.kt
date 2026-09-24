@@ -25,4 +25,7 @@ sealed interface ActionIcon {
      * Resolved where it is drawn — see `ActionIconImage`.
      */
     data object QuickPanel : ActionIcon
+
+    /** Another app's own icon, for an action that opens it. Drawn in its own colours, untinted. */
+    data class App(val packageName: String) : ActionIcon
 }

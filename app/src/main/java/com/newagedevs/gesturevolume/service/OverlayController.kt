@@ -41,6 +41,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.data.local.AppGestureStore
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.overlay.ContextMenuOverlay
@@ -61,9 +62,7 @@ import com.newagedevs.gesturevolume.data.local.QuickDialEntry
 import com.newagedevs.gesturevolume.ui.activities.MainActivity
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.pm.PackageManager
 import android.media.RingtoneManager
-import android.net.Uri
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.toBitmap
@@ -71,6 +70,7 @@ import com.newagedevs.gesturevolume.ui.view.HandlerGestureDetector
 import com.newagedevs.gesturevolume.ui.view.HandlerView
 import com.newagedevs.gesturevolume.ui.view.QuickSliderView
 import com.newagedevs.gesturevolume.utils.AudioStreamCatalog
+import com.newagedevs.gesturevolume.utils.BarBehaviour
 import com.newagedevs.gesturevolume.utils.AudioStreamResolver
 import com.newagedevs.gesturevolume.utils.BrightnessController
 import com.newagedevs.gesturevolume.utils.DeviceToggles
@@ -87,6 +87,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import android.provider.Settings
 import com.newagedevs.gesturevolume.utils.HandlerShape
+import com.newagedevs.gesturevolume.utils.NumberIntents
 import com.newagedevs.gesturevolume.utils.QuickSliderIcons
 
 /**
@@ -219,6 +220,25 @@ class OverlayController(
          */
         private const val VOLUME_DOWN_SETTLE_MS = 250L
 
+        /**
+         * How long after media was last heard it still counts as playing, for Show only while media
+         * plays: long enough for the gap between two tracks or a video buffering, short enough that
+         * pausing on purpose puts the bar away before the user has moved on.
+         */
+        private const val CONTEXT_MEDIA_GRACE_MS = 5_000L
+
+        /** How often media is listened for while it has been heard lately. See nextContextCheckMs. */
+        private const val CONTEXT_MEDIA_POLL_MS = 2_000L
+
+        /** How often, below Android 12, the audio mode is read for a call starting or ending. */
+        private const val CONTEXT_CALL_POLL_MS = 3_000L
+
+        /** How long a hide the user is in the way of waits before it is tried again. */
+        private const val CONTEXT_BUSY_RECHECK_MS = 2_000L
+
+        /** The gap left between a bar lifted clear of the keyboard and the top of its keys. */
+        private const val KEYBOARD_GAP_DP = 12f
+
         /** Where a taken Volume down stands. See [onVolumeKey]. */
         private const val WAIT_NONE = 0
         private const val WAIT_HELD = 1
@@ -282,6 +302,15 @@ class OverlayController(
     private var adjustDrivesPanel = false
 
     private var adjustDirection = 0
+
+    /**
+     * The fixed amount this swipe moves by, in percent, or [BarBehaviour.SWIPE_STEP_BY_LENGTH].
+     * Read when the stroke begins, so a setting changed mid-stroke waits for the next one.
+     */
+    private var swipeStepPercent = BarBehaviour.SWIPE_STEP_BY_LENGTH
+
+    /** Whether this stroke has already made its one fixed move. See `onAdjustStep`. */
+    private var swipeStepTaken = false
 
     // ---- drag-to-reposition state ----------------------------------------------------------
 
@@ -1010,6 +1039,10 @@ class OverlayController(
         finishVolumeDownWait()
         longPressHandler.removeCallbacks(longPressedRunnable)
         mainHandler.removeCallbacksAndMessages(null)
+        volume.onActivityChanged = null
+        // Only ever made on Android 11 and later; the check says so to lint as well.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) imeProbe?.remove()
+        imeProbe = null
 
         if (restoreBrightness) restoreAutoBrightnessIfOurs()
 
@@ -1068,6 +1101,7 @@ class OverlayController(
      */
     fun onForegroundApp(packageName: String) {
         if (destroyed || packageName == context.packageName) return
+        foregroundPackage = packageName
         val stepAside = packageName in preference.getHandlerHiddenApps()
         if (stepAside == hiddenForApp) return
         hiddenForApp = stepAside
@@ -1081,9 +1115,262 @@ class OverlayController(
 
     /** Forgets the app in front: whatever reported it has stopped, so nothing will say it changed. */
     fun clearForegroundApp() {
+        // Every gesture back to what it does everywhere, rather than one app's for good.
+        foregroundPackage = null
         if (!hiddenForApp) return
         hiddenForApp = false
         show()
+    }
+
+    /**
+     * The app in front, as the accessibility service last reported it, or null when nothing is
+     * reporting — which is whenever no app has gestures of its own and none hides the bar.
+     */
+    private var foregroundPackage: String? = null
+
+    /**
+     * What a gesture does right now: the app in front's own binding for it, when it has one, and
+     * otherwise the one set for everywhere. Every gesture is read through here, so a profile
+     * reaches the tap timings and the long press's repositioning as well as the actions themselves.
+     */
+    private fun slotAction(slot: AppGestureStore.Slot): String {
+        foregroundPackage?.let { app ->
+            preference.appGestures.actionFor(app, slot)?.let { return it }
+        }
+        return when (slot) {
+            AppGestureStore.Slot.SINGLE_TAP -> preference.getHandlerSingleTapAction()
+            AppGestureStore.Slot.DOUBLE_TAP -> preference.getHandlerDoubleTapAction()
+            AppGestureStore.Slot.TRIPLE_TAP -> preference.getHandlerTripleTapAction()
+            AppGestureStore.Slot.LONG_PRESS -> preference.getHandlerLongTapAction()
+            AppGestureStore.Slot.SWIPE_UP -> preference.getHandlerSwipeUpAction()
+            AppGestureStore.Slot.SWIPE_DOWN -> preference.getHandlerSwipeDownAction()
+            AppGestureStore.Slot.SWIPE_IN -> preference.getHandlerSwipeInAction()
+            AppGestureStore.Slot.SWIPE_OUT -> preference.getHandlerSwipeOutAction()
+        }
+    }
+
+    // ---- showing only while something plays, or a call is on --------------------------------------
+
+    /**
+     * Whether the bar is out of sight because none of the conditions the user chose to show it
+     * under — something playing, a call — holds just now.
+     *
+     * Transient, like [hiddenForApp], and checked at the same one place ([createOverlayHandler]).
+     * Nothing is persisted: a restart simply looks again.
+     */
+    private var hiddenForContext = false
+
+    /** When media was last seen playing, elapsed-realtime, or 0 for never. See [contextWantsBarHidden]. */
+    private var mediaLastSeenAt = 0L
+
+    private val contextCheck = Runnable { applyContextVisibility() }
+
+    /**
+     * Shows or hides the bar for the show-only-while conditions, and arranges to look again.
+     *
+     * Called whenever what is playing or the audio mode changes (see [VolumeController.onActivityChanged]),
+     * when the settings change, and on the schedule [nextContextCheckMs] keeps.
+     */
+    private fun applyContextVisibility() {
+        mainHandler.removeCallbacks(contextCheck)
+        if (destroyed) return
+        val hide = contextWantsBarHidden()
+        var recheck = nextContextCheckMs()
+        if (hide != hiddenForContext) {
+            if (hide && barInUse()) {
+                // Not taken out from under a hand that is using it: the Deck, the menu, the panel, a
+                // swipe or a drag. Music paused from the Deck's own controls is the usual case.
+                recheck = minOf(recheck ?: CONTEXT_BUSY_RECHECK_MS, CONTEXT_BUSY_RECHECK_MS)
+            } else {
+                hiddenForContext = hide
+                if (hide) {
+                    dismissQuickSliderNow()
+                    hide()
+                } else {
+                    show()
+                }
+            }
+        }
+        recheck?.let { mainHandler.postDelayed(contextCheck, it) }
+    }
+
+    /**
+     * Whether the conditions say the bar should be out of sight: at least one is chosen, and none
+     * of the chosen ones holds.
+     *
+     * Media counts for [CONTEXT_MEDIA_GRACE_MS] after it was last heard, so the bar does not blink
+     * out between two tracks or while a video buffers.
+     */
+    private fun contextWantsBarHidden(): Boolean {
+        val media = preference.getShowOnlyWhileMedia()
+        val call = preference.getShowOnlyWhileCall()
+        if (!media && !call) return false
+        if (media) {
+            if (volume.isMusicActiveNow()) mediaLastSeenAt = now()
+            if (mediaLastSeenAt > 0L && now() - mediaLastSeenAt < CONTEXT_MEDIA_GRACE_MS) return false
+        }
+        if (call && volume.isCallOrRinging()) return false
+        return true
+    }
+
+    /**
+     * When to look again without being told, or null for not until something changes.
+     *
+     * While media has been heard lately, every couple of seconds: the news that playback stopped
+     * can arrive while the stream is still winding down, and nothing is sent once it has, so the
+     * grace is counted from the last time it was actually heard. Below Android 12, where nothing
+     * announces a call starting or ending, every few seconds while calls are one of the conditions.
+     */
+    private fun nextContextCheckMs(): Long? {
+        var next: Long? = null
+        if (preference.getShowOnlyWhileMedia() && mediaLastSeenAt > 0L) {
+            val since = now() - mediaLastSeenAt
+            if (since < CONTEXT_MEDIA_GRACE_MS) {
+                next = minOf(CONTEXT_MEDIA_POLL_MS, CONTEXT_MEDIA_GRACE_MS - since + 50L)
+            }
+        }
+        if (preference.getShowOnlyWhileCall() && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            next = minOf(next ?: CONTEXT_CALL_POLL_MS, CONTEXT_CALL_POLL_MS)
+        }
+        return next
+    }
+
+    /** Whether something the user is in the middle of would be taken away by hiding the bar. */
+    private fun barInUse(): Boolean =
+        deckHost != null || contextMenuHost != null || sliderView != null || overlayView != null ||
+            adjustingBySwipe || dragging
+
+    /**
+     * The show-only-while conditions or the keyboard setting changed on a settings screen. Both
+     * are read live, so this only has to look again — and start or stop watching the keyboard.
+     */
+    fun refreshAutoHide() {
+        refreshImeProbe()
+        applyContextVisibility()
+        applyKeyboardAvoidance()
+    }
+
+    // ---- the keyboard ------------------------------------------------------------------------------
+
+    /**
+     * Whether the bar is put away for the keyboard, with Hide chosen. Transient, like
+     * [hiddenForApp]. See [applyKeyboardAvoidance].
+     */
+    private var hiddenForKeyboard = false
+
+    /** Watches for the keyboard while the setting asks the bar to keep out of its way. */
+    private var imeProbe: ImeProbe? = null
+
+    /** The keyboard's top edge in screen pixels while one is showing, else null. From [imeProbe]. */
+    private var keyboardTopPx: Int? = null
+
+    /**
+     * Where the bar rests when there is no keyboard to keep clear of, as the window's `y`: what
+     * [applyHandlerGeometry] or a drag last decided. The keyboard only ever lifts the bar from here,
+     * so it comes back to exactly this when the keyboard goes.
+     */
+    private var restingY: Int? = null
+
+    /** The lift in flight, so a keyboard that closes mid-lift takes it over rather than fighting it. */
+    private var keyboardAnimator: ValueAnimator? = null
+
+    /** True while the bar is being dragged: the finger decides where it is until it lets go. */
+    private var dragging = false
+
+    /**
+     * Starts or stops watching the keyboard to match the setting. Nothing is watched while the bar
+     * is told to stay where it is, nor below Android 11, where there is nothing to watch with.
+     */
+    private fun refreshImeProbe() {
+        val wanted = !destroyed && preference.getKeyboardBehaviour() != BarBehaviour.KEYBOARD_STAY
+        if (wanted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (imeProbe == null) {
+                val wm = windowManager ?: return
+                imeProbe = ImeProbe(context, wm) { top -> onKeyboardChanged(top) }
+                    .also { it.show() }
+            }
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) imeProbe?.remove()
+            imeProbe = null
+            onKeyboardChanged(null)
+        }
+    }
+
+    private fun onKeyboardChanged(top: Int?) {
+        if (keyboardTopPx == top) return
+        keyboardTopPx = top
+        applyKeyboardAvoidance()
+    }
+
+    /**
+     * Keeps the bar out of the keyboard's way, the way the setting says: lifted just clear of the
+     * keys, or put away until the keyboard closes.
+     *
+     * Nothing moves while the Deck is open: its own search and notes bring the keyboard up, the bar
+     * is out of sight beneath it anyway, and moving the bar would move the Deck's anchor out from
+     * under it. The bar is put right when the Deck closes. The same while a Quick panel stands in
+     * for the bar, which retracts into the place it grew from. Nor under a finger dragging it, which
+     * decides where it goes until it lets go, nor while it is still flying to an edge.
+     */
+    private fun applyKeyboardAvoidance() {
+        if (destroyed || deckHost != null || dragging || snapAnimator != null) return
+        if (sliderView != null || sliderCollapse != null) return
+        val keyboardUp = keyboardTopPx != null
+
+        val hide = keyboardUp && preference.getKeyboardBehaviour() == BarBehaviour.KEYBOARD_HIDE
+        if (hide != hiddenForKeyboard) {
+            hiddenForKeyboard = hide
+            if (hide) {
+                dismissQuickSliderNow()
+                hideHandlerView()
+            } else {
+                createOverlayHandler()
+            }
+            return
+        }
+        if (hiddenForKeyboard) return
+
+        val params = handlerParams ?: return
+        val rest = restingY ?: return
+        val target = keyboardAdjustedY(rest, params.height)
+        if (params.y != target) animateHandlerY(target)
+    }
+
+    /**
+     * Where the bar goes while the keyboard is up: where it rests, unless the keys would cover it —
+     * then just above them, and never above the top of the frame.
+     */
+    private fun keyboardAdjustedY(rest: Int, barHeight: Int): Int {
+        val top = keyboardTopPx ?: return rest
+        if (preference.getKeyboardBehaviour() != BarBehaviour.KEYBOARD_MOVE) return rest
+        val currentFrame = frame ?: return rest
+        // The keyboard's edge is in screen pixels and the bar's y is measured from the frame's top.
+        val limit = top - currentFrame.insetTop - barHeight - dpToPx(KEYBOARD_GAP_DP)
+        return minOf(rest, limit.coerceAtLeast(0))
+    }
+
+    /** Glides the bar to [target], the way it glides to an edge. See [keyboardAnimator]. */
+    private fun animateHandlerY(target: Int) {
+        val params = handlerParams ?: return
+        keyboardAnimator?.cancel()
+        keyboardAnimator = null
+        if (params.y == target) return
+        keyboardAnimator = ValueAnimator.ofInt(params.y, target).apply {
+            duration = ANIM_DURATION_MS
+            interpolator = DecelerateInterpolator()
+            addUpdateListener { animation ->
+                // Re-read every frame, like the snap: the window can go mid-animation.
+                val live = handlerParams ?: return@addUpdateListener
+                live.y = animation.animatedValue as Int
+                updateHandlerLayout(live)
+            }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    if (keyboardAnimator === animation) keyboardAnimator = null
+                }
+            })
+            start()
+        }
     }
 
     fun show() = createOverlayHandler()
@@ -1097,6 +1384,9 @@ class OverlayController(
     /** The user asked for the bar back: clear the hidden state, then show it. */
     private fun showByUser() {
         preference.setHandlerHidden(false)
+        // Asked for outright, so it comes back even with nothing playing and no call on. The
+        // conditions take over again the next time what is playing, or the call, changes.
+        hiddenForContext = false
         show()
         // The notification's first button swaps between Show and Hide, so it is reposted whenever
         // which one applies changes. The Quick Settings tile says the same thing, so it is too.
@@ -1116,6 +1406,9 @@ class OverlayController(
     fun update() {
         hideHandlerView()
         createOverlayHandler()
+        // A settings save can come from a restore or a reset as well as from a screen, and either
+        // can change the keyboard setting or the show-only-while conditions.
+        refreshAutoHide()
     }
 
     private fun now(): Long = SystemClock.elapsedRealtime()
@@ -1137,6 +1430,11 @@ class OverlayController(
      */
     private fun createOverlayHandler() {
         if (destroyed) return
+        // The keyboard as it is now, before anything is built: a bar put up while one is open is
+        // then placed clear of it, or kept away, from its first frame. First, because the answer
+        // can take the bar down — see applyKeyboardAvoidance — and must not do that halfway
+        // through building it.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) imeProbe?.checkNow()
         if (preference.isHandlerHidden()) return
         // The bar is never drawn over the app's own UI. Checked here, at the one place that puts
         // it on screen, rather than trusted to arrive as a "hide" command: on a cold start the
@@ -1145,6 +1443,9 @@ class OverlayController(
         if (preference.isAppInForeground()) return
         // Nor over an app the user asked it to stay out of. See [onForegroundApp].
         if (hiddenForApp) return
+        // Nor while nothing it was asked to show for is happening, nor while it is keeping out of
+        // the keyboard's way. See [applyContextVisibility] and [applyKeyboardAvoidance].
+        if (hiddenForContext || hiddenForKeyboard) return
         if (handlerView != null) return
 
         val handlerPosition = preference.getHandlerPosition()
@@ -1206,6 +1507,7 @@ class OverlayController(
         }
 
         val detector = HandlerGestureDetector(context, gestureHost)
+        detector.setTimings(preference.getDoubleTapMs().toLong(), preference.getLongPressMs().toLong())
         view.setGestureDetector(detector)
 
         gestureDetector = detector
@@ -1449,6 +1751,11 @@ class OverlayController(
         val currentFrame = frame ?: return
         val isPortrait = currentFrame.isPortrait
 
+        // Where the user put it is where it rests now, keyboard or not. Posted, so the keyboard is
+        // looked at again once this has been written: a bar dropped under the keys is lifted.
+        restingY = params.y
+        mainHandler.post { applyKeyboardAvoidance() }
+
         if (preference.getHandlerDynamicPosition()) {
             persistDynamicPosition(params, currentFrame)
             return
@@ -1659,6 +1966,14 @@ class OverlayController(
             dressHandlerFor(HandlerGeometry.xToIsLeft(params.x, currentFrame.usableWidth, barWidthPx))
         }
 
+        // Where the bar rests, and where it goes while the keyboard is up — the same place unless
+        // the keys would cover it. Decided here, before the window is placed, so a bar rebuilt or
+        // rotated while the keyboard is open never flashes down under the keys first.
+        keyboardAnimator?.cancel()
+        keyboardAnimator = null
+        restingY = params.y
+        params.y = keyboardAdjustedY(params.y, params.height)
+
         val view = handlerView ?: return
         if (view.isAttachedToWindow) {
             try {
@@ -1672,8 +1987,13 @@ class OverlayController(
     private fun hideHandlerView() {
         // The menu is anchored to a bar that is about to stop existing, and the pending clear
         // would fire against a view that is gone. The snap animation is in the same position: its
-        // frame callback writes into handlerParams, which is about to be null.
+        // frame callback writes into handlerParams, which is about to be null — and so is the
+        // keyboard's lift.
         cancelSnap()
+        keyboardAnimator?.cancel()
+        keyboardAnimator = null
+        restingY = null
+        dragging = false
         hideContextMenu()
         mainHandler.removeCallbacks(clearVolumePercentRunnable)
         gestureDetector?.cancel()
@@ -1711,31 +2031,31 @@ class OverlayController(
     private val gestureHost = object : HandlerGestureDetector.Host {
 
         override fun isLongPressReposition(): Boolean =
-            preference.getHandlerLongTapAction() == HandlerActions.REPOSITION
+            slotAction(AppGestureStore.Slot.LONG_PRESS) == HandlerActions.REPOSITION
 
         override fun isDoubleTapArmed(): Boolean =
-            preference.getHandlerDoubleTapAction() != HandlerActions.NONE
+            slotAction(AppGestureStore.Slot.DOUBLE_TAP) != HandlerActions.NONE
 
         override fun isTripleTapArmed(): Boolean =
-            preference.getHandlerTripleTapAction() != HandlerActions.NONE
+            slotAction(AppGestureStore.Slot.TRIPLE_TAP) != HandlerActions.NONE
 
         // Tap actions can tear the handler window down ("Hide Handler", "Open App", the music
         // overlay). Running that inside onTouchEvent would destroy the window from within input
         // dispatch, so every action is posted off the input stack.
         override fun onTap() {
-            mainHandler.post { runAction(preference.getHandlerSingleTapAction()) }
+            mainHandler.post { runAction(slotAction(AppGestureStore.Slot.SINGLE_TAP)) }
         }
 
         override fun onDoubleTap() {
-            mainHandler.post { runAction(preference.getHandlerDoubleTapAction()) }
+            mainHandler.post { runAction(slotAction(AppGestureStore.Slot.DOUBLE_TAP)) }
         }
 
         override fun onTripleTap() {
-            mainHandler.post { runAction(preference.getHandlerTripleTapAction()) }
+            mainHandler.post { runAction(slotAction(AppGestureStore.Slot.TRIPLE_TAP)) }
         }
 
         override fun onLongPress() {
-            mainHandler.post { runAction(preference.getHandlerLongTapAction()) }
+            mainHandler.post { runAction(slotAction(AppGestureStore.Slot.LONG_PRESS)) }
         }
 
         override fun onAdjustBegin(initialDirection: Int) {
@@ -1743,6 +2063,8 @@ class OverlayController(
             adjustDirection = 0
             adjustOneShot = null
             adjustDrivesPanel = false
+            swipeStepPercent = preference.getSwipeStepPercent()
+            swipeStepTaken = false
             resolveAdjustAction(initialDirection)
 
             if (adjustOneShot == HandlerActions.OPEN_QUICK_SLIDER) {
@@ -1774,6 +2096,17 @@ class OverlayController(
             // down — a "Decrease brightness" swipe-down would silently move the volume instead.
             resolveAdjustAction(direction)
             if (!adjustEnabled) return false
+            if (swipeStepPercent != BarBehaviour.SWIPE_STEP_BY_LENGTH) {
+                // One swipe, one move: the stroke's first step is the whole of it, and the rest of
+                // the stroke, however long, is refused — which also stops the detector banking it.
+                if (swipeStepTaken) return false
+                swipeStepTaken = true
+                return if (adjustIsBrightness) {
+                    stepBrightness(direction, swipeStepPercent)
+                } else {
+                    stepVolume(direction, swipeStepPercent)
+                }
+            }
             return if (adjustIsBrightness) stepBrightness(direction) else stepVolume(direction)
         }
 
@@ -1804,6 +2137,9 @@ class OverlayController(
 
         override fun onDragBegin() {
             cancelSnap()
+            keyboardAnimator?.cancel()
+            keyboardAnimator = null
+            dragging = true
             val params = handlerParams
             dragStartX = params?.x ?: 0
             dragStartY = params?.y ?: 0
@@ -1867,7 +2203,12 @@ class OverlayController(
          * from meaning different things by "the edge".
          */
         override fun onDragEnd(moved: Boolean) {
-            if (!moved) return
+            dragging = false
+            if (!moved) {
+                // Held and let go without moving: catch up with whatever the keyboard did meanwhile.
+                applyKeyboardAvoidance()
+                return
+            }
             if (dragSnapToEdge) snapToNearestEdge() else persistPosition()
         }
 
@@ -1940,7 +2281,7 @@ class OverlayController(
     }
 
     private fun horizontalSwipeAction(inward: Boolean): String =
-        if (inward) preference.getHandlerSwipeInAction() else preference.getHandlerSwipeOutAction()
+        if (inward) slotAction(AppGestureStore.Slot.SWIPE_IN) else slotAction(AppGestureStore.Slot.SWIPE_OUT)
 
     /**
      * Loads the swipe settings for [direction] — which domain it drives, whether it shows the system
@@ -1954,9 +2295,9 @@ class OverlayController(
         adjustDirection = direction
 
         val action = if (direction > 0) {
-            preference.getHandlerSwipeUpAction()
+            slotAction(AppGestureStore.Slot.SWIPE_UP)
         } else {
-            preference.getHandlerSwipeDownAction()
+            slotAction(AppGestureStore.Slot.SWIPE_DOWN)
         }
 
         adjustIsBrightness = HandlerActions.isBrightnessSwipe(action)
@@ -1998,10 +2339,19 @@ class OverlayController(
         }
     }
 
-    private fun stepVolume(direction: Int): Boolean {
+    /**
+     * One step of a volume swipe: one index, or [byPercent] of the range at once when the swipe is
+     * set to a fixed amount — never less than one index, which is as fine as audio goes.
+     */
+    private fun stepVolume(direction: Int, byPercent: Int = BarBehaviour.SWIPE_STEP_BY_LENGTH): Boolean {
         val resolution = adjustResolution ?: volume.media().also { adjustResolution = it }
+        val indices = if (byPercent == BarBehaviour.SWIPE_STEP_BY_LENGTH) {
+            1
+        } else {
+            (byPercent * resolution.stepCount / 100f).roundToInt().coerceAtLeast(1)
+        }
 
-        val percent = volume.step(resolution, direction, adjustShowsUi) ?: return false
+        val percent = volume.stepBy(resolution, direction, indices, adjustShowsUi) ?: return false
         // Seen, so this step coming back through the watchers after the swipe has ended is known
         // for the swipe's and not taken for a press of the rocker.
         if (percent >= 0) lastSeenVolume[resolution.stream] = percent
@@ -2036,8 +2386,13 @@ class OverlayController(
         }
     }
 
-    private fun stepBrightness(direction: Int): Boolean {
-        val fraction = brightness.step(direction) ?: return false
+    /** One step of a brightness swipe, or [byPercent] of the range at once. See [stepVolume]. */
+    private fun stepBrightness(direction: Int, byPercent: Int = BarBehaviour.SWIPE_STEP_BY_LENGTH): Boolean {
+        val fraction = if (byPercent == BarBehaviour.SWIPE_STEP_BY_LENGTH) {
+            brightness.step(direction)
+        } else {
+            brightness.stepBy(direction, byPercent / 100f)
+        } ?: return false
         val percent = (fraction * 100).roundToInt()
         // The sun on the readout, and the level on the bar as a volume swipe puts it there. It
         // used to be words alone in the middle of the screen, so a brightness swipe looked like a
@@ -2588,6 +2943,9 @@ class OverlayController(
             // sheet about something else entirely.
             iconTapEnabled = settings.getShowIcon() && settings.getIconOpensVolumePanel() &&
                 sliderTarget != QuickSliderStore.TARGET_BRIGHTNESS
+            // Before the style, so a Pixels fill starts its clock at its own pace the first time.
+            setPixelStyle(settings.getPixelStyle())
+            setShaderStyle(settings.getShaderStyle())
             setFillStyle(settings.getFillStyle())
             // The user's own colours for the animation, or null for the style's palette.
             setFillColors(settings.getEffectiveFillColors())
@@ -3017,6 +3375,9 @@ class OverlayController(
                         bar.alpha = 1f
                         // Left over the bar a moment rather than taken down on this same frame.
                         retireQuickSliderView(view, backdrop)
+                        // The bar is itself again: out of the way of a keyboard that came up
+                        // while the panel was standing in for it.
+                        mainHandler.post { applyKeyboardAvoidance() }
                     } else {
                         removeQuickSliderView(view, backdrop)
                     }
@@ -3061,6 +3422,7 @@ class OverlayController(
         view.setInteractive(false)
         if (deckHost == null) handlerView?.alpha = 1f
         removeQuickSliderView(view, backdrop)
+        mainHandler.post { applyKeyboardAvoidance() }
     }
 
     private fun removeQuickSliderView(view: QuickSliderView, backdrop: PanelBackdrop?) {
@@ -3412,6 +3774,9 @@ class OverlayController(
         // The bar back, now there is nothing in front of it. Not while a Quick panel is standing
         // in for it: that puts the bar back itself when it retracts.
         if (sliderView == null && sliderCollapse == null) fadeHandler(visible = true)
+        // The keyboard was not the bar's business while the Deck was up, so the bar catches up with
+        // it now — posted, so the keyboard the Deck's own search had up has had a moment to go.
+        mainHandler.post { applyKeyboardAvoidance() }
     }
 
     /**
@@ -3576,13 +3941,9 @@ class OverlayController(
 
         override fun dial(entry: QuickDialEntry) {
             hideDeck()
-            val direct = preference.search.getDirectCall() &&
-                ContextCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) ==
-                PackageManager.PERMISSION_GRANTED
-            val intent = Intent(
-                if (direct) Intent.ACTION_CALL else Intent.ACTION_DIAL,
-                Uri.parse("tel:" + Uri.encode(entry.number))
-            )
+            // A call, an SMS, or straight into that person's WhatsApp or Telegram chat, whichever
+            // the entry was saved with — by the same route the search bar opens a number.
+            val intent = NumberIntents.intentFor(context, preference.search, entry.number, entry.via)
             if (!launchActivity(intent)) {
                 showIndicatorMessage(context.getString(R.string.action_unavailable_on_device))
             }
@@ -3694,6 +4055,10 @@ class OverlayController(
             showDeck(it)
             return
         }
+        HandlerActions.launchedPackage(action)?.let { pkg ->
+            launchOtherApp(pkg)
+            return
+        }
         when (action) {
             HandlerActions.OPEN_VOLUME_UI -> {
                 volume.panel(volume.resolve(preference.getVolumeStreamMode()))
@@ -3738,6 +4103,12 @@ class OverlayController(
             HandlerActions.MEDIA_NEXT -> toggles.mediaNext()
             HandlerActions.MEDIA_PREVIOUS -> toggles.mediaPrevious()
             HandlerActions.SCAN_QR -> openQrScanner()
+            HandlerActions.RING_VIBRATE -> toggleRingVibrate()
+            HandlerActions.WIFI_PANEL -> openSystemSheet(toggles.wifiPanelIntent())
+            HandlerActions.BLUETOOTH_SETTINGS -> openSystemSheet(toggles.bluetoothSettingsIntent())
+            HandlerActions.INTERNET_PANEL -> openSystemSheet(toggles.internetPanelIntent())
+            HandlerActions.OPEN_CAMERA -> openSystemSheet(toggles.cameraIntent())
+            HandlerActions.VOICE_ASSISTANT -> openVoiceAssistant()
             in HandlerActions.ACCESSIBILITY_ACTIONS -> performSystemAction(action)
         }
     }
@@ -3801,6 +4172,55 @@ class OverlayController(
                 }
             )
         )
+    }
+
+    private fun toggleRingVibrate() {
+        val mode = toggles.toggleRingVibrate()
+        showIndicatorMessage(
+            context.getString(
+                when {
+                    mode == AudioManager.RINGER_MODE_VIBRATE -> R.string.ringer_vibrate
+                    mode == AudioManager.RINGER_MODE_NORMAL -> R.string.ringer_ring
+                    // Refused: on most phones that is silent mode being Do Not Disturb underneath,
+                    // which only that access can lift.
+                    !toggles.canToggleDnd() -> R.string.dnd_needs_access
+                    else -> R.string.action_unavailable_on_device
+                }
+            )
+        )
+    }
+
+    /**
+     * Opens a system sheet or app — Wi-Fi, Bluetooth, the camera — over whatever is on screen.
+     *
+     * The Deck is put away first, as it is for the QR scanner, or it would be left floating over
+     * the sheet the user just asked for.
+     */
+    private fun openSystemSheet(intent: Intent) {
+        hideDeck()
+        if (!launchActivity(intent)) {
+            showIndicatorMessage(context.getString(R.string.action_unavailable_on_device))
+        }
+    }
+
+    /**
+     * Opens the app a Launch app action names, the way its launcher icon would. One since
+     * uninstalled, or with no launcher entry any more, is said on the indicator rather than ignored.
+     */
+    private fun launchOtherApp(packageName: String) {
+        hideDeck()
+        val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+        if (intent == null || !launchActivity(intent)) {
+            showIndicatorMessage(context.getString(R.string.deck_app_unavailable))
+        }
+    }
+
+    /** The first way in the voice assistant answers to. See [DeviceToggles.voiceAssistantIntents]. */
+    private fun openVoiceAssistant() {
+        hideDeck()
+        if (toggles.voiceAssistantIntents().none { launchActivity(it) }) {
+            showIndicatorMessage(context.getString(R.string.action_unavailable_on_device))
+        }
     }
 
     /**
@@ -3921,7 +4341,12 @@ class OverlayController(
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT
             ).apply {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                // ALWAYS from 11, where it exists: SHORT_EDGES is deprecated from 15, and only ever
+                // covered a cutout on the short edges, so a landscape notch was left uncovered.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    layoutInDisplayCutoutMode =
+                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     layoutInDisplayCutoutMode =
                         WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
                 }
@@ -4058,4 +4483,20 @@ class OverlayController(
 
     private fun dpToPx(dp: Float): Int =
         (dp * context.resources.displayMetrics.density).toInt()
+
+    /*
+     * Last in the file, below every property it touches, for the reason the note on the other late
+     * init block gives: initialisers run in the order they appear, so from any higher up, the
+     * fields for the keyboard and the show-only-while conditions would be set here and then put
+     * back to their defaults by their own initialisers a moment later.
+     *
+     * The bar is not put up or taken down from here: whoever constructed this decides when it first
+     * shows, and [createOverlayHandler] already consults both flags when it does.
+     */
+    init {
+        volume.onActivityChanged = { applyContextVisibility() }
+        hiddenForContext = contextWantsBarHidden()
+        nextContextCheckMs()?.let { mainHandler.postDelayed(contextCheck, it) }
+        refreshImeProbe()
+    }
 }

@@ -2,17 +2,25 @@ package com.newagedevs.gesturevolume.ui.theme
 
 import android.app.Activity
 import android.os.Build
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.newagedevs.gesturevolume.ui.motion.PressBounce
+import com.newagedevs.gesturevolume.ui.motion.RubberBandOverscrollFactory
 
 private val LightColorScheme = lightColorScheme(
     primary = Primary,
@@ -112,6 +120,17 @@ fun GestureVolumeTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
-    )
+    ) {
+        // The app's physics, for everything under this theme, the screens and the overlays alike:
+        // whatever is tapped gives and springs back, and whatever scrolls is a rubber band at its
+        // ends. Inside MaterialTheme, which sets the plain ripple these replace.
+        val density = LocalDensity.current.density
+        val overscroll = remember(density) { RubberBandOverscrollFactory(density) }
+        val indication = remember { PressBounce(ripple()) }
+        CompositionLocalProvider(
+            LocalIndication provides indication,
+            LocalOverscrollFactory provides overscroll,
+            content = content,
+        )
+    }
 }

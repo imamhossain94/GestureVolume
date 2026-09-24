@@ -43,9 +43,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.newagedevs.gesturevolume.ui.motion.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -71,6 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.QuickDialEntry
+import com.newagedevs.gesturevolume.data.local.SearchStore
 import kotlin.math.max
 import kotlin.math.min
 
@@ -558,20 +561,46 @@ private fun QuickDialButton(entry: QuickDialEntry, palette: DeckPalette, onClick
             .joinToString("") { it.first().uppercase() }
             .ifEmpty { "#" }
     }
-    Box(
-        modifier = Modifier
-            .size(44.dp)
-            .clip(CircleShape)
-            .background(palette.accent.copy(alpha = 0.22f))
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = initials,
-            color = palette.accent,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold
-        )
+    // A button that opens a chat wears a small mark, so two for one person — call them, message
+    // them — can be told apart. A call wears none, which is what every button did before.
+    val badge = when (entry.via) {
+        SearchStore.NUMBER_SMS -> Icons.Filled.Sms
+        SearchStore.NUMBER_WHATSAPP, SearchStore.NUMBER_TELEGRAM -> Icons.AutoMirrored.Filled.Chat
+        else -> null
+    }
+    Box(modifier = Modifier.size(44.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(CircleShape)
+                .background(palette.accent.copy(alpha = 0.22f))
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = initials,
+                color = palette.accent,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        if (badge != null) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(palette.accent),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = badge,
+                    contentDescription = null,
+                    tint = palette.onAccent,
+                    modifier = Modifier.size(10.dp)
+                )
+            }
+        }
     }
 }
 

@@ -21,4 +21,12 @@
         <item quantity="one">%1$d of %2$d on</item>
         <item quantity="other">%1$d of %2$d on</item>
     </plurals>
+    <plurals name="app_gestures_app_count">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d apps</item>
+    </plurals>
+    <plurals name="app_gestures_changed_count">
+        <item quantity="one">%1$d gesture changed</item>
+        <item quantity="other">%1$d gestures changed</item>
+    </plurals>
 </resources>

@@ -15,7 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.newagedevs.gesturevolume.ui.motion.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -55,6 +55,8 @@ import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
+import com.newagedevs.gesturevolume.ui.components.PixelFillControls
+import com.newagedevs.gesturevolume.ui.components.ShaderFillControls
 import com.newagedevs.gesturevolume.ui.components.SliderFillSelector
 import com.newagedevs.gesturevolume.ui.components.panelAnimationLabel
 import com.newagedevs.gesturevolume.ui.components.panelThemeLabel
@@ -72,6 +74,8 @@ import com.newagedevs.gesturevolume.utils.HandlerShape
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import com.newagedevs.gesturevolume.utils.QuickSliderIcons
+import com.newagedevs.gesturevolume.utils.PixelFill
+import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 
 /** The translated name of a slider target. */
@@ -191,6 +195,8 @@ fun QuickSliderScreen(
     }
     val barWidth = remember { viewModel.preference.getHandlerWidthDp() }
     var fillStyle by remember { mutableStateOf(store.getFillStyle()) }
+    var pixelStyle by remember { mutableStateOf(store.getPixelStyle()) }
+    var shaderStyle by remember { mutableStateOf(store.getShaderStyle()) }
     var fillColorsOn by remember { mutableStateOf(store.getFillColorsEnabled()) }
     var fillColors by remember { mutableStateOf(store.getFillColors().toList()) }
     var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
@@ -316,6 +322,8 @@ fun QuickSliderScreen(
                     iconMargin = iconMargin,
                     panelTheme = panelTheme,
                     fillStyle = fillStyle,
+                    pixelStyle = pixelStyle,
+                    shaderStyle = shaderStyle,
                     fillColors = if (fillColorsOn) fillColors.toIntArray() else null,
                     valueColor = if (contentColorsOn) valueColor else null,
                     iconColor = if (contentColorsOn) iconColor else null,
@@ -573,6 +581,23 @@ fun QuickSliderScreen(
                     style = fillStyle,
                     onStyleChange = { fillStyle = it; store.setFillStyle(it) },
                 )
+                // The one fill with settings of its own, right under the chip that chose it.
+                if (fillStyle == SliderFill.PIXELS) {
+                    Sep()
+                    PixelFillControls(
+                        style = pixelStyle,
+                        accent = accent,
+                        onChange = { pixelStyle = it; store.setPixelStyle(it) },
+                    )
+                }
+                if (fillStyle == SliderFill.SHADER) {
+                    Sep()
+                    ShaderFillControls(
+                        style = shaderStyle,
+                        accent = accent,
+                        onChange = { shaderStyle = it; store.setShaderStyle(it) },
+                    )
+                }
                 Spacer(modifier = Modifier.height(12.dp))
                 SettingSwitchItem(
                     title = stringResource(R.string.slider_fill_colors),
@@ -581,7 +606,10 @@ fun QuickSliderScreen(
                     onCheckedChange = { fillColorsOn = it; store.setFillColorsEnabled(it) }
                 )
                 if (fillColorsOn) {
-                    if (SliderFill.supportsCustomColors(fillStyle)) {
+                    // A Pixels pattern drawn in the fill colour has nothing here to recolour either.
+                    val pixelsInFill = fillStyle == SliderFill.PIXELS &&
+                        !PixelFill.supportsCustomColors(pixelStyle.pattern)
+                    if (SliderFill.supportsCustomColors(fillStyle) && !pixelsInFill) {
                         fillColors.forEachIndexed { index, colour ->
                             Spacer(modifier = Modifier.height(12.dp))
                             ColorPickerControl(
@@ -597,7 +625,11 @@ fun QuickSliderScreen(
                     } else {
                         // Solid, the tides and the stripes are drawn in the fill colour itself, so
                         // there is nothing here for these to recolour.
-                        Hint(stringResource(R.string.slider_fill_colors_unsupported))
+                        Hint(
+                            stringResource(
+                                if (pixelsInFill) R.string.pixel_colors_fill_only else R.string.slider_fill_colors_unsupported
+                            )
+                        )
                     }
                 }
             }
@@ -718,6 +750,10 @@ private fun SliderPreview(
     panelTheme: String,
     /** What the fill does. Runs here exactly as it runs on the real panel. */
     fillStyle: String,
+    /** The Pixels fill's pattern and grid, used when that is the fill. */
+    pixelStyle: PixelFill.Style,
+    /** The Shaders fill's effect and settings, used when that is the fill. */
+    shaderStyle: ShaderFill.Style,
     /** The animation's own colours, or null for its palette. */
     fillColors: IntArray?,
     /** The number's and the icon's own colours, or null to swap with the fill. */
@@ -788,6 +824,8 @@ private fun SliderPreview(
                     view.setExpandedCorners(corners[0], corners[1], corners[2], corners[3])
                     view.setShapes(shape, flare, shape, flare, handlerOnLeft)
                 }
+                view.setPixelStyle(pixelStyle)
+                view.setShaderStyle(shaderStyle)
                 view.setFillStyle(fillStyle)
                 view.setFillColors(fillColors)
                 view.setDrawnThickness(thicknessDp * density, handlerOnLeft)

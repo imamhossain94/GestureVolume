@@ -8,7 +8,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import com.newagedevs.gesturevolume.ui.motion.NavigationDrawerItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,6 +31,8 @@ fun NavigationDrawerContent(
     isProActivated: Boolean,
     /** Whether to offer "Privacy choices" (ad consent). See PrivacyChoices.isAvailable. */
     showPrivacyChoices: Boolean = false,
+    /** After an update, until What's new is opened: its row says "New". */
+    whatsNewUnseen: Boolean = false,
     onMenuItemClick: (String) -> Unit
 ) {
     val context = LocalContext.current
@@ -176,6 +182,14 @@ fun NavigationDrawerContent(
                 )
 
                 NavigationDrawerItem(
+                    icon = 0,
+                    vector = Icons.Outlined.NewReleases,
+                    label = stringResource(R.string.whats_new_title),
+                    badge = if (whatsNewUnseen) stringResource(R.string.whats_new_badge) else null,
+                    onClick = { onMenuItemClick("What's new") }
+                )
+
+                NavigationDrawerItem(
                     icon = R.drawable.ic_nothing,
                     label = stringResource(R.string.about),
                     onClick = { onMenuItemClick("About") }
@@ -201,6 +215,8 @@ private fun NavigationDrawerItem(
     badge: String? = null,
     /** Overrides the icon and label colour. Used by the one destructive row. */
     tint: Color? = null,
+    /** A Material icon in place of [icon], for a row with no drawable of its own. */
+    vector: ImageVector? = null,
     onClick: () -> Unit
 ) {
     Surface(
@@ -216,12 +232,21 @@ private fun NavigationDrawerItem(
                 .padding(horizontal = 12.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = painterResource(id = icon),
-                contentDescription = label,
-                modifier = Modifier.size(24.dp),
-                tint = tint ?: MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (vector != null) {
+                Icon(
+                    imageVector = vector,
+                    contentDescription = label,
+                    modifier = Modifier.size(24.dp),
+                    tint = tint ?: MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = label,
+                    modifier = Modifier.size(24.dp),
+                    tint = tint ?: MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             Spacer(modifier = Modifier.width(16.dp))
 

@@ -24,12 +24,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.NewReleases
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.newagedevs.gesturevolume.ui.motion.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -78,6 +81,7 @@ fun MainScreen(
     onNavigateToFaq: () -> Unit,
     onNavigateToUpgrade: () -> Unit,
     onNavigateToVisibility: () -> Unit,
+    onNavigateToWhatsNew: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
@@ -129,6 +133,7 @@ fun MainScreen(
             NavigationDrawerContent(
                 isProActivated = state.isProActivated,
                 showPrivacyChoices = showPrivacyChoices,
+                whatsNewUnseen = state.hasUnseenWhatsNew,
                 onMenuItemClick = { option ->
                     viewModel.handleMenuOption(option, context)
                     scope.launch { drawerState.close() }
@@ -151,6 +156,16 @@ fun MainScreen(
                         }
                     },
                     actions = {
+                        // What's new, with a dot after an update until it has been opened.
+                        IconButton(onClick = onNavigateToWhatsNew) {
+                            BadgedBox(badge = { if (state.hasUnseenWhatsNew) Badge() }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.NewReleases,
+                                    contentDescription = stringResource(R.string.whats_new_title),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
                         // The way to Pro, where the close button used to be. In the app's own
                         // colour: Pro is part of this app, not an advert laid over it.
                         IconButton(onClick = onNavigateToUpgrade) {

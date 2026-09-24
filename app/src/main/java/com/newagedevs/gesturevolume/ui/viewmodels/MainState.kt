@@ -67,6 +67,11 @@ data class MainState(
     val showAccessibilityPrompt: Boolean = false,
     /** The same, for a Do Not Disturb action bound without Do Not Disturb access. */
     val showDndPrompt: Boolean = false,
+    /**
+     * True after an update, until What's new is opened: the dot on the home screen's icon and the
+     * "New" in the drawer. See SharedPref.hasUnseenWhatsNew.
+     */
+    val hasUnseenWhatsNew: Boolean = false,
     val theme: Int = 0,
     val language: String = "en"
 )

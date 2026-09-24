@@ -13,6 +13,73 @@
     <string name="fill_storm">Storm</string>
     <string name="fill_fireworks">Fireworks</string>
 
+    <!-- The Pixels fill: a grid of lights lit up to the level, with a pattern and settings of its own. -->
+    <string name="fill_pixels">Pixels</string>
+    <string name="pixel_settings_desc">A grid of lights, lit up to the level. Pick a pattern and tune the grid; the preview above shows it as you go.</string>
+    <string name="pixel_pattern">Pattern</string>
+    <string name="pixel_speed">Speed</string>
+    <string name="pixel_columns">Pixels across</string>
+    <string name="pixel_gap">Gap</string>
+    <string name="pixel_roundness">Roundness</string>
+    <string name="pixel_glow">Glow</string>
+    <string name="pixel_rest">Unlit pixels</string>
+    <string name="pixel_speed_value">%1$s×</string>
+    <string name="pixel_percent_value">%1$d%%</string>
+    <string name="pixel_pattern_steady">Steady</string>
+    <string name="pixel_pattern_breathe">Breathe</string>
+    <string name="pixel_pattern_sweep">Sweep</string>
+    <string name="pixel_pattern_pendulum">Pendulum</string>
+    <string name="pixel_pattern_snake">Snake</string>
+    <string name="pixel_pattern_rain">Rain</string>
+    <string name="pixel_pattern_twinkle">Twinkle</string>
+    <string name="pixel_pattern_checkers">Checkers</string>
+    <string name="pixel_pattern_meter">Meter</string>
+    <string name="pixel_pattern_spectrum">Spectrum</string>
+    <string name="pixel_pattern_rainbow">Rainbow</string>
+    <string name="pixel_pattern_aurora">Aurora</string>
+    <string name="pixel_pattern_plasma">Plasma</string>
+    <string name="pixel_pattern_embers">Embers</string>
+    <string name="pixel_pattern_thermal">Thermal</string>
+    <string name="pixel_pattern_confetti">Confetti</string>
+    <string name="pixel_pattern_chromatic">Chromatic</string>
+    <string name="pixel_pattern_candy">Candy</string>
+    <string name="pixel_pattern_ripple">Ripple</string>
+    <string name="pixel_colors_fill_only">This pattern is drawn in the fill colour. The colourful ones — Rain, Meter, Spectrum and the rest — take these colours.</string>
+
+    <!-- The Shaders fill: effects drawn by the phone's graphics chip, Android 13 and later. -->
+    <string name="fill_shader">Shaders</string>
+    <string name="shader_settings_desc">Effects drawn live by your phone\'s graphics chip, lit up to the level and faint above it. Pick one and tune it; the preview above shows it as you go.</string>
+    <string name="shader_effect">Effect</string>
+    <string name="shader_speed">Speed</string>
+    <string name="shader_scale">Scale</string>
+    <string name="shader_brightness">Brightness</string>
+    <string name="shader_grain">Grain</string>
+    <string name="shader_rest">Above the level</string>
+    <string name="shader_speed_still">Still</string>
+    <string name="shader_effect_lava_lamp">Lava lamp</string>
+    <string name="shader_effect_liquid_chrome">Liquid chrome</string>
+    <string name="shader_effect_molten">Molten</string>
+    <string name="shader_effect_aurora">Aurora</string>
+    <string name="shader_effect_ink_smoke">Ink smoke</string>
+    <string name="shader_effect_plasma">Plasma</string>
+    <string name="shader_effect_caustics">Caustics</string>
+    <string name="shader_effect_soap_film">Soap film</string>
+    <string name="shader_effect_mesh">Mesh</string>
+    <string name="shader_effect_clouds">Clouds</string>
+    <string name="shader_effect_smoke">Smoke</string>
+    <string name="shader_effect_starfield">Starfield</string>
+    <string name="shader_detail_warp">Warp</string>
+    <string name="shader_detail_flow">Flow</string>
+    <string name="shader_detail_sway">Sway</string>
+    <string name="shader_detail_distortion">Distortion</string>
+    <string name="shader_detail_softness">Softness</string>
+    <string name="shader_detail_thickness">Thickness</string>
+    <string name="shader_detail_drift">Drift</string>
+    <string name="shader_detail_billow">Billow</string>
+    <string name="shader_detail_swirl">Swirl</string>
+    <string name="shader_detail_density">Density</string>
+    <string name="shader_detail_blobs">Blobs</string>
+
     <!-- The animation's own colours, for the settings screen. -->
     <string name="slider_fill_colors">Animation colours</string>
     <string name="slider_fill_colors_desc">Paint the animation in three colours of your own instead of its own.</string>

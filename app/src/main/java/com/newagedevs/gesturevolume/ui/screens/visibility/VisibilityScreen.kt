@@ -1,5 +1,13 @@
 package com.newagedevs.gesturevolume.ui.screens.visibility
 
+import android.os.Build
+import androidx.compose.material.icons.filled.Keyboard
+import com.newagedevs.gesturevolume.data.local.SharedPref
+import com.newagedevs.gesturevolume.ui.screens.handler_action.ActionSettingItem
+import com.newagedevs.gesturevolume.ui.screens.handler_action.ChoiceDialog
+import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
+import com.newagedevs.gesturevolume.utils.ActionIcon
+import com.newagedevs.gesturevolume.utils.BarBehaviour
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 
 import androidx.compose.foundation.background
@@ -27,7 +35,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.newagedevs.gesturevolume.ui.motion.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -69,7 +77,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * The apps the bar steps aside in.
+ * When the bar shows: only while media plays or a call is on, what it does while the keyboard is
+ * open, and the apps it steps aside in.
+ *
+ * The first two sit above the apps and take no permission at all — the overlay hears what is
+ * playing and the audio mode on its own, and asks the window manager where the keyboard is.
  *
  * Two lists, the chosen apps on the left and every app on the right. On its side there is the width
  * for them to stand side by side, each scrolling on its own; upright there is not, so they are the
@@ -158,13 +170,15 @@ fun VisibilityScreen(
         }
         val chosen = remember(filtered, hiddenApps) { filtered.filter { it.packageName in hiddenApps } }
         val header: @Composable (Modifier) -> Unit = { modifier ->
-            AppsHeader(
-                accessibilityOn = accessibilityOn,
-                query = query,
-                onQueryChange = { query = it },
-                onTurnOnAccessibility = { onOpenPermissions(PermissionNeeds.Permission.ACCESSIBILITY) },
-                modifier = modifier,
-            )
+            Column(modifier = modifier) {
+                AutoHideSection(preference)
+                AppsHeader(
+                    accessibilityOn = accessibilityOn,
+                    query = query,
+                    onQueryChange = { query = it },
+                    onTurnOnAccessibility = { onOpenPermissions(PermissionNeeds.Permission.ACCESSIBILITY) },
+                )
+            }
         }
 
         if (isLandscape()) {
@@ -230,6 +244,94 @@ fun VisibilityScreen(
             }
         }
     }
+}
+
+/**
+ * The bar's other two reasons to step aside, above the apps: nothing it was asked to show for is
+ * happening, and the keyboard is open.
+ *
+ * Both are read live by the overlay, so a change here only has to ask it to look again.
+ */
+@Composable
+private fun AutoHideSection(preference: SharedPref, modifier: Modifier = Modifier) {
+    var onlyMedia by remember { mutableStateOf(preference.getShowOnlyWhileMedia()) }
+    var onlyCall by remember { mutableStateOf(preference.getShowOnlyWhileCall()) }
+    var keyboard by remember { mutableStateOf(preference.getKeyboardBehaviour()) }
+    var showKeyboardDialog by remember { mutableStateOf(false) }
+    // Below Android 11 there is no keyboard to be told about. See ImeProbe.
+    val keyboardSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+
+    Column(modifier = modifier) {
+        SectionTitle(stringResource(R.string.visibility_auto_title), MaterialTheme.colorScheme.primary)
+        Text(
+            text = stringResource(R.string.visibility_auto_desc),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        SettingSwitchItem(
+            title = stringResource(R.string.visibility_media_title),
+            description = stringResource(R.string.visibility_media_desc),
+            checked = onlyMedia,
+            onCheckedChange = {
+                onlyMedia = it
+                preference.setShowOnlyWhileMedia(it)
+                OverlayRuntime.activeController?.refreshAutoHide()
+            }
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        SettingSwitchItem(
+            title = stringResource(R.string.visibility_call_title),
+            description = stringResource(R.string.visibility_call_desc),
+            checked = onlyCall,
+            onCheckedChange = {
+                onlyCall = it
+                preference.setShowOnlyWhileCall(it)
+                OverlayRuntime.activeController?.refreshAutoHide()
+            }
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        ActionSettingItem(
+            label = stringResource(R.string.visibility_keyboard_title),
+            description = stringResource(
+                if (keyboardSupported) R.string.visibility_keyboard_desc else R.string.keyboard_needs_android_11
+            ),
+            value = stringResource(keyboardLabel(if (keyboardSupported) keyboard else BarBehaviour.KEYBOARD_STAY)),
+            icon = ActionIcon.Vector(Icons.Filled.Keyboard),
+            borderColor = MaterialTheme.colorScheme.primary,
+            onClick = { if (keyboardSupported) showKeyboardDialog = true }
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+
+    if (showKeyboardDialog) {
+        ChoiceDialog(
+            title = stringResource(R.string.visibility_keyboard_title),
+            options = BarBehaviour.KEYBOARD_BEHAVIOURS,
+            selected = keyboard,
+            label = { stringResource(keyboardLabel(it)) },
+            description = { stringResource(keyboardDescription(it)) },
+            onDismiss = { showKeyboardDialog = false },
+            onConfirm = { picked ->
+                keyboard = picked
+                preference.setKeyboardBehaviour(picked)
+                OverlayRuntime.activeController?.refreshAutoHide()
+                showKeyboardDialog = false
+            }
+        )
+    }
+}
+
+private fun keyboardLabel(behaviour: String): Int = when (behaviour) {
+    BarBehaviour.KEYBOARD_HIDE -> R.string.keyboard_hide
+    BarBehaviour.KEYBOARD_STAY -> R.string.keyboard_stay
+    else -> R.string.keyboard_move
+}
+
+private fun keyboardDescription(behaviour: String): Int = when (behaviour) {
+    BarBehaviour.KEYBOARD_HIDE -> R.string.keyboard_hide_desc
+    BarBehaviour.KEYBOARD_STAY -> R.string.keyboard_stay_desc
+    else -> R.string.keyboard_move_desc
 }
 
 /** Everything above the lists: the heading, what it needs, and the search field both lists share. */

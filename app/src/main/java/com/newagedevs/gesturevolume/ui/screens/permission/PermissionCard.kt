@@ -19,11 +19,11 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Button
+import com.newagedevs.gesturevolume.ui.motion.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.newagedevs.gesturevolume.ui.motion.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable

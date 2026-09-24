@@ -2,6 +2,8 @@ package com.newagedevs.gesturevolume.data.local
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.newagedevs.gesturevolume.utils.PixelFill
+import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.HandlerShape
 
@@ -100,6 +102,20 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val SHOW_ICON = "sliderShowIcon"
         private const val AUTO_BRIGHTNESS_OFF = "sliderDisableAutoBrightness"
         private const val FILL_STYLE = "sliderFillStyle"
+        private const val PIXEL_PATTERN = "sliderPixelPattern"
+        private const val PIXEL_SPEED = "sliderPixelSpeed"
+        private const val PIXEL_COLUMNS = "sliderPixelColumns"
+        private const val PIXEL_GAP = "sliderPixelGap"
+        private const val PIXEL_ROUNDNESS = "sliderPixelRoundness"
+        private const val PIXEL_GLOW = "sliderPixelGlow"
+        private const val PIXEL_REST = "sliderPixelRest"
+        private const val SHADER_EFFECT = "sliderShaderEffect"
+        private const val SHADER_SPEED = "sliderShaderSpeed"
+        private const val SHADER_SCALE = "sliderShaderScale"
+        private const val SHADER_DETAIL = "sliderShaderDetail"
+        private const val SHADER_BRIGHTNESS = "sliderShaderBrightness"
+        private const val SHADER_GRAIN = "sliderShaderGrain"
+        private const val SHADER_REST = "sliderShaderRest"
         private const val FOLLOW_HANDLER = "sliderFollowHandlerShape"
         private const val OPEN_ON_VOLUME_KEY = "sliderOpenOnVolumeKey"
         private const val VOLUME_KEYS = "sliderVolumeKeys"
@@ -429,6 +445,67 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     /** What the filled portion does while the panel is open. See [SliderFill]. */
     fun getFillStyle(): String = SliderFill.sanitize(prefs.getString(FILL_STYLE, null))
     fun setFillStyle(value: String) = prefs.edit { putString(FILL_STYLE, SliderFill.sanitize(value)) }
+
+    /**
+     * The Pixels fill's own settings: its pattern, and the six things about the grid the user
+     * tunes. Only read while [getFillStyle] is [SliderFill.PIXELS], and kept when it is not, so
+     * trying another fill and coming back finds the grid as it was left.
+     */
+    fun getPixelStyle(): PixelFill.Style {
+        val d = PixelFill.Style()
+        return PixelFill.Style(
+            pattern = prefs.getString(PIXEL_PATTERN, d.pattern) ?: d.pattern,
+            speed = prefs.getFloat(PIXEL_SPEED, d.speed),
+            columns = prefs.getInt(PIXEL_COLUMNS, d.columns),
+            gap = prefs.getFloat(PIXEL_GAP, d.gap),
+            roundness = prefs.getFloat(PIXEL_ROUNDNESS, d.roundness),
+            glow = prefs.getFloat(PIXEL_GLOW, d.glow),
+            rest = prefs.getFloat(PIXEL_REST, d.rest),
+        ).sanitized()
+    }
+
+    fun setPixelStyle(value: PixelFill.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putString(PIXEL_PATTERN, s.pattern)
+            putFloat(PIXEL_SPEED, s.speed)
+            putInt(PIXEL_COLUMNS, s.columns)
+            putFloat(PIXEL_GAP, s.gap)
+            putFloat(PIXEL_ROUNDNESS, s.roundness)
+            putFloat(PIXEL_GLOW, s.glow)
+            putFloat(PIXEL_REST, s.rest)
+        }
+    }
+
+    /**
+     * The Shaders fill's own settings: its effect, and the six things every effect answers to.
+     * Kept while another fill is chosen, like the Pixels grid's.
+     */
+    fun getShaderStyle(): ShaderFill.Style {
+        val d = ShaderFill.Style()
+        return ShaderFill.Style(
+            effect = prefs.getString(SHADER_EFFECT, d.effect) ?: d.effect,
+            speed = prefs.getFloat(SHADER_SPEED, d.speed),
+            scale = prefs.getFloat(SHADER_SCALE, d.scale),
+            detail = prefs.getFloat(SHADER_DETAIL, d.detail),
+            brightness = prefs.getFloat(SHADER_BRIGHTNESS, d.brightness),
+            grain = prefs.getFloat(SHADER_GRAIN, d.grain),
+            rest = prefs.getFloat(SHADER_REST, d.rest),
+        ).sanitized()
+    }
+
+    fun setShaderStyle(value: ShaderFill.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putString(SHADER_EFFECT, s.effect)
+            putFloat(SHADER_SPEED, s.speed)
+            putFloat(SHADER_SCALE, s.scale)
+            putFloat(SHADER_DETAIL, s.detail)
+            putFloat(SHADER_BRIGHTNESS, s.brightness)
+            putFloat(SHADER_GRAIN, s.grain)
+            putFloat(SHADER_REST, s.rest)
+        }
+    }
 
     /**
      * Whether the fill animations are painted in the user's colours rather than their own.

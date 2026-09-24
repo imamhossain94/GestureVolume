@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.activities
 
+import com.newagedevs.gesturevolume.ui.motion.ScreenTransitions
 import com.newagedevs.gesturevolume.ui.util.permissionsRoute
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 
@@ -12,11 +13,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import com.newagedevs.gesturevolume.ui.motion.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.TextButton
+import com.newagedevs.gesturevolume.ui.motion.OutlinedButton
+import com.newagedevs.gesturevolume.ui.motion.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
@@ -50,6 +51,7 @@ import com.newagedevs.gesturevolume.ui.screens.deck.DeckScreen
 import com.newagedevs.gesturevolume.ui.screens.deck.DeckTilesScreen
 import com.newagedevs.gesturevolume.ui.screens.deck.NotesScreen
 import com.newagedevs.gesturevolume.ui.screens.deck.QuickDialScreen
+import com.newagedevs.gesturevolume.ui.screens.app_gestures.AppGesturesScreen
 import com.newagedevs.gesturevolume.ui.screens.deck.SearchSettingsScreen
 import com.newagedevs.gesturevolume.ui.screens.feedback.FeedbackScreen
 import com.newagedevs.gesturevolume.ui.screens.handler_action.HandlerActionsScreen
@@ -66,6 +68,7 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.helper.PrivacyChoices
 import com.newagedevs.gesturevolume.ui.screens.upgrade.UpgradeScreen
 import com.newagedevs.gesturevolume.ui.screens.visibility.VisibilityScreen
+import com.newagedevs.gesturevolume.ui.screens.whats_new.WhatsNewScreen
 
 /** Routes the Deck may ask the app to open. Anything else in the extra is ignored. */
 private val DEEP_LINK_ROUTES = setOf("deck", "notes", "deck_search", "deck_apps", "deck_quick_dial", "deck_tiles")
@@ -149,6 +152,7 @@ fun MainNavigation(
                 is MainEffect.ShowLanguageDialog -> showLanguageDialog = true
                 is MainEffect.NavigateToTroubleshoot -> navController.navigate("troubleshoot")
                 is MainEffect.NavigateToFaq -> navController.navigate("faq")
+                is MainEffect.NavigateToWhatsNew -> navController.navigate("whats_new")
                 is MainEffect.OpenAccessibilitySettings -> {
                     viewModel.preference.setAppOpenAdPaused(true)
                     try {
@@ -179,7 +183,12 @@ fun MainNavigation(
         Box(modifier = Modifier.weight(1f)) {
             NavHost(
                 navController = navController,
-                startDestination = if (viewModel.preference.isFirstLaunch()) "walkthrough" else "main"
+                startDestination = if (viewModel.preference.isFirstLaunch()) "walkthrough" else "main",
+                // On springs, like everything else that moves in the app. See ScreenTransitions.
+                enterTransition = ScreenTransitions.enter,
+                exitTransition = ScreenTransitions.exit,
+                popEnterTransition = ScreenTransitions.popEnter,
+                popExitTransition = ScreenTransitions.popExit,
             ) {
                 composable("walkthrough") {
                     WalkthroughScreen(
@@ -214,7 +223,15 @@ fun MainNavigation(
                         onNavigateToLongPressMenu = { navController.navigate("long_press_menu") },
                         onNavigateToFaq = { navController.navigate("faq") },
                         onNavigateToUpgrade = { navController.navigate("upgrade") },
-                        onNavigateToVisibility = { navController.navigate("visibility") }
+                        onNavigateToVisibility = { navController.navigate("visibility") },
+                        onNavigateToWhatsNew = { navController.navigate("whats_new") }
+                    )
+                }
+
+                composable("whats_new") {
+                    WhatsNewScreen(
+                        onNavigateBack = { navController.navigateBackOnce() },
+                        onSeen = { viewModel.markWhatsNewSeen() }
                     )
                 }
 
@@ -254,7 +271,11 @@ fun MainNavigation(
                 }
 
                 composable("deck_quick_dial") {
-                    QuickDialScreen(viewModel = viewModel, onNavigateBack = { navController.navigateBackOnce() })
+                    QuickDialScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.navigateBackOnce() },
+                        onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
+                    )
                 }
 
                 composable("deck_search") {
@@ -295,9 +316,20 @@ fun MainNavigation(
                         onOpenLongPressMenu = {
                             navController.navigate("long_press_menu")
                         },
+                        onOpenAppGestures = {
+                            navController.navigate("app_gestures")
+                        },
                         onOpenPermissions = {
                             navController.navigate(permissionsRoute(it))
                         }
+                    )
+                }
+
+                composable("app_gestures") {
+                    AppGesturesScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.navigateBackOnce() },
+                        onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
                     )
                 }
 

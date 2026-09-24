@@ -355,7 +355,7 @@ class HandlerGestureDetector(
      */
     var inwardSpanPx: Float = 0f
 
-    private val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
+    private var longPressTimeout = TapTiming.automaticLongPressMs
     /**
      * How long the second tap of a double tap may take to arrive.
      *
@@ -369,8 +369,17 @@ class HandlerGestureDetector(
      * Only ever *longer* than the platform value, never shorter, so a device that has already
      * decided its users need more time keeps it.
      */
-    private val doubleTapTimeout =
-        maxOf(ViewConfiguration.getDoubleTapTimeout().toLong(), DOUBLE_TAP_FLOOR_MS)
+    private var doubleTapTimeout = TapTiming.automaticDoubleTapMs
+
+    /**
+     * The user's own timings, from the Actions screen: how long the second tap of a double tap
+     * may take, and how long a hold is before it is a long press. Zero for either keeps the
+     * automatic figure above.
+     */
+    fun setTimings(doubleTapMs: Long, longPressMs: Long) {
+        doubleTapTimeout = if (doubleTapMs > 0L) doubleTapMs else TapTiming.automaticDoubleTapMs
+        longPressTimeout = if (longPressMs > 0L) longPressMs else TapTiming.automaticLongPressMs
+    }
 
     private val handler = Handler(Looper.getMainLooper())
 
@@ -1051,4 +1060,26 @@ internal object EdgePullRelease {
         if (shortActionBound && inwardVelocity >= flickVelocity) return false
         return true
     }
+}
+
+/**
+ * How long taps and holds on the bar take before the user changes them, and how far they may.
+ *
+ * Public, unlike the detector's own constants, because the Actions screen shows the automatic
+ * figure on its sliders before anything has been moved.
+ */
+object TapTiming {
+    /**
+     * The platform's double-tap window, raised to 450ms: a bar at the very edge of the screen is
+     * harder to tap twice than a button. See [HandlerGestureDetector]'s doubleTapTimeout.
+     */
+    val automaticDoubleTapMs: Long get() = maxOf(ViewConfiguration.getDoubleTapTimeout().toLong(), 450L)
+
+    /** The platform's own long-press delay. */
+    val automaticLongPressMs: Long get() = ViewConfiguration.getLongPressTimeout().toLong()
+
+    const val MIN_DOUBLE_TAP_MS = 200
+    const val MAX_DOUBLE_TAP_MS = 800
+    const val MIN_LONG_PRESS_MS = 200
+    const val MAX_LONG_PRESS_MS = 1200
 }

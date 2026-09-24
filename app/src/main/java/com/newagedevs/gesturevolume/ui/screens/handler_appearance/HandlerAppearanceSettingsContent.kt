@@ -30,7 +30,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.newagedevs.gesturevolume.ui.motion.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -186,8 +186,10 @@ fun HandlerAppearanceSettingsContent(
                 value = state.width,
                 // Up to 200dp since 1.4.0: the Notch preset lays the bar across the top of the
                 // screen, and a range that stopped at 60 could not express it — nor could a user
-                // adjust one after applying it.
-                valueRange = 10f..200f,
+                // adjust one after applying it. Down to 1dp for a bar that is barely a line: only
+                // the drawing gets that thin, because the window around it keeps its 28dp for the
+                // thumb (OverlayController.MIN_TOUCH_WIDTH_DP).
+                valueRange = 1f..200f,
                 valueDisplay = "${state.width.toInt()}dp",
                 borderColor = MaterialTheme.colorScheme.primary,
                 onValueChange = { state.width = it }

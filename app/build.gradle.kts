@@ -46,8 +46,8 @@ android {
         applicationId = "com.newagedevs.gesturevolume"
         minSdk = 26
         targetSdk = 37
-        versionCode = 36
-        versionName = "1.5.0"
+        versionCode = 37
+        versionName = "1.5.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -164,7 +164,6 @@ dependencies {
     implementation(libs.applovin.sdk)
     implementation(libs.play.services.base)
     implementation(libs.inmobi.adapter)
-    implementation(libs.mintegral.adapter)
     implementation(libs.picasso)
     implementation(libs.androidx.recyclerview)
     implementation(libs.vungle.adapter)

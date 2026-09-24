@@ -102,6 +102,48 @@ object HandlerActions {
     const val MEDIA_NEXT = "Next track"
     const val MEDIA_PREVIOUS = "Previous track"
 
+    // ---- connections, the ringer, the assistant and the camera ---------------------------------
+
+    /**
+     * The system's Wi-Fi panel. A panel rather than a switch because Android 10 closed switching
+     * Wi-Fi to apps: the honest version of a Wi-Fi toggle is the sheet the user flips it on. The
+     * Deck's Wi-Fi tile has always opened the same one.
+     */
+    const val WIFI_PANEL = "Wi-Fi panel"
+
+    /** Bluetooth settings. Android 13 closed switching Bluetooth to apps, and it has no panel. */
+    const val BLUETOOTH_SETTINGS = "Bluetooth settings"
+
+    /** The Internet panel, with mobile data and Wi-Fi on one sheet. Android 10 and later. */
+    const val INTERNET_PANEL = "Internet panel"
+
+    /**
+     * Flips the ringer between ring and vibrate. Silent is left out: on Android 7 and later leaving
+     * or entering it is a Do Not Disturb change, which is what [TOGGLE_DND] is for.
+     */
+    const val RING_VIBRATE = "Ring or vibrate"
+
+    /** Whichever voice assistant the phone has. */
+    const val VOICE_ASSISTANT = "Voice assistant"
+
+    /** The camera app, ready to take a photo. */
+    const val OPEN_CAMERA = "Open camera"
+
+    /**
+     * Opens another app. Stored with the app's package after a colon — "Launch app:com.whatsapp" —
+     * because unlike every other action it needs to say *which*; see [launchApp]. This bare form is
+     * only the picker's tile, which asks for the app, and is never stored.
+     */
+    const val LAUNCH_APP = "Launch app"
+    private const val LAUNCH_APP_PREFIX = "$LAUNCH_APP:"
+
+    /** The stored action that opens [packageName]. */
+    fun launchApp(packageName: String): String = LAUNCH_APP_PREFIX + packageName
+
+    /** The package a [launchApp] action opens, or null when [action] is not one. */
+    fun launchedPackage(action: String): String? =
+        action.takeIf { it.startsWith(LAUNCH_APP_PREFIX) }?.removePrefix(LAUNCH_APP_PREFIX)?.takeIf { it.isNotBlank() }
+
     // ---- 1.4.0: system actions, performed by the accessibility service ------------------------
 
     /**
@@ -166,7 +208,8 @@ object HandlerActions {
         OPEN_MEDIA, COIN_TOSS, DICE_ROLL, SCAN_QR,
         TOGGLE_FLASHLIGHT, TOGGLE_DND, TOGGLE_AUTO_ROTATE,
         MEDIA_PLAY_PAUSE, MEDIA_NEXT, MEDIA_PREVIOUS,
-        LOCK, SCREENSHOT, BACK, HOME, RECENTS, NOTIFICATIONS, QUICK_SETTINGS, POWER_MENU
+        LOCK, SCREENSHOT, BACK, HOME, RECENTS, NOTIFICATIONS, QUICK_SETTINGS, POWER_MENU,
+        WIFI_PANEL, BLUETOOTH_SETTINGS, INTERNET_PANEL, RING_VIBRATE, VOICE_ASSISTANT, OPEN_CAMERA
     )
 
     /** The actions the accessibility service performs. Nothing else can. */
@@ -185,10 +228,13 @@ object HandlerActions {
      * It is also how an action is retired: a slot still holding an identifier a later build
      * removed reads as [NONE], and the long-press menu's stored set simply loses it.
      */
-    fun sanitize(action: String): String = if (action in KNOWN) action else NONE
+    fun sanitize(action: String): String = if (isKnown(action)) action else NONE
 
     /** The set form, for the long-press menu's stored selection. */
-    fun sanitize(actions: Set<String>): Set<String> = actions.filterTo(mutableSetOf()) { it in KNOWN }
+    fun sanitize(actions: Set<String>): Set<String> = actions.filterTo(mutableSetOf()) { isKnown(it) }
+
+    /** Whether this build understands [action]: one of [KNOWN], or an app to open. */
+    fun isKnown(action: String): Boolean = action in KNOWN || launchedPackage(action) != null
 
     /**
      * True when a vertical-swipe binding is one the finger *steers* rather than one it triggers.

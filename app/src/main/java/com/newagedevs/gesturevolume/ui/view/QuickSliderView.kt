@@ -9,6 +9,8 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
+import android.os.Build
+import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.animation.DecelerateInterpolator
 import android.view.View
@@ -16,6 +18,8 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
+import com.newagedevs.gesturevolume.utils.PixelFill
+import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.PanelAnimation
 import com.newagedevs.gesturevolume.utils.HandlerShape
@@ -239,6 +243,13 @@ class QuickSliderView(context: Context) : View(context) {
     private val drawPath = Path()
 
     /**
+     * What the lit rim follows: [drawPath], except that a tab's is left open along the screen edge,
+     * the way the bar's own border is. A rim down the straight side was a line along the frame of
+     * the phone.
+     */
+    private val rimPath = Path()
+
+    /**
      * The four corners the shape ends on, clockwise from the top left, in pixels.
      *
      * Four, and usually the same four as [collapsedCornersPx]. The panel takes the handler's own
@@ -310,6 +321,28 @@ class QuickSliderView(context: Context) : View(context) {
 
     /** The user's animation colours, or null for each style's own. See [setFillColors]. */
     private var fillColors: IntArray? = null
+
+    /** The Pixels fill's pattern and grid, used while [fillStyle] is [SliderFill.PIXELS]. */
+    private var pixelStyle = PixelFill.Style()
+    private val pixelArt = PixelArt()
+
+    /** The Shaders fill's effect and settings, used while [fillStyle] is [SliderFill.SHADER]. */
+    private var shaderStyle = ShaderFill.Style()
+
+    /** Made on first use, and only on Android 13 and later: before that there is no RuntimeShader. */
+    private var shaderArt: ShaderArt? = null
+
+    /** The effect's four colours, the user's when they have set some. See [ShaderFill.paletteWith]. */
+    private var shaderPalette: IntArray = ShaderFill.paletteWith(ShaderFill.LAVA_LAMP, null)
+
+    /**
+     * The effect's own clock, in seconds. Advanced by what each frame took times the speed, rather
+     * than read off a clock and multiplied, so dragging the speed slider changes the pace without
+     * jumping the picture. Starts somewhere in the hour, so each opening finds it mid-flow rather
+     * than at the same first frame.
+     */
+    private var shaderTime = (SystemClock.uptimeMillis() % 3_600_000L) / 1000f
+    private var shaderTickAt = 0L
 
     /**
      * The palette the current style is painted with, worked out when the style or the colours
@@ -877,9 +910,41 @@ class QuickSliderView(context: Context) : View(context) {
         if (next.contentEquals(fillColors)) return
         fillColors = next
         fillPalette = SliderFill.paletteWith(fillStyle, next)
+        shaderPalette = ShaderFill.paletteWith(shaderStyle.effect, next)
         fillArtOrNull = null
         invalidate()
     }
+
+    /**
+     * The Pixels fill's settings. The clock is restarted only when what it keeps time for changes —
+     * the pattern or its speed — so dragging the gap or the glow slider does not restart the pattern
+     * on every step of the drag.
+     */
+    fun setPixelStyle(style: PixelFill.Style) {
+        val next = style.sanitized()
+        if (next == pixelStyle) return
+        val retime = next.pattern != pixelStyle.pattern || next.speed != pixelStyle.speed
+        pixelStyle = next
+        if (retime && fillStyle == SliderFill.PIXELS) restartFillClock()
+        invalidate()
+    }
+
+    /**
+     * The Shaders fill's settings. Only stopping or starting it touches the clock: the speed is
+     * applied a frame at a time, so a new speed simply takes over from the next frame.
+     */
+    fun setShaderStyle(style: ShaderFill.Style) {
+        val next = style.sanitized()
+        if (next == shaderStyle) return
+        val retime = next.isAnimated != shaderStyle.isAnimated
+        if (next.effect != shaderStyle.effect) shaderPalette = ShaderFill.paletteWith(next.effect, fillColors)
+        shaderStyle = next
+        if (retime && fillStyle == SliderFill.SHADER) restartFillClock()
+        invalidate()
+    }
+
+    /** Whether this phone can draw the Shaders fill at all. */
+    private val shadersSupported: Boolean get() = Build.VERSION.SDK_INT >= ShaderFill.MIN_SDK
 
     /**
      * Plays one of [PanelAnimation]'s entrances on this view.
@@ -953,17 +1018,40 @@ class QuickSliderView(context: Context) : View(context) {
     private fun restartFillClock() {
         fillClock?.cancel()
         fillClock = null
-        if (!SliderFill.isAnimated(fillStyle) || !isAttachedToWindow) return
+        val pixels = fillStyle == SliderFill.PIXELS
+        val shader = fillStyle == SliderFill.SHADER
+        val animated = when {
+            pixels -> PixelFill.isAnimated(pixelStyle.pattern)
+            shader -> shadersSupported && shaderStyle.isAnimated
+            else -> SliderFill.isAnimated(fillStyle)
+        }
+        if (!animated || !isAttachedToWindow) return
+        shaderTickAt = 0L
         fillClock = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = SliderFill.cycleMs(fillStyle).toLong()
+            duration = if (pixels) PixelFill.cycleMs(pixelStyle) else SliderFill.cycleMs(fillStyle).toLong()
             repeatCount = ValueAnimator.INFINITE
             interpolator = null
             addUpdateListener {
                 fillPhase = it.animatedValue as Float
+                if (shader) tickShaderClock()
                 invalidate()
             }
             start()
         }
+    }
+
+    /**
+     * Moves [shaderTime] on by the time since the last frame, at the effect's speed. A frame that
+     * took longer than a tenth of a second — the panel held off screen, a stall — counts as a
+     * tenth, so the effect resumes where it was rather than leaping.
+     */
+    private fun tickShaderClock() {
+        val now = SystemClock.uptimeMillis()
+        val last = shaderTickAt
+        shaderTickAt = now
+        if (last == 0L) return
+        val step = (now - last).coerceIn(0L, 100L) / 1000f * shaderStyle.speed
+        shaderTime = (shaderTime + step) % ShaderFill.TIME_WRAP_S
     }
 
     override fun onAttachedToWindow() {
@@ -975,6 +1063,7 @@ class QuickSliderView(context: Context) : View(context) {
         super.onDetachedFromWindow()
         fillClock?.cancel()
         fillClock = null
+        pixelArt.release()
         valueAnimator?.cancel()
         valueAnimator = null
         entranceAnimator?.cancel()
@@ -1282,6 +1371,7 @@ class QuickSliderView(context: Context) : View(context) {
         )
 
         drawPath.reset()
+        rimPath.reset()
         fillPathDirty = true
         if (drawRect.isEmpty) {
             rebuildGlass()
@@ -1311,6 +1401,7 @@ class QuickSliderView(context: Context) : View(context) {
                 drawPath.lineTo(l + outline[i], t + outline[i + 1])
                 i += 2
             }
+            rimPath.set(drawPath)
             drawPath.close()
         } else {
             // Never more than half the shorter side, or the corners overlap and the round-rect
@@ -1327,6 +1418,7 @@ class QuickSliderView(context: Context) : View(context) {
                 drawRadii[corner * 2 + 1] = r
             }
             drawPath.addRoundRect(drawRect, drawRadii, Path.Direction.CW)
+            rimPath.set(drawPath)
         }
         rebuildGlass()
         reportGlass()
@@ -1361,6 +1453,14 @@ class QuickSliderView(context: Context) : View(context) {
         // Under the contents: lighting on the surface, not over the number.
         sheenPaint?.let { canvas.drawRect(drawRect, it) }
         counterLightPaint?.let { canvas.drawRect(drawRect, it) }
+
+        if (fillStyle == SliderFill.PIXELS || (fillStyle == SliderFill.SHADER && drawShaderFill(canvas))) {
+            if (fillStyle == SliderFill.PIXELS) drawPixelFill(canvas)
+            canvas.restore()
+            drawGrabLip(canvas)
+            edgePaint?.let { canvas.drawPath(rimPath, it) }
+            return
+        }
 
         drawContent(canvas, overFill = false)
         canvas.restore()
@@ -1398,29 +1498,89 @@ class QuickSliderView(context: Context) : View(context) {
             drawContent(canvas, overFill = true)
             canvas.restore()
 
-            // A bright lip on the fill's leading edge while a finger is on it. The panel has no
-            // thumb — the fill line *is* the value — so without this there is nothing to confirm
-            // that the touch was received, and on a control the user only touches for a moment
-            // that confirmation is most of the feedback there is.
-            if (grabbed) {
-                canvas.save()
-                canvas.clipPath(drawPath)
-                fillPaint.alpha = 255
-                canvas.drawRect(
-                    drawRect.left,
-                    fillTop - GRAB_LIP_DP * density / 2f,
-                    drawRect.right,
-                    fillTop + GRAB_LIP_DP * density / 2f,
-                    fillPaint
-                )
-                canvas.restore()
-            }
+            drawGrabLip(canvas)
             fillPaint.alpha = 255
         }
 
         // The rim last and outside the fill pass, so the filled half of the track does not paint
         // over the edge.
-        edgePaint?.let { canvas.drawPath(drawPath, it) }
+        edgePaint?.let { canvas.drawPath(rimPath, it) }
+    }
+
+    /**
+     * A bright lip on the fill's leading edge while a finger is on it. The panel has no thumb — the
+     * fill line *is* the value — so without this there is nothing to confirm that the touch was
+     * received, and on a control the user only touches for a moment that confirmation is most of
+     * the feedback there is.
+     */
+    private fun drawGrabLip(canvas: Canvas) {
+        if (!grabbed || !fillVisible || contentAlpha <= 0.01f) return
+        val fillTop = drawRect.bottom - drawRect.height() * value
+        canvas.save()
+        canvas.clipPath(drawPath)
+        fillPaint.alpha = 255
+        canvas.drawRect(
+            drawRect.left,
+            fillTop - GRAB_LIP_DP * density / 2f,
+            drawRect.right,
+            fillTop + GRAB_LIP_DP * density / 2f,
+            fillPaint
+        )
+        canvas.restore()
+    }
+
+    /**
+     * The Pixels fill, inside the panel's clip: the grid over the whole track, lit below the level,
+     * and the number and the icon over it — in the fill colour where the grid is resting and in the
+     * track's where it is lit, as over any other fill.
+     *
+     * The grid takes the place of the filled shape rather than being drawn on it: the pixels above
+     * the level are part of the picture, so it cannot be cut to the fill the way the others are.
+     */
+    private fun drawPixelFill(canvas: Canvas) {
+        if (!fillVisible || contentAlpha <= 0.01f) {
+            drawContent(canvas, overFill = false)
+            return
+        }
+        val fillTop = drawRect.bottom - drawRect.height() * value
+        pixelArt.draw(canvas, drawRect, fillTop, fillPhase, pixelStyle, fillColor, fillColors, contentAlpha)
+
+        canvas.save()
+        canvas.clipRect(drawRect.left, drawRect.top, drawRect.right, fillTop)
+        drawContent(canvas, overFill = false)
+        canvas.restore()
+        canvas.save()
+        canvas.clipRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom)
+        drawContent(canvas, overFill = true)
+        canvas.restore()
+    }
+
+    /**
+     * The Shaders fill, inside the panel's clip: the effect over the whole track, lit below the
+     * level and faint above it, with the number and the icon over it as over the Pixels grid.
+     *
+     * Returns false, having drawn nothing, where the effect cannot be drawn — before Android 13, or
+     * on a phone that would not compile it — and the panel is then drawn with a plain fill.
+     */
+    private fun drawShaderFill(canvas: Canvas): Boolean {
+        if (Build.VERSION.SDK_INT < ShaderFill.MIN_SDK) return false
+        if (!fillVisible || contentAlpha <= 0.01f) {
+            drawContent(canvas, overFill = false)
+            return true
+        }
+        val fillTop = drawRect.bottom - drawRect.height() * value
+        val art = shaderArt ?: ShaderArt().also { shaderArt = it }
+        if (!art.draw(canvas, drawRect, fillTop, shaderTime, shaderStyle, shaderPalette, contentAlpha)) return false
+
+        canvas.save()
+        canvas.clipRect(drawRect.left, drawRect.top, drawRect.right, fillTop)
+        drawContent(canvas, overFill = false)
+        canvas.restore()
+        canvas.save()
+        canvas.clipRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom)
+        drawContent(canvas, overFill = true)
+        canvas.restore()
+        return true
     }
 
     /** The icon's size and centre, shared by the drawing and the touch test so the two agree. */
