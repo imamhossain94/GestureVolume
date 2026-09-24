@@ -8,6 +8,7 @@ import com.newagedevs.gesturevolume.R
 import android.view.Gravity
 import androidx.compose.ui.graphics.toArgb
 import com.newagedevs.gesturevolume.utils.BarBehaviour
+import com.newagedevs.gesturevolume.utils.UserMode
 import com.newagedevs.gesturevolume.utils.ContextMenuLayout
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.PanelAnimation
@@ -153,6 +154,65 @@ class SharedPref @Inject constructor(
         setPanelAnimation(behaviour.panelAnimation)
         setContextMenuLayout(behaviour.menuLayout)
         setContextMenuPerPage(behaviour.menuPerPage)
+    }
+
+    /**
+     * Makes [preset] the bar outright: its look, where it sits, and everything it does.
+     *
+     * For choosing a [UserMode], where there is no Appearance screen in between to carry the look
+     * through its state holder the way applying a preset there does — so this writes what that
+     * screen's save would, plus [writePresetBehaviour].
+     */
+    fun applyPreset(preset: HandlerPresets.Preset) {
+        setHandlerWidthDp(preset.width)
+        setHandlerHeightDp(preset.height)
+        setHandlerColor(preset.bgColor.toArgb())
+        setHandlerBackgroundAlpha(preset.bgAlpha)
+        setHandlerStrokeColor(preset.strokeColor.toArgb())
+        setHandlerStrokeWidth(preset.strokeWidth)
+        setHandlerStrokeAlpha(preset.strokeAlpha)
+        setHandlerCornerRadiusTL(preset.topLeft)
+        setHandlerCornerRadiusTR(preset.topRight)
+        setHandlerCornerRadiusBL(preset.bottomLeft)
+        setHandlerCornerRadiusBR(preset.bottomRight)
+        setHandlerShape(preset.shape)
+        setHandlerShapeFlare(preset.flare)
+        setHandlerIconRes(preset.iconRes)
+        setHandlerIconSize(preset.iconSize)
+        setHandlerIconColor(preset.iconColor.toArgb())
+        setHandlerShowIcon(preset.showIcon)
+        setHandlerVibrateOnClick(preset.vibrate)
+        setHandlerEdgeMarginDp(preset.edgeMargin)
+        preset.placement?.let { placement ->
+            setHandlerPosition(if (placement.gravity == Gravity.START) "Left" else "Right")
+            setHandlerSnapToEdge(placement.snapToEdge)
+            setHandlerPosXFraction(true, placement.posXFraction)
+            setHandlerPosXFraction(false, placement.posXFraction)
+        }
+        setHandlerPositionFraction(preset.positionFraction)
+        setHandlerPosYFraction(true, preset.positionFraction)
+        setHandlerPosYFraction(false, preset.positionFraction)
+        setHandlerDynamicPosition(preset.behaviour.dynamicPosition)
+        writePresetBehaviour(preset.behaviour)
+    }
+
+    /**
+     * Which kind of user the app is set up for. See [UserMode].
+     *
+     * Unset means nobody has chosen yet. A fresh install is regular until its walkthrough says
+     * otherwise; an install from before modes existed has been living with the advanced features
+     * all along, and folding them away on an update would be the same surprise the other way round.
+     */
+    fun getUserMode(): String =
+        sharedPreferences.getString(USER_MODE, null)?.let(UserMode::sanitize)
+            ?: if (isFirstLaunch()) UserMode.REGULAR else UserMode.ADVANCED
+
+    fun setUserMode(value: String) = sharedPreferences.edit { putString(USER_MODE, UserMode.sanitize(value)) }
+
+    /** Sets the app up for a [mode] user: the mode, and that mode's preset as the bar. */
+    fun applyUserMode(mode: String) {
+        setUserMode(mode)
+        applyPreset(UserMode.presetFor(mode))
     }
 
     /**
@@ -397,6 +457,7 @@ class SharedPref @Inject constructor(
         const val SHOW_ONLY_WHILE_MEDIA = "handlerShowOnlyWhileMedia"
         const val SHOW_ONLY_WHILE_CALL = "handlerShowOnlyWhileCall"
         const val WHATS_NEW_SEEN = "whatsNewSeenVersion"
+        const val USER_MODE = "userMode"
         const val DOUBLE_TAP_MS = "handlerDoubleTapMs"
         const val LONG_PRESS_MS = "handlerLongPressMs"
 

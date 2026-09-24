@@ -24,12 +24,15 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +52,11 @@ import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
+import com.newagedevs.gesturevolume.ui.components.DemoGesture
+import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.GestureDemoState
+import com.newagedevs.gesturevolume.ui.components.HowItWorksButton
+import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import com.newagedevs.gesturevolume.ui.components.PREVIEW_SUBJECT_MAX_HEIGHT
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
@@ -153,6 +161,10 @@ fun QuickSliderScreen(
     // Read once: which side the bar is on is settled on the Appearance screen, and this one has
     // no way to change it.
     val handlerOnLeft = remember { viewModel.preference.getHandlerPosition() == "Left" }
+
+    // A finger pulling the panel out of the bar, twice on arrival and on request after that. Up,
+    // because that is the pull the panel is known by; the preview grows in step with it.
+    val demo = rememberGestureDemoState(QUICK_DEMO_STEPS)
 
     var openWith by remember { mutableStateOf(store.getOpenWith()) }
     var target by remember { mutableStateOf(store.getTarget()) }
@@ -337,7 +349,8 @@ fun QuickSliderScreen(
                     corners = listOf(cornerTL, cornerTR, cornerBL, cornerBR),
                     animation = panelAnimation,
                     animationSpeed = animationSpeed,
-                    replay = replay
+                    replay = replay,
+                    demo = demo,
                 )
             },
         ) {
@@ -772,11 +785,57 @@ private fun SliderPreview(
     shape: String,
     flare: Float,
     corners: List<Float>,
+    /** The how-it-works demo; while it plays, the panel's expansion follows the finger. */
+    demo: GestureDemoState,
 ) {
     // Against the same edge the handler is on, because that is where the panel actually opens —
     // it grows out of the bar. Centred, it was a picture of a track floating in the middle of the
     // screen, which is the one place it never appears.
     val density = LocalDensity.current.density
+    var sliderView by remember { mutableStateOf<QuickSliderView?>(null) }
+    // Driven here rather than from `update`, which re-dresses the whole view: running all of that
+    // on every frame of a drag is the stutter the note in `update` describes.
+    LaunchedEffect(sliderView) {
+        val view = sliderView ?: return@LaunchedEffect
+        // The bar's own footprint inside the window, against the edge, so expansion 0 is the bar
+        // the finger lands on. Without it the collapsed shape is the whole track, and the panel
+        // would only fade in place rather than grow out of anything. Set afresh each time, because
+        // the window changes size with the length and width sliders.
+        fun placeBar() {
+            val w = view.width.toFloat()
+            val h = view.height.toFloat()
+            if (w <= 0f || h <= 0f) return
+            val barPx = (barWidthDp * density).coerceAtMost(w).coerceAtLeast(1f)
+            val half = minOf(h * 0.22f, 36f * density)
+            val cy = h / 2f
+            if (handlerOnLeft) {
+                view.setCollapsedRect(0f, cy - half, barPx, cy + half)
+            } else {
+                view.setCollapsedRect(w - barPx, cy - half, w, cy + half)
+            }
+        }
+        snapshotFlow { demo.progressOf(DemoGesture.SWIPE_UP) }.collect { fraction ->
+            if (fraction < 1f) {
+                if (view.width > 0 && view.height > 0) {
+                    placeBar()
+                } else {
+                    // On arrival the demo starts before the view's first layout; placed only on
+                    // the next change, the whole track would show as a dark lozenge until the
+                    // finger moved and then snap down to the bar.
+                    view.addOnLayoutChangeListener(object : android.view.View.OnLayoutChangeListener {
+                        override fun onLayoutChange(
+                            v: android.view.View, left: Int, top: Int, right: Int, bottom: Int,
+                            oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int,
+                        ) {
+                            v.removeOnLayoutChangeListener(this)
+                            placeBar()
+                        }
+                    })
+                }
+            }
+            view.setExpansion(fraction)
+        }
+    }
     PreviewStage(
         backdrop = backdrop,
         contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
@@ -784,7 +843,7 @@ private fun SliderPreview(
         modifier = modifier,
     ) {
         AndroidView(
-            factory = { ctx -> QuickSliderView(ctx) },
+            factory = { ctx -> QuickSliderView(ctx).also { sliderView = it } },
             update = { view ->
                 // Dressed exactly the way the live panel is — see
                 // `OverlayController.openQuickSliderWindow`, including which ink a material that
@@ -837,7 +896,10 @@ private fun SliderPreview(
                 // Both, and neither is optional. QuickSliderView is built to grow out of the
                 // bar, so it starts collapsed and empty: at expansion 0 it draws no fill, no
                 // number and no icon, which in a *static* preview is just a black lozenge.
-                view.setExpansion(1f)
+                // Wherever the demo has it, which is fully open whenever the demo is not playing.
+                // Read unobserved, so a demo frame does not re-run all of this; the effect above
+                // moves it between recompositions.
+                view.setExpansion(Snapshot.withoutReadObservation { demo.progressOf(DemoGesture.SWIPE_UP) })
                 view.setCommitted()
                 // Only when asked for. `update` runs on every recomposition — every tick of
                 // every slider on this screen — and replaying the entrance each time is what
@@ -862,6 +924,20 @@ private fun SliderPreview(
                 // The window's floor, not the panel's: the preview is the window, and the panel
                 // is drawn inside it against the edge, exactly as it is on screen.
                 .width(maxOf(thicknessDp, PANEL_PREVIEW_MIN_WINDOW).dp)
+        )
+        // Over the panel and drawing only, so it never takes a touch meant for the preview.
+        GestureDemoOverlay(
+            state = demo,
+            barAtStart = handlerOnLeft,
+            barInset = (edgeOffsetDp + minOf(barWidthDp, maxOf(thicknessDp, PANEL_PREVIEW_MIN_WINDOW)) / 2f).dp,
+            modifier = Modifier.matchParentSize(),
+        )
+        // The bottom corner away from the panel, where it covers nothing being judged.
+        HowItWorksButton(
+            onClick = demo::replay,
+            modifier = Modifier
+                .align(if (handlerOnLeft) Alignment.BottomEnd else Alignment.BottomStart)
+                .padding(8.dp),
         )
     }
 }
@@ -972,3 +1048,6 @@ private const val QUICK_PANEL_MAX_FLARE = 0.22f
 
 /** Mirrors `OverlayController.PANEL_MIN_THICKNESS_DP`: the window's floor, not the panel's. */
 private const val PANEL_PREVIEW_MIN_WINDOW = 48f
+
+/** The Quick panel's demo: a pull up the bar, which is what opens it. */
+private val QUICK_DEMO_STEPS = listOf(DemoGesture.SWIPE_UP)

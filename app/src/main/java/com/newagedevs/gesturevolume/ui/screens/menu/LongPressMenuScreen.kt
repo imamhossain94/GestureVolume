@@ -65,7 +65,16 @@ import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.overlay.ContextMenuCard
 import com.newagedevs.gesturevolume.overlay.panelFrame
 import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
+import com.newagedevs.gesturevolume.ui.components.HandleLook
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
+import com.newagedevs.gesturevolume.ui.components.DemoGesture
+import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.HowItWorksButton
+import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.ui.graphics.graphicsLayer
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
@@ -170,6 +179,18 @@ fun LongPressMenuScreen(
     // One backdrop per visit; see the note in HandlerAppearanceScreen.
     val backdrop = remember { viewModel.getNextBackground() }
 
+    // A finger pressing and holding the bar until the menu pops up, twice on arrival and on request
+    // after that. The menu waits for the ring to close rather than following it in, because that
+    // is how the real one behaves: nothing, and then the menu.
+    val handlerOnLeft = remember { preference.getHandlerPosition() == "Left" }
+    val gestureDemo = rememberGestureDemoState(MENU_DEMO_STEPS)
+    val menuUp by remember { derivedStateOf { gestureDemo.progressOf(DemoGesture.HOLD) >= 1f } }
+    val menuPop by animateFloatAsState(
+        targetValue = if (menuUp) 1f else 0f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = 480f),
+        label = "demoMenuPop",
+    )
+
     fun persist() = preference.setContextMenuOrder(shown.toList())
 
     val available = HandlerActionCatalog.CONTEXT_MENU_CANDIDATES.filterNot { it.action in shown }
@@ -218,10 +239,32 @@ fun LongPressMenuScreen(
                         onSelect = {},
                         modifier = Modifier
                             .scale(PREVIEW_SCALE)
-                            .panelFrame { entrance.value },
+                            .panelFrame { entrance.value }
+                            // Popped in by the demo's long press; read in the layer so the spring
+                            // redraws the card without recomposing the screen.
+                            .graphicsLayer {
+                                alpha = menuPop.coerceIn(0f, 1f)
+                                val grow = 0.82f + 0.18f * menuPop
+                                scaleX = grow
+                                scaleY = grow
+                            },
                         theme = panelTheme,
                         surfaceOverride = menuSurface,
                         style = menuStyle,
+                    )
+                    GestureDemoOverlay(
+                        state = gestureDemo,
+                        barAtStart = handlerOnLeft,
+                        barInset = 12.dp,
+                        showBar = true,
+                        handle = remember { HandleLook.from(preference) },
+                        modifier = Modifier.matchParentSize(),
+                    )
+                    HowItWorksButton(
+                        onClick = gestureDemo::replay,
+                        modifier = Modifier
+                            .align(if (handlerOnLeft) Alignment.BottomEnd else Alignment.BottomStart)
+                            .padding(8.dp),
                     )
                 }
             },
@@ -701,3 +744,6 @@ private fun HiddenRow(
         )
     }
 }
+
+/** The menu's demo: a long press on the bar, which is what opens it. */
+private val MENU_DEMO_STEPS = listOf(DemoGesture.HOLD)

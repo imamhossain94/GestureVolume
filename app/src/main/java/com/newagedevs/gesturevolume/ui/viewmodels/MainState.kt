@@ -72,6 +72,8 @@ data class MainState(
      * "New" in the drawer. See SharedPref.hasUnseenWhatsNew.
      */
     val hasUnseenWhatsNew: Boolean = false,
+    /** Regular or advanced: whether the home screen opens its advanced features. See UserMode. */
+    val userMode: String = com.newagedevs.gesturevolume.utils.UserMode.REGULAR,
     val theme: Int = 0,
     val language: String = "en"
 )

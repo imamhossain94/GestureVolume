@@ -299,11 +299,16 @@ fun MainScreen(
                                     appearance(Modifier.width(span(1)).fillMaxHeight())
                                     actions(Modifier.width(span(1)).fillMaxHeight())
                                 }
-                                GridRow {
-                                    deck(Modifier.width(span(1)).fillMaxHeight())
-                                    quickPanel(Modifier.width(span(1)).fillMaxHeight())
-                                    longPressMenu(Modifier.width(span(1)).fillMaxHeight())
-                                    visibility(Modifier.width(span(1)).fillMaxHeight())
+                                AdvancedFeaturesGroup(
+                                    userMode = state.userMode,
+                                    onChangeMode = { viewModel.chooseUserMode(it, context) },
+                                ) {
+                                    GridRow {
+                                        deck(Modifier.width(span(1)).fillMaxHeight())
+                                        quickPanel(Modifier.width(span(1)).fillMaxHeight())
+                                        longPressMenu(Modifier.width(span(1)).fillMaxHeight())
+                                        visibility(Modifier.width(span(1)).fillMaxHeight())
+                                    }
                                 }
                             }
                         }
@@ -331,14 +336,20 @@ fun MainScreen(
                             }
                         }
                         Spacer(modifier = Modifier.height(GAP))
-                        GridRow {
-                            deck(Modifier.weight(1f).fillMaxHeight())
-                            quickPanel(Modifier.weight(1f).fillMaxHeight())
-                        }
-                        Spacer(modifier = Modifier.height(GAP))
-                        GridRow {
-                            longPressMenu(Modifier.weight(1f).fillMaxHeight())
-                            visibility(Modifier.weight(1f).fillMaxHeight())
+                        // Folded away for a regular user: the home screen is then the app as it
+                        // was, the switch and the two pages the bar needs. See AdvancedFeaturesGroup.
+                        AdvancedFeaturesGroup(
+                            userMode = state.userMode,
+                            onChangeMode = { viewModel.chooseUserMode(it, context) },
+                        ) {
+                            GridRow {
+                                deck(Modifier.weight(1f).fillMaxHeight())
+                                quickPanel(Modifier.weight(1f).fillMaxHeight())
+                            }
+                            GridRow {
+                                longPressMenu(Modifier.weight(1f).fillMaxHeight())
+                                visibility(Modifier.weight(1f).fillMaxHeight())
+                            }
                         }
                     }
 

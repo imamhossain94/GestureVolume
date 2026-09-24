@@ -147,6 +147,29 @@ object HandlerPresets {
         slider = EDGE_BEHAVIOUR.slider.copy(thicknessDp = 28f, valueMarginDp = 35f, iconMarginDp = 35f),
     )
 
+    /**
+     * The Classic's: the app as it was before the Quick panel and the Deck. Swipe up and down change
+     * the volume and show it, a tap opens the volume panel, a hold moves the bar — and nothing opens
+     * a panel, the volume keys included. What the users who asked to turn the Quick slider off
+     * wanted back, and what a regular user starts with. See [UserMode].
+     */
+    private val CLASSIC_BEHAVIOUR = EDGE_BEHAVIOUR.copy(
+        dynamicPosition = false,
+        singleTap = HandlerActions.OPEN_VOLUME_UI,
+        doubleTap = HandlerActions.NONE,
+        tripleTap = HandlerActions.NONE,
+        longPress = HandlerActions.REPOSITION,
+        swipeUp = HandlerActions.INCREASE_VOLUME_UI,
+        swipeDown = HandlerActions.DECREASE_VOLUME_UI,
+        swipeIn = HandlerActions.NONE,
+        swipeOut = HandlerActions.NONE,
+        slider = EDGE_BEHAVIOUR.slider.copy(volumeKeys = QuickSliderStore.VOLUME_KEYS_OFF),
+        panelAnimation = PanelAnimation.POP,
+    )
+
+    /** Where the Classic sat: higher than the presets that came after it. */
+    private const val CLASSIC_POSITION_FRACTION = 0.12f
+
     data class Preset(
         val id: String,
         val nameRes: Int,
@@ -207,6 +230,32 @@ object HandlerPresets {
     }
 
     val ALL: List<Preset> = listOf(
+        Preset(
+            /**
+             * The round button: the out-of-the-box handler from before the Dock, brought back as
+             * it was — a 30 by 100 pill in half-transparent indigo with a thin white outline, no
+             * icon, on the right a little below the top.
+             *
+             * A regular user's default (see [UserMode]), and the look the users who missed it
+             * described as sufficient. Its behaviour is the app's original too: [CLASSIC_BEHAVIOUR].
+             */
+            id = "Classic",
+            nameRes = R.string.preset_classic_title,
+            subtitleRes = R.string.preset_classic_subtitle,
+            gravity = Gravity.END,
+            width = 30f, height = 100f,
+            bgColor = PREVIEW_PRIMARY, bgAlpha = 128,
+            strokeColor = Color.White, strokeWidth = 1f, strokeAlpha = 200,
+            cornerRadius = 15f,
+            iconRes = R.drawable.ic_vol_increase, iconSize = 18f, iconColor = Color.White,
+            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = CLASSIC_POSITION_FRACTION,
+            behaviour = CLASSIC_BEHAVIOUR,
+            placement = Placement(
+                gravity = Gravity.END,
+                posXFraction = 1f,
+                snapToEdge = true
+            )
+        ),
         Preset(
             /**
              * The dock tab: a bar whose ends sweep back into the side of the phone.
@@ -352,4 +401,7 @@ object HandlerPresets {
 
     /** The slim pill that was the default before the Dock. See `SharedPref.pinEdgeAppearanceDefaults`. */
     val EDGE: Preset = ALL.first { it.id == "Edge" }
+
+    /** The round button the app began with, and a regular user's default. See [UserMode]. */
+    val CLASSIC: Preset = ALL.first { it.id == "Classic" }
 }

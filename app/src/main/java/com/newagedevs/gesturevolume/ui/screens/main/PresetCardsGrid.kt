@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -56,7 +57,11 @@ fun PresetCardsGrid(
 
     val presets = remember(primary, onSurface) {
         listOf(
-            // First: the default.
+            // The round button the app began with, and a regular user's default: half-transparent
+            // indigo, a thin outline, ends rounded to half its width.
+            PresetConfig("Classic", R.string.preset_classic_title, R.string.preset_classic_subtitle, Icons.Default.RadioButtonChecked,
+                listOf(primary, primary), 22.dp, 11.dp, ComposeColor(0xFF4F46E5), 0.5f),
+            // The advanced default.
             // The swatch is drawn from the shape's own geometry, so the corner radius here is
             // carried only to satisfy the constructor — a tab has no corners to round.
             PresetConfig("Dock", R.string.preset_dock_title, R.string.preset_dock_subtitle, Icons.Default.Bookmark,

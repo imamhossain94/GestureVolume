@@ -92,9 +92,21 @@ class MainViewModel @Inject constructor(
             swipeOutActionIcon = getActionIcon(preference.getHandlerSwipeOutAction()),
             isHandlerHidden = preference.isHandlerHidden(),
             hasUnseenWhatsNew = preference.hasUnseenWhatsNew(),
+            userMode = preference.getUserMode(),
             theme = preference.getTheme(),
             language = preference.getLanguage()
         )
+    }
+
+    /**
+     * Sets the app up for a regular or an advanced user — the walkthrough's choice, or the home
+     * screen's switch: the mode, and its preset as the bar, look and gestures both. A running bar
+     * is rebuilt so the change is on screen at once. See UserMode.
+     */
+    fun chooseUserMode(mode: String, context: Context? = null) {
+        preference.applyUserMode(mode)
+        initializeData()
+        context?.let { sendUpdateToService(it) }
     }
 
     /** What's new was opened: the marker on the home screen goes until the next update. */

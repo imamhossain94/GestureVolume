@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.deck
 
+import com.newagedevs.gesturevolume.ui.components.HandleLook
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
 import com.newagedevs.gesturevolume.ui.util.permissionsRoute
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
@@ -57,6 +58,13 @@ import com.newagedevs.gesturevolume.overlay.deck.DeckTiles
 import com.newagedevs.gesturevolume.overlay.panelFrame
 import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
+import com.newagedevs.gesturevolume.ui.components.DemoGesture
+import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.HowItWorksButton
+import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
@@ -137,6 +145,11 @@ fun DeckScreen(
     // One backdrop per visit; see the note in HandlerAppearanceScreen.
     val backdrop = remember { viewModel.getNextBackground() }
     val handlerOnLeft = remember { preference.getHandlerPosition() == "Left" }
+    // A finger swiping in off the bar with the Deck following it out, twice on arrival and on
+    // request after that. Which physical way "out" is follows the stage, which puts the Deck at the
+    // start edge when the bar is on the left.
+    val gestureDemo = rememberGestureDemoState(DECK_DEMO_STEPS)
+    val deckOnLeft = handlerOnLeft != (LocalLayoutDirection.current == LayoutDirection.Rtl)
     val previewTiles = remember(version) {
         DeckTiles.visible(store.getTileOrder(), store.getEnabledTiles())
     }
@@ -214,7 +227,30 @@ fun DeckScreen(
                         glass = PanelTheme.hasLitEdge(panelTheme),
                         modifier = Modifier
                             .padding(horizontal = 14.dp)
-                            .panelFrame { entrance.value },
+                            .panelFrame { entrance.value }
+                            // In step with the demo's swipe: out from the edge and into view as the
+                            // finger crosses the stage. Read in the layer, so the frames of the
+                            // demo redraw the strip without recomposing the screen.
+                            .graphicsLayer {
+                                val reveal = gestureDemo.progressOf(DemoGesture.SWIPE_IN)
+                                // `this.`, because the screen's own `alpha` (the background opacity) would shadow it.
+                                this.alpha = reveal
+                                translationX = (1f - reveal) * 44.dp.toPx() * (if (deckOnLeft) -1f else 1f)
+                            },
+                    )
+                    GestureDemoOverlay(
+                        state = gestureDemo,
+                        barAtStart = handlerOnLeft,
+                        barInset = 12.dp,
+                        showBar = true,
+                        handle = remember { HandleLook.from(preference) },
+                        modifier = Modifier.matchParentSize(),
+                    )
+                    HowItWorksButton(
+                        onClick = gestureDemo::replay,
+                        modifier = Modifier
+                            .align(if (handlerOnLeft) Alignment.BottomEnd else Alignment.BottomStart)
+                            .padding(8.dp),
                     )
                 }
             },
@@ -477,3 +513,6 @@ fun TileGlyph(icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: M
         tint = MaterialTheme.colorScheme.primary
     )
 }
+
+/** The Deck's demo: a swipe in off the bar, which is what opens it. */
+private val DECK_DEMO_STEPS = listOf(DemoGesture.SWIPE_IN)

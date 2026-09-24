@@ -52,6 +52,13 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.HandlerPresets
 import com.newagedevs.gesturevolume.utils.AdPacing
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
+import com.newagedevs.gesturevolume.ui.components.DemoGesture
+import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.HowItWorksButton
+import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 
 /**
  * One screen. Preview on top, settings underneath, nothing overlapping.
@@ -138,6 +145,11 @@ fun HandlerAppearanceScreen(
     // One wallpaper per visit, not per recomposition: a backdrop that reshuffled while a colour
     // was being chosen would be worse than no backdrop at all.
     val backdrop = remember { viewModel.getNextBackground() }
+
+    // A finger acting out what the bar is for — a tap, a swipe up, a swipe down — twice on arrival
+    // and on request after that. The dock can show what the bar looks like but not what it does,
+    // and this is the one screen everyone sees before the bar is any use to them.
+    val gestureDemo = rememberGestureDemoState(APPEARANCE_DEMO_STEPS)
 
     val state = remember {
         AppearanceStateHolder(
@@ -414,12 +426,30 @@ fun HandlerAppearanceScreen(
                 )
             },
             preview = { modifier, fillHeight ->
-                HandlerPreviewSurface(
-                    state = state,
-                    backdrop = backdrop,
-                    fillHeight = fillHeight,
-                    modifier = modifier,
-                )
+                // The finger goes over the dock from out here, leaving the dock itself to be the
+                // bar and nothing else. Clipped to the stage's corners, as the stage clips its own.
+                val barAtStart = state.gravity == Gravity.START
+                Box(modifier = modifier) {
+                    HandlerPreviewSurface(
+                        state = state,
+                        backdrop = backdrop,
+                        fillHeight = fillHeight,
+                    )
+                    GestureDemoOverlay(
+                        state = gestureDemo,
+                        barAtStart = barAtStart,
+                        barInset = (state.edgeMargin.toFloat() + state.width.toFloat() / 2f).dp,
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clip(RoundedCornerShape(20.dp)),
+                    )
+                    HowItWorksButton(
+                        onClick = gestureDemo::replay,
+                        modifier = Modifier
+                            .align(if (barAtStart) Alignment.BottomEnd else Alignment.BottomStart)
+                            .padding(8.dp),
+                    )
+                }
             },
         ) {
             HandlerAppearanceSettingsContent(
@@ -442,3 +472,6 @@ fun HandlerAppearanceScreen(
         )
     }
 }
+
+/** What the bar is for, in the order people meet it: a tap, then a swipe each way. */
+private val APPEARANCE_DEMO_STEPS = listOf(DemoGesture.TAP, DemoGesture.SWIPE_UP, DemoGesture.SWIPE_DOWN)

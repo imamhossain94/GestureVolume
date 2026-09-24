@@ -12,8 +12,9 @@ import org.junit.Test
 class HandlerPresetsTest {
 
     @Test
-    fun `the catalogue is Dock, Edge and Bold, and Dock is the default`() {
-        assertEquals(listOf("Dock", "Edge", "Bold"), HandlerPresets.ALL.map { it.id })
+    fun `the catalogue is Classic, Dock, Edge and Bold, and Dock is the default`() {
+        assertEquals(listOf("Classic", "Dock", "Edge", "Bold"), HandlerPresets.ALL.map { it.id })
+        assertSame(HandlerPresets.byId("Classic"), HandlerPresets.CLASSIC)
         assertSame(HandlerPresets.byId("Dock"), HandlerPresets.DEFAULT)
         assertSame(HandlerPresets.byId("Edge"), HandlerPresets.EDGE)
     }
@@ -27,7 +28,8 @@ class HandlerPresetsTest {
 
     @Test
     fun `every preset puts the bar a fifth of the way down with the shared gestures`() {
-        HandlerPresets.ALL.forEach { preset ->
+        // Not the Classic: it is the app as it was, its place and gestures included. See UserModeTest.
+        HandlerPresets.ALL.filter { it != HandlerPresets.CLASSIC }.forEach { preset ->
             val b = preset.behaviour
             val id = preset.id
             assertEquals(id, 0.20f, preset.positionFraction, 0f)

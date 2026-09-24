@@ -38,6 +38,7 @@ object ReleaseNotes {
             version = "1.5.1",
             date = null,
             notes = listOf(
+                "🙂 Simple or Advanced — the original round button is back, and the extras fold away until you want them",
                 "🙋 Gestures for chosen apps — give YouTube, or any app, gestures of its own",
                 "🟩 Pixels — a new Quick panel fill: a grid of lights with 19 patterns you can tune",
                 "✨ Shaders — 12 live effects for the Quick panel, from lava lamp to liquid chrome (Android 13+)",
