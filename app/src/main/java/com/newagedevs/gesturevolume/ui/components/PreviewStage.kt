@@ -294,8 +294,11 @@ fun Modifier.scaleToFit(maxScale: Float, horizontal: Dp, top: Dp, bottom: Dp, fi
         }
         val w = (placeable.width * scale).roundToInt()
         val h = (placeable.height * scale).roundToInt()
-        // The margins are part of the size, so whatever centres it keeps them.
-        layout(w + sides, h + ends) {
+        // The margins are part of the size, so whatever centres it keeps them. Left taller than the
+        // space, it says it is only as tall as the space, and runs off the bottom of it: a size over
+        // the constraints would be centred on them, cutting off the top instead.
+        val height = if (fitHeight || !constraints.hasBoundedHeight) h + ends else minOf(h + ends, constraints.maxHeight)
+        layout(w + sides, height) {
             placeable.placeWithLayer(sides / 2 + (w - placeable.width) / 2, top.roundToPx() + (h - placeable.height) / 2) {
                 scaleX = scale
                 scaleY = scale
