@@ -227,7 +227,7 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
          * changed; only the part that is painted has. See `QuickSliderView.setDrawnThickness`.
          */
         const val MIN_THICKNESS = 10f
-        const val DEFAULT_THICKNESS = 28f
+        const val DEFAULT_THICKNESS = 32f
 
         /** The furthest the open panel may stand in from the edge. See [getEdgeOffsetDp]. */
         const val MAX_EDGE_OFFSET = 48f

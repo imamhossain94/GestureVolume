@@ -78,15 +78,25 @@ class HandlerPresetsTest {
     }
 
     @Test
-    fun `the Dock's panel is thicker than the Edge's, with its number and icon further in`() {
+    fun `the Dock's and the Edge's panels are 32dp across, the Dock's number and icon further in`() {
         val dock = HandlerPresets.DEFAULT.behaviour.slider
-        assertEquals(28f, dock.thicknessDp, 0f)
+        assertEquals(32f, dock.thicknessDp, 0f)
         assertEquals(35f, dock.valueMarginDp, 0f)
         assertEquals(35f, dock.iconMarginDp, 0f)
         val edge = HandlerPresets.EDGE.behaviour.slider
-        assertEquals(24f, edge.thicknessDp, 0f)
+        assertEquals(32f, edge.thicknessDp, 0f)
         assertEquals(26f, edge.valueMarginDp, 0f)
         assertEquals(26f, edge.iconMarginDp, 0f)
+        // And so is a fresh install's, which is the Dock's.
+        assertEquals(32f, QuickSliderStore.DEFAULT_THICKNESS, 0f)
+    }
+
+    @Test
+    fun `the Classic's and the Bold's panels open as wide as their bars`() {
+        listOf(HandlerPresets.CLASSIC, HandlerPresets.byId("Bold")!!).forEach { preset ->
+            assertEquals(preset.id, preset.width, preset.behaviour.slider.thicknessDp, 0f)
+        }
+        assertEquals(30f, HandlerPresets.CLASSIC.behaviour.slider.thicknessDp, 0f)
     }
 
     @Test
@@ -97,7 +107,16 @@ class HandlerPresetsTest {
         assertEquals(46f, bold.width, 0f)
         assertEquals(46f, bold.height, 0f)
         assertEquals(46f, bold.behaviour.slider.thicknessDp, 0f)
-        assertEquals(8f, bold.behaviour.slider.edgeOffsetDp, 0f)
+    }
+
+    @Test
+    fun `the rounded presets' panels stand a few dp off the edge, the tab's sits flush`() {
+        listOf(HandlerPresets.CLASSIC, HandlerPresets.byId("Bold")!!).forEach { preset ->
+            val offset = preset.behaviour.slider.edgeOffsetDp
+            assertTrue("${preset.id}: $offset", offset in 2f..5f)
+        }
+        assertEquals(HandlerShape.TAB, HandlerPresets.DEFAULT.shape)
+        assertEquals(0f, HandlerPresets.DEFAULT.behaviour.slider.edgeOffsetDp, 0f)
     }
 
     @Test

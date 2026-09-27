@@ -24,8 +24,8 @@ object GlimmerFill {
     // ---- the grid ---------------------------------------------------------------------------------
 
     /**
-     * The spacing of the dots, in dp. Five across the panel's default width, as the slider has five
-     * across its track, and more across a wider panel rather than bigger dots.
+     * The spacing of the dots, in dp. Five across a 28dp panel, as the slider has five across its
+     * track, and more across a wider panel rather than bigger dots: six across the default 32dp.
      */
     const val PITCH_DP = 5.6f
 
