@@ -520,4 +520,5 @@
     <string name="troubleshoot_group_fixes">在此修复</string>
     <string name="troubleshoot_group_steps">另请检查</string>
     <string name="troubleshoot_group_more">更多帮助</string>
+    <string name="preview_title">预览</string>
 </resources>

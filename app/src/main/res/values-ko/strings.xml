@@ -802,4 +802,5 @@
     <string name="troubleshoot_group_fixes">여기서 해결</string>
     <string name="troubleshoot_group_steps">이것도 확인</string>
     <string name="troubleshoot_group_more">추가 도움말</string>
+    <string name="preview_title">미리보기</string>
 </resources>

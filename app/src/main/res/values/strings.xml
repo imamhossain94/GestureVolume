@@ -394,7 +394,7 @@
     <string name="context_menu_move_down">Move down</string>
     <string name="context_menu_hide_item">Remove from menu</string>
     <string name="context_menu_show_item">Add to menu</string>
-    <string name="appearance_preview_hint">Your handler at its real size. How it works acts out each gesture with your own settings. Long press the live bar to move it.</string>
+    <string name="appearance_preview_hint">Your handler as it looks on your screen. How it works acts out each gesture with your own settings. Long press the live bar to move it.</string>
     <string name="faq">FAQ</string>
     <string name="faq_desc">Common questions</string>
     <string name="context_menu_layout">Layout</string>
@@ -1079,4 +1079,5 @@
     <string name="troubleshoot_group_fixes">Fix it here</string>
     <string name="troubleshoot_group_steps">Also check</string>
     <string name="troubleshoot_group_more">More help</string>
+    <string name="preview_title">Preview</string>
 </resources>

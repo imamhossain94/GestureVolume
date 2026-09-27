@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.components
 
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Path
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.animation.togetherWith
@@ -211,6 +212,8 @@ fun GestureDemoOverlay(
     if (!state.playing) return
     val handlePath = remember { Path() }
     val density = LocalDensity.current
+    // The bar is drawn smaller on a preview's glass than on the phone: see PreviewStage.
+    val glassScale = LocalGlassScale.current
     val onLeft = barAtStart != (LocalLayoutDirection.current == LayoutDirection.Rtl)
     // Keyed on the side the bar is on. Moved to the other edge part-way through a pass, the bar
     // takes the hand with it at once: a fresh pose, hidden, and the pass started again from the new
@@ -220,12 +223,12 @@ fun GestureDemoOverlay(
     var size by remember { mutableStateOf(IntSize.Zero) }
     LaunchedEffect(state.generation, onLeft) {
         val box = snapshotFlow { size }.first { it.width > 0 && it.height > 0 }
-        density.runDemo(state, pose, box, onLeft, with(density) { barInset.toPx() })
+        density.runDemo(state, pose, box, onLeft, with(density) { barInset.toPx() } * glassScale)
     }
     Canvas(modifier = modifier.onSizeChanged { size = it }) {
         // On the glass, and only on it: a ring spreading from a touch at the edge stops at the edge.
         clipRect {
-            if (showBar) drawStandInBar(pose, handle, onLeft, handlePath)
+            if (showBar) drawStandInBar(pose, handle, onLeft, handlePath, glassScale)
             drawTouchRings(pose)
         }
         // The hand is not clipped: it reaches in over the frame, from beyond the phone.
@@ -262,39 +265,6 @@ fun HowItWorksButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             )
         }
     }
-}
-
-/**
- * What the finger is doing, in the row under the phone while the demo plays, and nothing at rest.
- * [content] words it for the screen: the gesture alone, or the gesture and what it is set to do.
- */
-@Composable
-fun DemoCaption(
-    state: GestureDemoState,
-    modifier: Modifier = Modifier,
-    content: @Composable (DemoGesture) -> Unit,
-) {
-    val step by remember(state) { derivedStateOf { state.currentStep } }
-    AnimatedContent(
-        targetState = step,
-        transitionSpec = { fadeIn() togetherWith fadeOut() },
-        contentAlignment = Alignment.CenterStart,
-        modifier = modifier,
-        label = "demoCaption",
-    ) { gesture -> if (gesture != null) content(gesture) }
-}
-
-/**
- * The row under a preview's phone: what the finger is doing on the left, while it does it, and the
- * button that plays it again on the right. [caption] words the gesture; by default, its name.
- */
-@Composable
-fun RowScope.DemoFooter(
-    state: GestureDemoState,
-    caption: @Composable (DemoGesture) -> Unit = { DemoGestureText(it) },
-) {
-    DemoCaption(state, Modifier.weight(1f), caption)
-    HowItWorksButton(onClick = state::replay)
 }
 
 /** A gesture's name, as a caption under the phone: the walkthrough's caption, on the card. */
@@ -512,10 +482,10 @@ private fun mix(a: Float, b: Float, t: Float) = a + (b - a) * t
  * so a demo shows the handle they will actually be touching. Scaled down only when the stage is
  * too short for it, and then evenly, so a tab keeps its sweeps rather than being squashed.
  */
-private fun DrawScope.drawStandInBar(pose: FingerPose, handle: HandleLook, onLeft: Boolean, path: Path) {
+private fun DrawScope.drawStandInBar(pose: FingerPose, handle: HandleLook, onLeft: Boolean, path: Path, glassScale: Float) {
     if (pose.barAlpha <= 0f) return
-    val fullHeight = handle.heightDp * density
-    val scale = if (fullHeight <= 0f) 1f else minOf(1f, size.height * 0.55f / fullHeight)
+    val fullHeight = handle.heightDp * density * glassScale
+    val scale = glassScale * if (fullHeight <= 0f) 1f else minOf(1f, size.height * 0.55f / fullHeight)
     drawHandle(
         look = handle,
         edgeX = if (onLeft) 0f else size.width,

@@ -757,11 +757,20 @@ fun DeckPreviewStrip(
     cornerDp: Float,
     glass: Boolean,
     modifier: Modifier = Modifier,
+    /** How tall the strip is, as on the phone; null for as tall as [PREVIEW_TILE_COUNT] tiles. */
+    heightDp: Float? = null,
 ) {
     val shape = RoundedCornerShape(cornerDp.dp)
+    // As many as the strip holds, as the real one shows as many as it holds and scrolls the rest.
+    val count = if (heightDp == null) {
+        PREVIEW_TILE_COUNT
+    } else {
+        ((heightDp - STRIP_PADDING_DP * 2 + TILE_GAP_DP) / (TILE_DP + TILE_GAP_DP)).toInt().coerceAtLeast(1)
+    }
     Column(
         modifier = modifier
             .width(widthDp.dp)
+            .then(if (heightDp != null) Modifier.height(heightDp.dp) else Modifier)
             .clip(shape)
             .background(palette.background)
             .then(if (glass) Modifier.liquidGlass(cornerDp.dp, palette.light) else Modifier)
@@ -771,7 +780,7 @@ fun DeckPreviewStrip(
     ) {
         // However many fit the stage. The real strip scrolls; a preview that scrolled would be
         // inviting a gesture that tells the user nothing.
-        tiles.take(PREVIEW_TILE_COUNT).forEach { tile ->
+        tiles.take(count).forEach { tile ->
             TileButton(
                 icon = tile.icon,
                 label = stringResource(tile.labelRes),
@@ -785,3 +794,8 @@ fun DeckPreviewStrip(
 
 /** As many tiles as the preview stage has room for without the last one being clipped. */
 private const val PREVIEW_TILE_COUNT = 4
+
+/** A tile, the gap between two, and the strip's own padding at each end, in dp: see [TileButton]. */
+private const val TILE_DP = 44f
+private const val TILE_GAP_DP = 6f
+private const val STRIP_PADDING_DP = 10f

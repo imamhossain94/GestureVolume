@@ -802,4 +802,5 @@
     <string name="troubleshoot_group_fixes">ここで解決</string>
     <string name="troubleshoot_group_steps">こちらも確認</string>
     <string name="troubleshoot_group_more">その他のヘルプ</string>
+    <string name="preview_title">プレビュー</string>
 </resources>

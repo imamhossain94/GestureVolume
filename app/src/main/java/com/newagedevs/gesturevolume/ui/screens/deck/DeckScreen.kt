@@ -1,5 +1,7 @@
 package com.newagedevs.gesturevolume.ui.screens.deck
 
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.AspectRatio
@@ -65,7 +67,6 @@ import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
-import com.newagedevs.gesturevolume.ui.components.DemoFooter
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -214,6 +215,7 @@ fun DeckScreen(
         // so every colour and every number on this screen was set blind and checked by going out
         // and opening the thing.
         PreviewSettingsLayout(
+            hint = stringResource(R.string.deck_card_subtitle),
             contentPadding = padding,
             preview = { modifier, fillHeight ->
                 PreviewStage(
@@ -232,14 +234,22 @@ fun DeckScreen(
                         )
                     },
                     // Under the phone: what the finger is doing, and the button that plays it.
-                    footer = { DemoFooter(gestureDemo) },
+                    demo = gestureDemo,
                 ) {
+                    // As tall as the Deck is on the phone, as far as the part of the phone that
+                    // shows will take it: the glass is the phone's screen, drawn smaller.
+                    val screenHeight = LocalConfiguration.current.let { maxOf(it.screenWidthDp, it.screenHeightDp) }
+                    BoxWithConstraints(
+                        modifier = Modifier.matchParentSize(),
+                        contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
+                    ) {
                     DeckPreviewStrip(
                         tiles = previewTiles,
                         palette = previewPalette,
                         widthDp = width,
                         cornerDp = corner,
                         glass = PanelTheme.hasLitEdge(panelTheme),
+                        heightDp = minOf(screenHeight * height, maxHeight.value * 0.8f),
                         modifier = Modifier
                             .padding(horizontal = 14.dp)
                             .panelFrame { entrance.value }
@@ -253,6 +263,7 @@ fun DeckScreen(
                                 translationX = (1f - reveal) * 44.dp.toPx() * (if (deckOnLeft) -1f else 1f)
                             },
                     )
+                    }
                 }
             },
         ) {

@@ -73,7 +73,6 @@ import com.newagedevs.gesturevolume.ui.components.HandleLook
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
-import com.newagedevs.gesturevolume.ui.components.DemoFooter
 import com.newagedevs.gesturevolume.ui.components.scaleToFit
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import androidx.compose.animation.core.animateFloatAsState
@@ -211,9 +210,11 @@ fun LongPressMenuScreen(
                         )
                     }
                 },
+                // Transparent, as every other screen's: a surface-coloured bar stood out as a band
+                // against the page in the dark theme.
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                    containerColor = Color.Transparent,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
                 modifier = Modifier.statusBarsPadding()
             )
@@ -224,14 +225,7 @@ fun LongPressMenuScreen(
         // worst possible arrangement.
         PreviewSettingsLayout(
             contentPadding = padding,
-            header = {
-                Text(
-                    text = stringResource(R.string.context_menu_desc),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
-            },
+            hint = stringResource(R.string.context_menu_desc),
             preview = { modifier, fillHeight ->
                 PreviewStage(
                     fillHeight = fillHeight,
@@ -248,7 +242,7 @@ fun LongPressMenuScreen(
                         )
                     },
                     // Under the phone: what the finger is doing, and the button that plays it.
-                    footer = { DemoFooter(gestureDemo) },
+                    demo = gestureDemo,
                 ) {
                     ContextMenuCard(
                         entries = HandlerActionCatalog.contextMenuEntries(shown.toList()),
@@ -285,6 +279,7 @@ fun LongPressMenuScreen(
                 title = stringResource(R.string.section_size_shape),
                 icon = Icons.Filled.AspectRatio,
                 summary = "${menuWidth.toInt()} × ${menuHeight.toInt()}dp",
+                initiallyExpanded = true,
             ) {
                 SectionLabel(stringResource(R.string.context_menu_layout))
                 LayoutSelector(
@@ -370,7 +365,6 @@ fun LongPressMenuScreen(
                 title = stringResource(R.string.section_items),
                 icon = Icons.AutoMirrored.Filled.List,
                 summary = stringResource(R.string.context_menu_count, HandlerActionCatalog.contextMenuEntries(shown.toList()).size),
-                initiallyExpanded = true,
             ) {
                 SectionLabel(stringResource(R.string.context_menu_shown))
                 if (shown.isEmpty()) {

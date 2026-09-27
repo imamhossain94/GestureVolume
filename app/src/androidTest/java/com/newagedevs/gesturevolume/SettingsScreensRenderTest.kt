@@ -3,6 +3,8 @@ package com.newagedevs.gesturevolume
 import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
@@ -57,10 +59,38 @@ class SettingsScreensRenderTest {
     @Test
     fun menu() = film("menu") { LongPressMenuScreen(viewModel = viewModel, onNavigateBack = {}) }
 
+    /** Appearance and the long-press menu in the dark theme, as they open and while the demo plays. */
+    @Test
+    fun dark() {
+        var which by androidx.compose.runtime.mutableIntStateOf(0)
+        compose.setContent {
+            GestureVolumeTheme(darkTheme = true) {
+                if (which == 0) {
+                    HandlerAppearanceScreen(viewModel = viewModel, presetId = null, onNavigateBack = {})
+                } else {
+                    LongPressMenuScreen(viewModel = viewModel, onNavigateBack = {})
+                }
+            }
+        }
+        Thread.sleep(1300)
+        save("settings_dark_appearance_demo")
+        // The demo runs on the test's clock, which sleeping does not move.
+        compose.mainClock.advanceTimeBy(15_000)
+        save("settings_dark_appearance")
+        compose.runOnIdle { which = 1 }
+        Thread.sleep(1300)
+        save("settings_dark_menu_demo")
+        compose.mainClock.advanceTimeBy(15_000)
+        save("settings_dark_menu")
+    }
+
     private fun film(name: String, screen: @Composable () -> Unit) {
         compose.setContent { GestureVolumeTheme { screen() } }
         Thread.sleep(1500)
         save("settings_${name}_0")
+        // At rest: the demo runs on the test's clock, which sleeping does not move.
+        compose.mainClock.advanceTimeBy(15_000)
+        save("settings_${name}_rest")
         for (title in listOf("Size & shape", "Colours")) {
             val nodes = compose.onAllNodesWithText(title).fetchSemanticsNodes()
             if (nodes.isNotEmpty()) {

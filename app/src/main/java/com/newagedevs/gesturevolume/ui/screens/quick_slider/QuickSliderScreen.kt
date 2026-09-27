@@ -65,7 +65,6 @@ import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
 import com.newagedevs.gesturevolume.ui.components.GestureDemoState
-import com.newagedevs.gesturevolume.ui.components.DemoFooter
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import com.newagedevs.gesturevolume.ui.components.PREVIEW_SUBJECT_MAX_HEIGHT
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
@@ -326,14 +325,7 @@ fun QuickSliderScreen(
         // problem with extra steps.
         PreviewSettingsLayout(
             contentPadding = padding,
-            header = {
-                Text(
-                    text = stringResource(R.string.quick_slider_intro),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            },
+            hint = stringResource(R.string.quick_slider_intro),
             preview = { modifier, fillHeight ->
                 SliderPreview(
                     modifier = modifier,
@@ -946,7 +938,7 @@ private fun SliderPreview(
             )
         },
         // Under the phone: what the finger is doing, and the button that plays it.
-        footer = { DemoFooter(demo) },
+        demo = demo,
     ) {
         AndroidView(
             factory = { ctx -> QuickSliderView(ctx).also { sliderView = it } },

@@ -58,7 +58,6 @@ import com.newagedevs.gesturevolume.utils.AdPacing
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
-import com.newagedevs.gesturevolume.ui.components.DemoFooter
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Alignment
@@ -443,9 +442,11 @@ fun HandlerAppearanceScreen(
                             )
                         }
                     },
+                    // Transparent, as every other screen's: a surface-coloured bar stood out as a band
+                    // against the page in the dark theme.
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                        containerColor = Color.Transparent,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     ),
                     modifier = Modifier.statusBarsPadding()
                 )
@@ -456,17 +457,10 @@ fun HandlerAppearanceScreen(
             // beside them on its side; see PreviewSettingsLayout.
             PreviewSettingsLayout(
                 contentPadding = innerPadding,
-                // Above the preview, matching the Quick panel's screen. The dock shows what the bar
+                // On the preview's card, as the Quick panel's screen has it. The dock shows what the bar
                 // will look like and cannot show what it will do, so the one thing worth saying here
                 // is where the rest of it lives.
-                header = {
-                    Text(
-                        text = stringResource(R.string.appearance_preview_hint),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
-                },
+                hint = stringResource(R.string.appearance_preview_hint),
                 preview = { modifier, fillHeight ->
                     val barAtStart = state.gravity == Gravity.START
                     HandlerPreviewSurface(
@@ -483,10 +477,9 @@ fun HandlerAppearanceScreen(
                                 modifier = Modifier.matchParentSize(),
                             )
                         },
-                        // Under the phone: what each gesture is set to do, and the button that plays it.
-                        footer = {
-                            DemoFooter(gestureDemo) { gesture -> GestureCaption(gesture, previewEffects.actionOf(gesture)) }
-                        },
+                        // The demo it plays, and under the phone while it plays, what each gesture is set to do.
+                        demo = gestureDemo,
+                        caption = { gesture -> GestureCaption(gesture, previewEffects.actionOf(gesture)) },
                     ) {
                         // On the phone's screen with the bar, so what is placed against its edge
                         // lines up with it. What the finger's taps and swipes do, with the user's

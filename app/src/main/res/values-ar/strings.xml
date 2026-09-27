@@ -520,4 +520,5 @@
     <string name="troubleshoot_group_fixes">أصلحها من هنا</string>
     <string name="troubleshoot_group_steps">تحقق أيضًا</string>
     <string name="troubleshoot_group_more">مزيد من المساعدة</string>
+    <string name="preview_title">معاينة</string>
 </resources>

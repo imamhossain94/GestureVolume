@@ -802,4 +802,5 @@
     <string name="troubleshoot_group_fixes">এখানেই ঠিক করুন</string>
     <string name="troubleshoot_group_steps">এগুলোও দেখুন</string>
     <string name="troubleshoot_group_more">আরও সাহায্য</string>
+    <string name="preview_title">প্রিভিউ</string>
 </resources>

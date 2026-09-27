@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.components
 
+import androidx.compose.runtime.CompositionLocalProvider
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,15 +51,15 @@ fun isLandscape(): Boolean =
  *
  * @param contentPadding the Scaffold's padding. Its top and its sides are applied here; its bottom
  *   belongs to the scrolling settings, which pad for the navigation bar themselves.
- * @param header a line above the preview, when the screen has one. Laid out edge to edge of the
- *   preview column, so it lines up with the preview under it.
+ * @param hint what the preview is for, said on its card under the phone while its demo is not
+ *   playing — see [LocalPreviewHint]. It used to be a line above the preview, outside the card.
  * @param preview told the modifier to place it with, and whether to fill the height it is given.
  */
 @Composable
 fun PreviewSettingsLayout(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
-    header: (@Composable () -> Unit)? = null,
+    hint: String? = null,
     preview: @Composable (modifier: Modifier, fillHeight: Boolean) -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -86,9 +87,10 @@ fun PreviewSettingsLayout(
                         .navigationBarsPadding()
                         .padding(bottom = 12.dp)
                 ) {
-                    header?.invoke()
                     Spacer(modifier = Modifier.height(8.dp))
-                    preview(Modifier.weight(1f), true)
+                    CompositionLocalProvider(LocalPreviewHint provides hint) {
+                        preview(Modifier.weight(1f), true)
+                    }
                 }
                 Column(
                     modifier = Modifier
@@ -103,10 +105,11 @@ fun PreviewSettingsLayout(
         }
     } else {
         Column(modifier = framed) {
-            header?.let {
-                Box(modifier = Modifier.padding(horizontal = SIDE_MARGIN)) { it() }
+            // Pinned: only the settings under it scroll, so the preview is in sight whatever is
+            // being changed.
+            CompositionLocalProvider(LocalPreviewHint provides hint) {
+                preview(Modifier.padding(start = SIDE_MARGIN, end = SIDE_MARGIN, top = 4.dp), false)
             }
-            preview(Modifier.padding(start = SIDE_MARGIN, end = SIDE_MARGIN, top = 8.dp), false)
             Spacer(modifier = Modifier.height(10.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
             Column(

@@ -802,4 +802,5 @@
     <string name="troubleshoot_group_fixes">Buradan düzelt</string>
     <string name="troubleshoot_group_steps">Şunları da kontrol et</string>
     <string name="troubleshoot_group_more">Daha fazla yardım</string>
+    <string name="preview_title">Önizleme</string>
 </resources>

@@ -1,5 +1,30 @@
 package com.newagedevs.gesturevolume.ui.components
 
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.AnimatedContent
+import com.newagedevs.gesturevolume.R
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.background
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +40,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,9 +73,16 @@ import androidx.compose.ui.layout.layout
  * an edge is on the screen's edge. [overGlass] has the same bounds and no clip, for the demo's hand,
  * which reaches in over the frame from beyond the phone, as it does in the walkthrough.
  *
- * [footer] is the row under the phone, on the card, as the walkthrough's cards have one for their
- * words: what the demo is doing, and the button that plays it. Nothing but the preview and the hand
- * goes on the glass, where a caption or a button would sit on whatever the preview shows there.
+ * Dressed as the Actions screen's Try it card, so every screen that shows its subject shows it the
+ * same way: a card with its name at the top — and, when there is a [demo], the button that plays it
+ * across from the name — the phone on a stage inside it, and under the stage a few lines on what
+ * the preview is for ([LocalPreviewHint]). While the demo plays, what the finger is doing takes the
+ * place of those lines, centred, in the same space: the card never grows or shrinks around it.
+ * Nothing but the preview and the hand goes on the glass, where a caption or a button would sit on
+ * whatever the preview shows there.
+ *
+ * @param demo the "How it works" demo this preview plays, if it has one.
+ * @param caption words the gesture the demo is making: by default, its name.
  *
  * @param fillHeight fill the height it is given instead of taking [PREVIEW_STAGE_HEIGHT] — for the
  *   landscape arrangement, where the preview has a column of its own. See [PreviewSettingsLayout].
@@ -62,20 +93,49 @@ fun PreviewStage(
     contentAlignment: Alignment = Alignment.Center,
     fillHeight: Boolean = false,
     overGlass: @Composable BoxScope.() -> Unit = {},
-    footer: (@Composable RowScope.() -> Unit)? = null,
+    demo: GestureDemoState? = null,
+    caption: @Composable (DemoGesture) -> Unit = { DemoGestureText(it) },
     content: @Composable BoxScope.() -> Unit,
 ) {
-    Surface(
+    val colours = MaterialTheme.colorScheme
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .then(if (fillHeight) Modifier.fillMaxHeight() else Modifier.height(PREVIEW_STAGE_HEIGHT)),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceContainer,
+            .then(if (fillHeight) Modifier.fillMaxHeight() else Modifier)
+            .clip(RoundedCornerShape(24.dp))
+            .background(colours.surfaceVariant.copy(alpha = 0.65f))
+            .padding(12.dp),
     ) {
-        Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 6.dp, bottom = 10.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.PhoneAndroid,
+                contentDescription = null,
+                tint = colours.primary,
+                modifier = Modifier.size(20.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = stringResource(R.string.preview_title),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = colours.onSurface,
+                modifier = Modifier.weight(1f),
+            )
+            if (demo != null) HowItWorksButton(onClick = demo::replay)
+        }
         // Clipped, as the walkthrough's picture is: the hand reaches in over the frame and is cut off
         // at the bottom of the phone, and never strays into the row of words under it.
-        BoxWithConstraints(modifier = Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(if (fillHeight) Modifier.weight(1f) else Modifier.height(PREVIEW_PHONE_HEIGHT))
+                .clip(RoundedCornerShape(18.dp))
+                .background(colours.surface)
+                .clipToBounds()
+        ) {
             // One of the scene's units, in dp, and where the scene sits: the walkthrough's fit.
             val unit = DeviceArt.scale(maxWidth.value, maxHeight.value)
             val origin = DeviceArt.origin(maxWidth.value, maxHeight.value, unit)
@@ -97,27 +157,90 @@ fun PreviewStage(
                     top = (origin.y + DeviceArt.SCREEN_T * unit).dp,
                 )
             val corner = (DeviceArt.SCREEN_CORNER * unit).dp
-            Box(
-                modifier = glass.clip(RoundedCornerShape(topStart = corner, topEnd = corner)),
-                contentAlignment = contentAlignment,
-                content = content,
-            )
-            Box(modifier = glass, content = overGlass)
+            // The screen as this phone would show it: its contents laid out at the width of the
+            // phone's own screen and drawn smaller by as much as the frame is, so a 30dp bar is as
+            // thin against this glass as it is against the real one, and a Deck as narrow. Drawn at
+            // their size in dp on a phone a fraction of the size, they were several times too big.
+            val glassWidth = maxWidth.value - 2f * origin.x - (DeviceArt.SCREEN_L + DeviceArt.SCENE_W - DeviceArt.SCREEN_R) * unit
+            val screenWidth = LocalConfiguration.current.let { minOf(it.screenWidthDp, it.screenHeightDp) }
+            val scale = (glassWidth / screenWidth.coerceAtLeast(1)).coerceIn(0.05f, 1f)
+            CompositionLocalProvider(LocalGlassScale provides scale) {
+                Box(modifier = glass.clip(RoundedCornerShape(topStart = corner, topEnd = corner))) {
+                    Box(
+                        modifier = Modifier.miniature(scale),
+                        contentAlignment = contentAlignment,
+                        content = content,
+                    )
+                }
+                Box(modifier = glass, content = overGlass)
+            }
         }
-        if (footer != null) {
-            Row(
+        // The lines under the stage: what the preview is for, and while the demo plays, what the
+        // finger is doing, centred, in the same three lines' space.
+        val hint = LocalPreviewHint.current
+        if (hint != null || demo != null) {
+            val lines = with(LocalDensity.current) { (MaterialTheme.typography.bodySmall.lineHeight * 3).toDp() }
+            val step = demo?.let { d -> remember(d) { derivedStateOf { d.currentStep } }.value }
+            AnimatedContent(
+                targetState = step,
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(PREVIEW_FOOTER_HEIGHT)
-                    .padding(horizontal = 18.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                content = footer,
-            )
-        }
+                    .padding(start = 6.dp, end = 6.dp, top = 10.dp)
+                    .height(lines),
+                label = "previewLines",
+            ) { gesture ->
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = if (gesture != null) Alignment.Center else Alignment.CenterStart,
+                ) {
+                    if (gesture != null) {
+                        caption(gesture)
+                    } else if (hint != null) {
+                        Text(
+                            text = hint,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colours.onSurfaceVariant,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
         }
     }
 }
+
+/**
+ * How much smaller than on the phone itself things are drawn on a preview's glass: see
+ * [PreviewStage]. For what is drawn over the glass rather than on it, such as the demo's hand,
+ * to find what is on it.
+ */
+val LocalGlassScale = compositionLocalOf { 1f }
+
+/**
+ * Lays out what it modifies at the size it is given divided by [scale], and draws it [scale] times
+ * as big, from the top left: the phone's screen, in the space of a picture of it.
+ */
+private fun Modifier.miniature(scale: Float): Modifier = layout { measurable, constraints ->
+    val w = constraints.maxWidth
+    val h = constraints.maxHeight
+    val placeable = measurable.measure(Constraints.fixed((w / scale).roundToInt(), (h / scale).roundToInt()))
+    layout(w, h) {
+        placeable.placeWithLayer(0, 0) {
+            scaleX = scale
+            scaleY = scale
+            transformOrigin = TransformOrigin(0f, 0f)
+        }
+    }
+}
+
+/**
+ * What the preview is for, said under it while its demo is not playing — the line each screen
+ * used to put above its preview, now on the card, under the phone. See [PreviewStage].
+ */
+val LocalPreviewHint = compositionLocalOf<String?> { null }
 
 /**
  * Draws what it modifies at up to [maxScale] of its own size, and smaller wherever that would not
@@ -152,8 +275,8 @@ fun Modifier.scaleToFit(maxScale: Float, horizontal: Dp, top: Dp, bottom: Dp): M
         }
     }
 
-/** The row under the phone, for the demo's caption and its button. */
-val PREVIEW_FOOTER_HEIGHT = 52.dp
+/** The row under the phone, for the demo's caption and its button: at least this tall. */
+val PREVIEW_FOOTER_HEIGHT = 44.dp
 
 /**
  * How tall every preview is, the row under the phone included.
@@ -167,9 +290,12 @@ val PREVIEW_FOOTER_HEIGHT = 52.dp
  */
 val PREVIEW_STAGE_HEIGHT = 300.dp
 
+/** The phone's part of that, above the row: where the card fits the phone the way it always has. */
+val PREVIEW_PHONE_HEIGHT = 212.dp
+
 /**
  * The tallest a subject is drawn: tall and thin subjects are capped here, so neither runs off the
  * ends of the screen it is being judged on — a track bleeding off both edges reads as a cropped
  * photograph rather than as an object standing on one.
  */
-val PREVIEW_SUBJECT_MAX_HEIGHT = 178.dp
+val PREVIEW_SUBJECT_MAX_HEIGHT = 260.dp

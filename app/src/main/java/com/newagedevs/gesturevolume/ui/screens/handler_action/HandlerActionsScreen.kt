@@ -384,24 +384,11 @@ fun HandlerActionsScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
         }
-        if (isLandscape()) {
-            // On its side, the pad beside the gestures rather than above them, as the preview
-            // screens put their preview: two fifths for the pad, as tall as the screen allows, and
-            // the gestures scrolling in the rest — so trying one and changing it are both in view.
-            PreviewSettingsLayout(contentPadding = padding, preview = tryPad, content = groups)
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                tryPad(Modifier, false)
-                Spacer(modifier = Modifier.height(24.dp))
-                groups()
-            }
-        }
+        // The pad where the preview screens put their preview, and pinned as theirs is: above the
+        // gestures upright, only the gestures scrolling under it; beside them on its side, two
+        // fifths of the width and as tall as the screen allows — so trying a gesture and changing
+        // it are both in view, whichever way the phone is held.
+        PreviewSettingsLayout(contentPadding = padding, preview = tryPad, content = groups)
     }
 }
 

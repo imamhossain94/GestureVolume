@@ -17,7 +17,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.newagedevs.gesturevolume.ui.components.DemoFooter
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoState
 import com.newagedevs.gesturevolume.ui.components.PREVIEW_STAGE_HEIGHT
@@ -135,7 +134,8 @@ class HandlerPreviewEffectsRenderTest {
                 HandlerPreviewSurface(
                     state = state,
                     barLabel = { effects.barLabel(showPercent) },
-                    footer = { DemoFooter(demo) { gesture -> GestureCaption(gesture, effects.actionOf(gesture)) } },
+                    demo = demo,
+                    caption = { gesture -> GestureCaption(gesture, effects.actionOf(gesture)) },
                 ) {
                     HandlerPreviewEffects(
                         effects = effects,

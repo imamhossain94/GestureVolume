@@ -802,4 +802,5 @@
     <string name="troubleshoot_group_fixes">Исправить здесь</string>
     <string name="troubleshoot_group_steps">Проверьте также</string>
     <string name="troubleshoot_group_more">Ещё помощь</string>
+    <string name="preview_title">Предпросмотр</string>
 </resources>

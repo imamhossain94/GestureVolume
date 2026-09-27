@@ -520,4 +520,5 @@
     <string name="troubleshoot_group_fixes">Sửa tại đây</string>
     <string name="troubleshoot_group_steps">Kiểm tra thêm</string>
     <string name="troubleshoot_group_more">Thêm trợ giúp</string>
+    <string name="preview_title">Xem trước</string>
 </resources>

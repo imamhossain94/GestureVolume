@@ -1,5 +1,8 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
+import com.newagedevs.gesturevolume.ui.components.DemoGestureText
+import com.newagedevs.gesturevolume.ui.components.DemoGesture
+import com.newagedevs.gesturevolume.ui.components.GestureDemoState
 import android.view.Gravity
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.BoxScope
@@ -57,8 +60,9 @@ fun HandlerPreviewSurface(
     barLabel: () -> Int? = { null },
     /** Over the glass and unclipped, for the demo's hand: see [PreviewStage]. */
     overGlass: @Composable BoxScope.() -> Unit = {},
-    /** The row under the phone, for the demo's caption and its button: see [PreviewStage]. */
-    footer: (@Composable RowScope.() -> Unit)? = null,
+    /** The demo the card's button plays, and how its gestures are worded: see [PreviewStage]. */
+    demo: GestureDemoState? = null,
+    caption: @Composable (DemoGesture) -> Unit = { DemoGestureText(it) },
     /**
      * Laid over the bar on the phone's screen, so what it places against the screen's edge lines up
      * with the bar: what the gestures do, the replay button.
@@ -109,7 +113,7 @@ fun HandlerPreviewSurface(
         }
     }
 
-    PreviewStage(modifier = modifier, fillHeight = fillHeight, overGlass = overGlass, footer = footer) {
+    PreviewStage(modifier = modifier, fillHeight = fillHeight, overGlass = overGlass, demo = demo, caption = caption) {
         AndroidView(
             factory = { ctx ->
                 FrameLayout(ctx).apply {
