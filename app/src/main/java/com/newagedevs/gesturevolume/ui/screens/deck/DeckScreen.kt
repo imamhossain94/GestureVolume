@@ -67,6 +67,7 @@ import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.HowItWorksAction
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -195,7 +196,7 @@ fun DeckScreen(
     }
 
     Scaffold(
-        // The top bar is clear: the preview's header washes itself, behind it. See headerWash.
+        // The top bar is clear, on the plain page as the preview under it is.
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.deck_title)) },
@@ -204,6 +205,7 @@ fun DeckScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
+                actions = { HowItWorksAction(gestureDemo) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -234,7 +236,7 @@ fun DeckScreen(
                             modifier = Modifier.matchParentSize(),
                         )
                     },
-                    // Under the phone: what the finger is doing, and the button that plays it.
+                    // What the finger is doing, on the stage while the demo plays.
                     demo = gestureDemo,
                 ) {
                     // As tall as the Deck is on the phone, as far as the part of the phone that

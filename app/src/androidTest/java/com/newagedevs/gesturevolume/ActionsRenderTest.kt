@@ -54,12 +54,12 @@ class ActionsRenderTest {
         compose.waitForIdle()
         save("actions_screen_0")
         // A swipe up on the pad: it should say which gesture that was, and what it does.
-        // The pad is the 172dp over the words under it.
+        // The pad ends 18dp over the words under it.
         val hint = compose.onNodeWithText("Tap, hold or swipe", substring = true).getBoundsInRoot()
         compose.onRoot().performTouchInput {
             val x = width - 60.dp.toPx()
-            val top = hint.top.toPx() - 190.dp.toPx()
-            swipe(Offset(x, top + 126.dp.toPx()), Offset(x, top + 36.dp.toPx()), durationMillis = 250)
+            val bottom = hint.top.toPx() - 18.dp.toPx()
+            swipe(Offset(x, bottom - 64.dp.toPx()), Offset(x, bottom - 154.dp.toPx()), durationMillis = 250)
         }
         Thread.sleep(600)
         compose.waitForIdle()
@@ -83,7 +83,7 @@ class ActionsRenderTest {
         compose.waitForIdle()
         val hint = compose.onNodeWithText("Tap, hold or swipe", substring = true).getBoundsInRoot()
         fun at(scope: androidx.compose.ui.test.TouchInjectionScope) = with(scope) {
-            Offset(width - 60.dp.toPx(), hint.top.toPx() - 92.dp.toPx())
+            Offset(width - 60.dp.toPx(), hint.top.toPx() - 100.dp.toPx())
         }
         compose.onRoot().performTouchInput { val p = at(this); click(p); click(p) }
         Thread.sleep(1200)

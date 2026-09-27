@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Animation
 import com.newagedevs.gesturevolume.ui.components.ChoiceChip
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
@@ -64,9 +65,9 @@ import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.HowItWorksAction
 import com.newagedevs.gesturevolume.ui.components.GestureDemoState
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
-import com.newagedevs.gesturevolume.ui.components.PREVIEW_SUBJECT_MAX_HEIGHT
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
@@ -301,7 +302,7 @@ fun QuickSliderScreen(
     val accent = MaterialTheme.colorScheme.primary
 
     Scaffold(
-        // The top bar is clear: the preview's header washes itself, behind it. See headerWash.
+        // The top bar is clear, on the plain page as the preview under it is.
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.quick_slider_title)) },
@@ -313,6 +314,7 @@ fun QuickSliderScreen(
                         )
                     }
                 },
+                actions = { HowItWorksAction(demo) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -924,11 +926,12 @@ private fun SliderPreview(
             }
         }
     }
+    // In proportion with the phone, as the bar is on the Appearance screen: drawn at its own size on
+    // a phone drawn at three quarters of it, the panel was a third too big for the screen it was on,
+    // ran up over the status bar into the glass's corner and off the bottom of the stage.
     PreviewStage(
         contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
         fillHeight = fillHeight,
-        // A panel a few dp wide against the whole glass was too slight to see its fill in.
-        naturalSize = true,
         modifier = modifier,
         // The hand reaches in over the frame, as the walkthrough's does; drawing only, so it never
         // takes a touch meant for the preview.
@@ -940,9 +943,17 @@ private fun SliderPreview(
                 modifier = Modifier.matchParentSize(),
             )
         },
-        // Under the phone: what the finger is doing, and the button that plays it.
+        // What the finger is doing, on the stage while the demo plays.
         demo = demo,
     ) {
+        // Between the status bar and as far below the middle, so the panel stays centred on the
+        // glass, where the demo's finger finds the bar it grows out of.
+        BoxWithConstraints(
+            modifier = Modifier
+                .matchParentSize()
+                .padding(vertical = PANEL_PREVIEW_STATUS_BAR),
+            contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
+        ) {
         AndroidView(
             factory = { ctx -> QuickSliderView(ctx).also { sliderView = it } },
             update = { view ->
@@ -1014,20 +1025,23 @@ private fun SliderPreview(
             },
             modifier = Modifier
                 // The side the panel opens against stands in for the screen edge, so at an edge
-                // distance of 0 the panel is flush against the stage's wall, as it is flush against
-                // the screen; the distance is the gap from it. The far side keeps the stage's inset.
+                // distance of 0 the panel is flush against the glass's edge, as a tab is flush
+                // against the screen's; the distance is the gap from it. The far side keeps the
+                // stage's inset.
                 .padding(
                     start = if (handlerOnLeft) edgeOffsetDp.dp else 18.dp,
                     end = if (handlerOnLeft) 18.dp else edgeOffsetDp.dp,
                 )
-                // Capped to the stage's clear height, so a 320dp track is shown shortened rather
-                // than bleeding off both ends. What the user is judging here is width, colour and
-                // the shape of the ends; length is a number they set with a slider and read off it.
-                .height(minOf(lengthDp, PREVIEW_SUBJECT_MAX_HEIGHT.value).dp)
+                // Capped to the glass under the status bar, so a long track is shown shortened
+                // rather than running off either end. What the user is judging here is width,
+                // colour and the shape of the ends; length is a number they set with a slider and
+                // read off it.
+                .height(minOf(lengthDp, maxHeight.value).dp)
                 // The window's floor, not the panel's: the preview is the window, and the panel
                 // is drawn inside it against the edge, exactly as it is on screen.
                 .width(maxOf(thicknessDp, PANEL_PREVIEW_MIN_WINDOW).dp)
         )
+        }
     }
 }
 
@@ -1117,6 +1131,12 @@ private const val QUICK_PANEL_MAX_FLARE = 0.22f
 
 /** Mirrors `OverlayController.PANEL_MIN_THICKNESS_DP`: the window's floor, not the panel's. */
 private const val PANEL_PREVIEW_MIN_WINDOW = 48f
+
+/**
+ * The preview's status bar and camera, and a little under them, in the phone's own dp: they come
+ * down about 36dp of it on the glass. The long-press menu's preview keeps its top as far down.
+ */
+private val PANEL_PREVIEW_STATUS_BAR = 44.dp
 
 /** How long the preview holds each level, and takes to move to the next. */
 private const val LEVEL_PREVIEW_HOLD_MS = 1300L

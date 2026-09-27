@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoState
-import com.newagedevs.gesturevolume.ui.components.PREVIEW_STAGE_HEIGHT
+import com.newagedevs.gesturevolume.ui.components.PREVIEW_STAGE_MAX_HEIGHT
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.AppearanceStateHolder
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.GestureCaption
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.HandlerPreviewEffects
@@ -129,8 +129,8 @@ class HandlerPreviewEffectsRenderTest {
         val state = draft()
         compose.setContent {
             // As the Appearance screen lays it out: the effects on the phone's screen, over the bar,
-            // and the caption in the row under the phone.
-            Box(modifier = Modifier.size(360.dp, PREVIEW_STAGE_HEIGHT)) {
+            // and the caption on the stage. Room under the stage for its description.
+            Box(modifier = Modifier.size(360.dp, PREVIEW_STAGE_MAX_HEIGHT + 60.dp)) {
                 HandlerPreviewSurface(
                     state = state,
                     barLabel = { effects.barLabel(showPercent) },

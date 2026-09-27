@@ -1,5 +1,13 @@
 package com.newagedevs.gesturevolume.ui.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Path
@@ -18,18 +26,12 @@ import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -138,6 +140,12 @@ class GestureDemoState internal constructor(
     val currentStep: DemoGesture?
         get() = if (!acting) null else steps.firstOrNull { progressOf(it) < 1f } ?: steps.last()
 
+    /** Stops where it is, and the preview goes back to rest: for a touch of the user's own mid-demo. */
+    fun stop() {
+        passesLeft = 0
+        rewinding = false
+    }
+
     /** Plays one more pass, from the start. */
     fun replay() {
         passesLeft = 1
@@ -238,33 +246,53 @@ fun GestureDemoOverlay(
 }
 
 /**
- * Replays the demo. In the row under the phone, on the card, where the walkthrough puts its words:
- * over the phone it sat on whatever the preview was showing in that corner.
+ * Replays [demo]: a ? in the screen's top bar, read out as "How it works". In the bar rather than
+ * under the preview, so the row under the phone is the preview's description alone, at the card's
+ * full width, and the button is where a screen's own actions are.
+ *
+ * In the accent while the demo plays, so the ? that was pressed says it is the one playing.
  */
 @Composable
-fun HowItWorksButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    // In the accent, so the one thing on the card to press stands out from what it is about.
-    Surface(
-        onClick = onClick,
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
-        modifier = modifier.height(34.dp),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.padding(start = 8.dp, end = 12.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Default.PlayArrow,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-            )
-            Text(
-                text = stringResource(R.string.how_it_works),
-                style = MaterialTheme.typography.labelMedium,
-            )
+fun HowItWorksAction(demo: GestureDemoState) {
+    val tint by animateColorAsState(
+        if (demo.playing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        label = "howItWorksTint",
+    )
+    IconButton(onClick = demo::replay) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+            contentDescription = stringResource(R.string.how_it_works),
+            tint = tint,
+        )
+    }
+}
+
+/**
+ * What the finger is doing, on the stage while the demo plays: a pill over the bottom of the glass,
+ * as a phone shows a passing message, so the description under the stage never has to make way
+ * for it. Fades between gestures, and out with the demo.
+ */
+@Composable
+fun BoxScope.DemoCaptionPill(demo: GestureDemoState, caption: @Composable (DemoGesture) -> Unit) {
+    val step by remember(demo) { derivedStateOf { demo.currentStep } }
+    AnimatedContent(
+        targetState = step,
+        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        contentAlignment = Alignment.BottomCenter,
+        label = "demoCaption",
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .padding(start = 12.dp, end = 12.dp, bottom = 14.dp),
+    ) { gesture ->
+        if (gesture != null) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .shadow(3.dp, CircleShape)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.94f))
+                    .padding(horizontal = 14.dp, vertical = 7.dp),
+            ) { caption(gesture) }
         }
     }
 }

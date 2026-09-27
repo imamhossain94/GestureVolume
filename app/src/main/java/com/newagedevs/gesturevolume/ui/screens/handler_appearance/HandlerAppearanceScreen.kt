@@ -1,7 +1,5 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.material3.TextButton
 import android.content.res.Configuration
 import android.view.Gravity
 import androidx.activity.compose.BackHandler
@@ -23,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import com.newagedevs.gesturevolume.ui.motion.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -60,6 +59,7 @@ import com.newagedevs.gesturevolume.utils.AdPacing
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.HowItWorksAction
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Alignment
@@ -386,7 +386,7 @@ fun HandlerAppearanceScreen(
     // edits this screen's draft, so it lives with it rather than on a route of its own.
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
-            // The top bar is clear: the preview's header washes itself, behind it. See headerWash.
+            // The top bar is clear, on the plain page as the preview under it is.
             topBar = {
                 TopAppBar(
                     title = { Text(stringResource(R.string.appearance)) },
@@ -401,14 +401,16 @@ fun HandlerAppearanceScreen(
                         }
                     },
                     actions = {
+                        HowItWorksAction(gestureDemo)
                         // Always present, so its place in the bar never moves; live only when there
                         // is something to apply, which is also the whole of the answer to "have I
                         // saved this yet?".
-                        // The tick is the screen's one piece of feedback that something is pending,
-                        // so it is worth a moment of motion. Scale through graphicsLayer rather than a
-                        // size change: the icon sits in a top bar with other buttons beside it, and a
-                        // bouncy spring on a real dimension would shove them sideways. `enabled` still
-                        // gates the click, so an animating tick is never a mis-tap.
+                        // An icon, as the ? beside it is. It is the screen's one piece of feedback
+                        // that something is pending, so it is worth a moment of motion. Scale through graphicsLayer
+                        // rather than a size change: the icon sits in a top bar with other buttons
+                        // beside it, and a bouncy spring on a real dimension would shove them
+                        // sideways. `enabled` still gates the click, so an animating icon is never a
+                        // mis-tap.
                         val tickScale by animateFloatAsState(
                             targetValue = if (hasUnsavedChanges) 1f else 0.85f,
                             animationSpec = AppearanceMotion.Pop,
@@ -423,7 +425,7 @@ fun HandlerAppearanceScreen(
                             animationSpec = AppearanceMotion.Tint,
                             label = "applyTickTint",
                         )
-                        TextButton(
+                        IconButton(
                             onClick = {
                                 saveChanges()
                                 // A break point: the user finished and saved, and stays on this screen.
@@ -437,10 +439,10 @@ fun HandlerAppearanceScreen(
                                 scaleY = tickScale
                             },
                         ) {
-                            Text(
-                                text = stringResource(R.string.save),
-                                color = tickTint,
-                                fontWeight = FontWeight.SemiBold,
+                            Icon(
+                                imageVector = Icons.Filled.Save,
+                                contentDescription = stringResource(R.string.save),
+                                tint = tickTint,
                             )
                         }
                     },

@@ -73,6 +73,7 @@ import com.newagedevs.gesturevolume.ui.components.HandleLook
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.HowItWorksAction
 import com.newagedevs.gesturevolume.ui.components.scaleToFit
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import androidx.compose.animation.core.animateFloatAsState
@@ -198,7 +199,7 @@ fun LongPressMenuScreen(
     val available = HandlerActionCatalog.CONTEXT_MENU_CANDIDATES.filterNot { it.action in shown }
 
     Scaffold(
-        // The top bar is clear: the preview's header washes itself, behind it. See headerWash.
+        // The top bar is clear, on the plain page as the preview under it is.
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.context_menu_title)) },
@@ -210,6 +211,7 @@ fun LongPressMenuScreen(
                         )
                     }
                 },
+                actions = { HowItWorksAction(gestureDemo) },
                 // Transparent, as every other screen's: a surface-coloured bar stood out as a band
                 // against the page in the dark theme.
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -247,7 +249,7 @@ fun LongPressMenuScreen(
                             modifier = Modifier.matchParentSize(),
                         )
                     },
-                    // Under the phone: what the finger is doing, and the button that plays it.
+                    // What the finger is doing, on the stage while the demo plays.
                     demo = gestureDemo,
                 ) {
                     ContextMenuCard(

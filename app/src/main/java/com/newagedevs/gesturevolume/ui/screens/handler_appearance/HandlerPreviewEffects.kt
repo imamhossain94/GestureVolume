@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
+import com.newagedevs.gesturevolume.ui.components.demoGestureName
 import com.newagedevs.gesturevolume.ui.components.GestureDemoState
 import com.newagedevs.gesturevolume.ui.components.actionDisplayName
 import com.newagedevs.gesturevolume.utils.GesturePreview
@@ -280,20 +281,15 @@ private fun BrightnessReadout(level: Int) {
 }
 
 /**
- * "Swipe up · Increase volume": the gesture under way, and what it is set to do, in the row under
- * the phone, worded and coloured as the walkthrough's captions are.
+ * "Swipe up · Increase volume": the gesture under way, and what it is set to do, on the demo's
+ * caption pill, worded and coloured as the walkthrough's captions are. Also the Actions screen's,
+ * for the demo on its Try it pad.
  */
 @Composable
 internal fun GestureCaption(gesture: DemoGesture, action: String) {
     val off = HandlerActions.isDisabled(action)
     val entry = if (off) null else HandlerActionCatalog.displayEntryFor(action)
-    val gestureName = stringResource(
-        when (gesture) {
-            DemoGesture.SWIPE_UP -> R.string.demo_swipe_up
-            DemoGesture.SWIPE_DOWN -> R.string.demo_swipe_down
-            else -> R.string.demo_tap
-        }
-    )
+    val gestureName = stringResource(demoGestureName(gesture))
     val actionName = if (off) stringResource(R.string.demo_does_nothing) else actionDisplayName(action)
     val ink = MaterialTheme.colorScheme.primary
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {

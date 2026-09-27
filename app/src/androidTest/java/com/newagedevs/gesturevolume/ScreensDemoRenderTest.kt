@@ -6,11 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.manager.BillingManager
 import com.newagedevs.gesturevolume.ui.screens.deck.DeckScreen
+import com.newagedevs.gesturevolume.ui.screens.handler_action.HandlerActionsScreen
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.HandlerAppearanceScreen
 import com.newagedevs.gesturevolume.ui.screens.menu.LongPressMenuScreen
 import com.newagedevs.gesturevolume.ui.screens.quick_slider.QuickSliderScreen
@@ -22,7 +25,7 @@ import org.junit.runner.RunWith
 import java.io.File
 
 /**
- * The four screens with a preview, whole, while their "How it works" demo plays: a frame every
+ * The five screens with a preview, whole, while their "How it works" demo plays: a frame every
  * 300ms from arrival, and one once it has finished. Left in the app's cache as screen_*.png.
  *
  * The screens are the real ones, on a view model built from the app's own preferences, so what is
@@ -53,9 +56,19 @@ class ScreensDemoRenderTest {
     @Test
     fun menu() = film("menu") { LongPressMenuScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    private fun film(name: String, screen: @Composable () -> Unit) {
+    /** The Actions screen plays its demo only from the ?, so this one presses it first. */
+    @Test
+    fun actions() = film("actions", pressHelp = true) {
+        HandlerActionsScreen(viewModel = viewModel, onNavigateBack = {})
+    }
+
+    private fun film(name: String, pressHelp: Boolean = false, screen: @Composable () -> Unit) {
         compose.mainClock.autoAdvance = false
         compose.setContent { GestureVolumeTheme { screen() } }
+        if (pressHelp) {
+            compose.mainClock.advanceTimeBy(STEP_MS)
+            compose.onNodeWithContentDescription("How it works").performClick()
+        }
         for (i in 0 until FRAMES) {
             compose.mainClock.advanceTimeBy(STEP_MS)
             save(name, i)

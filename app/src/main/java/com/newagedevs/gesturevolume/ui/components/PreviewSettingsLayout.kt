@@ -1,8 +1,5 @@
 package com.newagedevs.gesturevolume.ui.components
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.foundation.background
 import androidx.compose.runtime.CompositionLocalProvider
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,63 +68,50 @@ fun PreviewSettingsLayout(
         end = contentPadding.calculateEndPadding(direction),
     )
     if (isLandscape()) {
-        // The header here is the top bar alone: its wash fades out just under it.
-        val background = MaterialTheme.colorScheme.background
-        Box(modifier = modifier.fillMaxSize()) {
-            Box(
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(top = top)
+                .then(sides),
+            contentAlignment = Alignment.TopCenter,
+        ) {
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(top + 40.dp)
-                    .headerWash()
-                    .background(Brush.verticalGradient(listOf(Color.Transparent, background))),
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = top)
-                    .then(sides),
-                contentAlignment = Alignment.TopCenter,
+                    .widthIn(max = LANDSCAPE_MAX_WIDTH)
+                    .fillMaxHeight()
+                    .padding(horizontal = SIDE_MARGIN),
+                horizontalArrangement = Arrangement.spacedBy(PANE_GAP),
             ) {
-                Row(
+                Column(
                     modifier = Modifier
-                        .widthIn(max = LANDSCAPE_MAX_WIDTH)
+                        .weight(PREVIEW_SHARE)
                         .fillMaxHeight()
-                        .padding(horizontal = SIDE_MARGIN),
-                    horizontalArrangement = Arrangement.spacedBy(PANE_GAP),
+                        .navigationBarsPadding()
+                        .padding(bottom = 12.dp)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(PREVIEW_SHARE)
-                            .fillMaxHeight()
-                            .navigationBarsPadding()
-                            .padding(bottom = 12.dp)
-                    ) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        CompositionLocalProvider(LocalPreviewHint provides hint) {
-                            preview(Modifier.weight(1f), true)
-                        }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    CompositionLocalProvider(LocalPreviewHint provides hint) {
+                        preview(Modifier.weight(1f), true)
                     }
-                    Column(
-                        modifier = Modifier
-                            .weight(1f - PREVIEW_SHARE)
-                            .fillMaxHeight()
-                            .verticalScroll(rememberScrollState())
-                            .navigationBarsPadding()
-                            .padding(top = 8.dp, bottom = 16.dp),
-                        content = content,
-                    )
                 }
+                Column(
+                    modifier = Modifier
+                        .weight(1f - PREVIEW_SHARE)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState())
+                        .navigationBarsPadding()
+                        .padding(top = 8.dp, bottom = 16.dp),
+                    content = content,
+                )
             }
         }
     } else {
         Column(modifier = modifier.fillMaxSize()) {
             // Pinned: only the settings under it scroll, so the preview is in sight whatever is
-            // being changed. The header — the top bar over it, and the preview — on the wash, which
-            // ends with it: the settings are on the plain page.
+            // being changed. On the plain page, as the settings are: the stage is the one card.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .headerWash()
                     .padding(top = top)
                     .then(sides)
                     .padding(start = SIDE_MARGIN, end = SIDE_MARGIN, top = 4.dp, bottom = 12.dp),

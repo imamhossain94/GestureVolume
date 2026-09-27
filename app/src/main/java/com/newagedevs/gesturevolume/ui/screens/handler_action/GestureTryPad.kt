@@ -1,6 +1,11 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
 import com.newagedevs.gesturevolume.ui.components.StageShape
+import com.newagedevs.gesturevolume.ui.components.DemoCaptionPill
+import com.newagedevs.gesturevolume.ui.components.DemoGesture
+import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.GestureDemoState
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.GestureCaption
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.Gravity
@@ -49,7 +54,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -79,8 +86,14 @@ import com.newagedevs.gesturevolume.utils.HandlerActions
  * nothing until it is tried. The one difference is that every tap count is listened for here, set
  * or not; see [TryPadView].
  *
+ * Shorter than the other screens' previews: it has no phone to show, only a strip of wallpaper and
+ * the bar, and the gestures under it are what this screen is for.
+ *
  * @param actions what each gesture is set to now.
  * @param onChange opens the picker for the gesture just tried.
+ * @param demo the "How it works" demo the screen's ? plays on the strip: the finger acting out the
+ *   gestures on the bar, and on a pill at the foot of the strip, what each is set to do. A touch of
+ *   the user's own stops it, so the finger in the strip is only ever theirs or the demo's.
  * @param fillHeight the strip takes whatever height the pad is given, as it does beside the list
  *   on a phone on its side, instead of a height of its own.
  */
@@ -93,6 +106,7 @@ fun GestureTryPad(
     onLeft: Boolean,
     onChange: (Slot) -> Unit,
     modifier: Modifier = Modifier,
+    demo: GestureDemoState? = null,
     fillHeight: Boolean = false,
 ) {
     val context = LocalContext.current
@@ -111,25 +125,34 @@ fun GestureTryPad(
     }
     pad.onTouch = { at ->
         touch = at
-        if (at != null) lastTouch = at
+        if (at != null) {
+            lastTouch = at
+            demo?.stop()
+        }
     }
     pad.actions = { currentActions }
     LaunchedEffect(doubleTapMs, longPressMs) { pad.setTimings(doubleTapMs, longPressMs) }
     DisposableEffect(pad) { onDispose { pad.cancel() } }
 
     val colours = MaterialTheme.colorScheme
+    val padHeight = LocalConfiguration.current
+        .let { maxOf(it.screenWidthDp, it.screenHeightDp) * PAD_SHARE_OF_SCREEN }.dp
+        .coerceIn(PAD_MIN_HEIGHT, PAD_MAX_HEIGHT)
+    // Upright, the bar as long as leaves room above and below it to swipe; beside the list, where
+    // the strip's height is only known once it is laid out, the length it has always had.
+    val barMaxHeight = if (fillHeight) BAR_MAX_HEIGHT_DP else padHeight.value * BAR_SHARE_OF_PAD
     // Laid out as the previews are: the pad the one card, the words under it.
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(if (fillHeight) Modifier.weight(1f).heightIn(min = 120.dp) else Modifier.height(172.dp))
+                .then(if (fillHeight) Modifier.weight(1f).heightIn(min = 120.dp) else Modifier.height(padHeight))
                 .clip(StageShape)
                 .background(Brush.linearGradient(listOf(DeviceArt.WallTop, DeviceArt.WallBottom))),
         ) {
             AndroidView(
                 factory = {
-                    pad.also { it.dress(preference) }
+                    pad.also { it.dress(preference, barMaxHeight) }
                 },
                 modifier = Modifier.fillMaxSize(),
             )
@@ -146,6 +169,20 @@ fun GestureTryPad(
                         style = Stroke(width = 2.dp.toPx()),
                     )
                 }
+            }
+            if (demo != null) {
+                DemoCaptionPill(demo) { gesture ->
+                    val slot = slotOf(gesture)
+                    GestureCaption(gesture, actions[slot] ?: HandlerActions.NONE)
+                }
+                // Drawing only: the strip under it still takes every touch.
+                GestureDemoOverlay(
+                    state = demo,
+                    barAtStart = onLeft,
+                    barInset = (preference.getHandlerEdgeMarginDp().coerceAtMost(BAR_MAX_MARGIN_DP) +
+                        preference.getHandlerWidthDp() / 2f).dp,
+                    modifier = Modifier.matchParentSize(),
+                )
             }
         }
         AnimatedContent(
@@ -177,6 +214,37 @@ fun GestureTryPad(
         }
     }
 }
+
+/** The pad's gesture that [gesture] acts out. */
+private fun slotOf(gesture: DemoGesture): Slot = when (gesture) {
+    DemoGesture.TAP -> Slot.SINGLE_TAP
+    DemoGesture.SWIPE_UP -> Slot.SWIPE_UP
+    DemoGesture.SWIPE_DOWN -> Slot.SWIPE_DOWN
+    DemoGesture.SWIPE_IN -> Slot.SWIPE_IN
+    DemoGesture.HOLD -> Slot.LONG_PRESS
+}
+
+/** What the Actions screen's demo acts out on the pad: every gesture it can, in the list's order. */
+internal val ACTIONS_DEMO_STEPS = listOf(
+    DemoGesture.TAP,
+    DemoGesture.HOLD,
+    DemoGesture.SWIPE_UP,
+    DemoGesture.SWIPE_DOWN,
+    DemoGesture.SWIPE_IN,
+)
+
+/** How much of the screen's height the pad takes upright, and the least and most that can be. */
+private const val PAD_SHARE_OF_SCREEN = 0.2f
+private val PAD_MIN_HEIGHT = 150.dp
+private val PAD_MAX_HEIGHT = 220.dp
+
+/** Of the pad's height, the most the bar takes upright. */
+private const val BAR_SHARE_OF_PAD = 0.6f
+
+/** Beside the list on a phone on its side: the strip is short, so a long bar is shown at this length. */
+private const val BAR_MAX_HEIGHT_DP = 112f
+
+private const val BAR_MAX_MARGIN_DP = 16f
 
 /** "Double tap → Open Deck", and the way to change it. */
 @Composable
@@ -305,10 +373,10 @@ private class TryPadView(
         addView(bar)
     }
 
-    /** Puts the user's own bar in the strip, against the side it is on. */
-    fun dress(preference: SharedPref) {
+    /** Puts the user's own bar in the strip, against the side it is on, no longer than [maxHeightDp]. */
+    fun dress(preference: SharedPref, maxHeightDp: Float) {
         bar.apply {
-            setViewDimensionsDp(preference.getHandlerWidthDp(), minOf(preference.getHandlerHeightDp(), BAR_MAX_HEIGHT_DP))
+            setViewDimensionsDp(preference.getHandlerWidthDp(), minOf(preference.getHandlerHeightDp(), maxHeightDp))
             setViewGravity(if (onLeft) Gravity.START else Gravity.END)
             setEdgeMarginDp(preference.getHandlerEdgeMarginDp().coerceAtMost(BAR_MAX_MARGIN_DP))
             setViewBackgroundColor(preference.getHandlerColor(), preference.getHandlerBackgroundAlpha())
@@ -354,11 +422,5 @@ private class TryPadView(
         }
         detector.onTouchEvent(event)
         return true
-    }
-
-    private companion object {
-        /** The strip is short; a long bar is shown at a length that fits it with room to swipe. */
-        const val BAR_MAX_HEIGHT_DP = 112f
-        const val BAR_MAX_MARGIN_DP = 16f
     }
 }

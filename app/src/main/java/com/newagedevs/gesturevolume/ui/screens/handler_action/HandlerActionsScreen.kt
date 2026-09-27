@@ -70,6 +70,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.AppGestureStore.Slot
+import com.newagedevs.gesturevolume.ui.components.HowItWorksAction
+import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.DndAccessDialog
@@ -256,8 +258,13 @@ fun HandlerActionsScreen(
         )
     }
 
+    // The finger acting the gestures out on the pad, from the ? as on the preview screens. Only on
+    // request: the pad is for the user's own tries, and this screen is the one they come back to
+    // whenever they change what a gesture does.
+    val gestureDemo = rememberGestureDemoState(ACTIONS_DEMO_STEPS, autoPlays = 0)
+
     Scaffold(
-        // The top bar is clear: the preview's header washes itself, behind it. See headerWash.
+        // The top bar is clear, on the plain page as the preview under it is.
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.handler_actions)) },
@@ -266,6 +273,7 @@ fun HandlerActionsScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
+                actions = { HowItWorksAction(gestureDemo) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -283,6 +291,7 @@ fun HandlerActionsScreen(
                 onLeft = onLeft,
                 onChange = onPickAction,
                 modifier = padModifier,
+                demo = gestureDemo,
                 fillHeight = fillHeight,
             )
         }

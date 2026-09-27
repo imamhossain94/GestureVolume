@@ -1,43 +1,15 @@
 package com.newagedevs.gesturevolume.ui.components
 
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.runtime.getValue
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.animation.togetherWith
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.AnimatedContent
-import com.newagedevs.gesturevolume.R
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.Icons
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.background
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -56,6 +28,7 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.layout.layout
 
@@ -80,17 +53,16 @@ import androidx.compose.ui.layout.layout
  * which reaches in over the frame from beyond the phone, as it does in the walkthrough.
  *
  * Laid out as the Actions screen's Try it, so every screen that shows its subject shows it the
- * same way: the stage, the one card, as the walkthrough's picture is, and under it a row of what
- * the preview is for ([LocalPreviewHint]) and, when there is a [demo], the button that plays it at
- * the end. While the demo plays, what the finger is doing takes the place of those words, in the
- * room they took, so the row is only as tall as the words it has.
- * Nothing but the preview and the hand goes on the glass, where a caption or a button would sit on
- * whatever the preview shows there.
+ * same way: the stage, the one card, as the walkthrough's picture is, and under it what the preview
+ * is for ([LocalPreviewHint]), at the card's full width and always there. The demo is played from a
+ * ? in the screen's top bar ([HowItWorksAction]); while it plays, what the finger is doing is a pill
+ * at the foot of the glass ([DemoCaptionPill]), as a phone shows a passing message, rather than in
+ * the description's place, where it hid the description for the first seconds of every visit.
  *
- * @param demo the "How it works" demo this preview plays, if it has one.
+ * @param demo the "How it works" demo this preview plays, if it has one: for its caption.
  * @param caption words the gesture the demo is making: by default, its name.
  *
- * @param fillHeight fill the height it is given instead of taking [PREVIEW_STAGE_HEIGHT] — for the
+ * @param fillHeight fill the height it is given instead of taking [previewStageHeight] — for the
  *   landscape arrangement, where the preview has a column of its own. See [PreviewSettingsLayout].
  * @param naturalSize draw what is on the glass at its own size, rather than as small against the
  *   glass as it is against the phone's screen: for a subject too slight to read in true proportion,
@@ -107,18 +79,18 @@ fun PreviewStage(
     caption: @Composable (DemoGesture) -> Unit = { DemoGestureText(it) },
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val colours = MaterialTheme.colorScheme
+    val height = previewStageHeight()
     Column(
         modifier = modifier
             .fillMaxWidth()
             .then(if (fillHeight) Modifier.fillMaxHeight() else Modifier),
     ) {
         // Clipped, as the walkthrough's picture is: the hand reaches in over the frame and is cut off
-        // at the bottom of the phone, and never strays into the row of words under it.
+        // at the bottom of the phone, and never strays into the words under it.
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(if (fillHeight) Modifier.weight(1f) else Modifier.height(PREVIEW_PHONE_HEIGHT))
+                .then(if (fillHeight) Modifier.weight(1f) else Modifier.height(height))
                 .clip(StageShape)
                 .stageBackdrop()
                 .clipToBounds()
@@ -161,52 +133,29 @@ fun PreviewStage(
                         content = content,
                     )
                 }
+                // Under the hand, which passes in front of it as it does the phone.
+                if (demo != null) DemoCaptionPill(demo, caption)
                 Box(modifier = glass, content = overGlass)
             }
         }
-        // Under the stage: what the preview is for, and the button that plays its demo at the end.
-        // While the demo plays, what the finger is doing takes the words' place; they stay, unseen,
-        // so the row keeps their height rather than jumping to the caption's.
-        val hint = LocalPreviewHint.current
-        if (hint != null || demo != null) {
-            val step = demo?.let { d -> remember(d) { derivedStateOf { d.currentStep } }.value }
-            val hintAlpha by animateFloatAsState(if (step == null) 1f else 0f, label = "previewHint")
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 4.dp, top = 10.dp),
-            ) {
-                Box(
-                    contentAlignment = Alignment.CenterStart,
-                    modifier = Modifier
-                        .weight(1f)
-                        .heightIn(min = 34.dp),
-                ) {
-                    if (hint != null) {
-                        Text(
-                            text = hint,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = colours.onSurfaceVariant,
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.graphicsLayer { alpha = hintAlpha },
-                        )
-                    }
-                    AnimatedContent(
-                        targetState = step,
-                        transitionSpec = { fadeIn() togetherWith fadeOut() },
-                        contentAlignment = Alignment.CenterStart,
-                        label = "previewCaption",
-                    ) { gesture -> if (gesture != null) caption(gesture) }
-                }
-                if (demo != null) {
-                    Spacer(modifier = Modifier.width(12.dp))
-                    HowItWorksButton(onClick = demo::replay)
-                }
-            }
-        }
+        LocalPreviewHint.current?.let { PreviewDescription(it) }
     }
+}
+
+/**
+ * What a preview is for, under its card: the whole of it, at the card's full width, with nothing
+ * beside it and nothing taking its place.
+ */
+@Composable
+fun PreviewDescription(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 4.dp, end = 4.dp, top = 10.dp),
+    )
 }
 
 /** The corners of a preview's stage, and the Actions screen's Try it pad: the walkthrough's card's. */
@@ -306,23 +255,32 @@ fun Modifier.scaleToFit(maxScale: Float, horizontal: Dp, top: Dp, bottom: Dp, fi
         }
     }
 
-/** The row under the phone, for the demo's caption and its button: at least this tall. */
-val PREVIEW_FOOTER_HEIGHT = 44.dp
-
 /**
- * How tall every preview is, the row under the phone included.
+ * How tall every preview's stage is upright, the description under it aside: a little over a quarter
+ * of the screen's height, and never less than [PREVIEW_STAGE_MIN_HEIGHT] or more than
+ * [PREVIEW_STAGE_MAX_HEIGHT].
  *
- * Fixed, and shared, for the reason the class note gives. The phone is fitted to what is left as the
- * walkthrough's is to its card, so this is also what decides how big the phone is: tall enough for
- * the glass to take the subjects at their real size. It also has to hold the subject: the Quick
- * panel's track runs to 320dp and the bar to 200dp, so neither fits whole — but both are long in the
- * axis where being cropped costs nothing, because a track is the same all the way down and what the
- * user is judging is its width, its colour and its ends.
+ * Shared, for the reason the class note gives, so moving between the four screens the settings start
+ * at the same place. The phone's glass is a fixed share of the stage's width, so the height is how
+ * much of the phone shows: on a tall phone, past the home screen's icons, where the bar, the Deck and
+ * the panel sit in the middle of the glass with room above and below. On a short one it gives way
+ * first, to leave the settings room to scroll. A third of the screen, tried first, left the settings
+ * too little of it.
  */
-val PREVIEW_STAGE_HEIGHT = 300.dp
+@Composable
+fun previewStageHeight(): Dp {
+    val screenHeight = LocalConfiguration.current.let { maxOf(it.screenWidthDp, it.screenHeightDp) }
+    return (screenHeight * STAGE_SHARE_OF_SCREEN).dp.coerceIn(PREVIEW_STAGE_MIN_HEIGHT, PREVIEW_STAGE_MAX_HEIGHT)
+}
 
-/** The phone's part of that, above the row: where the card fits the phone the way it always has. */
-val PREVIEW_PHONE_HEIGHT = 212.dp
+/** The shortest a stage is: the height every stage was before it followed the screen. */
+val PREVIEW_STAGE_MIN_HEIGHT = 212.dp
+
+/** The tallest a stage is, on the tallest phones. */
+val PREVIEW_STAGE_MAX_HEIGHT = 320.dp
+
+/** How much of the screen's height a stage takes, between those. */
+private const val STAGE_SHARE_OF_SCREEN = 0.27f
 
 /**
  * The tallest a subject is drawn: tall and thin subjects are capped here, so neither runs off the

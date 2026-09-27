@@ -394,7 +394,7 @@
     <string name="context_menu_move_down">Move down</string>
     <string name="context_menu_hide_item">Remove from menu</string>
     <string name="context_menu_show_item">Add to menu</string>
-    <string name="appearance_preview_hint">Your handler as it looks on your screen. How it works acts out each gesture with your own settings. Long press the live bar to move it.</string>
+    <string name="appearance_preview_hint">Your handler as it looks on your screen. Tap ? above to watch each gesture play out with your own settings. Long press the live bar to move it.</string>
     <string name="faq">FAQ</string>
     <string name="faq_desc">Common questions</string>
     <string name="context_menu_layout">Layout</string>
