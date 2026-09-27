@@ -99,6 +99,15 @@
     <string name="effort_level_ultra_max_short">Ultra</string>
     <string name="shader_detail_blobs">Blobs</string>
 
+    <!-- The Glimmer fill: fine dots brightening into a glimmer at the level, a handle on it. -->
+    <string name="fill_glimmer">Glimmer</string>
+    <string name="glimmer_settings_desc">Fine dots that brighten from nothing into a glimmer as they near the level, twinkling as they go, after the dotted effort slider in AI coding tools. The preview above runs it.</string>
+    <string name="glimmer_speed">Speed</string>
+    <string name="glimmer_handle">Handle</string>
+    <string name="glimmer_handle_desc">A handle on the level, as a slider has. Off, the dots simply stop at the level.</string>
+    <string name="glimmer_stops">Stops</string>
+    <string name="glimmer_stops_desc">Six faint marks down the track, one every fifth of the way.</string>
+
     <!-- The animation's own colours, for the settings screen. -->
     <string name="slider_fill_colors">Animation colours</string>
     <string name="slider_fill_colors_desc">Paint the animation in three colours of your own instead of its own.</string>

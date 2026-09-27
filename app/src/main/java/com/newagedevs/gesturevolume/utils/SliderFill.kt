@@ -136,6 +136,13 @@ object SliderFill {
     const val EFFORT = "effort"
 
     /**
+     * The track as a field of fine dots brightening into a lavender glimmer at the level, a white
+     * handle on it and six stops down the track, after Claude Code's dotted effort slider. Settings
+     * of its own, like [PIXELS]. See [GlimmerFill].
+     */
+    const val GLIMMER = "glimmer"
+
+    /**
      * Every style, in the order they are offered.
      *
      * Five earlier ones — a charging band, two block walls, a breath and a sheen — are gone rather
@@ -145,7 +152,7 @@ object SliderFill {
      * options to protect five that were not worth having.
      */
     val ALL = listOf(
-        SOLID, PIXELS, SHADER, EFFORT, LIQUID, VU_METER, WAVEFORM, SUNRISE,
+        SOLID, PIXELS, SHADER, EFFORT, GLIMMER, LIQUID, VU_METER, WAVEFORM, SUNRISE,
         SPECTRUM, GALAXY, SILK, TIDE_UP, AURORA,
         PLASMA, HOLOGRAM, NEBULA, EMBER, SONAR,
         CIRCUIT, DOT_MATRIX, CYBERPUNK, MATRIX_RAIN, RUNE,
@@ -204,9 +211,9 @@ object SliderFill {
         FIREWORKS -> 4800
         // Its own pattern and speed decide; see PixelFill.cycleMs(Style).
         PIXELS -> PixelFill.cycleMs(PixelFill.SPECTRUM)
-        // Only a tick: a shader keeps its own time, which runs on rather than looping. So does the
-        // effort picker, whose sheen quickens with the level.
-        SHADER, EFFORT -> 10_000
+        // Only a tick: a shader keeps its own time, which runs on rather than looping. So do the
+        // effort picker, whose sheen quickens with the level, and the glimmer, whose speed is set.
+        SHADER, EFFORT, GLIMMER -> 10_000
         else -> 1
     }
 
@@ -262,13 +269,13 @@ object SliderFill {
     /**
      * Whether the user's own animation colours can stand in for the style's.
      *
-     * The pictorial ones, [SHADER], [EFFORT], and [PIXELS], whose colourful patterns take them (its single-colour ones
+     * The pictorial ones, [SHADER], [EFFORT], [GLIMMER], and [PIXELS], whose colourful patterns take them (its single-colour ones
      * do not: see [PixelFill.supportsCustomColors]). The rest are drawn in the fill's and the track's
      * colours, which the user already chooses; a second set of colours for them would be a setting
      * that does nothing.
      */
     fun supportsCustomColors(id: String): Boolean =
-        isPictorial(id) || sanitize(id).let { it == PIXELS || it == SHADER || it == EFFORT }
+        isPictorial(id) || sanitize(id).let { it == PIXELS || it == SHADER || it == EFFORT || it == GLIMMER }
 
     /**
      * The colours a pictorial style paints with, brightest first, as `0xAARRGGBB`.

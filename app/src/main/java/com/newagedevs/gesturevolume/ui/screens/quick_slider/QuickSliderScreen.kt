@@ -70,6 +70,7 @@ import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.ui.components.PixelFillControls
 import com.newagedevs.gesturevolume.ui.components.ShaderFillControls
 import com.newagedevs.gesturevolume.ui.components.EffortFillControls
+import com.newagedevs.gesturevolume.ui.components.GlimmerFillControls
 import com.newagedevs.gesturevolume.ui.components.SliderFillSelector
 import com.newagedevs.gesturevolume.ui.components.panelAnimationLabel
 import com.newagedevs.gesturevolume.ui.components.panelThemeLabel
@@ -91,6 +92,7 @@ import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.EffortFill
+import com.newagedevs.gesturevolume.utils.GlimmerFill
 
 /** The translated name of a slider target. */
 fun sliderTargetLabel(id: String): Int = when (id) {
@@ -216,6 +218,7 @@ fun QuickSliderScreen(
     var pixelStyle by remember { mutableStateOf(store.getPixelStyle()) }
     var shaderStyle by remember { mutableStateOf(store.getShaderStyle()) }
     var effortStyle by remember { mutableStateOf(store.getEffortStyle()) }
+    var glimmerStyle by remember { mutableStateOf(store.getGlimmerStyle()) }
     var fillColorsOn by remember { mutableStateOf(store.getFillColorsEnabled()) }
     var fillColors by remember { mutableStateOf(store.getFillColors().toList()) }
     var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
@@ -344,6 +347,7 @@ fun QuickSliderScreen(
                     pixelStyle = pixelStyle,
                     shaderStyle = shaderStyle,
                     effortStyle = effortStyle,
+                    glimmerStyle = glimmerStyle,
                     fillColors = if (fillColorsOn) fillColors.toIntArray() else null,
                     valueColor = if (contentColorsOn) valueColor else null,
                     iconColor = if (contentColorsOn) iconColor else null,
@@ -627,6 +631,14 @@ fun QuickSliderScreen(
                         onChange = { effortStyle = it; store.setEffortStyle(it) },
                     )
                 }
+                if (fillStyle == SliderFill.GLIMMER) {
+                    Sep()
+                    GlimmerFillControls(
+                        style = glimmerStyle,
+                        accent = accent,
+                        onChange = { glimmerStyle = it; store.setGlimmerStyle(it) },
+                    )
+                }
                 Spacer(modifier = Modifier.height(12.dp))
                 SettingSwitchItem(
                     title = stringResource(R.string.slider_fill_colors),
@@ -785,6 +797,8 @@ private fun SliderPreview(
     shaderStyle: ShaderFill.Style,
     /** The Effort fill's look and settings, used when that is the fill. */
     effortStyle: EffortFill.Style,
+    /** The Glimmer fill's settings, used when that is the fill. */
+    glimmerStyle: GlimmerFill.Style,
     /** The animation's own colours, or null for its palette. */
     fillColors: IntArray?,
     /** The number's and the icon's own colours, or null to swap with the fill. */
@@ -929,6 +943,7 @@ private fun SliderPreview(
                 view.setPixelStyle(pixelStyle)
                 view.setShaderStyle(shaderStyle)
                 view.setEffortStyle(effortStyle)
+                view.setGlimmerStyle(glimmerStyle)
                 view.setFillStyle(fillStyle)
                 view.setFillColors(fillColors)
                 view.setDrawnThickness(thicknessDp * density, handlerOnLeft)

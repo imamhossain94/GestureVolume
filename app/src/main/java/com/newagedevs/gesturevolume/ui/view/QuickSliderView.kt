@@ -22,6 +22,7 @@ import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.utils.EffortFill
+import com.newagedevs.gesturevolume.utils.GlimmerFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.PanelAnimation
 import com.newagedevs.gesturevolume.utils.HandlerShape
@@ -372,6 +373,25 @@ class QuickSliderView(context: Context) : View(context) {
      */
     private var effortTime = (SystemClock.uptimeMillis() % 3_600_000L) / 1000f
     private var effortTickAt = 0L
+
+    /** The Glimmer fill's settings, used while [fillStyle] is [SliderFill.GLIMMER]. */
+    private var glimmerStyle = GlimmerFill.Style()
+    private var glimmerArtOrNull: GlimmerArt? = null
+    private val glimmerArt: GlimmerArt
+        get() = glimmerArtOrNull ?: GlimmerArt(density).also { glimmerArtOrNull = it }
+
+    /** The glimmer's colours, the user's when they have set some. See [GlimmerFill.paletteWith]. */
+    private var glimmerPalette: IntArray = GlimmerFill.paletteWith(null)
+
+    /** The glimmer's own clock, in seconds, run at its speed like [effortTime]. */
+    private var glimmerTime = (SystemClock.uptimeMillis() % 3_600_000L) / 1000f
+    private var glimmerTickAt = 0L
+
+    /**
+     * Where the glimmer's stops keep clear of, as (top, bottom) pairs: the number, then the icon.
+     * NaN for one that is not shown, which no stop is ever inside. Filled in each frame, never made.
+     */
+    private val glimmerKeepOut = FloatArray(4)
 
     /** The effect's four colours, the user's when they have set some. See [ShaderFill.paletteWith]. */
     private var shaderPalette: IntArray = ShaderFill.paletteWith(ShaderFill.LAVA_LAMP, null)
@@ -953,6 +973,7 @@ class QuickSliderView(context: Context) : View(context) {
         fillPalette = SliderFill.paletteWith(fillStyle, next)
         shaderPalette = ShaderFill.paletteWith(shaderStyle.effect, next)
         effortPalette = EffortFill.paletteWith(next)
+        glimmerPalette = GlimmerFill.paletteWith(next)
         fillArtOrNull = null
         invalidate()
     }
@@ -993,6 +1014,14 @@ class QuickSliderView(context: Context) : View(context) {
         val next = style.sanitized()
         if (next == effortStyle) return
         effortStyle = next
+        invalidate()
+    }
+
+    /** The Glimmer fill's settings. Like the picker's, they take over from the next frame; the clock runs on. */
+    fun setGlimmerStyle(style: GlimmerFill.Style) {
+        val next = style.sanitized()
+        if (next == glimmerStyle) return
+        glimmerStyle = next
         invalidate()
     }
 
@@ -1074,6 +1103,7 @@ class QuickSliderView(context: Context) : View(context) {
         val pixels = fillStyle == SliderFill.PIXELS
         val shader = fillStyle == SliderFill.SHADER
         val effort = fillStyle == SliderFill.EFFORT
+        val glimmer = fillStyle == SliderFill.GLIMMER
         val animated = when {
             pixels -> PixelFill.isAnimated(pixelStyle.pattern)
             shader -> shadersSupported && shaderStyle.isAnimated
@@ -1082,6 +1112,7 @@ class QuickSliderView(context: Context) : View(context) {
         if (!animated || !isAttachedToWindow) return
         shaderTickAt = 0L
         effortTickAt = 0L
+        glimmerTickAt = 0L
         fillClock = ValueAnimator.ofFloat(0f, 1f).apply {
             duration = if (pixels) PixelFill.cycleMs(pixelStyle) else SliderFill.cycleMs(fillStyle).toLong()
             repeatCount = ValueAnimator.INFINITE
@@ -1090,6 +1121,7 @@ class QuickSliderView(context: Context) : View(context) {
                 fillPhase = it.animatedValue as Float
                 if (shader) tickShaderClock()
                 if (effort) tickEffortClock()
+                if (glimmer) tickGlimmerClock()
                 invalidate()
             }
             start()
@@ -1120,6 +1152,16 @@ class QuickSliderView(context: Context) : View(context) {
         effortTime = (effortTime + step) % EffortFill.TIME_WRAP_S
     }
 
+    /** Moves [glimmerTime] on by the time since the last frame, at the glimmer's speed, capped like [tickShaderClock]. */
+    private fun tickGlimmerClock() {
+        val now = SystemClock.uptimeMillis()
+        val last = glimmerTickAt
+        glimmerTickAt = now
+        if (last == 0L) return
+        val step = (now - last).coerceIn(0L, 100L) / 1000f * glimmerStyle.speed
+        glimmerTime = (glimmerTime + step) % GlimmerFill.TIME_WRAP_S
+    }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         restartFillClock()
@@ -1130,6 +1172,7 @@ class QuickSliderView(context: Context) : View(context) {
         fillClock?.cancel()
         fillClock = null
         pixelArt.release()
+        glimmerArtOrNull?.release()
         valueAnimator?.cancel()
         valueAnimator = null
         entranceAnimator?.cancel()
@@ -1520,13 +1563,16 @@ class QuickSliderView(context: Context) : View(context) {
         sheenPaint?.let { canvas.drawRect(drawRect, it) }
         counterLightPaint?.let { canvas.drawRect(drawRect, it) }
 
-        if (fillStyle == SliderFill.PIXELS || fillStyle == SliderFill.EFFORT ||
+        if (fillStyle == SliderFill.PIXELS || fillStyle == SliderFill.EFFORT || fillStyle == SliderFill.GLIMMER ||
             (fillStyle == SliderFill.SHADER && drawShaderFill(canvas))
         ) {
             if (fillStyle == SliderFill.PIXELS) drawPixelFill(canvas)
             if (fillStyle == SliderFill.EFFORT) drawEffortFill(canvas)
+            if (fillStyle == SliderFill.GLIMMER) drawGlimmerFill(canvas)
             canvas.restore()
-            drawGrabLip(canvas)
+            // The glimmer's handle is its own grab cue: it glows while held, where a lip would be
+            // a line drawn across the middle of it.
+            if (fillStyle != SliderFill.GLIMMER || !glimmerStyle.handle) drawGrabLip(canvas)
             edgePaint?.let { canvas.drawPath(rimPath, it) }
             return
         }
@@ -1684,6 +1730,52 @@ class QuickSliderView(context: Context) : View(context) {
         canvas.restore()
         canvas.save()
         canvas.clipRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom)
+        drawContent(canvas, overFill = true)
+        canvas.restore()
+    }
+
+    /**
+     * The Glimmer fill, inside the panel's clip: the dots over the whole track, lit up to the level,
+     * and the number and the icon over them — in the fill colour over the dots, which are dark
+     * wherever they are, and in the track's through the handle, which is painted in the fill colour.
+     * The stops keep clear of both.
+     */
+    private fun drawGlimmerFill(canvas: Canvas) {
+        if (!fillVisible || contentAlpha <= 0.01f) {
+            drawContent(canvas, overFill = false)
+            return
+        }
+        glimmerKeepOut.fill(Float.NaN)
+        if (showValue) {
+            glimmerKeepOut[0] = drawRect.top + valueMarginPx
+            glimmerKeepOut[1] = glimmerKeepOut[0] + if (turned) textPaint.measureText("100") else textPaint.textSize
+        }
+        if (icon != null) {
+            val size = iconSize()
+            glimmerKeepOut[2] = iconCenterY(size) - size / 2f
+            glimmerKeepOut[3] = glimmerKeepOut[2] + size
+        }
+        val art = glimmerArt
+        art.draw(
+            canvas, drawRect, value, glimmerTime, glimmerStyle, glimmerPalette,
+            light = fillColor,
+            // The panel's roundest corner, as the slider's handle has its track's. A tab's ends are
+            // sweeps rather than corners, so on a tab the handle is a pill.
+            corner = if (drawnIsTab) drawRect.width() / 2f else maxOf(drawRadii[0], drawRadii[2], drawRadii[4], drawRadii[6]),
+            grabbed = grabbed,
+            keepOut = glimmerKeepOut,
+            alpha = contentAlpha,
+        )
+        if (art.handle.isEmpty) {
+            drawContent(canvas, overFill = false)
+            return
+        }
+        canvas.save()
+        canvas.clipOutPath(art.handlePath)
+        drawContent(canvas, overFill = false)
+        canvas.restore()
+        canvas.save()
+        canvas.clipPath(art.handlePath)
         drawContent(canvas, overFill = true)
         canvas.restore()
     }

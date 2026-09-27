@@ -5,6 +5,7 @@ import androidx.core.content.edit
 import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.EffortFill
+import com.newagedevs.gesturevolume.utils.GlimmerFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.HandlerShape
 
@@ -120,6 +121,9 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val EFFORT_LOOK = "sliderEffortLook"
         private const val EFFORT_SPEED = "sliderEffortSpeed"
         private const val EFFORT_LABELS = "sliderEffortLabels"
+        private const val GLIMMER_SPEED = "sliderGlimmerSpeed"
+        private const val GLIMMER_HANDLE = "sliderGlimmerHandle"
+        private const val GLIMMER_STOPS = "sliderGlimmerStops"
         private const val FOLLOW_HANDLER = "sliderFollowHandlerShape"
         private const val OPEN_ON_VOLUME_KEY = "sliderOpenOnVolumeKey"
         private const val VOLUME_KEYS = "sliderVolumeKeys"
@@ -530,6 +534,28 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
             putString(EFFORT_LOOK, s.look)
             putFloat(EFFORT_SPEED, s.speed)
             putBoolean(EFFORT_LABELS, s.labels)
+        }
+    }
+
+    /**
+     * The Glimmer fill's own settings: how fast it moves, and whether it has a handle and stops.
+     * Kept while another fill is chosen, like the Pixels grid's.
+     */
+    fun getGlimmerStyle(): GlimmerFill.Style {
+        val d = GlimmerFill.Style()
+        return GlimmerFill.Style(
+            speed = prefs.getFloat(GLIMMER_SPEED, d.speed),
+            handle = prefs.getBoolean(GLIMMER_HANDLE, d.handle),
+            stops = prefs.getBoolean(GLIMMER_STOPS, d.stops),
+        ).sanitized()
+    }
+
+    fun setGlimmerStyle(value: GlimmerFill.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putFloat(GLIMMER_SPEED, s.speed)
+            putBoolean(GLIMMER_HANDLE, s.handle)
+            putBoolean(GLIMMER_STOPS, s.stops)
         }
     }
 

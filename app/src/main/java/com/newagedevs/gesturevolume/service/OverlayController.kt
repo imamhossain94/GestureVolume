@@ -2947,6 +2947,7 @@ class OverlayController(
             setPixelStyle(settings.getPixelStyle())
             setShaderStyle(settings.getShaderStyle())
             setEffortStyle(settings.getEffortStyle())
+            setGlimmerStyle(settings.getGlimmerStyle())
             setFillStyle(settings.getFillStyle())
             // The user's own colours for the animation, or null for the style's palette.
             setFillColors(settings.getEffectiveFillColors())
