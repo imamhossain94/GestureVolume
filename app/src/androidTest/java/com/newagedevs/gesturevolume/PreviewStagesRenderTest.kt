@@ -1,5 +1,9 @@
 package com.newagedevs.gesturevolume
 
+import com.newagedevs.gesturevolume.ui.components.previewUnit
+import com.newagedevs.gesturevolume.ui.components.previewOrigin
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.geometry.Offset
 import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
@@ -17,7 +21,6 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -29,7 +32,7 @@ import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.DeviceArt
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
 import com.newagedevs.gesturevolume.ui.components.GestureDemoState
-import com.newagedevs.gesturevolume.ui.components.PREVIEW_STAGE_HEIGHT
+import com.newagedevs.gesturevolume.ui.components.PREVIEW_STAGE_TAG
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.ui.components.scaleToFit
 import com.newagedevs.gesturevolume.ui.view.QuickSliderView
@@ -76,7 +79,7 @@ class PreviewStagesRenderTest {
                 entries = HandlerActionCatalog.contextMenuEntries(HandlerActions.DEFAULT_CONTEXT_MENU.toList()),
                 grid = true,
                 onSelect = {},
-                modifier = Modifier.scaleToFit(0.8f, horizontal = 12.dp, top = 30.dp, bottom = 12.dp),
+                modifier = Modifier.scaleToFit(0.8f, horizontal = 12.dp, top = 44.dp, bottom = 12.dp),
             )
         }
         assertPhone(image)
@@ -91,7 +94,7 @@ class PreviewStagesRenderTest {
                 entries = HandlerActionCatalog.contextMenuEntries(HandlerActionCatalog.ALL.map { it.action }),
                 grid = false,
                 onSelect = {},
-                modifier = Modifier.scaleToFit(0.8f, horizontal = 12.dp, top = 30.dp, bottom = 12.dp),
+                modifier = Modifier.scaleToFit(0.8f, horizontal = 12.dp, top = 44.dp, bottom = 12.dp),
             )
         }
         assertMenuOnGlass(image)
@@ -99,17 +102,16 @@ class PreviewStagesRenderTest {
 
     /**
      * The menu's dark card is somewhere on the glass, and nowhere near its edges: not in the rows
-     * under the status bar, not in the last rows before the card cuts the phone off, and not down
-     * either side of the glass.
+     * of the status bar and the camera, not in the last rows before the stage cuts the phone off,
+     * and not down either side of the glass.
      */
     private fun assertMenuOnGlass(image: Bitmap) {
         val density = compose.activity.resources.displayMetrics.density
-        val unit = DeviceArt.scale(STAGE_WIDTH, PREVIEW_STAGE_HEIGHT.value)
-        val origin = DeviceArt.origin(STAGE_WIDTH, PREVIEW_STAGE_HEIGHT.value, unit)
+        val (unit, origin) = fit(image)
         val left = ((origin.x + DeviceArt.SCREEN_L * unit) * density).toInt()
         val right = ((origin.x + DeviceArt.SCREEN_R * unit) * density).toInt()
         val top = ((origin.y + DeviceArt.SCREEN_T * unit) * density).toInt()
-        val bottom = (PREVIEW_STAGE_HEIGHT.value * density).toInt() - 1
+        val bottom = image.height - 1
         val camera = (left + right) / 2
         fun dark(x: Int, y: Int): Boolean {
             val c = image.getPixel(x, y)
@@ -131,7 +133,10 @@ class PreviewStagesRenderTest {
         }
         val middle = darkInRows((top + bottom) / 2, (top + bottom) / 2 + 1)
         assertTrue("no menu on the glass", middle > 20)
-        assertTrue("the menu is under the status bar", darkInRows(top, top + (24 * density).toInt()) == 0)
+        // The status bar and the camera come down to 36.5 of the scene's units. From a dp into the
+        // glass: its top row, rounded down, can be the frame's edge.
+        val statusBar = ((origin.y + 36.5f * unit) * density).toInt()
+        assertTrue("the menu is under the status bar", darkInRows(top + density.toInt(), statusBar) == 0)
         assertTrue("the menu runs off the bottom of the phone", darkInRows(bottom - (6 * density).toInt(), bottom) == 0)
         assertTrue("the menu runs off the left of the glass", darkInColumns(left + 2, left + (6 * density).toInt()) == 0)
         assertTrue("the menu runs off the right of the glass", darkInColumns(right - (6 * density).toInt(), right - 2) == 0)
@@ -171,7 +176,7 @@ class PreviewStagesRenderTest {
             }
         }
         compose.waitForIdle()
-        val image = compose.onRoot().captureToImage().asAndroidBitmap()
+        val image = compose.onNodeWithTag(PREVIEW_STAGE_TAG).captureToImage().asAndroidBitmap()
         File(compose.activity.cacheDir, "stage_$name.png").outputStream().use {
             image.compress(Bitmap.CompressFormat.PNG, 100, it)
         }
@@ -228,7 +233,7 @@ class PreviewStagesRenderTest {
     }
 
     private fun capture(name: String): Bitmap {
-        val image = compose.onRoot().captureToImage().asAndroidBitmap()
+        val image = compose.onNodeWithTag(PREVIEW_STAGE_TAG).captureToImage().asAndroidBitmap()
         File(compose.activity.cacheDir, "$name.png").outputStream().use { image.compress(Bitmap.CompressFormat.PNG, 100, it) }
         return image
     }
@@ -255,7 +260,7 @@ class PreviewStagesRenderTest {
         }
         // In from off the phone and onto the bar.
         compose.mainClock.advanceTimeBy(1500)
-        val image = compose.onRoot().captureToImage().asAndroidBitmap()
+        val image = compose.onNodeWithTag(PREVIEW_STAGE_TAG).captureToImage().asAndroidBitmap()
         File(compose.activity.cacheDir, "stage_$name.png").outputStream().use {
             image.compress(Bitmap.CompressFormat.PNG, 100, it)
         }
@@ -281,13 +286,14 @@ class PreviewStagesRenderTest {
 
     /**
      * The frame down the left side of the phone, and the wallpaper's lavender just inside it: where
-     * the walkthrough's scene puts them, fitted to this stage as the walkthrough fits its own.
+     * the walkthrough's scene puts them, in the stage's close-up of the phone's top.
      */
     private fun assertPhone(image: Bitmap) {
         val density = compose.activity.resources.displayMetrics.density
-        val unit = DeviceArt.scale(STAGE_WIDTH, PREVIEW_STAGE_HEIGHT.value)
-        val origin = DeviceArt.origin(STAGE_WIDTH, PREVIEW_STAGE_HEIGHT.value, unit)
-        val y = ((origin.y + 160f * unit) * density).toInt()
+        val (unit, origin) = fit(image)
+        // Well down the glass, below the status bar, and still on the stage.
+        val y = ((origin.y + 90f * unit) * density).toInt()
+        assertTrue("the stage cuts the phone off above its middle", y < image.height)
         // The frame's side runs from 40 to 46 of the scene's units.
         val frame = image.getPixel(((origin.x + 43f * unit) * density).toInt(), y)
         assertTrue("no frame at the phone's side: %08X".format(frame), near(frame, DeviceArt.Frame.toArgb()))
@@ -295,6 +301,13 @@ class PreviewStagesRenderTest {
         val r = android.graphics.Color.red(glass)
         val b = android.graphics.Color.blue(glass)
         assertTrue("no wallpaper inside the frame: %08X".format(glass), b > 200 && r > 140 && b > r)
+    }
+
+    /** The stage's scene unit and where its scene sits, in dp, worked out as the stage does from its size. */
+    private fun fit(stage: Bitmap): Pair<Float, Offset> {
+        val density = compose.activity.resources.displayMetrics.density
+        val unit = previewUnit(stage.width / density, stage.height / density)
+        return unit to previewOrigin(stage.width / density, unit)
     }
 
     private fun near(a: Int, b: Int): Boolean =

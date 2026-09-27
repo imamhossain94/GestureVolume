@@ -1,6 +1,5 @@
 package com.newagedevs.gesturevolume.ui.screens.menu
 
-import com.newagedevs.gesturevolume.ui.components.screenWash
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.Animation
@@ -199,9 +198,7 @@ fun LongPressMenuScreen(
     val available = HandlerActionCatalog.CONTEXT_MENU_CANDIDATES.filterNot { it.action in shown }
 
     Scaffold(
-        // The walkthrough's cool wash at the top, behind the transparent bar: see screenWash.
-        modifier = Modifier.screenWash(),
-        containerColor = Color.Transparent,
+        // The top bar is clear: the preview's header washes itself, behind it. See headerWash.
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.context_menu_title)) },
@@ -230,8 +227,14 @@ fun LongPressMenuScreen(
             contentPadding = padding,
             hint = stringResource(R.string.context_menu_desc),
             preview = { modifier, fillHeight ->
+                // As a list, at its own size and from under the status bar down, running off the
+                // bottom of the phone as a long one does on the real screen: fitted to the glass, a
+                // list of many actions was too small to read.
+                val list = layout != ContextMenuLayout.GRID
                 PreviewStage(
                     fillHeight = fillHeight,
+                    naturalSize = list,
+                    contentAlignment = if (list) Alignment.TopCenter else Alignment.Center,
                     modifier = modifier,
                     // The hand reaches in over the frame, as the walkthrough's does.
                     overGlass = {
@@ -256,9 +259,16 @@ fun LongPressMenuScreen(
                         // Measured at its own size, as the real one is, and drawn as large as fits
                         // the phone's glass, both ways, under the status bar: the card lays its tiles
                         // out from its own width, and a menu of many actions is taller than the part
-                        // of the phone that shows.
+                        // of the phone that shows. Its top clear of the status bar and the camera,
+                        // which on the glass come down about 36dp of the phone's own.
                         modifier = Modifier
-                            .scaleToFit(PREVIEW_SCALE, horizontal = 12.dp, top = 30.dp, bottom = 12.dp)
+                            .scaleToFit(
+                                if (list) 1f else PREVIEW_SCALE,
+                                horizontal = 12.dp,
+                                top = if (list) 30.dp else 44.dp,
+                                bottom = 12.dp,
+                                fitHeight = !list,
+                            )
                             .panelFrame { entrance.value }
                             // Popped in by the demo's long press; read in the layer so the spring
                             // redraws the card without recomposing the screen.

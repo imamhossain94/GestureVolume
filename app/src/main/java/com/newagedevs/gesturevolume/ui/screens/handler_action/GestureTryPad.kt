@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
+import com.newagedevs.gesturevolume.ui.components.StageShape
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.Gravity
@@ -117,36 +118,13 @@ fun GestureTryPad(
     DisposableEffect(pad) { onDispose { pad.cancel() } }
 
     val colours = MaterialTheme.colorScheme
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(colours.surfaceVariant.copy(alpha = 0.65f))
-            .padding(12.dp),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 6.dp, top = 2.dp, bottom = 10.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Filled.TouchApp,
-                contentDescription = null,
-                tint = colours.primary,
-                modifier = Modifier.size(20.dp),
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = stringResource(R.string.actions_try_title),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = colours.onSurface,
-            )
-        }
+    // Laid out as the previews are: the pad the one card, the words under it.
+    Column(modifier = modifier.fillMaxWidth()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .then(if (fillHeight) Modifier.weight(1f).heightIn(min = 120.dp) else Modifier.height(172.dp))
-                .clip(RoundedCornerShape(18.dp))
+                .clip(StageShape)
                 .background(Brush.linearGradient(listOf(DeviceArt.WallTop, DeviceArt.WallBottom))),
         ) {
             AndroidView(
@@ -186,7 +164,7 @@ fun GestureTryPad(
                     text = stringResource(R.string.actions_try_hint),
                     style = MaterialTheme.typography.bodyMedium,
                     color = colours.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 8.dp),
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
                 )
             } else {
                 TriedResult(
@@ -210,7 +188,7 @@ private fun TriedResult(slot: Slot, action: String, onLeft: Boolean, onChange: (
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(colours.surface.copy(alpha = 0.8f))
+            .background(colours.primaryContainer.copy(alpha = 0.45f))
             .padding(start = 8.dp, top = 6.dp, bottom = 6.dp, end = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

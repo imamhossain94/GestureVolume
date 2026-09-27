@@ -1,6 +1,5 @@
 package com.newagedevs.gesturevolume.ui.screens.quick_slider
 
-import com.newagedevs.gesturevolume.ui.components.screenWash
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Palette
@@ -302,9 +301,7 @@ fun QuickSliderScreen(
     val accent = MaterialTheme.colorScheme.primary
 
     Scaffold(
-        // The walkthrough's cool wash at the top, behind the transparent bar: see screenWash.
-        modifier = Modifier.screenWash(),
-        containerColor = Color.Transparent,
+        // The top bar is clear: the preview's header washes itself, behind it. See headerWash.
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.quick_slider_title)) },
@@ -930,6 +927,8 @@ private fun SliderPreview(
     PreviewStage(
         contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
         fillHeight = fillHeight,
+        // A panel a few dp wide against the whole glass was too slight to see its fill in.
+        naturalSize = true,
         modifier = modifier,
         // The hand reaches in over the frame, as the walkthrough's does; drawing only, so it never
         // takes a touch meant for the preview.

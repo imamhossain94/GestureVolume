@@ -1,5 +1,8 @@
 package com.newagedevs.gesturevolume.ui.components
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.background
 import androidx.compose.runtime.CompositionLocalProvider
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -51,8 +53,8 @@ fun isLandscape(): Boolean =
  *
  * @param contentPadding the Scaffold's padding. Its top and its sides are applied here; its bottom
  *   belongs to the scrolling settings, which pad for the navigation bar themselves.
- * @param hint what the preview is for, said on its card under the phone while its demo is not
- *   playing — see [LocalPreviewHint]. It used to be a line above the preview, outside the card.
+ * @param hint what the preview is for, said under the phone while its demo is not playing — see
+ *   [LocalPreviewHint].
  * @param preview told the modifier to place it with, and whether to fill the height it is given.
  */
 @Composable
@@ -64,58 +66,82 @@ fun PreviewSettingsLayout(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val direction = LocalLayoutDirection.current
-    val framed = modifier
-        .fillMaxSize()
-        .padding(
-            top = contentPadding.calculateTopPadding(),
-            start = contentPadding.calculateStartPadding(direction),
-            end = contentPadding.calculateEndPadding(direction),
-        )
+    val top = contentPadding.calculateTopPadding()
+    val sides = Modifier.padding(
+        start = contentPadding.calculateStartPadding(direction),
+        end = contentPadding.calculateEndPadding(direction),
+    )
     if (isLandscape()) {
-        Box(modifier = framed, contentAlignment = Alignment.TopCenter) {
-            Row(
+        // The header here is the top bar alone: its wash fades out just under it.
+        val background = MaterialTheme.colorScheme.background
+        Box(modifier = modifier.fillMaxSize()) {
+            Box(
                 modifier = Modifier
-                    .widthIn(max = LANDSCAPE_MAX_WIDTH)
-                    .fillMaxHeight()
-                    .padding(horizontal = SIDE_MARGIN),
-                horizontalArrangement = Arrangement.spacedBy(PANE_GAP),
+                    .fillMaxWidth()
+                    .height(top + 40.dp)
+                    .headerWash()
+                    .background(Brush.verticalGradient(listOf(Color.Transparent, background))),
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = top)
+                    .then(sides),
+                contentAlignment = Alignment.TopCenter,
             ) {
-                Column(
+                Row(
                     modifier = Modifier
-                        .weight(PREVIEW_SHARE)
+                        .widthIn(max = LANDSCAPE_MAX_WIDTH)
                         .fillMaxHeight()
-                        .navigationBarsPadding()
-                        .padding(bottom = 12.dp)
+                        .padding(horizontal = SIDE_MARGIN),
+                    horizontalArrangement = Arrangement.spacedBy(PANE_GAP),
                 ) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    CompositionLocalProvider(LocalPreviewHint provides hint) {
-                        preview(Modifier.weight(1f), true)
+                    Column(
+                        modifier = Modifier
+                            .weight(PREVIEW_SHARE)
+                            .fillMaxHeight()
+                            .navigationBarsPadding()
+                            .padding(bottom = 12.dp)
+                    ) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        CompositionLocalProvider(LocalPreviewHint provides hint) {
+                            preview(Modifier.weight(1f), true)
+                        }
                     }
+                    Column(
+                        modifier = Modifier
+                            .weight(1f - PREVIEW_SHARE)
+                            .fillMaxHeight()
+                            .verticalScroll(rememberScrollState())
+                            .navigationBarsPadding()
+                            .padding(top = 8.dp, bottom = 16.dp),
+                        content = content,
+                    )
                 }
-                Column(
-                    modifier = Modifier
-                        .weight(1f - PREVIEW_SHARE)
-                        .fillMaxHeight()
-                        .verticalScroll(rememberScrollState())
-                        .navigationBarsPadding()
-                        .padding(top = 8.dp, bottom = 16.dp),
-                    content = content,
-                )
             }
         }
     } else {
-        Column(modifier = framed) {
+        Column(modifier = modifier.fillMaxSize()) {
             // Pinned: only the settings under it scroll, so the preview is in sight whatever is
-            // being changed.
-            CompositionLocalProvider(LocalPreviewHint provides hint) {
-                preview(Modifier.padding(start = SIDE_MARGIN, end = SIDE_MARGIN, top = 4.dp), false)
+            // being changed. The header — the top bar over it, and the preview — on the wash, which
+            // ends with it: the settings are on the plain page.
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .headerWash()
+                    .padding(top = top)
+                    .then(sides)
+                    .padding(start = SIDE_MARGIN, end = SIDE_MARGIN, top = 4.dp, bottom = 12.dp),
+            ) {
+                CompositionLocalProvider(LocalPreviewHint provides hint) {
+                    preview(Modifier, false)
+                }
             }
-            Spacer(modifier = Modifier.height(10.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .then(sides)
                     .verticalScroll(rememberScrollState())
                     .navigationBarsPadding()
                     .padding(SIDE_MARGIN),

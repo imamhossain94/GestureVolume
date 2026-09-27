@@ -184,6 +184,7 @@
     <string name="action_not_available_msg">此操作在此不可用。</string>
     <string name="unknown_action_msg">未知的行动。</string>
     <string name="save_changes">保存更改</string>
+    <string name="save">保存</string>
     <string name="locked">锁定</string>
     <string name="unlocked">解锁</string>
     <string name="icon_increase">增加</string>

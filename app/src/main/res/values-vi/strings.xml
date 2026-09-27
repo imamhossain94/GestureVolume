@@ -184,6 +184,7 @@
     <string name="action_not_available_msg">Hành động này không có sẵn ở đây.</string>
     <string name="unknown_action_msg">Hành động không xác định.</string>
     <string name="save_changes">Lưu thay đổi</string>
+    <string name="save">Lưu</string>
     <string name="locked">Đã khóa</string>
     <string name="unlocked">Đã mở khóa</string>
     <string name="icon_increase">Tăng</string>

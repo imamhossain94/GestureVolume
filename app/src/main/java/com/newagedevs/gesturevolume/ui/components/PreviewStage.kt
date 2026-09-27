@@ -1,5 +1,11 @@
 package com.newagedevs.gesturevolume.ui.components
 
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.getValue
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.runtime.CompositionLocalProvider
@@ -73,11 +79,11 @@ import androidx.compose.ui.layout.layout
  * an edge is on the screen's edge. [overGlass] has the same bounds and no clip, for the demo's hand,
  * which reaches in over the frame from beyond the phone, as it does in the walkthrough.
  *
- * Dressed as the Actions screen's Try it card, so every screen that shows its subject shows it the
- * same way: a card with its name at the top — and, when there is a [demo], the button that plays it
- * across from the name — the phone on a stage inside it, and under the stage a few lines on what
- * the preview is for ([LocalPreviewHint]). While the demo plays, what the finger is doing takes the
- * place of those lines, centred, in the same space: the card never grows or shrinks around it.
+ * Laid out as the Actions screen's Try it, so every screen that shows its subject shows it the
+ * same way: the stage, the one card, as the walkthrough's picture is, and under it a row of what
+ * the preview is for ([LocalPreviewHint]) and, when there is a [demo], the button that plays it at
+ * the end. While the demo plays, what the finger is doing takes the place of those words, in the
+ * room they took, so the row is only as tall as the words it has.
  * Nothing but the preview and the hand goes on the glass, where a caption or a button would sit on
  * whatever the preview shows there.
  *
@@ -86,12 +92,16 @@ import androidx.compose.ui.layout.layout
  *
  * @param fillHeight fill the height it is given instead of taking [PREVIEW_STAGE_HEIGHT] — for the
  *   landscape arrangement, where the preview has a column of its own. See [PreviewSettingsLayout].
+ * @param naturalSize draw what is on the glass at its own size, rather than as small against the
+ *   glass as it is against the phone's screen: for a subject too slight to read in true proportion,
+ *   such as the Quick panel, or too long, such as the long-press menu as a list.
  */
 @Composable
 fun PreviewStage(
     modifier: Modifier = Modifier,
     contentAlignment: Alignment = Alignment.Center,
     fillHeight: Boolean = false,
+    naturalSize: Boolean = false,
     overGlass: @Composable BoxScope.() -> Unit = {},
     demo: GestureDemoState? = null,
     caption: @Composable (DemoGesture) -> Unit = { DemoGestureText(it) },
@@ -101,44 +111,23 @@ fun PreviewStage(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .then(if (fillHeight) Modifier.fillMaxHeight() else Modifier)
-            .clip(RoundedCornerShape(24.dp))
-            .background(colours.surfaceVariant.copy(alpha = 0.65f))
-            .padding(12.dp),
+            .then(if (fillHeight) Modifier.fillMaxHeight() else Modifier),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 6.dp, bottom = 10.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Filled.PhoneAndroid,
-                contentDescription = null,
-                tint = colours.primary,
-                modifier = Modifier.size(20.dp),
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = stringResource(R.string.preview_title),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = colours.onSurface,
-                modifier = Modifier.weight(1f),
-            )
-            if (demo != null) HowItWorksButton(onClick = demo::replay)
-        }
         // Clipped, as the walkthrough's picture is: the hand reaches in over the frame and is cut off
         // at the bottom of the phone, and never strays into the row of words under it.
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
                 .then(if (fillHeight) Modifier.weight(1f) else Modifier.height(PREVIEW_PHONE_HEIGHT))
-                .clip(RoundedCornerShape(18.dp))
+                .clip(StageShape)
                 .stageBackdrop()
                 .clipToBounds()
+                .testTag(PREVIEW_STAGE_TAG)
         ) {
-            // One of the scene's units, in dp, and where the scene sits: the walkthrough's fit.
-            val unit = DeviceArt.scale(maxWidth.value, maxHeight.value)
-            val origin = DeviceArt.origin(maxWidth.value, maxHeight.value, unit)
+            // One of the scene's units, in dp, and where the scene sits: a close-up of the phone's
+            // top, see previewUnit.
+            val unit = previewUnit(maxWidth.value, maxHeight.value)
+            val origin = previewOrigin(maxWidth.value, unit)
             // Drawn once per size: nothing in it moves.
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val px = unit.dp.toPx()
@@ -163,7 +152,7 @@ fun PreviewStage(
             // their size in dp on a phone a fraction of the size, they were several times too big.
             val glassWidth = maxWidth.value - 2f * origin.x - (DeviceArt.SCREEN_L + DeviceArt.SCENE_W - DeviceArt.SCREEN_R) * unit
             val screenWidth = LocalConfiguration.current.let { minOf(it.screenWidthDp, it.screenHeightDp) }
-            val scale = (glassWidth / screenWidth.coerceAtLeast(1)).coerceIn(0.05f, 1f)
+            val scale = if (naturalSize) 1f else (glassWidth / screenWidth.coerceAtLeast(1)).coerceIn(0.05f, 1f)
             CompositionLocalProvider(LocalGlassScale provides scale) {
                 Box(modifier = glass.clip(RoundedCornerShape(topStart = corner, topEnd = corner))) {
                     Box(
@@ -175,42 +164,81 @@ fun PreviewStage(
                 Box(modifier = glass, content = overGlass)
             }
         }
-        // The lines under the stage: what the preview is for, and while the demo plays, what the
-        // finger is doing, centred, in the same three lines' space.
+        // Under the stage: what the preview is for, and the button that plays its demo at the end.
+        // While the demo plays, what the finger is doing takes the words' place; they stay, unseen,
+        // so the row keeps their height rather than jumping to the caption's.
         val hint = LocalPreviewHint.current
         if (hint != null || demo != null) {
-            val lines = with(LocalDensity.current) { (MaterialTheme.typography.bodySmall.lineHeight * 3).toDp() }
             val step = demo?.let { d -> remember(d) { derivedStateOf { d.currentStep } }.value }
-            AnimatedContent(
-                targetState = step,
-                transitionSpec = { fadeIn() togetherWith fadeOut() },
-                contentAlignment = Alignment.Center,
+            val hintAlpha by animateFloatAsState(if (step == null) 1f else 0f, label = "previewHint")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 6.dp, end = 6.dp, top = 10.dp)
-                    .height(lines),
-                label = "previewLines",
-            ) { gesture ->
+                    .padding(start = 4.dp, top = 10.dp),
+            ) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = if (gesture != null) Alignment.Center else Alignment.CenterStart,
+                    contentAlignment = Alignment.CenterStart,
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 34.dp),
                 ) {
-                    if (gesture != null) {
-                        caption(gesture)
-                    } else if (hint != null) {
+                    if (hint != null) {
                         Text(
                             text = hint,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = colours.onSurfaceVariant,
                             maxLines = 3,
                             overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.graphicsLayer { alpha = hintAlpha },
                         )
                     }
+                    AnimatedContent(
+                        targetState = step,
+                        transitionSpec = { fadeIn() togetherWith fadeOut() },
+                        contentAlignment = Alignment.CenterStart,
+                        label = "previewCaption",
+                    ) { gesture -> if (gesture != null) caption(gesture) }
+                }
+                if (demo != null) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                    HowItWorksButton(onClick = demo::replay)
                 }
             }
         }
     }
 }
+
+/** The corners of a preview's stage, and the Actions screen's Try it pad: the walkthrough's card's. */
+val StageShape = RoundedCornerShape(28.dp)
+
+/**
+ * A scene unit on a preview's stage, in dp: a close-up of the phone's top, its glass [GLASS_SHARE]
+ * of the stage's width, where the walkthrough's fit showed the whole phone with a margin on each
+ * side and left what is on its screen a little over half the size. No closer than leaves a good
+ * part of the glass showing under the status bar on a wide, short stage.
+ */
+fun previewUnit(width: Float, height: Float): Float =
+    minOf(width * GLASS_SHARE / DeviceArt.SCREEN_W, (height - PHONE_TOP) / MIN_GLASS_SHOWN)
+
+/** Where the scene's top left lands on a stage [width] wide at [unit]: centred, its frame [PHONE_TOP] from the top. */
+fun previewOrigin(width: Float, unit: Float): Offset =
+    Offset((width - DeviceArt.SCENE_W * unit) / 2f, PHONE_TOP - FRAME_TOP * unit)
+
+/** For a test to find the stage. */
+const val PREVIEW_STAGE_TAG = "previewStage"
+
+/** How much of the stage's width the glass takes. */
+private const val GLASS_SHARE = 0.8f
+
+/** The phone's frame, from the top of the stage, in dp. */
+private const val PHONE_TOP = 12f
+
+/** The frame's top, in the scene's units: see drawScenePhone. */
+private const val FRAME_TOP = 14f
+
+/** Scene units of stage height a unit of glass needs: the gap over the glass and a part of the glass under it. */
+private const val MIN_GLASS_SHOWN = (DeviceArt.SCREEN_T - FRAME_TOP) + DeviceArt.SCREEN_W * 0.55f
 
 /**
  * How much smaller than on the phone itself things are drawn on a preview's glass: see
@@ -252,13 +280,13 @@ val LocalPreviewHint = compositionLocalOf<String?> { null }
  * subject on the phone's glass, where a menu of many actions is taller than the part of the
  * phone that shows; [top] keeps it off the status bar.
  */
-fun Modifier.scaleToFit(maxScale: Float, horizontal: Dp, top: Dp, bottom: Dp): Modifier =
+fun Modifier.scaleToFit(maxScale: Float, horizontal: Dp, top: Dp, bottom: Dp, fitHeight: Boolean = true): Modifier =
     layout { measurable, constraints ->
         val placeable = measurable.measure(Constraints())
         val sides = horizontal.roundToPx() * 2
         val ends = top.roundToPx() + bottom.roundToPx()
         val roomW = if (constraints.hasBoundedWidth) (constraints.maxWidth - sides).toFloat() else Float.MAX_VALUE
-        val roomH = if (constraints.hasBoundedHeight) (constraints.maxHeight - ends).toFloat() else Float.MAX_VALUE
+        val roomH = if (fitHeight && constraints.hasBoundedHeight) (constraints.maxHeight - ends).toFloat() else Float.MAX_VALUE
         val scale = if (placeable.width <= 0 || placeable.height <= 0) {
             maxScale
         } else {

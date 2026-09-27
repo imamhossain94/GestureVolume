@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -294,14 +295,15 @@ internal fun GestureCaption(gesture: DemoGesture, action: String) {
         }
     )
     val actionName = if (off) stringResource(R.string.demo_does_nothing) else actionDisplayName(action)
-    val ink = MaterialTheme.colorScheme.onSurfaceVariant
+    val ink = MaterialTheme.colorScheme.primary
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         if (entry != null) {
-            ActionIconImage(icon = entry.icon, contentDescription = null, modifier = Modifier.size(16.dp), tint = ink)
+            ActionIconImage(icon = entry.icon, contentDescription = null, modifier = Modifier.size(18.dp), tint = ink)
         }
         Text(
             text = stringResource(R.string.demo_caption, gestureName, actionName),
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
             color = ink,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,

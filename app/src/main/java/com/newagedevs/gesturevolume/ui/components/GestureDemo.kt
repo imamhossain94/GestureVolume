@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.components
 
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Path
 import androidx.compose.runtime.derivedStateOf
@@ -242,11 +243,12 @@ fun GestureDemoOverlay(
  */
 @Composable
 fun HowItWorksButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    // In the accent, so the one thing on the card to press stands out from what it is about.
     Surface(
         onClick = onClick,
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        color = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
         modifier = modifier.height(34.dp),
     ) {
         Row(
@@ -272,8 +274,9 @@ fun HowItWorksButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 fun DemoGestureText(gesture: DemoGesture) {
     Text(
         text = stringResource(demoGestureName(gesture)),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.primary,
     )
 }
 

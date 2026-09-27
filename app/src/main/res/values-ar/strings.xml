@@ -184,6 +184,7 @@
     <string name="action_not_available_msg">هذا الإجراء غير متوفر هنا.</string>
     <string name="unknown_action_msg">عمل غير معروف.</string>
     <string name="save_changes">حفظ التغييرات</string>
+    <string name="save">حفظ</string>
     <string name="locked">مغلق</string>
     <string name="unlocked">مفتوح</string>
     <string name="icon_increase">يزيد</string>

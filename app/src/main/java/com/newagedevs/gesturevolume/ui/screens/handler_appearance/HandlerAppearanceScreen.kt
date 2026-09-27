@@ -1,6 +1,7 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
-import com.newagedevs.gesturevolume.ui.components.screenWash
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material3.TextButton
 import android.content.res.Configuration
 import android.view.Gravity
 import androidx.activity.compose.BackHandler
@@ -385,9 +386,7 @@ fun HandlerAppearanceScreen(
     // edits this screen's draft, so it lives with it rather than on a route of its own.
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
-            // The walkthrough's cool wash at the top, behind the transparent bar: see screenWash.
-            modifier = Modifier.screenWash(),
-            containerColor = Color.Transparent,
+            // The top bar is clear: the preview's header washes itself, behind it. See headerWash.
             topBar = {
                 TopAppBar(
                     title = { Text(stringResource(R.string.appearance)) },
@@ -424,7 +423,7 @@ fun HandlerAppearanceScreen(
                             animationSpec = AppearanceMotion.Tint,
                             label = "applyTickTint",
                         )
-                        IconButton(
+                        TextButton(
                             onClick = {
                                 saveChanges()
                                 // A break point: the user finished and saved, and stays on this screen.
@@ -432,16 +431,16 @@ fun HandlerAppearanceScreen(
                                 // which leaves the screen.
                                 viewModel.onHappyMoment(AdPacing.Trigger.SETTINGS_APPLIED)
                             },
-                            enabled = hasUnsavedChanges
+                            enabled = hasUnsavedChanges,
+                            modifier = Modifier.graphicsLayer {
+                                scaleX = tickScale
+                                scaleY = tickScale
+                            },
                         ) {
-                            Icon(
-                                Icons.Default.Check,
-                                contentDescription = stringResource(R.string.save_changes),
-                                tint = tickTint,
-                                modifier = Modifier.graphicsLayer {
-                                    scaleX = tickScale
-                                    scaleY = tickScale
-                                },
+                            Text(
+                                text = stringResource(R.string.save),
+                                color = tickTint,
+                                fontWeight = FontWeight.SemiBold,
                             )
                         }
                     },
