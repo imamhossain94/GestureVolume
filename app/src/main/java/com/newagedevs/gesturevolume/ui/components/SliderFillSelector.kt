@@ -98,13 +98,18 @@ data class FillTileLook(
     val feedback: LevelFeedback.Style = LevelFeedback.Style(),
 )
 
-/** A tile's picture: the wallpaper, and [id] running on a small panel over it in [look]. */
+/**
+ * A tile's picture: the wallpaper, and [id] running on a small panel over it in [look], filled to
+ * [level]. [showcase], for a panel at the top that keeps reaching it: see [MiniFill].
+ */
 @Composable
-internal fun BoxScope.FillTile(id: String, look: FillTileLook) {
+internal fun BoxScope.FillTile(id: String, look: FillTileLook, level: Float = MINI_LEVEL, showcase: Boolean = false) {
     TileWallpaper()
     MiniFill(
         id = id,
         look = look,
+        level = level,
+        showcase = showcase,
         modifier = Modifier
             .align(Alignment.Center)
             .size(width = 24.dp, height = 70.dp),
@@ -112,11 +117,20 @@ internal fun BoxScope.FillTile(id: String, look: FillTileLook) {
 }
 
 /**
- * [id] running on a small Quick panel: the real view, with no number and no icon, at a level that
- * shows both the lit part and the track above it.
+ * [id] running on a small Quick panel: the real view, with no number and no icon, by default at a
+ * level that shows both the lit part and the track above it.
+ *
+ * @param showcase the top reached again every few seconds, for a panel held at it: so a tile of the
+ *   flourish at 100% shows it arriving as well as staying. See `QuickSliderView.setFeedbackShowcase`.
  */
 @Composable
-internal fun MiniFill(id: String, look: FillTileLook, modifier: Modifier = Modifier) {
+internal fun MiniFill(
+    id: String,
+    look: FillTileLook,
+    modifier: Modifier = Modifier,
+    level: Float = MINI_LEVEL,
+    showcase: Boolean = false,
+) {
     AndroidView(
         factory = { context ->
             QuickSliderView(context).apply {
@@ -138,7 +152,8 @@ internal fun MiniFill(id: String, look: FillTileLook, modifier: Modifier = Modif
             view.setFillColors(look.fillColors)
             view.setExpansion(1f)
             view.setCommitted()
-            view.setValue(MINI_LEVEL)
+            view.setFeedbackShowcase(showcase)
+            view.setValue(level)
         },
         modifier = modifier,
     )

@@ -13,7 +13,15 @@
     <string name="level_feedback_low">توهّج عند الانخفاض</string>
     <string name="level_feedback_low_desc">ضوء خافت يتنفس عند المستوى حين يكون منخفضًا، وفي الأسفل حين يكون متوقفًا.</string>
     <string name="level_feedback_full">احتفال عند القمة</string>
-    <string name="level_feedback_full_desc">انفجار من الضوء عند الوصول إلى 100%، وإطار بألوان قوس قزح ما دام هناك.</string>
+    <string name="level_feedback_full_desc">تأثير عند الوصول إلى 100% وطوال بقائه هناك. اختر واحدًا أدناه.</string>
+    <string name="level_max_title">عند القمة</string>
+    <string name="level_max_burst">انفجار</string>
+    <string name="level_max_ripple">تموّجات</string>
+    <string name="level_max_shine">لمعان</string>
+    <string name="level_max_sparkle">بريق</string>
+    <string name="level_max_confetti">قصاصات ملونة</string>
+    <string name="level_max_neon">نيون</string>
+    <string name="level_max_pulse">نبض</string>
     <string name="glimmer_look">المظهر</string>
     <string name="glimmer_look_both">المقبض والعلامات</string>
     <string name="glimmer_look_handle">المقبض</string>

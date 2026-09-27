@@ -13,7 +13,15 @@
     <string name="level_feedback_low">Bagliore quando è basso</string>
     <string name="level_feedback_low_desc">Una luce tenue respira sul livello quando è basso, e in fondo quando è spento.</string>
     <string name="level_feedback_full">Festa in cima</string>
-    <string name="level_feedback_full_desc">Un lampo di luce al 100% e un bordo arcobaleno finché resta lì.</string>
+    <string name="level_feedback_full_desc">Un effetto quando arriva al 100% e finché resta lì. Scegline uno qui sotto.</string>
+    <string name="level_max_title">In cima</string>
+    <string name="level_max_burst">Esplosione</string>
+    <string name="level_max_ripple">Onde</string>
+    <string name="level_max_shine">Riflesso</string>
+    <string name="level_max_sparkle">Scintille</string>
+    <string name="level_max_confetti">Coriandoli</string>
+    <string name="level_max_neon">Neon</string>
+    <string name="level_max_pulse">Battito</string>
     <string name="glimmer_look">Aspetto</string>
     <string name="glimmer_look_both">Cursore e tacche</string>
     <string name="glimmer_look_handle">Cursore</string>

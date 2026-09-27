@@ -13,7 +13,15 @@
     <string name="level_feedback_low">低いときに光る</string>
     <string name="level_feedback_low_desc">レベルが低いときはその位置で、オフのときは下端で、やわらかな光が呼吸します。</string>
     <string name="level_feedback_full">最上部でお祝い</string>
-    <string name="level_feedback_full_desc">100% に達すると光があふれ、そのままの間は虹色の縁が回ります。</string>
+    <string name="level_feedback_full_desc">100%に達したとき、そしてそのままの間に演出が入ります。下から選んでください。</string>
+    <string name="level_max_title">最上部</string>
+    <string name="level_max_burst">バースト</string>
+    <string name="level_max_ripple">波紋</string>
+    <string name="level_max_shine">光沢</string>
+    <string name="level_max_sparkle">きらめき</string>
+    <string name="level_max_confetti">紙吹雪</string>
+    <string name="level_max_neon">ネオン</string>
+    <string name="level_max_pulse">鼓動</string>
     <string name="glimmer_look">見た目</string>
     <string name="glimmer_look_both">ハンドルと目盛り</string>
     <string name="glimmer_look_handle">ハンドル</string>

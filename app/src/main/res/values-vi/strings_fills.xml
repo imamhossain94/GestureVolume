@@ -13,7 +13,15 @@
     <string name="level_feedback_low">Phát sáng khi thấp</string>
     <string name="level_feedback_low_desc">Một ánh sáng dịu thở ở mức khi mức thấp, và ở đáy khi tắt.</string>
     <string name="level_feedback_full">Ăn mừng khi lên đỉnh</string>
-    <string name="level_feedback_full_desc">Một luồng sáng bùng lên khi đạt 100%, và viền cầu vồng khi vẫn ở đó.</string>
+    <string name="level_feedback_full_desc">Hiệu ứng khi đạt 100% và trong lúc vẫn ở đó. Chọn một bên dưới.</string>
+    <string name="level_max_title">Khi lên đỉnh</string>
+    <string name="level_max_burst">Bùng nổ</string>
+    <string name="level_max_ripple">Gợn sóng</string>
+    <string name="level_max_shine">Ánh lóe</string>
+    <string name="level_max_sparkle">Lấp lánh</string>
+    <string name="level_max_confetti">Hoa giấy</string>
+    <string name="level_max_neon">Neon</string>
+    <string name="level_max_pulse">Nhịp đập</string>
     <string name="glimmer_look">Kiểu</string>
     <string name="glimmer_look_both">Tay nắm và vạch</string>
     <string name="glimmer_look_handle">Tay nắm</string>

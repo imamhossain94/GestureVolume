@@ -141,7 +141,15 @@
     <string name="level_feedback_low">Glow when low</string>
     <string name="level_feedback_low_desc">A soft light breathes at the level when it is low, and at the bottom when it is off.</string>
     <string name="level_feedback_full">Celebrate at the top</string>
-    <string name="level_feedback_full_desc">A burst of light when it reaches 100%, and a rainbow rim while it stays there.</string>
+    <string name="level_feedback_full_desc">A flourish when it reaches 100%, and while it stays there. Pick one below.</string>
+    <string name="level_max_title">At the top</string>
+    <string name="level_max_burst">Burst</string>
+    <string name="level_max_ripple">Ripple</string>
+    <string name="level_max_shine">Shine</string>
+    <string name="level_max_sparkle">Sparkle</string>
+    <string name="level_max_confetti">Confetti</string>
+    <string name="level_max_neon">Neon</string>
+    <string name="level_max_pulse">Pulse</string>
     <string name="glimmer_look">Look</string>
     <string name="glimmer_look_both">Handle &amp; stops</string>
     <string name="glimmer_look_handle">Handle</string>

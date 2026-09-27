@@ -13,7 +13,15 @@
     <string name="level_feedback_low">कम होने पर चमक</string>
     <string name="level_feedback_low_desc">लेवल कम होने पर वहाँ एक हल्की रोशनी साँस लेती है, और बंद होने पर सबसे नीचे।</string>
     <string name="level_feedback_full">ऊपर पहुँचने पर जश्न</string>
-    <string name="level_feedback_full_desc">100% पर पहुँचते ही रोशनी की एक चमक, और वहाँ रहने तक इंद्रधनुषी किनारा।</string>
+    <string name="level_feedback_full_desc">100% पर पहुँचने पर और वहाँ रहने तक एक प्रभाव। नीचे से एक चुनें।</string>
+    <string name="level_max_title">सबसे ऊपर</string>
+    <string name="level_max_burst">विस्फोट</string>
+    <string name="level_max_ripple">लहरें</string>
+    <string name="level_max_shine">चमक</string>
+    <string name="level_max_sparkle">झिलमिल</string>
+    <string name="level_max_confetti">कंफ़ेटी</string>
+    <string name="level_max_neon">नियॉन</string>
+    <string name="level_max_pulse">धड़कन</string>
     <string name="glimmer_look">रूप</string>
     <string name="glimmer_look_both">हैंडल और स्टॉप</string>
     <string name="glimmer_look_handle">हैंडल</string>

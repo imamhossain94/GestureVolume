@@ -685,6 +685,8 @@ fun QuickSliderScreen(
                         showSpeed = fillStyle != SliderFill.PIXELS && fillStyle != SliderFill.SHADER &&
                             fillStyle != SliderFill.SURGE && fillStyle != SliderFill.GLIMMER,
                         onChange = { levelFeedback = it; store.setLevelFeedback(it) },
+                        fillStyle = fillStyle,
+                        look = tileLook,
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))

@@ -13,7 +13,15 @@
     <string name="level_feedback_low">低时发光</string>
     <string name="level_feedback_low_desc">电平较低时在电平处、关闭时在底部，一道柔光缓缓呼吸。</string>
     <string name="level_feedback_full">到顶庆祝</string>
-    <string name="level_feedback_full_desc">达到 100% 时迸发光芒，保持在顶部时显示彩虹边框。</string>
+    <string name="level_feedback_full_desc">到达 100% 时以及停留在顶部期间的效果。在下方选择一个。</string>
+    <string name="level_max_title">到顶时</string>
+    <string name="level_max_burst">迸发</string>
+    <string name="level_max_ripple">涟漪</string>
+    <string name="level_max_shine">光泽</string>
+    <string name="level_max_sparkle">闪烁</string>
+    <string name="level_max_confetti">彩纸</string>
+    <string name="level_max_neon">霓虹</string>
+    <string name="level_max_pulse">脉动</string>
     <string name="glimmer_look">外观</string>
     <string name="glimmer_look_both">滑块和刻度</string>
     <string name="glimmer_look_handle">滑块</string>

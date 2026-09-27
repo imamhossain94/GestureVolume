@@ -13,7 +13,15 @@
     <string name="level_feedback_low">Lueur quand c’est bas</string>
     <string name="level_feedback_low_desc">Une douce lumière respire au niveau quand il est bas, et en bas quand il est coupé.</string>
     <string name="level_feedback_full">Fête tout en haut</string>
-    <string name="level_feedback_full_desc">Un éclat de lumière à 100 %, et un contour arc-en-ciel tant qu’il y reste.</string>
+    <string name="level_feedback_full_desc">Un effet quand il atteint 100 %, et tant qu’il y reste. Choisissez-en un ci-dessous.</string>
+    <string name="level_max_title">Tout en haut</string>
+    <string name="level_max_burst">Éclat</string>
+    <string name="level_max_ripple">Ondes</string>
+    <string name="level_max_shine">Reflet</string>
+    <string name="level_max_sparkle">Étincelles</string>
+    <string name="level_max_confetti">Confettis</string>
+    <string name="level_max_neon">Néon</string>
+    <string name="level_max_pulse">Pulsation</string>
     <string name="glimmer_look">Apparence</string>
     <string name="glimmer_look_both">Poignée et repères</string>
     <string name="glimmer_look_handle">Poignée</string>

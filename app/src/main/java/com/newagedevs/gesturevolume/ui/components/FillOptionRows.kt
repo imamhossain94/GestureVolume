@@ -132,12 +132,45 @@ fun GlimmerLookRow(style: GlimmerFill.Style, look: FillTileLook, onChange: (Glim
     }
 }
 
+/** The translated name of a flourish at the top. */
+fun maxFlourishLabel(id: String): Int = when (LevelFeedback.sanitizeMax(id)) {
+    LevelFeedback.MAX_RIPPLE -> R.string.level_max_ripple
+    LevelFeedback.MAX_SHINE -> R.string.level_max_shine
+    LevelFeedback.MAX_SPARKLE -> R.string.level_max_sparkle
+    LevelFeedback.MAX_CONFETTI -> R.string.level_max_confetti
+    LevelFeedback.MAX_NEON -> R.string.level_max_neon
+    LevelFeedback.MAX_PULSE -> R.string.level_max_pulse
+    else -> R.string.level_max_burst
+}
+
+/**
+ * Which flourish the panel plays at 100%, as a row of the same live tiles as the fills: each a
+ * panel of the chosen fill held at the top and reaching it again every few seconds, so the tile
+ * shows the flourish arriving and then staying.
+ */
+@Composable
+fun MaxFlourishRow(style: LevelFeedback.Style, fillStyle: String, look: FillTileLook, onChange: (LevelFeedback.Style) -> Unit) {
+    OptionRow(R.string.level_max_title) {
+        PictureRow(
+            items = LevelFeedback.MAX_STYLES,
+            selected = LevelFeedback.sanitizeMax(style.max),
+            onSelect = { onChange(style.copy(max = it)) },
+            label = { stringResource(maxFlourishLabel(it)) },
+            tileWidth = FILL_TILE_WIDTH,
+        ) { id, _ ->
+            FillTile(fillStyle, look.copy(feedback = style.copy(full = true, max = id)), level = 1f, showcase = true)
+        }
+    }
+}
+
 /**
  * How the fill answers the level — see [LevelFeedback] — for every fill but the Effort picker,
  * which answers it in its own way: livelier as it rises, a glow when low, a flourish at the top.
  *
  * @param showSpeed for the fills without a speed of their own; the Pixels grid, the shaders and the
  *   glimmer keep theirs, above.
+ * @param fillStyle the fill chosen, and [look] how it is dressed, for the tiles of the flourishes
+ *   at the top: each is that fill at 100%.
  */
 @Composable
 fun LevelFeedbackControls(
@@ -145,6 +178,8 @@ fun LevelFeedbackControls(
     accent: Color,
     showSpeed: Boolean,
     onChange: (LevelFeedback.Style) -> Unit,
+    fillStyle: String,
+    look: FillTileLook,
     modifier: Modifier = Modifier,
 ) {
     val locale = LocalConfiguration.current.locales[0]
@@ -193,5 +228,10 @@ fun LevelFeedbackControls(
             checked = style.full,
             onCheckedChange = { onChange(style.copy(full = it)) },
         )
+        // Under its switch, and only while it is on: a choice of nothing is not a choice.
+        if (style.full) {
+            Spacer(modifier = Modifier.height(16.dp))
+            MaxFlourishRow(style = style, fillStyle = fillStyle, look = look, onChange = onChange)
+        }
     }
 }

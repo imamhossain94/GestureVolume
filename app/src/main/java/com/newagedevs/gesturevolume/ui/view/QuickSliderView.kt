@@ -429,6 +429,22 @@ class QuickSliderView(context: Context) : View(context) {
     private var stepAt = 0L
     private var fullAt = 0L
 
+    /**
+     * Whether the top is reached over and over, every [SHOWCASE_S] of the feedback's clock, rather
+     * than when the level gets there: for a picker's tile, a panel held at 100% that has to show
+     * its flourish arriving as well as staying.
+     */
+    private var showcase = false
+
+    fun setFeedbackShowcase(on: Boolean) {
+        if (showcase == on) return
+        showcase = on
+        invalidate()
+    }
+
+    /** Seconds since the top was reached, as the feedback reads it; negative for not yet. */
+    private fun fullSeconds(): Float = if (showcase) feedbackTime % SHOWCASE_S else secondsSince(fullAt)
+
     /** The feedback's own clock, in seconds, at the fill's speed; and the fill clock's last tick. */
     private var feedbackTime = 0f
     private var phaseTickAt = 0L
@@ -1964,7 +1980,7 @@ class QuickSliderView(context: Context) : View(context) {
         feedbackArt.drawLit(
             canvas, drawRect, fillTop, value, feedback, feedbackTime,
             stepS = secondsSince(stepAt),
-            fullS = secondsSince(fullAt),
+            fullS = fullSeconds(),
             ink = feedbackInk(),
             // A band across dots or a grid would paint the gaps between them as well.
             sheen = fillStyle != SliderFill.PIXELS && fillStyle != SliderFill.GLIMMER,
@@ -1984,9 +2000,11 @@ class QuickSliderView(context: Context) : View(context) {
             value = value,
             style = feedback,
             timeS = feedbackTime,
-            fullS = secondsSince(fullAt),
+            fullS = fullSeconds(),
             // On the track, where the low glow mostly is: the fill colour, unless it would vanish.
             glow = ContentInk.pick(blendedTrackColor, fillColor),
+            // At the top, where the flourishes are, the panel is all fill.
+            ink = feedbackInk(),
             alpha = contentAlpha,
         )
         canvas.restore()
@@ -2258,6 +2276,9 @@ private const val BIG_CLIP = 100_000f
 
 /** Where the feedback's clock wraps, in seconds: its breath and its rim both divide it. */
 private const val FEEDBACK_TIME_WRAP_S = 3600f
+
+/** How often a showcase reaches the top again, in seconds of the feedback's clock: see [QuickSliderView.setFeedbackShowcase]. */
+private const val SHOWCASE_S = 3.6f
 
 private val FEEDBACK_DARK_INK = 0xFF14161B.toInt()
 

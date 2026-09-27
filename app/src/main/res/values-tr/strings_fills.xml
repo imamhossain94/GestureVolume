@@ -13,7 +13,15 @@
     <string name="level_feedback_low">Düşükken parlama</string>
     <string name="level_feedback_low_desc">Seviye düşükken orada, kapalıyken en altta yumuşak bir ışık nefes alır.</string>
     <string name="level_feedback_full">En üstte kutlama</string>
-    <string name="level_feedback_full_desc">%100’e ulaşınca bir ışık patlaması, orada kaldıkça gökkuşağı renkli bir kenar.</string>
+    <string name="level_feedback_full_desc">%100’e ulaşınca ve orada kaldıkça bir efekt. Aşağıdan birini seç.</string>
+    <string name="level_max_title">En üstte</string>
+    <string name="level_max_burst">Patlama</string>
+    <string name="level_max_ripple">Dalgalar</string>
+    <string name="level_max_shine">Parıltı</string>
+    <string name="level_max_sparkle">Işıltı</string>
+    <string name="level_max_confetti">Konfeti</string>
+    <string name="level_max_neon">Neon</string>
+    <string name="level_max_pulse">Nabız</string>
     <string name="glimmer_look">Görünüm</string>
     <string name="glimmer_look_both">Tutamaç ve duraklar</string>
     <string name="glimmer_look_handle">Tutamaç</string>

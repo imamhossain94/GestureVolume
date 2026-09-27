@@ -78,4 +78,63 @@ class LevelFeedbackTest {
         assertEquals(LevelFeedback.MIN_SPEED, LevelFeedback.Style(speed = 0f).sanitized().speed, 0f)
         assertEquals(LevelFeedback.DEFAULT_SPEED, LevelFeedback.Style(speed = Float.NaN).sanitized().speed, 0f)
     }
+
+    @Test
+    fun `the flourish at the top is one of seven, the burst unless another is chosen`() {
+        assertEquals(7, LevelFeedback.MAX_STYLES.size)
+        assertEquals(LevelFeedback.MAX_STYLES.size, LevelFeedback.MAX_STYLES.toSet().size)
+        assertEquals(LevelFeedback.MAX_BURST, LevelFeedback.Style().max)
+        assertEquals(LevelFeedback.MAX_BURST, LevelFeedback.sanitizeMax("bogus"))
+        assertEquals(LevelFeedback.MAX_BURST, LevelFeedback.sanitizeMax(null))
+        assertEquals(LevelFeedback.MAX_BURST, LevelFeedback.Style(max = "nope").sanitized().max)
+        LevelFeedback.MAX_STYLES.forEach { assertEquals(it, LevelFeedback.Style(max = it).sanitized().max) }
+    }
+
+    @Test
+    fun `every flourish's loop divides the feedback clock's hour, so its wrap is not seen`() {
+        listOf(
+            LevelFeedback.RIPPLE_LIFE_S, LevelFeedback.SHINE_S, LevelFeedback.SPARKLE_S, LevelFeedback.BEAT_S,
+        ).forEach { period ->
+            val turns = 3600f / period
+            assertEquals("$period", Math.round(turns).toFloat(), turns, 1e-3f)
+        }
+    }
+
+    @Test
+    fun `a heartbeat throbs twice and rests`() {
+        val samples = (0 until 240).map { LevelFeedback.heartbeat(it * LevelFeedback.BEAT_S / 240f) }
+        samples.forEach { assertTrue(it in 0f..1f) }
+        // Two peaks, the first the stronger, and a rest after them.
+        val peaks = samples.indices.filter { i ->
+            i in 1 until samples.size - 1 && samples[i] > samples[i - 1] && samples[i] >= samples[i + 1] && samples[i] > 0.3f
+        }
+        assertEquals(2, peaks.size)
+        assertTrue(samples[peaks[0]] > samples[peaks[1]])
+        assertTrue(samples.subList(160, 240).all { it < 0.05f })
+        // The same a beat later.
+        assertEquals(LevelFeedback.heartbeat(0.3f), LevelFeedback.heartbeat(0.3f + LevelFeedback.BEAT_S), 1e-4f)
+    }
+
+    @Test
+    fun `a neon tube stutters as it strikes, then stays lit`() {
+        val strike = (0 until 70).map { LevelFeedback.neonStrike(it * LevelFeedback.NEON_STRIKE_S / 70f) }
+        assertTrue(strike.any { it < 0.3f })
+        assertEquals(1f, LevelFeedback.neonStrike(LevelFeedback.NEON_STRIKE_S), 0f)
+        assertEquals(1f, LevelFeedback.neonStrike(5f), 0f)
+        // Opened already full: simply lit.
+        assertEquals(1f, LevelFeedback.neonStrike(-1f), 0f)
+    }
+
+    @Test
+    fun `stars twinkle half the time, each on its own beat`() {
+        (0 until 7).forEach { star ->
+            val samples = (0 until 180).map { LevelFeedback.twinkle(star, it * LevelFeedback.SPARKLE_S / 180f) }
+            samples.forEach { assertTrue(it in 0f..1f) }
+            val lit = samples.count { it > 0f }
+            assertTrue("$star lit $lit", lit in 80..95)
+        }
+        // Not all at once.
+        val now = (0 until 7).map { LevelFeedback.twinkle(it, 0.5f) }
+        assertTrue(now.toSet().size > 3)
+    }
 }

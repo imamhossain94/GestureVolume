@@ -13,7 +13,15 @@
     <string name="level_feedback_low">কম থাকলে আভা</string>
     <string name="level_feedback_low_desc">লেভেল কম থাকলে সেখানে একটি নরম আলো শ্বাস নেয়, আর বন্ধ থাকলে নিচে।</string>
     <string name="level_feedback_full">শীর্ষে উদযাপন</string>
-    <string name="level_feedback_full_desc">১০০%-এ পৌঁছালে আলোর ঝলক, আর সেখানে থাকা পর্যন্ত রংধনু রঙের কিনারা।</string>
+    <string name="level_feedback_full_desc">১০০%-এ পৌঁছালে এবং সেখানে থাকা পর্যন্ত একটি ইফেক্ট। নিচে থেকে একটি বেছে নিন।</string>
+    <string name="level_max_title">শীর্ষে</string>
+    <string name="level_max_burst">বিস্ফোরণ</string>
+    <string name="level_max_ripple">ঢেউ</string>
+    <string name="level_max_shine">ঝলক</string>
+    <string name="level_max_sparkle">ঝিকিমিকি</string>
+    <string name="level_max_confetti">কনফেটি</string>
+    <string name="level_max_neon">নিয়ন</string>
+    <string name="level_max_pulse">স্পন্দন</string>
     <string name="glimmer_look">চেহারা</string>
     <string name="glimmer_look_both">হ্যান্ডেল ও স্টপ</string>
     <string name="glimmer_look_handle">হ্যান্ডেল</string>

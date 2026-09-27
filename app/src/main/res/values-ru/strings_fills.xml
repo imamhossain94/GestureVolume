@@ -13,7 +13,15 @@
     <string name="level_feedback_low">Свечение на низком уровне</string>
     <string name="level_feedback_low_desc">Мягкий свет «дышит» на уровне, когда он низкий, и внизу, когда он выключен.</string>
     <string name="level_feedback_full">Праздник наверху</string>
-    <string name="level_feedback_full_desc">Вспышка света на 100% и радужная кайма, пока уровень остаётся там.</string>
+    <string name="level_feedback_full_desc">Эффект при достижении 100% и пока уровень остаётся там. Выберите ниже.</string>
+    <string name="level_max_title">Наверху</string>
+    <string name="level_max_burst">Вспышка</string>
+    <string name="level_max_ripple">Волны</string>
+    <string name="level_max_shine">Блик</string>
+    <string name="level_max_sparkle">Искры</string>
+    <string name="level_max_confetti">Конфетти</string>
+    <string name="level_max_neon">Неон</string>
+    <string name="level_max_pulse">Пульс</string>
     <string name="glimmer_look">Вид</string>
     <string name="glimmer_look_both">Ползунок и метки</string>
     <string name="glimmer_look_handle">Ползунок</string>

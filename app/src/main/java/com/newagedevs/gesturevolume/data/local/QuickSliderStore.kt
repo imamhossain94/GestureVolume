@@ -137,6 +137,7 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val FEEDBACK_FOLLOW = "sliderFeedbackFollow"
         private const val FEEDBACK_LOW = "sliderFeedbackLow"
         private const val FEEDBACK_FULL = "sliderFeedbackFull"
+        private const val FEEDBACK_MAX = "sliderFeedbackMax"
         private const val FOLLOW_HANDLER = "sliderFollowHandlerShape"
         private const val OPEN_ON_VOLUME_KEY = "sliderOpenOnVolumeKey"
         private const val VOLUME_KEYS = "sliderVolumeKeys"
@@ -613,6 +614,7 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
             follow = prefs.getBoolean(FEEDBACK_FOLLOW, d.follow),
             low = prefs.getBoolean(FEEDBACK_LOW, d.low),
             full = prefs.getBoolean(FEEDBACK_FULL, d.full),
+            max = prefs.getString(FEEDBACK_MAX, d.max) ?: d.max,
         ).sanitized()
     }
 
@@ -623,6 +625,7 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
             putBoolean(FEEDBACK_FOLLOW, s.follow)
             putBoolean(FEEDBACK_LOW, s.low)
             putBoolean(FEEDBACK_FULL, s.full)
+            putString(FEEDBACK_MAX, s.max)
         }
     }
 

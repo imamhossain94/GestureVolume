@@ -62,7 +62,10 @@ class FillOptionsRenderTest {
                     SurgeLookRow(SurgeFill.Style(), look) {}
                     EffortLookRow(EffortFill.Style(), look) {}
                     GlimmerLookRow(GlimmerFill.Style(), look) {}
-                    LevelFeedbackControls(LevelFeedback.Style(), MaterialTheme.colorScheme.primary, showSpeed = true, onChange = {})
+                    LevelFeedbackControls(
+                        LevelFeedback.Style(), MaterialTheme.colorScheme.primary, showSpeed = true, onChange = {},
+                        fillStyle = SliderFill.SOLID, look = look,
+                    )
                 }
             }
         }

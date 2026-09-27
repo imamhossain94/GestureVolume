@@ -3,6 +3,8 @@ package com.newagedevs.gesturevolume.utils
 import kotlin.math.PI
 import kotlin.math.ceil
 import kotlin.math.cos
+import kotlin.math.exp
+import kotlin.math.sin
 
 /**
  * How every Quick panel fill answers the level it is at, the way the Effort fill always has: calm
@@ -78,6 +80,107 @@ object LevelFeedback {
     /** A breath at [timeS], 0..1 and back, once every [BREATH_S]. */
     fun breath(timeS: Float): Float = 0.5f - 0.5f * cos((timeS / BREATH_S) * 2f * PI.toFloat())
 
+    // ---- the flourish at the top ------------------------------------------------------------------
+
+    /*
+     * What the panel does at 100%: a moment as the top is reached, and a quieter loop while it stays
+     * there. One of these, chosen under "Celebrate at the top". Identifiers are a persistence
+     * format, never renamed. Every loop's period divides the feedback clock's hour, so the clock
+     * wrapping is not a frame anyone can see.
+     */
+
+    /** A blossom of light and a ring of gold, a wave up the panel, then the spectrum turning round its rim. */
+    const val MAX_BURST = "burst"
+
+    /** Three rings going out from the top as it is reached, then one every [RIPPLE_EVERY_S]. */
+    const val MAX_RIPPLE = "ripple"
+
+    /** A flash, then a glint sweeping up the panel on a slant, as across a card tilted to the light. */
+    const val MAX_SHINE = "shine"
+
+    /** Four-pointed stars twinkling over the panel, each on its own beat, all at once as it arrives. */
+    const val MAX_SPARKLE = "sparkle"
+
+    /** Confetti thrown up from the top and falling through the panel, then a light fall while it stays. */
+    const val MAX_CONFETTI = "confetti"
+
+    /** The panel's edge lit like a neon tube: a flicker as it strikes, then a steady hum. */
+    const val MAX_NEON = "neon"
+
+    /** The panel beating like a heart: two quick throbs and a rest, strongest as it arrives. */
+    const val MAX_PULSE = "pulse"
+
+    /** In the order they are offered. */
+    val MAX_STYLES: List<String> = listOf(
+        MAX_BURST, MAX_RIPPLE, MAX_SHINE, MAX_SPARKLE, MAX_CONFETTI, MAX_NEON, MAX_PULSE,
+    )
+
+    fun sanitizeMax(id: String?): String = if (id in MAX_STYLES) id!! else MAX_BURST
+
+    /** Between one ripple and the next while the panel stays full, and how long one takes to go out. */
+    const val RIPPLE_EVERY_S = 1.2f
+    const val RIPPLE_LIFE_S = 3f * RIPPLE_EVERY_S
+
+    /** One glint and the rest before the next, and the part of that the glint takes. */
+    const val SHINE_S = 2.4f
+    const val SHINE_SWEEP = 0.45f
+
+    /** How long confetti thrown at the top takes to fall through the panel. */
+    const val CONFETTI_BURST_S = 1.8f
+
+    /** One twinkle's period; each star keeps its own offset in it. */
+    const val SPARKLE_S = 1.8f
+
+    /** How long a neon tube takes to strike. */
+    const val NEON_STRIKE_S = 0.7f
+
+    /** One heartbeat: two throbs and the rest after them. */
+    const val BEAT_S = 1.2f
+
+    /**
+     * How bright star [index] is twinkling at [timeS], 0..1: lit for half of each [SPARKLE_S] and dark
+     * for the rest, on a seeded offset so the stars do not blink together.
+     */
+    fun twinkle(index: Int, timeS: Float): Float {
+        val offset = SliderFill.pseudoRandom(index * 7919 + 13)
+        val u = ((timeS / SPARKLE_S + offset) % 1f + 1f) % 1f
+        if (u >= 0.5f) return 0f
+        val s = sin(PI.toFloat() * u / 0.5f)
+        return s * s
+    }
+
+    /**
+     * How lit a neon tube is [sinceS] after it was switched on, 0..1: the stutter of a tube
+     * striking — on, off, on dimmer, off, on — and then fully on. Negative for a panel that opened
+     * already full, which is simply lit.
+     */
+    fun neonStrike(sinceS: Float): Float {
+        if (sinceS < 0f || sinceS >= NEON_STRIKE_S) return 1f
+        val t = sinceS / NEON_STRIKE_S
+        return when {
+            t < 0.08f -> 1f
+            t < 0.2f -> 0.1f
+            t < 0.3f -> 0.75f
+            t < 0.46f -> 0.2f
+            t < 0.56f -> 1f
+            t < 0.64f -> 0.35f
+            else -> 1f
+        }
+    }
+
+    /**
+     * A heartbeat at [timeS], 0..1: a strong throb, a softer one close behind it, and a rest, once
+     * every [BEAT_S].
+     */
+    fun heartbeat(timeS: Float): Float {
+        val t = ((timeS % BEAT_S) + BEAT_S) % BEAT_S
+        fun throb(at: Float, width: Float): Float {
+            val d = (t - at) / width
+            return exp(-d * d)
+        }
+        return (throb(0.12f, 0.07f) + 0.65f * throb(0.36f, 0.08f)).coerceIn(0f, 1f)
+    }
+
     // ---- the settings -----------------------------------------------------------------------------
 
     /** Everything the user tunes about how a fill answers the level. */
@@ -91,14 +194,17 @@ object LevelFeedback {
         val follow: Boolean = true,
         /** A breath of light at the level when it is low, and at the bottom when it is off. */
         val low: Boolean = true,
-        /** A burst of light at the top, and a rim of colour while it stays there. */
+        /** A flourish at the top: [max] as it is reached, and while it stays there. */
         val full: Boolean = true,
+        /** Which flourish, one of [MAX_STYLES]. */
+        val max: String = MAX_BURST,
     ) {
         fun sanitized(): Style = Style(
             speed = if (speed.isNaN()) DEFAULT_SPEED else speed.coerceIn(MIN_SPEED, MAX_SPEED),
             follow = follow,
             low = low,
             full = full,
+            max = sanitizeMax(max),
         )
 
         /** Whether there is anything to draw over a fill at all. */
