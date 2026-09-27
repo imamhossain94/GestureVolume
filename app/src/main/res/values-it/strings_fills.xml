@@ -6,4 +6,17 @@
     <string name="slider_fill_colors_unsupported">Questa animazione è disegnata con il colore del riempimento, quindi non ha colori propri da cambiare.</string>
     <string name="slider_fill_color_n">Colore %1$d</string>
     <string name="slider_fill_colors_reset">Ripristina colori</string>
+    <string name="level_feedback_title">Risposta al livello</string>
+    <string name="level_feedback_desc">Come l’animazione risponde al livello: calma quando è basso, più vivace mentre sale e un tocco finale in cima.</string>
+    <string name="level_feedback_follow">Più vivace mentre si riempie</string>
+    <string name="level_feedback_follow_desc">Si muove più veloce e brilla di più quanto più alto è il livello, con un lampo a ogni quinto superato.</string>
+    <string name="level_feedback_low">Bagliore quando è basso</string>
+    <string name="level_feedback_low_desc">Una luce tenue respira sul livello quando è basso, e in fondo quando è spento.</string>
+    <string name="level_feedback_full">Festa in cima</string>
+    <string name="level_feedback_full_desc">Un lampo di luce al 100% e un bordo arcobaleno finché resta lì.</string>
+    <string name="glimmer_look">Aspetto</string>
+    <string name="glimmer_look_both">Cursore e tacche</string>
+    <string name="glimmer_look_handle">Cursore</string>
+    <string name="glimmer_look_stops">Tacche</string>
+    <string name="glimmer_look_plain">Solo punti</string>
 </resources>

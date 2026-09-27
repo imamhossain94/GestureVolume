@@ -72,6 +72,9 @@ import com.newagedevs.gesturevolume.ui.components.ShaderFillControls
 import com.newagedevs.gesturevolume.ui.components.EffortFillControls
 import com.newagedevs.gesturevolume.ui.components.GlimmerFillControls
 import com.newagedevs.gesturevolume.ui.components.SliderFillSelector
+import com.newagedevs.gesturevolume.ui.components.FillTileLook
+import com.newagedevs.gesturevolume.ui.components.LevelFeedbackControls
+import com.newagedevs.gesturevolume.utils.LevelFeedback
 import com.newagedevs.gesturevolume.ui.components.panelAnimationLabel
 import com.newagedevs.gesturevolume.ui.components.panelThemeLabel
 import com.newagedevs.gesturevolume.ui.components.sliderFillLabel
@@ -217,6 +220,7 @@ fun QuickSliderScreen(
     var shaderStyle by remember { mutableStateOf(store.getShaderStyle()) }
     var effortStyle by remember { mutableStateOf(store.getEffortStyle()) }
     var glimmerStyle by remember { mutableStateOf(store.getGlimmerStyle()) }
+    var levelFeedback by remember { mutableStateOf(store.getLevelFeedback()) }
     var fillColorsOn by remember { mutableStateOf(store.getFillColorsEnabled()) }
     var fillColors by remember { mutableStateOf(store.getFillColors().toList()) }
     var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
@@ -345,6 +349,7 @@ fun QuickSliderScreen(
                     shaderStyle = shaderStyle,
                     effortStyle = effortStyle,
                     glimmerStyle = glimmerStyle,
+                    levelFeedback = levelFeedback,
                     fillColors = if (fillColorsOn) fillColors.toIntArray() else null,
                     valueColor = if (contentColorsOn) valueColor else null,
                     iconColor = if (contentColorsOn) iconColor else null,
@@ -599,9 +604,8 @@ fun QuickSliderScreen(
                     },
                 )
                 Sep()
-                SliderFillSelector(
-                    style = fillStyle,
-                    onStyleChange = { fillStyle = it; store.setFillStyle(it) },
+                // Every tile, in the fill row and in the rows under it, dressed as the panel is.
+                val tileLook = FillTileLook(
                     trackColor = trackColor.toArgb(),
                     fillColor = fillColor.toArgb(),
                     fillColors = if (fillColorsOn) fillColors.toIntArray() else null,
@@ -609,6 +613,12 @@ fun QuickSliderScreen(
                     shaderStyle = shaderStyle,
                     effortStyle = effortStyle,
                     glimmerStyle = glimmerStyle,
+                    feedback = levelFeedback,
+                )
+                SliderFillSelector(
+                    style = fillStyle,
+                    onStyleChange = { fillStyle = it; store.setFillStyle(it) },
+                    look = tileLook,
                 )
                 // The fills with settings of their own, right under the chip that chose them.
                 if (fillStyle == SliderFill.PIXELS) {
@@ -617,6 +627,7 @@ fun QuickSliderScreen(
                         style = pixelStyle,
                         accent = accent,
                         onChange = { pixelStyle = it; store.setPixelStyle(it) },
+                        look = tileLook,
                     )
                 }
                 if (fillStyle == SliderFill.SHADER) {
@@ -625,6 +636,7 @@ fun QuickSliderScreen(
                         style = shaderStyle,
                         accent = accent,
                         onChange = { shaderStyle = it; store.setShaderStyle(it) },
+                        look = tileLook,
                     )
                 }
                 if (fillStyle == SliderFill.EFFORT) {
@@ -633,6 +645,7 @@ fun QuickSliderScreen(
                         style = effortStyle,
                         accent = accent,
                         onChange = { effortStyle = it; store.setEffortStyle(it) },
+                        look = tileLook,
                     )
                 }
                 if (fillStyle == SliderFill.GLIMMER) {
@@ -641,6 +654,18 @@ fun QuickSliderScreen(
                         style = glimmerStyle,
                         accent = accent,
                         onChange = { glimmerStyle = it; store.setGlimmerStyle(it) },
+                        look = tileLook,
+                    )
+                }
+                // How every fill but the Effort picker answers the level; the picker has its own.
+                if (fillStyle != SliderFill.EFFORT) {
+                    Sep()
+                    LevelFeedbackControls(
+                        style = levelFeedback,
+                        accent = accent,
+                        showSpeed = fillStyle != SliderFill.PIXELS && fillStyle != SliderFill.SHADER &&
+                            fillStyle != SliderFill.GLIMMER,
+                        onChange = { levelFeedback = it; store.setLevelFeedback(it) },
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
@@ -802,6 +827,8 @@ private fun SliderPreview(
     effortStyle: EffortFill.Style,
     /** The Glimmer fill's settings, used when that is the fill. */
     glimmerStyle: GlimmerFill.Style,
+    /** How the fill answers the level, which the preview's sweep through the levels shows. */
+    levelFeedback: LevelFeedback.Style,
     /** The animation's own colours, or null for its palette. */
     fillColors: IntArray?,
     /** The number's and the icon's own colours, or null to swap with the fill. */
@@ -871,25 +898,22 @@ private fun SliderPreview(
             view.setExpansion(fraction)
         }
     }
-    // The effort picker is only seen for what it is across its levels, so its preview steps up
-    // through them one at a time and back down, the way a finger clicks through a picker's stops,
-    // instead of holding still at one.
-    LaunchedEffect(sliderView, fillStyle == SliderFill.EFFORT) {
+    // A fill is only seen for what it is across its levels — calm when low, livelier as it rises,
+    // the flourish at the top — so the preview steps up through them one at a time and back down,
+    // the way a finger clicks through a picker's stops, instead of holding still at one. The
+    // Effort picker's stops, and the top itself, which is where the others finish.
+    LaunchedEffect(sliderView) {
         val view = sliderView ?: return@LaunchedEffect
-        if (fillStyle != SliderFill.EFFORT) {
-            view.setValue(0.6f)
-            return@LaunchedEffect
-        }
-        val stops = floatArrayOf(0.1f, 0.3f, 0.5f, 0.7f, 0.92f)
+        val stops = floatArrayOf(0.05f, 0.3f, 0.5f, 0.7f, 1f)
         var at = stops[0]
         view.setValue(at)
         val order = stops.indices.toList().let { up -> up.drop(1) + up.reversed().drop(1) }
         while (true) {
             for (i in order) {
-                delay(EFFORT_PREVIEW_HOLD_MS)
+                delay(LEVEL_PREVIEW_HOLD_MS)
                 val from = at
                 val to = stops[i]
-                animate(from, to, animationSpec = tween(EFFORT_PREVIEW_MOVE_MS, easing = FastOutSlowInEasing)) { v, _ ->
+                animate(from, to, animationSpec = tween(LEVEL_PREVIEW_MOVE_MS, easing = FastOutSlowInEasing)) { v, _ ->
                     view.setValue(v)
                 }
                 at = to
@@ -958,6 +982,7 @@ private fun SliderPreview(
                 view.setShaderStyle(shaderStyle)
                 view.setEffortStyle(effortStyle)
                 view.setGlimmerStyle(glimmerStyle)
+                view.setLevelFeedback(levelFeedback)
                 view.setFillStyle(fillStyle)
                 view.setFillColors(fillColors)
                 view.setDrawnThickness(thicknessDp * density, handlerOnLeft)
@@ -965,8 +990,6 @@ private fun SliderPreview(
                 view.setShowValue(showValue)
                 view.setContentColors(valueColor?.toArgb(), iconColor?.toArgb())
                 view.setIcon(if (showIcon) iconRes else null)
-                // Held at a level, except for the effort picker, which climbs its levels below.
-                if (fillStyle != SliderFill.EFFORT) view.setValue(0.6f)
                 // Both, and neither is optional. QuickSliderView is built to grow out of the
                 // bar, so it starts collapsed and empty: at expansion 0 it draws no fill, no
                 // number and no icon, which in a *static* preview is just a black lozenge.
@@ -1109,9 +1132,9 @@ private const val QUICK_PANEL_MAX_FLARE = 0.22f
 /** Mirrors `OverlayController.PANEL_MIN_THICKNESS_DP`: the window's floor, not the panel's. */
 private const val PANEL_PREVIEW_MIN_WINDOW = 48f
 
-/** How long the effort picker's preview holds each level, and takes to move to the next. */
-private const val EFFORT_PREVIEW_HOLD_MS = 1100L
-private const val EFFORT_PREVIEW_MOVE_MS = 520
+/** How long the preview holds each level, and takes to move to the next. */
+private const val LEVEL_PREVIEW_HOLD_MS = 1300L
+private const val LEVEL_PREVIEW_MOVE_MS = 520
 
 /** The Quick panel's demo: a pull up the bar, which is what opens it. */
 private val QUICK_DEMO_STEPS = listOf(DemoGesture.SWIPE_UP)

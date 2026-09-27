@@ -13,14 +13,13 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.newagedevs.gesturevolume.R
-import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
 import com.newagedevs.gesturevolume.utils.GlimmerFill
 import java.text.NumberFormat
 
 /**
- * The Glimmer fill's own settings, shown under the fill chips while it is the one chosen: how fast
- * it twinkles, and whether it has a handle and stops.
+ * The Glimmer fill's own settings, shown under the fill row while it is the one chosen: whether
+ * it has a handle and stops, as a row of the looks they make, and how fast it twinkles.
  *
  * Every change is handed up at once, like the Effort fill's: the preview above runs the real panel.
  */
@@ -29,6 +28,8 @@ fun GlimmerFillControls(
     style: GlimmerFill.Style,
     accent: Color,
     onChange: (GlimmerFill.Style) -> Unit,
+    /** How the tiles in its row are dressed: the panel as the user has it. */
+    look: FillTileLook,
     modifier: Modifier = Modifier,
 ) {
     val locale = LocalConfiguration.current.locales[0]
@@ -41,6 +42,8 @@ fun GlimmerFillControls(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 10.dp),
         )
+        GlimmerLookRow(style = style, look = look, onChange = onChange)
+        Spacer(modifier = Modifier.height(16.dp))
         SliderControl(
             label = stringResource(R.string.glimmer_speed),
             value = style.speed,
@@ -49,20 +52,6 @@ fun GlimmerFillControls(
             borderColor = accent,
             step = 0.25f,
             onValueChange = { onChange(style.copy(speed = it)) },
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        SettingSwitchItem(
-            title = stringResource(R.string.glimmer_handle),
-            description = stringResource(R.string.glimmer_handle_desc),
-            checked = style.handle,
-            onCheckedChange = { onChange(style.copy(handle = it)) },
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        SettingSwitchItem(
-            title = stringResource(R.string.glimmer_stops),
-            description = stringResource(R.string.glimmer_stops_desc),
-            checked = style.stops,
-            onCheckedChange = { onChange(style.copy(stops = it)) },
         )
     }
 }

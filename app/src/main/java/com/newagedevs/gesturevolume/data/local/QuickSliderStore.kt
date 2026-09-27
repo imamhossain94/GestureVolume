@@ -6,6 +6,7 @@ import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
+import com.newagedevs.gesturevolume.utils.LevelFeedback
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.HandlerShape
 
@@ -124,6 +125,10 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val GLIMMER_SPEED = "sliderGlimmerSpeed"
         private const val GLIMMER_HANDLE = "sliderGlimmerHandle"
         private const val GLIMMER_STOPS = "sliderGlimmerStops"
+        private const val FEEDBACK_SPEED = "sliderFeedbackSpeed"
+        private const val FEEDBACK_FOLLOW = "sliderFeedbackFollow"
+        private const val FEEDBACK_LOW = "sliderFeedbackLow"
+        private const val FEEDBACK_FULL = "sliderFeedbackFull"
         private const val FOLLOW_HANDLER = "sliderFollowHandlerShape"
         private const val OPEN_ON_VOLUME_KEY = "sliderOpenOnVolumeKey"
         private const val VOLUME_KEYS = "sliderVolumeKeys"
@@ -556,6 +561,30 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
             putFloat(GLIMMER_SPEED, s.speed)
             putBoolean(GLIMMER_HANDLE, s.handle)
             putBoolean(GLIMMER_STOPS, s.stops)
+        }
+    }
+
+    /**
+     * How every fill answers the level, and how fast the fills without a speed of their own move.
+     * One setting for all of them: see [LevelFeedback].
+     */
+    fun getLevelFeedback(): LevelFeedback.Style {
+        val d = LevelFeedback.Style()
+        return LevelFeedback.Style(
+            speed = prefs.getFloat(FEEDBACK_SPEED, d.speed),
+            follow = prefs.getBoolean(FEEDBACK_FOLLOW, d.follow),
+            low = prefs.getBoolean(FEEDBACK_LOW, d.low),
+            full = prefs.getBoolean(FEEDBACK_FULL, d.full),
+        ).sanitized()
+    }
+
+    fun setLevelFeedback(value: LevelFeedback.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putFloat(FEEDBACK_SPEED, s.speed)
+            putBoolean(FEEDBACK_FOLLOW, s.follow)
+            putBoolean(FEEDBACK_LOW, s.low)
+            putBoolean(FEEDBACK_FULL, s.full)
         }
     }
 

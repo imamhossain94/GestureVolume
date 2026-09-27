@@ -3,6 +3,7 @@ package com.newagedevs.gesturevolume.ui.components
 import android.os.Build
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,6 +28,7 @@ import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.ui.view.QuickSliderView
 import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
+import com.newagedevs.gesturevolume.utils.LevelFeedback
 import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.SliderFill
@@ -39,23 +41,15 @@ import com.newagedevs.gesturevolume.utils.SliderFill
  * them ("Silk", "Rune", "Sonar") do not say what they look like. The preview above runs the one
  * picked, full size. See [PictureRow].
  *
- * The settings a fill has of its own are handed in, so a tile shows the Pixels grid, the shader and
- * the effort picker as they are set up, not as they would be out of the box.
+ * [look] carries the settings a fill has of its own, so a tile shows the Pixels grid, the shader
+ * and the effort picker as they are set up, not as they would be out of the box.
  */
 @Composable
 fun SliderFillSelector(
     style: String,
     onStyleChange: (String) -> Unit,
+    look: FillTileLook,
     modifier: Modifier = Modifier,
-    /** The panel's colours, which the tiles are painted in as the panel is. */
-    trackColor: Int = QuickSliderStore.DEFAULT_TRACK_COLOR,
-    fillColor: Int = QuickSliderStore.DEFAULT_FILL_COLOR,
-    /** The user's animation colours, or null for each fill's own. */
-    fillColors: IntArray? = null,
-    pixelStyle: PixelFill.Style = PixelFill.Style(),
-    shaderStyle: ShaderFill.Style = ShaderFill.Style(),
-    effortStyle: EffortFill.Style = EffortFill.Style(),
-    glimmerStyle: GlimmerFill.Style = GlimmerFill.Style(),
 ) {
     Column(modifier = modifier) {
         Text(
@@ -79,23 +73,38 @@ fun SliderFillSelector(
             onSelect = onStyleChange,
             label = { stringResource(sliderFillLabel(it)) },
             tileWidth = FILL_TILE_WIDTH,
-        ) { id, _ ->
-            TileWallpaper()
-            MiniFill(
-                id = id,
-                trackColor = trackColor,
-                fillColor = fillColor,
-                fillColors = fillColors,
-                pixelStyle = pixelStyle,
-                shaderStyle = shaderStyle,
-                effortStyle = effortStyle,
-                glimmerStyle = glimmerStyle,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(width = 24.dp, height = 70.dp),
-            )
-        }
+        ) { id, _ -> FillTile(id, look) }
     }
+}
+
+/**
+ * Everything a tile's little panel is dressed in: the panel's colours, the animation's, and every
+ * fill's own settings — so a row of tiles can vary one of them, a pattern or an effect, and keep
+ * the rest as the user has them.
+ */
+data class FillTileLook(
+    val trackColor: Int = QuickSliderStore.DEFAULT_TRACK_COLOR,
+    val fillColor: Int = QuickSliderStore.DEFAULT_FILL_COLOR,
+    /** The user's animation colours, or null for each fill's own. */
+    val fillColors: IntArray? = null,
+    val pixelStyle: PixelFill.Style = PixelFill.Style(),
+    val shaderStyle: ShaderFill.Style = ShaderFill.Style(),
+    val effortStyle: EffortFill.Style = EffortFill.Style(),
+    val glimmerStyle: GlimmerFill.Style = GlimmerFill.Style(),
+    val feedback: LevelFeedback.Style = LevelFeedback.Style(),
+)
+
+/** A tile's picture: the wallpaper, and [id] running on a small panel over it in [look]. */
+@Composable
+internal fun BoxScope.FillTile(id: String, look: FillTileLook) {
+    TileWallpaper()
+    MiniFill(
+        id = id,
+        look = look,
+        modifier = Modifier
+            .align(Alignment.Center)
+            .size(width = 24.dp, height = 70.dp),
+    )
 }
 
 /**
@@ -103,17 +112,7 @@ fun SliderFillSelector(
  * shows both the lit part and the track above it.
  */
 @Composable
-private fun MiniFill(
-    id: String,
-    trackColor: Int,
-    fillColor: Int,
-    fillColors: IntArray?,
-    pixelStyle: PixelFill.Style,
-    shaderStyle: ShaderFill.Style,
-    effortStyle: EffortFill.Style,
-    glimmerStyle: GlimmerFill.Style,
-    modifier: Modifier = Modifier,
-) {
+internal fun MiniFill(id: String, look: FillTileLook, modifier: Modifier = Modifier) {
     AndroidView(
         factory = { context ->
             QuickSliderView(context).apply {
@@ -123,14 +122,15 @@ private fun MiniFill(
             }
         },
         update = { view ->
-            view.setColors(trackColor, fillColor)
+            view.setColors(look.trackColor, look.fillColor)
             // Before the style, as the panel does, so a Pixels fill starts at its own pace.
-            view.setPixelStyle(pixelStyle)
-            view.setShaderStyle(shaderStyle)
-            view.setEffortStyle(effortStyle)
-            view.setGlimmerStyle(glimmerStyle)
+            view.setPixelStyle(look.pixelStyle)
+            view.setShaderStyle(look.shaderStyle)
+            view.setEffortStyle(look.effortStyle)
+            view.setGlimmerStyle(look.glimmerStyle)
+            view.setLevelFeedback(look.feedback)
             view.setFillStyle(id)
-            view.setFillColors(fillColors)
+            view.setFillColors(look.fillColors)
             view.setExpansion(1f)
             view.setCommitted()
             view.setValue(MINI_LEVEL)
@@ -143,7 +143,7 @@ private fun MiniFill(
 private const val MINI_LEVEL = 0.62f
 
 /** A fill's tile, narrower than the others: the panel in it is narrow, and there are forty of them. */
-private val FILL_TILE_WIDTH = 68.dp
+internal val FILL_TILE_WIDTH = 68.dp
 
 @Composable
 internal fun FillChip(label: String, selected: Boolean, onClick: () -> Unit) {

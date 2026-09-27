@@ -6,4 +6,17 @@
     <string name="slider_fill_colors_unsupported">यह एनिमेशन भराव के रंग में बनता है, इसलिए इसके बदलने लायक अपने रंग नहीं हैं।</string>
     <string name="slider_fill_color_n">रंग %1$d</string>
     <string name="slider_fill_colors_reset">रंग रीसेट करें</string>
+    <string name="level_feedback_title">लेवल पर प्रतिक्रिया</string>
+    <string name="level_feedback_desc">एनिमेशन लेवल पर कैसे प्रतिक्रिया देता है: कम होने पर शांत, बढ़ने पर ज़्यादा जीवंत, और सबसे ऊपर पहुँचने पर एक जश्न।</string>
+    <string name="level_feedback_follow">भरते हुए ज़्यादा जीवंत</string>
+    <string name="level_feedback_follow_desc">लेवल जितना ऊँचा, उतना तेज़ चलता और चमकता है; हर पाँचवाँ हिस्सा पार करने पर एक चमक।</string>
+    <string name="level_feedback_low">कम होने पर चमक</string>
+    <string name="level_feedback_low_desc">लेवल कम होने पर वहाँ एक हल्की रोशनी साँस लेती है, और बंद होने पर सबसे नीचे।</string>
+    <string name="level_feedback_full">ऊपर पहुँचने पर जश्न</string>
+    <string name="level_feedback_full_desc">100% पर पहुँचते ही रोशनी की एक चमक, और वहाँ रहने तक इंद्रधनुषी किनारा।</string>
+    <string name="glimmer_look">रूप</string>
+    <string name="glimmer_look_both">हैंडल और स्टॉप</string>
+    <string name="glimmer_look_handle">हैंडल</string>
+    <string name="glimmer_look_stops">स्टॉप</string>
+    <string name="glimmer_look_plain">सिर्फ़ बिंदु</string>
 </resources>

@@ -6,4 +6,17 @@
     <string name="slider_fill_colors_unsupported">此动画使用填充颜色绘制，没有可更改的自有颜色。</string>
     <string name="slider_fill_color_n">颜色 %1$d</string>
     <string name="slider_fill_colors_reset">重置颜色</string>
+    <string name="level_feedback_title">电平反馈</string>
+    <string name="level_feedback_desc">动画如何响应电平：低时平静，升高时更活跃，到顶时有收尾效果。</string>
+    <string name="level_feedback_follow">越满越活跃</string>
+    <string name="level_feedback_follow_desc">电平越高动得越快、越亮，每越过五分之一闪一下。</string>
+    <string name="level_feedback_low">低时发光</string>
+    <string name="level_feedback_low_desc">电平较低时在电平处、关闭时在底部，一道柔光缓缓呼吸。</string>
+    <string name="level_feedback_full">到顶庆祝</string>
+    <string name="level_feedback_full_desc">达到 100% 时迸发光芒，保持在顶部时显示彩虹边框。</string>
+    <string name="glimmer_look">外观</string>
+    <string name="glimmer_look_both">滑块和刻度</string>
+    <string name="glimmer_look_handle">滑块</string>
+    <string name="glimmer_look_stops">刻度</string>
+    <string name="glimmer_look_plain">仅圆点</string>
 </resources>

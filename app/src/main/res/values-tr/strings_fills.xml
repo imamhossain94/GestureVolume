@@ -6,4 +6,17 @@
     <string name="slider_fill_colors_unsupported">Bu animasyon dolgu rengiyle çizilir, bu yüzden değiştirilecek kendi renkleri yoktur.</string>
     <string name="slider_fill_color_n">Renk %1$d</string>
     <string name="slider_fill_colors_reset">Renkleri sıfırla</string>
+    <string name="level_feedback_title">Seviye tepkisi</string>
+    <string name="level_feedback_desc">Animasyonun seviyeye nasıl tepki verdiği: düşükken sakin, yükseldikçe daha canlı ve en üstte bir final.</string>
+    <string name="level_feedback_follow">Doldukça daha canlı</string>
+    <string name="level_feedback_follow_desc">Seviye yükseldikçe daha hızlı hareket eder ve daha parlak ışır; her beşte biri geçerken bir parlama.</string>
+    <string name="level_feedback_low">Düşükken parlama</string>
+    <string name="level_feedback_low_desc">Seviye düşükken orada, kapalıyken en altta yumuşak bir ışık nefes alır.</string>
+    <string name="level_feedback_full">En üstte kutlama</string>
+    <string name="level_feedback_full_desc">%100’e ulaşınca bir ışık patlaması, orada kaldıkça gökkuşağı renkli bir kenar.</string>
+    <string name="glimmer_look">Görünüm</string>
+    <string name="glimmer_look_both">Tutamaç ve duraklar</string>
+    <string name="glimmer_look_handle">Tutamaç</string>
+    <string name="glimmer_look_stops">Duraklar</string>
+    <string name="glimmer_look_plain">Yalnızca noktalar</string>
 </resources>

@@ -6,4 +6,17 @@
     <string name="slider_fill_colors_unsupported">تُرسم هذه الحركة بلون التعبئة، لذا ليست لها ألوان خاصة يمكن تغييرها.</string>
     <string name="slider_fill_color_n">اللون %1$d</string>
     <string name="slider_fill_colors_reset">إعادة ضبط الألوان</string>
+    <string name="level_feedback_title">استجابة المستوى</string>
+    <string name="level_feedback_desc">كيف تستجيب الحركة للمستوى: هادئة عندما يكون منخفضًا، وأكثر حيوية كلما ارتفع، ولمسة احتفالية عند القمة.</string>
+    <string name="level_feedback_follow">أكثر حيوية كلما امتلأ</string>
+    <string name="level_feedback_follow_desc">تتحرك أسرع وتلمع أكثر كلما ارتفع المستوى، مع ومضة عند تجاوز كل خُمس.</string>
+    <string name="level_feedback_low">توهّج عند الانخفاض</string>
+    <string name="level_feedback_low_desc">ضوء خافت يتنفس عند المستوى حين يكون منخفضًا، وفي الأسفل حين يكون متوقفًا.</string>
+    <string name="level_feedback_full">احتفال عند القمة</string>
+    <string name="level_feedback_full_desc">انفجار من الضوء عند الوصول إلى 100%، وإطار بألوان قوس قزح ما دام هناك.</string>
+    <string name="glimmer_look">المظهر</string>
+    <string name="glimmer_look_both">المقبض والعلامات</string>
+    <string name="glimmer_look_handle">المقبض</string>
+    <string name="glimmer_look_stops">العلامات</string>
+    <string name="glimmer_look_plain">النقاط فقط</string>
 </resources>

@@ -114,4 +114,17 @@
     <string name="slider_fill_colors_unsupported">This animation is drawn in the fill colour, so it has no colours of its own to change.</string>
     <string name="slider_fill_color_n">Colour %1$d</string>
     <string name="slider_fill_colors_reset">Reset colours</string>
+    <string name="level_feedback_title">Level feedback</string>
+    <string name="level_feedback_desc">How the animation answers the level: calm when it is low, livelier as it rises, and a flourish at the top.</string>
+    <string name="level_feedback_follow">Livelier as it fills</string>
+    <string name="level_feedback_follow_desc">Moves faster and shines brighter the higher the level, with a flash as it passes each fifth.</string>
+    <string name="level_feedback_low">Glow when low</string>
+    <string name="level_feedback_low_desc">A soft light breathes at the level when it is low, and at the bottom when it is off.</string>
+    <string name="level_feedback_full">Celebrate at the top</string>
+    <string name="level_feedback_full_desc">A burst of light when it reaches 100%, and a rainbow rim while it stays there.</string>
+    <string name="glimmer_look">Look</string>
+    <string name="glimmer_look_both">Handle &amp; stops</string>
+    <string name="glimmer_look_handle">Handle</string>
+    <string name="glimmer_look_stops">Stops</string>
+    <string name="glimmer_look_plain">Dots only</string>
 </resources>

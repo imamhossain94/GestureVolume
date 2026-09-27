@@ -6,4 +6,17 @@
     <string name="slider_fill_colors_unsupported">Esta animación se dibuja con el color del relleno, así que no tiene colores propios que cambiar.</string>
     <string name="slider_fill_color_n">Color %1$d</string>
     <string name="slider_fill_colors_reset">Restablecer colores</string>
+    <string name="level_feedback_title">Respuesta al nivel</string>
+    <string name="level_feedback_desc">Cómo responde la animación al nivel: tranquila cuando está bajo, más viva a medida que sube y con un remate al llegar arriba.</string>
+    <string name="level_feedback_follow">Más viva al llenarse</string>
+    <string name="level_feedback_follow_desc">Se mueve más rápido y brilla más cuanto más alto está el nivel, con un destello al pasar cada quinto.</string>
+    <string name="level_feedback_low">Brillo cuando está bajo</string>
+    <string name="level_feedback_low_desc">Una luz suave respira en el nivel cuando está bajo, y abajo del todo cuando está apagado.</string>
+    <string name="level_feedback_full">Celebrar arriba</string>
+    <string name="level_feedback_full_desc">Un estallido de luz al llegar al 100 % y un borde arcoíris mientras se quede ahí.</string>
+    <string name="glimmer_look">Aspecto</string>
+    <string name="glimmer_look_both">Tirador y marcas</string>
+    <string name="glimmer_look_handle">Tirador</string>
+    <string name="glimmer_look_stops">Marcas</string>
+    <string name="glimmer_look_plain">Solo puntos</string>
 </resources>

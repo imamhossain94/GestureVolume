@@ -6,4 +6,17 @@
     <string name="slider_fill_colors_unsupported">Esta animação é desenhada com a cor do preenchimento, então não tem cores próprias para mudar.</string>
     <string name="slider_fill_color_n">Cor %1$d</string>
     <string name="slider_fill_colors_reset">Redefinir cores</string>
+    <string name="level_feedback_title">Resposta ao nível</string>
+    <string name="level_feedback_desc">Como a animação responde ao nível: calma quando está baixo, mais viva à medida que sobe e um remate no topo.</string>
+    <string name="level_feedback_follow">Mais viva ao encher</string>
+    <string name="level_feedback_follow_desc">Move-se mais depressa e brilha mais quanto mais alto está o nível, com um clarão a cada quinto ultrapassado.</string>
+    <string name="level_feedback_low">Brilho quando está baixo</string>
+    <string name="level_feedback_low_desc">Uma luz suave respira no nível quando está baixo, e em baixo quando está desligado.</string>
+    <string name="level_feedback_full">Celebrar no topo</string>
+    <string name="level_feedback_full_desc">Uma explosão de luz ao chegar aos 100% e um contorno arco-íris enquanto lá ficar.</string>
+    <string name="glimmer_look">Aspeto</string>
+    <string name="glimmer_look_both">Pega e marcas</string>
+    <string name="glimmer_look_handle">Pega</string>
+    <string name="glimmer_look_stops">Marcas</string>
+    <string name="glimmer_look_plain">Só pontos</string>
 </resources>

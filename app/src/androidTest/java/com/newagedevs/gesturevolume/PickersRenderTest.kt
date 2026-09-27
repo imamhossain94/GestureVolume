@@ -24,6 +24,7 @@ import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.SliderFillSelector
+import com.newagedevs.gesturevolume.ui.components.FillTileLook
 import com.newagedevs.gesturevolume.ui.screens.visibility.KeyboardMotionSelector
 import com.newagedevs.gesturevolume.ui.theme.GestureVolumeTheme
 import com.newagedevs.gesturevolume.ui.view.QuickSliderView
@@ -59,7 +60,7 @@ class PickersRenderTest {
                     PanelThemeSelector(theme = "frosted", onThemeChange = {})
                     PanelThemeSelector(theme = "amoled", onThemeChange = {})
                     PanelAnimationSelector(animation = "grow", onAnimationChange = {})
-                    SliderFillSelector(style = SliderFill.LIQUID, onStyleChange = {})
+                    SliderFillSelector(style = SliderFill.LIQUID, onStyleChange = {}, look = FillTileLook())
                     KeyboardMotionSelector(motion = "spring", onMotionChange = {})
                 }
             }

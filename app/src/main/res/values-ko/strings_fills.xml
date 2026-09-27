@@ -6,4 +6,17 @@
     <string name="slider_fill_colors_unsupported">이 애니메이션은 채움 색상으로 그려지므로 바꿀 고유 색이 없습니다.</string>
     <string name="slider_fill_color_n">색상 %1$d</string>
     <string name="slider_fill_colors_reset">색상 초기화</string>
+    <string name="level_feedback_title">레벨 반응</string>
+    <string name="level_feedback_desc">애니메이션이 레벨에 반응하는 방식: 낮을 때는 차분하게, 오를수록 활기차게, 맨 위에서는 화려하게.</string>
+    <string name="level_feedback_follow">찰수록 활기차게</string>
+    <string name="level_feedback_follow_desc">레벨이 높을수록 더 빠르게 움직이고 더 밝게 빛나며, 5분의 1을 지날 때마다 번쩍입니다.</string>
+    <string name="level_feedback_low">낮을 때 빛나기</string>
+    <string name="level_feedback_low_desc">레벨이 낮을 때는 그 위치에서, 꺼져 있을 때는 맨 아래에서 부드러운 빛이 숨 쉽니다.</string>
+    <string name="level_feedback_full">맨 위에서 축하</string>
+    <string name="level_feedback_full_desc">100%에 도달하면 빛이 터지고, 그대로 있는 동안 무지개빛 테두리가 돕니다.</string>
+    <string name="glimmer_look">모양</string>
+    <string name="glimmer_look_both">손잡이와 눈금</string>
+    <string name="glimmer_look_handle">손잡이</string>
+    <string name="glimmer_look_stops">눈금</string>
+    <string name="glimmer_look_plain">점만</string>
 </resources>

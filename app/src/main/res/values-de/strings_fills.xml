@@ -6,4 +6,17 @@
     <string name="slider_fill_colors_unsupported">Diese Animation wird in der Füllfarbe gezeichnet und hat daher keine eigenen Farben zum Ändern.</string>
     <string name="slider_fill_color_n">Farbe %1$d</string>
     <string name="slider_fill_colors_reset">Farben zurücksetzen</string>
+    <string name="level_feedback_title">Rückmeldung zum Pegel</string>
+    <string name="level_feedback_desc">Wie die Animation auf den Pegel antwortet: ruhig, wenn er niedrig ist, lebhafter, wenn er steigt, und ein Abschluss ganz oben.</string>
+    <string name="level_feedback_follow">Lebhafter beim Füllen</string>
+    <string name="level_feedback_follow_desc">Bewegt sich schneller und leuchtet heller, je höher der Pegel ist, mit einem Aufblitzen bei jedem Fünftel.</string>
+    <string name="level_feedback_low">Glühen bei niedrigem Pegel</string>
+    <string name="level_feedback_low_desc">Ein sanftes Licht atmet am Pegel, wenn er niedrig ist, und unten, wenn er aus ist.</string>
+    <string name="level_feedback_full">Feiern ganz oben</string>
+    <string name="level_feedback_full_desc">Ein Lichtstoß bei 100 % und ein Regenbogenrand, solange er dort bleibt.</string>
+    <string name="glimmer_look">Aussehen</string>
+    <string name="glimmer_look_both">Griff &amp; Stopps</string>
+    <string name="glimmer_look_handle">Griff</string>
+    <string name="glimmer_look_stops">Stopps</string>
+    <string name="glimmer_look_plain">Nur Punkte</string>
 </resources>

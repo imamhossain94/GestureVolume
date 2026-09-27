@@ -6,4 +6,17 @@
     <string name="slider_fill_colors_unsupported">Эта анимация рисуется цветом заливки, поэтому своих цветов для изменения у неё нет.</string>
     <string name="slider_fill_color_n">Цвет %1$d</string>
     <string name="slider_fill_colors_reset">Сбросить цвета</string>
+    <string name="level_feedback_title">Отклик на уровень</string>
+    <string name="level_feedback_desc">Как анимация отвечает на уровень: спокойно на низком, живее по мере роста и с финальным эффектом наверху.</string>
+    <string name="level_feedback_follow">Живее по мере заполнения</string>
+    <string name="level_feedback_follow_desc">Чем выше уровень, тем быстрее движется и ярче светится; вспыхивает при прохождении каждой пятой части.</string>
+    <string name="level_feedback_low">Свечение на низком уровне</string>
+    <string name="level_feedback_low_desc">Мягкий свет «дышит» на уровне, когда он низкий, и внизу, когда он выключен.</string>
+    <string name="level_feedback_full">Праздник наверху</string>
+    <string name="level_feedback_full_desc">Вспышка света на 100% и радужная кайма, пока уровень остаётся там.</string>
+    <string name="glimmer_look">Вид</string>
+    <string name="glimmer_look_both">Ползунок и метки</string>
+    <string name="glimmer_look_handle">Ползунок</string>
+    <string name="glimmer_look_stops">Метки</string>
+    <string name="glimmer_look_plain">Только точки</string>
 </resources>

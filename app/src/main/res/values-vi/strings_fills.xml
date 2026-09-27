@@ -6,4 +6,17 @@
     <string name="slider_fill_colors_unsupported">Hoạt ảnh này được vẽ bằng màu tô, nên không có màu riêng để thay đổi.</string>
     <string name="slider_fill_color_n">Màu %1$d</string>
     <string name="slider_fill_colors_reset">Đặt lại màu</string>
+    <string name="level_feedback_title">Phản hồi theo mức</string>
+    <string name="level_feedback_desc">Cách hiệu ứng phản hồi theo mức: êm dịu khi thấp, sống động hơn khi tăng, và một điểm nhấn khi lên đỉnh.</string>
+    <string name="level_feedback_follow">Sống động hơn khi đầy lên</string>
+    <string name="level_feedback_follow_desc">Mức càng cao thì chuyển động càng nhanh và sáng hơn, lóe sáng mỗi khi vượt qua một phần năm.</string>
+    <string name="level_feedback_low">Phát sáng khi thấp</string>
+    <string name="level_feedback_low_desc">Một ánh sáng dịu thở ở mức khi mức thấp, và ở đáy khi tắt.</string>
+    <string name="level_feedback_full">Ăn mừng khi lên đỉnh</string>
+    <string name="level_feedback_full_desc">Một luồng sáng bùng lên khi đạt 100%, và viền cầu vồng khi vẫn ở đó.</string>
+    <string name="glimmer_look">Kiểu</string>
+    <string name="glimmer_look_both">Tay nắm và vạch</string>
+    <string name="glimmer_look_handle">Tay nắm</string>
+    <string name="glimmer_look_stops">Vạch</string>
+    <string name="glimmer_look_plain">Chỉ có chấm</string>
 </resources>

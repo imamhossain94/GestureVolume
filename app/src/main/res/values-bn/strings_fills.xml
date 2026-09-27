@@ -6,4 +6,17 @@
     <string name="slider_fill_colors_unsupported">এই অ্যানিমেশন ভরাটের রঙে আঁকা হয়, তাই বদলানোর মতো নিজস্ব রং নেই।</string>
     <string name="slider_fill_color_n">রং %1$d</string>
     <string name="slider_fill_colors_reset">রং রিসেট করুন</string>
+    <string name="level_feedback_title">লেভেলের প্রতিক্রিয়া</string>
+    <string name="level_feedback_desc">লেভেল অনুযায়ী অ্যানিমেশন কেমন সাড়া দেয়: কম থাকলে শান্ত, বাড়লে আরও প্রাণবন্ত, আর শীর্ষে পৌঁছালে একটি উদযাপন।</string>
+    <string name="level_feedback_follow">ভরার সঙ্গে আরও প্রাণবন্ত</string>
+    <string name="level_feedback_follow_desc">লেভেল যত বেশি, তত দ্রুত চলে আর উজ্জ্বল হয়; প্রতিটি পঞ্চমাংশ পেরোলে একবার ঝলক।</string>
+    <string name="level_feedback_low">কম থাকলে আভা</string>
+    <string name="level_feedback_low_desc">লেভেল কম থাকলে সেখানে একটি নরম আলো শ্বাস নেয়, আর বন্ধ থাকলে নিচে।</string>
+    <string name="level_feedback_full">শীর্ষে উদযাপন</string>
+    <string name="level_feedback_full_desc">১০০%-এ পৌঁছালে আলোর ঝলক, আর সেখানে থাকা পর্যন্ত রংধনু রঙের কিনারা।</string>
+    <string name="glimmer_look">চেহারা</string>
+    <string name="glimmer_look_both">হ্যান্ডেল ও স্টপ</string>
+    <string name="glimmer_look_handle">হ্যান্ডেল</string>
+    <string name="glimmer_look_stops">স্টপ</string>
+    <string name="glimmer_look_plain">শুধু বিন্দু</string>
 </resources>

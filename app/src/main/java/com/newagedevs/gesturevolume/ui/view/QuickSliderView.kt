@@ -26,6 +26,7 @@ import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.ContentInk
+import com.newagedevs.gesturevolume.utils.LevelFeedback
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 import com.newagedevs.gesturevolume.utils.PanelAnimation
@@ -396,6 +397,39 @@ class QuickSliderView(context: Context) : View(context) {
      * NaN for one that is not shown, which no stop is ever inside. Filled in each frame, never made.
      */
     private val glimmerKeepOut = FloatArray(4)
+
+    /**
+     * How the fill answers the level — see [LevelFeedback] — and how fast it moves, for the fills
+     * without a speed of their own. The Effort fill keeps its own answer to the level.
+     */
+    private var feedback = LevelFeedback.Style()
+    private var feedbackArtOrNull: LevelFeedbackArt? = null
+    private val feedbackArt: LevelFeedbackArt
+        get() = feedbackArtOrNull ?: LevelFeedbackArt(density).also { feedbackArtOrNull = it }
+
+    /** The fifth the level was last in, or -1 before it has had one; and whether it was full. */
+    private var feedbackLevel = -1
+    private var wasFull = false
+
+    /** When a fifth was last passed, and the top last reached, in uptime; 0 for not yet. */
+    private var stepAt = 0L
+    private var fullAt = 0L
+
+    /** The feedback's own clock, in seconds, at the fill's speed; and the fill clock's last tick. */
+    private var feedbackTime = 0f
+    private var phaseTickAt = 0L
+
+    /** Whether this fill has the feedback layer. */
+    private val feedbackOn: Boolean
+        get() = fillStyle != SliderFill.EFFORT && feedback.drawsAnything
+
+    /** The fills with a speed slider of their own, which [LevelFeedback.Style.speed] leaves alone. */
+    private val ownSpeed: Boolean
+        get() = fillStyle == SliderFill.PIXELS || fillStyle == SliderFill.SHADER ||
+            fillStyle == SliderFill.GLIMMER || fillStyle == SliderFill.EFFORT
+
+    /** How much faster than its own pace the fill runs at this level. */
+    private fun levelPace(): Float = LevelFeedback.pace(value, feedbackOn && feedback.follow)
 
     /** The effect's four colours, the user's when they have set some. See [ShaderFill.paletteWith]. */
     private var shaderPalette: IntArray = ShaderFill.paletteWith(ShaderFill.LAVA_LAMP, null)
@@ -897,7 +931,24 @@ class QuickSliderView(context: Context) : View(context) {
         val clamped = fraction.coerceIn(0f, 1f)
         if (clamped == value) return
         value = clamped
+        noteLevel()
         invalidate()
+    }
+
+    /**
+     * Notes a fifth passed, or the top reached, for the feedback to flash. Not on the first value
+     * the panel is given: that is where it opened, not somewhere the finger went.
+     */
+    private fun noteLevel() {
+        val now = SystemClock.uptimeMillis()
+        val level = LevelFeedback.levelAt(value)
+        val full = LevelFeedback.isFull(value)
+        if (feedbackLevel >= 0) {
+            if (level != feedbackLevel) stepAt = now
+            if (full && !wasFull) fullAt = now
+        }
+        feedbackLevel = level
+        wasFull = full
     }
 
     /**
@@ -1029,6 +1080,19 @@ class QuickSliderView(context: Context) : View(context) {
         invalidate()
     }
 
+    /**
+     * How the fill answers the level, and its speed. The clock is restarted only when whether there
+     * is anything to animate changes, so a switch flipped mid-animation does not restart it.
+     */
+    fun setLevelFeedback(style: LevelFeedback.Style) {
+        val next = style.sanitized()
+        if (next == feedback) return
+        val retime = next.drawsAnything != feedback.drawsAnything
+        feedback = next
+        if (retime) restartFillClock()
+        invalidate()
+    }
+
     /** Whether this phone can draw the Shaders fill at all. */
     private val shadersSupported: Boolean get() = Build.VERSION.SDK_INT >= ShaderFill.MIN_SDK
 
@@ -1113,16 +1177,23 @@ class QuickSliderView(context: Context) : View(context) {
             shader -> shadersSupported && shaderStyle.isAnimated
             else -> SliderFill.isAnimated(fillStyle)
         }
-        if (!animated || !isAttachedToWindow) return
+        // The feedback moves on its own too, so a fill that holds still still runs a clock for it.
+        if ((!animated && !feedbackOn) || !isAttachedToWindow) return
         shaderTickAt = 0L
         effortTickAt = 0L
         glimmerTickAt = 0L
+        phaseTickAt = 0L
+        val cycleMs = (if (pixels) PixelFill.cycleMs(pixelStyle) else SliderFill.cycleMs(fillStyle).toLong())
+            .coerceAtLeast(1L)
+        // A ticker rather than the phase itself: the phase is advanced a frame at a time by what
+        // the frame took, at a pace that follows the level, so the pace can change without the
+        // picture jumping. Still whole cycles, so the loops stay seamless.
         fillClock = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = if (pixels) PixelFill.cycleMs(pixelStyle) else SliderFill.cycleMs(fillStyle).toLong()
+            duration = 1000L
             repeatCount = ValueAnimator.INFINITE
             interpolator = null
             addUpdateListener {
-                fillPhase = it.animatedValue as Float
+                tickFillPhase(cycleMs, animated)
                 if (shader) tickShaderClock()
                 if (effort) tickEffortClock()
                 if (glimmer) tickGlimmerClock()
@@ -1130,6 +1201,22 @@ class QuickSliderView(context: Context) : View(context) {
             }
             start()
         }
+    }
+
+    /**
+     * Moves [fillPhase] on by the time since the last frame, a whole cycle every [cycleMs] at the
+     * fill's speed and the level's pace, and the feedback's clock with it. Capped like
+     * [tickShaderClock].
+     */
+    private fun tickFillPhase(cycleMs: Long, animated: Boolean) {
+        val now = SystemClock.uptimeMillis()
+        val last = phaseTickAt
+        phaseTickAt = now
+        if (last == 0L) return
+        val dt = (now - last).coerceIn(0L, 100L).toFloat()
+        val speed = if (ownSpeed) 1f else feedback.speed
+        if (animated) fillPhase = (fillPhase + dt / cycleMs * speed * levelPace()) % 1f
+        feedbackTime = (feedbackTime + dt / 1000f * speed) % FEEDBACK_TIME_WRAP_S
     }
 
     /**
@@ -1142,7 +1229,7 @@ class QuickSliderView(context: Context) : View(context) {
         val last = shaderTickAt
         shaderTickAt = now
         if (last == 0L) return
-        val step = (now - last).coerceIn(0L, 100L) / 1000f * shaderStyle.speed
+        val step = (now - last).coerceIn(0L, 100L) / 1000f * shaderStyle.speed * levelPace()
         shaderTime = (shaderTime + step) % ShaderFill.TIME_WRAP_S
     }
 
@@ -1162,7 +1249,7 @@ class QuickSliderView(context: Context) : View(context) {
         val last = glimmerTickAt
         glimmerTickAt = now
         if (last == 0L) return
-        val step = (now - last).coerceIn(0L, 100L) / 1000f * glimmerStyle.speed
+        val step = (now - last).coerceIn(0L, 100L) / 1000f * glimmerStyle.speed * levelPace()
         glimmerTime = (glimmerTime + step) % GlimmerFill.TIME_WRAP_S
     }
 
@@ -1577,6 +1664,7 @@ class QuickSliderView(context: Context) : View(context) {
             if (fillStyle == SliderFill.EFFORT) drawEffortFill(canvas)
             if (fillStyle == SliderFill.GLIMMER) drawGlimmerFill(canvas)
             canvas.restore()
+            drawFeedbackPanel(canvas)
             // The glimmer's handle is its own grab cue: it glows while held, where a lip would be
             // a line drawn across the middle of it.
             if (fillStyle != SliderFill.GLIMMER || !glimmerStyle.handle) drawGrabLip(canvas)
@@ -1617,12 +1705,14 @@ class QuickSliderView(context: Context) : View(context) {
             canvas.save()
             canvas.clipPath(fillShapePath)
             drawFillEffects(canvas, fillTop, alpha)
+            drawFeedbackLit(canvas, fillTop, clip = false)
             drawContent(canvas, overFill = true)
             canvas.restore()
 
             drawGrabLip(canvas)
             fillPaint.alpha = 255
         }
+        drawFeedbackPanel(canvas)
 
         // The rim last and outside the fill pass, so the filled half of the track does not paint
         // over the edge.
@@ -1666,6 +1756,7 @@ class QuickSliderView(context: Context) : View(context) {
         }
         val fillTop = drawRect.bottom - drawRect.height() * value
         pixelArt.draw(canvas, drawRect, fillTop, fillPhase, pixelStyle, fillColor, fillColors, contentAlpha)
+        drawFeedbackLit(canvas, fillTop, clip = true)
 
         canvas.save()
         canvas.clipRect(drawRect.left, drawRect.top, drawRect.right, fillTop)
@@ -1693,6 +1784,7 @@ class QuickSliderView(context: Context) : View(context) {
         val fillTop = drawRect.bottom - drawRect.height() * value
         val art = shaderArt ?: ShaderArt().also { shaderArt = it }
         if (!art.draw(canvas, drawRect, fillTop, shaderTime, shaderStyle, shaderPalette, contentAlpha)) return false
+        drawFeedbackLit(canvas, fillTop, clip = true)
 
         canvas.save()
         canvas.clipRect(drawRect.left, drawRect.top, drawRect.right, fillTop)
@@ -1773,6 +1865,7 @@ class QuickSliderView(context: Context) : View(context) {
             keepOut = glimmerKeepOut,
             alpha = contentAlpha,
         )
+        drawFeedbackLit(canvas, drawRect.bottom - drawRect.height() * value, clip = true)
         if (art.handle.isEmpty) {
             drawContent(canvas, overFill = false)
             return
@@ -1785,6 +1878,56 @@ class QuickSliderView(context: Context) : View(context) {
         canvas.clipPath(art.handlePath)
         drawContent(canvas, overFill = true)
         canvas.restore()
+    }
+
+    /**
+     * The feedback over the lit part, under the number and the icon: see [LevelFeedbackArt.drawLit].
+     * [clip] for the fills drawn over the whole track, whose lit part the canvas is not cut to.
+     */
+    private fun drawFeedbackLit(canvas: Canvas, fillTop: Float, clip: Boolean) {
+        if (!feedbackOn || contentAlpha <= 0.01f) return
+        if (clip) {
+            canvas.save()
+            canvas.clipRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom)
+        }
+        feedbackArt.drawLit(
+            canvas, drawRect, fillTop, value, feedback, feedbackTime,
+            stepS = secondsSince(stepAt),
+            fullS = secondsSince(fullAt),
+            ink = feedbackInk(),
+            // A band across dots or a grid would paint the gaps between them as well.
+            sheen = fillStyle != SliderFill.PIXELS && fillStyle != SliderFill.GLIMMER,
+            alpha = contentAlpha,
+        )
+        if (clip) canvas.restore()
+    }
+
+    /** The feedback over the whole panel, over everything but its rim: see [LevelFeedbackArt.drawPanel]. */
+    private fun drawFeedbackPanel(canvas: Canvas) {
+        if (!feedbackOn || !fillVisible || contentAlpha <= 0.01f) return
+        canvas.save()
+        canvas.clipPath(drawPath)
+        feedbackArt.drawPanel(
+            canvas, drawPath, drawRect,
+            fillTop = drawRect.bottom - drawRect.height() * value,
+            value = value,
+            style = feedback,
+            timeS = feedbackTime,
+            fullS = secondsSince(fullAt),
+            // On the track, where the low glow mostly is: the fill colour, unless it would vanish.
+            glow = ContentInk.pick(blendedTrackColor, fillColor),
+            alpha = contentAlpha,
+        )
+        canvas.restore()
+    }
+
+    private fun secondsSince(at: Long): Float = if (at == 0L) -1f else (SystemClock.uptimeMillis() - at) / 1000f
+
+    /** The light the feedback paints the lit part in: white over a dark fill, near black over a pale one. */
+    private fun feedbackInk(): Int {
+        // The glimmer's dots are dark wherever they are; its fill colour is only the handle's.
+        if (fillStyle == SliderFill.GLIMMER) return Color.WHITE
+        return if (ContentInk.luminance(fillBackdrop(LIT_BACKDROP)) > 0.6) FEEDBACK_DARK_INK else Color.WHITE
     }
 
     /** The icon's size and centre, shared by the drawing and the touch test so the two agree. */
@@ -1830,8 +1973,8 @@ class QuickSliderView(context: Context) : View(context) {
         return Color.rgb(r / n, g / n, b / n)
     }
 
-    /** Under the number, then under the icon. */
-    private val backdrops = intArrayOf(Color.WHITE, Color.WHITE)
+    /** Under the number, under the icon, and over the whole lit part, for the feedback. */
+    private val backdrops = intArrayOf(Color.WHITE, Color.WHITE, Color.WHITE)
     private var backdropKey = 0
     private var backdropBitmap: Bitmap? = null
     private val backdropPaint = Paint()
@@ -1868,7 +2011,7 @@ class QuickSliderView(context: Context) : View(context) {
                 backdropBitmap = it
             }
         val canvas = Canvas(bitmap)
-        val sums = LongArray(8)
+        val sums = LongArray(4 * backdrops.size)
         val pixels = IntArray(bw * bh)
         val phase = fillPhase
         val fillTop = drawRect.bottom - drawRect.height() * level
@@ -1891,7 +2034,7 @@ class QuickSliderView(context: Context) : View(context) {
             }
             canvas.restore()
             bitmap.getPixels(pixels, 0, bw, 0, 0, bw, bh)
-            for (which in 0..1) {
+            for (which in backdrops.indices) {
                 if (!contentRegion(which, backdropRegion)) continue
                 // Only the part of it the fill is under: that is the part drawn in this ink.
                 backdropRegion.top = maxOf(backdropRegion.top, fillTop)
@@ -1910,7 +2053,7 @@ class QuickSliderView(context: Context) : View(context) {
             }
         }
         fillPhase = phase
-        for (which in 0..1) {
+        for (which in backdrops.indices) {
             val n = sums[which * 4 + 3]
             backdrops[which] = if (n == 0L) {
                 fillColor
@@ -1924,10 +2067,15 @@ class QuickSliderView(context: Context) : View(context) {
         }
     }
 
-    /** Where the number (0) or the icon (1) is drawn, into [out]; false when it is not shown. */
+    /**
+     * Where the number (0) or the icon (1) is drawn, into [out]; false when it is not shown. Or,
+     * for [LIT_BACKDROP], the whole panel, of which the caller keeps the lit part.
+     */
     private fun contentRegion(which: Int, out: RectF): Boolean {
         val cx = drawRect.centerX()
-        if (which == 0) {
+        if (which == LIT_BACKDROP) {
+            out.set(drawRect)
+        } else if (which == 0) {
             if (!showValue) return false
             val across = textPaint.measureText("88")
             val along = textPaint.textSize
@@ -2020,6 +2168,14 @@ private const val VALUE_GLIDE_MS = 130L
 
 /** Far enough to take a clip off a canvas in one direction, whatever the panel's size. */
 private const val BIG_CLIP = 100_000f
+
+/** Where the feedback's clock wraps, in seconds: its breath and its rim both divide it. */
+private const val FEEDBACK_TIME_WRAP_S = 3600f
+
+private val FEEDBACK_DARK_INK = 0xFF14161B.toInt()
+
+/** The slot in the backdrops that averages the whole lit part rather than under the contents. */
+private const val LIT_BACKDROP = 2
 
 /** How much smaller than the panel the image the ink is picked from is: an average needs few pixels. */
 private const val BACKDROP_SCALE = 0.25f

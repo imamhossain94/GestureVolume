@@ -60,6 +60,8 @@ fun PixelFillControls(
     style: PixelFill.Style,
     accent: Color,
     onChange: (PixelFill.Style) -> Unit,
+    /** How the tiles in its row are dressed: the panel as the user has it. */
+    look: FillTileLook,
     modifier: Modifier = Modifier,
 ) {
     val locale = LocalConfiguration.current.locales[0]
@@ -72,27 +74,7 @@ fun PixelFillControls(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 10.dp),
         )
-        Text(
-            text = stringResource(R.string.pixel_pattern),
-            fontSize = 15.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(bottom = 8.dp),
-        )
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .selectableGroup(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            PixelFill.ALL.forEach { id ->
-                FillChip(
-                    label = stringResource(pixelPatternLabel(id)),
-                    selected = style.pattern == id,
-                    onClick = { onChange(style.copy(pattern = id)) },
-                )
-            }
-        }
+        PixelPatternRow(style = style, look = look, onChange = onChange)
 
         Spacer(modifier = Modifier.height(16.dp))
         SliderControl(
