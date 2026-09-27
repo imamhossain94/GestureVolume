@@ -6,6 +6,7 @@ import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
+import com.newagedevs.gesturevolume.utils.SurgeFill
 import com.newagedevs.gesturevolume.utils.LevelFeedback
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.HandlerShape
@@ -125,6 +126,13 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val GLIMMER_SPEED = "sliderGlimmerSpeed"
         private const val GLIMMER_HANDLE = "sliderGlimmerHandle"
         private const val GLIMMER_STOPS = "sliderGlimmerStops"
+        private const val SURGE_LOOK = "sliderSurgeLook"
+        private const val SURGE_SPEED = "sliderSurgeSpeed"
+        private const val SURGE_SIZE = "sliderSurgeSize"
+        private const val SURGE_EDGE = "sliderSurgeEdge"
+        private const val SURGE_GLOW = "sliderSurgeGlow"
+        private const val SURGE_TRAIL = "sliderSurgeTrail"
+        private const val SURGE_REST = "sliderSurgeRest"
         private const val FEEDBACK_SPEED = "sliderFeedbackSpeed"
         private const val FEEDBACK_FOLLOW = "sliderFeedbackFollow"
         private const val FEEDBACK_LOW = "sliderFeedbackLow"
@@ -561,6 +569,36 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
             putFloat(GLIMMER_SPEED, s.speed)
             putBoolean(GLIMMER_HANDLE, s.handle)
             putBoolean(GLIMMER_STOPS, s.stops)
+        }
+    }
+
+    /**
+     * The Surge fill's own settings: its look, and the six things every look answers to. Kept while
+     * another fill is chosen, like the shader's.
+     */
+    fun getSurgeStyle(): SurgeFill.Style {
+        val d = SurgeFill.Style()
+        return SurgeFill.Style(
+            look = prefs.getString(SURGE_LOOK, d.look) ?: d.look,
+            speed = prefs.getFloat(SURGE_SPEED, d.speed),
+            size = prefs.getFloat(SURGE_SIZE, d.size),
+            edge = prefs.getFloat(SURGE_EDGE, d.edge),
+            glow = prefs.getFloat(SURGE_GLOW, d.glow),
+            trail = prefs.getFloat(SURGE_TRAIL, d.trail),
+            rest = prefs.getFloat(SURGE_REST, d.rest),
+        ).sanitized()
+    }
+
+    fun setSurgeStyle(value: SurgeFill.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putString(SURGE_LOOK, s.look)
+            putFloat(SURGE_SPEED, s.speed)
+            putFloat(SURGE_SIZE, s.size)
+            putFloat(SURGE_EDGE, s.edge)
+            putFloat(SURGE_GLOW, s.glow)
+            putFloat(SURGE_TRAIL, s.trail)
+            putFloat(SURGE_REST, s.rest)
         }
     }
 

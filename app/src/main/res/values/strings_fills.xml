@@ -108,6 +108,26 @@
     <string name="glimmer_stops">Stops</string>
     <string name="glimmer_stops_desc">Six faint marks down the track, one every fifth of the way.</string>
 
+    <!-- The Surge fill: the track lit to the level by a glowing front, in six looks. -->
+    <string name="fill_surge">Surge</string>
+    <string name="surge_settings_desc">The level as a glowing front, the light running back from it into the dark, drawn live by your phone\'s graphics chip. Pick a look and tune it; the preview above shows it as you go.</string>
+    <string name="surge_look">Look</string>
+    <string name="surge_look_curve">Curve</string>
+    <string name="surge_look_electric">Electric</string>
+    <string name="surge_look_honeycomb">Honeycomb</string>
+    <string name="surge_look_streaks">Streaks</string>
+    <string name="surge_look_blocks">Blocks</string>
+    <string name="surge_look_flame">Flame</string>
+    <string name="surge_speed">Speed</string>
+    <string name="surge_size">Size</string>
+    <string name="surge_size_desc">Above 1, more and smaller: more streaks and blocks, smaller cells, a busier edge.</string>
+    <string name="surge_edge">Edge</string>
+    <string name="surge_edge_desc">How far the front strays from the level: from a straight line to deep curves, tongues and steps.</string>
+    <string name="surge_glow">Glow</string>
+    <string name="surge_trail">Trail</string>
+    <string name="surge_trail_desc">How far the light reaches back from the front before it fades into the dark.</string>
+    <string name="surge_rest">Above the level</string>
+
     <!-- The animation's own colours, for the settings screen. -->
     <string name="slider_fill_colors">Animation colours</string>
     <string name="slider_fill_colors_desc">Paint the animation in three colours of your own instead of its own.</string>

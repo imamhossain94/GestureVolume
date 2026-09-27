@@ -2969,6 +2969,7 @@ class OverlayController(
             // Before the style, so a Pixels fill starts its clock at its own pace the first time.
             setPixelStyle(settings.getPixelStyle())
             setShaderStyle(settings.getShaderStyle())
+            setSurgeStyle(settings.getSurgeStyle())
             setEffortStyle(settings.getEffortStyle())
             setGlimmerStyle(settings.getGlimmerStyle())
             setLevelFeedback(settings.getLevelFeedback())

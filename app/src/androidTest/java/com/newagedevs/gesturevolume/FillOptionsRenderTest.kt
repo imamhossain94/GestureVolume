@@ -23,12 +23,15 @@ import com.newagedevs.gesturevolume.ui.components.GlimmerLookRow
 import com.newagedevs.gesturevolume.ui.components.LevelFeedbackControls
 import com.newagedevs.gesturevolume.ui.components.PixelPatternRow
 import com.newagedevs.gesturevolume.ui.components.ShaderEffectRow
+import com.newagedevs.gesturevolume.ui.components.SurgeLookRow
 import com.newagedevs.gesturevolume.ui.theme.GestureVolumeTheme
 import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
 import com.newagedevs.gesturevolume.utils.LevelFeedback
 import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
+import com.newagedevs.gesturevolume.utils.SliderFill
+import com.newagedevs.gesturevolume.utils.SurgeFill
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,6 +59,7 @@ class FillOptionsRenderTest {
                 ) {
                     PixelPatternRow(PixelFill.Style(), look) {}
                     ShaderEffectRow(ShaderFill.Style(), look) {}
+                    SurgeLookRow(SurgeFill.Style(), look) {}
                     EffortLookRow(EffortFill.Style(), look) {}
                     GlimmerLookRow(GlimmerFill.Style(), look) {}
                     LevelFeedbackControls(LevelFeedback.Style(), MaterialTheme.colorScheme.primary, showSpeed = true, onChange = {})

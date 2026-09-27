@@ -24,6 +24,7 @@ import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
+import com.newagedevs.gesturevolume.utils.SurgeFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.ContentInk
 import com.newagedevs.gesturevolume.utils.LevelFeedback
@@ -340,6 +341,19 @@ class QuickSliderView(context: Context) : View(context) {
     /** Made on first use, and only on Android 13 and later: before that there is no RuntimeShader. */
     private var shaderArt: ShaderArt? = null
 
+    /** The Surge fill's look and settings, used while [fillStyle] is [SliderFill.SURGE]. */
+    private var surgeStyle = SurgeFill.Style()
+
+    /** Made on first use, and only on Android 13 and later, like [shaderArt]. */
+    private var surgeArt: SurgeArt? = null
+
+    /** The look's four colours, the user's when they have set some. See [SurgeFill.paletteWith]. */
+    private var surgePalette: IntArray = SurgeFill.paletteWith(SurgeFill.CURVE, null)
+
+    /** The surge's own clock, in seconds, run at its speed and the level's pace like [shaderTime]. */
+    private var surgeTime = (SystemClock.uptimeMillis() % 3_600_000L) / 1000f
+    private var surgeTickAt = 0L
+
     /** The Effort fill's look and settings, used while [fillStyle] is [SliderFill.EFFORT]. */
     private var effortStyle = EffortFill.Style()
     private var effortArtOrNull: EffortArt? = null
@@ -426,7 +440,7 @@ class QuickSliderView(context: Context) : View(context) {
     /** The fills with a speed slider of their own, which [LevelFeedback.Style.speed] leaves alone. */
     private val ownSpeed: Boolean
         get() = fillStyle == SliderFill.PIXELS || fillStyle == SliderFill.SHADER ||
-            fillStyle == SliderFill.GLIMMER || fillStyle == SliderFill.EFFORT
+            fillStyle == SliderFill.SURGE || fillStyle == SliderFill.GLIMMER || fillStyle == SliderFill.EFFORT
 
     /** How much faster than its own pace the fill runs at this level. */
     private fun levelPace(): Float = LevelFeedback.pace(value, feedbackOn && feedback.follow)
@@ -1027,6 +1041,7 @@ class QuickSliderView(context: Context) : View(context) {
         fillColors = next
         fillPalette = SliderFill.paletteWith(fillStyle, next)
         shaderPalette = ShaderFill.paletteWith(shaderStyle.effect, next)
+        surgePalette = SurgeFill.paletteWith(surgeStyle.look, next)
         effortPalette = EffortFill.paletteWith(next)
         glimmerPalette = GlimmerFill.paletteWith(next)
         fillArtOrNull = null
@@ -1058,6 +1073,20 @@ class QuickSliderView(context: Context) : View(context) {
         if (next.effect != shaderStyle.effect) shaderPalette = ShaderFill.paletteWith(next.effect, fillColors)
         shaderStyle = next
         if (retime && fillStyle == SliderFill.SHADER) restartFillClock()
+        invalidate()
+    }
+
+    /**
+     * The Surge fill's settings. As with the shader's, only stopping or starting it touches the
+     * clock; a new speed takes over from the next frame.
+     */
+    fun setSurgeStyle(style: SurgeFill.Style) {
+        val next = style.sanitized()
+        if (next == surgeStyle) return
+        val retime = next.isAnimated != surgeStyle.isAnimated
+        if (next.look != surgeStyle.look) surgePalette = SurgeFill.paletteWith(next.look, fillColors)
+        surgeStyle = next
+        if (retime && fillStyle == SliderFill.SURGE) restartFillClock()
         invalidate()
     }
 
@@ -1170,16 +1199,19 @@ class QuickSliderView(context: Context) : View(context) {
         fillClock = null
         val pixels = fillStyle == SliderFill.PIXELS
         val shader = fillStyle == SliderFill.SHADER
+        val surge = fillStyle == SliderFill.SURGE
         val effort = fillStyle == SliderFill.EFFORT
         val glimmer = fillStyle == SliderFill.GLIMMER
         val animated = when {
             pixels -> PixelFill.isAnimated(pixelStyle.pattern)
             shader -> shadersSupported && shaderStyle.isAnimated
+            surge -> shadersSupported && surgeStyle.isAnimated
             else -> SliderFill.isAnimated(fillStyle)
         }
         // The feedback moves on its own too, so a fill that holds still still runs a clock for it.
         if ((!animated && !feedbackOn) || !isAttachedToWindow) return
         shaderTickAt = 0L
+        surgeTickAt = 0L
         effortTickAt = 0L
         glimmerTickAt = 0L
         phaseTickAt = 0L
@@ -1195,6 +1227,7 @@ class QuickSliderView(context: Context) : View(context) {
             addUpdateListener {
                 tickFillPhase(cycleMs, animated)
                 if (shader) tickShaderClock()
+                if (surge) tickSurgeClock()
                 if (effort) tickEffortClock()
                 if (glimmer) tickGlimmerClock()
                 invalidate()
@@ -1231,6 +1264,16 @@ class QuickSliderView(context: Context) : View(context) {
         if (last == 0L) return
         val step = (now - last).coerceIn(0L, 100L) / 1000f * shaderStyle.speed * levelPace()
         shaderTime = (shaderTime + step) % ShaderFill.TIME_WRAP_S
+    }
+
+    /** Moves [surgeTime] on by the time since the last frame, at the look's speed and the level's pace, like [tickShaderClock]. */
+    private fun tickSurgeClock() {
+        val now = SystemClock.uptimeMillis()
+        val last = surgeTickAt
+        surgeTickAt = now
+        if (last == 0L) return
+        val step = (now - last).coerceIn(0L, 100L) / 1000f * surgeStyle.speed * levelPace()
+        surgeTime = (surgeTime + step) % SurgeFill.TIME_WRAP_S
     }
 
     /** Moves [effortTime] on by the time since the last frame, at the picker's speed, capped like [tickShaderClock]. */
@@ -1658,7 +1701,8 @@ class QuickSliderView(context: Context) : View(context) {
         counterLightPaint?.let { canvas.drawRect(drawRect, it) }
 
         if (fillStyle == SliderFill.PIXELS || fillStyle == SliderFill.EFFORT || fillStyle == SliderFill.GLIMMER ||
-            (fillStyle == SliderFill.SHADER && drawShaderFill(canvas))
+            (fillStyle == SliderFill.SHADER && drawShaderFill(canvas)) ||
+            (fillStyle == SliderFill.SURGE && drawSurgeFill(canvas))
         ) {
             if (fillStyle == SliderFill.PIXELS) drawPixelFill(canvas)
             if (fillStyle == SliderFill.EFFORT) drawEffortFill(canvas)
@@ -1784,6 +1828,34 @@ class QuickSliderView(context: Context) : View(context) {
         val fillTop = drawRect.bottom - drawRect.height() * value
         val art = shaderArt ?: ShaderArt().also { shaderArt = it }
         if (!art.draw(canvas, drawRect, fillTop, shaderTime, shaderStyle, shaderPalette, contentAlpha)) return false
+        drawOverProgramFill(canvas, fillTop)
+        return true
+    }
+
+    /**
+     * The Surge fill, inside the panel's clip: the look's front climbing to the level, the light
+     * behind it and a halo past it, with the number and the icon over it as over the shader.
+     *
+     * Returns false, having drawn nothing, where it cannot be drawn, as [drawShaderFill] does.
+     */
+    private fun drawSurgeFill(canvas: Canvas): Boolean {
+        if (Build.VERSION.SDK_INT < SurgeFill.MIN_SDK) return false
+        if (!fillVisible || contentAlpha <= 0.01f) {
+            drawContent(canvas, overFill = false)
+            return true
+        }
+        val fillTop = drawRect.bottom - drawRect.height() * value
+        val art = surgeArt ?: SurgeArt().also { surgeArt = it }
+        if (!art.draw(canvas, drawRect, fillTop, surgeTime, surgeStyle, surgePalette, contentAlpha)) return false
+        drawOverProgramFill(canvas, fillTop)
+        return true
+    }
+
+    /**
+     * What goes over a fill a program on the graphics chip drew: the feedback on its lit part, and
+     * the number and the icon, in the track's ink above [fillTop] and the fill's below it.
+     */
+    private fun drawOverProgramFill(canvas: Canvas, fillTop: Float) {
         drawFeedbackLit(canvas, fillTop, clip = true)
 
         canvas.save()
@@ -1794,7 +1866,6 @@ class QuickSliderView(context: Context) : View(context) {
         canvas.clipRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom)
         drawContent(canvas, overFill = true)
         canvas.restore()
-        return true
     }
 
     /**
@@ -1951,7 +2022,8 @@ class QuickSliderView(context: Context) : View(context) {
      */
     private fun fillBackdrop(which: Int): Int = when {
         fillStyle == SliderFill.GLIMMER -> fillColor
-        fillStyle == SliderFill.SHADER -> shaderBackdrop()
+        fillStyle == SliderFill.SHADER -> averageOf(shaderPalette)
+        fillStyle == SliderFill.SURGE -> surgeBody()
         fillStyle == SliderFill.PIXELS || SliderFill.isPictorial(fillStyle) -> {
             refreshBackdrops()
             backdrops[which]
@@ -1959,17 +2031,32 @@ class QuickSliderView(context: Context) : View(context) {
         else -> fillColor
     }
 
-    /** The effect's colours, averaged: a shader is drawn on the GPU, where it cannot be read back. */
-    private fun shaderBackdrop(): Int {
+    /**
+     * What most of the Surge fill is, for the ink over it: its dark, lit a little by the deep light.
+     * The bright colours are the front's alone, and only for the moment it passes under the number
+     * or the icon; averaged in with the rest, they made the ink dark over a body that is dark.
+     */
+    private fun surgeBody(): Int {
+        val dark = surgePalette[0]
+        val deep = surgePalette.getOrElse(1) { dark }
+        fun mix(shift: Int) = (((dark shr shift) and 0xFF) * 0.65f + ((deep shr shift) and 0xFF) * 0.35f).toInt()
+        return Color.rgb(mix(16), mix(8), mix(0))
+    }
+
+    /**
+     * A program's colours, averaged, for the ink over the Shaders fill: it is drawn on the GPU,
+     * where the picture cannot be read back.
+     */
+    private fun averageOf(palette: IntArray): Int {
         var r = 0
         var g = 0
         var b = 0
-        for (c in shaderPalette) {
+        for (c in palette) {
             r += (c shr 16) and 0xFF
             g += (c shr 8) and 0xFF
             b += c and 0xFF
         }
-        val n = shaderPalette.size.coerceAtLeast(1)
+        val n = palette.size.coerceAtLeast(1)
         return Color.rgb(r / n, g / n, b / n)
     }
 

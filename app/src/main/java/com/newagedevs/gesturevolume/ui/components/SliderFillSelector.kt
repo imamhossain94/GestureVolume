@@ -32,6 +32,7 @@ import com.newagedevs.gesturevolume.utils.LevelFeedback
 import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.SliderFill
+import com.newagedevs.gesturevolume.utils.SurgeFill
 
 /**
  * Picks what the Quick panel's fill does while it sits there.
@@ -63,9 +64,11 @@ fun SliderFillSelector(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
         )
-        // Shaders only where the system runs an app's own: Android 13 and later.
+        // Shaders and the surge only where the system runs an app's own: Android 13 and later.
         val fills = remember {
-            SliderFill.ALL.filter { it != SliderFill.SHADER || Build.VERSION.SDK_INT >= ShaderFill.MIN_SDK }
+            SliderFill.ALL.filter {
+                (it != SliderFill.SHADER && it != SliderFill.SURGE) || Build.VERSION.SDK_INT >= ShaderFill.MIN_SDK
+            }
         }
         PictureRow(
             items = fills,
@@ -89,6 +92,7 @@ data class FillTileLook(
     val fillColors: IntArray? = null,
     val pixelStyle: PixelFill.Style = PixelFill.Style(),
     val shaderStyle: ShaderFill.Style = ShaderFill.Style(),
+    val surgeStyle: SurgeFill.Style = SurgeFill.Style(),
     val effortStyle: EffortFill.Style = EffortFill.Style(),
     val glimmerStyle: GlimmerFill.Style = GlimmerFill.Style(),
     val feedback: LevelFeedback.Style = LevelFeedback.Style(),
@@ -126,6 +130,7 @@ internal fun MiniFill(id: String, look: FillTileLook, modifier: Modifier = Modif
             // Before the style, as the panel does, so a Pixels fill starts at its own pace.
             view.setPixelStyle(look.pixelStyle)
             view.setShaderStyle(look.shaderStyle)
+            view.setSurgeStyle(look.surgeStyle)
             view.setEffortStyle(look.effortStyle)
             view.setGlimmerStyle(look.glimmerStyle)
             view.setLevelFeedback(look.feedback)
@@ -183,6 +188,7 @@ fun sliderFillLabel(id: String): Int = when (id) {
     SliderFill.FIREWORKS -> R.string.fill_fireworks
     SliderFill.PIXELS -> R.string.fill_pixels
     SliderFill.SHADER -> R.string.fill_shader
+    SliderFill.SURGE -> R.string.fill_surge
     SliderFill.EFFORT -> R.string.fill_effort
     SliderFill.GLIMMER -> R.string.fill_glimmer
     else -> R.string.fill_solid

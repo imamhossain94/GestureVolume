@@ -23,11 +23,12 @@ import com.newagedevs.gesturevolume.utils.LevelFeedback
 import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.SliderFill
+import com.newagedevs.gesturevolume.utils.SurgeFill
 import java.text.NumberFormat
 
 /*
  * The choices inside the fills that have them — the Pixels grid's pattern, the shader's effect, the
- * Effort picker's look, the Glimmer's handle and stops — as rows of the same live tiles as the
+ * surge's look, the Effort picker's look, the Glimmer's handle and stops — as rows of the same live tiles as the
  * fills themselves: each tile the fill running with that one choice changed and everything else as
  * the user has it. A pattern's name says as little as a fill's did.
  */
@@ -71,6 +72,20 @@ fun ShaderEffectRow(style: ShaderFill.Style, look: FillTileLook, onChange: (Shad
             label = { stringResource(shaderEffectLabel(it)) },
             tileWidth = FILL_TILE_WIDTH,
         ) { id, _ -> FillTile(SliderFill.SHADER, look.copy(shaderStyle = style.copy(effect = id))) }
+    }
+}
+
+/** Which look the surge's front has. */
+@Composable
+fun SurgeLookRow(style: SurgeFill.Style, look: FillTileLook, onChange: (SurgeFill.Style) -> Unit) {
+    OptionRow(R.string.surge_look) {
+        PictureRow(
+            items = SurgeFill.LOOKS,
+            selected = SurgeFill.sanitize(style.look),
+            onSelect = { onChange(style.copy(look = it)) },
+            label = { stringResource(surgeLookLabel(it)) },
+            tileWidth = FILL_TILE_WIDTH,
+        ) { id, _ -> FillTile(SliderFill.SURGE, look.copy(surgeStyle = style.copy(look = id))) }
     }
 }
 

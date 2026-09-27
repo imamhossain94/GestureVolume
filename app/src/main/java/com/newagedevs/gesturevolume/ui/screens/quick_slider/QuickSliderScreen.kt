@@ -75,6 +75,7 @@ import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.ui.components.PixelFillControls
 import com.newagedevs.gesturevolume.ui.components.ShaderFillControls
+import com.newagedevs.gesturevolume.ui.components.SurgeFillControls
 import com.newagedevs.gesturevolume.ui.components.EffortFillControls
 import com.newagedevs.gesturevolume.ui.components.GlimmerFillControls
 import com.newagedevs.gesturevolume.ui.components.SliderFillSelector
@@ -99,6 +100,7 @@ import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import com.newagedevs.gesturevolume.utils.QuickSliderIcons
 import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
+import com.newagedevs.gesturevolume.utils.SurgeFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
@@ -224,6 +226,7 @@ fun QuickSliderScreen(
     var fillStyle by remember { mutableStateOf(store.getFillStyle()) }
     var pixelStyle by remember { mutableStateOf(store.getPixelStyle()) }
     var shaderStyle by remember { mutableStateOf(store.getShaderStyle()) }
+    var surgeStyle by remember { mutableStateOf(store.getSurgeStyle()) }
     var effortStyle by remember { mutableStateOf(store.getEffortStyle()) }
     var glimmerStyle by remember { mutableStateOf(store.getGlimmerStyle()) }
     var levelFeedback by remember { mutableStateOf(store.getLevelFeedback()) }
@@ -348,6 +351,7 @@ fun QuickSliderScreen(
                     fillStyle = fillStyle,
                     pixelStyle = pixelStyle,
                     shaderStyle = shaderStyle,
+                    surgeStyle = surgeStyle,
                     effortStyle = effortStyle,
                     glimmerStyle = glimmerStyle,
                     levelFeedback = levelFeedback,
@@ -616,6 +620,7 @@ fun QuickSliderScreen(
                     fillColors = if (fillColorsOn) fillColors.toIntArray() else null,
                     pixelStyle = pixelStyle,
                     shaderStyle = shaderStyle,
+                    surgeStyle = surgeStyle,
                     effortStyle = effortStyle,
                     glimmerStyle = glimmerStyle,
                     feedback = levelFeedback,
@@ -644,6 +649,15 @@ fun QuickSliderScreen(
                         look = tileLook,
                     )
                 }
+                if (fillStyle == SliderFill.SURGE) {
+                    Sep()
+                    SurgeFillControls(
+                        style = surgeStyle,
+                        accent = accent,
+                        onChange = { surgeStyle = it; store.setSurgeStyle(it) },
+                        look = tileLook,
+                    )
+                }
                 if (fillStyle == SliderFill.EFFORT) {
                     Sep()
                     EffortFillControls(
@@ -669,7 +683,7 @@ fun QuickSliderScreen(
                         style = levelFeedback,
                         accent = accent,
                         showSpeed = fillStyle != SliderFill.PIXELS && fillStyle != SliderFill.SHADER &&
-                            fillStyle != SliderFill.GLIMMER,
+                            fillStyle != SliderFill.SURGE && fillStyle != SliderFill.GLIMMER,
                         onChange = { levelFeedback = it; store.setLevelFeedback(it) },
                     )
                 }
@@ -829,6 +843,8 @@ private fun SliderPreview(
     pixelStyle: PixelFill.Style,
     /** The Shaders fill's effect and settings, used when that is the fill. */
     shaderStyle: ShaderFill.Style,
+    /** The Surge fill's look and settings, used when that is the fill. */
+    surgeStyle: SurgeFill.Style,
     /** The Effort fill's look and settings, used when that is the fill. */
     effortStyle: EffortFill.Style,
     /** The Glimmer fill's settings, used when that is the fill. */
@@ -997,6 +1013,7 @@ private fun SliderPreview(
                 }
                 view.setPixelStyle(pixelStyle)
                 view.setShaderStyle(shaderStyle)
+                view.setSurgeStyle(surgeStyle)
                 view.setEffortStyle(effortStyle)
                 view.setGlimmerStyle(glimmerStyle)
                 view.setLevelFeedback(levelFeedback)

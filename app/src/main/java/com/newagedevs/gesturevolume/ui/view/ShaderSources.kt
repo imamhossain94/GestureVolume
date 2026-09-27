@@ -26,7 +26,7 @@ internal object ShaderSources {
     val FLOAT2_UNIFORMS = listOf("origin", "size")
     val COLOR_UNIFORMS = listOf("c0", "c1", "c2", "c3")
 
-    fun source(effect: String): String = HEAD + body(effect) + TAIL
+    fun source(effect: String): String = HEAD + HELPERS + body(effect) + TAIL
 
     private val HEAD = """
         uniform float2 origin;
@@ -44,6 +44,13 @@ internal object ShaderSources {
         layout(color) uniform half4 c2;
         layout(color) uniform half4 c3;
 
+    """.trimIndent() + "\n"
+
+    /**
+     * The noise, the colours and the track's proportions every program shares. Also the Surge
+     * fill's (see `SurgeSources`), whose programs declare `size` and the four colours too.
+     */
+    val HELPERS = """
         const float TAU = 6.2831853;
 
         // A hash without sine: sine loses its precision on some phones' chips long before this does.
