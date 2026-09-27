@@ -25,6 +25,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.tween
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -65,6 +69,7 @@ import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
 import com.newagedevs.gesturevolume.ui.components.PixelFillControls
 import com.newagedevs.gesturevolume.ui.components.ShaderFillControls
+import com.newagedevs.gesturevolume.ui.components.EffortFillControls
 import com.newagedevs.gesturevolume.ui.components.SliderFillSelector
 import com.newagedevs.gesturevolume.ui.components.panelAnimationLabel
 import com.newagedevs.gesturevolume.ui.components.panelThemeLabel
@@ -85,6 +90,7 @@ import com.newagedevs.gesturevolume.utils.QuickSliderIcons
 import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.SliderFill
+import com.newagedevs.gesturevolume.utils.EffortFill
 
 /** The translated name of a slider target. */
 fun sliderTargetLabel(id: String): Int = when (id) {
@@ -209,6 +215,7 @@ fun QuickSliderScreen(
     var fillStyle by remember { mutableStateOf(store.getFillStyle()) }
     var pixelStyle by remember { mutableStateOf(store.getPixelStyle()) }
     var shaderStyle by remember { mutableStateOf(store.getShaderStyle()) }
+    var effortStyle by remember { mutableStateOf(store.getEffortStyle()) }
     var fillColorsOn by remember { mutableStateOf(store.getFillColorsEnabled()) }
     var fillColors by remember { mutableStateOf(store.getFillColors().toList()) }
     var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
@@ -336,6 +343,7 @@ fun QuickSliderScreen(
                     fillStyle = fillStyle,
                     pixelStyle = pixelStyle,
                     shaderStyle = shaderStyle,
+                    effortStyle = effortStyle,
                     fillColors = if (fillColorsOn) fillColors.toIntArray() else null,
                     valueColor = if (contentColorsOn) valueColor else null,
                     iconColor = if (contentColorsOn) iconColor else null,
@@ -594,7 +602,7 @@ fun QuickSliderScreen(
                     style = fillStyle,
                     onStyleChange = { fillStyle = it; store.setFillStyle(it) },
                 )
-                // The one fill with settings of its own, right under the chip that chose it.
+                // The fills with settings of their own, right under the chip that chose them.
                 if (fillStyle == SliderFill.PIXELS) {
                     Sep()
                     PixelFillControls(
@@ -609,6 +617,14 @@ fun QuickSliderScreen(
                         style = shaderStyle,
                         accent = accent,
                         onChange = { shaderStyle = it; store.setShaderStyle(it) },
+                    )
+                }
+                if (fillStyle == SliderFill.EFFORT) {
+                    Sep()
+                    EffortFillControls(
+                        style = effortStyle,
+                        accent = accent,
+                        onChange = { effortStyle = it; store.setEffortStyle(it) },
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
@@ -767,6 +783,8 @@ private fun SliderPreview(
     pixelStyle: PixelFill.Style,
     /** The Shaders fill's effect and settings, used when that is the fill. */
     shaderStyle: ShaderFill.Style,
+    /** The Effort fill's look and settings, used when that is the fill. */
+    effortStyle: EffortFill.Style,
     /** The animation's own colours, or null for its palette. */
     fillColors: IntArray?,
     /** The number's and the icon's own colours, or null to swap with the fill. */
@@ -836,6 +854,31 @@ private fun SliderPreview(
             view.setExpansion(fraction)
         }
     }
+    // The effort picker is only seen for what it is across its levels, so its preview steps up
+    // through them one at a time and back down, the way a finger clicks through a picker's stops,
+    // instead of holding still at one.
+    LaunchedEffect(sliderView, fillStyle == SliderFill.EFFORT) {
+        val view = sliderView ?: return@LaunchedEffect
+        if (fillStyle != SliderFill.EFFORT) {
+            view.setValue(0.6f)
+            return@LaunchedEffect
+        }
+        val stops = floatArrayOf(0.1f, 0.3f, 0.5f, 0.7f, 0.92f)
+        var at = stops[0]
+        view.setValue(at)
+        val order = stops.indices.toList().let { up -> up.drop(1) + up.reversed().drop(1) }
+        while (true) {
+            for (i in order) {
+                delay(EFFORT_PREVIEW_HOLD_MS)
+                val from = at
+                val to = stops[i]
+                animate(from, to, animationSpec = tween(EFFORT_PREVIEW_MOVE_MS, easing = FastOutSlowInEasing)) { v, _ ->
+                    view.setValue(v)
+                }
+                at = to
+            }
+        }
+    }
     PreviewStage(
         backdrop = backdrop,
         contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
@@ -885,6 +928,7 @@ private fun SliderPreview(
                 }
                 view.setPixelStyle(pixelStyle)
                 view.setShaderStyle(shaderStyle)
+                view.setEffortStyle(effortStyle)
                 view.setFillStyle(fillStyle)
                 view.setFillColors(fillColors)
                 view.setDrawnThickness(thicknessDp * density, handlerOnLeft)
@@ -892,7 +936,8 @@ private fun SliderPreview(
                 view.setShowValue(showValue)
                 view.setContentColors(valueColor?.toArgb(), iconColor?.toArgb())
                 view.setIcon(if (showIcon) iconRes else null)
-                view.setValue(0.6f)
+                // Held at a level, except for the effort picker, which climbs its levels below.
+                if (fillStyle != SliderFill.EFFORT) view.setValue(0.6f)
                 // Both, and neither is optional. QuickSliderView is built to grow out of the
                 // bar, so it starts collapsed and empty: at expansion 0 it draws no fill, no
                 // number and no icon, which in a *static* preview is just a black lozenge.
@@ -1048,6 +1093,10 @@ private const val QUICK_PANEL_MAX_FLARE = 0.22f
 
 /** Mirrors `OverlayController.PANEL_MIN_THICKNESS_DP`: the window's floor, not the panel's. */
 private const val PANEL_PREVIEW_MIN_WINDOW = 48f
+
+/** How long the effort picker's preview holds each level, and takes to move to the next. */
+private const val EFFORT_PREVIEW_HOLD_MS = 1100L
+private const val EFFORT_PREVIEW_MOVE_MS = 520
 
 /** The Quick panel's demo: a pull up the bar, which is what opens it. */
 private val QUICK_DEMO_STEPS = listOf(DemoGesture.SWIPE_UP)

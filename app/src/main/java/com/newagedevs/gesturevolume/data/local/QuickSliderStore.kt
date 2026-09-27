@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
+import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.HandlerShape
 
@@ -116,6 +117,9 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val SHADER_BRIGHTNESS = "sliderShaderBrightness"
         private const val SHADER_GRAIN = "sliderShaderGrain"
         private const val SHADER_REST = "sliderShaderRest"
+        private const val EFFORT_LOOK = "sliderEffortLook"
+        private const val EFFORT_SPEED = "sliderEffortSpeed"
+        private const val EFFORT_LABELS = "sliderEffortLabels"
         private const val FOLLOW_HANDLER = "sliderFollowHandlerShape"
         private const val OPEN_ON_VOLUME_KEY = "sliderOpenOnVolumeKey"
         private const val VOLUME_KEYS = "sliderVolumeKeys"
@@ -504,6 +508,28 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
             putFloat(SHADER_BRIGHTNESS, s.brightness)
             putFloat(SHADER_GRAIN, s.grain)
             putFloat(SHADER_REST, s.rest)
+        }
+    }
+
+    /**
+     * The Effort fill's own settings: its look, how fast it moves, and whether the level is named.
+     * Kept while another fill is chosen, like the Pixels grid's.
+     */
+    fun getEffortStyle(): EffortFill.Style {
+        val d = EffortFill.Style()
+        return EffortFill.Style(
+            look = prefs.getString(EFFORT_LOOK, d.look) ?: d.look,
+            speed = prefs.getFloat(EFFORT_SPEED, d.speed),
+            labels = prefs.getBoolean(EFFORT_LABELS, d.labels),
+        ).sanitized()
+    }
+
+    fun setEffortStyle(value: EffortFill.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putString(EFFORT_LOOK, s.look)
+            putFloat(EFFORT_SPEED, s.speed)
+            putBoolean(EFFORT_LABELS, s.labels)
         }
     }
 

@@ -78,6 +78,25 @@
     <string name="shader_detail_billow">Billow</string>
     <string name="shader_detail_swirl">Swirl</string>
     <string name="shader_detail_density">Density</string>
+
+    <!-- The Effort fill: the track as an AI tool's effort picker, lit to the level and named. -->
+    <string name="fill_effort">Effort</string>
+    <string name="effort_settings_desc">The track as an effort picker, like the ones AI coding tools show: it lights up through Low, High, Extra high, Max and Ultra max as the level rises, and works harder the higher it goes. The preview above runs it.</string>
+    <string name="effort_look">Look</string>
+    <string name="effort_look_steps">Steps</string>
+    <string name="effort_look_dots">Dots</string>
+    <string name="effort_look_steps_desc">A stop for each level, stacked up the track like a slider\'s stops, lit to the one you are on.</string>
+    <string name="effort_look_dots_desc">One bar lit to the level, the level counted in dots beside its name.</string>
+    <string name="effort_speed">Speed</string>
+    <string name="effort_labels">Level names</string>
+    <string name="effort_labels_desc">Name the level on the track as well as lighting it.</string>
+    <string name="effort_level_low">Low</string>
+    <string name="effort_level_high">High</string>
+    <string name="effort_level_extra_high">Extra high</string>
+    <string name="effort_level_max">Max</string>
+    <string name="effort_level_ultra_max">Ultra max</string>
+    <string name="effort_level_extra_high_short">Extra</string>
+    <string name="effort_level_ultra_max_short">Ultra</string>
     <string name="shader_detail_blobs">Blobs</string>
 
     <!-- The animation's own colours, for the settings screen. -->

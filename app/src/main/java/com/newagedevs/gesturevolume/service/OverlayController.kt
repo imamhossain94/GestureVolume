@@ -2946,6 +2946,7 @@ class OverlayController(
             // Before the style, so a Pixels fill starts its clock at its own pace the first time.
             setPixelStyle(settings.getPixelStyle())
             setShaderStyle(settings.getShaderStyle())
+            setEffortStyle(settings.getEffortStyle())
             setFillStyle(settings.getFillStyle())
             // The user's own colours for the animation, or null for the style's palette.
             setFillColors(settings.getEffectiveFillColors())

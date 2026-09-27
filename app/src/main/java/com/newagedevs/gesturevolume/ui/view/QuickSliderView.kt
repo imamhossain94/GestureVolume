@@ -20,6 +20,8 @@ import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
+import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.PanelAnimation
 import com.newagedevs.gesturevolume.utils.HandlerShape
@@ -331,6 +333,45 @@ class QuickSliderView(context: Context) : View(context) {
 
     /** Made on first use, and only on Android 13 and later: before that there is no RuntimeShader. */
     private var shaderArt: ShaderArt? = null
+
+    /** The Effort fill's look and settings, used while [fillStyle] is [SliderFill.EFFORT]. */
+    private var effortStyle = EffortFill.Style()
+    private var effortArtOrNull: EffortArt? = null
+    private val effortArt: EffortArt
+        get() = effortArtOrNull ?: EffortArt(density).also { effortArtOrNull = it }
+
+    /** The picker's colours, the user's when they have set some. See [EffortFill.paletteWith]. */
+    private var effortPalette: IntArray = EffortFill.paletteWith(null)
+
+    /** The levels' names, lowest first, in the app's language. */
+    private val effortLabels: Array<String> by lazy {
+        arrayOf(
+            context.getString(R.string.effort_level_low),
+            context.getString(R.string.effort_level_high),
+            context.getString(R.string.effort_level_extra_high),
+            context.getString(R.string.effort_level_max),
+            context.getString(R.string.effort_level_ultra_max),
+        )
+    }
+
+    /** The same, shortened for a track with no room for the whole name. */
+    private val effortShortLabels: Array<String> by lazy {
+        arrayOf(
+            context.getString(R.string.effort_level_low),
+            context.getString(R.string.effort_level_high),
+            context.getString(R.string.effort_level_extra_high_short),
+            context.getString(R.string.effort_level_max),
+            context.getString(R.string.effort_level_ultra_max_short),
+        )
+    }
+
+    /**
+     * The picker's own clock, in seconds: advanced a frame at a time by what the frame took, times
+     * its speed, so a new speed takes over from the next frame without the sheen jumping. Starts
+     * somewhere in the hour, like [shaderTime].
+     */
+    private var effortTime = (SystemClock.uptimeMillis() % 3_600_000L) / 1000f
+    private var effortTickAt = 0L
 
     /** The effect's four colours, the user's when they have set some. See [ShaderFill.paletteWith]. */
     private var shaderPalette: IntArray = ShaderFill.paletteWith(ShaderFill.LAVA_LAMP, null)
@@ -911,6 +952,7 @@ class QuickSliderView(context: Context) : View(context) {
         fillColors = next
         fillPalette = SliderFill.paletteWith(fillStyle, next)
         shaderPalette = ShaderFill.paletteWith(shaderStyle.effect, next)
+        effortPalette = EffortFill.paletteWith(next)
         fillArtOrNull = null
         invalidate()
     }
@@ -940,6 +982,17 @@ class QuickSliderView(context: Context) : View(context) {
         if (next.effect != shaderStyle.effect) shaderPalette = ShaderFill.paletteWith(next.effect, fillColors)
         shaderStyle = next
         if (retime && fillStyle == SliderFill.SHADER) restartFillClock()
+        invalidate()
+    }
+
+    /**
+     * The Effort fill's settings. Nothing here touches the clock: the picker keeps its own time,
+     * and a new speed or look simply takes over from the next frame.
+     */
+    fun setEffortStyle(style: EffortFill.Style) {
+        val next = style.sanitized()
+        if (next == effortStyle) return
+        effortStyle = next
         invalidate()
     }
 
@@ -1020,6 +1073,7 @@ class QuickSliderView(context: Context) : View(context) {
         fillClock = null
         val pixels = fillStyle == SliderFill.PIXELS
         val shader = fillStyle == SliderFill.SHADER
+        val effort = fillStyle == SliderFill.EFFORT
         val animated = when {
             pixels -> PixelFill.isAnimated(pixelStyle.pattern)
             shader -> shadersSupported && shaderStyle.isAnimated
@@ -1027,6 +1081,7 @@ class QuickSliderView(context: Context) : View(context) {
         }
         if (!animated || !isAttachedToWindow) return
         shaderTickAt = 0L
+        effortTickAt = 0L
         fillClock = ValueAnimator.ofFloat(0f, 1f).apply {
             duration = if (pixels) PixelFill.cycleMs(pixelStyle) else SliderFill.cycleMs(fillStyle).toLong()
             repeatCount = ValueAnimator.INFINITE
@@ -1034,6 +1089,7 @@ class QuickSliderView(context: Context) : View(context) {
             addUpdateListener {
                 fillPhase = it.animatedValue as Float
                 if (shader) tickShaderClock()
+                if (effort) tickEffortClock()
                 invalidate()
             }
             start()
@@ -1052,6 +1108,16 @@ class QuickSliderView(context: Context) : View(context) {
         if (last == 0L) return
         val step = (now - last).coerceIn(0L, 100L) / 1000f * shaderStyle.speed
         shaderTime = (shaderTime + step) % ShaderFill.TIME_WRAP_S
+    }
+
+    /** Moves [effortTime] on by the time since the last frame, at the picker's speed, capped like [tickShaderClock]. */
+    private fun tickEffortClock() {
+        val now = SystemClock.uptimeMillis()
+        val last = effortTickAt
+        effortTickAt = now
+        if (last == 0L) return
+        val step = (now - last).coerceIn(0L, 100L) / 1000f * effortStyle.speed
+        effortTime = (effortTime + step) % EffortFill.TIME_WRAP_S
     }
 
     override fun onAttachedToWindow() {
@@ -1454,8 +1520,11 @@ class QuickSliderView(context: Context) : View(context) {
         sheenPaint?.let { canvas.drawRect(drawRect, it) }
         counterLightPaint?.let { canvas.drawRect(drawRect, it) }
 
-        if (fillStyle == SliderFill.PIXELS || (fillStyle == SliderFill.SHADER && drawShaderFill(canvas))) {
+        if (fillStyle == SliderFill.PIXELS || fillStyle == SliderFill.EFFORT ||
+            (fillStyle == SliderFill.SHADER && drawShaderFill(canvas))
+        ) {
             if (fillStyle == SliderFill.PIXELS) drawPixelFill(canvas)
+            if (fillStyle == SliderFill.EFFORT) drawEffortFill(canvas)
             canvas.restore()
             drawGrabLip(canvas)
             edgePaint?.let { canvas.drawPath(rimPath, it) }
@@ -1583,6 +1652,42 @@ class QuickSliderView(context: Context) : View(context) {
         return true
     }
 
+    /**
+     * The Effort fill, inside the panel's clip: the picker over the whole track, lit below the
+     * level, and the number and the icon over it in the fill colour above the level and in the
+     * picker's own ink below it. The level's name is kept clear of both.
+     */
+    private fun drawEffortFill(canvas: Canvas) {
+        if (!fillVisible || contentAlpha <= 0.01f) {
+            drawContent(canvas, overFill = false)
+            return
+        }
+        val fillTop = drawRect.bottom - drawRect.height() * value
+        // Where the number ends and the icon begins, give or take, for the name to keep between.
+        val numberBottom = if (showValue) {
+            drawRect.top + valueMarginPx + if (turned) textPaint.measureText("100") else textPaint.textSize
+        } else {
+            drawRect.top
+        }
+        val iconTop = if (icon != null) iconCenterY(iconSize()) - iconSize() / 2f else drawRect.bottom
+        effortArt.draw(
+            canvas, drawRect, fillTop, value, effortTime, effortStyle, effortPalette, effortLabels, effortShortLabels,
+            labelTop = numberBottom + 4f * density,
+            labelBottom = iconTop - 4f * density,
+            ghost = fillColor,
+            alpha = contentAlpha,
+        )
+
+        canvas.save()
+        canvas.clipRect(drawRect.left, drawRect.top, drawRect.right, fillTop)
+        drawContent(canvas, overFill = false)
+        canvas.restore()
+        canvas.save()
+        canvas.clipRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom)
+        drawContent(canvas, overFill = true)
+        canvas.restore()
+    }
+
     /** The icon's size and centre, shared by the drawing and the touch test so the two agree. */
     private fun iconSize(): Float = (drawRect.width() * 0.46f).coerceIn(12f * density, 26f * density)
 
@@ -1599,7 +1704,13 @@ class QuickSliderView(context: Context) : View(context) {
 
     private fun drawContent(canvas: Canvas, overFill: Boolean) {
         if (contentAlpha <= 0.01f) return
-        val ink = if (overFill) blendedTrackColor else fillColor
+        // Over the picker's lit stops, whose colour changes with the level, the track's colour would
+        // vanish into the darker ones.
+        val ink = when {
+            !overFill -> fillColor
+            fillStyle == SliderFill.EFFORT -> effortArt.ink
+            else -> blendedTrackColor
+        }
         val alpha = (contentAlpha * 255f).toInt().coerceIn(0, 255)
 
         if (showValue) {

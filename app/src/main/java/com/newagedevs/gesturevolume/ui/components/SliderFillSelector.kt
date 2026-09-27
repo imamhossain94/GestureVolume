@@ -137,5 +137,6 @@ fun sliderFillLabel(id: String): Int = when (id) {
     SliderFill.FIREWORKS -> R.string.fill_fireworks
     SliderFill.PIXELS -> R.string.fill_pixels
     SliderFill.SHADER -> R.string.fill_shader
+    SliderFill.EFFORT -> R.string.fill_effort
     else -> R.string.fill_solid
 }
