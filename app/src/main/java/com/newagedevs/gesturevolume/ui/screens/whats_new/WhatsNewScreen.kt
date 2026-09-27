@@ -1,5 +1,9 @@
 package com.newagedevs.gesturevolume.ui.screens.whats_new
 
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.AppearanceSection
+import androidx.compose.material.icons.filled.NewReleases
+import androidx.compose.material.icons.filled.History
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -102,12 +106,22 @@ fun WhatsNewScreen(
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(ReleaseNotes.HISTORY) { entry ->
+                itemsIndexed(
+                    ReleaseNotes.HISTORY,
+                    key = { _, entry ->
+                        when (entry) {
+                            is ReleaseNotes.Release -> "release:" + entry.version
+                            is ReleaseNotes.Milestone -> "milestone:" + entry.installs
+                        }
+                    },
+                ) { index, entry ->
                     when (entry) {
                         is ReleaseNotes.Release -> ReleaseCard(
                             release = entry,
                             isInstalled = entry.version == installed,
                             date = entry.date?.format(dates),
+                            // The newest, and the one on this phone, open; the rest folded to a row.
+                            open = index == 0 || entry.version == installed,
                         )
                         is ReleaseNotes.Milestone -> MilestoneRow(
                             text = stringResource(R.string.whats_new_milestone, numbers.format(entry.installs)),
@@ -120,59 +134,30 @@ fun WhatsNewScreen(
     }
 }
 
+/**
+ * A release, as the settings screens' groups are: a row with its picture, its version and its
+ * date, and its notes under it as the second half of the same card, folded away for the older
+ * ones. The one on this phone is marked on its tile and its line.
+ */
 @Composable
-private fun ReleaseCard(release: ReleaseNotes.Release, isInstalled: Boolean, date: String?) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = if (isInstalled) {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)
-        } else {
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
-        }
+private fun ReleaseCard(release: ReleaseNotes.Release, isInstalled: Boolean, date: String?, open: Boolean) {
+    val installedLabel = stringResource(R.string.whats_new_installed)
+    AppearanceSection(
+        title = stringResource(R.string.whats_new_version, release.version),
+        summary = listOfNotNull(date, installedLabel.takeIf { isInstalled }).joinToString(" · ").ifEmpty { null },
+        initiallyExpanded = open,
+        icon = if (isInstalled) Icons.Filled.NewReleases else Icons.Filled.History,
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(R.string.whats_new_version, release.version),
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f)
-                )
-                if (isInstalled) {
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = MaterialTheme.colorScheme.primary
-                    ) {
-                        Text(
-                            text = stringResource(R.string.whats_new_installed),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                        )
-                    }
-                }
-            }
-            if (date != null) {
-                Text(
-                    text = date,
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            if (release.firstRelease) {
-                Text(
-                    text = stringResource(R.string.whats_new_first_release),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            release.notes.forEach { note -> NoteLine(note) }
+        if (release.firstRelease) {
+            Text(
+                text = stringResource(R.string.whats_new_first_release),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 6.dp),
+            )
         }
+        release.notes.forEach { note -> NoteLine(note) }
     }
 }
 

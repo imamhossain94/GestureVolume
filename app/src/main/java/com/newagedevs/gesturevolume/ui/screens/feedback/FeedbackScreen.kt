@@ -1,5 +1,20 @@
 package com.newagedevs.gesturevolume.ui.screens.feedback
 
+import com.newagedevs.gesturevolume.ui.components.rowColor
+import com.newagedevs.gesturevolume.ui.components.cardShape
+import com.newagedevs.gesturevolume.ui.components.RowGroup
+import com.newagedevs.gesturevolume.ui.components.KitRow
+import com.newagedevs.gesturevolume.ui.components.IconTile
+import com.newagedevs.gesturevolume.ui.components.HeroCard
+import com.newagedevs.gesturevolume.ui.components.GroupHeading
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.material.icons.filled.SentimentDissatisfied
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.AdsClick
+import androidx.compose.material.icons.filled.TipsAndUpdates
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
@@ -106,10 +121,10 @@ fun FeedbackScreen(
     var otherIssueText by rememberSaveable { mutableStateOf("") }
 
     val issues = listOf(
-        IssueOption(R.string.issue_crash, Icons.Default.Warning, appCrashesChecked) { appCrashesChecked = it },
-        IssueOption(R.string.issue_ads, Icons.Default.Star, tooManyAdsChecked) { tooManyAdsChecked = it },
-        IssueOption(R.string.issue_unresponsive, Icons.Default.Info, appFreezesChecked) { appFreezesChecked = it },
-        IssueOption(R.string.issue_not_user_friendly, Icons.Default.ThumbUp, notUserFriendlyChecked) { notUserFriendlyChecked = it },
+        IssueOption(R.string.issue_crash, Icons.Default.BugReport, appCrashesChecked) { appCrashesChecked = it },
+        IssueOption(R.string.issue_ads, Icons.Default.AdsClick, tooManyAdsChecked) { tooManyAdsChecked = it },
+        IssueOption(R.string.issue_unresponsive, Icons.Default.HourglassEmpty, appFreezesChecked) { appFreezesChecked = it },
+        IssueOption(R.string.issue_not_user_friendly, Icons.Default.SentimentDissatisfied, notUserFriendlyChecked) { notUserFriendlyChecked = it },
     )
 
     val send = {
@@ -243,149 +258,57 @@ private class IssueOption(
     val onCheckedChange: (Boolean) -> Unit,
 )
 
-/** The home screen's card: the same tint, corner and padding. */
-@Composable
-private fun FeedbackCard(
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f),
-        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-    ) {
-        Column(modifier = Modifier.padding(16.dp), content = content)
-    }
-}
-
-/** The app's icon chip: the primary colour, faint behind and full on the glyph. */
-@Composable
-private fun IconChip(icon: ImageVector, size: Dp = 38.dp, glyph: Dp = 20.dp) {
-    val tint = MaterialTheme.colorScheme.primary
-    Box(
-        modifier = Modifier
-            .size(size)
-            .clip(RoundedCornerShape(10.dp))
-            .background(tint.copy(alpha = 0.12f)),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(glyph))
-    }
-}
-
 @Composable
 private fun HeaderCard() {
-    FeedbackCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconChip(Icons.Default.Email, size = 48.dp, glyph = 24.dp)
-            Spacer(modifier = Modifier.width(14.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.we_d_love_to_hear_from_you),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = stringResource(R.string.help_us_improve_the_app),
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
+    HeroCard(
+        title = stringResource(R.string.we_d_love_to_hear_from_you),
+        text = stringResource(R.string.help_us_improve_the_app),
+        leading = { IconTile(Icons.Default.Email, lit = true, size = 56.dp) },
+    )
 }
 
-/** The four common issues, two to a row, each ticked on its own. */
+/** The four common issues, one row each, ticked on their own, as the Visibility screen's apps are. */
 @Composable
 private fun IssuesSection(issues: List<IssueOption>) {
-    val selected = issues.count { it.checked }
-    AppearanceSection(
-        title = stringResource(R.string.common_issues),
-        summary = if (selected > 0) "$selected / ${issues.size}" else null,
-        initiallyExpanded = true,
-    ) {
-        Text(
-            text = stringResource(R.string.feedback_pick_any),
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 4.dp, bottom = 10.dp)
+    Column {
+        GroupHeading(
+            title = stringResource(R.string.section_common_issues),
+            hint = stringResource(R.string.feedback_pick_any),
         )
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            issues.chunked(2).forEach { pair ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(IntrinsicSize.Min),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    pair.forEach { issue ->
-                        IssueTile(issue, Modifier.weight(1f).fillMaxHeight())
-                    }
-                }
-            }
+        RowGroup {
+            issues.forEachIndexed { index, issue -> IssueRow(issue, cardShape(index, issues.size)) }
         }
     }
 }
 
-/** One issue: a chip, its name, and a round tick in the corner once chosen. */
+/** One issue: its picture, its name, and a tick once chosen — the whole row the tick. */
 @Composable
-private fun IssueTile(issue: IssueOption, modifier: Modifier = Modifier) {
-    val primary = MaterialTheme.colorScheme.primary
-    val shape = RoundedCornerShape(14.dp)
-    Column(
-        modifier = modifier
+private fun IssueRow(issue: IssueOption, shape: Shape) {
+    val colours = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
             .clip(shape)
-            .background(
-                if (issue.checked) primary.copy(alpha = 0.12f)
-                else MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
-            )
-            .border(
-                width = 1.dp,
-                color = if (issue.checked) primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                shape = shape
-            )
-            .toggleable(
-                value = issue.checked,
-                role = Role.Checkbox,
-                onValueChange = issue.onCheckedChange
-            )
-            .padding(12.dp)
+            .background(if (issue.checked) colours.primaryContainer else rowColor())
+            .toggleable(value = issue.checked, role = Role.Checkbox, onValueChange = issue.onCheckedChange)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.Top) {
-            IconChip(issue.icon, size = 34.dp, glyph = 18.dp)
-            Spacer(modifier = Modifier.weight(1f))
-            Box(
-                modifier = Modifier
-                    .size(22.dp)
-                    .clip(CircleShape)
-                    .background(if (issue.checked) primary else Color.Transparent)
-                    .border(
-                        width = 1.5.dp,
-                        color = if (issue.checked) primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                if (issue.checked) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(14.dp)
-                    )
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(10.dp))
+        IconTile(issue.icon, lit = issue.checked)
+        Spacer(modifier = Modifier.width(14.dp))
         Text(
             text = stringResource(issue.label),
-            fontSize = 13.sp,
-            lineHeight = 17.sp,
+            fontSize = 16.sp,
             fontWeight = if (issue.checked) FontWeight.SemiBold else FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = if (issue.checked) colours.onPrimaryContainer else colours.onSurface,
+            modifier = Modifier.weight(1f),
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Icon(
+            imageVector = if (issue.checked) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
+            contentDescription = null,
+            tint = if (issue.checked) colours.primary else colours.outline,
+            modifier = Modifier.size(24.dp),
         )
     }
 }
@@ -393,12 +316,8 @@ private fun IssueTile(issue: IssueOption, modifier: Modifier = Modifier) {
 /** Anything the four issues do not cover. */
 @Composable
 private fun MessageCard(value: String, onValueChange: (String) -> Unit) {
-    FeedbackCard {
-        SectionTitle(
-            text = stringResource(R.string.other_feedback),
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
-        )
+    Column {
+        GroupHeading(stringResource(R.string.group_other_feedback))
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -409,12 +328,12 @@ private fun MessageCard(value: String, onValueChange: (String) -> Unit) {
                 .heightIn(min = 140.dp),
             minLines = 4,
             maxLines = 8,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(20.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+                focusedContainerColor = rowColor(),
+                unfocusedContainerColor = rowColor(),
             )
         )
     }
@@ -423,41 +342,20 @@ private fun MessageCard(value: String, onValueChange: (String) -> Unit) {
 /** What Send does and what goes with it, so nobody wonders whether it has already gone. */
 @Composable
 private fun HowItIsSentCard() {
-    FeedbackCard {
-        InfoRow(
-            icon = Icons.Default.Email,
-            title = stringResource(R.string.feedback_via_email_title),
-            subtitle = stringResource(R.string.feedback_via_email_desc)
-        )
-        HorizontalDivider(
-            modifier = Modifier.padding(vertical = 12.dp),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-        )
-        InfoRow(
-            icon = Icons.Default.PhoneAndroid,
-            title = stringResource(R.string.feedback_details_title),
-            subtitle = stringResource(R.string.feedback_details_desc)
-        )
-    }
-}
-
-@Composable
-private fun InfoRow(icon: ImageVector, title: String, subtitle: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        IconChip(icon, size = 34.dp, glyph = 18.dp)
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+    Column {
+        GroupHeading(stringResource(R.string.group_how_sent))
+        RowGroup {
+            KitRow(
+                title = stringResource(R.string.feedback_via_email_title),
+                description = stringResource(R.string.feedback_via_email_desc),
+                shape = cardShape(0, 2),
+                leading = { IconTile(Icons.Default.Email) },
             )
-            Text(
-                text = subtitle,
-                fontSize = 12.sp,
-                lineHeight = 16.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            KitRow(
+                title = stringResource(R.string.feedback_details_title),
+                description = stringResource(R.string.feedback_details_desc),
+                shape = cardShape(1, 2),
+                leading = { IconTile(Icons.Default.PhoneAndroid) },
             )
         }
     }
@@ -536,7 +434,7 @@ private val CONTENT_MAX_WIDTH = 920.dp
 private val PANE_GAP = 20.dp
 
 /** Between cards in a column. */
-private val GAP = 12.dp
+private val GAP = 24.dp
 
 /** How much of the width the header and the notes take on its side. */
 private const val SIDE_SHARE = 0.4f

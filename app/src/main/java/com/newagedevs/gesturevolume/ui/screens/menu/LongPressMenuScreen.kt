@@ -1,5 +1,10 @@
 package com.newagedevs.gesturevolume.ui.screens.menu
 
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.Animation
+import androidx.compose.material.icons.automirrored.filled.List
+import com.newagedevs.gesturevolume.ui.components.ChoiceChip
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -275,59 +280,10 @@ fun LongPressMenuScreen(
         ) {
             val grid = layout == ContextMenuLayout.GRID
 
-            // ---- what is in it ------------------------------------------------------------------
-            AppearanceSection(
-                title = stringResource(R.string.context_menu_group_items),
-                summary = stringResource(R.string.context_menu_count, HandlerActionCatalog.contextMenuEntries(shown.toList()).size),
-                initiallyExpanded = true,
-            ) {
-                SectionLabel(stringResource(R.string.context_menu_shown))
-                if (shown.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.context_menu_empty),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                shown.forEachIndexed { index, action ->
-                    val entry = HandlerActionCatalog.entryFor(action) ?: return@forEachIndexed
-                    ShownRow(
-                        entry = entry,
-                        position = index + 1,
-                        pinned = action in HandlerActions.ALWAYS_IN_CONTEXT_MENU,
-                        canMoveUp = index > 0,
-                        canMoveDown = index < shown.lastIndex,
-                        onMoveUp = { shown.move(index, index - 1); persist() },
-                        onMoveDown = { shown.move(index, index + 1); persist() },
-                        onRemove = { shown.removeAt(index); persist() },
-                    )
-                    @Suppress("UNUSED_VARIABLE") val tick = permissionTick
-                    PermissionNeeds.missingFor(context, preference, action)?.let {
-                        PermissionNote(missing = it, onOpenPermissions = onOpenPermissions)
-                        Spacer(Modifier.height(4.dp))
-                    }
-                }
-
-                if (available.isNotEmpty()) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SectionLabel(stringResource(R.string.context_menu_hidden))
-                    available.forEach { entry ->
-                        HiddenRow(
-                            entry = entry,
-                            onAdd = { shown.add(entry.action); persist() },
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(12.dp))
-
             // ---- size & shape: its layout, its size, and how it is divided ----------------------
             AppearanceSection(
-                title = stringResource(R.string.group_size_shape),
+                title = stringResource(R.string.section_size_shape),
+                icon = Icons.Filled.AspectRatio,
                 summary = "${menuWidth.toInt()} × ${menuHeight.toInt()}dp",
             ) {
                 SectionLabel(stringResource(R.string.context_menu_layout))
@@ -409,12 +365,64 @@ fun LongPressMenuScreen(
 
             Spacer(Modifier.height(12.dp))
 
+            // ---- what is in it ------------------------------------------------------------------
+            AppearanceSection(
+                title = stringResource(R.string.section_items),
+                icon = Icons.AutoMirrored.Filled.List,
+                summary = stringResource(R.string.context_menu_count, HandlerActionCatalog.contextMenuEntries(shown.toList()).size),
+                initiallyExpanded = true,
+            ) {
+                SectionLabel(stringResource(R.string.context_menu_shown))
+                if (shown.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.context_menu_empty),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                shown.forEachIndexed { index, action ->
+                    val entry = HandlerActionCatalog.entryFor(action) ?: return@forEachIndexed
+                    ShownRow(
+                        entry = entry,
+                        position = index + 1,
+                        pinned = action in HandlerActions.ALWAYS_IN_CONTEXT_MENU,
+                        canMoveUp = index > 0,
+                        canMoveDown = index < shown.lastIndex,
+                        onMoveUp = { shown.move(index, index - 1); persist() },
+                        onMoveDown = { shown.move(index, index + 1); persist() },
+                        onRemove = { shown.removeAt(index); persist() },
+                    )
+                    @Suppress("UNUSED_VARIABLE") val tick = permissionTick
+                    PermissionNeeds.missingFor(context, preference, action)?.let {
+                        PermissionNote(missing = it, onOpenPermissions = onOpenPermissions)
+                        Spacer(Modifier.height(4.dp))
+                    }
+                }
+
+                if (available.isNotEmpty()) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                    )
+                    SectionLabel(stringResource(R.string.context_menu_hidden))
+                    available.forEach { entry ->
+                        HiddenRow(
+                            entry = entry,
+                            onAdd = { shown.add(entry.action); persist() },
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
             // ---- colours ------------------------------------------------------------------------
             // The opacity joins the summary only while the menu has a colour of its own; without
             // one the material decides, and a number would describe nothing on screen.
             val themeName = stringResource(panelThemeLabel(panelTheme))
             AppearanceSection(
-                title = stringResource(R.string.group_colours),
+                title = stringResource(R.string.section_colours),
+                icon = Icons.Filled.Palette,
                 summary = if (menuColor != null) {
                     "$themeName · ${(menuAlpha / 255f * 100).toInt()}%"
                 } else {
@@ -467,7 +475,8 @@ fun LongPressMenuScreen(
 
             // ---- animation ----------------------------------------------------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_animation),
+                title = stringResource(R.string.section_animation),
+                icon = Icons.Filled.Animation,
                 summary = "${stringResource(panelAnimationLabel(panelAnimation))} · ${panelAnimationSpeedLabel(animationSpeed)}",
             ) {
                 PanelAnimationSelector(
@@ -519,19 +528,7 @@ private fun <T> ChoiceChips(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         options.forEach { option ->
-            val on = option == selected
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = if (on) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                onClick = { onSelect(option) },
-            ) {
-                Text(
-                    text = label(option),
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                    fontSize = 13.sp,
-                    color = if (on) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            ChoiceChip(label = label(option), selected = option == selected, onClick = { onSelect(option) })
         }
     }
 }

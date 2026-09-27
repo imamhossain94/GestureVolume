@@ -2,6 +2,7 @@ package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,53 +44,47 @@ fun ColorPickerControl(
 ) {
     var showColorPicker by remember { mutableStateOf(false) }
 
-    Column {
-        Text(
-            text = label,
-            fontSize = 13.sp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            modifier = Modifier.padding(bottom = 8.dp),
-            fontWeight = FontWeight.Medium
-        )
-
-        Surface(
+    // A row, as the Actions screen's are: the colour itself on the tile, its name, and its value,
+    // the whole row the thing to tap. It was a label over an outlined box that read as a text field.
+    val colours = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .clickable { showColorPicker = true }
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showColorPicker = true },
-            shape = RoundedCornerShape(12.dp),
-            color = Color.Transparent,
-            border = BorderStroke(0.5.dp, borderColor.copy(alpha = 0.1f))
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(color)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "#${color.toArgb().toUInt().toString(16).uppercase().takeLast(6)}",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit",
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.outline
-                )
-            }
+                .size(46.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(color)
+                // An edge, so white on a pale card and black on a dark one are still a tile.
+                .border(BorderStroke(1.dp, colours.outline.copy(alpha = 0.35f)), RoundedCornerShape(14.dp))
+        )
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = colours.onSurface,
+            )
+            Text(
+                text = "#${color.toArgb().toUInt().toString(16).uppercase().padStart(8, '0').takeLast(6)}",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = colours.onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp),
+            )
         }
+        Icon(
+            imageVector = Icons.Default.Edit,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = colours.outline,
+        )
     }
 
     if (showColorPicker) {

@@ -1,5 +1,10 @@
 package com.newagedevs.gesturevolume.ui.screens.deck
 
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.Animation
+import com.newagedevs.gesturevolume.ui.components.ChoiceChip
 import com.newagedevs.gesturevolume.ui.components.HandleLook
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
 import com.newagedevs.gesturevolume.ui.util.permissionsRoute
@@ -254,7 +259,8 @@ fun DeckScreen(
             // ---- content ------------------------------------------------------------------------
             // What the Deck holds, and which half of it comes first.
             AppearanceSection(
-                title = stringResource(R.string.group_content),
+                title = stringResource(R.string.section_content),
+                icon = Icons.Filled.Widgets,
                 summary = pluralStringResource(R.plurals.deck_tiles_count, tilesOn, tilesOn, DeckTiles.ALL.size),
                 initiallyExpanded = true,
             ) {
@@ -319,7 +325,8 @@ fun DeckScreen(
 
             // ---- size & shape -------------------------------------------------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_size_shape),
+                title = stringResource(R.string.section_size_shape),
+                icon = Icons.Filled.AspectRatio,
                 summary = "${width.toInt()}dp · ${(height * 100).toInt()}% · ${corner.toInt()}dp",
             ) {
                 SliderControl(
@@ -355,7 +362,8 @@ fun DeckScreen(
             // ---- colours ------------------------------------------------------------------------
             // The material first, because it decides how much of the colours under it shows.
             AppearanceSection(
-                title = stringResource(R.string.group_colours),
+                title = stringResource(R.string.section_colours),
+                icon = Icons.Filled.Palette,
                 summary = "${stringResource(panelThemeLabel(panelTheme))} · ${(alpha / 255f * 100).toInt()}%",
             ) {
                 PanelThemeSelector(
@@ -394,7 +402,8 @@ fun DeckScreen(
 
             // ---- animation ----------------------------------------------------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_animation),
+                title = stringResource(R.string.section_animation),
+                icon = Icons.Filled.Animation,
                 summary = "${stringResource(panelAnimationLabel(panelAnimation))} · ${panelAnimationSpeedLabel(animationSpeed)}",
             ) {
                 // One choice for how every panel moves, shared with the long-press menu and the
@@ -422,7 +431,8 @@ fun DeckScreen(
 
             // ---- behaviour ----------------------------------------------------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_behaviour),
+                title = stringResource(R.string.section_behaviour),
+                icon = Icons.Filled.Tune,
                 summary = if (autoClose == 0) {
                     stringResource(R.string.deck_auto_close_never)
                 } else {
@@ -464,22 +474,12 @@ private fun AutoCloseChips(selected: Int, onSelect: (Int) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         listOf(0, 5, 10, 20, 30).forEach { seconds ->
-            val on = selected == seconds
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = if (on) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surfaceVariant,
-                onClick = { onSelect(seconds) }
-            ) {
-                Text(
-                    text = if (seconds == 0) stringResource(R.string.deck_auto_close_never)
-                    else stringResource(R.string.deck_auto_close_seconds, seconds),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    fontSize = 13.sp,
-                    color = if (on) MaterialTheme.colorScheme.onPrimaryContainer
-                    else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            ChoiceChip(
+                label = if (seconds == 0) stringResource(R.string.deck_auto_close_never)
+                else stringResource(R.string.deck_auto_close_seconds, seconds),
+                selected = selected == seconds,
+                onClick = { onSelect(seconds) },
+            )
         }
     }
 }

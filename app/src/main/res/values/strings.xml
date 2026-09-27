@@ -1053,4 +1053,30 @@
     <string name="whats_new_first_release">First release on Google Play</string>
     <!-- A milestone between releases. %1$s is a number already formatted for the language, e.g. 10,000. -->
     <string name="whats_new_milestone">%1$s+ installs</string>
+    <string name="section_content">Content</string>
+    <string name="section_size_shape">Size &amp; shape</string>
+    <string name="section_colours">Colours</string>
+    <string name="section_animation">Animation</string>
+    <string name="section_behaviour">Behaviour</string>
+    <string name="section_position">Position</string>
+    <string name="section_items">Items</string>
+    <string name="section_common_issues">Common issues</string>
+    <string name="presets_title">Quick presets</string>
+    <string name="subgroup_background">Background</string>
+    <string name="subgroup_stroke">Outline</string>
+    <string name="group_required">Required</string>
+    <string name="group_optional">Optional</string>
+    <string name="group_legal">Legal</string>
+    <string name="group_other_feedback">Anything else</string>
+    <string name="group_how_sent">How it is sent</string>
+    <string name="about_group_support">Support the app</string>
+    <string name="about_group_credits">Credits</string>
+    <string name="faq_group_start">Getting started</string>
+    <string name="faq_group_features">Features</string>
+    <string name="faq_group_tips">Tips</string>
+    <string name="faq_search">Search questions</string>
+    <string name="faq_empty">No question matches “%1$s”.</string>
+    <string name="troubleshoot_group_fixes">Fix it here</string>
+    <string name="troubleshoot_group_steps">Also check</string>
+    <string name="troubleshoot_group_more">More help</string>
 </resources>

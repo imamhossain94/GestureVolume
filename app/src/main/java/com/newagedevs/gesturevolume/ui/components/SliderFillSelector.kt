@@ -146,35 +146,8 @@ private const val MINI_LEVEL = 0.62f
 internal val FILL_TILE_WIDTH = 68.dp
 
 @Composable
-internal fun FillChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    val container by animateColorAsState(
-        targetValue = if (selected) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
-        },
-        label = "fillChipContainer",
-    )
-    val content by animateColorAsState(
-        targetValue = if (selected) {
-            MaterialTheme.colorScheme.onPrimary
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        },
-        label = "fillChipContent",
-    )
-    Text(
-        text = label,
-        modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-            .background(container)
-            .padding(horizontal = 14.dp, vertical = 9.dp),
-        fontSize = 13.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = content,
-    )
-}
+internal fun FillChip(label: String, selected: Boolean, onClick: () -> Unit) =
+    ChoiceChip(label = label, selected = selected, onClick = onClick)
 
 /** The translated name of a fill animation, for the summaries that name the one chosen. */
 fun sliderFillLabel(id: String): Int = when (id) {

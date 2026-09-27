@@ -1,5 +1,11 @@
 package com.newagedevs.gesturevolume.ui.screens.quick_slider
 
+import androidx.compose.material.icons.filled.Widgets
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.Animation
+import com.newagedevs.gesturevolume.ui.components.ChoiceChip
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -370,7 +376,8 @@ fun QuickSliderScreen(
         ) {
             // ---- content: what it drives, and what it shows on it -------------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_content),
+                title = stringResource(R.string.section_content),
+                icon = Icons.Filled.Widgets,
                 summary = stringResource(sliderTargetLabel(target)),
                 initiallyExpanded = true,
             ) {
@@ -432,7 +439,8 @@ fun QuickSliderScreen(
 
             // ---- size & shape: its proportions, its outline, and the room inside it -------------
             AppearanceSection(
-                title = stringResource(R.string.group_size_shape),
+                title = stringResource(R.string.section_size_shape),
+                icon = Icons.Filled.AspectRatio,
                 summary = "${length.toInt()} × ${thickness.toInt()}dp",
             ) {
                 SliderControl(
@@ -530,7 +538,8 @@ fun QuickSliderScreen(
 
             // ---- colours ------------------------------------------------------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_colours),
+                title = stringResource(R.string.section_colours),
+                icon = Icons.Filled.Palette,
                 summary = stringResource(panelThemeLabel(panelTheme)),
             ) {
                 PanelThemeSelector(
@@ -586,7 +595,8 @@ fun QuickSliderScreen(
             // The fill's own colours live here rather than under Colours: they belong to the
             // animation, and do nothing for the styles that draw in the fill colour itself.
             AppearanceSection(
-                title = stringResource(R.string.group_animation),
+                title = stringResource(R.string.section_animation),
+                icon = Icons.Filled.Animation,
                 summary = "${stringResource(panelAnimationLabel(panelAnimation))} · ${stringResource(sliderFillLabel(fillStyle))}",
             ) {
                 PanelAnimationSelector(
@@ -708,7 +718,8 @@ fun QuickSliderScreen(
 
             // ---- behaviour: what opens it, how it answers, and the keys -------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_behaviour),
+                title = stringResource(R.string.section_behaviour),
+                icon = Icons.Filled.Tune,
                 summary = "${stringResource(sliderOpenerLabel(openWith))} · ${stringResource(sliderVolumeKeysLabel(volumeKeys))}",
             ) {
                 Label(stringResource(R.string.slider_open_with))
@@ -1084,27 +1095,7 @@ private fun ChipRow(
         modifier = Modifier.padding(bottom = 8.dp),
     ) {
         ids.forEach { id ->
-            val on = selected(id)
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = if (on) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    MaterialTheme.colorScheme.surfaceVariant
-                },
-                onClick = { onClick(id) }
-            ) {
-                Text(
-                    text = label(id),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    fontSize = 13.sp,
-                    color = if (on) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    }
-                )
-            }
+            ChoiceChip(label = label(id), selected = selected(id), onClick = { onClick(id) })
         }
     }
 }

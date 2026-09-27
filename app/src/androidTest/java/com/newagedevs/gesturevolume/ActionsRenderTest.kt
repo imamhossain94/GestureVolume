@@ -2,6 +2,8 @@ package com.newagedevs.gesturevolume
 
 import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
@@ -90,6 +92,36 @@ class ActionsRenderTest {
         Thread.sleep(1200)
         compose.waitForIdle()
         save("actions_pad_triple")
+    }
+
+    /** The screen and the picker on their side: the test's own activity turned, nothing else. */
+    @Test
+    fun landscape() {
+        compose.activityRule.scenario.onActivity {
+            it.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
+        Thread.sleep(1500)
+        var picking by androidx.compose.runtime.mutableStateOf(false)
+        compose.setContent {
+            GestureVolumeTheme {
+                if (picking) {
+                    ActionPickerRoute(viewModel = viewModel, slot = AppGestureStore.Slot.DOUBLE_TAP, onDone = {})
+                } else {
+                    HandlerActionsScreen(viewModel = viewModel, onNavigateBack = {})
+                }
+            }
+        }
+        compose.waitForIdle()
+        Thread.sleep(500)
+        save("actions_land_screen")
+        compose.onRoot().performTouchInput {
+            swipe(Offset(width * 0.03f, height * 0.8f), Offset(width * 0.03f, height * 0.3f), durationMillis = 300)
+        }
+        Thread.sleep(300)
+        compose.runOnIdle { picking = true }
+        compose.waitForIdle()
+        Thread.sleep(500)
+        save("actions_land_picker")
     }
 
     @Test

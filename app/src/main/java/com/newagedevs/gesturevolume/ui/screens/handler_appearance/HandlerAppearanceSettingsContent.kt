@@ -1,5 +1,10 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
+import com.newagedevs.gesturevolume.ui.screens.handler_action.GroupLabel
+import androidx.compose.material.icons.filled.Widgets
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.AspectRatio
 import android.view.Gravity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -96,7 +101,7 @@ fun HandlerAppearanceSettingsContent(
 
         // ---- Quick presets ------------------------------------------------------------------
         // Above every group, because it is the one control that can finish the job on its own.
-        SectionTitle(stringResource(R.string.quick_presets), MaterialTheme.colorScheme.primary)
+        GroupLabel(stringResource(R.string.presets_title))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -124,7 +129,8 @@ fun HandlerAppearanceSettingsContent(
         // What the bar carries. The icon's size and colour are in the groups for sizes and
         // colours, each shown only while there is an icon for them to change.
         AppearanceSection(
-            title = stringResource(R.string.group_content),
+            title = stringResource(R.string.section_content),
+            icon = Icons.Filled.Widgets,
             summary = stringResource(if (state.showIcon) R.string.show_icon else R.string.icon_none),
             initiallyExpanded = true,
         ) {
@@ -184,7 +190,8 @@ fun HandlerAppearanceSettingsContent(
 
         // ---- Size & shape -------------------------------------------------------------------
         AppearanceSection(
-            title = stringResource(R.string.group_size_shape),
+            title = stringResource(R.string.section_size_shape),
+            icon = Icons.Filled.AspectRatio,
             summary = "${state.width.toInt()} × ${state.height.toInt()}dp · " +
                 stringResource(if (isTab) R.string.shape_tab else R.string.shape_rounded),
         ) {
@@ -368,7 +375,7 @@ fun HandlerAppearanceSettingsContent(
             )
             // Headed, because "Width" a few rows under the bar's own width would read as the
             // same thing twice.
-            SubgroupLabel(stringResource(R.string.stroke_uppercase))
+            SubgroupLabel(stringResource(R.string.subgroup_stroke))
             SliderControl(
                 label = stringResource(R.string.width),
                 value = state.strokeWidth,
@@ -406,12 +413,13 @@ fun HandlerAppearanceSettingsContent(
 
         // ---- Colours ------------------------------------------------------------------------
         AppearanceSection(
-            title = stringResource(R.string.group_colours),
+            title = stringResource(R.string.section_colours),
+            icon = Icons.Filled.Palette,
             summary = "${((state.bgAlpha / 255f) * 100).toInt()}% · ${((state.strokeAlpha / 255f) * 100).toInt()}%",
         ) {
             // Headed, for the same reason as the stroke's width: two "Color" and two "Opacity"
             // rows in one group need to say which is which.
-            SubgroupLabel(stringResource(R.string.background_uppercase))
+            SubgroupLabel(stringResource(R.string.subgroup_background))
             ColorPickerControl(
                 label = stringResource(R.string.color),
                 color = state.bgColor,
@@ -435,7 +443,7 @@ fun HandlerAppearanceSettingsContent(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
-            SubgroupLabel(stringResource(R.string.stroke_uppercase))
+            SubgroupLabel(stringResource(R.string.subgroup_stroke))
             ColorPickerControl(
                 label = stringResource(R.string.color),
                 color = state.strokeColor,
@@ -481,7 +489,8 @@ fun HandlerAppearanceSettingsContent(
 
         // ---- Behaviour ----------------------------------------------------------------------
         AppearanceSection(
-            title = stringResource(R.string.group_behaviour),
+            title = stringResource(R.string.section_behaviour),
+            icon = Icons.Filled.Tune,
             // Named while it is on; off, the header is left to speak for itself.
             summary = if (state.vibrate) stringResource(R.string.vibrate_on_click) else null,
         ) {
@@ -497,7 +506,8 @@ fun HandlerAppearanceSettingsContent(
 
         // ---- Position -----------------------------------------------------------------------
         AppearanceSection(
-            title = stringResource(R.string.position_uppercase),
+            title = stringResource(R.string.section_position),
+            icon = Icons.Filled.OpenWith,
             summary = if (state.dynamicPosition) {
                 stringResource(R.string.position_dynamic)
             } else if (state.samePosition || !state.snapToEdge) {

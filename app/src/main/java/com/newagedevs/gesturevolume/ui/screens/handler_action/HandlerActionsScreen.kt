@@ -74,6 +74,8 @@ import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.DndAccessDialog
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
+import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
+import com.newagedevs.gesturevolume.ui.components.isLandscape
 import com.newagedevs.gesturevolume.ui.components.actionDisplayName
 import com.newagedevs.gesturevolume.ui.motion.Button
 import com.newagedevs.gesturevolume.ui.motion.IconButton
@@ -271,13 +273,7 @@ fun HandlerActionsScreen(
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
+        val tryPad: @Composable (Modifier, Boolean) -> Unit = { padModifier, fillHeight ->
             GestureTryPad(
                 preference = preference,
                 actions = Slot.entries.associateWith { actionFor(state, it) },
@@ -285,10 +281,11 @@ fun HandlerActionsScreen(
                 longPressMs = longPressMs,
                 onLeft = onLeft,
                 onChange = onPickAction,
+                modifier = padModifier,
+                fillHeight = fillHeight,
             )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
+        }
+        val groups: @Composable ColumnScope.() -> Unit = {
             // ---- taps -----------------------------------------------------------------------
             GroupLabel(stringResource(R.string.actions_taps))
             Segments {
@@ -386,6 +383,24 @@ fun HandlerActionsScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+        }
+        if (isLandscape()) {
+            // On its side, the pad beside the gestures rather than above them, as the preview
+            // screens put their preview: two fifths for the pad, as tall as the screen allows, and
+            // the gestures scrolling in the rest — so trying one and changing it are both in view.
+            PreviewSettingsLayout(contentPadding = padding, preview = tryPad, content = groups)
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                tryPad(Modifier, false)
+                Spacer(modifier = Modifier.height(24.dp))
+                groups()
+            }
         }
     }
 }

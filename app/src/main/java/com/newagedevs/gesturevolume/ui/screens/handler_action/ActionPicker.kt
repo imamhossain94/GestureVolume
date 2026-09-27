@@ -7,6 +7,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import com.newagedevs.gesturevolume.ui.components.isLandscape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -244,7 +253,15 @@ private sealed interface Line {
 /** The items above the lines in the list: the header, and the search with the group chips. */
 private const val LEADING_ITEMS = 2
 
-@OptIn(ExperimentalFoundationApi::class)
+/**
+ * The actions to choose from, with the gesture's header, the search and the group chips.
+ *
+ * Upright, one list: the header scrolls away and the search and the chips stay pinned over the
+ * actions. On its side the phone is too short for that — the pinned part alone would be half of
+ * it — so the header, the search and the chips take two fifths of the width on the left, the
+ * chips wrapping into as many lines as they need, and the actions the other three fifths.
+ */
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun ActionList(
     slot: Slot,
@@ -261,6 +278,7 @@ private fun ActionList(
     onPick: (HandlerActionCatalog.Entry) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val landscape = isLandscape()
     val labels = groups.flatMap { (_, entries) -> entries }.associate { it.action to stringResource(it.labelRes) }
     val groupLabels = HandlerActionCatalog.Group.entries.associateWith { stringResource(it.labelRes) }
     val q = query.trim()
@@ -283,7 +301,9 @@ private fun ActionList(
         }
     }
     val showEverywhere = everywhereAction != null && q.isEmpty()
-    val firstLine = LEADING_ITEMS + if (showEverywhere) 1 else 0
+    // Upright, the header and the search are the list's first two items; on its side they are not
+    // in it at all.
+    val firstLine = (if (landscape) 0 else LEADING_ITEMS) + if (showEverywhere) 1 else 0
     val headingIndex = remember(lines, firstLine) {
         lines.withIndex().filter { it.value is Line.Heading }
             .associate { (it.value as Line.Heading).group to firstLine + it.index }
@@ -292,86 +312,69 @@ private fun ActionList(
     val listState = rememberLazyListState()
     val chipState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    // The group the top of the list is in, for its chip to show it.
-    val inView by remember(headingIndex) {
+    // The group the top of the list is in, for its chip to show it. Upright the top item is under
+    // the pinned search, so the one after it is the one in view.
+    val inView by remember(headingIndex, landscape) {
         derivedStateOf {
-            val top = listState.firstVisibleItemIndex + 1
+            val top = listState.firstVisibleItemIndex + if (landscape) 0 else 1
             headingIndex.entries.filter { it.value <= top }.maxByOrNull { it.value }?.key
                 ?: headingIndex.entries.minByOrNull { it.value }?.key
         }
     }
-    // Its chip kept in sight as the list scrolls past the groups, one chip of room before it.
-    LaunchedEffect(inView, shown) {
-        val at = shown.indexOfFirst { it.first == inView }
-        if (at >= 0) chipState.animateScrollToItem((at - 1).coerceAtLeast(0))
-    }
-
-    LazyColumn(
-        state = listState,
-        modifier = modifier
-            .fillMaxSize()
-            .imePadding(),
-        contentPadding = PaddingValues(bottom = 32.dp),
-    ) {
-        item(key = "header") {
-            PickerHeader(
-                slot = slot,
-                onLeft = onLeft,
-                currentAction = currentAction,
-                followsEverywhere = followsEverywhere,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp),
-            )
+    // Upright, its chip kept in sight as the list scrolls past the groups, one chip of room before
+    // it. On its side every chip is in sight already.
+    if (!landscape) {
+        LaunchedEffect(inView, shown) {
+            val at = shown.indexOfFirst { it.first == inView }
+            if (at >= 0) chipState.animateScrollToItem((at - 1).coerceAtLeast(0))
         }
-        stickyHeader(key = "search") {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(bottom = 8.dp),
-            ) {
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = onQueryChange,
-                    placeholder = { Text(stringResource(R.string.action_picker_search)) },
-                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-                    trailingIcon = if (query.isNotEmpty()) {
-                        {
-                            IconButton(onClick = { onQueryChange("") }) {
-                                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.close))
-                            }
-                        }
-                    } else {
-                        null
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                )
-                if (q.isEmpty() && shown.size > 1) {
-                    LazyRow(
-                        state = chipState,
-                        modifier = Modifier.padding(top = 8.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        items(shown, key = { it.first.name }) { (group, _) ->
-                            FilterChip(
-                                selected = group == inView,
-                                onClick = {
-                                    val target = headingIndex[group] ?: return@FilterChip
-                                    // Its heading just under the search, not behind it.
-                                    scope.launch { listState.animateScrollToItem(target - 1) }
-                                },
-                                label = { Text(groupLabels[group].orEmpty()) },
-                                shape = RoundedCornerShape(12.dp),
-                            )
-                        }
+    }
+    val jumpTo: (HandlerActionCatalog.Group) -> Unit = { group ->
+        headingIndex[group]?.let { target ->
+            // Upright, its heading just under the search, not behind it.
+            scope.launch { listState.animateScrollToItem(if (landscape) target else (target - 1).coerceAtLeast(0)) }
+        }
+    }
+    val chip: @Composable (HandlerActionCatalog.Group) -> Unit = { group ->
+        FilterChip(
+            selected = group == inView,
+            onClick = { jumpTo(group) },
+            label = { Text(groupLabels[group].orEmpty()) },
+            shape = RoundedCornerShape(12.dp),
+        )
+    }
+    val search: @Composable (Modifier) -> Unit = { fieldModifier ->
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = { Text(stringResource(R.string.action_picker_search)) },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+            trailingIcon = if (query.isNotEmpty()) {
+                {
+                    IconButton(onClick = { onQueryChange("") }) {
+                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.close))
                     }
                 }
-            }
-        }
+            } else {
+                null
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            modifier = fieldModifier.fillMaxWidth(),
+        )
+    }
+    val header: @Composable (Modifier) -> Unit = { headerModifier ->
+        PickerHeader(
+            slot = slot,
+            onLeft = onLeft,
+            currentAction = currentAction,
+            followsEverywhere = followsEverywhere,
+            modifier = headerModifier,
+        )
+    }
+    // Upright, the list runs the width of the screen and pads its rows; on its side the pane does.
+    val side = if (landscape) 0.dp else 16.dp
+    val options: LazyListScope.() -> Unit = {
         if (showEverywhere && everywhereAction != null && onUseEverywhere != null) {
             item(key = "everywhere") {
                 val entry = HandlerActionCatalog.displayEntryFor(everywhereAction)
@@ -384,7 +387,7 @@ private fun ActionList(
                     opensMore = false,
                     shape = RoundedCornerShape(20.dp),
                     onClick = onUseEverywhere,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp),
+                    modifier = Modifier.padding(start = side, end = side, top = 8.dp, bottom = 4.dp),
                 )
             }
         }
@@ -394,7 +397,7 @@ private fun ActionList(
                     text = stringResource(R.string.action_picker_empty, q),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 32.dp),
+                    modifier = Modifier.padding(horizontal = side + 8.dp, vertical = 32.dp),
                 )
             }
         }
@@ -402,7 +405,7 @@ private fun ActionList(
             when (line) {
                 is Line.Heading -> GroupLabel(
                     text = groupLabels[line.group].orEmpty(),
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 18.dp),
+                    modifier = Modifier.padding(start = side, end = side, top = 18.dp),
                 )
                 is Line.Option -> {
                     val entry = line.entry
@@ -417,13 +420,116 @@ private fun ActionList(
                         opensMore = isLaunch,
                         shape = segmentShape(line.index, line.count),
                         onClick = { onPick(entry) },
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 3.dp),
+                        modifier = Modifier.padding(start = side, end = side, bottom = 3.dp),
                     )
                 }
             }
         }
     }
+
+    if (landscape) {
+        PickerPanes(
+            modifier = modifier,
+            side = {
+                header(Modifier.padding(bottom = 12.dp))
+                search(Modifier)
+                if (q.isEmpty() && shown.size > 1) {
+                    FlowRow(
+                        modifier = Modifier.padding(top = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(0.dp),
+                    ) {
+                        shown.forEach { (group, _) -> chip(group) }
+                    }
+                }
+            },
+            main = { paneModifier ->
+                LazyColumn(
+                    state = listState,
+                    modifier = paneModifier,
+                    contentPadding = PaddingValues(bottom = 32.dp),
+                    content = options,
+                )
+            },
+        )
+    } else {
+        LazyColumn(
+            state = listState,
+            modifier = modifier
+                .fillMaxSize()
+                .imePadding(),
+            contentPadding = PaddingValues(bottom = 32.dp),
+        ) {
+            item(key = "header") {
+                header(Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp))
+            }
+            stickyHeader(key = "search") {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(bottom = 8.dp),
+                ) {
+                    search(Modifier.padding(horizontal = 16.dp))
+                    if (q.isEmpty() && shown.size > 1) {
+                        LazyRow(
+                            state = chipState,
+                            modifier = Modifier.padding(top = 8.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            items(shown, key = { it.first.name }) { (group, _) -> chip(group) }
+                        }
+                    }
+                }
+            }
+            options()
+        }
+    }
 }
+
+/**
+ * The picker on its side: [side] — what the choice is about and how to find one — in two fifths of
+ * the width on the left, scrolling on its own, and [main], the choices, in the rest. The Quick
+ * slider and the other preview screens split the same way, inside the same margins.
+ */
+@Composable
+private fun PickerPanes(
+    modifier: Modifier,
+    side: @Composable ColumnScope.() -> Unit,
+    main: @Composable (Modifier) -> Unit,
+) {
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        Row(
+            modifier = Modifier
+                .widthIn(max = PANES_MAX_WIDTH)
+                .fillMaxHeight()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(SIDE_SHARE)
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
+                    .padding(top = 4.dp, bottom = 16.dp),
+                content = side,
+            )
+            main(
+                Modifier
+                    .weight(1f - SIDE_SHARE)
+                    .fillMaxHeight(),
+            )
+        }
+    }
+}
+
+/** How much of the width the picker's side pane takes on its side, as the preview screens' preview does. */
+private const val SIDE_SHARE = 0.4f
+
+/** The home screen's widest column, as the preview screens keep to. */
+private val PANES_MAX_WIDTH = 920.dp
 
 /** The gesture, how it is done, and what it does now. */
 @Composable
@@ -599,11 +705,9 @@ private fun AppChooser(selected: String?, onPick: (String) -> Unit, modifier: Mo
     LaunchedEffect(Unit) {
         apps = withContext(Dispatchers.IO) { loadLaunchableApps(context) }
     }
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .imePadding(),
-    ) {
+    val landscape = isLandscape()
+    val side = if (landscape) 0.dp else 16.dp
+    val search: @Composable (Modifier) -> Unit = { fieldModifier ->
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
@@ -611,22 +715,21 @@ private fun AppChooser(selected: String?, onPick: (String) -> Unit, modifier: Mo
             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
             singleLine = true,
             shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+            modifier = fieldModifier.fillMaxWidth(),
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        val list = apps
-        if (list == null) {
-            Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+    }
+    val list: @Composable (Modifier) -> Unit = { listModifier ->
+        val loaded = apps
+        if (loaded == null) {
+            Box(modifier = listModifier.padding(32.dp), contentAlignment = Alignment.TopCenter) {
                 CircularProgressIndicator()
             }
         } else {
             val q = query.trim()
-            val shown = if (q.isEmpty()) list else list.filter { it.label.contains(q, ignoreCase = true) }
+            val shown = if (q.isEmpty()) loaded else loaded.filter { it.label.contains(q, ignoreCase = true) }
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 32.dp),
+                modifier = listModifier,
+                contentPadding = PaddingValues(start = side, end = side, top = 4.dp, bottom = 32.dp),
             ) {
                 itemsIndexed(shown, key = { _, app -> app.packageName }) { index, app ->
                     val isChosen = app.packageName == selected
@@ -672,6 +775,23 @@ private fun AppChooser(selected: String?, onPick: (String) -> Unit, modifier: Mo
                     }
                 }
             }
+        }
+    }
+    if (landscape) {
+        PickerPanes(
+            modifier = modifier,
+            side = { search(Modifier) },
+            main = { paneModifier -> list(paneModifier) },
+        )
+    } else {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .imePadding(),
+        ) {
+            search(Modifier.padding(horizontal = 16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            list(Modifier.fillMaxSize())
         }
     }
 }

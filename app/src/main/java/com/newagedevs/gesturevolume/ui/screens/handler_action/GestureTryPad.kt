@@ -80,6 +80,8 @@ import com.newagedevs.gesturevolume.utils.HandlerActions
  *
  * @param actions what each gesture is set to now.
  * @param onChange opens the picker for the gesture just tried.
+ * @param fillHeight the strip takes whatever height the pad is given, as it does beside the list
+ *   on a phone on its side, instead of a height of its own.
  */
 @Composable
 fun GestureTryPad(
@@ -90,6 +92,7 @@ fun GestureTryPad(
     onLeft: Boolean,
     onChange: (Slot) -> Unit,
     modifier: Modifier = Modifier,
+    fillHeight: Boolean = false,
 ) {
     val context = LocalContext.current
     // The last gesture recognised, and a count so the same one twice still plays its arrival.
@@ -142,7 +145,7 @@ fun GestureTryPad(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(172.dp)
+                .then(if (fillHeight) Modifier.weight(1f).heightIn(min = 120.dp) else Modifier.height(172.dp))
                 .clip(RoundedCornerShape(18.dp))
                 .background(Brush.linearGradient(listOf(DeviceArt.WallTop, DeviceArt.WallBottom))),
         ) {
