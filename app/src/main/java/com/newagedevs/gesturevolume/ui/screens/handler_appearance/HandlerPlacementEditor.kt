@@ -73,7 +73,7 @@ import androidx.core.view.WindowCompat
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.service.HandlerGeometry
 import com.newagedevs.gesturevolume.service.OverlayController
-import com.newagedevs.gesturevolume.ui.components.PreviewBackdrop
+import com.newagedevs.gesturevolume.ui.components.drawDeviceWallpaper
 import com.newagedevs.gesturevolume.ui.motion.Button
 import com.newagedevs.gesturevolume.ui.motion.OutlinedButton
 import com.newagedevs.gesturevolume.ui.view.HandlerView
@@ -101,7 +101,6 @@ internal fun HandlerPlacementEditor(
     state: AppearanceStateHolder,
     /** Which of the draft's two positions is the one the phone is held in. */
     isPortrait: Boolean,
-    backdrop: Int,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -215,9 +214,9 @@ internal fun HandlerPlacementEditor(
                 )
             },
     ) {
-        PreviewBackdrop(index = backdrop, modifier = Modifier.fillMaxSize())
-        // Darker at the ends, so the white status bar icons above and the buttons below read on
-        // whichever picture is showing.
+        // The whole screen as the previews' phone's glass: the walkthrough's wallpaper, edge to edge.
+        Canvas(modifier = Modifier.fillMaxSize()) { drawDeviceWallpaper(Offset.Zero, size) }
+        // Darker at the ends, so the white status bar icons above and the buttons below read on it.
         Box(
             modifier = Modifier
                 .fillMaxSize()

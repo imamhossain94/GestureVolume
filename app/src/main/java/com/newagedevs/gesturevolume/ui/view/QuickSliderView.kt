@@ -3,6 +3,7 @@ package com.newagedevs.gesturevolume.ui.view
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -24,6 +25,9 @@ import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
 import com.newagedevs.gesturevolume.utils.SliderFill
+import com.newagedevs.gesturevolume.utils.ContentInk
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 import com.newagedevs.gesturevolume.utils.PanelAnimation
 import com.newagedevs.gesturevolume.utils.HandlerShape
 import android.view.ViewConfiguration
@@ -1173,6 +1177,9 @@ class QuickSliderView(context: Context) : View(context) {
         fillClock = null
         pixelArt.release()
         glimmerArtOrNull?.release()
+        backdropBitmap?.recycle()
+        backdropBitmap = null
+        backdropKey = 0
         valueAnimator?.cancel()
         valueAnimator = null
         entranceAnimator?.cancel()
@@ -1794,19 +1801,163 @@ class QuickSliderView(context: Context) : View(context) {
         return y >= cy - reach && y <= cy + reach
     }
 
+    /**
+     * What the fill looks like under the number and under the icon, for [ContentInk] to pick their
+     * colour against: the fill colour for the fills drawn in it, and for the ones that paint a
+     * picture, the average of that picture where each of them sits. See [refreshBackdrops].
+     */
+    private fun fillBackdrop(which: Int): Int = when {
+        fillStyle == SliderFill.GLIMMER -> fillColor
+        fillStyle == SliderFill.SHADER -> shaderBackdrop()
+        fillStyle == SliderFill.PIXELS || SliderFill.isPictorial(fillStyle) -> {
+            refreshBackdrops()
+            backdrops[which]
+        }
+        else -> fillColor
+    }
+
+    /** The effect's colours, averaged: a shader is drawn on the GPU, where it cannot be read back. */
+    private fun shaderBackdrop(): Int {
+        var r = 0
+        var g = 0
+        var b = 0
+        for (c in shaderPalette) {
+            r += (c shr 16) and 0xFF
+            g += (c shr 8) and 0xFF
+            b += c and 0xFF
+        }
+        val n = shaderPalette.size.coerceAtLeast(1)
+        return Color.rgb(r / n, g / n, b / n)
+    }
+
+    /** Under the number, then under the icon. */
+    private val backdrops = intArrayOf(Color.WHITE, Color.WHITE)
+    private var backdropKey = 0
+    private var backdropBitmap: Bitmap? = null
+    private val backdropPaint = Paint()
+    private val backdropRegion = RectF()
+
+    /**
+     * Paints the fill into a small image off screen and averages it where the number and the icon
+     * sit, at a few moments of its animation, so the ink suits the picture as a whole rather than
+     * one frame of it.
+     *
+     * At the level, to the nearest twentieth: most pictures are drawn to the fill, not the panel, so
+     * what is under the icon moves as the level does — half full, a sunrise's sun is right behind
+     * it. Only again when that step or anything else that changes the picture changes — the style,
+     * its colours, the panel's size — so a drag redraws it a few times, and a frame never does.
+     */
+    private fun refreshBackdrops() {
+        val w = logicalWidth
+        val h = logicalHeight
+        if (w <= 0 || h <= 0 || drawRect.isEmpty) return
+        val level = (value * BACKDROP_LEVELS).roundToInt() / BACKDROP_LEVELS.toFloat()
+        val key = arrayOf<Any?>(
+            level, fillStyle, fillPalette.contentHashCode(), fillColor, trackColor, fillColors?.contentHashCode(), pixelStyle,
+            w, h, drawRect.left, drawRect.top, drawRect.right, drawRect.bottom,
+            turned, showValue, icon != null, valueMarginPx, iconMarginPx, textPaint.textSize,
+        ).contentHashCode()
+        if (key == backdropKey) return
+        backdropKey = key
+
+        val bw = ceil(w * BACKDROP_SCALE).toInt().coerceAtLeast(1)
+        val bh = ceil(h * BACKDROP_SCALE).toInt().coerceAtLeast(1)
+        val bitmap = backdropBitmap?.takeIf { it.width == bw && it.height == bh }
+            ?: Bitmap.createBitmap(bw, bh, Bitmap.Config.ARGB_8888).also {
+                backdropBitmap?.recycle()
+                backdropBitmap = it
+            }
+        val canvas = Canvas(bitmap)
+        val sums = LongArray(8)
+        val pixels = IntArray(bw * bh)
+        val phase = fillPhase
+        val fillTop = drawRect.bottom - drawRect.height() * level
+        for (moment in BACKDROP_PHASES) {
+            bitmap.eraseColor(Color.TRANSPARENT)
+            canvas.save()
+            canvas.scale(BACKDROP_SCALE, BACKDROP_SCALE)
+            canvas.clipPath(drawPath)
+            // The track under it, opaque: what shows through a picture's gaps.
+            backdropPaint.color = blendedTrackColor or OPAQUE
+            canvas.drawRect(drawRect, backdropPaint)
+            fillPhase = moment
+            if (fillStyle == SliderFill.PIXELS) {
+                pixelArt.draw(canvas, drawRect, fillTop, moment, pixelStyle, fillColor, fillColors, 1f)
+            } else {
+                backdropPaint.color = fillColor or OPAQUE
+                canvas.clipRect(drawRect.left, fillTop, drawRect.right, drawRect.bottom)
+                canvas.drawRect(drawRect, backdropPaint)
+                drawFillEffects(canvas, fillTop, 255)
+            }
+            canvas.restore()
+            bitmap.getPixels(pixels, 0, bw, 0, 0, bw, bh)
+            for (which in 0..1) {
+                if (!contentRegion(which, backdropRegion)) continue
+                // Only the part of it the fill is under: that is the part drawn in this ink.
+                backdropRegion.top = maxOf(backdropRegion.top, fillTop)
+                if (backdropRegion.top >= backdropRegion.bottom) continue
+                val left = (backdropRegion.left * BACKDROP_SCALE).toInt().coerceIn(0, bw - 1)
+                val right = ceil(backdropRegion.right * BACKDROP_SCALE).toInt().coerceIn(left + 1, bw)
+                val top = (backdropRegion.top * BACKDROP_SCALE).toInt().coerceIn(0, bh - 1)
+                val bottom = ceil(backdropRegion.bottom * BACKDROP_SCALE).toInt().coerceIn(top + 1, bh)
+                for (y in top until bottom) for (x in left until right) {
+                    val c = pixels[y * bw + x]
+                    sums[which * 4] += ((c shr 16) and 0xFF).toLong()
+                    sums[which * 4 + 1] += ((c shr 8) and 0xFF).toLong()
+                    sums[which * 4 + 2] += (c and 0xFF).toLong()
+                    sums[which * 4 + 3]++
+                }
+            }
+        }
+        fillPhase = phase
+        for (which in 0..1) {
+            val n = sums[which * 4 + 3]
+            backdrops[which] = if (n == 0L) {
+                fillColor
+            } else {
+                Color.rgb(
+                    (sums[which * 4] / n).toInt(),
+                    (sums[which * 4 + 1] / n).toInt(),
+                    (sums[which * 4 + 2] / n).toInt(),
+                )
+            }
+        }
+    }
+
+    /** Where the number (0) or the icon (1) is drawn, into [out]; false when it is not shown. */
+    private fun contentRegion(which: Int, out: RectF): Boolean {
+        val cx = drawRect.centerX()
+        if (which == 0) {
+            if (!showValue) return false
+            val across = textPaint.measureText("88")
+            val along = textPaint.textSize
+            // Lying down, the number is turned about its centre, so it is as tall as it is long.
+            val halfWidth = if (turned) along / 2f else across / 2f
+            val tall = if (turned) across else along
+            out.set(cx - halfWidth, drawRect.top + valueMarginPx, cx + halfWidth, drawRect.top + valueMarginPx + tall)
+        } else {
+            if (icon == null) return false
+            val size = iconSize()
+            val cy = iconCenterY(size)
+            out.set(cx - size / 2f, cy - size / 2f, cx + size / 2f, cy + size / 2f)
+        }
+        return true
+    }
+
     private fun drawContent(canvas: Canvas, overFill: Boolean) {
         if (contentAlpha <= 0.01f) return
-        // Over the picker's lit stops, whose colour changes with the level, the track's colour would
-        // vanish into the darker ones.
+        // Unless the user has chosen them, the number and the icon take a colour that stands out
+        // from what is under them: the track, the fill, or the fill's picture. See ContentInk.
+        // Over the picker's lit stops, whose colour changes with the level, the picker's own ink.
         val ink = when {
-            !overFill -> fillColor
+            !overFill -> ContentInk.pick(blendedTrackColor, fillColor)
             fillStyle == SliderFill.EFFORT -> effortArt.ink
-            else -> blendedTrackColor
+            else -> null
         }
         val alpha = (contentAlpha * 255f).toInt().coerceIn(0, 255)
 
         if (showValue) {
-            textPaint.color = valueInk ?: ink
+            textPaint.color = valueInk ?: ink ?: ContentInk.pick(fillBackdrop(0), blendedTrackColor)
             textPaint.alpha = alpha
             val label = "${(value * 100f).toInt()}"
             // Baseline placed by the font's own metrics rather than a guessed offset, so the
@@ -1832,13 +1983,14 @@ class QuickSliderView(context: Context) : View(context) {
             val cx = drawRect.centerX()
             val cy = iconCenterY(size)
             // Pressed, a soft disc behind the glyph in the same ink, so the tap is seen to land.
+            val iconColor = iconInk ?: ink ?: ContentInk.pick(fillBackdrop(1), blendedTrackColor)
             if (iconPressed) {
-                iconPressPaint.color = iconInk ?: ink
+                iconPressPaint.color = iconColor
                 iconPressPaint.alpha = (alpha * 0.22f).toInt()
                 canvas.drawCircle(cx, cy, size * 0.85f, iconPressPaint)
             }
             val wrapped = DrawableCompat.wrap(drawable)
-            DrawableCompat.setTint(wrapped, iconInk ?: ink)
+            DrawableCompat.setTint(wrapped, iconColor)
             wrapped.alpha = alpha
             wrapped.setBounds(
                 (cx - size / 2f).toInt(),
@@ -1868,6 +2020,17 @@ private const val VALUE_GLIDE_MS = 130L
 
 /** Far enough to take a clip off a canvas in one direction, whatever the panel's size. */
 private const val BIG_CLIP = 100_000f
+
+/** How much smaller than the panel the image the ink is picked from is: an average needs few pixels. */
+private const val BACKDROP_SCALE = 0.25f
+
+/** How finely the level that image is taken at follows the panel's: to the nearest twentieth. */
+private const val BACKDROP_LEVELS = 20
+
+/** The moments of a fill's cycle that image is taken at, spread so no one frame decides. */
+private val BACKDROP_PHASES = floatArrayOf(0.13f, 0.46f, 0.79f)
+
+private const val OPAQUE = 0xFF shl 24
 
 /** How far outside the drawn icon a touch still counts as on it, in dp. */
 private const val ICON_TOUCH_SLACK_DP = 8f

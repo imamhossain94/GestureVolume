@@ -1,6 +1,8 @@
 package com.newagedevs.gesturevolume.ui.screens.walkthrough
 
 import com.newagedevs.gesturevolume.utils.HandlerPresets
+import com.newagedevs.gesturevolume.ui.components.DeviceArt
+import com.newagedevs.gesturevolume.ui.components.drawScenePhone
 import com.newagedevs.gesturevolume.ui.components.drawPointingHand
 import com.newagedevs.gesturevolume.ui.components.setTabOutline
 import androidx.compose.animation.core.CubicBezierEasing
@@ -19,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -33,7 +34,6 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import kotlin.math.min
 
 /**
  * The gestures the walkthrough acts out, each on its own loop. The loop length is the story's
@@ -65,16 +65,17 @@ internal const val ACCESSIBILITY_SETTLED = 0.74f
 
 // The scene is drawn in a fixed design space and scaled to fit, so it keeps its proportions on
 // any screen: a short phone squeezes the card, and the drawing shrinks with it instead of
-// losing the bar off the bottom.
-private const val SCENE_W = 280f
-private const val SCENE_H = 200f
+// losing the bar off the bottom. The space and the phone in it are DeviceArt's, shared with every
+// settings preview.
+private const val SCENE_W = DeviceArt.SCENE_W
+private const val SCENE_H = DeviceArt.SCENE_H
 
 // The phone's screen. Its bottom runs past the scene: only the top of the phone is shown, which
 // is where the bar sits and all a gesture needs.
-private const val SCREEN_L = 46f
-private const val SCREEN_T = 20f
-private const val SCREEN_R = 234f
-private const val SCREEN_B = 236f
+private const val SCREEN_L = DeviceArt.SCREEN_L
+private const val SCREEN_T = DeviceArt.SCREEN_T
+private const val SCREEN_R = DeviceArt.SCREEN_R
+private const val SCREEN_B = DeviceArt.SCREEN_B
 private const val BAR_CY = 108f
 
 // The Simple button: the real one is 30 x 100 dp, drawn here at six tenths.
@@ -110,7 +111,7 @@ private const val MOVE_DROP_X = 88f
 private const val NOTIF_ALLOW_Y = 116f
 
 /** How wide the index finger is drawn; the rest of the hand is in proportion. */
-private const val FINGER_W = 24f
+private const val FINGER_W = DeviceArt.FINGER_W
 
 /** How often the touch ring goes out from the fingertip while a finger is down. */
 private const val PULSE_MS = 900f
@@ -118,9 +119,10 @@ private const val PULSE_MS = 900f
 private val Indigo = Color(0xFF4F46E5)
 private val SimpleFill = Indigo.copy(alpha = 0.5f)
 private val TabColour = Color(0xFF050507)
-private val FrameColour = Color(0xFF17171C)
-private val WallTop = Color(0xFFD9CCFF)
-private val WallBottom = Color(0xFF9DB2FA)
+// The phone's, shared with every settings preview: see DeviceArt.
+private val FrameColour = DeviceArt.Frame
+private val WallTop = DeviceArt.WallTop
+private val WallBottom = DeviceArt.WallBottom
 private val DeckPanel = Color(0xE61D1B2B)
 private val MenuPanel = Color(0xF7FFFFFF)
 private val MenuTile = Color(0xFFEEF0FF)
@@ -133,16 +135,14 @@ private val TileColours = listOf(
 )
 
 /** Off the phone, bottom right: where a finger comes from and goes back to. */
-private val FingerRest = Offset(266f, 206f)
+private val FingerRest = DeviceArt.FINGER_REST
 
 private val Smooth: Easing = FastOutSlowInEasing
 
 /** Out past the end and back: for things that pop open, so they land rather than stop. */
 private val Pop: Easing = CubicBezierEasing(0.34f, 1.56f, 0.64f, 1f)
 
-private val screenPath = Path().apply {
-    addRoundRect(RoundRect(SCREEN_L, SCREEN_T, SCREEN_R, SCREEN_B, CornerRadius(24f)))
-}
+private val screenPath = DeviceArt.screenPath
 
 /**
  * The top of a phone with the bar on its right edge, and a finger acting out [scene] on it, on a
@@ -181,12 +181,13 @@ internal fun WalkthroughIllustration(
  */
 internal fun DrawScope.drawWalkScene(scene: WalkScene, t: Float, path: Path) {
     val pulse = (t * scene.cycleMs / PULSE_MS) % 1f
-    val s = min(size.width / SCENE_W, size.height / SCENE_H)
+    val s = DeviceArt.scale(size.width, size.height)
+    val origin = DeviceArt.origin(size.width, size.height, s)
     withTransform({
-        translate((size.width - SCENE_W * s) / 2f, size.height - SCENE_H * s)
+        translate(origin.x, origin.y)
         scale(s, s, pivot = Offset.Zero)
     }) {
-        drawPhone()
+        drawScenePhone()
         when (scene) {
             WalkScene.Intro -> drawIntro(t, pulse)
             WalkScene.Simple -> drawSimple(t, pulse)
@@ -752,38 +753,6 @@ private fun DrawScope.drawAccessibilityGlyph(center: Offset) {
 
 
 /** The phone: a dark frame, a soft purple-to-blue wallpaper, a status bar and faint app icons. */
-private fun DrawScope.drawPhone() {
-    drawRoundRect(Color.Black, Offset(37f, 16f), Size(206f, 240f), CornerRadius(33f), alpha = 0.10f)
-    drawRoundRect(FrameColour, Offset(40f, 14f), Size(200f, 240f), CornerRadius(30f))
-    clipPath(screenPath) {
-        drawRect(
-            Brush.linearGradient(listOf(WallTop, WallBottom), Offset(SCREEN_L, SCREEN_T), Offset(SCREEN_R, SCREEN_B)),
-            topLeft = Offset(SCREEN_L, SCREEN_T),
-            size = Size(SCREEN_R - SCREEN_L, SCREEN_B - SCREEN_T),
-        )
-        // A glow in one corner, so the wallpaper reads as a picture rather than a flat fill.
-        drawCircle(
-            Brush.radialGradient(listOf(Color.White.copy(alpha = 0.4f), Color.Transparent), Offset(84f, 56f), 110f),
-            radius = 110f,
-            center = Offset(84f, 56f),
-        )
-        val ink = Color.White.copy(alpha = 0.85f)
-        drawRoundRect(ink, Offset(62f, 29f), Size(18f, 6f), CornerRadius(3f))
-        drawRoundRect(ink, Offset(198f, 29f), Size(9f, 6f), CornerRadius(2f))
-        drawRoundRect(ink, Offset(210f, 29f), Size(14f, 6f), CornerRadius(2f))
-        for (i in 0 until 6) {
-            drawRoundRect(
-                Color.White,
-                Offset(66f + (i % 3) * 36f, 58f + (i / 3) * 40f),
-                Size(24f, 24f),
-                CornerRadius(8f),
-                alpha = 0.22f,
-            )
-        }
-    }
-    drawCircle(FrameColour, radius = 4.5f, center = Offset(140f, 32f))
-}
-
 /**
  * The Simple button, centred on ([cx], [cy]). [lift] raises it off the glass, for when a hold has
  * picked it up.
@@ -856,7 +825,7 @@ private fun DrawScope.drawTouch(at: Offset, press: Float, pulse: Float) {
  * hovering, to 1, on the glass.
  */
 private fun DrawScope.drawFinger(tip: Offset, press: Float, alpha: Float) {
-    drawPointingHand(tip, fingerWidth = FINGER_W, tilt = -28f, press = press, alpha = alpha)
+    drawPointingHand(tip, fingerWidth = FINGER_W, tilt = DeviceArt.HAND_TILT, press = press, alpha = alpha)
 }
 
 /** The fingertip on its way in from [FingerRest], on [contact], or on its way back out. */

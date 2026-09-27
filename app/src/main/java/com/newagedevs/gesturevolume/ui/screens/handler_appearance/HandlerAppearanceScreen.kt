@@ -58,11 +58,11 @@ import com.newagedevs.gesturevolume.utils.AdPacing
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
-import com.newagedevs.gesturevolume.ui.components.HowItWorksButton
+import com.newagedevs.gesturevolume.ui.components.DemoFooter
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
+import kotlinx.coroutines.delay
 
 /**
  * One screen. Preview on top, settings underneath, nothing overlapping.
@@ -147,10 +147,6 @@ fun HandlerAppearanceScreen(
         )
     }
 
-    // One wallpaper per visit, not per recomposition: a backdrop that reshuffled while a colour
-    // was being chosen would be worse than no backdrop at all.
-    val backdrop = remember { viewModel.getNextBackground() }
-
     // A finger acting out what the bar is for — a tap, a swipe up, a swipe down — twice on arrival
     // and on request after that. The dock can show what the bar looks like but not what it does,
     // and this is the one screen everyone sees before the bar is any use to them.
@@ -187,6 +183,44 @@ fun HandlerAppearanceScreen(
             initialDynamicPosition = savedState.value.dynamicPosition,
             initialShowVolumePercent = savedState.value.showVolumePercent,
         )
+    }
+
+    // What the finger's gestures are set to do, so the preview acts out the user's own rather than a
+    // generic volume bar: the Actions screen's, or those of a preset chosen here, which Apply saves
+    // along with its look.
+    val previewGestures = remember(state.appliedPresetId) {
+        val preset = HandlerPresets.byId(state.appliedPresetId)?.behaviour
+        PreviewGestures(
+            tap = preset?.singleTap ?: preference.getHandlerSingleTapAction(),
+            swipeUp = preset?.swipeUp ?: preference.getHandlerSwipeUpAction(),
+            swipeDown = preset?.swipeDown ?: preference.getHandlerSwipeDownAction(),
+            stepPercent = preference.getSwipeStepPercent(),
+        )
+    }
+    val previewEffects = remember(previewGestures) { PreviewEffects(gestureDemo, previewGestures) }
+
+    // A preset chosen here can change what the gestures do, so the finger shows the new ones at
+    // once — unless it is already on its way, in which case it is showing them.
+    var shownGestures by remember { mutableStateOf(previewGestures) }
+    LaunchedEffect(previewGestures) {
+        if (previewGestures == shownGestures) return@LaunchedEffect
+        shownGestures = previewGestures
+        if (!gestureDemo.playing) gestureDemo.replay()
+    }
+
+    // Switched on, the number shows on the bar for a moment, so the switch is seen to do something:
+    // the bar only ever shows it mid-swipe, which is not when anyone is looking at a settings page.
+    var percentWasOn by remember { mutableStateOf(state.showVolumePercent) }
+    LaunchedEffect(state.showVolumePercent) {
+        val turnedOn = state.showVolumePercent && !percentWasOn
+        percentWasOn = state.showVolumePercent
+        if (!turnedOn || gestureDemo.playing) return@LaunchedEffect
+        try {
+            previewEffects.flashPercent = true
+            delay(PERCENT_FLASH_MS)
+        } finally {
+            previewEffects.flashPercent = false
+        }
     }
 
     // Resolved in composable scope so it follows a configuration change.
@@ -434,28 +468,34 @@ fun HandlerAppearanceScreen(
                     )
                 },
                 preview = { modifier, fillHeight ->
-                    // The finger goes over the dock from out here, leaving the dock itself to be the
-                    // bar and nothing else. Clipped to the stage's corners, as the stage clips its own.
                     val barAtStart = state.gravity == Gravity.START
-                    Box(modifier = modifier) {
-                        HandlerPreviewSurface(
-                            state = state,
-                            backdrop = backdrop,
-                            fillHeight = fillHeight,
-                        )
-                        GestureDemoOverlay(
-                            state = gestureDemo,
+                    HandlerPreviewSurface(
+                        state = state,
+                        fillHeight = fillHeight,
+                        modifier = modifier,
+                        barLabel = { previewEffects.barLabel(state.showVolumePercent) },
+                        // The hand reaches in over the frame, as the walkthrough's does.
+                        overGlass = {
+                            GestureDemoOverlay(
+                                state = gestureDemo,
+                                barAtStart = barAtStart,
+                                barInset = (state.edgeMargin.toFloat() + state.width.toFloat() / 2f).dp,
+                                modifier = Modifier.matchParentSize(),
+                            )
+                        },
+                        // Under the phone: what each gesture is set to do, and the button that plays it.
+                        footer = {
+                            DemoFooter(gestureDemo) { gesture -> GestureCaption(gesture, previewEffects.actionOf(gesture)) }
+                        },
+                    ) {
+                        // On the phone's screen with the bar, so what is placed against its edge
+                        // lines up with it. What the finger's taps and swipes do, with the user's
+                        // own settings: under the finger, over the bar.
+                        HandlerPreviewEffects(
+                            effects = previewEffects,
                             barAtStart = barAtStart,
-                            barInset = (state.edgeMargin.toFloat() + state.width.toFloat() / 2f).dp,
-                            modifier = Modifier
-                                .matchParentSize()
-                                .clip(RoundedCornerShape(20.dp)),
-                        )
-                        HowItWorksButton(
-                            onClick = gestureDemo::replay,
-                            modifier = Modifier
-                                .align(if (barAtStart) Alignment.BottomEnd else Alignment.BottomStart)
-                                .padding(8.dp),
+                            barReach = (state.edgeMargin.toFloat() + state.width.toFloat()).dp,
+                            modifier = Modifier.matchParentSize(),
                         )
                     }
                 },
@@ -478,7 +518,6 @@ fun HandlerAppearanceScreen(
             HandlerPlacementEditor(
                 state = state,
                 isPortrait = isPortrait,
-                backdrop = backdrop,
                 onDismiss = { showPlacement = false },
             )
         }
@@ -498,3 +537,6 @@ fun HandlerAppearanceScreen(
 
 /** What the bar is for, in the order people meet it: a tap, then a swipe each way. */
 private val APPEARANCE_DEMO_STEPS = listOf(DemoGesture.TAP, DemoGesture.SWIPE_UP, DemoGesture.SWIPE_DOWN)
+
+/** How long the number stays on the preview's bar when the percentage is switched on. */
+private const val PERCENT_FLASH_MS = 1600L

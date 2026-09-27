@@ -338,7 +338,8 @@ object PixelFill {
     const val DEFAULT_SPEED = 1f
     const val MIN_SPEED = 0.25f
     const val MAX_SPEED = 3f
-    const val DEFAULT_COLUMNS = 3
+    /** Four across: at three the pixels were blocks, and a pattern needs a few to run through. */
+    const val DEFAULT_COLUMNS = 4
     const val MIN_COLUMNS = 2
     const val MAX_COLUMNS = 6
     const val DEFAULT_GAP = 0.18f

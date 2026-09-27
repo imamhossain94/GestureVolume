@@ -29,7 +29,7 @@ import com.newagedevs.gesturevolume.R
 
 /**
  * One answer from a short list, each with its consequence underneath: the pattern
- * [VolumeStreamDialog] set, for the bar's other single-choice settings.
+ * volume stream choice on the Actions screen set, for the bar's other single-choice settings.
  *
  * The choice is held here until Apply, so the live overlay — which reads these at the start of each
  * gesture — is not re-pointed on every tap of a user still making up their mind.

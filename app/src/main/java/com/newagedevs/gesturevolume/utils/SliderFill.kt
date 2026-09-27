@@ -67,8 +67,6 @@ object SliderFill {
     /** Water: deep below, bright at a rippling surface that throws light down into it, bubbles rising. */
     const val LIQUID = "liquid"
 
-    /** A level meter: segments lit green to red by height over their own glow, a peak hold over the level. */
-    const val VU_METER = "vuMeter"
 
     /** Three signals crossing up the fill, glowing where they meet. Louder swings wider. */
     const val WAVEFORM = "waveform"
@@ -150,9 +148,12 @@ object SliderFill {
      * anybody would choose twice. A preference holding one of them now sanitises to [SOLID], which
      * is the honest outcome; leaving them in the list to avoid that would have been keeping nine
      * options to protect five that were not worth having.
+     *
+     * The level meter ("vuMeter") went the same way later: segments lit by a bouncing peak read as
+     * music playing, and a panel setting the volume is not playing anything.
      */
     val ALL = listOf(
-        SOLID, PIXELS, SHADER, EFFORT, GLIMMER, LIQUID, VU_METER, WAVEFORM, SUNRISE,
+        SOLID, PIXELS, SHADER, EFFORT, GLIMMER, LIQUID, WAVEFORM, SUNRISE,
         SPECTRUM, GALAXY, SILK, TIDE_UP, AURORA,
         PLASMA, HOLOGRAM, NEBULA, EMBER, SONAR,
         CIRCUIT, DOT_MATRIX, CYBERPUNK, MATRIX_RAIN, RUNE,
@@ -183,7 +184,6 @@ object SliderFill {
         SONAR -> 3600
         CIRCUIT -> 3200
         LIQUID -> 6000
-        VU_METER -> 1400
         WAVEFORM -> 2400
         // Slow, and a full turn of the fan is one ray's width: the rays are identical, so moving
         // by exactly one spacing is a seamless loop however long the cycle is.
@@ -261,7 +261,7 @@ object SliderFill {
     fun isPictorial(id: String): Boolean = when (sanitize(id)) {
         DOT_MATRIX, NEBULA, CYBERPUNK, MATRIX_RAIN, RUNE,
         PLASMA, AURORA, HOLOGRAM, EMBER, SONAR, CIRCUIT,
-        LIQUID, VU_METER, WAVEFORM, SUNRISE, SPECTRUM, GALAXY, SILK,
+        LIQUID, WAVEFORM, SUNRISE, SPECTRUM, GALAXY, SILK,
         FIREFLIES, SNOWFALL, HEARTBEAT, NEON, OCEAN, GRADIENT, CONFETTI, WARP, STORM, FIREWORKS -> true
         else -> false
     }
@@ -295,8 +295,7 @@ object SliderFill {
         EMBER -> longArrayOf(0xFFFFE9A8, 0xE6FF9D3D, 0x99FF5A1E)
         SONAR -> longArrayOf(0xFF8CFFD8, 0xFF2ED6A0)
         CIRCUIT -> longArrayOf(0xFF9CFFE6, 0xFF1F7A5A)
-        LIQUID -> longArrayOf(0xFF7FE6FF, 0xFF2D8FE6, 0xFF0B2A6B, 0xFFFFFFFF)
-        VU_METER -> longArrayOf(0xFF3DE68A, 0xFFFFC23D, 0xFFFF4F61, 0xFFFFFFFF)
+        LIQUID -> longArrayOf(0xFFA8F5FF, 0xFF3CC6F2, 0xFF4A5CF0, 0xFFFFFFFF)
         WAVEFORM -> longArrayOf(0xFF4FE3FF, 0xFFFF5CC8, 0xFF9B7CFF)
         SUNRISE -> longArrayOf(0xFFFFE3A1, 0xFFFF8A3D, 0xFFC2386B, 0xFF3A1450)
         SPECTRUM -> longArrayOf(0xFFFF9AD5, 0xFFB79CFF, 0xFF8CD9FF, 0xFF8CFFD1, 0xFFFFE98C, 0xFFFFB38C)

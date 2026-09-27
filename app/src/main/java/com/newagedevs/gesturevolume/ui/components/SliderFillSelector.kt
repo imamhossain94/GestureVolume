@@ -3,19 +3,17 @@ package com.newagedevs.gesturevolume.ui.components
 import android.os.Build
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
@@ -23,22 +21,41 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.data.local.QuickSliderStore
+import com.newagedevs.gesturevolume.ui.view.QuickSliderView
+import com.newagedevs.gesturevolume.utils.EffortFill
+import com.newagedevs.gesturevolume.utils.GlimmerFill
+import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 
 /**
  * Picks what the Quick panel's fill does while it sits there.
  *
- * The preview above this runs the real thing on a loop, so the chips are labels for something the
- * user is already watching rather than descriptions to be imagined.
+ * One row of tiles, each a small panel running the fill for real — the Quick panel's own view, in
+ * the user's own colours — over its name: a wall of forty names was a wall of words, and most of
+ * them ("Silk", "Rune", "Sonar") do not say what they look like. The preview above runs the one
+ * picked, full size. See [PictureRow].
+ *
+ * The settings a fill has of its own are handed in, so a tile shows the Pixels grid, the shader and
+ * the effort picker as they are set up, not as they would be out of the box.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SliderFillSelector(
     style: String,
     onStyleChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    /** The panel's colours, which the tiles are painted in as the panel is. */
+    trackColor: Int = QuickSliderStore.DEFAULT_TRACK_COLOR,
+    fillColor: Int = QuickSliderStore.DEFAULT_FILL_COLOR,
+    /** The user's animation colours, or null for each fill's own. */
+    fillColors: IntArray? = null,
+    pixelStyle: PixelFill.Style = PixelFill.Style(),
+    shaderStyle: ShaderFill.Style = ShaderFill.Style(),
+    effortStyle: EffortFill.Style = EffortFill.Style(),
+    glimmerStyle: GlimmerFill.Style = GlimmerFill.Style(),
 ) {
     Column(modifier = modifier) {
         Text(
@@ -50,26 +67,83 @@ fun SliderFillSelector(
             text = stringResource(R.string.slider_fill_style_desc),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 4.dp, bottom = 10.dp),
+            modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
         )
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .selectableGroup(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            // Shaders only where the system runs an app's own: Android 13 and later.
-            SliderFill.ALL.filter { it != SliderFill.SHADER || Build.VERSION.SDK_INT >= ShaderFill.MIN_SDK }.forEach { id ->
-                FillChip(
-                    label = stringResource(sliderFillLabel(id)),
-                    selected = style == id,
-                    onClick = { onStyleChange(id) },
-                )
-            }
+        // Shaders only where the system runs an app's own: Android 13 and later.
+        val fills = remember {
+            SliderFill.ALL.filter { it != SliderFill.SHADER || Build.VERSION.SDK_INT >= ShaderFill.MIN_SDK }
+        }
+        PictureRow(
+            items = fills,
+            selected = SliderFill.sanitize(style),
+            onSelect = onStyleChange,
+            label = { stringResource(sliderFillLabel(it)) },
+            tileWidth = FILL_TILE_WIDTH,
+        ) { id, _ ->
+            TileWallpaper()
+            MiniFill(
+                id = id,
+                trackColor = trackColor,
+                fillColor = fillColor,
+                fillColors = fillColors,
+                pixelStyle = pixelStyle,
+                shaderStyle = shaderStyle,
+                effortStyle = effortStyle,
+                glimmerStyle = glimmerStyle,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(width = 24.dp, height = 70.dp),
+            )
         }
     }
 }
+
+/**
+ * [id] running on a small Quick panel: the real view, with no number and no icon, at a level that
+ * shows both the lit part and the track above it.
+ */
+@Composable
+private fun MiniFill(
+    id: String,
+    trackColor: Int,
+    fillColor: Int,
+    fillColors: IntArray?,
+    pixelStyle: PixelFill.Style,
+    shaderStyle: ShaderFill.Style,
+    effortStyle: EffortFill.Style,
+    glimmerStyle: GlimmerFill.Style,
+    modifier: Modifier = Modifier,
+) {
+    AndroidView(
+        factory = { context ->
+            QuickSliderView(context).apply {
+                setShowValue(false)
+                setIcon(null)
+                setCornerRadiusDp(12f)
+            }
+        },
+        update = { view ->
+            view.setColors(trackColor, fillColor)
+            // Before the style, as the panel does, so a Pixels fill starts at its own pace.
+            view.setPixelStyle(pixelStyle)
+            view.setShaderStyle(shaderStyle)
+            view.setEffortStyle(effortStyle)
+            view.setGlimmerStyle(glimmerStyle)
+            view.setFillStyle(id)
+            view.setFillColors(fillColors)
+            view.setExpansion(1f)
+            view.setCommitted()
+            view.setValue(MINI_LEVEL)
+        },
+        modifier = modifier,
+    )
+}
+
+/** Where a tile's panel is filled to: enough to see the fill, with some track left above it. */
+private const val MINI_LEVEL = 0.62f
+
+/** A fill's tile, narrower than the others: the panel in it is narrow, and there are forty of them. */
+private val FILL_TILE_WIDTH = 68.dp
 
 @Composable
 internal fun FillChip(label: String, selected: Boolean, onClick: () -> Unit) {
@@ -105,7 +179,6 @@ internal fun FillChip(label: String, selected: Boolean, onClick: () -> Unit) {
 /** The translated name of a fill animation, for the summaries that name the one chosen. */
 fun sliderFillLabel(id: String): Int = when (id) {
     SliderFill.LIQUID -> R.string.fill_liquid
-    SliderFill.VU_METER -> R.string.fill_vu_meter
     SliderFill.WAVEFORM -> R.string.fill_waveform
     SliderFill.SUNRISE -> R.string.fill_sunrise
     SliderFill.SPECTRUM -> R.string.fill_spectrum

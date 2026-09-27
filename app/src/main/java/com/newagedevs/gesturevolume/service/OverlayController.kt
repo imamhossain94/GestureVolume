@@ -1349,24 +1349,47 @@ class OverlayController(
         return minOf(rest, limit.coerceAtLeast(0))
     }
 
-    /** Glides the bar to [target], the way it glides to an edge. See [keyboardAnimator]. */
+    /**
+     * Moves the bar to [target] in the motion the user chose for it (see
+     * [BarBehaviour.KEYBOARD_MOTIONS]): up clear of the keyboard, and back down when it goes. The
+     * curve is [BarBehaviour.motionAt], the one the setting's previews play, so the bar moves as the
+     * choice showed. See [keyboardAnimator].
+     */
     private fun animateHandlerY(target: Int) {
         val params = handlerParams ?: return
         keyboardAnimator?.cancel()
         keyboardAnimator = null
+        handlerView?.alpha = 1f
         if (params.y == target) return
-        keyboardAnimator = ValueAnimator.ofInt(params.y, target).apply {
-            duration = ANIM_DURATION_MS
-            interpolator = DecelerateInterpolator()
+        val motion = preference.getKeyboardMotion()
+        val from = params.y
+        if (BarBehaviour.motionMs(motion) <= 0L) {
+            params.y = target
+            updateHandlerLayout(params)
+            return
+        }
+        keyboardAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = BarBehaviour.motionMs(motion)
+            interpolator = null
             addUpdateListener { animation ->
                 // Re-read every frame, like the snap: the window can go mid-animation.
                 val live = handlerParams ?: return@addUpdateListener
-                live.y = animation.animatedValue as Int
-                updateHandlerLayout(live)
+                val t = animation.animatedValue as Float
+                val y = (from + (target - from) * BarBehaviour.motionAt(motion, t)).roundToInt()
+                if (live.y != y) {
+                    live.y = y
+                    updateHandlerLayout(live)
+                }
+                handlerView?.alpha = BarBehaviour.motionAlphaAt(motion, t)
             }
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
+                    handlerView?.alpha = 1f
                     if (keyboardAnimator === animation) keyboardAnimator = null
+                }
+
+                override fun onAnimationCancel(animation: Animator) {
+                    handlerView?.alpha = 1f
                 }
             })
             start()

@@ -257,6 +257,7 @@ private fun AutoHideSection(preference: SharedPref, modifier: Modifier = Modifie
     var onlyMedia by remember { mutableStateOf(preference.getShowOnlyWhileMedia()) }
     var onlyCall by remember { mutableStateOf(preference.getShowOnlyWhileCall()) }
     var keyboard by remember { mutableStateOf(preference.getKeyboardBehaviour()) }
+    var motion by remember { mutableStateOf(preference.getKeyboardMotion()) }
     var showKeyboardDialog by remember { mutableStateOf(false) }
     // Below Android 11 there is no keyboard to be told about. See ImeProbe.
     val keyboardSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
@@ -301,6 +302,17 @@ private fun AutoHideSection(preference: SharedPref, modifier: Modifier = Modifie
             borderColor = MaterialTheme.colorScheme.primary,
             onClick = { if (keyboardSupported) showKeyboardDialog = true }
         )
+        // How it moves, for the one choice that moves it. Read by the overlay on every move.
+        if (keyboardSupported && keyboard == BarBehaviour.KEYBOARD_MOVE) {
+            Spacer(modifier = Modifier.height(20.dp))
+            KeyboardMotionSelector(
+                motion = motion,
+                onMotionChange = {
+                    motion = it
+                    preference.setKeyboardMotion(it)
+                },
+            )
+        }
         Spacer(modifier = Modifier.height(24.dp))
     }
 

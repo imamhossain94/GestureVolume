@@ -1,6 +1,11 @@
 package com.newagedevs.gesturevolume.ui.components
 
 import androidx.compose.ui.graphics.Path
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.AnimatedContent
 import android.provider.Settings
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -13,6 +18,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,6 +48,7 @@ import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -107,10 +114,35 @@ class GestureDemoState internal constructor(
 
     val playing: Boolean get() = passesLeft > 0
 
+    /** True while a pass is being wound back to its start, before the finger comes in. */
+    internal var rewinding by mutableStateOf(false)
+
+    /**
+     * Whether the finger is acting a gesture out: playing, and not winding the last pass back.
+     *
+     * The wind-back runs the first step's progress from done to not begun, which a preview tied to
+     * [progressOf] takes as that step being undone. For the Quick panel folding back into the bar
+     * that is the point. For something a gesture merely set off — a panel a tap opened — it is the
+     * thing appearing and vanishing again before the tap that opens it, a flicker; those follow
+     * this instead of [playing].
+     */
+    val acting: Boolean get() = playing && !rewinding
+
+    /**
+     * The gesture the finger is making, or about to, while it [acting]s; null at rest and while it
+     * winds back. Read it through `derivedStateOf`: it is worked out from progress that changes on
+     * every frame of a gesture, and it changes only a few times a pass.
+     */
+    val currentStep: DemoGesture?
+        get() = if (!acting) null else steps.firstOrNull { progressOf(it) < 1f } ?: steps.last()
+
     /** Plays one more pass, from the start. */
     fun replay() {
         passesLeft = 1
         generation++
+        // From this frame, not from when the demo's coroutine gets round to winding back: until
+        // then the last pass still reads as finished, and would show its end for a frame or two.
+        rewinding = true
     }
 
     /**
@@ -180,31 +212,39 @@ fun GestureDemoOverlay(
     val handlePath = remember { Path() }
     val density = LocalDensity.current
     val onLeft = barAtStart != (LocalLayoutDirection.current == LayoutDirection.Rtl)
-    val pose = remember { FingerPose() }
+    // Keyed on the side the bar is on. Moved to the other edge part-way through a pass, the bar
+    // takes the hand with it at once: a fresh pose, hidden, and the pass started again from the new
+    // side. Kept, the hand went on acting against the edge the bar had left until the pass ended,
+    // and faded out there before coming round.
+    val pose = remember(onLeft) { FingerPose() }
     var size by remember { mutableStateOf(IntSize.Zero) }
-    LaunchedEffect(state.generation) {
+    LaunchedEffect(state.generation, onLeft) {
         val box = snapshotFlow { size }.first { it.width > 0 && it.height > 0 }
         density.runDemo(state, pose, box, onLeft, with(density) { barInset.toPx() })
     }
     Canvas(modifier = modifier.onSizeChanged { size = it }) {
-        if (showBar) drawStandInBar(pose, handle, onLeft, handlePath)
-        drawTouchRings(pose)
+        // On the glass, and only on it: a ring spreading from a touch at the edge stops at the edge.
+        clipRect {
+            if (showBar) drawStandInBar(pose, handle, onLeft, handlePath)
+            drawTouchRings(pose)
+        }
+        // The hand is not clipped: it reaches in over the frame, from beyond the phone.
         drawHand(pose, onLeft)
     }
 }
 
 /**
- * Replays the demo. Styled like the stage's own corner buttons — same scrim, same height — so it
- * reads as part of the stage rather than as a setting.
+ * Replays the demo. In the row under the phone, on the card, where the walkthrough puts its words:
+ * over the phone it sat on whatever the preview was showing in that corner.
  */
 @Composable
 fun HowItWorksButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         onClick = onClick,
         shape = CircleShape,
-        color = Color.Black.copy(alpha = 0.28f),
-        contentColor = Color.White,
-        modifier = modifier.height(32.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        modifier = modifier.height(34.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -222,6 +262,58 @@ fun HowItWorksButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             )
         }
     }
+}
+
+/**
+ * What the finger is doing, in the row under the phone while the demo plays, and nothing at rest.
+ * [content] words it for the screen: the gesture alone, or the gesture and what it is set to do.
+ */
+@Composable
+fun DemoCaption(
+    state: GestureDemoState,
+    modifier: Modifier = Modifier,
+    content: @Composable (DemoGesture) -> Unit,
+) {
+    val step by remember(state) { derivedStateOf { state.currentStep } }
+    AnimatedContent(
+        targetState = step,
+        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        contentAlignment = Alignment.CenterStart,
+        modifier = modifier,
+        label = "demoCaption",
+    ) { gesture -> if (gesture != null) content(gesture) }
+}
+
+/**
+ * The row under a preview's phone: what the finger is doing on the left, while it does it, and the
+ * button that plays it again on the right. [caption] words the gesture; by default, its name.
+ */
+@Composable
+fun RowScope.DemoFooter(
+    state: GestureDemoState,
+    caption: @Composable (DemoGesture) -> Unit = { DemoGestureText(it) },
+) {
+    DemoCaption(state, Modifier.weight(1f), caption)
+    HowItWorksButton(onClick = state::replay)
+}
+
+/** A gesture's name, as a caption under the phone: the walkthrough's caption, on the card. */
+@Composable
+fun DemoGestureText(gesture: DemoGesture) {
+    Text(
+        text = stringResource(demoGestureName(gesture)),
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+/** The name of [gesture], for a caption. */
+fun demoGestureName(gesture: DemoGesture): Int = when (gesture) {
+    DemoGesture.TAP -> R.string.demo_tap
+    DemoGesture.SWIPE_UP -> R.string.demo_swipe_up
+    DemoGesture.SWIPE_DOWN -> R.string.demo_swipe_down
+    DemoGesture.SWIPE_IN -> R.string.demo_swipe_in
+    DemoGesture.HOLD -> R.string.demo_hold
 }
 
 // ---- the performance ------------------------------------------------------------------------
@@ -256,6 +348,11 @@ private suspend fun Density.runDemo(
     val h = box.height.toFloat()
     val inward = if (onLeft) 1f else -1f
     val bar = Offset(if (onLeft) insetPx else w - insetPx, h / 2f)
+    // Where the walkthrough's hand rests, off the phone below the bar's side, in this glass's terms:
+    // the box is the glass, so its width is the scene's glass and gives the scene's unit.
+    val unit = w / DeviceArt.SCREEN_W
+    val restX = (DeviceArt.FINGER_REST.x - DeviceArt.SCREEN_L) * unit
+    val rest = Offset(if (onLeft) w - restX else restX, (DeviceArt.FINGER_REST.y - DeviceArt.SCREEN_T) * unit)
     // Short enough to stay on the stage, long enough to read as a swipe rather than a nudge.
     val swipe = minOf(64.dp.toPx(), h * 0.3f)
     val reach = minOf(120.dp.toPx(), w * 0.42f)
@@ -268,8 +365,8 @@ private suspend fun Density.runDemo(
 
     while (state.passesLeft > 0) {
         rewind(state)
-        // In from below and from the middle of the screen, the way a hand reaches for an edge.
-        pose.tip = bar + Offset(inward * 56.dp.toPx(), 70.dp.toPx())
+        // In from off the phone, below the bar's side, as the walkthrough's hand comes.
+        pose.tip = rest
         pose.press = 0f
         pose.ripple = 0f
         pose.hold = 0f
@@ -338,7 +435,7 @@ private suspend fun Density.runDemo(
         // Away, and a moment with the result on its own before the next pass or the rest.
         val leaveFrom = pose.tip
         coroutineScope {
-            launch { moveTo(pose, leaveFrom + Offset(inward * 36.dp.toPx(), 52.dp.toPx())) }
+            launch { moveTo(pose, lerp(leaveFrom, rest, 0.6f)) }
             tweenValue(1f, 0f, 280) { pose.alpha = it; pose.barAlpha = it }
         }
         delay(if (state.passesLeft > 1) 700L else 450L)
@@ -351,11 +448,19 @@ private suspend fun Density.runDemo(
  * back to the edge — smoothly, with no finger on screen, rather than snapping it shut.
  */
 private suspend fun rewind(state: GestureDemoState) {
-    if (state.stepIndex == 0 && state.stepFraction == 0f) return
+    if (state.stepIndex == 0 && state.stepFraction == 0f) {
+        state.rewinding = false
+        return
+    }
     val from = if (state.stepIndex == 0) state.stepFraction else 1f
-    state.stepIndex = 0
-    tweenValue(from, 0f, 380, FastOutSlowInEasing) { state.stepFraction = it }
-    delay(220)
+    state.rewinding = true
+    try {
+        state.stepIndex = 0
+        tweenValue(from, 0f, 380, FastOutSlowInEasing) { state.stepFraction = it }
+        delay(220)
+    } finally {
+        state.rewinding = false
+    }
 }
 
 /** Where the finger first touches for [step]: a swipe starts a little behind the bar, to go through it. */
@@ -460,20 +565,20 @@ private fun DrawScope.drawTouchRings(pose: FingerPose) {
 }
 
 /**
- * The hand: the app's one right hand (see [drawPointingHand]), its fingertip on the touch point.
+ * The hand: the walkthrough's (see [drawPointingHand]), its fingertip on the touch point, as big as
+ * the walkthrough draws it on a phone this size, and leaning in from the same side.
  *
- * Tilted so the hand comes from the middle of the screen towards the bar, which keeps it on the
- * stage and is how a finger actually reaches an edge. Turned for a bar on either side, never
- * mirrored: it is a right hand whichever edge the bar is on. Further over for a bar on the right,
- * because the fist is on the right of the finger, and at the smaller angle it hung off the stage
- * and left a finger with no hand behind it.
+ * The hand on the bar's side: a right hand, reaching in from the bottom right, for a bar on the
+ * right, and for a bar on the left the left hand, its mirror, from the bottom left. The box is the
+ * phone's glass, so its width is what the scene's unit is measured off.
  */
 private fun DrawScope.drawHand(pose: FingerPose, onLeft: Boolean) {
     drawPointingHand(
         tip = pose.tip,
-        fingerWidth = 20.dp.toPx(),
-        tilt = if (onLeft) -22f else 30f,
+        fingerWidth = size.width / DeviceArt.SCREEN_W * DeviceArt.FINGER_W,
+        tilt = if (onLeft) -DeviceArt.HAND_TILT else DeviceArt.HAND_TILT,
         press = pose.press,
         alpha = pose.alpha,
+        mirrored = onLeft,
     )
 }

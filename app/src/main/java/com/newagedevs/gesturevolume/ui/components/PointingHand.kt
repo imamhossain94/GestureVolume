@@ -128,6 +128,9 @@ private object HandArt {
  *   shadow tucked in underneath it.
  * @param alpha the whole hand, faded as one: a translucent hand drawn part by part would show its
  *   thumb through its palm.
+ * @param mirrored the left hand rather than the right: the same hand in a mirror, for a bar on the
+ *   left edge, which a left hand reaches. [tilt] still turns it on screen, so a left hand reaching
+ *   in from the bottom left wants the positive of the angle a right hand from the bottom right does.
  */
 fun DrawScope.drawPointingHand(
     tip: Offset,
@@ -135,6 +138,7 @@ fun DrawScope.drawPointingHand(
     tilt: Float,
     press: Float,
     alpha: Float = 1f,
+    mirrored: Boolean = false,
 ) {
     if (alpha <= 0.01f) return
     val lift = 1.06f + (0.97f - 1.06f) * press
@@ -142,7 +146,7 @@ fun DrawScope.drawPointingHand(
     withTransform({
         translate(tip.x, tip.y)
         rotate(tilt, pivot = Offset.Zero)
-        scale(scale, scale, pivot = Offset.Zero)
+        scale(if (mirrored) -scale else scale, scale, pivot = Offset.Zero)
     }) {
         val canvas = drawContext.canvas
         val layered = alpha < 0.99f
@@ -150,7 +154,7 @@ fun DrawScope.drawPointingHand(
             HandArt.layerPaint.alpha = alpha
             canvas.saveLayer(HandArt.bounds, HandArt.layerPaint)
         }
-        drawShadow(press)
+        drawShadow(press, mirrored)
         drawPath(HandArt.outline, HandArt.skin)
         drawPath(HandArt.thumb, HandArt.thumbSkin)
         drawPath(HandArt.knuckles, HandArt.knuckleLight)
@@ -174,9 +178,12 @@ fun DrawScope.drawPointingHand(
  * A soft shadow without a blur: the outline filled, then stroked twice wider and fainter, so its
  * edge fades out over a few units. A blur mask would redraw the whole hand into a blurred bitmap
  * every frame of the demo, and before API 28 would not draw at all.
+ *
+ * Down and to the right of the hand whichever hand it is: a mirrored hand would otherwise take its
+ * light from the other side, and the two hands would look lit by two different lamps.
  */
-private fun DrawScope.drawShadow(press: Float) {
-    val dx = 3f + (1f - 3f) * press
+private fun DrawScope.drawShadow(press: Float, mirrored: Boolean) {
+    val dx = (3f + (1f - 3f) * press) * (if (mirrored) -1f else 1f)
     val dy = 8f + (2.5f - 8f) * press
     translate(dx, dy) {
         drawPath(HandArt.outline, Color.Black, alpha = 0.10f)

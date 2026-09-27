@@ -83,7 +83,6 @@ internal class FillArt(private val density: Float) {
         val a = alpha / 255f
         when (style) {
             SliderFill.LIQUID -> liquid(canvas, p, r, fillTop, phase, alpha, a)
-            SliderFill.VU_METER -> meter(canvas, p, r, fillTop, phase, alpha, a)
             SliderFill.WAVEFORM -> waveform(canvas, p, r, fillTop, phase, value, alpha, a)
             SliderFill.SUNRISE -> sunrise(canvas, p, r, fillTop, phase, alpha, a)
             SliderFill.SPECTRUM -> spectrum(canvas, p, r, fillTop, phase, alpha, a)
@@ -226,7 +225,13 @@ internal class FillArt(private val density: Float) {
         val w = r.width()
         val h = r.bottom - top
         val track = r.height().coerceAtLeast(1f)
-        ground(canvas, "liquid", intArrayOf(c(p, 0), c(p, 1), c(p, 2)), floatArrayOf(0f, 0.3f, 1f), r, top, r.bottom, alpha)
+        // Bright at the surface, clear aqua through the body, a deep blue only at the very bottom:
+        // water in a glass rather than a well. The old palette sank to navy, which on the dark
+        // track was most of the fill looking like nothing at all.
+        ground(canvas, "liquid", intArrayOf(c(p, 0), c(p, 1), c(p, 2)), floatArrayOf(0f, 0.22f, 1f), r, top, r.bottom, alpha)
+        // The glass: the sides a little deeper than the middle, and a streak of light down one
+        // side, so the fill has a body rather than being a flat colour cut to a wave.
+        body(canvas, c(p, 2), r, top, alpha)
         // Caustics: the pools of light a rippling surface throws down into the water under it.
         for (i in 0 until 3) {
             val s = seed(i * 41 + 7)
@@ -261,49 +266,25 @@ internal class FillArt(private val density: Float) {
         }
     }
 
-    // ---- Level meter ----------------------------------------------------------------------------
-
-    private var meterShader: LinearGradient? = null
-
-    private fun meter(canvas: Canvas, p: LongArray, r: RectF, fillTop: Float, phase: Float, alpha: Int, a: Float) {
-        val w = r.width()
-        val track = r.height().coerceAtLeast(1f)
-        ground(canvas, "meterGround", intArrayOf(0xFF10151C.toInt(), 0xFF06080B.toInt()), null, r, fillTop, r.bottom, alpha)
-        // One gradient for the whole track, green at the foot to red at the head, so every segment
-        // takes its colour from how high it sits and a quiet level never reaches the red.
-        val shader = meterShader ?: LinearGradient(
-            0f, 0f, 0f, 1f,
-            intArrayOf(c(p, 2), c(p, 2), c(p, 1), c(p, 0), c(p, 0)),
-            floatArrayOf(0f, 0.1f, 0.28f, 0.52f, 1f),
-            Shader.TileMode.CLAMP,
-        ).also { meterShader = it }
-        matrix.setScale(1f, track)
-        matrix.postTranslate(0f, r.top)
-        shader.setLocalMatrix(matrix)
-        // The backlight: the meter's own colours glowing behind the segments.
-        paint.shader = shader
-        paint.alpha = a255(0.1f * a)
-        canvas.drawRect(r.left, fillTop, r.right, r.bottom, paint)
-        val pitch = 4.5f * density
-        val seg = pitch * 0.62f
-        val inset = w * 0.17f
-        var y = r.bottom - pitch * 0.85f
-        var n = 0
-        while (y + seg > fillTop) {
-            // A pulse running up the stack, twice a cycle: a meter standing still looks switched off.
-            paint.alpha = a255((0.72f + 0.28f * sin(n * 0.55f - phase * 2f * TAU)) * a)
-            canvas.drawRoundRect(r.left + inset, y, r.right - inset, y + seg, seg / 2f, seg / 2f, paint)
-            y -= pitch
-            n++
+    /** Across the fill: the sides shaded toward [deep], and a soft highlight a third of the way in. */
+    private fun body(canvas: Canvas, deep: Int, r: RectF, top: Float, alpha: Int) {
+        val shader = grounds.getOrPut("liquidBody") {
+            val edge = fade(deep, 0.38f)
+            val clear = deep and 0xFFFFFF
+            LinearGradient(
+                0f, 0f, 1f, 0f,
+                intArrayOf(edge, clear, 0x2EFFFFFF, clear, clear, edge),
+                floatArrayOf(0f, 0.2f, 0.3f, 0.42f, 0.78f, 1f),
+                Shader.TileMode.CLAMP,
+            )
         }
-        paint.shader = null
-        // The peak hold, floating just over the level and settling back.
-        val bob = (sin(phase * TAU) + 1f) / 2f
-        val peakY = fillTop + pitch * (0.4f + bob * 1.4f)
-        glow(canvas, r.centerX(), peakY + seg * 0.35f, w * 0.5f, seg * 1.6f, c(p, 3), 0.35f * a)
-        paint.color = c(p, 3)
+        matrix.setScale(r.width().coerceAtLeast(1f), 1f)
+        matrix.postTranslate(r.left, 0f)
+        shader.setLocalMatrix(matrix)
+        paint.shader = shader
         paint.alpha = alpha
-        canvas.drawRoundRect(r.left + inset, peakY, r.right - inset, peakY + seg * 0.7f, seg / 2f, seg / 2f, paint)
+        canvas.drawRect(r.left, top, r.right, r.bottom, paint)
+        paint.shader = null
     }
 
     // ---- Waveform -------------------------------------------------------------------------------
@@ -1742,7 +1723,7 @@ internal class FillArt(private val density: Float) {
         private const val FIREWORK_SPARKS = 14
 
         private val STYLES = setOf(
-            SliderFill.LIQUID, SliderFill.VU_METER, SliderFill.WAVEFORM, SliderFill.SUNRISE,
+            SliderFill.LIQUID, SliderFill.WAVEFORM, SliderFill.SUNRISE,
             SliderFill.SPECTRUM, SliderFill.SILK, SliderFill.AURORA, SliderFill.PLASMA,
             SliderFill.HOLOGRAM, SliderFill.SONAR, SliderFill.CIRCUIT, SliderFill.DOT_MATRIX,
             SliderFill.CYBERPUNK, SliderFill.MATRIX_RAIN, SliderFill.RUNE,

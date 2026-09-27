@@ -47,7 +47,6 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -69,7 +68,8 @@ import com.newagedevs.gesturevolume.ui.components.HandleLook
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
-import com.newagedevs.gesturevolume.ui.components.HowItWorksButton
+import com.newagedevs.gesturevolume.ui.components.DemoFooter
+import com.newagedevs.gesturevolume.ui.components.scaleToFit
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -176,8 +176,6 @@ fun LongPressMenuScreen(
         speed = animationSpeed,
     )
 
-    // One backdrop per visit; see the note in HandlerAppearanceScreen.
-    val backdrop = remember { viewModel.getNextBackground() }
 
     // A finger pressing and holding the bar until the menu pops up, twice on arrival and on request
     // after that. The menu waits for the ring to close rather than following it in, because that
@@ -230,15 +228,35 @@ fun LongPressMenuScreen(
                 )
             },
             preview = { modifier, fillHeight ->
-                PreviewStage(backdrop = backdrop, fillHeight = fillHeight, modifier = modifier) {
+                PreviewStage(
+                    fillHeight = fillHeight,
+                    modifier = modifier,
+                    // The hand reaches in over the frame, as the walkthrough's does.
+                    overGlass = {
+                        GestureDemoOverlay(
+                            state = gestureDemo,
+                            barAtStart = handlerOnLeft,
+                            barInset = 12.dp,
+                            showBar = true,
+                            handle = remember { HandleLook.from(preference) },
+                            modifier = Modifier.matchParentSize(),
+                        )
+                    },
+                    // Under the phone: what the finger is doing, and the button that plays it.
+                    footer = { DemoFooter(gestureDemo) },
+                ) {
                     ContextMenuCard(
                         entries = HandlerActionCatalog.contextMenuEntries(shown.toList()),
                         grid = layout == ContextMenuLayout.GRID,
                         // Inert. This is a picture of the menu, and a tile that ran its action
                         // from the settings screen would be a trap rather than a convenience.
                         onSelect = {},
+                        // Measured at its own size, as the real one is, and drawn as large as fits
+                        // the phone's glass, both ways, under the status bar: the card lays its tiles
+                        // out from its own width, and a menu of many actions is taller than the part
+                        // of the phone that shows.
                         modifier = Modifier
-                            .scale(PREVIEW_SCALE)
+                            .scaleToFit(PREVIEW_SCALE, horizontal = 12.dp, top = 30.dp, bottom = 12.dp)
                             .panelFrame { entrance.value }
                             // Popped in by the demo's long press; read in the layer so the spring
                             // redraws the card without recomposing the screen.
@@ -251,20 +269,6 @@ fun LongPressMenuScreen(
                         theme = panelTheme,
                         surfaceOverride = menuSurface,
                         style = menuStyle,
-                    )
-                    GestureDemoOverlay(
-                        state = gestureDemo,
-                        barAtStart = handlerOnLeft,
-                        barInset = 12.dp,
-                        showBar = true,
-                        handle = remember { HandleLook.from(preference) },
-                        modifier = Modifier.matchParentSize(),
-                    )
-                    HowItWorksButton(
-                        onClick = gestureDemo::replay,
-                        modifier = Modifier
-                            .align(if (handlerOnLeft) Alignment.BottomEnd else Alignment.BottomStart)
-                            .padding(8.dp),
                     )
                 }
             },
@@ -499,6 +503,7 @@ fun LongPressMenuScreen(
  * three-row grid inside the stage.
  */
 private const val PREVIEW_SCALE = 0.8f
+
 
 /** A wrapping row of choices, one of them picked. */
 @OptIn(ExperimentalLayoutApi::class)

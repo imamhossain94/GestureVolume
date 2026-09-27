@@ -454,6 +454,7 @@ class SharedPref @Inject constructor(
         const val HANDLER_EDGE_SWIPE_MENU = "handlerEdgeSwipeMenu"
         const val SWIPE_STEP_PERCENT = "handlerSwipeStepPercent"
         const val KEYBOARD_BEHAVIOUR = "handlerKeyboardBehaviour"
+        const val KEYBOARD_MOTION = "handlerKeyboardMotion"
         const val SHOW_ONLY_WHILE_MEDIA = "handlerShowOnlyWhileMedia"
         const val SHOW_ONLY_WHILE_CALL = "handlerShowOnlyWhileCall"
         const val WHATS_NEW_SEEN = "whatsNewSeenVersion"
@@ -934,6 +935,17 @@ class SharedPref @Inject constructor(
     fun getKeyboardBehaviour(): String =
         sharedPreferences.getString(KEYBOARD_BEHAVIOUR, BarBehaviour.KEYBOARD_MOVE)
             ?.takeIf { it in BarBehaviour.KEYBOARD_BEHAVIOURS } ?: BarBehaviour.KEYBOARD_MOVE
+
+    /**
+     * How the bar moves up clear of the keyboard and back down: one of [BarBehaviour.KEYBOARD_MOTIONS].
+     * The glide it has always made, unless another is chosen.
+     */
+    fun getKeyboardMotion(): String =
+        BarBehaviour.sanitizeMotion(sharedPreferences.getString(KEYBOARD_MOTION, BarBehaviour.MOTION_GLIDE))
+
+    fun setKeyboardMotion(value: String) {
+        sharedPreferences.edit { putString(KEYBOARD_MOTION, BarBehaviour.sanitizeMotion(value)) }
+    }
 
     fun setKeyboardBehaviour(value: String) {
         sharedPreferences.edit {

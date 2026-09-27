@@ -55,6 +55,8 @@ import com.newagedevs.gesturevolume.ui.screens.app_gestures.AppGesturesScreen
 import com.newagedevs.gesturevolume.ui.screens.deck.SearchSettingsScreen
 import com.newagedevs.gesturevolume.ui.screens.feedback.FeedbackScreen
 import com.newagedevs.gesturevolume.ui.screens.handler_action.HandlerActionsScreen
+import com.newagedevs.gesturevolume.ui.screens.handler_action.ActionPickerRoute
+import com.newagedevs.gesturevolume.data.local.AppGestureStore
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.HandlerAppearanceScreen
 import com.newagedevs.gesturevolume.ui.screens.main.MainScreen
 import com.newagedevs.gesturevolume.ui.screens.quick_slider.QuickSliderScreen
@@ -310,6 +312,9 @@ fun MainNavigation(
                         onNavigateBack = {
                             navController.navigateBackOnce()
                         },
+                        onPickAction = { slot ->
+                            navController.navigate("pick_action/${slot.key}")
+                        },
                         onOpenQuickSlider = {
                             navController.navigate("quick_slider")
                         },
@@ -323,6 +328,20 @@ fun MainNavigation(
                             navController.navigate(permissionsRoute(it))
                         }
                     )
+                }
+
+                // What one of the bar's gestures does, chosen on a screen of its own.
+                composable("pick_action/{slot}") { backStackEntry ->
+                    val slot = AppGestureStore.Slot.fromKey(backStackEntry.arguments?.getString("slot").orEmpty())
+                    if (slot == null) {
+                        LaunchedEffect(Unit) { navController.navigateBackOnce() }
+                    } else {
+                        ActionPickerRoute(
+                            viewModel = viewModel,
+                            slot = slot,
+                            onDone = { navController.navigateBackOnce() }
+                        )
+                    }
                 }
 
                 composable("app_gestures") {

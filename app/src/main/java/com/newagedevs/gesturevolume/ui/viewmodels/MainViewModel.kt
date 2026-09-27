@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
 import androidx.core.content.ContextCompat
-import androidx.core.content.edit
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -741,17 +740,6 @@ class MainViewModel @Inject constructor(
             LiveDataManager.communicator().removeObserver(it)
             messageObserver = null
         }
-    }
-
-    fun getNextBackground(): Int {
-        // Drawn backdrops rather than downloaded photographs; see PreviewBackdrops. Still one per
-        // visit, and still the next one each time, so the same colour is not always judged
-        // against the same picture.
-        val count = com.newagedevs.gesturevolume.ui.components.PreviewBackdrops.COUNT
-        val lastIndex = preference.sharedPreferences.getInt("last_bg_index", -1)
-        val nextIndex = (lastIndex + 1).mod(count)
-        preference.sharedPreferences.edit { putInt("last_bg_index", nextIndex) }
-        return nextIndex
     }
 
     fun setTheme(theme: Int) {

@@ -130,13 +130,14 @@ internal class EffortArt(private val density: Float) {
 
     /** A segment for each level up the track: the empty ones faint, the lit ones in the level's colour. */
     private fun steps(canvas: Canvas, r: RectF, fillTop: Float, time: Float, level: Int, arrival: Float, p: IntArray, ghost: Int, a: Float) {
-        val w = r.width()
         val segment = r.height() / EffortFill.LEVELS
-        val pad = (w * 0.14f).coerceIn(dp(2f), dp(8f))
         val gap = (segment * 0.1f).coerceIn(dp(1.5f), dp(3.5f))
-        val left = r.left + pad
-        val right = r.right - pad
-        val round = min(right - left, segment - gap) * 0.32f
+        // The whole width of the pill, edge to edge: a stop is a band of the track, not a button on
+        // it. Corners only just rounded, so no sliver of track shows beside a lit stop, and the
+        // pill's own outline rounds the two at its ends.
+        val left = r.left
+        val right = r.right
+        val round = min(dp(3f), (segment - gap) / 2f)
         val lit = r.bottom - fillTop
 
         backGlow(canvas, r, fillTop, time, level, p, a)
@@ -180,14 +181,14 @@ internal class EffortArt(private val density: Float) {
 
     /** One bar lit to the level, a tick at each stop; the dots are in the readout. */
     private fun dots(canvas: Canvas, r: RectF, fillTop: Float, time: Float, level: Int, arrival: Float, p: IntArray, ghost: Int, a: Float) {
-        val w = r.width()
         val segment = r.height() / EffortFill.LEVELS
-        val pad = (w * 0.16f).coerceIn(dp(2f), dp(9f))
-        val left = r.left + pad
-        val right = r.right - pad
+        // The bar is the pill itself, its whole width and length: lit from the bottom to the level.
+        val left = r.left
+        val right = r.right
         val round = (right - left) / 2f
-        val bottom = r.bottom - pad
-        rect.set(left, r.top + pad, right, bottom)
+        val top = r.top
+        val bottom = r.bottom
+        rect.set(left, top, right, bottom)
         paint.shader = null
         paint.color = ghost
         paint.alpha = a255(GHOST * a)
@@ -223,7 +224,7 @@ internal class EffortArt(private val density: Float) {
             paint.alpha = a255((if (onLit) 0.32f else 0.3f) * a)
             canvas.drawRect(left + round * 0.35f, y - dp(0.5f), right - round * 0.35f, y + dp(0.5f), paint)
         }
-        if (fillTop > r.top + pad + dp(2f) && fillTop < bottom - dp(2f)) {
+        if (fillTop > top + dp(2f) && fillTop < bottom - dp(2f)) {
             edge(canvas, left + round * 0.3f, right - round * 0.3f, fillTop, a)
         }
         if (level == EffortFill.ULTRA) sparks(canvas, left, right, fillTop, bottom, time, a)

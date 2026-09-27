@@ -1,7 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.app_gestures
 
 import androidx.activity.compose.BackHandler
-import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -68,32 +67,19 @@ import com.newagedevs.gesturevolume.data.local.AppGestureStore
 import com.newagedevs.gesturevolume.data.local.AppGestureStore.Slot
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.service.OverlayRuntime
-import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
 import com.newagedevs.gesturevolume.ui.components.actionDisplayName
 import com.newagedevs.gesturevolume.ui.screens.deck.InstalledApp
 import com.newagedevs.gesturevolume.ui.screens.deck.loadLaunchableApps
-import com.newagedevs.gesturevolume.ui.screens.handler_action.SwipeActionDialog
-import com.newagedevs.gesturevolume.ui.screens.handler_action.TapActionDialog
+import com.newagedevs.gesturevolume.ui.screens.handler_action.ActionPickerScreen
+import com.newagedevs.gesturevolume.ui.screens.handler_action.GestureRow
+import com.newagedevs.gesturevolume.ui.screens.handler_action.segmentShape
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.ActionIcon
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
-/** The name each gesture goes by on the Actions screen, so the two screens say the same thing. */
-@StringRes
-private fun slotLabel(slot: Slot): Int = when (slot) {
-    Slot.SINGLE_TAP -> R.string.single_tap_action
-    Slot.DOUBLE_TAP -> R.string.double_tap_action
-    Slot.TRIPLE_TAP -> R.string.triple_tap_action
-    Slot.LONG_PRESS -> R.string.long_press_action
-    Slot.SWIPE_UP -> R.string.swipe_up_action
-    Slot.SWIPE_DOWN -> R.string.swipe_down_action
-    Slot.SWIPE_IN -> R.string.swipe_in_action
-    Slot.SWIPE_OUT -> R.string.swipe_out_action
-}
 
 /** What [slot] does everywhere, which an app's own gesture replaces while that app is in front. */
 private fun everywhereAction(preference: SharedPref, slot: Slot): String = when (slot) {
@@ -138,6 +124,8 @@ fun AppGesturesScreen(
     /** The app whose gestures are open, or null for the list. */
     var editing by rememberSaveable { mutableStateOf<String?>(null) }
     var picking by rememberSaveable { mutableStateOf(false) }
+    /** The gesture whose action is being chosen, for the app being edited: a screen of its own. */
+    var pickingSlot by rememberSaveable { mutableStateOf<Slot?>(null) }
     var accessibilityOn by remember { mutableStateOf(OverlayRuntime.isAccessibilityEnabled(context)) }
     // Bumped on every return, so the notes under the gestures re-read what has been granted since.
     var permissionTick by remember { mutableIntStateOf(0) }
@@ -170,6 +158,34 @@ fun AppGesturesScreen(
 
     val appsByPackage = remember(apps) { apps.orEmpty().associateBy { it.packageName } }
     val editingApp = editing?.let { appsByPackage[it] }
+
+    // Choosing a gesture's action takes the screen, as it does for the bar's own gestures.
+    val choosing = pickingSlot
+    val choosingFor = editing
+    if (choosing != null && choosingFor != null) {
+        val own = profiles[choosingFor].orEmpty()[choosing]
+        val everywhere = everywhereAction(preference, choosing)
+        ActionPickerScreen(
+            slot = choosing,
+            currentAction = own ?: everywhere,
+            onLeft = remember { preference.getHandlerPosition() == "Left" },
+            subtitle = editingApp?.label ?: choosingFor,
+            everywhereAction = everywhere,
+            followsEverywhere = own == null,
+            onBack = { pickingSlot = null },
+            onSelect = { action ->
+                store.setAction(choosingFor, choosing, action)
+                refresh()
+                pickingSlot = null
+            },
+            onUseEverywhere = {
+                store.setAction(choosingFor, choosing, null)
+                refresh()
+                pickingSlot = null
+            },
+        )
+        return
+    }
 
     Scaffold(
         topBar = {
@@ -233,10 +249,7 @@ fun AppGesturesScreen(
                 accessibilityNote = accessibilityNote,
                 onOpenPermissions = onOpenPermissions,
                 modifier = Modifier.padding(padding),
-                onSet = { slot, action ->
-                    store.setAction(current, slot, action)
-                    refresh()
-                },
+                onPick = { pickingSlot = it },
                 onRemove = {
                     store.removeApp(current)
                     refresh()
@@ -342,11 +355,10 @@ private fun ProfileEditor(
     accessibilityNote: @Composable () -> Unit,
     onOpenPermissions: (PermissionNeeds.Permission?) -> Unit,
     modifier: Modifier,
-    onSet: (Slot, String?) -> Unit,
+    onPick: (Slot) -> Unit,
     onRemove: () -> Unit,
 ) {
     val context = LocalContext.current
-    var picking by remember { mutableStateOf<Slot?>(null) }
 
     Column(
         modifier = modifier
@@ -364,69 +376,32 @@ private fun ProfileEditor(
         }
         accessibilityNote()
         Spacer(modifier = Modifier.height(8.dp))
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
-        ) {
-            Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                Slot.entries.forEachIndexed { index, slot ->
-                    val own = profile[slot]
-                    val effective = own ?: everywhereAction(preference, slot)
-                    val entry = HandlerActionCatalog.displayEntryFor(effective)
-                    val actionName = if (entry != null) actionDisplayName(effective) else stringResource(R.string.app_gestures_none)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { picking = slot }
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        ActionIconImage(
-                            icon = entry?.icon ?: ActionIcon.Res(R.drawable.ic_nothing),
-                            contentDescription = null,
-                            modifier = Modifier.size(26.dp),
-                            // An app's own gesture in full colour; one following everywhere, faded.
-                            tint = if (own != null) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                            }
-                        )
-                        Spacer(modifier = Modifier.width(14.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(slotLabel(slot)),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = if (own != null) actionName else stringResource(R.string.app_gestures_as_everywhere, actionName),
-                                fontSize = 13.sp,
-                                color = if (own != null) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                }
-                            )
-                        }
-                    }
+        val onLeft = remember { preference.getHandlerPosition() == "Left" }
+        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Slot.entries.forEachIndexed { index, slot ->
+                val own = profile[slot]
+                val effective = own ?: everywhereAction(preference, slot)
+                val entry = HandlerActionCatalog.displayEntryFor(effective)
+                val actionName = if (entry != null) actionDisplayName(effective) else stringResource(R.string.app_gestures_none)
+                GestureRow(
+                    slot = slot,
+                    onLeft = onLeft,
+                    actionIcon = entry?.icon ?: ActionIcon.Res(R.drawable.ic_nothing),
+                    // An app's own gesture in full colour; one following everywhere, faded.
+                    actionText = if (own != null) actionName else stringResource(R.string.app_gestures_as_everywhere, actionName),
+                    dimmed = own == null,
+                    shape = segmentShape(index, Slot.entries.size),
+                    onClick = { onPick(slot) },
+                ) {
                     if (own != null) {
                         @Suppress("UNUSED_VARIABLE") val tick = permissionTick
                         PermissionNeeds.missingFor(context, preference, own)?.let {
                             PermissionNote(
                                 missing = it,
                                 onOpenPermissions = onOpenPermissions,
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp)
                             )
                         }
-                    }
-                    if (index < Slot.entries.lastIndex) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
-                        )
                     }
                 }
             }
@@ -436,38 +411,6 @@ private fun ProfileEditor(
             Text(stringResource(R.string.app_gestures_remove))
         }
         Spacer(modifier = Modifier.height(24.dp))
-    }
-
-    val slot = picking
-    if (slot != null) {
-        val title = stringResource(slotLabel(slot))
-        val currentAction = profile[slot] ?: everywhereAction(preference, slot)
-        val select: (String) -> Unit = { action ->
-            onSet(slot, action)
-            picking = null
-        }
-        val useEverywhere = {
-            onSet(slot, null)
-            picking = null
-        }
-        when (slot) {
-            Slot.SWIPE_UP, Slot.SWIPE_DOWN -> SwipeActionDialog(
-                title = title,
-                currentAction = currentAction,
-                isSwipeUp = slot == Slot.SWIPE_UP,
-                onDismiss = { picking = null },
-                onSelect = select,
-                onUseEverywhere = useEverywhere,
-            )
-            else -> TapActionDialog(
-                title = title,
-                currentAction = currentAction,
-                onDismiss = { picking = null },
-                onSelect = select,
-                allowReposition = slot == Slot.LONG_PRESS,
-                onUseEverywhere = useEverywhere,
-            )
-        }
     }
 }
 

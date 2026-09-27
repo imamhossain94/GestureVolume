@@ -59,7 +59,7 @@ import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
 import com.newagedevs.gesturevolume.ui.components.GestureDemoState
-import com.newagedevs.gesturevolume.ui.components.HowItWorksButton
+import com.newagedevs.gesturevolume.ui.components.DemoFooter
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import com.newagedevs.gesturevolume.ui.components.PREVIEW_SUBJECT_MAX_HEIGHT
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
@@ -163,8 +163,6 @@ fun QuickSliderScreen(
 ) {
     val store = viewModel.preference.slider
 
-    // One backdrop per visit; see the note in HandlerAppearanceScreen.
-    val backdrop = remember { viewModel.getNextBackground() }
 
     // Read once: which side the bar is on is settled on the Appearance screen, and this one has
     // no way to change it.
@@ -330,7 +328,6 @@ fun QuickSliderScreen(
                 SliderPreview(
                     modifier = modifier,
                     fillHeight = fillHeight,
-                    backdrop = backdrop,
                     handlerOnLeft = handlerOnLeft,
                     lengthDp = length,
                     thicknessDp = thickness,
@@ -605,6 +602,13 @@ fun QuickSliderScreen(
                 SliderFillSelector(
                     style = fillStyle,
                     onStyleChange = { fillStyle = it; store.setFillStyle(it) },
+                    trackColor = trackColor.toArgb(),
+                    fillColor = fillColor.toArgb(),
+                    fillColors = if (fillColorsOn) fillColors.toIntArray() else null,
+                    pixelStyle = pixelStyle,
+                    shaderStyle = shaderStyle,
+                    effortStyle = effortStyle,
+                    glimmerStyle = glimmerStyle,
                 )
                 // The fills with settings of their own, right under the chip that chose them.
                 if (fillStyle == SliderFill.PIXELS) {
@@ -763,7 +767,7 @@ fun QuickSliderScreen(
 }
 
 /**
- * The real slider view, at a fixed 60%, on one of the preview backdrops.
+ * The real slider view, at a fixed 60%, on the previews' phone.
  *
  * Held at a value rather than animated: the point of the preview is to show what the fill line
  * looks like against the two colours, and a value that moves on its own makes that harder to
@@ -785,7 +789,6 @@ private fun SliderPreview(
     iconRes: Int,
     valueMargin: Float,
     iconMargin: Float,
-    backdrop: Int,
     handlerOnLeft: Boolean,
     /** The panel style, so this shows the material the user is about to get. */
     panelTheme: String,
@@ -894,10 +897,21 @@ private fun SliderPreview(
         }
     }
     PreviewStage(
-        backdrop = backdrop,
         contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
         fillHeight = fillHeight,
         modifier = modifier,
+        // The hand reaches in over the frame, as the walkthrough's does; drawing only, so it never
+        // takes a touch meant for the preview.
+        overGlass = {
+            GestureDemoOverlay(
+                state = demo,
+                barAtStart = handlerOnLeft,
+                barInset = (edgeOffsetDp + minOf(barWidthDp, maxOf(thicknessDp, PANEL_PREVIEW_MIN_WINDOW)) / 2f).dp,
+                modifier = Modifier.matchParentSize(),
+            )
+        },
+        // Under the phone: what the finger is doing, and the button that plays it.
+        footer = { DemoFooter(demo) },
     ) {
         AndroidView(
             factory = { ctx -> QuickSliderView(ctx).also { sliderView = it } },
@@ -984,20 +998,6 @@ private fun SliderPreview(
                 // The window's floor, not the panel's: the preview is the window, and the panel
                 // is drawn inside it against the edge, exactly as it is on screen.
                 .width(maxOf(thicknessDp, PANEL_PREVIEW_MIN_WINDOW).dp)
-        )
-        // Over the panel and drawing only, so it never takes a touch meant for the preview.
-        GestureDemoOverlay(
-            state = demo,
-            barAtStart = handlerOnLeft,
-            barInset = (edgeOffsetDp + minOf(barWidthDp, maxOf(thicknessDp, PANEL_PREVIEW_MIN_WINDOW)) / 2f).dp,
-            modifier = Modifier.matchParentSize(),
-        )
-        // The bottom corner away from the panel, where it covers nothing being judged.
-        HowItWorksButton(
-            onClick = demo::replay,
-            modifier = Modifier
-                .align(if (handlerOnLeft) Alignment.BottomEnd else Alignment.BottomStart)
-                .padding(8.dp),
         )
     }
 }

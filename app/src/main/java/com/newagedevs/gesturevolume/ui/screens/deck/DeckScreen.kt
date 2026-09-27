@@ -60,7 +60,7 @@ import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.DemoGesture
 import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
-import com.newagedevs.gesturevolume.ui.components.HowItWorksButton
+import com.newagedevs.gesturevolume.ui.components.DemoFooter
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -142,8 +142,6 @@ fun DeckScreen(
     var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
     var animationSpeed by remember { mutableFloatStateOf(viewModel.preference.getPanelAnimationSpeed()) }
 
-    // One backdrop per visit; see the note in HandlerAppearanceScreen.
-    val backdrop = remember { viewModel.getNextBackground() }
     val handlerOnLeft = remember { preference.getHandlerPosition() == "Left" }
     // A finger swiping in off the bar with the Deck following it out, twice on arrival and on
     // request after that. Which physical way "out" is follows the stage, which puts the Deck at the
@@ -214,10 +212,22 @@ fun DeckScreen(
             contentPadding = padding,
             preview = { modifier, fillHeight ->
                 PreviewStage(
-                    backdrop = backdrop,
                     contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
                     fillHeight = fillHeight,
                     modifier = modifier,
+                    // The hand reaches in over the frame, as the walkthrough's does.
+                    overGlass = {
+                        GestureDemoOverlay(
+                            state = gestureDemo,
+                            barAtStart = handlerOnLeft,
+                            barInset = 12.dp,
+                            showBar = true,
+                            handle = remember { HandleLook.from(preference) },
+                            modifier = Modifier.matchParentSize(),
+                        )
+                    },
+                    // Under the phone: what the finger is doing, and the button that plays it.
+                    footer = { DemoFooter(gestureDemo) },
                 ) {
                     DeckPreviewStrip(
                         tiles = previewTiles,
@@ -237,20 +247,6 @@ fun DeckScreen(
                                 this.alpha = reveal
                                 translationX = (1f - reveal) * 44.dp.toPx() * (if (deckOnLeft) -1f else 1f)
                             },
-                    )
-                    GestureDemoOverlay(
-                        state = gestureDemo,
-                        barAtStart = handlerOnLeft,
-                        barInset = 12.dp,
-                        showBar = true,
-                        handle = remember { HandleLook.from(preference) },
-                        modifier = Modifier.matchParentSize(),
-                    )
-                    HowItWorksButton(
-                        onClick = gestureDemo::replay,
-                        modifier = Modifier
-                            .align(if (handlerOnLeft) Alignment.BottomEnd else Alignment.BottomStart)
-                            .padding(8.dp),
                     )
                 }
             },
