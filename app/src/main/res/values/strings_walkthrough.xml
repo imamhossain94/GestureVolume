@@ -79,7 +79,18 @@
     <string name="walk_menu_point_3">Screenshot and lock</string>
     <string name="walk_menu_point_4">Flashlight and more</string>
 
-    <!-- Last page: the overlay permission -->
+    <!-- Both styles, after their own pages: moving the bar -->
+    <string name="walk_move_chip">MOVE IT</string>
+    <string name="walk_move_title">Put it where your thumb is</string>
+    <string name="walk_move_subtitle">Hold the bar until it dims and shows arrows, then drag it anywhere: up, down, or across to the other side. Let go and it settles on the nearer edge.</string>
+    <string name="walk_move_caption">Hold · Drag · Let go</string>
+    <string name="walk_move_animation">A finger holds the bar until it shows arrows, drags it down and across the screen, and lets go, and the bar settles against the other edge.</string>
+    <string name="walk_move_point_1">Hold – pick it up</string>
+    <string name="walk_move_point_2">Drag – anywhere</string>
+    <string name="walk_move_point_3">Let go – it finds the edge</string>
+    <string name="walk_move_point_4">Stays where you leave it</string>
+
+    <!-- The overlay permission -->
     <string name="walk_permission_chip">PERMISSION</string>
     <string name="walk_permission_title">Allow the bar on screen</string>
     <string name="walk_permission_subtitle">Android asks you to allow Gesture Volume to display over other apps, so the bar can sit on top of them.</string>
@@ -89,7 +100,19 @@
     <string name="walk_permission_point_3">One switch in Settings</string>
     <string name="walk_permission_point_4">Off again any time</string>
 
-    <!-- Advanced only, after the overlay: the accessibility service -->
+    <!-- Both styles, Android 13 and later, after the overlay: notifications -->
+    <string name="walk_notif_chip">NOTIFICATIONS</string>
+    <string name="walk_notif_title">Controls in your notifications</string>
+    <string name="walk_notif_subtitle">Optional. Allow notifications and the bar\'s controls wait in your notification shade: hide or show the bar, open settings, or stop it, even with the app closed.</string>
+    <string name="walk_notif_animation">Allow is tapped on the notification request, and the notification shade comes down with the bar\'s controls in it.</string>
+    <string name="walk_notif_card">It is the only way back to a bar you hid while the app is closed. Gesture Volume posts no other notifications.</string>
+    <string name="walk_notif_granted">Notifications on ✓</string>
+    <string name="walk_notif_point_1">Hide or show the bar</string>
+    <string name="walk_notif_point_2">Settings and Stop</string>
+    <string name="walk_notif_point_3">Works with the app closed</string>
+    <string name="walk_notif_point_4">Off again any time</string>
+
+    <!-- Advanced only, last: the accessibility service -->
     <string name="walk_access_chip">ACCESSIBILITY</string>
     <string name="walk_access_title">Instant volume keys</string>
     <string name="walk_access_subtitle">Optional. Turn on the Gesture Volume accessibility service so a volume key opens the Quick slider at once, and Lock screen and Screenshot work from the bar and the Deck.</string>

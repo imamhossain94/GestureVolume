@@ -45,12 +45,20 @@ internal enum class WalkScene(val cycleMs: Int) {
     QuickSlider(4400),
     Deck(4200),
     LongPress(4400),
+    /** Hold, drag, let go: the Simple button moved to the other side. */
+    MoveButton(6000),
+    /** The same, with the Dock tab. */
+    MoveTab(6000),
     Permission(3600),
+    Notifications(5200),
     Accessibility(5200),
 }
 
 /** Where the permission scene rests once the permission is granted: switch on, bar on screen. */
 internal const val PERMISSION_SETTLED = 0.75f
+
+/** Where the notifications scene rests once they are allowed: the shade down, the controls in it. */
+internal const val NOTIFICATIONS_SETTLED = 0.75f
 
 /** Where the accessibility scene rests once the service is on: switched on, the Quick slider open. */
 internal const val ACCESSIBILITY_SETTLED = 0.74f
@@ -78,6 +86,28 @@ private const val PILL_CX = SCREEN_R - 4f - PILL_W / 2f
 private const val TAB_W = 9f
 private const val TAB_H = 56f
 private const val TAB_SWEEP = 10f
+
+// The Deck's strip: the real one's 64 dp against a phone's width, and as tall as its six items,
+// centred on the bar and short of the tab, which stays in sight beside it.
+private const val DECK_W = 32f
+private const val DECK_PAD = 5f
+private const val DECK_GAP = 4f
+private const val DECK_H = 141f
+private const val DECK_TOP = BAR_CY - DECK_H / 2f
+private const val DECK_RIGHT = 219f
+
+// Where a moved bar comes to rest: the left edge, as the right one's mirror.
+private const val PILL_CX_LEFT = SCREEN_L + 4f + PILL_W / 2f
+
+/** How far the real bar fades while a hold has it following the finger. See HandlerView.setDragCue. */
+private const val DRAG_CUE_ALPHA = 0.65f
+
+/** How far down the edge the moved bar is carried, and where across the screen it is let go. */
+private const val MOVE_DOWN = 44f
+private const val MOVE_DROP_X = 88f
+
+/** The middle of the notification request's Allow button. */
+private const val NOTIF_ALLOW_Y = 116f
 
 /** How wide the index finger is drawn; the rest of the hand is in proportion. */
 private const val FINGER_W = 24f
@@ -139,23 +169,35 @@ internal fun WalkthroughIllustration(
     Canvas(modifier.clipToBounds().semantics { contentDescription = description }) {
         // The clock is read here, in the draw phase, so a frame of the loop redraws this canvas
         // and nothing else: the page around it never recomposes for the animation.
-        val t = settledAt ?: clock.value
-        val pulse = (t * scene.cycleMs / PULSE_MS) % 1f
-        val s = min(size.width / SCENE_W, size.height / SCENE_H)
-        withTransform({
-            translate((size.width - SCENE_W * s) / 2f, size.height - SCENE_H * s)
-            scale(s, s, pivot = Offset.Zero)
-        }) {
-            drawPhone()
-            when (scene) {
-                WalkScene.Intro -> drawIntro(t, pulse)
-                WalkScene.Simple -> drawSimple(t, pulse)
-                WalkScene.QuickSlider -> drawQuickSlider(t, pulse, scratch)
-                WalkScene.Deck -> drawDeck(t, pulse, scratch)
-                WalkScene.LongPress -> drawLongPress(t, pulse, scratch)
-                WalkScene.Permission -> drawPermission(t, pulse)
-                WalkScene.Accessibility -> drawAccessibility(t, pulse, scratch)
-            }
+        drawWalkScene(scene, settledAt ?: clock.value, scratch)
+    }
+}
+
+/**
+ * [scene] at [t] of its loop, fitted to this scope's size. The whole drawing, apart from the clock
+ * that moves it, so a test can put any moment of any scene on a bitmap.
+ *
+ * @param path scratch for the tab's outline, rewound for each use rather than made per frame.
+ */
+internal fun DrawScope.drawWalkScene(scene: WalkScene, t: Float, path: Path) {
+    val pulse = (t * scene.cycleMs / PULSE_MS) % 1f
+    val s = min(size.width / SCENE_W, size.height / SCENE_H)
+    withTransform({
+        translate((size.width - SCENE_W * s) / 2f, size.height - SCENE_H * s)
+        scale(s, s, pivot = Offset.Zero)
+    }) {
+        drawPhone()
+        when (scene) {
+            WalkScene.Intro -> drawIntro(t, pulse)
+            WalkScene.Simple -> drawSimple(t, pulse)
+            WalkScene.QuickSlider -> drawQuickSlider(t, pulse, path)
+            WalkScene.Deck -> drawDeck(t, pulse, path)
+            WalkScene.LongPress -> drawLongPress(t, pulse, path)
+            WalkScene.MoveButton -> drawMove(t, pulse, path, tab = false)
+            WalkScene.MoveTab -> drawMove(t, pulse, path, tab = true)
+            WalkScene.Permission -> drawPermission(t, pulse)
+            WalkScene.Notifications -> drawNotifications(t, pulse)
+            WalkScene.Accessibility -> drawAccessibility(t, pulse, path)
         }
     }
 }
@@ -320,7 +362,10 @@ private fun DrawScope.drawQuickSlider(t: Float, pulse: Float, path: Path) {
     drawFinger(tip, press, alpha)
 }
 
-/** A swipe inward from the tab, and the Deck's tiles slide in behind the finger. */
+/**
+ * A swipe inward from the tab, and the Deck slides in beside it: one column down the edge, as it is
+ * on the phone — a contact to dial, two apps, a divider, and two toggles, one of them on.
+ */
 private fun DrawScope.drawDeck(t: Float, pulse: Float, path: Path) {
     val arrive = span(t, 0.02f, 0.12f)
     val press = span(t, 0.12f, 0.16f) * (1f - span(t, 0.38f, 0.43f))
@@ -329,31 +374,61 @@ private fun DrawScope.drawDeck(t: Float, pulse: Float, path: Path) {
     val alpha = span(t, 0f, 0.06f, LinearEasing) * (1f - span(t, 0.46f, 0.58f, LinearEasing))
     val close = span(t, 0.8f, 0.92f)
     val open = swipe * (1f - close)
-    val tip = fingerAt(Offset(mix(SCREEN_R - TAB_W / 2f - 1f, 150f, swipe), BAR_CY), arrive, leave)
+    val tip = fingerAt(Offset(mix(SCREEN_R - TAB_W / 2f - 1f, 160f, swipe), BAR_CY), arrive, leave)
 
     clipPath(screenPath) {
         drawTab(path)
         if (open > 0.001f) {
-            val panelW = 144f
-            val panelH = 100f
-            val left = mix(SCREEN_R + 4f, 220f - panelW, open)
-            val top = BAR_CY - panelH / 2f
-            drawRoundRect(Color.Black, Offset(left + 2f, top + 6f), Size(panelW, panelH), CornerRadius(22f), alpha = 0.18f * open)
-            drawRoundRect(DeckPanel, Offset(left, top), Size(panelW, panelH), CornerRadius(22f))
-            for (i in 0 until 6) {
-                // One after another, not all at once: the Deck fills in as it arrives.
-                val appear = span(t, 0.24f + i * 0.035f, 0.36f + i * 0.035f, Pop) * (1f - close)
-                if (appear <= 0.01f) continue
-                val cx = left + 28f + (i % 3) * 44f
-                val cy = top + 28f + (i / 3) * 44f
-                val tile = 36f * appear
-                drawRoundRect(Color.White, Offset(cx - tile / 2f, cy - tile / 2f), Size(tile, tile), CornerRadius(11f * appear), alpha = 0.14f)
-                drawCircle(TileColours[i], radius = 8f * appear, center = Offset(cx, cy))
+            val left = mix(SCREEN_R + 4f, DECK_RIGHT - DECK_W, open)
+            val corner = CornerRadius(DECK_W / 2f)
+            drawRoundRect(Color.Black, Offset(left + 2f, DECK_TOP + 6f), Size(DECK_W, DECK_H), corner, alpha = 0.18f * open)
+            drawRoundRect(DeckPanel, Offset(left, DECK_TOP), Size(DECK_W, DECK_H), corner)
+            val cx = left + DECK_W / 2f
+            var y = DECK_TOP + DECK_PAD
+            DeckItem.entries.forEachIndexed { i, item ->
+                // One after another down the column: the Deck fills in as it arrives.
+                val appear = span(t, 0.24f + i * 0.03f, 0.34f + i * 0.03f, Pop) * (1f - close)
+                val cy = y + item.height / 2f
+                if (appear > 0.01f) drawDeckItem(item, Offset(cx, cy), appear)
+                y += item.height + DECK_GAP
             }
         }
         drawTouch(tip, press, pulse)
     }
     drawFinger(tip, press, alpha)
+}
+
+/** What the Deck's column holds in the scene, top to bottom, in the real strip's order. */
+private enum class DeckItem(val height: Float) { Dial(22f), App(22f), SecondApp(22f), Divider(1f), ToggleOn(22f), Toggle(22f) }
+
+private fun DrawScope.drawDeckItem(item: DeckItem, center: Offset, appear: Float) {
+    val r = 11f * appear
+    when (item) {
+        // A contact: a round chip with an initial.
+        DeckItem.Dial -> {
+            drawCircle(Color.White, radius = r, center = center, alpha = 0.14f)
+            drawCircle(TileColours[3], radius = 4.5f * appear, center = center)
+        }
+        // Apps are their own icons, rounded squares in their own colours.
+        DeckItem.App, DeckItem.SecondApp -> {
+            val side = 20f * appear
+            val colour = if (item == DeckItem.App) TileColours[0] else TileColours[1]
+            drawRoundRect(colour, center - Offset(side / 2f, side / 2f), Size(side, side), CornerRadius(6f * appear))
+            drawCircle(Color.White, radius = 3.5f * appear, center = center, alpha = 0.85f)
+        }
+        DeckItem.Divider -> drawRoundRect(
+            Color.White, center - Offset(7f, 0.5f), Size(14f, 1f), CornerRadius(0.5f), alpha = 0.18f * appear,
+        )
+        // A toggle that is on wears the accent; one that is off is a chip with its glyph in colour.
+        DeckItem.ToggleOn -> {
+            drawCircle(Indigo, radius = r, center = center)
+            drawCircle(Color.White, radius = 4f * appear, center = center)
+        }
+        DeckItem.Toggle -> {
+            drawCircle(Color.White, radius = r, center = center, alpha = 0.14f)
+            drawCircle(TileColours[2], radius = 4f * appear, center = center)
+        }
+    }
 }
 
 /** A hold on the tab, counted by a ring round the fingertip, and the menu pops out beside it. */
@@ -402,6 +477,75 @@ private fun DrawScope.drawLongPress(t: Float, pulse: Float, path: Path) {
     drawFinger(tip, press, alpha)
 }
 
+/**
+ * A hold until the bar comes away from the edge, a drag down and across the screen, and a let-go
+ * short of the far side: it flies the rest of the way and stays there. While it is held it fades
+ * and wears the move arrows, as the real one does. Then it is put back, for the next loop.
+ *
+ * [tab] draws the Dock tab, whose flat side turns to face whichever edge it is nearer, as the
+ * real one's does; otherwise the Simple button.
+ */
+private fun DrawScope.drawMove(t: Float, pulse: Float, path: Path, tab: Boolean) {
+    val arrive = span(t, 0.02f, 0.12f)
+    val press = span(t, 0.12f, 0.16f) * (1f - span(t, 0.7f, 0.74f))
+    val hold = span(t, 0.16f, 0.34f, LinearEasing)
+    // Picked up the moment the hold completes; put down the moment the finger lifts.
+    val held = span(t, 0.33f, 0.4f, Pop) * (1f - span(t, 0.7f, 0.76f))
+    val down = span(t, 0.4f, 0.52f)
+    val across = span(t, 0.54f, 0.68f)
+    // Let go short of the left edge, it flies the rest of the way on its own.
+    val snap = span(t, 0.72f, 0.82f, Pop)
+    val leave = span(t, 0.74f, 0.88f)
+    val alpha = span(t, 0f, 0.06f, LinearEasing) * (1f - span(t, 0.78f, 0.9f, LinearEasing))
+    // Faded out where it landed and back in where it began, so the next loop starts the same way.
+    val gone = span(t, 0.9f, 0.94f, LinearEasing) * (1f - span(t, 0.95f, 0.99f, LinearEasing))
+    val home = t >= 0.945f
+
+    val startX = if (tab) SCREEN_R - TAB_W / 2f else PILL_CX
+    val restX = if (tab) SCREEN_L + TAB_W / 2f else PILL_CX_LEFT
+    val heldX = mix(startX, MOVE_DROP_X, across)
+    val x = if (home) startX else mix(heldX, restX, snap)
+    val y = if (home) BAR_CY else BAR_CY + MOVE_DOWN * down
+    val tip = fingerAt(Offset(heldX, BAR_CY + MOVE_DOWN * down), arrive, leave)
+    val lift = held.coerceIn(0f, 1f)
+    val barAlpha = (1f - gone) * (1f - (1f - DRAG_CUE_ALPHA) * lift)
+
+    clipPath(screenPath) {
+        if (tab) {
+            val onLeft = x < (SCREEN_L + SCREEN_R) / 2f
+            val edge = if (onLeft) x - TAB_W / 2f else x + TAB_W / 2f
+            withTransform({ scale(1f + 0.12f * held, 1f + 0.12f * held, pivot = Offset(x, y)) }) {
+                if (lift > 0.01f) {
+                    // A shadow falling away below it: it is in the finger now, not on the glass.
+                    tabPath(path, edge + 2f, y + 6f, TAB_W, TAB_H, TAB_SWEEP, onLeft)
+                    drawPath(path, Color.Black, alpha = 0.2f * lift * (1f - gone))
+                }
+                tabPath(path, edge, y, TAB_W, TAB_H, TAB_SWEEP, onLeft)
+                drawPath(path, TabColour, alpha = barAlpha)
+            }
+            drawMoveGlyph(Offset(x, y), 7f, lift * (1f - gone))
+        } else {
+            drawPill(y, held, cx = x, alpha = barAlpha)
+            drawMoveGlyph(Offset(x, y), 10f, lift * (1f - gone))
+        }
+        if (press > 0.01f && hold > 0f && hold < 1f) {
+            // The hold, counted round the fingertip, as on the long-press page.
+            drawArc(
+                Color.White,
+                startAngle = -90f,
+                sweepAngle = 360f * hold,
+                useCenter = false,
+                topLeft = Offset(tip.x - 21f, tip.y - 21f),
+                size = Size(42f, 42f),
+                alpha = press,
+                style = Stroke(3f),
+            )
+        }
+        drawTouch(tip, press, pulse)
+    }
+    drawFinger(tip, press, alpha)
+}
+
 /** The system switch flipped on, and the bar arrives over whatever app is open. */
 private fun DrawScope.drawPermission(t: Float, pulse: Float) {
     val cardTop = 48f
@@ -429,6 +573,67 @@ private fun DrawScope.drawPermission(t: Float, pulse: Float) {
         drawTouch(tip, press, pulse)
     }
     drawFinger(tip, press, alpha)
+}
+
+/**
+ * Allow tapped on Android's notification request, and the notification shade comes down with the
+ * bar's own notification in it: its Hide, Settings and Stop buttons, there with the app closed.
+ */
+private fun DrawScope.drawNotifications(t: Float, pulse: Float) {
+    val arrive = span(t, 0.04f, 0.18f)
+    val press = span(t, 0.2f, 0.24f) * (1f - span(t, 0.28f, 0.33f))
+    val leave = span(t, 0.34f, 0.5f)
+    val alpha = span(t, 0f, 0.08f, LinearEasing) * (1f - span(t, 0.4f, 0.52f, LinearEasing))
+    // Answered, the request goes; at the end it comes back, so the loop starts from the question.
+    val asking = (1f - span(t, 0.3f, 0.4f)) + span(t, 0.93f, 0.99f, LinearEasing)
+    val shade = span(t, 0.42f, 0.58f) * (1f - span(t, 0.86f, 0.93f))
+    val tip = fingerAt(Offset(140f, NOTIF_ALLOW_Y), arrive, leave)
+
+    clipPath(screenPath) {
+        if (shade > 0.001f) drawShade(shade)
+        if (asking > 0.01f) {
+            drawRect(Color.Black, Offset(SCREEN_L, SCREEN_T), Size(SCREEN_R - SCREEN_L, SCREEN_B - SCREEN_T), alpha = 0.22f * asking)
+            val grow = 0.92f + 0.08f * asking
+            withTransform({ scale(grow, grow, pivot = Offset(140f, 100f)) }) {
+                drawRoundRect(Color.White, Offset(72f, 50f), Size(136f, 100f), CornerRadius(16f), alpha = 0.97f * asking)
+                drawBell(Offset(140f, 67f), asking)
+                drawRoundRect(TextLine, Offset(100f, 82f), Size(80f, 6f), CornerRadius(3f), alpha = asking)
+                drawRoundRect(TextLine, Offset(112f, 93f), Size(56f, 5f), CornerRadius(2.5f), alpha = 0.6f * asking)
+                // Allow, lit as the finger lands on it, and Don't allow under it.
+                drawRoundRect(Indigo, Offset(84f, NOTIF_ALLOW_Y - 7.5f), Size(112f, 15f), CornerRadius(7.5f), alpha = (0.14f + 0.3f * press) * asking)
+                drawRoundRect(Indigo, Offset(122f, NOTIF_ALLOW_Y - 2f), Size(36f, 4f), CornerRadius(2f), alpha = asking)
+                drawRoundRect(TextLine, Offset(116f, NOTIF_ALLOW_Y + 17f), Size(48f, 4f), CornerRadius(2f), alpha = asking)
+            }
+        }
+        drawTouch(tip, press, pulse)
+    }
+    drawFinger(tip, press, alpha)
+}
+
+/**
+ * The notification shade, [open] of the way down, with the bar's notification in it: the app's
+ * mark, its name and state, and its three buttons.
+ */
+private fun DrawScope.drawShade(open: Float) {
+    // Slid down from above the screen rather than grown, so everything in it moves together.
+    val dy = -(1f - open) * 118f
+    drawRoundRect(DeckPanel, Offset(SCREEN_L, SCREEN_T - 30f + dy), Size(SCREEN_R - SCREEN_L, 140f), CornerRadius(20f))
+    for (i in 0 until 4) {
+        drawCircle(Color.White, radius = 7f, center = Offset(82f + i * 38f, 46f + dy), alpha = if (i == 1) 0.9f else 0.18f)
+    }
+    val top = 62f + dy
+    drawRoundRect(Color.White, Offset(58f, top), Size(164f, 56f), CornerRadius(14f), alpha = 0.97f)
+    // The app's mark: the bar, in a circle of the accent.
+    drawCircle(Indigo, radius = 7f, center = Offset(72f, top + 14f))
+    drawRoundRect(Color.White, Offset(70.8f, top + 10f), Size(2.4f, 8f), CornerRadius(1.2f))
+    drawRoundRect(TextLine, Offset(84f, top + 9f), Size(60f, 6f), CornerRadius(3f))
+    drawRoundRect(TextLine, Offset(84f, top + 19f), Size(84f, 5f), CornerRadius(2.5f), alpha = 0.6f)
+    // Hide, Settings, Stop.
+    for (i in 0 until 3) {
+        val left = 70f + i * 48f
+        drawRoundRect(Indigo, Offset(left, top + 35f), Size(42f, 12f), CornerRadius(6f), alpha = 0.12f)
+        drawRoundRect(Indigo, Offset(left + 10f, top + 39.5f), Size(22f, 3f), CornerRadius(1.5f), alpha = 0.75f)
+    }
 }
 
 /**
@@ -503,6 +708,36 @@ private fun DrawScope.drawVolumeKeys(pressed: Float) {
     }
 }
 
+/** A bell in a filled circle: what Android's notification request leads with. */
+private fun DrawScope.drawBell(center: Offset, alpha: Float) {
+    drawCircle(Indigo, radius = 9f, center = center, alpha = alpha)
+    val ink = Color.White
+    // A dome, the body under it, the flared lip, and the clapper below.
+    drawArc(ink, 180f, 180f, useCenter = true, topLeft = center + Offset(-4f, -5.5f), size = Size(8f, 8f), alpha = alpha)
+    drawRect(ink, center + Offset(-4f, -1.6f), Size(8f, 3.6f), alpha = alpha)
+    drawRoundRect(ink, center + Offset(-5.6f, 1.8f), Size(11.2f, 1.8f), CornerRadius(0.9f), alpha = alpha)
+    drawCircle(ink, radius = 1.3f, center = center + Offset(0f, 4.8f), alpha = alpha)
+}
+
+/** The move mark the real bar wears while it follows a finger: arrows out to all four sides. */
+private fun DrawScope.drawMoveGlyph(center: Offset, size: Float, alpha: Float) {
+    if (alpha <= 0.01f) return
+    val r = size / 2f
+    val head = r * 0.42f
+    val stroke = size * 0.13f
+    val ink = Color.White
+    drawLine(ink, center + Offset(-r, 0f), center + Offset(r, 0f), stroke, StrokeCap.Round, alpha = alpha)
+    drawLine(ink, center + Offset(0f, -r), center + Offset(0f, r), stroke, StrokeCap.Round, alpha = alpha)
+    // Each head: two short strokes back from the tip, either side of the shaft.
+    for (i in 0 until 4) {
+        val ux = if (i == 0) 1f else if (i == 1) -1f else 0f
+        val uy = if (i == 2) 1f else if (i == 3) -1f else 0f
+        val tip = center + Offset(ux * r, uy * r)
+        drawLine(ink, tip, tip + Offset(-ux * head - uy * head, -uy * head + ux * head), stroke, StrokeCap.Round, alpha = alpha)
+        drawLine(ink, tip, tip + Offset(-ux * head + uy * head, -uy * head - ux * head), stroke, StrokeCap.Round, alpha = alpha)
+    }
+}
+
 /** Android's accessibility mark: a figure with open arms in a filled circle. */
 private fun DrawScope.drawAccessibilityGlyph(center: Offset) {
     drawCircle(Indigo, radius = 10f, center = center)
@@ -549,18 +784,21 @@ private fun DrawScope.drawPhone() {
     drawCircle(FrameColour, radius = 4.5f, center = Offset(140f, 32f))
 }
 
-/** The Simple button. [lift] raises it off the glass, for when a hold has picked it up. */
-private fun DrawScope.drawPill(cy: Float, lift: Float = 0f) {
+/**
+ * The Simple button, centred on ([cx], [cy]). [lift] raises it off the glass, for when a hold has
+ * picked it up.
+ */
+private fun DrawScope.drawPill(cy: Float, lift: Float = 0f, cx: Float = PILL_CX, alpha: Float = 1f) {
     val grow = 1f + 0.12f * lift
     val w = PILL_W * grow
     val h = PILL_H * grow
-    val topLeft = Offset(PILL_CX - w / 2f, cy - h / 2f)
+    val topLeft = Offset(cx - w / 2f, cy - h / 2f)
     if (lift > 0.01f) {
         // A shadow falling away below it says it is in the finger now, not on the screen.
-        drawRoundRect(Color.Black, topLeft + Offset(2f, 6f), Size(w, h), CornerRadius(w / 2f), alpha = 0.2f * lift.coerceIn(0f, 1f))
+        drawRoundRect(Color.Black, topLeft + Offset(2f, 6f), Size(w, h), CornerRadius(w / 2f), alpha = 0.2f * lift.coerceIn(0f, 1f) * alpha)
     }
-    drawRoundRect(SimpleFill, topLeft, Size(w, h), CornerRadius(w / 2f))
-    drawRoundRect(Color.White, topLeft, Size(w, h), CornerRadius(w / 2f), style = Stroke(1f))
+    drawRoundRect(SimpleFill, topLeft, Size(w, h), CornerRadius(w / 2f), alpha = alpha)
+    drawRoundRect(Color.White, topLeft, Size(w, h), CornerRadius(w / 2f), alpha = alpha, style = Stroke(1f))
 }
 
 private fun DrawScope.drawTab(path: Path, cy: Float = BAR_CY, alpha: Float = 1f) {
@@ -575,8 +813,10 @@ private fun DrawScope.drawTab(path: Path, cy: Float = BAR_CY, alpha: Float = 1f)
  * Cut from the real bar's outline (see setTabOutline), not drawn freehand: a pair of cubics
  * left the ends as hooks with a crease where they met the straight side, and the walkthrough's
  * handle looked worse than the one it was introducing.
+ *
+ * [edgeOnLeft] turns it to face a left edge: its flat side on the left, reaching right.
  */
-private fun tabPath(path: Path, edge: Float, cy: Float, width: Float, height: Float, sweep: Float) {
+private fun tabPath(path: Path, edge: Float, cy: Float, width: Float, height: Float, sweep: Float, edgeOnLeft: Boolean = false) {
     val total = height + 2f * sweep
     path.setTabOutline(
         edgeX = edge,
@@ -584,7 +824,7 @@ private fun tabPath(path: Path, edge: Float, cy: Float, width: Float, height: Fl
         width = width,
         height = total,
         flare = HandlerPresets.DEFAULT.flare,
-        edgeOnLeft = false,
+        edgeOnLeft = edgeOnLeft,
     )
 }
 

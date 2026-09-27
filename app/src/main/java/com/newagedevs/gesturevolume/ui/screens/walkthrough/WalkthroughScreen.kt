@@ -1,6 +1,9 @@
 package com.newagedevs.gesturevolume.ui.screens.walkthrough
 
+import android.Manifest
 import android.content.Intent
+import android.os.Build
+import android.os.SystemClock
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -17,8 +20,10 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -35,6 +40,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -45,6 +51,9 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
@@ -54,6 +63,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -81,11 +91,13 @@ import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
 import com.newagedevs.gesturevolume.ui.motion.Button
+import com.newagedevs.gesturevolume.ui.motion.IconButton
 import com.newagedevs.gesturevolume.ui.motion.OutlinedButton
 import com.newagedevs.gesturevolume.ui.motion.Springs
 import com.newagedevs.gesturevolume.ui.motion.TextButton
 import com.newagedevs.gesturevolume.ui.motion.pressBounce
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
+import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import com.newagedevs.gesturevolume.utils.UserMode
 
 /**
@@ -93,9 +105,18 @@ import com.newagedevs.gesturevolume.utils.UserMode
  * depends on the style chosen on [Style]. The order also gives every move a direction, so a page
  * slides in from the side it sits on, whichever way the user is going.
  */
-private enum class WalkPage { Intro, Style, Simple, QuickSlider, Deck, LongPress, Permission, Accessibility }
+internal enum class WalkPage {
+    Intro, Style, Simple, QuickSlider, Deck, LongPress, Move, Permission, Notifications, Accessibility,
+}
 
-private fun pagesFor(mode: String): List<WalkPage> = buildList {
+/**
+ * The pages for [mode], in order.
+ *
+ * @param askNotifications whether this phone asks for notifications at all: Android 13 and later.
+ *   Below that they are allowed unless switched off, and a page asking for them would be a page
+ *   with nothing to ask.
+ */
+internal fun pagesFor(mode: String, askNotifications: Boolean): List<WalkPage> = buildList {
     add(WalkPage.Intro)
     add(WalkPage.Style)
     if (mode == UserMode.ADVANCED) {
@@ -105,16 +126,21 @@ private fun pagesFor(mode: String): List<WalkPage> = buildList {
     } else {
         add(WalkPage.Simple)
     }
+    // Both styles: wherever the bar starts is somewhere, and a thumb has its own idea of where.
+    add(WalkPage.Move)
     add(WalkPage.Permission)
+    // Both styles, and optional: the bar works without it, and it is where the bar's controls live
+    // while the app is closed.
+    if (askNotifications) add(WalkPage.Notifications)
     // Advanced only: its defaults are what need the service — volume keys that open the Quick
     // slider at once, and Lock screen and Screenshot on the Deck. Last, and optional, because the
-    // bar works without it and cannot work without the page before.
+    // bar works without it and cannot work without the overlay page.
     if (mode == UserMode.ADVANCED) add(WalkPage.Accessibility)
 }
 
 /** The pages that ask for a permission, each with Allow and Skip of its own. */
 private val WalkPage.asksPermission: Boolean
-    get() = this == WalkPage.Permission || this == WalkPage.Accessibility
+    get() = this == WalkPage.Permission || this == WalkPage.Notifications || this == WalkPage.Accessibility
 
 /** The words on a page. [scene] is null where the card holds something other than a gesture. */
 private class PageText(
@@ -163,10 +189,22 @@ private fun pageText(page: WalkPage, mode: String): PageText = when (page) {
         R.string.walk_menu_caption, R.string.walk_menu_animation, WalkScene.LongPress,
         listOf(R.string.walk_menu_point_1, R.string.walk_menu_point_2, R.string.walk_menu_point_3, R.string.walk_menu_point_4),
     )
+    // The bar the style brings, being moved: the button, or the tab turning to face its new edge.
+    WalkPage.Move -> PageText(
+        R.string.walk_move_chip, R.string.walk_move_title, R.string.walk_move_subtitle,
+        R.string.walk_move_caption, R.string.walk_move_animation,
+        if (mode == UserMode.ADVANCED) WalkScene.MoveTab else WalkScene.MoveButton,
+        listOf(R.string.walk_move_point_1, R.string.walk_move_point_2, R.string.walk_move_point_3, R.string.walk_move_point_4),
+    )
     WalkPage.Permission -> PageText(
         R.string.walk_permission_chip, R.string.walk_permission_title, R.string.walk_permission_subtitle,
         null, R.string.walk_permission_animation, WalkScene.Permission,
         listOf(R.string.walk_permission_point_1, R.string.walk_permission_point_2, R.string.walk_permission_point_3, R.string.walk_permission_point_4),
+    )
+    WalkPage.Notifications -> PageText(
+        R.string.walk_notif_chip, R.string.walk_notif_title, R.string.walk_notif_subtitle,
+        null, R.string.walk_notif_animation, WalkScene.Notifications,
+        listOf(R.string.walk_notif_point_1, R.string.walk_notif_point_2, R.string.walk_notif_point_3, R.string.walk_notif_point_4),
     )
     WalkPage.Accessibility -> PageText(
         R.string.walk_access_chip, R.string.walk_access_title, R.string.walk_access_subtitle,
@@ -179,6 +217,12 @@ private val CardShape = RoundedCornerShape(28.dp)
 private val ActionShape = RoundedCornerShape(18.dp)
 private val Granted = Color(0xFF10B981)
 private val EdgeDot = Color(0xFFEF4444)
+
+/**
+ * How soon a refusal of the notification request comes back when no one was asked: Android has
+ * stopped showing it after two refusals. Nobody reads the question and answers it this fast.
+ */
+private const val UNASKED_WITHIN_MS = 500L
 
 @Composable
 fun WalkthroughScreen(
@@ -201,20 +245,59 @@ fun WalkthroughScreen(
     var pageIndex by rememberSaveable { mutableIntStateOf(0) }
     // A second tap on Start or Skip while the first is navigating away must not finish twice.
     var finished by remember { mutableStateOf(false) }
-    val pages = remember(selectedMode) { pagesFor(selectedMode) }
+    val pages = remember(selectedMode) {
+        pagesFor(selectedMode, askNotifications = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    }
     val index = pageIndex.coerceIn(0, pages.lastIndex)
     val page = pages[index]
 
     val hasOverlayPermission = remember { mutableStateOf(Settings.canDrawOverlays(context)) }
+    val hasNotifications = remember { mutableStateOf(PermissionNeeds.hasNotificationPermission(context)) }
     val hasAccessibility = remember { mutableStateOf(OverlayRuntime.isAccessibilityEnabled(context)) }
     var showAccessibilityDisclosure by remember { mutableStateOf(false) }
+
+    /** When the notification request went out, to tell a refusal from no one having been asked. */
+    var notificationsAskedAt by remember { mutableLongStateOf(0L) }
 
     // Checked on every return to the screen too, not only when the settings screen hands back a
     // result: some phones come back without one, and the switch can be flipped from elsewhere. The
     // accessibility list never hands anything back, so this is the only way it is ever seen.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         hasOverlayPermission.value = Settings.canDrawOverlays(context)
+        hasNotifications.value = PermissionNeeds.hasNotificationPermission(context)
         hasAccessibility.value = OverlayRuntime.isAccessibilityEnabled(context)
+    }
+
+    fun openNotificationSettings() {
+        // Kept paused on the way back as well: the walkthrough lifts it when it closes.
+        viewModel.preference.setAppOpenAdPaused(true)
+        runCatching {
+            context.startActivity(
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            )
+        }
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasNotifications.value = granted
+        // Refused twice before, Android stops showing the question and the answer comes straight
+        // back. Back that fast, no one was asked, so the app's notification settings are the way
+        // left. An answer someone actually gave stands: Skip is beside Allow for moving on.
+        if (!granted && SystemClock.elapsedRealtime() - notificationsAskedAt < UNASKED_WITHIN_MS) {
+            openNotificationSettings()
+        }
+    }
+
+    fun requestNotifications() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        // Asked here, so switching the bar on later does not ask a second time. See
+        // MainViewModel.maybeAskForNotificationPermission.
+        viewModel.preference.setAskedNotificationPermission(true)
+        notificationsAskedAt = SystemClock.elapsedRealtime()
+        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
@@ -266,6 +349,7 @@ fun WalkthroughScreen(
                 goTo(index + 1)
             }
             WalkPage.Permission -> if (hasOverlayPermission.value) next() else requestOverlayPermission()
+            WalkPage.Notifications -> if (hasNotifications.value) next() else requestNotifications()
             // The disclosure first, every time, as everywhere else the app asks for the service.
             WalkPage.Accessibility -> if (hasAccessibility.value) next() else showAccessibilityDisclosure = true
             else -> goTo(index + 1)
@@ -315,6 +399,7 @@ fun WalkthroughScreen(
                 // The permission pages have their own Skip beside Allow; two would be one too many.
                 showSkip = !page.asksPermission,
                 onSkip = ::finish,
+                onBack = { goTo(index - 1) },
             )
 
             AnimatedContent(
@@ -337,6 +422,7 @@ fun WalkthroughScreen(
                     onSelectMode = { selectedMode = it },
                     granted = when (shown) {
                         WalkPage.Accessibility -> hasAccessibility.value
+                        WalkPage.Notifications -> hasNotifications.value
                         else -> hasOverlayPermission.value
                     },
                     onPrimary = ::onPrimary,
@@ -350,7 +436,7 @@ fun WalkthroughScreen(
 }
 
 @Composable
-private fun TopRow(index: Int, count: Int, showSkip: Boolean, onSkip: () -> Unit) {
+private fun TopRow(index: Int, count: Int, showSkip: Boolean, onSkip: () -> Unit, onBack: () -> Unit) {
     val colours = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
@@ -358,6 +444,22 @@ private fun TopRow(index: Int, count: Int, showSkip: Boolean, onSkip: () -> Unit
             .height(52.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Back to the page before, from every page but the first: the step the system's Back
+        // already takes, where the eye looks for it. It opens out ahead of the dots as the first
+        // page is left, rather than the dots jumping aside for it.
+        AnimatedVisibility(
+            visible = index > 0,
+            enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
+            exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
+        ) {
+            IconButton(onClick = onBack, modifier = Modifier.offset(x = (-8).dp)) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back),
+                    tint = colours.onSurface,
+                )
+            }
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             for (i in 0 until count) {
                 val width by animateDpAsState(
@@ -450,6 +552,15 @@ private fun PageContent(
                     body = stringResource(R.string.walkthrough_overlay_desc),
                     grantedLabel = stringResource(R.string.permission_granted_check),
                     settledAt = PERMISSION_SETTLED,
+                    granted = granted,
+                    modifier = Modifier.fillMaxSize()
+                )
+                page == WalkPage.Notifications -> PermissionCard(
+                    scene = WalkScene.Notifications,
+                    description = stringResource(R.string.walk_notif_animation),
+                    body = stringResource(R.string.walk_notif_card),
+                    grantedLabel = stringResource(R.string.walk_notif_granted),
+                    settledAt = NOTIFICATIONS_SETTLED,
                     granted = granted,
                     modifier = Modifier.fillMaxSize()
                 )
