@@ -133,7 +133,7 @@ fun PreviewStage(
                 .fillMaxWidth()
                 .then(if (fillHeight) Modifier.weight(1f) else Modifier.height(PREVIEW_PHONE_HEIGHT))
                 .clip(RoundedCornerShape(18.dp))
-                .background(colours.surface)
+                .stageBackdrop()
                 .clipToBounds()
         ) {
             // One of the scene's units, in dp, and where the scene sits: the walkthrough's fit.

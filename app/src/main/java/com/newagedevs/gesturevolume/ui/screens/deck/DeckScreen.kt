@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.deck
 
+import com.newagedevs.gesturevolume.ui.components.screenWash
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material.icons.filled.Tune
@@ -195,6 +196,9 @@ fun DeckScreen(
     }
 
     Scaffold(
+        // The walkthrough's cool wash at the top, behind the transparent bar: see screenWash.
+        modifier = Modifier.screenWash(),
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.deck_title)) },

@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
+import com.newagedevs.gesturevolume.ui.components.screenWash
 import android.content.res.Configuration
 import android.view.Gravity
 import androidx.activity.compose.BackHandler
@@ -384,7 +385,9 @@ fun HandlerAppearanceScreen(
     // edits this screen's draft, so it lives with it rather than on a route of its own.
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
-            containerColor = MaterialTheme.colorScheme.background,
+            // The walkthrough's cool wash at the top, behind the transparent bar: see screenWash.
+            modifier = Modifier.screenWash(),
+            containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
                     title = { Text(stringResource(R.string.appearance)) },

@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
+import com.newagedevs.gesturevolume.ui.components.screenWash
 import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -257,6 +258,9 @@ fun HandlerActionsScreen(
     }
 
     Scaffold(
+        // The walkthrough's cool wash at the top, behind the transparent bar: see screenWash.
+        modifier = Modifier.screenWash(),
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.handler_actions)) },

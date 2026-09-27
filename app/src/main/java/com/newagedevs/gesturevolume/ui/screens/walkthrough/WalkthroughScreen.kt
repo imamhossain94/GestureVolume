@@ -1,5 +1,7 @@
 package com.newagedevs.gesturevolume.ui.screens.walkthrough
 
+import com.newagedevs.gesturevolume.ui.components.screenWash
+import com.newagedevs.gesturevolume.ui.components.stageBackdrop
 import android.Manifest
 import android.content.Intent
 import android.os.Build
@@ -378,9 +380,8 @@ fun WalkthroughScreen(
     BackHandler(enabled = index > 0) { goTo(index - 1) }
 
     val colours = MaterialTheme.colorScheme
-    // A warm wash over the theme's background: peach on light, a faint ember on dark, so the
-    // pages feel like a welcome without fighting the theme.
-    val warm = if (colours.background.luminance() > 0.5f) Color(0xFFFFE9D6) else Color(0xFF3A2A20)
+    // A cool wash over the theme's background, shared with the screens that show a preview: see
+    // screenWash. It was a peach wash, which fought the blues of the pictures below.
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -389,7 +390,7 @@ fun WalkthroughScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Brush.verticalGradient(listOf(warm, colours.background)))
+                .screenWash()
                 .systemBarsPadding()
                 .padding(horizontal = 20.dp)
         ) {
@@ -636,8 +637,9 @@ private fun PageContent(
 @Composable
 private fun IllustrationCard(scene: WalkScene, caption: String, description: String, modifier: Modifier = Modifier) {
     val colours = MaterialTheme.colorScheme
-    Surface(modifier = modifier, shape = CardShape, color = colours.surfaceContainer) {
-        Column {
+    // On the same backdrop as the preview cards: the phone stands on it the same way everywhere.
+    Surface(modifier = modifier, shape = CardShape, color = Color.Transparent) {
+        Column(modifier = Modifier.stageBackdrop()) {
             WalkthroughIllustration(
                 scene = scene,
                 description = description,
@@ -797,8 +799,9 @@ private fun PermissionCard(
     modifier: Modifier = Modifier,
 ) {
     val colours = MaterialTheme.colorScheme
-    Surface(modifier = modifier, shape = CardShape, color = colours.surfaceContainer) {
-        Column {
+    // On the same backdrop as the preview cards: the phone stands on it the same way everywhere.
+    Surface(modifier = modifier, shape = CardShape, color = Color.Transparent) {
+        Column(modifier = Modifier.stageBackdrop()) {
             WalkthroughIllustration(
                 scene = scene,
                 description = description,

@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.menu
 
+import com.newagedevs.gesturevolume.ui.components.screenWash
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.Animation
@@ -198,7 +199,9 @@ fun LongPressMenuScreen(
     val available = HandlerActionCatalog.CONTEXT_MENU_CANDIDATES.filterNot { it.action in shown }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        // The walkthrough's cool wash at the top, behind the transparent bar: see screenWash.
+        modifier = Modifier.screenWash(),
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.context_menu_title)) },
