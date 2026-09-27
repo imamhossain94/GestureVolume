@@ -203,7 +203,7 @@ class OverlayController(
          *
          * A bar already wider than this keeps its own width: the maximum, never a replacement.
          */
-        private const val MIN_TOUCH_WIDTH_DP = 28f
+        internal const val MIN_TOUCH_WIDTH_DP = 28f
 
         /** How long the bar is kept out of a screenshot before and after the shutter. */
         private const val SCREENSHOT_HIDE_BEFORE_MS = 250L

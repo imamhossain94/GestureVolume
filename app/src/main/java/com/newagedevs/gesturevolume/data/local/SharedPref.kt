@@ -380,10 +380,10 @@ class SharedPref @Inject constructor(
         /**
          * Where a fresh install puts the bar vertically, read from the Default preset.
          *
-         * Paired with a horizontal default of 1f — flush right — the preset's 0.2 puts the bar a
-         * fifth of the way down the right edge, clear of the status bar and of the part of the
-         * screen a thumb scrolls through. It has been an eighth and a half before this, and the
-         * bar can be dragged anywhere.
+         * Paired with a horizontal default of 1f — flush right — the preset's 0.21 puts the bar a
+         * little over a fifth of the way down the right edge, clear of the status bar and of the
+         * part of the screen a thumb scrolls through. It has been an eighth, a half and a fifth
+         * before this, and the bar can be dragged anywhere.
          *
          * An install that predates a change keeps whatever it had: see
          * [pinLegacyAppearanceDefaults] and [pinPreDockBehaviourDefaults].

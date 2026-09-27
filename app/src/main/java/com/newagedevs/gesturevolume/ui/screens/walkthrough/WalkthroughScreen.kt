@@ -78,6 +78,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.newagedevs.gesturevolume.GestureApplication
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.service.OverlayRuntime
+import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
 import com.newagedevs.gesturevolume.ui.motion.Button
 import com.newagedevs.gesturevolume.ui.motion.OutlinedButton
 import com.newagedevs.gesturevolume.ui.motion.Springs
@@ -91,7 +93,7 @@ import com.newagedevs.gesturevolume.utils.UserMode
  * depends on the style chosen on [Style]. The order also gives every move a direction, so a page
  * slides in from the side it sits on, whichever way the user is going.
  */
-private enum class WalkPage { Intro, Style, Simple, QuickSlider, Deck, LongPress, Permission }
+private enum class WalkPage { Intro, Style, Simple, QuickSlider, Deck, LongPress, Permission, Accessibility }
 
 private fun pagesFor(mode: String): List<WalkPage> = buildList {
     add(WalkPage.Intro)
@@ -104,7 +106,15 @@ private fun pagesFor(mode: String): List<WalkPage> = buildList {
         add(WalkPage.Simple)
     }
     add(WalkPage.Permission)
+    // Advanced only: its defaults are what need the service — volume keys that open the Quick
+    // slider at once, and Lock screen and Screenshot on the Deck. Last, and optional, because the
+    // bar works without it and cannot work without the page before.
+    if (mode == UserMode.ADVANCED) add(WalkPage.Accessibility)
 }
+
+/** The pages that ask for a permission, each with Allow and Skip of its own. */
+private val WalkPage.asksPermission: Boolean
+    get() = this == WalkPage.Permission || this == WalkPage.Accessibility
 
 /** The words on a page. [scene] is null where the card holds something other than a gesture. */
 private class PageText(
@@ -158,6 +168,11 @@ private fun pageText(page: WalkPage, mode: String): PageText = when (page) {
         null, R.string.walk_permission_animation, WalkScene.Permission,
         listOf(R.string.walk_permission_point_1, R.string.walk_permission_point_2, R.string.walk_permission_point_3, R.string.walk_permission_point_4),
     )
+    WalkPage.Accessibility -> PageText(
+        R.string.walk_access_chip, R.string.walk_access_title, R.string.walk_access_subtitle,
+        null, R.string.walk_access_animation, WalkScene.Accessibility,
+        listOf(R.string.walk_access_point_1, R.string.walk_access_point_2, R.string.walk_access_point_3, R.string.walk_access_point_4),
+    )
 }
 
 private val CardShape = RoundedCornerShape(28.dp)
@@ -191,11 +206,15 @@ fun WalkthroughScreen(
     val page = pages[index]
 
     val hasOverlayPermission = remember { mutableStateOf(Settings.canDrawOverlays(context)) }
+    val hasAccessibility = remember { mutableStateOf(OverlayRuntime.isAccessibilityEnabled(context)) }
+    var showAccessibilityDisclosure by remember { mutableStateOf(false) }
 
     // Checked on every return to the screen too, not only when the settings screen hands back a
-    // result: some phones come back without one, and the switch can be flipped from elsewhere.
+    // result: some phones come back without one, and the switch can be flipped from elsewhere. The
+    // accessibility list never hands anything back, so this is the only way it is ever seen.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         hasOverlayPermission.value = Settings.canDrawOverlays(context)
+        hasAccessibility.value = OverlayRuntime.isAccessibilityEnabled(context)
     }
 
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
@@ -232,6 +251,13 @@ fun WalkthroughScreen(
         overlayPermissionLauncher.launch(intent)
     }
 
+    val isLastPage = index == pages.lastIndex
+
+    /** On to the next page, or out of the walkthrough from the last. */
+    fun next() {
+        if (isLastPage) finish() else goTo(index + 1)
+    }
+
     fun onPrimary() {
         when (page) {
             WalkPage.Style -> {
@@ -239,9 +265,29 @@ fun WalkthroughScreen(
                 modeChosen = true
                 goTo(index + 1)
             }
-            WalkPage.Permission -> if (hasOverlayPermission.value) finish() else requestOverlayPermission()
+            WalkPage.Permission -> if (hasOverlayPermission.value) next() else requestOverlayPermission()
+            // The disclosure first, every time, as everywhere else the app asks for the service.
+            WalkPage.Accessibility -> if (hasAccessibility.value) next() else showAccessibilityDisclosure = true
             else -> goTo(index + 1)
         }
+    }
+
+    if (showAccessibilityDisclosure) {
+        AccessibilityDisclosureDialog(
+            onAccept = {
+                showAccessibilityDisclosure = false
+                viewModel.preference.setAcceptedAccessibilityDisclosure(true)
+                // Kept paused on the way back as well: the walkthrough lifts it when it closes.
+                viewModel.preference.setAppOpenAdPaused(true)
+                try {
+                    context.startActivity(OverlayRuntime.accessibilitySettingsIntent())
+                } catch (_: Exception) {
+                    // No accessibility list on this build: nothing to wait for, so on it goes.
+                    next()
+                }
+            },
+            onDismiss = { showAccessibilityDisclosure = false },
+        )
     }
 
     // Back steps back through the pages; only on the first does it leave.
@@ -266,8 +312,8 @@ fun WalkthroughScreen(
             TopRow(
                 index = index,
                 count = pages.size,
-                // The permission page has its own Skip beside Allow; two would be one too many.
-                showSkip = page != WalkPage.Permission,
+                // The permission pages have their own Skip beside Allow; two would be one too many.
+                showSkip = !page.asksPermission,
                 onSkip = ::finish,
             )
 
@@ -285,12 +331,18 @@ fun WalkthroughScreen(
             ) { shown ->
                 PageContent(
                     page = shown,
-                    isLastTutorial = shown == pages.getOrNull(pages.lastIndex - 1),
+                    isLastTutorial = shown == pages.getOrNull(pages.indexOf(WalkPage.Permission) - 1),
+                    isLastPage = shown == pages.last(),
                     selectedMode = selectedMode,
                     onSelectMode = { selectedMode = it },
-                    granted = hasOverlayPermission.value,
+                    granted = when (shown) {
+                        WalkPage.Accessibility -> hasAccessibility.value
+                        else -> hasOverlayPermission.value
+                    },
                     onPrimary = ::onPrimary,
-                    onSkip = ::finish,
+                    // Skips this permission, not the rest: the Advanced walkthrough still has the
+                    // accessibility page to offer after the overlay one.
+                    onSkip = ::next,
                 )
             }
         }
@@ -345,6 +397,7 @@ private fun TopRow(index: Int, count: Int, showSkip: Boolean, onSkip: () -> Unit
 private fun PageContent(
     page: WalkPage,
     isLastTutorial: Boolean,
+    isLastPage: Boolean,
     selectedMode: String,
     onSelectMode: (String) -> Unit,
     granted: Boolean,
@@ -392,6 +445,20 @@ private fun PageContent(
                     modifier = Modifier.fillMaxSize()
                 )
                 page == WalkPage.Permission -> PermissionCard(
+                    scene = WalkScene.Permission,
+                    description = stringResource(R.string.walk_permission_animation),
+                    body = stringResource(R.string.walkthrough_overlay_desc),
+                    grantedLabel = stringResource(R.string.permission_granted_check),
+                    settledAt = PERMISSION_SETTLED,
+                    granted = granted,
+                    modifier = Modifier.fillMaxSize()
+                )
+                page == WalkPage.Accessibility -> PermissionCard(
+                    scene = WalkScene.Accessibility,
+                    description = stringResource(R.string.walk_access_animation),
+                    body = stringResource(R.string.walk_access_card),
+                    grantedLabel = stringResource(R.string.walk_access_granted),
+                    settledAt = ACCESSIBILITY_SETTLED,
                     granted = granted,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -411,7 +478,7 @@ private fun PageContent(
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (page == WalkPage.Permission && !granted) {
+        if (page.asksPermission && !granted) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -437,7 +504,7 @@ private fun PageContent(
             }
         } else {
             val label = when {
-                page == WalkPage.Permission -> R.string.walk_start
+                page.asksPermission -> if (isLastPage) R.string.walk_start else R.string.walk_continue
                 isLastTutorial -> R.string.walk_got_it
                 else -> R.string.walk_continue
             }
@@ -607,16 +674,25 @@ private fun StyleCard(
     }
 }
 
+/** A permission page's card: the switch being flipped, what it is for, and a tick once it is on. */
 @Composable
-private fun PermissionCard(granted: Boolean, modifier: Modifier = Modifier) {
+private fun PermissionCard(
+    scene: WalkScene,
+    description: String,
+    body: String,
+    grantedLabel: String,
+    settledAt: Float,
+    granted: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val colours = MaterialTheme.colorScheme
     Surface(modifier = modifier, shape = CardShape, color = colours.surfaceContainer) {
         Column {
             WalkthroughIllustration(
-                scene = WalkScene.Permission,
-                description = stringResource(R.string.walk_permission_animation),
+                scene = scene,
+                description = description,
                 // Once granted there is nothing left to show happening: it rests switched on.
-                settledAt = if (granted) PERMISSION_SETTLED else null,
+                settledAt = if (granted) settledAt else null,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
@@ -624,7 +700,7 @@ private fun PermissionCard(granted: Boolean, modifier: Modifier = Modifier) {
             )
             Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp)) {
                 Text(
-                    text = stringResource(R.string.walkthrough_overlay_desc),
+                    text = body,
                     style = MaterialTheme.typography.bodySmall,
                     color = colours.onSurfaceVariant
                 )
@@ -635,7 +711,7 @@ private fun PermissionCard(granted: Boolean, modifier: Modifier = Modifier) {
                         modifier = Modifier.padding(top = 10.dp)
                     ) {
                         Text(
-                            text = stringResource(R.string.permission_granted_check),
+                            text = grantedLabel,
                             color = Granted,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)

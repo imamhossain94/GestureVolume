@@ -1,6 +1,7 @@
 package com.newagedevs.gesturevolume.ui.screens.walkthrough
 
 import com.newagedevs.gesturevolume.utils.HandlerPresets
+import com.newagedevs.gesturevolume.ui.components.drawPointingHand
 import com.newagedevs.gesturevolume.ui.components.setTabOutline
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Easing
@@ -23,6 +24,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
@@ -44,10 +46,14 @@ internal enum class WalkScene(val cycleMs: Int) {
     Deck(4200),
     LongPress(4400),
     Permission(3600),
+    Accessibility(5200),
 }
 
 /** Where the permission scene rests once the permission is granted: switch on, bar on screen. */
 internal const val PERMISSION_SETTLED = 0.75f
+
+/** Where the accessibility scene rests once the service is on: switched on, the Quick slider open. */
+internal const val ACCESSIBILITY_SETTLED = 0.74f
 
 // The scene is drawn in a fixed design space and scaled to fit, so it keeps its proportions on
 // any screen: a short phone squeezes the card, and the drawing shrinks with it instead of
@@ -73,8 +79,8 @@ private const val TAB_W = 9f
 private const val TAB_H = 56f
 private const val TAB_SWEEP = 10f
 
-private const val FINGER_W = 26f
-private const val FINGER_LEN = 124f
+/** How wide the index finger is drawn; the rest of the hand is in proportion. */
+private const val FINGER_W = 24f
 
 /** How often the touch ring goes out from the fingertip while a finger is down. */
 private const val PULSE_MS = 900f
@@ -85,9 +91,6 @@ private val TabColour = Color(0xFF050507)
 private val FrameColour = Color(0xFF17171C)
 private val WallTop = Color(0xFFD9CCFF)
 private val WallBottom = Color(0xFF9DB2FA)
-private val FingerColour = Color(0xFFF7F4FB)
-private val FingerEdge = Color(0xFF3B3552)
-private val NailColour = Color(0xFFE6DFF2)
 private val DeckPanel = Color(0xE61D1B2B)
 private val MenuPanel = Color(0xF7FFFFFF)
 private val MenuTile = Color(0xFFEEF0FF)
@@ -151,6 +154,7 @@ internal fun WalkthroughIllustration(
                 WalkScene.Deck -> drawDeck(t, pulse, scratch)
                 WalkScene.LongPress -> drawLongPress(t, pulse, scratch)
                 WalkScene.Permission -> drawPermission(t, pulse)
+                WalkScene.Accessibility -> drawAccessibility(t, pulse, scratch)
             }
         }
     }
@@ -427,7 +431,90 @@ private fun DrawScope.drawPermission(t: Float, pulse: Float) {
     drawFinger(tip, press, alpha)
 }
 
+/**
+ * The accessibility switch flipped on, then a press of the volume key on the phone's side, and the
+ * Quick slider grows out of the bar at once: what the service is for, in the order it happens.
+ */
+private fun DrawScope.drawAccessibility(t: Float, pulse: Float, path: Path) {
+    // Low on the screen, so the slider has the top of it to open into.
+    val cardTop = 146f
+    val switchLeft = 176f
+    val switchTop = cardTop + 14f
+    val arrive = span(t, 0.04f, 0.18f)
+    val press = span(t, 0.2f, 0.24f) * (1f - span(t, 0.28f, 0.33f))
+    val leave = span(t, 0.34f, 0.5f)
+    val alpha = span(t, 0f, 0.08f, LinearEasing) * (1f - span(t, 0.4f, 0.52f, LinearEasing))
+    // Everything winds back at the end, so the loop starts from a switched-off phone again.
+    val reset = 1f - span(t, 0.9f, 0.98f, LinearEasing)
+    val on = span(t, 0.24f, 0.34f) * reset
+    // The key goes in and comes back out, and the slider answers the moment it goes in.
+    val key = span(t, 0.5f, 0.54f) * (1f - span(t, 0.62f, 0.66f))
+    val grow = span(t, 0.52f, 0.64f, Pop) * (1f - span(t, 0.84f, 0.92f))
+    val level = mix(0.35f, 0.7f, span(t, 0.58f, 0.72f))
+    val tip = fingerAt(Offset(switchLeft + 17f, switchTop + 9f), arrive, leave)
+
+    drawVolumeKeys(key)
+    clipPath(screenPath) {
+        val tabAlpha = (1f - grow * 3f).coerceIn(0f, 1f)
+        if (tabAlpha > 0f) drawTab(path, alpha = tabAlpha)
+        if (grow > 0.01f) {
+            val g = grow.coerceIn(0f, 1f)
+            val left = mix(SCREEN_R - TAB_W, 192f, grow)
+            val right = mix(SCREEN_R + 6f, 226f, grow)
+            // Below the status bar and above the card, so it covers neither.
+            val top = mix(BAR_CY - TAB_H / 2f, 42f, grow)
+            val bottom = mix(BAR_CY + TAB_H / 2f, 138f, grow)
+            val radius = mix(TAB_W / 2f, 16f, g)
+            drawRoundRect(TabColour, Offset(left, top), Size(right - left, bottom - top), CornerRadius(radius))
+            val inset = 4f * g
+            val fillTop = mix(bottom - inset - 10f, top + inset + 10f, level)
+            drawRoundRect(
+                Color.White,
+                Offset(left + inset, fillTop),
+                Size(right - left - inset * 2f, bottom - inset - fillTop),
+                CornerRadius((radius - inset).coerceAtLeast(0f)),
+                alpha = 0.95f * g,
+            )
+        }
+
+        drawRoundRect(Color.White, Offset(58f, cardTop), Size(164f, 46f), CornerRadius(14f), alpha = 0.95f)
+        drawAccessibilityGlyph(Offset(77f, cardTop + 23f))
+        drawRoundRect(TextLine, Offset(94f, cardTop + 13f), Size(66f, 7f), CornerRadius(3.5f))
+        drawRoundRect(TextLine, Offset(94f, cardTop + 26f), Size(44f, 6f), CornerRadius(3f), alpha = 0.6f)
+        drawRoundRect(lerp(SwitchOff, Indigo, on), Offset(switchLeft, switchTop), Size(34f, 18f), CornerRadius(9f))
+        drawCircle(Color.White, radius = 7f, center = Offset(switchLeft + 9f + 16f * on, switchTop + 9f))
+        drawTouch(tip, press, pulse)
+    }
+    drawFinger(tip, press, alpha)
+}
+
 // ---- Pieces ----------------------------------------------------------------------------------
+
+/**
+ * The volume keys on the phone's right side, past the frame. [pressed] pushes the upper one in and
+ * lights it, so the eye finds the cause just before the slider shows the effect.
+ */
+private fun DrawScope.drawVolumeKeys(pressed: Float) {
+    // Started inside the frame, in its colour, so each key reads as part of it rather than stuck on.
+    drawRoundRect(FrameColour, Offset(237f, 52f), Size(6f - 2f * pressed, 22f), CornerRadius(2f))
+    drawRoundRect(FrameColour, Offset(237f, 80f), Size(6f, 22f), CornerRadius(2f))
+    if (pressed > 0.01f) {
+        drawCircle(Indigo, radius = 8f + 6f * pressed, center = Offset(244f, 63f), alpha = 0.28f * pressed)
+    }
+}
+
+/** Android's accessibility mark: a figure with open arms in a filled circle. */
+private fun DrawScope.drawAccessibilityGlyph(center: Offset) {
+    drawCircle(Indigo, radius = 10f, center = center)
+    val ink = Color.White
+    val stroke = 1.7f
+    drawCircle(ink, radius = 1.9f, center = center + Offset(0f, -4.6f))
+    drawLine(ink, center + Offset(-5f, -1.4f), center + Offset(5f, -1.4f), stroke, cap = StrokeCap.Round)
+    drawLine(ink, center + Offset(0f, -1.4f), center + Offset(0f, 2.2f), stroke, cap = StrokeCap.Round)
+    drawLine(ink, center + Offset(0f, 2.2f), center + Offset(-2.8f, 6.2f), stroke, cap = StrokeCap.Round)
+    drawLine(ink, center + Offset(0f, 2.2f), center + Offset(2.8f, 6.2f), stroke, cap = StrokeCap.Round)
+}
+
 
 /** The phone: a dark frame, a soft purple-to-blue wallpaper, a status bar and faint app icons. */
 private fun DrawScope.drawPhone() {
@@ -524,26 +611,12 @@ private fun DrawScope.drawTouch(at: Offset, press: Float, pulse: Float) {
 }
 
 /**
- * A finger seen from above: a capsule, a nail at its tip, and a shadow that closes in as it
- * presses, which is what sells the touch. [press] runs from 0, hovering, to 1, on the glass.
+ * The app's right hand (see [drawPointingHand]), reaching in from the bottom right, which is where
+ * a right hand comes from to the right edge of a phone held in the left. [press] runs from 0,
+ * hovering, to 1, on the glass.
  */
 private fun DrawScope.drawFinger(tip: Offset, press: Float, alpha: Float) {
-    if (alpha <= 0.01f) return
-    val hover = 1f - press
-    val grow = 1f + 0.07f * hover
-    withTransform({
-        rotate(-28f, pivot = tip)
-        scale(grow, grow, pivot = tip)
-    }) {
-        val body = Size(FINGER_W, FINGER_LEN)
-        val topLeft = Offset(tip.x - FINGER_W / 2f, tip.y - FINGER_W / 2f)
-        val round = CornerRadius(FINGER_W / 2f)
-        drawRoundRect(Color.Black, topLeft + Offset(3f + 5f * hover, 4f + 8f * hover), body, round, alpha = 0.16f * alpha)
-        drawRoundRect(FingerColour, topLeft, body, round, alpha = alpha)
-        drawRoundRect(FingerEdge, topLeft, body, round, style = Stroke(1.2f), alpha = 0.45f * alpha)
-        drawRoundRect(NailColour, Offset(tip.x - 7f, tip.y - 9f), Size(14f, 16f), CornerRadius(7f), alpha = alpha)
-        drawRoundRect(FingerEdge, Offset(tip.x - 7f, tip.y - 9f), Size(14f, 16f), CornerRadius(7f), style = Stroke(0.8f), alpha = 0.3f * alpha)
-    }
+    drawPointingHand(tip, fingerWidth = FINGER_W, tilt = -28f, press = press, alpha = alpha)
 }
 
 /** The fingertip on its way in from [FingerRest], on [contact], or on its way back out. */

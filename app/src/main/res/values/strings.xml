@@ -950,6 +950,13 @@
     <string name="position_dynamic_desc">Moves the bar with the screen when you rotate the phone. It keeps to the same edge of the phone and lies along the top or bottom in landscape, always resting against the edge. Off, it stays upright on its side of the screen.</string>
     <string name="position_along_edge">Position along edge</string>
     <string name="position_along_edge_desc">Where the middle of the bar sits along its edge, measured with the phone upright. Turned on its side, the bar keeps the same place on the glass.</string>
+    <string name="position_set_initial">Set initial position</string>
+    <string name="position_set_initial_desc">Opens your screen at full size with the bar where it starts. Hold anywhere, then drag to move it into place.</string>
+    <string name="placement_hint">Hold anywhere until the bar lifts, then drag to move it where it should start.</string>
+    <string name="placement_snap_note">Snap to edge is on, so it settles against the nearer side.</string>
+    <string name="placement_dynamic_note">Dynamic position is on, so it always rests against an edge.</string>
+    <string name="placement_readout">%1$s %2$d%%</string>
+    <string name="placement_done">Done</string>
     <string name="group_content">CONTENT</string>
     <string name="group_size_shape">SIZE &amp; SHAPE</string>
     <string name="group_colours">COLOURS</string>

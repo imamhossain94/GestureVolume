@@ -70,13 +70,7 @@ fun HandlerPreviewSurface(
             )
             setViewGravity(state.gravity)
             setEdgeMarginDp(state.edgeMargin)
-            setViewBackgroundColor(state.bgColor.toArgb(), state.bgAlpha)
-            setCornerRadiiDp(state.cornerTL, state.cornerTR, state.cornerBL, state.cornerBR)
-            setShapeStyle(state.shape, state.flare)
-            setStrokeProperties(state.strokeColor.toArgb(), state.strokeWidth, state.strokeAlpha)
-            setCenterIcon(state.iconRes, state.iconSize, state.iconColor.toArgb())
-            setCenterIconColor(state.iconColor.toArgb())
-            setCenterIconVisible(state.showIcon)
+            wearDraft(state)
 
             // Last, and it has to be last: every setter above that changes a dimension or the
             // side rebuilds the layout params from scratch — see HandlerView.updateLayoutParams —
@@ -109,3 +103,17 @@ fun HandlerPreviewSurface(
 }
 
 
+
+/**
+ * Dresses [this] bar in the draft's look — fill, outline, corners, shape and icon — and nothing
+ * about its size or place, which the dock and the placement editor each decide for themselves.
+ */
+internal fun HandlerView.wearDraft(state: AppearanceStateHolder) {
+    setViewBackgroundColor(state.bgColor.toArgb(), state.bgAlpha)
+    setCornerRadiiDp(state.cornerTL, state.cornerTR, state.cornerBL, state.cornerBR)
+    setShapeStyle(state.shape, state.flare)
+    setStrokeProperties(state.strokeColor.toArgb(), state.strokeWidth, state.strokeAlpha)
+    setCenterIcon(state.iconRes, state.iconSize, state.iconColor.toArgb())
+    setCenterIconColor(state.iconColor.toArgb())
+    setCenterIconVisible(state.showIcon)
+}

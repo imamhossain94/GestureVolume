@@ -1,8 +1,5 @@
 package com.newagedevs.gesturevolume.ui.components
 
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.Path
 import android.provider.Settings
 import androidx.compose.animation.core.Easing
@@ -39,18 +36,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -468,66 +460,20 @@ private fun DrawScope.drawTouchRings(pose: FingerPose) {
 }
 
 /**
- * A pointing hand: a finger whose rounded end sits on the touch point, and the back of the hand
- * below it, running off the bottom of the stage. White with a faint outline and a soft shadow —
- * neutral on any backdrop, and no particular hand.
+ * The hand: the app's one right hand (see [drawPointingHand]), its fingertip on the touch point.
  *
  * Tilted so the hand comes from the middle of the screen towards the bar, which keeps it on the
- * stage and is how a thumb or finger actually reaches an edge. Pressing brings it down onto the
- * glass: a little smaller, the shadow tucked in underneath.
+ * stage and is how a finger actually reaches an edge. Turned for a bar on either side, never
+ * mirrored: it is a right hand whichever edge the bar is on. Further over for a bar on the right,
+ * because the fist is on the right of the finger, and at the smaller angle it hung off the stage
+ * and left a finger with no hand behind it.
  */
 private fun DrawScope.drawHand(pose: FingerPose, onLeft: Boolean) {
-    val a = pose.alpha
-    if (a <= 0f) return
-    val tip = pose.tip
-    val fw = 20.dp.toPx()
-    val len = 74.dp.toPx()
-    val inward = if (onLeft) 1f else -1f
-    val lift = mix(1.06f, 0.96f, pose.press)
-    val shadow = mix(7.dp.toPx(), 2.dp.toPx(), pose.press)
-    rotate(degrees = -inward * 18f, pivot = tip) {
-        scale(lift, pivot = tip) {
-            translate(left = shadow * 0.4f, top = shadow) {
-                drawHandShape(tip, fw, len, inward, Color.Black.copy(alpha = 0.16f * a), outline = null)
-            }
-            drawHandShape(tip, fw, len, inward, Color.White.copy(alpha = 0.96f * a), Color.Black.copy(alpha = 0.16f * a))
-            // The nail, and two creases across the finger: enough to say "finger" at 20dp.
-            val nw = fw * 0.56f
-            val nh = fw * 0.66f
-            drawRoundRect(
-                color = Color(0xFFE4E1E8).copy(alpha = a),
-                topLeft = Offset(tip.x - nw / 2f, tip.y - fw * 0.3f),
-                size = Size(nw, nh),
-                cornerRadius = CornerRadius(nw / 2f),
-            )
-            val crease = Color.Black.copy(alpha = 0.12f * a)
-            for (y in floatArrayOf(fw * 1.25f, fw * 2.2f)) {
-                drawLine(
-                    color = crease,
-                    start = Offset(tip.x - fw * 0.26f, tip.y + y),
-                    end = Offset(tip.x + fw * 0.26f, tip.y + y),
-                    strokeWidth = 1.2.dp.toPx(),
-                    cap = StrokeCap.Round,
-                )
-            }
-        }
-    }
-}
-
-private fun DrawScope.drawHandShape(tip: Offset, fw: Float, len: Float, inward: Float, color: Color, outline: Color?) {
-    // The round end's centre is the touch point, so the ring and the finger agree on where it is.
-    val finger = Rect(tip.x - fw / 2f, tip.y - fw / 2f, tip.x + fw / 2f, tip.y + len)
-    val palmWidth = fw * 2.7f
-    val palmLeft = if (inward > 0f) tip.x - fw * 0.6f else tip.x + fw * 0.6f - palmWidth
-    val palm = Rect(palmLeft, tip.y + len * 0.62f, palmLeft + palmWidth, tip.y + len * 1.7f)
-    // One silhouette, not two outlined shapes stacked: the finger and the palm are joined into a
-    // single outline, so the hand has one smooth edge all the way round instead of a seam where
-    // one box ends and the other begins.
-    val hand = Path.combine(
-        PathOperation.Union,
-        Path().apply { addRoundRect(RoundRect(finger, CornerRadius(fw / 2f))) },
-        Path().apply { addRoundRect(RoundRect(palm, CornerRadius(fw * 0.9f))) },
+    drawPointingHand(
+        tip = pose.tip,
+        fingerWidth = 20.dp.toPx(),
+        tilt = if (onLeft) -22f else 30f,
+        press = pose.press,
+        alpha = pose.alpha,
     )
-    drawPath(hand, color)
-    outline?.let { drawPath(hand, it, style = Stroke(1.dp.toPx(), join = StrokeJoin.Round)) }
 }

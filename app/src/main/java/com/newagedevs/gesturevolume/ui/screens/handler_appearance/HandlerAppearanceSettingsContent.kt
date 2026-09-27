@@ -30,7 +30,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import com.newagedevs.gesturevolume.ui.motion.Button
 import com.newagedevs.gesturevolume.ui.motion.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.OpenWith
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -83,6 +88,8 @@ fun HandlerAppearanceSettingsContent(
     /** Which of the two positions is the one the phone is being held in. */
     isPortrait: Boolean,
     onShowIconPicker: () -> Unit,
+    /** Opens the full-screen editor, where the bar is held and dragged to where it starts. */
+    onSetInitialPosition: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -502,6 +509,34 @@ fun HandlerAppearanceSettingsContent(
             // Set when a slider moved the bar off an edge and switched snapping off to let it stay
             // there, so the user is told why a switch they did not touch has changed.
             var snapTurnedOff by rememberSaveable { mutableStateOf(false) }
+
+            // First, because it is the direct way: the bar on the whole screen, put where it goes.
+            // Everything below is the same place in numbers, or a rule for where it may go.
+            Button(
+                onClick = onSetInitialPosition,
+                colors = ButtonDefaults.filledTonalButtonColors(),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.OpenWith,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(R.string.position_set_initial))
+            }
+            Text(
+                text = stringResource(R.string.position_set_initial_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 16.sp,
+                modifier = Modifier.padding(top = 6.dp),
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
 
             // Which side, in both orientations at once. The quick answer for most people, and
             // the only way a right-hand bar reaches the left without being carried across.

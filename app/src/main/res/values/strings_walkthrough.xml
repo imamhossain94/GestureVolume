@@ -88,4 +88,16 @@
     <string name="walk_permission_point_2">Keeps the bar on top</string>
     <string name="walk_permission_point_3">One switch in Settings</string>
     <string name="walk_permission_point_4">Off again any time</string>
+
+    <!-- Advanced only, after the overlay: the accessibility service -->
+    <string name="walk_access_chip">ACCESSIBILITY</string>
+    <string name="walk_access_title">Instant volume keys</string>
+    <string name="walk_access_subtitle">Optional. Turn on the Gesture Volume accessibility service so a volume key opens the Quick slider at once, and Lock screen and Screenshot work from the bar and the Deck.</string>
+    <string name="walk_access_animation">The accessibility switch turns on, a volume key is pressed, and the Quick slider opens beside it.</string>
+    <string name="walk_access_card">It is used only for the features you switch on, and nothing leaves your phone. Before Settings opens, you will see exactly what it does.</string>
+    <string name="walk_access_granted">Accessibility on ✓</string>
+    <string name="walk_access_point_1">Volume keys open the slider</string>
+    <string name="walk_access_point_2">Lock screen and Screenshot</string>
+    <string name="walk_access_point_3">Nothing leaves your phone</string>
+    <string name="walk_access_point_4">Off again any time</string>
 </resources>

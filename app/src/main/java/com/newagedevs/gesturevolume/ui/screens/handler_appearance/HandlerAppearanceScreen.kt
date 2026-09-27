@@ -3,6 +3,10 @@ package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 import android.content.res.Configuration
 import android.view.Gravity
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -77,10 +81,10 @@ import androidx.compose.ui.draw.clip
  * a scale model — and a scale model small enough to leave room for the settings draws a 10dp bar
  * at four dp, which is too small to judge a corner radius on and too small to drag. Placement
  * already has a better home: the live bar, where a long press picks it up and puts it down for
- * real — and the one part of it this screen still owns, which side the bar starts on, is a pair of
- * buttons in the Position section rather than a drag. So [HandlerPreviewSurface] is now a shallow
- * dock that shows the handler at its true size on a wallpaper, and it fits at the top of an
- * ordinary scrolling page.
+ * real — and, for the place the bar starts in, [HandlerPlacementEditor], which gives the bar the
+ * whole screen rather than a model of it, opened from the Position section. So
+ * [HandlerPreviewSurface] is now a shallow dock that shows the handler at its true size on a
+ * wallpaper, and it fits at the top of an ordinary scrolling page.
  *
  * The chrome is two things and no more:
  *
@@ -106,6 +110,7 @@ fun HandlerAppearanceScreen(
 
     var showDiscardDialog by remember { mutableStateOf(false) }
     var showIconPicker by remember { mutableStateOf(false) }
+    var showPlacement by remember { mutableStateOf(false) }
 
     val savedState = remember {
         mutableStateOf(
@@ -342,122 +347,140 @@ fun HandlerAppearanceScreen(
         )
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.appearance)) },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        if (hasUnsavedChanges) showDiscardDialog = true else onNavigateBack()
-                    }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
+    // A Box so the placement editor can cover the whole screen, top bar and all, from here: it
+    // edits this screen's draft, so it lives with it rather than on a route of its own.
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.background,
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.appearance)) },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            if (hasUnsavedChanges) showDiscardDialog = true else onNavigateBack()
+                        }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.back)
+                            )
+                        }
+                    },
+                    actions = {
+                        // Always present, so its place in the bar never moves; live only when there
+                        // is something to apply, which is also the whole of the answer to "have I
+                        // saved this yet?".
+                        // The tick is the screen's one piece of feedback that something is pending,
+                        // so it is worth a moment of motion. Scale through graphicsLayer rather than a
+                        // size change: the icon sits in a top bar with other buttons beside it, and a
+                        // bouncy spring on a real dimension would shove them sideways. `enabled` still
+                        // gates the click, so an animating tick is never a mis-tap.
+                        val tickScale by animateFloatAsState(
+                            targetValue = if (hasUnsavedChanges) 1f else 0.85f,
+                            animationSpec = AppearanceMotion.Pop,
+                            label = "applyTickScale",
                         )
-                    }
-                },
-                actions = {
-                    // Always present, so its place in the bar never moves; live only when there
-                    // is something to apply, which is also the whole of the answer to "have I
-                    // saved this yet?".
-                    // The tick is the screen's one piece of feedback that something is pending,
-                    // so it is worth a moment of motion. Scale through graphicsLayer rather than a
-                    // size change: the icon sits in a top bar with other buttons beside it, and a
-                    // bouncy spring on a real dimension would shove them sideways. `enabled` still
-                    // gates the click, so an animating tick is never a mis-tap.
-                    val tickScale by animateFloatAsState(
-                        targetValue = if (hasUnsavedChanges) 1f else 0.85f,
-                        animationSpec = AppearanceMotion.Pop,
-                        label = "applyTickScale",
-                    )
-                    val tickTint by animateColorAsState(
-                        targetValue = if (hasUnsavedChanges) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                        },
-                        animationSpec = AppearanceMotion.Tint,
-                        label = "applyTickTint",
-                    )
-                    IconButton(
-                        onClick = {
-                            saveChanges()
-                            // A break point: the user finished and saved, and stays on this screen.
-                            // Only here, not in the discard dialog's Apply, which Back opens and
-                            // which leaves the screen.
-                            viewModel.onHappyMoment(AdPacing.Trigger.SETTINGS_APPLIED)
-                        },
-                        enabled = hasUnsavedChanges
-                    ) {
-                        Icon(
-                            Icons.Default.Check,
-                            contentDescription = stringResource(R.string.save_changes),
-                            tint = tickTint,
-                            modifier = Modifier.graphicsLayer {
-                                scaleX = tickScale
-                                scaleY = tickScale
+                        val tickTint by animateColorAsState(
+                            targetValue = if (hasUnsavedChanges) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                             },
+                            animationSpec = AppearanceMotion.Tint,
+                            label = "applyTickTint",
+                        )
+                        IconButton(
+                            onClick = {
+                                saveChanges()
+                                // A break point: the user finished and saved, and stays on this screen.
+                                // Only here, not in the discard dialog's Apply, which Back opens and
+                                // which leaves the screen.
+                                viewModel.onHappyMoment(AdPacing.Trigger.SETTINGS_APPLIED)
+                            },
+                            enabled = hasUnsavedChanges
+                        ) {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = stringResource(R.string.save_changes),
+                                tint = tickTint,
+                                modifier = Modifier.graphicsLayer {
+                                    scaleX = tickScale
+                                    scaleY = tickScale
+                                },
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    modifier = Modifier.statusBarsPadding()
+                )
+            }
+        ) { innerPadding ->
+            // The dock pinned, and outside the scroll on purpose: the point of the rework is that a
+            // control and the thing it changes are on screen together. Above the settings upright,
+            // beside them on its side; see PreviewSettingsLayout.
+            PreviewSettingsLayout(
+                contentPadding = innerPadding,
+                // Above the preview, matching the Quick panel's screen. The dock shows what the bar
+                // will look like and cannot show what it will do, so the one thing worth saying here
+                // is where the rest of it lives.
+                header = {
+                    Text(
+                        text = stringResource(R.string.appearance_preview_hint),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                },
+                preview = { modifier, fillHeight ->
+                    // The finger goes over the dock from out here, leaving the dock itself to be the
+                    // bar and nothing else. Clipped to the stage's corners, as the stage clips its own.
+                    val barAtStart = state.gravity == Gravity.START
+                    Box(modifier = modifier) {
+                        HandlerPreviewSurface(
+                            state = state,
+                            backdrop = backdrop,
+                            fillHeight = fillHeight,
+                        )
+                        GestureDemoOverlay(
+                            state = gestureDemo,
+                            barAtStart = barAtStart,
+                            barInset = (state.edgeMargin.toFloat() + state.width.toFloat() / 2f).dp,
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clip(RoundedCornerShape(20.dp)),
+                        )
+                        HowItWorksButton(
+                            onClick = gestureDemo::replay,
+                            modifier = Modifier
+                                .align(if (barAtStart) Alignment.BottomEnd else Alignment.BottomStart)
+                                .padding(8.dp),
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                modifier = Modifier.statusBarsPadding()
-            )
-        }
-    ) { innerPadding ->
-        // The dock pinned, and outside the scroll on purpose: the point of the rework is that a
-        // control and the thing it changes are on screen together. Above the settings upright,
-        // beside them on its side; see PreviewSettingsLayout.
-        PreviewSettingsLayout(
-            contentPadding = innerPadding,
-            // Above the preview, matching the Quick panel's screen. The dock shows what the bar
-            // will look like and cannot show what it will do, so the one thing worth saying here
-            // is where the rest of it lives.
-            header = {
-                Text(
-                    text = stringResource(R.string.appearance_preview_hint),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp),
+            ) {
+                HandlerAppearanceSettingsContent(
+                    state = state,
+                    isPortrait = isPortrait,
+                    onShowIconPicker = { showIconPicker = true },
+                    onSetInitialPosition = { showPlacement = true },
                 )
-            },
-            preview = { modifier, fillHeight ->
-                // The finger goes over the dock from out here, leaving the dock itself to be the
-                // bar and nothing else. Clipped to the stage's corners, as the stage clips its own.
-                val barAtStart = state.gravity == Gravity.START
-                Box(modifier = modifier) {
-                    HandlerPreviewSurface(
-                        state = state,
-                        backdrop = backdrop,
-                        fillHeight = fillHeight,
-                    )
-                    GestureDemoOverlay(
-                        state = gestureDemo,
-                        barAtStart = barAtStart,
-                        barInset = (state.edgeMargin.toFloat() + state.width.toFloat() / 2f).dp,
-                        modifier = Modifier
-                            .matchParentSize()
-                            .clip(RoundedCornerShape(20.dp)),
-                    )
-                    HowItWorksButton(
-                        onClick = gestureDemo::replay,
-                        modifier = Modifier
-                            .align(if (barAtStart) Alignment.BottomEnd else Alignment.BottomStart)
-                            .padding(8.dp),
-                    )
-                }
-            },
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+
+        AnimatedVisibility(
+            visible = showPlacement,
+            enter = fadeIn(tween(220)),
+            exit = fadeOut(tween(180)),
         ) {
-            HandlerAppearanceSettingsContent(
+            HandlerPlacementEditor(
                 state = state,
                 isPortrait = isPortrait,
-                onShowIconPicker = { showIconPicker = true },
+                backdrop = backdrop,
+                onDismiss = { showPlacement = false },
             )
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 

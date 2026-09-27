@@ -27,12 +27,19 @@ class HandlerPresetsTest {
     }
 
     @Test
-    fun `every preset puts the bar a fifth of the way down with the shared gestures`() {
-        // Not the Classic: it is the app as it was, its place and gestures included. See UserModeTest.
+    fun `every preset starts the bar 21 percent of the way down, the Classic included`() {
+        HandlerPresets.ALL.forEach { preset ->
+            assertEquals(preset.id, 0.21f, preset.positionFraction, 0f)
+        }
+        assertEquals(0.21f, HandlerPresets.DEFAULT.positionFraction, 0f)
+    }
+
+    @Test
+    fun `every preset but the Classic shares the edge gestures`() {
+        // Not the Classic: it is the app as it was, its gestures included. See UserModeTest.
         HandlerPresets.ALL.filter { it != HandlerPresets.CLASSIC }.forEach { preset ->
             val b = preset.behaviour
             val id = preset.id
-            assertEquals(id, 0.20f, preset.positionFraction, 0f)
             assertEquals(id, HandlerActions.OPEN_VOLUME_UI, b.singleTap)
             assertEquals(id, HandlerActions.NONE, b.doubleTap)
             assertEquals(id, HandlerActions.NONE, b.tripleTap)

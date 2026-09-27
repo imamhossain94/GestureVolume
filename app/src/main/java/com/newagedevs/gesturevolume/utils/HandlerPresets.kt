@@ -10,7 +10,7 @@ import com.newagedevs.gesturevolume.data.local.QuickSliderStore
  * The handler presets, defined once: Dock (the default), Edge and Bold.
  *
  * A preset is a look for the bar plus a [Behaviour] — its gestures, the Quick panel, the menu and
- * the panel animation — and every one of them puts the bar a fifth of the way down the screen.
+ * the panel animation — and every one of them puts the bar 21% of the way down the screen.
  *
  * These used to live as a `when (presetId)` block inside the appearance screen's LaunchedEffect.
  * Moving them here gives the screen one place to read from, and keeps the identifiers that select
@@ -107,8 +107,11 @@ object HandlerPresets {
         val menuPerPage: Int,
     )
 
-    /** Where every preset puts the bar's centre: a fifth of the way down the usable height. */
-    const val POSITION_FRACTION = 0.20f
+    /**
+     * Where every preset puts the bar's centre, the Classic included: 21% of the way down the
+     * usable height. Also where a fresh install starts it, since the default is a preset.
+     */
+    const val POSITION_FRACTION = 0.21f
 
     /** The behaviour the edge presets share. Bold differs only where it says so. */
     private val EDGE_BEHAVIOUR = Behaviour(
@@ -166,9 +169,6 @@ object HandlerPresets {
         slider = EDGE_BEHAVIOUR.slider.copy(volumeKeys = QuickSliderStore.VOLUME_KEYS_OFF),
         panelAnimation = PanelAnimation.POP,
     )
-
-    /** Where the Classic sat: higher than the presets that came after it. */
-    private const val CLASSIC_POSITION_FRACTION = 0.12f
 
     data class Preset(
         val id: String,
@@ -248,7 +248,7 @@ object HandlerPresets {
             strokeColor = Color.White, strokeWidth = 1f, strokeAlpha = 200,
             cornerRadius = 15f,
             iconRes = R.drawable.ic_vol_increase, iconSize = 18f, iconColor = Color.White,
-            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = CLASSIC_POSITION_FRACTION,
+            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = POSITION_FRACTION,
             behaviour = CLASSIC_BEHAVIOUR,
             placement = Placement(
                 gravity = Gravity.END,
