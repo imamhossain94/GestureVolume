@@ -1,5 +1,7 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
+import com.newagedevs.gesturevolume.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -68,13 +70,14 @@ fun IconPickerControl(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         painter = painterResource(safeIconRes),
-                        contentDescription = "Selected Icon",
+                        // The row says what it is for; the icon is its picture.
+                        contentDescription = null,
                         modifier = Modifier.size(24.dp),
                         tint = borderColor
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = caption ?: "Tap to change",
+                        text = caption ?: stringResource(R.string.tap_to_change),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -82,7 +85,7 @@ fun IconPickerControl(
                 }
                 Icon(
                     imageVector = Icons.Default.Edit,
-                    contentDescription = "Change",
+                    contentDescription = null,
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.outline
                 )

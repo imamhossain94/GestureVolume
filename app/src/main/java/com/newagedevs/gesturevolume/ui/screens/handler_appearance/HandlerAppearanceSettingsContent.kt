@@ -1,5 +1,10 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
+import com.newagedevs.gesturevolume.ui.screens.handler_action.GroupLabel
+import androidx.compose.material.icons.filled.Widgets
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.AspectRatio
 import android.view.Gravity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -30,7 +35,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.newagedevs.gesturevolume.ui.motion.Button
+import com.newagedevs.gesturevolume.ui.motion.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.OpenWith
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -83,13 +93,15 @@ fun HandlerAppearanceSettingsContent(
     /** Which of the two positions is the one the phone is being held in. */
     isPortrait: Boolean,
     onShowIconPicker: () -> Unit,
+    /** Opens the full-screen editor, where the bar is held and dragged to where it starts. */
+    onSetInitialPosition: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
 
         // ---- Quick presets ------------------------------------------------------------------
         // Above every group, because it is the one control that can finish the job on its own.
-        SectionTitle(stringResource(R.string.quick_presets), MaterialTheme.colorScheme.primary)
+        GroupLabel(stringResource(R.string.presets_title))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -117,7 +129,8 @@ fun HandlerAppearanceSettingsContent(
         // What the bar carries. The icon's size and colour are in the groups for sizes and
         // colours, each shown only while there is an icon for them to change.
         AppearanceSection(
-            title = stringResource(R.string.group_content),
+            title = stringResource(R.string.section_content),
+            icon = Icons.Filled.Widgets,
             summary = stringResource(if (state.showIcon) R.string.show_icon else R.string.icon_none),
             initiallyExpanded = true,
         ) {
@@ -177,7 +190,8 @@ fun HandlerAppearanceSettingsContent(
 
         // ---- Size & shape -------------------------------------------------------------------
         AppearanceSection(
-            title = stringResource(R.string.group_size_shape),
+            title = stringResource(R.string.section_size_shape),
+            icon = Icons.Filled.AspectRatio,
             summary = "${state.width.toInt()} × ${state.height.toInt()}dp · " +
                 stringResource(if (isTab) R.string.shape_tab else R.string.shape_rounded),
         ) {
@@ -186,8 +200,10 @@ fun HandlerAppearanceSettingsContent(
                 value = state.width,
                 // Up to 200dp since 1.4.0: the Notch preset lays the bar across the top of the
                 // screen, and a range that stopped at 60 could not express it — nor could a user
-                // adjust one after applying it.
-                valueRange = 10f..200f,
+                // adjust one after applying it. Down to 1dp for a bar that is barely a line: only
+                // the drawing gets that thin, because the window around it keeps its 28dp for the
+                // thumb (OverlayController.MIN_TOUCH_WIDTH_DP).
+                valueRange = 1f..200f,
                 valueDisplay = "${state.width.toInt()}dp",
                 borderColor = MaterialTheme.colorScheme.primary,
                 onValueChange = { state.width = it }
@@ -359,7 +375,7 @@ fun HandlerAppearanceSettingsContent(
             )
             // Headed, because "Width" a few rows under the bar's own width would read as the
             // same thing twice.
-            SubgroupLabel(stringResource(R.string.stroke_uppercase))
+            SubgroupLabel(stringResource(R.string.subgroup_stroke))
             SliderControl(
                 label = stringResource(R.string.width),
                 value = state.strokeWidth,
@@ -397,12 +413,13 @@ fun HandlerAppearanceSettingsContent(
 
         // ---- Colours ------------------------------------------------------------------------
         AppearanceSection(
-            title = stringResource(R.string.group_colours),
+            title = stringResource(R.string.section_colours),
+            icon = Icons.Filled.Palette,
             summary = "${((state.bgAlpha / 255f) * 100).toInt()}% · ${((state.strokeAlpha / 255f) * 100).toInt()}%",
         ) {
             // Headed, for the same reason as the stroke's width: two "Color" and two "Opacity"
             // rows in one group need to say which is which.
-            SubgroupLabel(stringResource(R.string.background_uppercase))
+            SubgroupLabel(stringResource(R.string.subgroup_background))
             ColorPickerControl(
                 label = stringResource(R.string.color),
                 color = state.bgColor,
@@ -426,7 +443,7 @@ fun HandlerAppearanceSettingsContent(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             )
-            SubgroupLabel(stringResource(R.string.stroke_uppercase))
+            SubgroupLabel(stringResource(R.string.subgroup_stroke))
             ColorPickerControl(
                 label = stringResource(R.string.color),
                 color = state.strokeColor,
@@ -472,7 +489,8 @@ fun HandlerAppearanceSettingsContent(
 
         // ---- Behaviour ----------------------------------------------------------------------
         AppearanceSection(
-            title = stringResource(R.string.group_behaviour),
+            title = stringResource(R.string.section_behaviour),
+            icon = Icons.Filled.Tune,
             // Named while it is on; off, the header is left to speak for itself.
             summary = if (state.vibrate) stringResource(R.string.vibrate_on_click) else null,
         ) {
@@ -488,7 +506,8 @@ fun HandlerAppearanceSettingsContent(
 
         // ---- Position -----------------------------------------------------------------------
         AppearanceSection(
-            title = stringResource(R.string.position_uppercase),
+            title = stringResource(R.string.section_position),
+            icon = Icons.Filled.OpenWith,
             summary = if (state.dynamicPosition) {
                 stringResource(R.string.position_dynamic)
             } else if (state.samePosition || !state.snapToEdge) {
@@ -500,6 +519,34 @@ fun HandlerAppearanceSettingsContent(
             // Set when a slider moved the bar off an edge and switched snapping off to let it stay
             // there, so the user is told why a switch they did not touch has changed.
             var snapTurnedOff by rememberSaveable { mutableStateOf(false) }
+
+            // First, because it is the direct way: the bar on the whole screen, put where it goes.
+            // Everything below is the same place in numbers, or a rule for where it may go.
+            Button(
+                onClick = onSetInitialPosition,
+                colors = ButtonDefaults.filledTonalButtonColors(),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.OpenWith,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(R.string.position_set_initial))
+            }
+            Text(
+                text = stringResource(R.string.position_set_initial_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 16.sp,
+                modifier = Modifier.padding(top = 6.dp),
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
 
             // Which side, in both orientations at once. The quick answer for most people, and
             // the only way a right-hand bar reaches the left without being carried across.

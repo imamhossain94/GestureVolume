@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="how_it_works">사용 방법</string>
+    <string name="demo_tap">탭</string>
+    <string name="demo_swipe_up">위로 밀기</string>
+    <string name="demo_swipe_down">아래로 밀기</string>
+    <string name="demo_swipe_in">안쪽으로 밀기</string>
+    <string name="demo_hold">길게 누르기</string>
+    <string name="demo_does_nothing">동작 없음</string>
+</resources>

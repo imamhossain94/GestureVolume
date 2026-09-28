@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Regular and advanced users: the Classic preset, the home screen's folded group, and the
+         switch between the two. -->
+    <string name="preset_classic_title">Classic</string>
+    <string name="preset_classic_subtitle">The original round button: swipe for volume, tap for the panel</string>
+
+    <string name="home_advanced_features">Advanced features</string>
+    <string name="home_advanced_features_desc">Deck, Quick slider, long-press menu and visibility</string>
+    <string name="expand_advanced_features">Show advanced features</string>
+    <string name="collapse_advanced_features">Hide advanced features</string>
+
+    <string name="mode_advanced_switch">Advanced mode</string>
+    <string name="mode_advanced_on_desc">The Dock bar: swipe for the Quick slider, swipe inward for the Deck, hold for the menu</string>
+    <string name="mode_advanced_off_desc">The round button: swipe for volume, tap for the volume panel. Turn on for the Dock and its panels.</string>
+
+    <string name="mode_to_simple_title">Switch to Simple?</string>
+    <string name="mode_to_simple_body">Your bar becomes the round button: swipe up or down for volume, tap for the volume panel, hold to move it. The Quick slider, the Deck and the long-press menu are turned off, the volume keys included. You can switch back any time.</string>
+    <string name="mode_to_advanced_title">Switch to Advanced?</string>
+    <string name="mode_to_advanced_body">Your bar becomes the Dock: swipe up or down for the Quick slider, swipe inward for the Deck, hold for the long-press menu. Its look and gestures are replaced; you can switch back any time.</string>
+    <string name="mode_switch_confirm">Switch</string>
+    <string name="mode_switch_cancel">Cancel</string>
+</resources>

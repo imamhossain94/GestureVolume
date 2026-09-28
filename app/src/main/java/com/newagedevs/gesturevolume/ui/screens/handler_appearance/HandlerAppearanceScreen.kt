@@ -3,6 +3,10 @@ package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 import android.content.res.Configuration
 import android.view.Gravity
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,14 +21,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import com.newagedevs.gesturevolume.ui.motion.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.newagedevs.gesturevolume.ui.motion.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.newagedevs.gesturevolume.ui.motion.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -52,6 +57,13 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.HandlerPresets
 import com.newagedevs.gesturevolume.utils.AdPacing
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
+import com.newagedevs.gesturevolume.ui.components.DemoGesture
+import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.HowItWorksAction
+import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Alignment
+import kotlinx.coroutines.delay
 
 /**
  * One screen. Preview on top, settings underneath, nothing overlapping.
@@ -70,10 +82,10 @@ import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
  * a scale model — and a scale model small enough to leave room for the settings draws a 10dp bar
  * at four dp, which is too small to judge a corner radius on and too small to drag. Placement
  * already has a better home: the live bar, where a long press picks it up and puts it down for
- * real — and the one part of it this screen still owns, which side the bar starts on, is a pair of
- * buttons in the Position section rather than a drag. So [HandlerPreviewSurface] is now a shallow
- * dock that shows the handler at its true size on a wallpaper, and it fits at the top of an
- * ordinary scrolling page.
+ * real — and, for the place the bar starts in, [HandlerPlacementEditor], which gives the bar the
+ * whole screen rather than a model of it, opened from the Position section. So
+ * [HandlerPreviewSurface] is now a shallow dock that shows the handler at its true size on a
+ * wallpaper, and it fits at the top of an ordinary scrolling page.
  *
  * The chrome is two things and no more:
  *
@@ -99,6 +111,7 @@ fun HandlerAppearanceScreen(
 
     var showDiscardDialog by remember { mutableStateOf(false) }
     var showIconPicker by remember { mutableStateOf(false) }
+    var showPlacement by remember { mutableStateOf(false) }
 
     val savedState = remember {
         mutableStateOf(
@@ -135,9 +148,10 @@ fun HandlerAppearanceScreen(
         )
     }
 
-    // One wallpaper per visit, not per recomposition: a backdrop that reshuffled while a colour
-    // was being chosen would be worse than no backdrop at all.
-    val backdrop = remember { viewModel.getNextBackground() }
+    // A finger acting out what the bar is for — a tap, a swipe up, a swipe down — twice on arrival
+    // and on request after that. The dock can show what the bar looks like but not what it does,
+    // and this is the one screen everyone sees before the bar is any use to them.
+    val gestureDemo = rememberGestureDemoState(APPEARANCE_DEMO_STEPS)
 
     val state = remember {
         AppearanceStateHolder(
@@ -170,6 +184,44 @@ fun HandlerAppearanceScreen(
             initialDynamicPosition = savedState.value.dynamicPosition,
             initialShowVolumePercent = savedState.value.showVolumePercent,
         )
+    }
+
+    // What the finger's gestures are set to do, so the preview acts out the user's own rather than a
+    // generic volume bar: the Actions screen's, or those of a preset chosen here, which Apply saves
+    // along with its look.
+    val previewGestures = remember(state.appliedPresetId) {
+        val preset = HandlerPresets.byId(state.appliedPresetId)?.behaviour
+        PreviewGestures(
+            tap = preset?.singleTap ?: preference.getHandlerSingleTapAction(),
+            swipeUp = preset?.swipeUp ?: preference.getHandlerSwipeUpAction(),
+            swipeDown = preset?.swipeDown ?: preference.getHandlerSwipeDownAction(),
+            stepPercent = preference.getSwipeStepPercent(),
+        )
+    }
+    val previewEffects = remember(previewGestures) { PreviewEffects(gestureDemo, previewGestures) }
+
+    // A preset chosen here can change what the gestures do, so the finger shows the new ones at
+    // once — unless it is already on its way, in which case it is showing them.
+    var shownGestures by remember { mutableStateOf(previewGestures) }
+    LaunchedEffect(previewGestures) {
+        if (previewGestures == shownGestures) return@LaunchedEffect
+        shownGestures = previewGestures
+        if (!gestureDemo.playing) gestureDemo.replay()
+    }
+
+    // Switched on, the number shows on the bar for a moment, so the switch is seen to do something:
+    // the bar only ever shows it mid-swipe, which is not when anyone is looking at a settings page.
+    var percentWasOn by remember { mutableStateOf(state.showVolumePercent) }
+    LaunchedEffect(state.showVolumePercent) {
+        val turnedOn = state.showVolumePercent && !percentWasOn
+        percentWasOn = state.showVolumePercent
+        if (!turnedOn || gestureDemo.playing) return@LaunchedEffect
+        try {
+            previewEffects.flashPercent = true
+            delay(PERCENT_FLASH_MS)
+        } finally {
+            previewEffects.flashPercent = false
+        }
     }
 
     // Resolved in composable scope so it follows a configuration change.
@@ -330,104 +382,141 @@ fun HandlerAppearanceScreen(
         )
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.appearance)) },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        if (hasUnsavedChanges) showDiscardDialog = true else onNavigateBack()
-                    }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
+    // A Box so the placement editor can cover the whole screen, top bar and all, from here: it
+    // edits this screen's draft, so it lives with it rather than on a route of its own.
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            // The top bar is clear, on the plain page as the preview under it is.
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.appearance)) },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            if (hasUnsavedChanges) showDiscardDialog = true else onNavigateBack()
+                        }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.back)
+                            )
+                        }
+                    },
+                    actions = {
+                        HowItWorksAction(gestureDemo)
+                        // Always present, so its place in the bar never moves; live only when there
+                        // is something to apply, which is also the whole of the answer to "have I
+                        // saved this yet?".
+                        // An icon, as the ? beside it is. It is the screen's one piece of feedback
+                        // that something is pending, so it is worth a moment of motion. Scale through graphicsLayer
+                        // rather than a size change: the icon sits in a top bar with other buttons
+                        // beside it, and a bouncy spring on a real dimension would shove them
+                        // sideways. `enabled` still gates the click, so an animating icon is never a
+                        // mis-tap.
+                        val tickScale by animateFloatAsState(
+                            targetValue = if (hasUnsavedChanges) 1f else 0.85f,
+                            animationSpec = AppearanceMotion.Pop,
+                            label = "applyTickScale",
                         )
-                    }
-                },
-                actions = {
-                    // Always present, so its place in the bar never moves; live only when there
-                    // is something to apply, which is also the whole of the answer to "have I
-                    // saved this yet?".
-                    // The tick is the screen's one piece of feedback that something is pending,
-                    // so it is worth a moment of motion. Scale through graphicsLayer rather than a
-                    // size change: the icon sits in a top bar with other buttons beside it, and a
-                    // bouncy spring on a real dimension would shove them sideways. `enabled` still
-                    // gates the click, so an animating tick is never a mis-tap.
-                    val tickScale by animateFloatAsState(
-                        targetValue = if (hasUnsavedChanges) 1f else 0.85f,
-                        animationSpec = AppearanceMotion.Pop,
-                        label = "applyTickScale",
-                    )
-                    val tickTint by animateColorAsState(
-                        targetValue = if (hasUnsavedChanges) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                        },
-                        animationSpec = AppearanceMotion.Tint,
-                        label = "applyTickTint",
-                    )
-                    IconButton(
-                        onClick = {
-                            saveChanges()
-                            // A break point: the user finished and saved, and stays on this screen.
-                            // Only here, not in the discard dialog's Apply, which Back opens and
-                            // which leaves the screen.
-                            viewModel.onHappyMoment(AdPacing.Trigger.SETTINGS_APPLIED)
-                        },
-                        enabled = hasUnsavedChanges
-                    ) {
-                        Icon(
-                            Icons.Default.Check,
-                            contentDescription = stringResource(R.string.save_changes),
-                            tint = tickTint,
+                        val tickTint by animateColorAsState(
+                            targetValue = if (hasUnsavedChanges) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                            },
+                            animationSpec = AppearanceMotion.Tint,
+                            label = "applyTickTint",
+                        )
+                        IconButton(
+                            onClick = {
+                                saveChanges()
+                                // A break point: the user finished and saved, and stays on this screen.
+                                // Only here, not in the discard dialog's Apply, which Back opens and
+                                // which leaves the screen.
+                                viewModel.onHappyMoment(AdPacing.Trigger.SETTINGS_APPLIED)
+                            },
+                            enabled = hasUnsavedChanges,
                             modifier = Modifier.graphicsLayer {
                                 scaleX = tickScale
                                 scaleY = tickScale
                             },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Save,
+                                contentDescription = stringResource(R.string.save),
+                                tint = tickTint,
+                            )
+                        }
+                    },
+                    // Transparent, as every other screen's: a surface-coloured bar stood out as a band
+                    // against the page in the dark theme.
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    modifier = Modifier.statusBarsPadding()
+                )
+            }
+        ) { innerPadding ->
+            // The dock pinned, and outside the scroll on purpose: the point of the rework is that a
+            // control and the thing it changes are on screen together. Above the settings upright,
+            // beside them on its side; see PreviewSettingsLayout.
+            PreviewSettingsLayout(
+                contentPadding = innerPadding,
+                // On the preview's card, as the Quick panel's screen has it. The dock shows what the bar
+                // will look like and cannot show what it will do, so the one thing worth saying here
+                // is where the rest of it lives.
+                hint = stringResource(R.string.appearance_preview_hint),
+                preview = { modifier, fillHeight ->
+                    val barAtStart = state.gravity == Gravity.START
+                    HandlerPreviewSurface(
+                        state = state,
+                        fillHeight = fillHeight,
+                        modifier = modifier,
+                        barLabel = { previewEffects.barLabel(state.showVolumePercent) },
+                        // The hand reaches in over the frame, as the walkthrough's does.
+                        overGlass = {
+                            GestureDemoOverlay(
+                                state = gestureDemo,
+                                barAtStart = barAtStart,
+                                barInset = (state.edgeMargin.toFloat() + state.width.toFloat() / 2f).dp,
+                                modifier = Modifier.matchParentSize(),
+                            )
+                        },
+                        // The demo it plays, and under the phone while it plays, what each gesture is set to do.
+                        demo = gestureDemo,
+                        caption = { gesture -> GestureCaption(gesture, previewEffects.actionOf(gesture)) },
+                    ) {
+                        // On the phone's screen with the bar, so what is placed against its edge
+                        // lines up with it. What the finger's taps and swipes do, with the user's
+                        // own settings: under the finger, over the bar.
+                        HandlerPreviewEffects(
+                            effects = previewEffects,
+                            barAtStart = barAtStart,
+                            barReach = (state.edgeMargin.toFloat() + state.width.toFloat()).dp,
+                            modifier = Modifier.matchParentSize(),
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                modifier = Modifier.statusBarsPadding()
-            )
-        }
-    ) { innerPadding ->
-        // The dock pinned, and outside the scroll on purpose: the point of the rework is that a
-        // control and the thing it changes are on screen together. Above the settings upright,
-        // beside them on its side; see PreviewSettingsLayout.
-        PreviewSettingsLayout(
-            contentPadding = innerPadding,
-            // Above the preview, matching the Quick panel's screen. The dock shows what the bar
-            // will look like and cannot show what it will do, so the one thing worth saying here
-            // is where the rest of it lives.
-            header = {
-                Text(
-                    text = stringResource(R.string.appearance_preview_hint),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
-            },
-            preview = { modifier, fillHeight ->
-                HandlerPreviewSurface(
+            ) {
+                HandlerAppearanceSettingsContent(
                     state = state,
-                    backdrop = backdrop,
-                    fillHeight = fillHeight,
-                    modifier = modifier,
+                    isPortrait = isPortrait,
+                    onShowIconPicker = { showIconPicker = true },
+                    onSetInitialPosition = { showPlacement = true },
                 )
-            },
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+
+        AnimatedVisibility(
+            visible = showPlacement,
+            enter = fadeIn(tween(220)),
+            exit = fadeOut(tween(180)),
         ) {
-            HandlerAppearanceSettingsContent(
+            HandlerPlacementEditor(
                 state = state,
                 isPortrait = isPortrait,
-                onShowIconPicker = { showIconPicker = true },
+                onDismiss = { showPlacement = false },
             )
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 
@@ -442,3 +531,9 @@ fun HandlerAppearanceScreen(
         )
     }
 }
+
+/** What the bar is for, in the order people meet it: a tap, then a swipe each way. */
+private val APPEARANCE_DEMO_STEPS = listOf(DemoGesture.TAP, DemoGesture.SWIPE_UP, DemoGesture.SWIPE_DOWN)
+
+/** How long the number stays on the preview's bar when the percentage is switched on. */
+private const val PERCENT_FLASH_MS = 1600L

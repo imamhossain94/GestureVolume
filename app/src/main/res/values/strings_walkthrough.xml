@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Walkthrough: the frame around every page -->
+    <string name="walk_progress" translatable="false">%1$d/%2$d</string>
+    <string name="walk_continue">Continue</string>
+    <string name="walk_got_it">Got it</string>
+    <string name="walk_allow">Allow</string>
+    <string name="walk_start">Start</string>
+    <string name="walk_active_edge">Active edge</string>
+
+    <!-- Page 1: what the app is -->
+    <string name="walk_intro_chip">GESTURE VOLUME</string>
+    <string name="walk_intro_title">Volume at the edge of your screen</string>
+    <string name="walk_intro_subtitle">A small bar sits on the side of your screen. Swipe it to change the volume, tap it for the volume panel.</string>
+    <string name="walk_intro_caption">Swipe up · Swipe down</string>
+    <string name="walk_intro_animation">A finger swipes the bar up and down, and the volume level rises and falls with it.</string>
+    <string name="walk_intro_point_1">Swipe up – louder</string>
+    <string name="walk_intro_point_2">Swipe down – quieter</string>
+    <string name="walk_intro_point_3">Tap – volume panel</string>
+    <string name="walk_intro_point_4">Sits over any app</string>
+
+    <!-- Page 2: choosing a style -->
+    <string name="walk_style_chip">CHOOSE YOUR STYLE</string>
+    <string name="walk_style_title">How do you want it?</string>
+    <string name="walk_style_subtitle">You can change this any time from the home screen.</string>
+    <string name="walk_style_simple_title">Simple</string>
+    <string name="walk_style_simple_desc">A round button. Swipe for volume, tap for the volume panel. Nothing else to learn.</string>
+    <string name="walk_style_advanced_title">Advanced</string>
+    <string name="walk_style_advanced_desc">The Dock tab with the Quick slider, the Deck of shortcuts and a long-press menu.</string>
+    <string name="walk_style_simple_point_1">Swipe – volume</string>
+    <string name="walk_style_simple_point_2">Tap – volume panel</string>
+    <string name="walk_style_simple_point_3">Hold – move it</string>
+    <string name="walk_style_advanced_point_1">Quick slider</string>
+    <string name="walk_style_advanced_point_2">Deck of shortcuts</string>
+    <string name="walk_style_advanced_point_3">Long-press menu</string>
+    <string name="walk_style_point_change">Change it any time</string>
+    <!-- The style page in the tour, for someone already using the app: shows the styles, chooses nothing. -->
+    <string name="walk_style_tour_chip">TWO STYLES</string>
+    <string name="walk_style_tour_title">Two ways to use it</string>
+    <string name="walk_style_tour_subtitle_simple">You’re on Simple. Tap Advanced to see what it adds. Switch for real on the home screen.</string>
+    <string name="walk_style_tour_subtitle_advanced">You’re on Advanced. Tap Simple to see the other way. Switch for real on the home screen.</string>
+
+    <!-- Simple: how the button works -->
+    <string name="walk_simple_chip">HOW IT WORKS</string>
+    <string name="walk_simple_title">Swipe, tap, hold</string>
+    <string name="walk_simple_subtitle">Swipe up or down on the button to change the volume. Tap it for the volume panel. Hold it to move it anywhere.</string>
+    <string name="walk_simple_caption">Swipe · Tap · Hold</string>
+    <string name="walk_simple_animation">A finger swipes the button to raise the volume, taps it to open the volume panel, then holds it and moves it.</string>
+    <string name="walk_simple_point_1">Swipe up – louder</string>
+    <string name="walk_simple_point_2">Swipe down – quieter</string>
+    <string name="walk_simple_point_3">Tap – volume panel</string>
+    <string name="walk_simple_point_4">Hold – move it</string>
+
+    <!-- Advanced: the Quick slider -->
+    <string name="walk_slider_chip">QUICK SLIDER</string>
+    <string name="walk_slider_title">Pull the bar into a slider</string>
+    <string name="walk_slider_subtitle">Swipe up or down on the bar and it grows into a full-height volume slider. Keep sliding to set the level.</string>
+    <string name="walk_slider_caption">Swipe · Slide</string>
+    <string name="walk_slider_animation">A finger drags the bar, which grows into a tall volume slider whose level follows the finger.</string>
+    <string name="walk_slider_point_1">Swipe up – louder</string>
+    <string name="walk_slider_point_2">Swipe down – quieter</string>
+    <string name="walk_slider_point_3">Slide – set the level</string>
+    <string name="walk_slider_point_4">Full-height slider</string>
+
+    <!-- Advanced: the Deck -->
+    <string name="walk_deck_chip">DECK</string>
+    <string name="walk_deck_title">Your shortcuts, one swipe away</string>
+    <string name="walk_deck_subtitle">Swipe inward from the bar to open the Deck: apps, toggles, quick dial and more.</string>
+    <string name="walk_deck_caption">Swipe inward</string>
+    <string name="walk_deck_animation">A finger swipes inward from the bar and a panel of shortcut tiles slides in.</string>
+    <string name="walk_deck_point_1">Swipe inward – open</string>
+    <string name="walk_deck_point_2">Apps</string>
+    <string name="walk_deck_point_3">Toggles</string>
+    <string name="walk_deck_point_4">Quick dial</string>
+
+    <!-- Advanced: the long-press menu -->
+    <string name="walk_menu_chip">LONG-PRESS MENU</string>
+    <string name="walk_menu_title">Hold for everything else</string>
+    <string name="walk_menu_subtitle">Hold the bar to open a menu of actions: screenshot, lock, flashlight and more. Hold and drag to move the bar.</string>
+    <string name="walk_menu_caption">Hold · Drag</string>
+    <string name="walk_menu_animation">A finger holds the bar and a grid of actions opens beside it.</string>
+    <string name="walk_menu_point_1">Hold – open the menu</string>
+    <string name="walk_menu_point_2">Hold and drag – move</string>
+    <string name="walk_menu_point_3">Screenshot and lock</string>
+    <string name="walk_menu_point_4">Flashlight and more</string>
+
+    <!-- Both styles, after their own pages: moving the bar -->
+    <string name="walk_move_chip">MOVE IT</string>
+    <string name="walk_move_title">Put it where your thumb is</string>
+    <string name="walk_move_subtitle">Hold the bar until it dims and shows arrows, then drag it anywhere: up, down, or across to the other side. Let go and it settles on the nearer edge.</string>
+    <string name="walk_move_caption">Hold · Drag · Let go</string>
+    <string name="walk_move_animation">A finger holds the bar until it shows arrows, drags it down and across the screen, and lets go, and the bar settles against the other edge.</string>
+    <string name="walk_move_point_1">Hold – pick it up</string>
+    <string name="walk_move_point_2">Drag – anywhere</string>
+    <string name="walk_move_point_3">Let go – it finds the edge</string>
+    <string name="walk_move_point_4">Stays where you leave it</string>
+
+    <!-- The overlay permission -->
+    <string name="walk_permission_chip">PERMISSION</string>
+    <string name="walk_permission_title">Allow the bar on screen</string>
+    <string name="walk_permission_subtitle">Android asks you to allow Gesture Volume to display over other apps, so the bar can sit on top of them.</string>
+    <string name="walk_permission_animation">The display over other apps switch turns on, and the bar appears on the edge of the screen.</string>
+    <string name="walk_permission_point_1">Display over other apps</string>
+    <string name="walk_permission_point_2">Keeps the bar on top</string>
+    <string name="walk_permission_point_3">One switch in Settings</string>
+    <string name="walk_permission_point_4">Off again any time</string>
+
+    <!-- Both styles, Android 13 and later, after the overlay: notifications -->
+    <string name="walk_notif_chip">NOTIFICATIONS</string>
+    <string name="walk_notif_title">Controls in your notifications</string>
+    <string name="walk_notif_subtitle">Optional. Allow notifications and the bar\'s controls wait in your notification shade: hide or show the bar, open settings, or stop it, even with the app closed.</string>
+    <string name="walk_notif_animation">Allow is tapped on the notification request, and the notification shade comes down with the bar\'s controls in it.</string>
+    <string name="walk_notif_card">It is the only way back to a bar you hid while the app is closed. Gesture Volume posts no other notifications.</string>
+    <string name="walk_notif_granted">Notifications on ✓</string>
+    <string name="walk_notif_point_1">Hide or show the bar</string>
+    <string name="walk_notif_point_2">Settings and Stop</string>
+    <string name="walk_notif_point_3">Works with the app closed</string>
+    <string name="walk_notif_point_4">Off again any time</string>
+
+    <!-- Advanced only, last: the accessibility service -->
+    <string name="walk_access_chip">ACCESSIBILITY</string>
+    <string name="walk_access_title">Instant volume keys</string>
+    <string name="walk_access_subtitle">Optional. Turn on the Gesture Volume accessibility service so a volume key opens the Quick slider at once, and Lock screen and Screenshot work from the bar and the Deck.</string>
+    <string name="walk_access_animation">The accessibility switch turns on, a volume key is pressed, and the Quick slider opens beside it.</string>
+    <string name="walk_access_card">It is used only for the features you switch on, and nothing leaves your phone. Before Settings opens, you will see exactly what it does.</string>
+    <string name="walk_access_granted">Accessibility on ✓</string>
+    <string name="walk_access_point_1">Volume keys open the slider</string>
+    <string name="walk_access_point_2">Lock screen and Screenshot</string>
+    <string name="walk_access_point_3">Nothing leaves your phone</string>
+    <string name="walk_access_point_4">Off again any time</string>
+</resources>

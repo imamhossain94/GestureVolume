@@ -94,8 +94,8 @@ fun SliderControl(
         ) {
             Text(
                 text = label,
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f),
             )

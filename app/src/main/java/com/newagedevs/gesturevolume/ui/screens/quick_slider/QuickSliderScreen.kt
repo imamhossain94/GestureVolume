@@ -1,7 +1,14 @@
 package com.newagedevs.gesturevolume.ui.screens.quick_slider
 
+import androidx.compose.material.icons.filled.Widgets
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.Animation
+import com.newagedevs.gesturevolume.ui.components.ChoiceChip
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.newagedevs.gesturevolume.ui.motion.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -24,12 +31,19 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.tween
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,13 +63,25 @@ import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
-import com.newagedevs.gesturevolume.ui.components.PREVIEW_SUBJECT_MAX_HEIGHT
+import com.newagedevs.gesturevolume.ui.components.DemoGesture
+import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.HowItWorksAction
+import com.newagedevs.gesturevolume.ui.components.GestureDemoState
+import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
+import com.newagedevs.gesturevolume.ui.components.PixelFillControls
+import com.newagedevs.gesturevolume.ui.components.ShaderFillControls
+import com.newagedevs.gesturevolume.ui.components.SurgeFillControls
+import com.newagedevs.gesturevolume.ui.components.EffortFillControls
+import com.newagedevs.gesturevolume.ui.components.GlimmerFillControls
 import com.newagedevs.gesturevolume.ui.components.SliderFillSelector
+import com.newagedevs.gesturevolume.ui.components.FillTileLook
+import com.newagedevs.gesturevolume.ui.components.LevelFeedbackControls
+import com.newagedevs.gesturevolume.utils.LevelFeedback
 import com.newagedevs.gesturevolume.ui.components.panelAnimationLabel
 import com.newagedevs.gesturevolume.ui.components.panelThemeLabel
 import com.newagedevs.gesturevolume.ui.components.sliderFillLabel
@@ -72,7 +98,12 @@ import com.newagedevs.gesturevolume.utils.HandlerShape
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import com.newagedevs.gesturevolume.utils.QuickSliderIcons
+import com.newagedevs.gesturevolume.utils.PixelFill
+import com.newagedevs.gesturevolume.utils.ShaderFill
+import com.newagedevs.gesturevolume.utils.SurgeFill
 import com.newagedevs.gesturevolume.utils.SliderFill
+import com.newagedevs.gesturevolume.utils.EffortFill
+import com.newagedevs.gesturevolume.utils.GlimmerFill
 
 /** The translated name of a slider target. */
 fun sliderTargetLabel(id: String): Int = when (id) {
@@ -143,12 +174,14 @@ fun QuickSliderScreen(
 ) {
     val store = viewModel.preference.slider
 
-    // One backdrop per visit; see the note in HandlerAppearanceScreen.
-    val backdrop = remember { viewModel.getNextBackground() }
 
     // Read once: which side the bar is on is settled on the Appearance screen, and this one has
     // no way to change it.
     val handlerOnLeft = remember { viewModel.preference.getHandlerPosition() == "Left" }
+
+    // A finger pulling the panel out of the bar, twice on arrival and on request after that. Up,
+    // because that is the pull the panel is known by; the preview grows in step with it.
+    val demo = rememberGestureDemoState(QUICK_DEMO_STEPS)
 
     var openWith by remember { mutableStateOf(store.getOpenWith()) }
     var target by remember { mutableStateOf(store.getTarget()) }
@@ -191,6 +224,12 @@ fun QuickSliderScreen(
     }
     val barWidth = remember { viewModel.preference.getHandlerWidthDp() }
     var fillStyle by remember { mutableStateOf(store.getFillStyle()) }
+    var pixelStyle by remember { mutableStateOf(store.getPixelStyle()) }
+    var shaderStyle by remember { mutableStateOf(store.getShaderStyle()) }
+    var surgeStyle by remember { mutableStateOf(store.getSurgeStyle()) }
+    var effortStyle by remember { mutableStateOf(store.getEffortStyle()) }
+    var glimmerStyle by remember { mutableStateOf(store.getGlimmerStyle()) }
+    var levelFeedback by remember { mutableStateOf(store.getLevelFeedback()) }
     var fillColorsOn by remember { mutableStateOf(store.getFillColorsEnabled()) }
     var fillColors by remember { mutableStateOf(store.getFillColors().toList()) }
     var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
@@ -266,6 +305,7 @@ fun QuickSliderScreen(
     val accent = MaterialTheme.colorScheme.primary
 
     Scaffold(
+        // The top bar is clear, on the plain page as the preview under it is.
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.quick_slider_title)) },
@@ -277,6 +317,7 @@ fun QuickSliderScreen(
                         )
                     }
                 },
+                actions = { HowItWorksAction(demo) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -290,19 +331,11 @@ fun QuickSliderScreen(
         // problem with extra steps.
         PreviewSettingsLayout(
             contentPadding = padding,
-            header = {
-                Text(
-                    text = stringResource(R.string.quick_slider_intro),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            },
+            hint = stringResource(R.string.quick_slider_intro),
             preview = { modifier, fillHeight ->
                 SliderPreview(
                     modifier = modifier,
                     fillHeight = fillHeight,
-                    backdrop = backdrop,
                     handlerOnLeft = handlerOnLeft,
                     lengthDp = length,
                     thicknessDp = thickness,
@@ -316,6 +349,12 @@ fun QuickSliderScreen(
                     iconMargin = iconMargin,
                     panelTheme = panelTheme,
                     fillStyle = fillStyle,
+                    pixelStyle = pixelStyle,
+                    shaderStyle = shaderStyle,
+                    surgeStyle = surgeStyle,
+                    effortStyle = effortStyle,
+                    glimmerStyle = glimmerStyle,
+                    levelFeedback = levelFeedback,
                     fillColors = if (fillColorsOn) fillColors.toIntArray() else null,
                     valueColor = if (contentColorsOn) valueColor else null,
                     iconColor = if (contentColorsOn) iconColor else null,
@@ -329,13 +368,15 @@ fun QuickSliderScreen(
                     corners = listOf(cornerTL, cornerTR, cornerBL, cornerBR),
                     animation = panelAnimation,
                     animationSpeed = animationSpeed,
-                    replay = replay
+                    replay = replay,
+                    demo = demo,
                 )
             },
         ) {
             // ---- content: what it drives, and what it shows on it -------------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_content),
+                title = stringResource(R.string.section_content),
+                icon = Icons.Filled.Widgets,
                 summary = stringResource(sliderTargetLabel(target)),
                 initiallyExpanded = true,
             ) {
@@ -397,7 +438,8 @@ fun QuickSliderScreen(
 
             // ---- size & shape: its proportions, its outline, and the room inside it -------------
             AppearanceSection(
-                title = stringResource(R.string.group_size_shape),
+                title = stringResource(R.string.section_size_shape),
+                icon = Icons.Filled.AspectRatio,
                 summary = "${length.toInt()} × ${thickness.toInt()}dp",
             ) {
                 SliderControl(
@@ -495,7 +537,8 @@ fun QuickSliderScreen(
 
             // ---- colours ------------------------------------------------------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_colours),
+                title = stringResource(R.string.section_colours),
+                icon = Icons.Filled.Palette,
                 summary = stringResource(panelThemeLabel(panelTheme)),
             ) {
                 PanelThemeSelector(
@@ -551,7 +594,8 @@ fun QuickSliderScreen(
             // The fill's own colours live here rather than under Colours: they belong to the
             // animation, and do nothing for the styles that draw in the fill colour itself.
             AppearanceSection(
-                title = stringResource(R.string.group_animation),
+                title = stringResource(R.string.section_animation),
+                icon = Icons.Filled.Animation,
                 summary = "${stringResource(panelAnimationLabel(panelAnimation))} · ${stringResource(sliderFillLabel(fillStyle))}",
             ) {
                 PanelAnimationSelector(
@@ -569,10 +613,82 @@ fun QuickSliderScreen(
                     },
                 )
                 Sep()
+                // Every tile, in the fill row and in the rows under it, dressed as the panel is.
+                val tileLook = FillTileLook(
+                    trackColor = trackColor.toArgb(),
+                    fillColor = fillColor.toArgb(),
+                    fillColors = if (fillColorsOn) fillColors.toIntArray() else null,
+                    pixelStyle = pixelStyle,
+                    shaderStyle = shaderStyle,
+                    surgeStyle = surgeStyle,
+                    effortStyle = effortStyle,
+                    glimmerStyle = glimmerStyle,
+                    feedback = levelFeedback,
+                )
                 SliderFillSelector(
                     style = fillStyle,
                     onStyleChange = { fillStyle = it; store.setFillStyle(it) },
+                    look = tileLook,
                 )
+                // The fills with settings of their own, right under the chip that chose them.
+                if (fillStyle == SliderFill.PIXELS) {
+                    Sep()
+                    PixelFillControls(
+                        style = pixelStyle,
+                        accent = accent,
+                        onChange = { pixelStyle = it; store.setPixelStyle(it) },
+                        look = tileLook,
+                    )
+                }
+                if (fillStyle == SliderFill.SHADER) {
+                    Sep()
+                    ShaderFillControls(
+                        style = shaderStyle,
+                        accent = accent,
+                        onChange = { shaderStyle = it; store.setShaderStyle(it) },
+                        look = tileLook,
+                    )
+                }
+                if (fillStyle == SliderFill.SURGE) {
+                    Sep()
+                    SurgeFillControls(
+                        style = surgeStyle,
+                        accent = accent,
+                        onChange = { surgeStyle = it; store.setSurgeStyle(it) },
+                        look = tileLook,
+                    )
+                }
+                if (fillStyle == SliderFill.EFFORT) {
+                    Sep()
+                    EffortFillControls(
+                        style = effortStyle,
+                        accent = accent,
+                        onChange = { effortStyle = it; store.setEffortStyle(it) },
+                        look = tileLook,
+                    )
+                }
+                if (fillStyle == SliderFill.GLIMMER) {
+                    Sep()
+                    GlimmerFillControls(
+                        style = glimmerStyle,
+                        accent = accent,
+                        onChange = { glimmerStyle = it; store.setGlimmerStyle(it) },
+                        look = tileLook,
+                    )
+                }
+                // How every fill but the Effort picker answers the level; the picker has its own.
+                if (fillStyle != SliderFill.EFFORT) {
+                    Sep()
+                    LevelFeedbackControls(
+                        style = levelFeedback,
+                        accent = accent,
+                        showSpeed = fillStyle != SliderFill.PIXELS && fillStyle != SliderFill.SHADER &&
+                            fillStyle != SliderFill.SURGE && fillStyle != SliderFill.GLIMMER,
+                        onChange = { levelFeedback = it; store.setLevelFeedback(it) },
+                        fillStyle = fillStyle,
+                        look = tileLook,
+                    )
+                }
                 Spacer(modifier = Modifier.height(12.dp))
                 SettingSwitchItem(
                     title = stringResource(R.string.slider_fill_colors),
@@ -581,7 +697,10 @@ fun QuickSliderScreen(
                     onCheckedChange = { fillColorsOn = it; store.setFillColorsEnabled(it) }
                 )
                 if (fillColorsOn) {
-                    if (SliderFill.supportsCustomColors(fillStyle)) {
+                    // A Pixels pattern drawn in the fill colour has nothing here to recolour either.
+                    val pixelsInFill = fillStyle == SliderFill.PIXELS &&
+                        !PixelFill.supportsCustomColors(pixelStyle.pattern)
+                    if (SliderFill.supportsCustomColors(fillStyle) && !pixelsInFill) {
                         fillColors.forEachIndexed { index, colour ->
                             Spacer(modifier = Modifier.height(12.dp))
                             ColorPickerControl(
@@ -597,7 +716,11 @@ fun QuickSliderScreen(
                     } else {
                         // Solid, the tides and the stripes are drawn in the fill colour itself, so
                         // there is nothing here for these to recolour.
-                        Hint(stringResource(R.string.slider_fill_colors_unsupported))
+                        Hint(
+                            stringResource(
+                                if (pixelsInFill) R.string.pixel_colors_fill_only else R.string.slider_fill_colors_unsupported
+                            )
+                        )
                     }
                 }
             }
@@ -606,7 +729,8 @@ fun QuickSliderScreen(
 
             // ---- behaviour: what opens it, how it answers, and the keys -------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_behaviour),
+                title = stringResource(R.string.section_behaviour),
+                icon = Icons.Filled.Tune,
                 summary = "${stringResource(sliderOpenerLabel(openWith))} · ${stringResource(sliderVolumeKeysLabel(volumeKeys))}",
             ) {
                 Label(stringResource(R.string.slider_open_with))
@@ -690,7 +814,7 @@ fun QuickSliderScreen(
 }
 
 /**
- * The real slider view, at a fixed 60%, on one of the preview backdrops.
+ * The real slider view, at a fixed 60%, on the previews' phone.
  *
  * Held at a value rather than animated: the point of the preview is to show what the fill line
  * looks like against the two colours, and a value that moves on its own makes that harder to
@@ -712,12 +836,23 @@ private fun SliderPreview(
     iconRes: Int,
     valueMargin: Float,
     iconMargin: Float,
-    backdrop: Int,
     handlerOnLeft: Boolean,
     /** The panel style, so this shows the material the user is about to get. */
     panelTheme: String,
     /** What the fill does. Runs here exactly as it runs on the real panel. */
     fillStyle: String,
+    /** The Pixels fill's pattern and grid, used when that is the fill. */
+    pixelStyle: PixelFill.Style,
+    /** The Shaders fill's effect and settings, used when that is the fill. */
+    shaderStyle: ShaderFill.Style,
+    /** The Surge fill's look and settings, used when that is the fill. */
+    surgeStyle: SurgeFill.Style,
+    /** The Effort fill's look and settings, used when that is the fill. */
+    effortStyle: EffortFill.Style,
+    /** The Glimmer fill's settings, used when that is the fill. */
+    glimmerStyle: GlimmerFill.Style,
+    /** How the fill answers the level, which the preview's sweep through the levels shows. */
+    levelFeedback: LevelFeedback.Style,
     /** The animation's own colours, or null for its palette. */
     fillColors: IntArray?,
     /** The number's and the icon's own colours, or null to swap with the fill. */
@@ -736,19 +871,109 @@ private fun SliderPreview(
     shape: String,
     flare: Float,
     corners: List<Float>,
+    /** The how-it-works demo; while it plays, the panel's expansion follows the finger. */
+    demo: GestureDemoState,
 ) {
     // Against the same edge the handler is on, because that is where the panel actually opens —
     // it grows out of the bar. Centred, it was a picture of a track floating in the middle of the
     // screen, which is the one place it never appears.
     val density = LocalDensity.current.density
+    var sliderView by remember { mutableStateOf<QuickSliderView?>(null) }
+    // Driven here rather than from `update`, which re-dresses the whole view: running all of that
+    // on every frame of a drag is the stutter the note in `update` describes.
+    LaunchedEffect(sliderView) {
+        val view = sliderView ?: return@LaunchedEffect
+        // The bar's own footprint inside the window, against the edge, so expansion 0 is the bar
+        // the finger lands on. Without it the collapsed shape is the whole track, and the panel
+        // would only fade in place rather than grow out of anything. Set afresh each time, because
+        // the window changes size with the length and width sliders.
+        fun placeBar() {
+            val w = view.width.toFloat()
+            val h = view.height.toFloat()
+            if (w <= 0f || h <= 0f) return
+            val barPx = (barWidthDp * density).coerceAtMost(w).coerceAtLeast(1f)
+            val half = minOf(h * 0.22f, 36f * density)
+            val cy = h / 2f
+            if (handlerOnLeft) {
+                view.setCollapsedRect(0f, cy - half, barPx, cy + half)
+            } else {
+                view.setCollapsedRect(w - barPx, cy - half, w, cy + half)
+            }
+        }
+        snapshotFlow { demo.progressOf(DemoGesture.SWIPE_UP) }.collect { fraction ->
+            if (fraction < 1f) {
+                if (view.width > 0 && view.height > 0) {
+                    placeBar()
+                } else {
+                    // On arrival the demo starts before the view's first layout; placed only on
+                    // the next change, the whole track would show as a dark lozenge until the
+                    // finger moved and then snap down to the bar.
+                    view.addOnLayoutChangeListener(object : android.view.View.OnLayoutChangeListener {
+                        override fun onLayoutChange(
+                            v: android.view.View, left: Int, top: Int, right: Int, bottom: Int,
+                            oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int,
+                        ) {
+                            v.removeOnLayoutChangeListener(this)
+                            placeBar()
+                        }
+                    })
+                }
+            }
+            view.setExpansion(fraction)
+        }
+    }
+    // A fill is only seen for what it is across its levels — calm when low, livelier as it rises,
+    // the flourish at the top — so the preview steps up through them one at a time and back down,
+    // the way a finger clicks through a picker's stops, instead of holding still at one. The
+    // Effort picker's stops, and the top itself, which is where the others finish.
+    LaunchedEffect(sliderView) {
+        val view = sliderView ?: return@LaunchedEffect
+        val stops = floatArrayOf(0.05f, 0.3f, 0.5f, 0.7f, 1f)
+        var at = stops[0]
+        view.setValue(at)
+        val order = stops.indices.toList().let { up -> up.drop(1) + up.reversed().drop(1) }
+        while (true) {
+            for (i in order) {
+                delay(LEVEL_PREVIEW_HOLD_MS)
+                val from = at
+                val to = stops[i]
+                animate(from, to, animationSpec = tween(LEVEL_PREVIEW_MOVE_MS, easing = FastOutSlowInEasing)) { v, _ ->
+                    view.setValue(v)
+                }
+                at = to
+            }
+        }
+    }
+    // In proportion with the phone, as the bar is on the Appearance screen: drawn at its own size on
+    // a phone drawn at three quarters of it, the panel was a third too big for the screen it was on,
+    // ran up over the status bar into the glass's corner and off the bottom of the stage.
     PreviewStage(
-        backdrop = backdrop,
         contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
         fillHeight = fillHeight,
         modifier = modifier,
+        // The hand reaches in over the frame, as the walkthrough's does; drawing only, so it never
+        // takes a touch meant for the preview.
+        overGlass = {
+            GestureDemoOverlay(
+                state = demo,
+                barAtStart = handlerOnLeft,
+                barInset = (edgeOffsetDp + minOf(barWidthDp, maxOf(thicknessDp, PANEL_PREVIEW_MIN_WINDOW)) / 2f).dp,
+                modifier = Modifier.matchParentSize(),
+            )
+        },
+        // What the finger is doing, on the stage while the demo plays.
+        demo = demo,
     ) {
+        // Between the status bar and as far below the middle, so the panel stays centred on the
+        // glass, where the demo's finger finds the bar it grows out of.
+        BoxWithConstraints(
+            modifier = Modifier
+                .matchParentSize()
+                .padding(vertical = PANEL_PREVIEW_STATUS_BAR),
+            contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
+        ) {
         AndroidView(
-            factory = { ctx -> QuickSliderView(ctx) },
+            factory = { ctx -> QuickSliderView(ctx).also { sliderView = it } },
             update = { view ->
                 // Dressed exactly the way the live panel is — see
                 // `OverlayController.openQuickSliderWindow`, including which ink a material that
@@ -788,6 +1013,12 @@ private fun SliderPreview(
                     view.setExpandedCorners(corners[0], corners[1], corners[2], corners[3])
                     view.setShapes(shape, flare, shape, flare, handlerOnLeft)
                 }
+                view.setPixelStyle(pixelStyle)
+                view.setShaderStyle(shaderStyle)
+                view.setSurgeStyle(surgeStyle)
+                view.setEffortStyle(effortStyle)
+                view.setGlimmerStyle(glimmerStyle)
+                view.setLevelFeedback(levelFeedback)
                 view.setFillStyle(fillStyle)
                 view.setFillColors(fillColors)
                 view.setDrawnThickness(thicknessDp * density, handlerOnLeft)
@@ -795,11 +1026,13 @@ private fun SliderPreview(
                 view.setShowValue(showValue)
                 view.setContentColors(valueColor?.toArgb(), iconColor?.toArgb())
                 view.setIcon(if (showIcon) iconRes else null)
-                view.setValue(0.6f)
                 // Both, and neither is optional. QuickSliderView is built to grow out of the
                 // bar, so it starts collapsed and empty: at expansion 0 it draws no fill, no
                 // number and no icon, which in a *static* preview is just a black lozenge.
-                view.setExpansion(1f)
+                // Wherever the demo has it, which is fully open whenever the demo is not playing.
+                // Read unobserved, so a demo frame does not re-run all of this; the effect above
+                // moves it between recompositions.
+                view.setExpansion(Snapshot.withoutReadObservation { demo.progressOf(DemoGesture.SWIPE_UP) })
                 view.setCommitted()
                 // Only when asked for. `update` runs on every recomposition — every tick of
                 // every slider on this screen — and replaying the entrance each time is what
@@ -811,20 +1044,23 @@ private fun SliderPreview(
             },
             modifier = Modifier
                 // The side the panel opens against stands in for the screen edge, so at an edge
-                // distance of 0 the panel is flush against the stage's wall, as it is flush against
-                // the screen; the distance is the gap from it. The far side keeps the stage's inset.
+                // distance of 0 the panel is flush against the glass's edge, as a tab is flush
+                // against the screen's; the distance is the gap from it. The far side keeps the
+                // stage's inset.
                 .padding(
                     start = if (handlerOnLeft) edgeOffsetDp.dp else 18.dp,
                     end = if (handlerOnLeft) 18.dp else edgeOffsetDp.dp,
                 )
-                // Capped to the stage's clear height, so a 320dp track is shown shortened rather
-                // than bleeding off both ends. What the user is judging here is width, colour and
-                // the shape of the ends; length is a number they set with a slider and read off it.
-                .height(minOf(lengthDp, PREVIEW_SUBJECT_MAX_HEIGHT.value).dp)
+                // Capped to the glass under the status bar, so a long track is shown shortened
+                // rather than running off either end. What the user is judging here is width,
+                // colour and the shape of the ends; length is a number they set with a slider and
+                // read off it.
+                .height(minOf(lengthDp, maxHeight.value).dp)
                 // The window's floor, not the panel's: the preview is the window, and the panel
                 // is drawn inside it against the edge, exactly as it is on screen.
                 .width(maxOf(thicknessDp, PANEL_PREVIEW_MIN_WINDOW).dp)
         )
+        }
     }
 }
 
@@ -887,27 +1123,7 @@ private fun ChipRow(
         modifier = Modifier.padding(bottom = 8.dp),
     ) {
         ids.forEach { id ->
-            val on = selected(id)
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = if (on) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    MaterialTheme.colorScheme.surfaceVariant
-                },
-                onClick = { onClick(id) }
-            ) {
-                Text(
-                    text = label(id),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    fontSize = 13.sp,
-                    color = if (on) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    }
-                )
-            }
+            ChoiceChip(label = label(id), selected = selected(id), onClick = { onClick(id) })
         }
     }
 }
@@ -934,3 +1150,16 @@ private const val QUICK_PANEL_MAX_FLARE = 0.22f
 
 /** Mirrors `OverlayController.PANEL_MIN_THICKNESS_DP`: the window's floor, not the panel's. */
 private const val PANEL_PREVIEW_MIN_WINDOW = 48f
+
+/**
+ * The preview's status bar and camera, and a little under them, in the phone's own dp: they come
+ * down about 36dp of it on the glass. The long-press menu's preview keeps its top as far down.
+ */
+private val PANEL_PREVIEW_STATUS_BAR = 44.dp
+
+/** How long the preview holds each level, and takes to move to the next. */
+private const val LEVEL_PREVIEW_HOLD_MS = 1300L
+private const val LEVEL_PREVIEW_MOVE_MS = 520
+
+/** The Quick panel's demo: a pull up the bar, which is what opens it. */
+private val QUICK_DEMO_STEPS = listOf(DemoGesture.SWIPE_UP)

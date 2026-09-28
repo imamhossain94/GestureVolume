@@ -1,41 +1,86 @@
 package com.newagedevs.gesturevolume.ui.screens.about
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Policy
+import androidx.compose.material.icons.filled.PrivacyTip
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.newagedevs.gesturevolume.helper.extensions.openAppStore
-import com.newagedevs.gesturevolume.helper.extensions.openWebPage
-import com.newagedevs.gesturevolume.helper.extensions.shareApp
-import com.newagedevs.gesturevolume.utils.Constants
-import com.newagedevs.gesturevolume.utils.Constants.Companion.PUBLISHER_URL
-import java.util.Calendar
-import androidx.compose.ui.res.stringResource
-import com.newagedevs.gesturevolume.R
-import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.newagedevs.gesturevolume.BuildConfig
+import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.helper.PrivacyChoices
+import com.newagedevs.gesturevolume.helper.extensions.openAppStore
+import com.newagedevs.gesturevolume.helper.extensions.openWebPage
+import com.newagedevs.gesturevolume.helper.extensions.shareApp
+import com.newagedevs.gesturevolume.ui.components.GroupHeading
+import com.newagedevs.gesturevolume.ui.components.HeroCard
+import com.newagedevs.gesturevolume.ui.components.IconTile
+import com.newagedevs.gesturevolume.ui.components.KitRow
+import com.newagedevs.gesturevolume.ui.components.RowGroup
+import com.newagedevs.gesturevolume.ui.components.cardShape
+import com.newagedevs.gesturevolume.ui.components.rowColor
+import com.newagedevs.gesturevolume.ui.motion.IconButton
+import com.newagedevs.gesturevolume.utils.Constants
+import com.newagedevs.gesturevolume.utils.Constants.Companion.PUBLISHER_URL
+import java.util.Calendar
 
 /**
+ * The app itself: which version this is, the ways to help it along, who made it and whose ideas
+ * it grew from, and the small print.
+ *
+ * Laid out as the Actions screen is: a card at the top, then groups of rows, each a picture on a
+ * tile and what it is — the whole row the thing to tap where it leads somewhere.
+ *
  * @param isProActivated hides the Privacy choices entry; Pro never initialises the ad SDK.
  * @param onOpenPrivacyChoices reopens the ad consent form. See [PrivacyChoices].
  */
@@ -59,6 +104,12 @@ fun AboutScreen(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
+    // The launcher's own icon, as the phone draws it: it is adaptive, which a painter cannot load.
+    val appIcon = remember {
+        runCatching {
+            context.packageManager.getApplicationIcon(context.packageName).toBitmap(192, 192).asImageBitmap()
+        }.getOrNull()
+    }
 
     Scaffold(
         topBar = {
@@ -80,213 +131,182 @@ fun AboutScreen(
             )
         }
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(padding),
+            contentAlignment = Alignment.TopCenter,
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                ActionButton(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Star,
-                    text = stringResource(R.string.rate_us),
-                    borderColor = Color(0xFFF59E0B),
-                    onClick = {
-                        openAppStore(context, Constants.APP_STORE_ID) {
-
-                        }
-                    }
-                )
-                ActionButton(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Share,
-                    text = stringResource(R.string.share),
-                    borderColor = Color(0xFF10B981),
-                    onClick = {
-                        shareApp(context)
-                    }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                ActionButton(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Build,
-                    text = stringResource(R.string.source),
-                    borderColor = Color(0xFF8B5CF6),
-                    onClick = {
-                        openAppStore(context, Constants.SOURCE_CODE_URL) {
-
-                        }
-                    }
-                )
-                ActionButton(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.ShoppingCart,
-                    text = stringResource(R.string.more_apps),
-                    borderColor = Color(0xFFEC4899),
-                    onClick = {
-                        openAppStore(context, PUBLISHER_URL) {
-
-                        }
-                    }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Two credits in one design: who built the app, and whose ideas much of it was.
-            CreditCard(
-                icon = Icons.Default.Person,
-                tint = MaterialTheme.colorScheme.primary,
-                label = stringResource(R.string.about_developed_in),
-                name = stringResource(R.string.newagedevs),
-                detail = stringResource(R.string.about_developer_mission),
-                footnote = stringResource(
-                    R.string.about_copyright,
-                    Calendar.getInstance().get(Calendar.YEAR).toString()
-                ),
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Thanks for the ideas rather than the code: much of what is new in this app was his
-            // suggestion first, and the suggestions keep coming.
-            CreditCard(
-                icon = Icons.Default.Lightbulb,
-                // The same colour as the card above it: the two credits belong together.
-                tint = MaterialTheme.colorScheme.primary,
-                label = stringResource(R.string.about_ideas_by),
-                name = stringResource(R.string.about_ideas_name),
-                detail = stringResource(R.string.about_ideas_desc),
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Links Section
-            Text(
-                text = stringResource(R.string.legal),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                letterSpacing = 1.2.sp,
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp, start = 4.dp)
-            )
+                    .widthIn(max = CONTENT_MAX_WIDTH)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+            ) {
+                HeroCard(
+                    title = stringResource(R.string.gesture_volume),
+                    text = stringResource(R.string.whats_new_version, BuildConfig.VERSION_NAME),
+                    leading = {
+                        if (appIcon != null) {
+                            Image(
+                                bitmap = appIcon,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(RoundedCornerShape(16.dp)),
+                            )
+                        } else {
+                            IconTile(Icons.Filled.Apps, lit = true, size = 56.dp)
+                        }
+                    },
+                )
 
-            LinkCard(
-                icon = Icons.Default.Info,
-                text = stringResource(R.string.privacy_policy),
-                onClick = {
-                    openWebPage(context, Constants.PRIVACY_POLICY_URL) {
+                Spacer(modifier = Modifier.height(24.dp))
 
+                // ---- the ways to help it along ------------------------------------------------
+                GroupHeading(stringResource(R.string.about_group_support))
+                RowGroup {
+                    KitRow(
+                        title = stringResource(R.string.rate_us),
+                        shape = cardShape(0, 4),
+                        leading = { IconTile(Icons.Filled.Star) },
+                        onClick = { openAppStore(context, Constants.APP_STORE_ID) {} },
+                    )
+                    KitRow(
+                        title = stringResource(R.string.share),
+                        shape = cardShape(1, 4),
+                        leading = { IconTile(Icons.Filled.Share) },
+                        onClick = { shareApp(context) },
+                    )
+                    KitRow(
+                        title = stringResource(R.string.source),
+                        shape = cardShape(2, 4),
+                        leading = { IconTile(Icons.Filled.Code) },
+                        onClick = { openAppStore(context, Constants.SOURCE_CODE_URL) {} },
+                    )
+                    KitRow(
+                        title = stringResource(R.string.more_apps),
+                        shape = cardShape(3, 4),
+                        leading = { IconTile(Icons.Filled.Apps) },
+                        onClick = { openAppStore(context, PUBLISHER_URL) {} },
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // ---- who: the people who built it, and whose ideas much of it was --------------
+                GroupHeading(stringResource(R.string.about_group_credits))
+                RowGroup {
+                    CreditRow(
+                        icon = Icons.Filled.Person,
+                        label = stringResource(R.string.about_developed_in),
+                        name = stringResource(R.string.newagedevs),
+                        detail = stringResource(R.string.about_developer_mission),
+                        footnote = stringResource(
+                            R.string.about_copyright,
+                            Calendar.getInstance().get(Calendar.YEAR).toString()
+                        ),
+                        shape = cardShape(0, 2),
+                    )
+                    // Thanks for the ideas rather than the code: much of what is new in this app
+                    // was his suggestion first, and the suggestions keep coming.
+                    CreditRow(
+                        icon = Icons.Filled.Lightbulb,
+                        label = stringResource(R.string.about_ideas_by),
+                        name = stringResource(R.string.about_ideas_name),
+                        detail = stringResource(R.string.about_ideas_desc),
+                        shape = cardShape(1, 2),
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // ---- the small print -------------------------------------------------------------
+                // Privacy choices reopens the ad consent form, for users who were asked for consent
+                // in the first place. Re-checked on every resume: the ad SDK may finish initialising
+                // after this screen is first drawn.
+                val legalRows = if (showPrivacyChoices) 2 else 1
+                GroupHeading(stringResource(R.string.group_legal))
+                RowGroup {
+                    KitRow(
+                        title = stringResource(R.string.privacy_policy),
+                        shape = cardShape(0, legalRows),
+                        leading = { IconTile(Icons.Filled.Policy) },
+                        onClick = { openWebPage(context, Constants.PRIVACY_POLICY_URL) {} },
+                    )
+                    if (showPrivacyChoices) {
+                        KitRow(
+                            title = stringResource(R.string.privacy_choices),
+                            shape = cardShape(1, legalRows),
+                            leading = { IconTile(Icons.Filled.PrivacyTip) },
+                            onClick = onOpenPrivacyChoices,
+                        )
                     }
                 }
-            )
 
-            // Reopens the ad consent form, for users who were asked for consent in the first
-            // place. Re-checked on every resume: the ad SDK may finish initialising after this
-            // screen is first drawn.
-            if (showPrivacyChoices) {
-                Spacer(modifier = Modifier.height(12.dp))
-                LinkCard(
-                    icon = Icons.Default.PrivacyTip,
-                    text = stringResource(R.string.privacy_choices),
-                    onClick = onOpenPrivacyChoices
-                )
+                Spacer(modifier = Modifier.height(32.dp))
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
 
-/** One credit: a tinted badge, what they did, their name, a line more, and a quieter footnote. */
+/** One credit: what they did, their name, a line more, and a quieter footnote, beside a tile. */
 @Composable
-private fun CreditCard(
+private fun CreditRow(
     icon: ImageVector,
-    tint: Color,
     label: String,
     name: String,
     detail: String,
+    shape: Shape,
     footnote: String? = null,
 ) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant
+    val colours = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(rowColor())
+            .padding(horizontal = 14.dp, vertical = 14.dp),
+        // The tile heads the row rather than floating beside its middle: the credit runs to
+        // several lines, and centred it drifted down level with the small print.
+        verticalAlignment = Alignment.Top,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            // The badge heads the card rather than floating beside its middle: the credit under it
-            // runs to several lines, and centred it drifted down level with the small print.
-            verticalAlignment = Alignment.Top
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(tint.copy(alpha = 0.16f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = tint
-                )
-            }
-            Spacer(modifier = Modifier.width(14.dp))
-            Column {
-                Text(
-                    text = label,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        IconTile(icon)
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = label, style = MaterialTheme.typography.bodySmall, color = colours.onSurfaceVariant)
+            Text(
+                text = name,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold,
+                color = colours.onSurface,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+            Text(
+                text = detail,
+                style = MaterialTheme.typography.bodySmall,
+                color = colours.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+            if (footnote != null) {
+                // A short rule in the accent, so the small print reads as small print rather than
+                // as one more line of the sentence above it.
+                Box(
+                    modifier = Modifier
+                        .padding(top = 10.dp, bottom = 7.dp)
+                        .size(width = 28.dp, height = 1.dp)
+                        .background(colours.primary.copy(alpha = 0.45f))
                 )
                 Text(
-                    text = name,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = footnote,
+                    fontSize = 11.sp,
+                    letterSpacing = 0.3.sp,
+                    color = colours.onSurfaceVariant.copy(alpha = 0.7f),
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = detail,
-                    fontSize = 12.sp,
-                    lineHeight = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                )
-                if (footnote != null) {
-                    // A short rule in the badge's colour, so the small print reads as small print
-                    // rather than as one more line of the sentence above it.
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 10.dp, bottom = 7.dp)
-                            .size(width = 28.dp, height = 1.dp)
-                            .background(tint.copy(alpha = 0.45f))
-                    )
-                    Text(
-                        text = footnote,
-                        fontSize = 11.sp,
-                        letterSpacing = 0.3.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
-                    )
-                }
             }
         }
     }
 }
+
+/** The home screen's widest column. */
+private val CONTENT_MAX_WIDTH = 920.dp

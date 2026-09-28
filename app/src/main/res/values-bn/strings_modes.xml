@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">ক্লাসিক</string>
+    <string name="preset_classic_subtitle">আসল গোল বোতাম: ভলিউমের জন্য সোয়াইপ, প্যানেলের জন্য ট্যাপ</string>
+    <string name="home_advanced_features">অ্যাডভান্সড ফিচার</string>
+    <string name="home_advanced_features_desc">ডেক, দ্রুত স্লাইডার, লং-প্রেস মেনু ও দৃশ্যমানতা</string>
+    <string name="expand_advanced_features">অ্যাডভান্সড ফিচার দেখান</string>
+    <string name="collapse_advanced_features">অ্যাডভান্সড ফিচার লুকান</string>
+    <string name="mode_advanced_switch">অ্যাডভান্সড মোড</string>
+    <string name="mode_advanced_on_desc">ডক বার: দ্রুত স্লাইডারের জন্য সোয়াইপ, ডেকের জন্য ভেতরে সোয়াইপ, মেনুর জন্য চেপে ধরুন</string>
+    <string name="mode_advanced_off_desc">গোল বোতাম: ভলিউমের জন্য সোয়াইপ, ভলিউম প্যানেলের জন্য ট্যাপ। ডক ও তার প্যানেলগুলোর জন্য চালু করুন।</string>
+    <string name="mode_to_simple_title">সিম্পল-এ যাবেন?</string>
+    <string name="mode_to_simple_body">আপনার বারটি গোল বোতাম হয়ে যাবে: ভলিউমের জন্য ওপরে বা নিচে সোয়াইপ, ভলিউম প্যানেলের জন্য ট্যাপ, সরাতে চেপে ধরুন। দ্রুত স্লাইডার, ডেক ও লং-প্রেস মেনু বন্ধ হয়ে যাবে, ভলিউম কীসহ। যেকোনো সময় আবার ফিরে আসতে পারবেন।</string>
+    <string name="mode_to_advanced_title">অ্যাডভান্সড-এ যাবেন?</string>
+    <string name="mode_to_advanced_body">আপনার বারটি ডক হয়ে যাবে: দ্রুত স্লাইডারের জন্য ওপরে বা নিচে সোয়াইপ, ডেকের জন্য ভেতরে সোয়াইপ, লং-প্রেস মেনুর জন্য চেপে ধরুন। এর চেহারা ও জেসচার বদলে যাবে; যেকোনো সময় আবার ফিরে আসতে পারবেন।</string>
+    <string name="mode_switch_confirm">বদলান</string>
+    <string name="mode_switch_cancel">বাতিল</string>
+</resources>

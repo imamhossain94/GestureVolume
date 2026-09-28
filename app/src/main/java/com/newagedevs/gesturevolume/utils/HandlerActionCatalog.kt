@@ -26,6 +26,13 @@ import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.ViewCarousel
 import androidx.compose.material.icons.filled.ViewSidebar
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.KeyboardVoice
+import androidx.compose.material.icons.filled.NetworkCell
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Vibration
+import androidx.compose.material.icons.filled.Wifi
 import com.newagedevs.gesturevolume.R
 
 /**
@@ -44,6 +51,8 @@ object HandlerActionCatalog {
 
     /** How the picker groups the list. With forty entries a flat grid is a wall. */
     enum class Group(@param:StringRes val labelRes: Int) {
+        /** The swipe-up and swipe-down pickers' own head group: see [swipeAdjust]. Never in [ALL]. */
+        SWIPE(R.string.action_group_swipe),
         HANDLER(R.string.action_group_handler),
         VOLUME(R.string.action_group_volume),
         DECK(R.string.action_group_deck),
@@ -89,9 +98,17 @@ object HandlerActionCatalog {
         Entry(HandlerActions.COIN_TOSS, ActionIcon.Vector(Icons.Filled.Paid), R.string.action_coin_toss, Group.DECK),
         Entry(HandlerActions.DICE_ROLL, ActionIcon.Vector(Icons.Filled.Casino), R.string.action_dice_roll, Group.DECK),
         Entry(HandlerActions.SCAN_QR, ActionIcon.Vector(Icons.Filled.QrCodeScanner), R.string.action_scan_qr, Group.DECK),
+        // The tile that asks which app; what is stored is HandlerActions.launchApp(package).
+        Entry(HandlerActions.LAUNCH_APP, ActionIcon.Vector(Icons.Filled.Apps), R.string.action_launch_app, Group.DECK),
         Entry(HandlerActions.TOGGLE_FLASHLIGHT, ActionIcon.Vector(Icons.Filled.FlashlightOn), R.string.action_toggle_flashlight, Group.DEVICE),
         Entry(HandlerActions.TOGGLE_DND, ActionIcon.Vector(Icons.Filled.DoNotDisturbOn), R.string.action_toggle_dnd, Group.DEVICE),
         Entry(HandlerActions.TOGGLE_AUTO_ROTATE, ActionIcon.Vector(Icons.Filled.ScreenRotation), R.string.action_toggle_auto_rotate, Group.DEVICE),
+        Entry(HandlerActions.RING_VIBRATE, ActionIcon.Vector(Icons.Filled.Vibration), R.string.action_ring_vibrate, Group.DEVICE),
+        Entry(HandlerActions.WIFI_PANEL, ActionIcon.Vector(Icons.Filled.Wifi), R.string.action_wifi_panel, Group.DEVICE),
+        Entry(HandlerActions.BLUETOOTH_SETTINGS, ActionIcon.Vector(Icons.Filled.Bluetooth), R.string.action_bluetooth_settings, Group.DEVICE),
+        Entry(HandlerActions.INTERNET_PANEL, ActionIcon.Vector(Icons.Filled.NetworkCell), R.string.action_internet_panel, Group.DEVICE),
+        Entry(HandlerActions.OPEN_CAMERA, ActionIcon.Vector(Icons.Filled.PhotoCamera), R.string.action_open_camera, Group.DEVICE),
+        Entry(HandlerActions.VOICE_ASSISTANT, ActionIcon.Vector(Icons.Filled.KeyboardVoice), R.string.action_voice_assistant, Group.DEVICE),
         Entry(HandlerActions.MEDIA_PLAY_PAUSE, ActionIcon.Vector(Icons.Filled.PlayArrow), R.string.action_media_play_pause, Group.MEDIA),
         Entry(HandlerActions.MEDIA_NEXT, ActionIcon.Vector(Icons.Filled.SkipNext), R.string.action_media_next, Group.MEDIA),
         Entry(HandlerActions.MEDIA_PREVIOUS, ActionIcon.Vector(Icons.Filled.SkipPrevious), R.string.action_media_previous, Group.MEDIA),
@@ -119,12 +136,48 @@ object HandlerActionCatalog {
     val CONTEXT_MENU_CANDIDATES: List<Entry> = ALL.filterNot {
         it.action == HandlerActions.NONE ||
             it.action == HandlerActions.REPOSITION ||
-            it.action == HandlerActions.OPEN_MENU
+            it.action == HandlerActions.OPEN_MENU ||
+            // The menu stores bare identifiers, and this one needs an app to go with it.
+            it.action == HandlerActions.LAUNCH_APP
     }
 
     private val byAction: Map<String, Entry> = ALL.associateBy { it.action }
 
     fun entryFor(action: String): Entry? = byAction[action]
+
+    /**
+     * What a vertical swipe can do *as it goes*: the volume or brightness bindings, where the
+     * length of the stroke is the size of the change, for one direction.
+     *
+     * Kept out of [ALL] because they only mean something on a vertical swipe — a tap has no length
+     * to steer by — and so they head the swipe pickers as a group of their own, above the whole
+     * catalog, which a swipe can fire once like any other gesture.
+     */
+    fun swipeAdjust(isSwipeUp: Boolean): List<Entry> = if (isSwipeUp) SWIPE_UP_ADJUST else SWIPE_DOWN_ADJUST
+
+    private val SWIPE_UP_ADJUST: List<Entry> = listOf(
+        Entry(HandlerActions.INCREASE_VOLUME_UI, res(R.drawable.ic_vol_increase), R.string.action_increase_vol_ui, Group.SWIPE),
+        Entry(HandlerActions.INCREASE_VOLUME, res(R.drawable.ic_vol_plus), R.string.action_increase_vol, Group.SWIPE),
+        Entry(HandlerActions.INCREASE_BRIGHTNESS, res(R.drawable.ic_brightness_up), R.string.action_increase_brightness, Group.SWIPE),
+    )
+
+    private val SWIPE_DOWN_ADJUST: List<Entry> = listOf(
+        Entry(HandlerActions.DECREASE_VOLUME_UI, res(R.drawable.ic_vol_decrease), R.string.action_decrease_vol_ui, Group.SWIPE),
+        Entry(HandlerActions.DECREASE_VOLUME, res(R.drawable.ic_vol_minus), R.string.action_decrease_vol, Group.SWIPE),
+        Entry(HandlerActions.DECREASE_BRIGHTNESS, res(R.drawable.ic_brightness_down), R.string.action_decrease_brightness, Group.SWIPE),
+    )
+
+    /**
+     * The entry for any identifier a slot can hold, the swipe-only ones included — for the rows
+     * and icons that show what a slot is set to. [entryFor] stays the catalog proper, which the
+     * long-press menu is built from.
+     */
+    fun displayEntryFor(action: String): Entry? {
+        HandlerActions.launchedPackage(action)?.let { pkg ->
+            return Entry(action, ActionIcon.App(pkg), R.string.action_launch_app, Group.DECK)
+        }
+        return byAction[action] ?: (SWIPE_UP_ADJUST + SWIPE_DOWN_ADJUST).firstOrNull { it.action == action }
+    }
 
     /**
      * What a tap, double tap, triple tap, long press or horizontal swipe may be bound to.

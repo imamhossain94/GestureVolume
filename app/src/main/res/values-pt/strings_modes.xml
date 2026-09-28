@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">Clássico</string>
+    <string name="preset_classic_subtitle">O botão redondo original: deslize para o volume, toque para o painel</string>
+    <string name="home_advanced_features">Recursos avançados</string>
+    <string name="home_advanced_features_desc">Deck, Controle rápido, menu de pressão longa e visibilidade</string>
+    <string name="expand_advanced_features">Mostrar recursos avançados</string>
+    <string name="collapse_advanced_features">Ocultar recursos avançados</string>
+    <string name="mode_advanced_switch">Modo avançado</string>
+    <string name="mode_advanced_on_desc">A barra Dock: deslize para o Controle rápido, deslize para dentro para o Deck, segure para o menu</string>
+    <string name="mode_advanced_off_desc">O botão redondo: deslize para o volume, toque para o painel de volume. Ative para ter o Dock e seus painéis.</string>
+    <string name="mode_to_simple_title">Mudar para Simples?</string>
+    <string name="mode_to_simple_body">Sua barra vira o botão redondo: deslize para cima ou para baixo para o volume, toque para o painel de volume, segure para movê-la. O Controle rápido, o Deck e o menu de pressão longa são desativados, incluindo as teclas de volume. Você pode voltar a qualquer momento.</string>
+    <string name="mode_to_advanced_title">Mudar para Avançado?</string>
+    <string name="mode_to_advanced_body">Sua barra vira o Dock: deslize para cima ou para baixo para o Controle rápido, deslize para dentro para o Deck, segure para o menu de pressão longa. A aparência e os gestos dela são substituídos; você pode voltar a qualquer momento.</string>
+    <string name="mode_switch_confirm">Mudar</string>
+    <string name="mode_switch_cancel">Cancelar</string>
+</resources>

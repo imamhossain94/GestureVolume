@@ -9,7 +9,7 @@ package com.newagedevs.gesturevolume.utils
  *
  * This is deliberately a separate object from [HandlerActions] rather than three more entries in
  * it. These are not assignable actions: they never appear in a gesture slot, so
- * [HandlerActionCatalog.ALL], `SwipeActionDialog` and `MainViewModel`'s swipe-icon lookups — the
+ * [HandlerActionCatalog.ALL], the action picker and `MainViewModel`'s swipe-icon lookups — the
  * three hand-synced lists that have already shipped one bug between them — need no change at all.
  */
 object VolumeStreamMode {

@@ -12,8 +12,9 @@ import org.junit.Test
 class HandlerPresetsTest {
 
     @Test
-    fun `the catalogue is Dock, Edge and Bold, and Dock is the default`() {
-        assertEquals(listOf("Dock", "Edge", "Bold"), HandlerPresets.ALL.map { it.id })
+    fun `the catalogue is Classic, Dock, Edge and Bold, and Dock is the default`() {
+        assertEquals(listOf("Classic", "Dock", "Edge", "Bold"), HandlerPresets.ALL.map { it.id })
+        assertSame(HandlerPresets.byId("Classic"), HandlerPresets.CLASSIC)
         assertSame(HandlerPresets.byId("Dock"), HandlerPresets.DEFAULT)
         assertSame(HandlerPresets.byId("Edge"), HandlerPresets.EDGE)
     }
@@ -26,11 +27,19 @@ class HandlerPresetsTest {
     }
 
     @Test
-    fun `every preset puts the bar a fifth of the way down with the shared gestures`() {
+    fun `every preset starts the bar 21 percent of the way down, the Classic included`() {
         HandlerPresets.ALL.forEach { preset ->
+            assertEquals(preset.id, 0.21f, preset.positionFraction, 0f)
+        }
+        assertEquals(0.21f, HandlerPresets.DEFAULT.positionFraction, 0f)
+    }
+
+    @Test
+    fun `every preset but the Classic shares the edge gestures`() {
+        // Not the Classic: it is the app as it was, its gestures included. See UserModeTest.
+        HandlerPresets.ALL.filter { it != HandlerPresets.CLASSIC }.forEach { preset ->
             val b = preset.behaviour
             val id = preset.id
-            assertEquals(id, 0.20f, preset.positionFraction, 0f)
             assertEquals(id, HandlerActions.OPEN_VOLUME_UI, b.singleTap)
             assertEquals(id, HandlerActions.NONE, b.doubleTap)
             assertEquals(id, HandlerActions.NONE, b.tripleTap)
@@ -69,15 +78,25 @@ class HandlerPresetsTest {
     }
 
     @Test
-    fun `the Dock's panel is thicker than the Edge's, with its number and icon further in`() {
+    fun `the Dock's and the Edge's panels are 32dp across, the Dock's number and icon further in`() {
         val dock = HandlerPresets.DEFAULT.behaviour.slider
-        assertEquals(28f, dock.thicknessDp, 0f)
+        assertEquals(32f, dock.thicknessDp, 0f)
         assertEquals(35f, dock.valueMarginDp, 0f)
         assertEquals(35f, dock.iconMarginDp, 0f)
         val edge = HandlerPresets.EDGE.behaviour.slider
-        assertEquals(24f, edge.thicknessDp, 0f)
+        assertEquals(32f, edge.thicknessDp, 0f)
         assertEquals(26f, edge.valueMarginDp, 0f)
         assertEquals(26f, edge.iconMarginDp, 0f)
+        // And so is a fresh install's, which is the Dock's.
+        assertEquals(32f, QuickSliderStore.DEFAULT_THICKNESS, 0f)
+    }
+
+    @Test
+    fun `the Classic's and the Bold's panels open as wide as their bars`() {
+        listOf(HandlerPresets.CLASSIC, HandlerPresets.byId("Bold")!!).forEach { preset ->
+            assertEquals(preset.id, preset.width, preset.behaviour.slider.thicknessDp, 0f)
+        }
+        assertEquals(30f, HandlerPresets.CLASSIC.behaviour.slider.thicknessDp, 0f)
     }
 
     @Test
@@ -88,7 +107,16 @@ class HandlerPresetsTest {
         assertEquals(46f, bold.width, 0f)
         assertEquals(46f, bold.height, 0f)
         assertEquals(46f, bold.behaviour.slider.thicknessDp, 0f)
-        assertEquals(8f, bold.behaviour.slider.edgeOffsetDp, 0f)
+    }
+
+    @Test
+    fun `the rounded presets' panels stand a few dp off the edge, the tab's sits flush`() {
+        listOf(HandlerPresets.CLASSIC, HandlerPresets.byId("Bold")!!).forEach { preset ->
+            val offset = preset.behaviour.slider.edgeOffsetDp
+            assertTrue("${preset.id}: $offset", offset in 2f..5f)
+        }
+        assertEquals(HandlerShape.TAB, HandlerPresets.DEFAULT.shape)
+        assertEquals(0f, HandlerPresets.DEFAULT.behaviour.slider.edgeOffsetDp, 0f)
     }
 
     @Test

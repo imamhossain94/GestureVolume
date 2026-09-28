@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="how_it_works">Cách hoạt động</string>
+    <string name="demo_tap">Chạm</string>
+    <string name="demo_swipe_up">Vuốt lên</string>
+    <string name="demo_swipe_down">Vuốt xuống</string>
+    <string name="demo_swipe_in">Vuốt vào trong</string>
+    <string name="demo_hold">Giữ</string>
+    <string name="demo_does_nothing">Không làm gì</string>
+</resources>

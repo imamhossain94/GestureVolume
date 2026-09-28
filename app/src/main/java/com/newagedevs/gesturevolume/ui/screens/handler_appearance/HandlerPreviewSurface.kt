@@ -1,14 +1,21 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
+import com.newagedevs.gesturevolume.ui.components.DemoGestureText
+import com.newagedevs.gesturevolume.ui.components.DemoGesture
+import com.newagedevs.gesturevolume.ui.components.GestureDemoState
 import android.view.Gravity
 import android.widget.FrameLayout
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
@@ -44,11 +51,33 @@ import com.newagedevs.gesturevolume.ui.view.HandlerView
 @Composable
 fun HandlerPreviewSurface(
     state: AppearanceStateHolder,
-    backdrop: Int,
     modifier: Modifier = Modifier,
     fillHeight: Boolean = false,
+    /**
+     * The number the bar shows in place of its icon right now, or null for the icon: the level a
+     * swipe in the preview's demo is moving. Read as state, so it can change every step.
+     */
+    barLabel: () -> Int? = { null },
+    /** Over the glass and unclipped, for the demo's hand: see [PreviewStage]. */
+    overGlass: @Composable BoxScope.() -> Unit = {},
+    /** The demo the card's button plays, and how its gestures are worded: see [PreviewStage]. */
+    demo: GestureDemoState? = null,
+    caption: @Composable (DemoGesture) -> Unit = { DemoGestureText(it) },
+    /**
+     * Laid over the bar on the phone's screen, so what it places against the screen's edge lines up
+     * with the bar: what the gestures do, the replay button.
+     */
+    overlay: @Composable BoxScope.() -> Unit = {},
 ) {
     var handlerViewRef by remember { mutableStateOf<HandlerView?>(null) }
+    val currentBarLabel by rememberUpdatedState(barLabel)
+
+    // Through the bar's own readout, the one the live bar shows while a swipe moves the level: the
+    // number in its middle, in the icon's colour, where the icon was.
+    LaunchedEffect(handlerViewRef) {
+        val bar = handlerViewRef ?: return@LaunchedEffect
+        snapshotFlow { currentBarLabel() }.collect { bar.setVolumePercent(it) }
+    }
 
     // Every property, in one effect. There is nothing here that has to happen in a particular
     // order relative to anything else, and one keyed effect is what keeps "the preview shows the
@@ -70,13 +99,7 @@ fun HandlerPreviewSurface(
             )
             setViewGravity(state.gravity)
             setEdgeMarginDp(state.edgeMargin)
-            setViewBackgroundColor(state.bgColor.toArgb(), state.bgAlpha)
-            setCornerRadiiDp(state.cornerTL, state.cornerTR, state.cornerBL, state.cornerBR)
-            setShapeStyle(state.shape, state.flare)
-            setStrokeProperties(state.strokeColor.toArgb(), state.strokeWidth, state.strokeAlpha)
-            setCenterIcon(state.iconRes, state.iconSize, state.iconColor.toArgb())
-            setCenterIconColor(state.iconColor.toArgb())
-            setCenterIconVisible(state.showIcon)
+            wearDraft(state)
 
             // Last, and it has to be last: every setter above that changes a dimension or the
             // side rebuilds the layout params from scratch — see HandlerView.updateLayoutParams —
@@ -90,7 +113,7 @@ fun HandlerPreviewSurface(
         }
     }
 
-    PreviewStage(backdrop = backdrop, modifier = modifier, fillHeight = fillHeight) {
+    PreviewStage(modifier = modifier, fillHeight = fillHeight, overGlass = overGlass, demo = demo, caption = caption) {
         AndroidView(
             factory = { ctx ->
                 FrameLayout(ctx).apply {
@@ -105,7 +128,22 @@ fun HandlerPreviewSurface(
             },
             modifier = Modifier.fillMaxSize()
         )
+        overlay()
     }
 }
 
 
+
+/**
+ * Dresses [this] bar in the draft's look — fill, outline, corners, shape and icon — and nothing
+ * about its size or place, which the dock and the placement editor each decide for themselves.
+ */
+internal fun HandlerView.wearDraft(state: AppearanceStateHolder) {
+    setViewBackgroundColor(state.bgColor.toArgb(), state.bgAlpha)
+    setCornerRadiiDp(state.cornerTL, state.cornerTR, state.cornerBL, state.cornerBR)
+    setShapeStyle(state.shape, state.flare)
+    setStrokeProperties(state.strokeColor.toArgb(), state.strokeWidth, state.strokeAlpha)
+    setCenterIcon(state.iconRes, state.iconSize, state.iconColor.toArgb())
+    setCenterIconColor(state.iconColor.toArgb())
+    setCenterIconVisible(state.showIcon)
+}

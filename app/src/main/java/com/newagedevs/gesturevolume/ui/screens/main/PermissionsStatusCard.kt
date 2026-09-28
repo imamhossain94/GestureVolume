@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -41,9 +42,8 @@ enum class PermissionChipState {
  * The home screen's way to the Permissions page, and its answer to "is everything the app needs
  * switched on?".
  *
- * Built the way the cards above it are — the same surface, corner, icon chip, title and
- * description, in the same order — only the full width of the grid, so it reads as the grid's last
- * row rather than as a banner under it.
+ * A row of the home screen's first group, in the Actions and Visibility screens' design, with what
+ * it is waiting for and the chips under it inside the same row.
  *
  * It used to say only "All permissions granted" in a card sized for a paragraph, which read as an
  * empty card. So it says what these permissions are for, and then shows the three that matter most
@@ -76,96 +76,65 @@ fun PermissionsStatusCard(
     otherMissing: Int = 0,
     /** What the first missing permission is needed by, shown in place of the description. */
     reason: String? = null,
+    /** Where it sits in its group: see segmentShape. */
+    shape: Shape = RoundedCornerShape(20.dp),
     onClick: () -> Unit
 ) {
     val allGranted = missingPermissionCount == 0 && overlay != PermissionChipState.MISSING
     val tone = if (allGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
 
-    Card(
-        modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(if (compact) 12.dp else 14.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(if (compact) 32.dp else 38.dp)
-                        .clip(RoundedCornerShape(if (compact) 10.dp else 12.dp))
-                        .background(tone.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = if (allGranted) Icons.Default.Shield else Icons.Default.PrivacyTip,
-                        contentDescription = null,
-                        modifier = Modifier.size(if (compact) 18.dp else 22.dp),
-                        tint = tone
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.permissions),
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = if (compact) 14.sp else 15.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = when {
-                            allGranted -> stringResource(R.string.all_permissions_granted)
-                            // Naming the count is the difference between a card the user opens and
-                            // one they learn to ignore.
-                            missingPermissionCount == 1 ->
-                                stringResource(R.string.permission_action_required_one)
-                            missingPermissionCount > 1 ->
-                                stringResource(R.string.permission_action_required_many, missingPermissionCount)
-                            else -> stringResource(R.string.action_required)
-                        },
-                        fontSize = 12.sp,
-                        lineHeight = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = if (allGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                if (!allGranted && missingPermissionCount > 0) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .defaultMinSize(minWidth = 24.dp, minHeight = 24.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.error)
-                            .padding(horizontal = 7.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = missingPermissionCount.toString(),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onError
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.width(6.dp))
+    HomeLinkRow(
+        // Its tile in the warning colour while something waits, so the row is found at a glance.
+        icon = {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(tone.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    imageVector = if (allGranted) Icons.Default.Shield else Icons.Default.PrivacyTip,
                     contentDescription = null,
-                    modifier = Modifier.size(if (compact) 18.dp else 20.dp),
-                    tint = MaterialTheme.colorScheme.outline
+                    modifier = Modifier.size(24.dp),
+                    tint = tone
                 )
             }
-
-            Spacer(modifier = Modifier.height(if (compact) 8.dp else 10.dp))
+        },
+        title = stringResource(R.string.permissions),
+        summary = when {
+            allGranted -> stringResource(R.string.all_permissions_granted)
+            // Naming the count is the difference between a row the user opens and one they
+            // learn to ignore.
+            missingPermissionCount == 1 -> stringResource(R.string.permission_action_required_one)
+            missingPermissionCount > 1 ->
+                stringResource(R.string.permission_action_required_many, missingPermissionCount)
+            else -> stringResource(R.string.action_required)
+        },
+        summaryColour = tone,
+        shape = shape,
+        onClick = onClick,
+        trailing = {
+            if (!allGranted && missingPermissionCount > 0) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .defaultMinSize(minWidth = 24.dp, minHeight = 24.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.error)
+                        .padding(horizontal = 7.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = missingPermissionCount.toString(),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onError
+                    )
+                }
+            }
+        },
+        footer = {
             Text(
                 // When something is waiting, what it is waiting for says more than a description
                 // of permissions in general.
@@ -180,8 +149,7 @@ fun PermissionsStatusCard(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -196,8 +164,8 @@ fun PermissionsStatusCard(
                     )
                 }
             }
-        }
-    }
+        },
+    )
 }
 
 /** One permission and where it stands, as a small pill. */

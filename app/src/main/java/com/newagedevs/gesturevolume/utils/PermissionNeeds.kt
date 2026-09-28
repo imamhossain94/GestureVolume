@@ -63,6 +63,7 @@ object PermissionNeeds {
         QUICK_SLIDER_BRIGHTNESS(Screen.QUICK_SLIDER, R.string.permission_feature_slider_brightness),
         QUICK_SLIDER_INSTANT_KEYS(Screen.QUICK_SLIDER, R.string.permission_feature_slider_instant_keys),
         HIDE_IN_APPS(Screen.VISIBILITY, R.string.permission_feature_hide_in_apps),
+        APP_GESTURES(Screen.ACTIONS, R.string.permission_feature_app_gestures),
     }
 
     /** One missing permission, and the feature that is waiting on it. */
@@ -80,6 +81,11 @@ object PermissionNeeds {
         val volumeKeyMode: String = QuickSliderStore.VOLUME_KEYS_OFF,
         /** True when the bar is set to step aside for at least one app. */
         val hideInApps: Boolean = false,
+        /**
+         * Every action an app's own gestures are set to, across all the apps that have them. Any
+         * at all means the app in front has to be known, which is the accessibility service's.
+         */
+        val appGestureActions: List<String> = emptyList(),
         val notificationControls: Boolean = false,
         val searchContacts: Boolean = false,
         val directCall: Boolean = false,
@@ -184,6 +190,10 @@ object PermissionNeeds {
             need(Permission.ACCESSIBILITY, Feature.QUICK_SLIDER_INSTANT_KEYS)
         }
         if (config.hideInApps) need(Permission.ACCESSIBILITY, Feature.HIDE_IN_APPS)
+        if (config.appGestureActions.isNotEmpty()) need(Permission.ACCESSIBILITY, Feature.APP_GESTURES)
+        config.appGestureActions.forEach { action ->
+            permissionsFor(action, config.sliderTarget).forEach { need(it, Feature.APP_GESTURES) }
+        }
         if (config.notificationControls) need(Permission.NOTIFICATIONS, Feature.NOTIFICATION_CONTROLS)
 
         // Stable, so within a permission the features keep the order they were found in.
@@ -213,6 +223,7 @@ object PermissionNeeds {
         sliderTarget = preference.slider.getTarget(),
         volumeKeyMode = preference.slider.getVolumeKeyMode(),
         hideInApps = preference.getHandlerHiddenApps().isNotEmpty(),
+        appGestureActions = preference.appGestures.getProfiles().values.flatMap { it.values },
         notificationControls = preference.getShowNotification(),
         searchContacts = preference.search.getIndexContacts(),
         directCall = preference.search.getDirectCall(),

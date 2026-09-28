@@ -10,7 +10,7 @@ import com.newagedevs.gesturevolume.data.local.QuickSliderStore
  * The handler presets, defined once: Dock (the default), Edge and Bold.
  *
  * A preset is a look for the bar plus a [Behaviour] — its gestures, the Quick panel, the menu and
- * the panel animation — and every one of them puts the bar a fifth of the way down the screen.
+ * the panel animation — and every one of them puts the bar 21% of the way down the screen.
  *
  * These used to live as a `when (presetId)` block inside the appearance screen's LaunchedEffect.
  * Moving them here gives the screen one place to read from, and keeps the identifiers that select
@@ -107,8 +107,11 @@ object HandlerPresets {
         val menuPerPage: Int,
     )
 
-    /** Where every preset puts the bar's centre: a fifth of the way down the usable height. */
-    const val POSITION_FRACTION = 0.20f
+    /**
+     * Where every preset puts the bar's centre, the Classic included: 21% of the way down the
+     * usable height. Also where a fresh install starts it, since the default is a preset.
+     */
+    const val POSITION_FRACTION = 0.21f
 
     /** The behaviour the edge presets share. Bold differs only where it says so. */
     private val EDGE_BEHAVIOUR = Behaviour(
@@ -126,7 +129,7 @@ object HandlerPresets {
             showValue = true,
             showIcon = true,
             lengthDp = 220f,
-            thicknessDp = 24f,
+            thicknessDp = PANEL_THICKNESS,
             edgeOffsetDp = 0f,
             valueMarginDp = 26f,
             iconMarginDp = 26f,
@@ -139,13 +142,60 @@ object HandlerPresets {
     )
 
     /**
-     * The Dock's: the edge behaviour with a panel four dp thicker, and the number and the icon
-     * further in from its ends. The tab's sweeps curve the panel's ends away, and at the Edge's
-     * 26dp the number and icon sat on the curve rather than on the flat.
+     * How wide the Quick panel opens, in dp, for the presets whose panel is not their bar's own
+     * width — the Dock and the Edge — and so for a fresh install. The Classic's and the Bold's are
+     * their bars' widths.
+     */
+    const val PANEL_THICKNESS = 32f
+
+    /**
+     * The Dock's: the edge behaviour with the number and the icon further in from the panel's ends.
+     * The tab's sweeps curve the panel's ends away, and at the Edge's 26dp the number and icon sat
+     * on the curve rather than on the flat.
      */
     private val DOCK_BEHAVIOUR = EDGE_BEHAVIOUR.copy(
-        slider = EDGE_BEHAVIOUR.slider.copy(thicknessDp = 28f, valueMarginDp = 35f, iconMarginDp = 35f),
+        slider = EDGE_BEHAVIOUR.slider.copy(valueMarginDp = 35f, iconMarginDp = 35f),
     )
+
+    /**
+     * The Classic's: the app as it was before the Quick panel and the Deck. Swipe up and down change
+     * the volume and show it, a tap opens the volume panel, a hold moves the bar — and nothing opens
+     * a panel, the volume keys included. What the users who asked to turn the Quick slider off
+     * wanted back, and what a regular user starts with. See [UserMode].
+     */
+    private val CLASSIC_BEHAVIOUR = EDGE_BEHAVIOUR.copy(
+        dynamicPosition = false,
+        singleTap = HandlerActions.OPEN_VOLUME_UI,
+        doubleTap = HandlerActions.NONE,
+        tripleTap = HandlerActions.NONE,
+        longPress = HandlerActions.REPOSITION,
+        swipeUp = HandlerActions.INCREASE_VOLUME_UI,
+        swipeDown = HandlerActions.DECREASE_VOLUME_UI,
+        swipeIn = HandlerActions.NONE,
+        swipeOut = HandlerActions.NONE,
+        // A few dp off the edge: the Classic's panel is a rounded pill, and flush against the edge
+        // a pill reads as cut off by it. The tab presets' panels stay flush, where a tab belongs.
+        // As wide as the Classic's bar, so the panel opens to the width of the pill it grows out of.
+        slider = EDGE_BEHAVIOUR.slider.copy(
+            thicknessDp = CLASSIC_WIDTH,
+            edgeOffsetDp = ROUNDED_PANEL_EDGE_OFFSET,
+            volumeKeys = QuickSliderStore.VOLUME_KEYS_OFF,
+        ),
+        panelAnimation = PanelAnimation.POP,
+    )
+
+    /**
+     * How far the Classic's and the Bold's rounded panels stand off the edge, in dp: enough to read
+     * as a pill on the screen rather than one cut off by its edge, and little enough to still open
+     * out of the bar beside it.
+     */
+    const val ROUNDED_PANEL_EDGE_OFFSET = 4f
+
+    /** The Classic's bar's width, and its Quick panel's. */
+    private const val CLASSIC_WIDTH = 30f
+
+    /** The Bold's bubble's width, and its Quick panel's. */
+    private const val BOLD_WIDTH = 46f
 
     data class Preset(
         val id: String,
@@ -207,6 +257,32 @@ object HandlerPresets {
     }
 
     val ALL: List<Preset> = listOf(
+        Preset(
+            /**
+             * The round button: the out-of-the-box handler from before the Dock, brought back as
+             * it was — a 30 by 100 pill in half-transparent indigo with a thin white outline, no
+             * icon, on the right a little below the top.
+             *
+             * A regular user's default (see [UserMode]), and the look the users who missed it
+             * described as sufficient. Its behaviour is the app's original too: [CLASSIC_BEHAVIOUR].
+             */
+            id = "Classic",
+            nameRes = R.string.preset_classic_title,
+            subtitleRes = R.string.preset_classic_subtitle,
+            gravity = Gravity.END,
+            width = CLASSIC_WIDTH, height = 100f,
+            bgColor = PREVIEW_PRIMARY, bgAlpha = 128,
+            strokeColor = Color.White, strokeWidth = 1f, strokeAlpha = 200,
+            cornerRadius = 15f,
+            iconRes = R.drawable.ic_vol_increase, iconSize = 18f, iconColor = Color.White,
+            showIcon = false, vibrate = false, edgeMargin = 0f, positionFraction = POSITION_FRACTION,
+            behaviour = CLASSIC_BEHAVIOUR,
+            placement = Placement(
+                gravity = Gravity.END,
+                posXFraction = 1f,
+                snapToEdge = true
+            )
+        ),
         Preset(
             /**
              * The dock tab: a bar whose ends sweep back into the side of the phone.
@@ -314,7 +390,7 @@ object HandlerPresets {
             nameRes = R.string.preset_bold_title,
             subtitleRes = R.string.preset_bold_subtitle,
             gravity = Gravity.END,
-            width = 46f, height = 46f,
+            width = BOLD_WIDTH, height = BOLD_WIDTH,
             bgColor = PREVIEW_ON_SURFACE, bgAlpha = 140,
             strokeColor = Color.White, strokeWidth = 1.5f, strokeAlpha = 90,
             cornerRadius = 23f,
@@ -323,10 +399,11 @@ object HandlerPresets {
             iconRes = R.drawable.ic_vol_increase, iconSize = 24f, iconColor = Color.White,
             showIcon = true, vibrate = true, edgeMargin = 8f, positionFraction = POSITION_FRACTION,
             // Held still rather than carried round the phone, and a Quick panel as thick as the
-            // bubble and standing off the edge by the same 8dp, so it opens out of the circle.
+            // bubble, standing a few dp off the edge as the Classic's does. It stood off by the
+            // bubble's own 8dp, which left it floating well clear of the edge it opens from.
             behaviour = EDGE_BEHAVIOUR.copy(
                 dynamicPosition = false,
-                slider = EDGE_BEHAVIOUR.slider.copy(thicknessDp = 46f, edgeOffsetDp = 8f),
+                slider = EDGE_BEHAVIOUR.slider.copy(thicknessDp = BOLD_WIDTH, edgeOffsetDp = ROUNDED_PANEL_EDGE_OFFSET),
             )
         )
     )
@@ -352,4 +429,7 @@ object HandlerPresets {
 
     /** The slim pill that was the default before the Dock. See `SharedPref.pinEdgeAppearanceDefaults`. */
     val EDGE: Preset = ALL.first { it.id == "Edge" }
+
+    /** The round button the app began with, and a regular user's default. See [UserMode]. */
+    val CLASSIC: Preset = ALL.first { it.id == "Classic" }
 }

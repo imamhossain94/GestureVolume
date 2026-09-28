@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">Classico</string>
+    <string name="preset_classic_subtitle">Il pulsante rotondo originale: scorri per il volume, tocca per il pannello</string>
+    <string name="home_advanced_features">Funzioni avanzate</string>
+    <string name="home_advanced_features_desc">Deck, Cursore rapido, menu a pressione prolungata e visibilità</string>
+    <string name="expand_advanced_features">Mostra le funzioni avanzate</string>
+    <string name="collapse_advanced_features">Nascondi le funzioni avanzate</string>
+    <string name="mode_advanced_switch">Modalità avanzata</string>
+    <string name="mode_advanced_on_desc">La barra Dock: scorri per il Cursore rapido, scorri verso l’interno per il Deck, tieni premuto per il menu</string>
+    <string name="mode_advanced_off_desc">Il pulsante rotondo: scorri per il volume, tocca per il pannello del volume. Attivala per il Dock e i suoi pannelli.</string>
+    <string name="mode_to_simple_title">Passare a Semplice?</string>
+    <string name="mode_to_simple_body">La barra diventa il pulsante rotondo: scorri su o giù per il volume, tocca per il pannello del volume, tieni premuto per spostarlo. Il Cursore rapido, il Deck e il menu a pressione prolungata vengono disattivati, tasti del volume inclusi. Puoi tornare indietro in qualsiasi momento.</string>
+    <string name="mode_to_advanced_title">Passare ad Avanzata?</string>
+    <string name="mode_to_advanced_body">La barra diventa il Dock: scorri su o giù per il Cursore rapido, scorri verso l’interno per il Deck, tieni premuto per il menu a pressione prolungata. Aspetto e gesti vengono sostituiti; puoi tornare indietro in qualsiasi momento.</string>
+    <string name="mode_switch_confirm">Cambia</string>
+    <string name="mode_switch_cancel">Annulla</string>
+</resources>

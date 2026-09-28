@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">Appearance saved</string>
     <string name="appearance">Appearance</string>
-    <string name="appearance_desc">Colour, shape &amp; size</string>
+    <string name="appearance_desc">Colour, shape, size and icon, with a live preview</string>
     <string name="customize_handler">Customize handler</string>
     <string name="actions">Actions</string>
-    <string name="actions_desc">What taps &amp; swipes do</string>
+    <string name="actions_desc">What each tap, hold and swipe does, and a pad to try them</string>
 
     <!-- Navigation -->
     <string name="pro_version">Pro Version</string>
@@ -211,22 +211,23 @@
     <string name="icon_close">Close</string>
     <string name="crown">Crown</string>
 
-    <!-- Languages -->
-    <string name="lang_english">English</string>
-    <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">Arabic</string>
-    <string name="lang_hindi">Hindi</string>
-    <string name="lang_korean">Korean</string>
-    <string name="lang_japanese">Japanese</string>
-    <string name="lang_chinese">Chinese</string>
-    <string name="lang_german">German</string>
-    <string name="lang_spanish">Spanish</string>
-    <string name="lang_french">French</string>
-    <string name="lang_italian">Italian</string>
-    <string name="lang_portuguese">Portuguese</string>
-    <string name="lang_russian">Russian</string>
-    <string name="lang_turkish">Turkish</string>
-    <string name="lang_vietnamese">Vietnamese</string>
+    <!-- Languages, each in its own name, as Android's own picker shows them: whoever lands in a
+         language they cannot read can still find theirs. Not translated. -->
+    <string name="lang_english" translatable="false">English</string>
+    <string name="lang_bangla" translatable="false">বাংলা</string>
+    <string name="lang_arabic" translatable="false">العربية</string>
+    <string name="lang_hindi" translatable="false">हिन्दी</string>
+    <string name="lang_korean" translatable="false">한국어</string>
+    <string name="lang_japanese" translatable="false">日本語</string>
+    <string name="lang_chinese" translatable="false">中文</string>
+    <string name="lang_german" translatable="false">Deutsch</string>
+    <string name="lang_spanish" translatable="false">Español</string>
+    <string name="lang_french" translatable="false">Français</string>
+    <string name="lang_italian" translatable="false">Italiano</string>
+    <string name="lang_portuguese" translatable="false">Português</string>
+    <string name="lang_russian" translatable="false">Русский</string>
+    <string name="lang_turkish" translatable="false">Türkçe</string>
+    <string name="lang_vietnamese" translatable="false">Tiếng Việt</string>
 
     <!-- Theme Options -->
     <string name="system_default">System Default</string>
@@ -239,7 +240,7 @@
 
     <!-- Presets -->
     <string name="preset_bold_title">Bold</string>
-    <string name="preset_bold_subtitle">Floating bubble</string>
+    <string name="preset_bold_subtitle">A round bubble floating off the edge, easy to find</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">Press back again to exit</string>
@@ -394,7 +395,7 @@
     <string name="context_menu_move_down">Move down</string>
     <string name="context_menu_hide_item">Remove from menu</string>
     <string name="context_menu_show_item">Add to menu</string>
-    <string name="appearance_preview_hint">This is your handler at its real size. Long press the live bar on your home screen to move it.</string>
+    <string name="appearance_preview_hint">Your handler as it looks on your screen. Tap ? above to watch each gesture play out with your own settings. Long press the live bar to move it.</string>
     <string name="faq">FAQ</string>
     <string name="faq_desc">Common questions</string>
     <string name="context_menu_layout">Layout</string>
@@ -430,7 +431,7 @@
     <string name="faq_q_battery">Does it drain the battery?</string>
     <string name="faq_a_battery">Very little. The bar is a small window that draws nothing until you touch it, and the app does no work in the background between gestures. Turning off battery optimisation, which Troubleshoot suggests, does not make it use more power — it only stops the system killing it.</string>
     <string name="faq_q_games">The bar gets in the way in games and full-screen video.</string>
-    <string name="faq_a_games">Move it somewhere the app you are using does not need — long press and drag — or make it smaller and more transparent under Appearance. The Ghost preset is close to invisible while still being there. For a game you play often, hiding the bar from the long-press menu and bringing it back from the notification afterwards is the cleanest option.</string>
+    <string name="faq_a_games">Move it somewhere the app you are using does not need — long press and drag — or make it smaller and more transparent under Appearance. For a game you play often, hiding the bar from the long-press menu and bringing it back from the notification afterwards is the cleanest option.</string>
     <string name="panel_theme">Panel style</string>
     <string name="panel_theme_desc">How the Deck, the Quick panel and the long-press menu are drawn. Gloss, Clear and Paper are pale with dark text on them. Frosted, Glass, Gloss, Clear, Acrylic and Amethyst blur the screen behind the panel, which needs Android 12 or newer; where the system will not blur, the panel stays translucent.</string>
     <string name="panel_theme_solid">Solid</string>
@@ -451,7 +452,7 @@
     <string name="edge_swipe_menu_desc">Swipe from the bar toward the middle of the screen to open the actions menu. Off by default, because this is also how the system Back gesture is performed.</string>
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">Edge</string>
-    <string name="preset_edge_subtitle">Slim pill, flush to the side</string>
+    <string name="preset_edge_subtitle">A slim pill, flush to the side and out of the way</string>
     <!-- 1.4.0: action groups in the picker -->
     <string name="action_group_handler">Handler</string>
     <string name="action_group_volume">Volume &amp; brightness</string>
@@ -487,6 +488,18 @@
     <string name="action_quick_settings">Quick settings</string>
     <string name="action_power_menu">Power menu</string>
 
+    <!-- Connections, the ringer, the assistant and the camera. Wi-Fi, Bluetooth and Internet open the system's own sheet: apps may no longer switch them. -->
+    <string name="action_wifi_panel">Wi-Fi</string>
+    <string name="action_bluetooth_settings">Bluetooth</string>
+    <string name="action_internet_panel">Internet</string>
+    <string name="action_ring_vibrate">Ring / vibrate</string>
+    <string name="action_open_camera">Camera</string>
+    <string name="action_voice_assistant">Voice assistant</string>
+    <string name="action_launch_app">Launch app</string>
+    <string name="action_group_swipe">Adjust as you swipe</string>
+    <string name="ringer_ring">Ring</string>
+    <string name="ringer_vibrate">Vibrate</string>
+
     <!-- 1.4.0: what the bar says while it does things -->
     <string name="flashlight_on">Flashlight on</string>
     <string name="flashlight_off">Flashlight off</string>
@@ -507,15 +520,55 @@
     <string name="swipe_in_desc">Swipe from the bar toward the middle of the screen</string>
     <string name="swipe_out_action">Swipe out action</string>
     <string name="swipe_out_desc">Swipe from the bar toward the screen edge</string>
+    <string name="gesture_name_single_tap">Tap</string>
+    <string name="gesture_name_double_tap">Double tap</string>
+    <string name="gesture_name_triple_tap">Triple tap</string>
+    <string name="gesture_name_long_press">Long press</string>
+    <string name="gesture_name_swipe_up">Swipe up</string>
+    <string name="gesture_name_swipe_down">Swipe down</string>
+    <string name="gesture_name_swipe_in">Swipe in</string>
+    <string name="gesture_name_swipe_out">Swipe out</string>
+    <string name="gesture_hint_single_tap">Tap the bar once.</string>
+    <string name="gesture_hint_double_tap">Tap the bar twice, quickly.</string>
+    <string name="gesture_hint_triple_tap">Tap the bar three times, quickly.</string>
+    <string name="gesture_hint_long_press">Press and hold the bar.</string>
+    <string name="gesture_hint_swipe_up">Slide your finger up along the bar.</string>
+    <string name="gesture_hint_swipe_down">Slide your finger down along the bar.</string>
+    <string name="actions_taps">Taps</string>
+    <string name="actions_swipes">Swipes</string>
+    <string name="actions_more">More</string>
+    <string name="actions_try_title">Try it</string>
+    <string name="actions_try_hint">Tap, hold or swipe the bar above to see what each gesture does. Nothing actually runs here.</string>
+    <string name="actions_try_change">Change</string>
+    <string name="actions_not_set">Not set</string>
+    <string name="action_picker_search">Search actions</string>
+    <string name="action_picker_now">Now: %1$s</string>
+    <string name="action_picker_empty">No action matches “%1$s”.</string>
+    <string name="tap_timing_title">Tap timing</string>
+    <string name="tap_timing_auto">%1$d ms · automatic</string>
+    <string name="tap_timing_use_auto">Use automatic</string>
+    <string name="tap_timing_try">Try the new timing on the bar at the top of this screen.</string>
+
+    <!-- How far one swipe up or down moves the volume or brightness -->
+    <string name="tap_timing_desc">How long the bar waits for a second tap, and how long a hold takes to become a long press. Longer is easier to hit; shorter makes a single tap answer sooner.</string>
+    <string name="tap_timing_double">Double-tap window</string>
+    <string name="tap_timing_long">Long-press delay</string>
+    <string name="tap_timing_value">%1$d ms</string>
+    <string name="swipe_amount_title">Swipe amount</string>
+    <string name="swipe_amount_desc">How far one swipe up or down moves the volume or brightness</string>
+    <string name="swipe_amount_by_length">By how far you swipe</string>
+    <string name="swipe_amount_by_length_desc">A step for about every finger’s width you swipe, as the bar has always worked. A long swipe sweeps the whole range.</string>
+    <string name="swipe_amount_percent">%1$d%% per swipe</string>
+    <string name="swipe_amount_percent_desc">Each swipe moves it %1$d%%, however long or short the swipe. A volume with only a few steps moves to the nearest one.</string>
 
     <!-- 1.4.0: the accessibility service -->
     <string name="accessibility_service_label">GestureVolume</string>
-    <string name="accessibility_service_summary">System shortcuts from the volume bar, instant volume keys and hiding the bar in chosen apps</string>
-    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also opens the Quick panel the moment you press a volume key, looking at the two volume keys only. If you choose apps to hide the bar in, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.</string>
+    <string name="accessibility_service_summary">System shortcuts from the volume bar, instant volume keys, and hiding the bar or changing its gestures in chosen apps</string>
+    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also opens the Quick panel the moment you press a volume key, looking at the two volume keys only. If you choose apps to hide the bar in, or give apps gestures of their own, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.</string>
     <string name="accessibility_permission">Accessibility service</string>
     <string name="accessibility_permission_desc">Optional: performs Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and Power menu.</string>
     <string name="accessibility_disclosure_title">Turn on the accessibility service?</string>
-    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for three things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To look at the two volume keys, only if you set the volume keys to Instant: to open the Quick panel the moment you press one. Every other key passes straight on, and no key is recorded. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.\n\n• To see which app is on screen, only if you choose apps to hide the bar in. It looks at the app’s name and nothing else.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
+    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for three things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To look at the two volume keys, only if you set the volume keys to Instant: to open the Quick panel the moment you press one. Every other key passes straight on, and no key is recorded. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.\n\n• To see which app is on screen, only if you choose apps to hide the bar in or give apps gestures of their own. It looks at the app’s name and nothing else.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
     <string name="accessibility_disclosure_accept">Open Accessibility settings</string>
     <string name="accessibility_disclosure_decline">Not now</string>
     <string name="accessibility_how_to">In the list, open GestureVolume and switch it on.</string>
@@ -642,13 +695,24 @@
     <string name="deck_apps_pinned">PINNED</string>
     <string name="deck_apps_all">ALL APPS</string>
     <string name="deck_quick_dial_title">Quick dial</string>
-    <string name="deck_quick_dial_intro">One-tap call buttons in the Deck. Pick a contact, or type a name and a number.</string>
+    <string name="deck_quick_dial_intro">One-tap buttons in the Deck that call someone, or open your SMS, WhatsApp or Telegram chat with them. Pick a contact, or type a name and a number.</string>
     <string name="quick_dial_add">Add</string>
     <string name="quick_dial_pick_contact">Pick a contact</string>
     <string name="quick_dial_name">Name</string>
     <string name="quick_dial_number">Number</string>
     <string name="quick_dial_empty">No quick-dial contacts yet.</string>
     <string name="quick_dial_new">New quick dial</string>
+    <string name="quick_dial_edit">Edit quick dial</string>
+    <string name="quick_dial_opens_in">Opens in</string>
+    <string name="quick_dial_via_call">Phone</string>
+    <string name="quick_dial_via_sms">SMS</string>
+    <string name="quick_dial_via_whatsapp">WhatsApp</string>
+    <string name="quick_dial_via_telegram">Telegram</string>
+    <!-- A quick-dial row that opens a chat: the app, then the number. -->
+    <string name="quick_dial_via_line" translatable="false">%1$s · %2$s</string>
+    <string name="quick_dial_country_code_hint">WhatsApp and Telegram need the country code. Start the number with +, or set the country code below.</string>
+    <string name="quick_dial_settings_title">CALLS AND CHATS</string>
+    <string name="quick_dial_settings_desc">Shared with the Deck’s search.</string>
     <string name="notes_title">Notes</string>
     <string name="notes_intro">Notes saved from the Deck. Tap one to copy it, or open it to edit.</string>
     <string name="notes_empty">No notes yet.</string>
@@ -743,7 +807,7 @@
     <string name="slider_auto_brightness">Turn off adaptive brightness</string>
     <string name="slider_auto_brightness_desc">While the brightness slider is open. Without this the light sensor undoes what you set within a second or two. It is handed back when the service stops.</string>
     <string name="preset_dock_title">Dock</string>
-    <string name="preset_dock_subtitle">Curved edge tab</string>
+    <string name="preset_dock_subtitle">A curved tab on the edge that opens into panels</string>
     <string name="shape_uppercase">SHAPE</string>
     <string name="shape_rounded">Rounded</string>
     <string name="shape_tab">Tab</string>
@@ -805,7 +869,6 @@
     <string name="slider_value_margin">Number top padding</string>
     <string name="slider_icon_margin">Icon bottom padding</string>
     <string name="fill_liquid">Liquid</string>
-    <string name="fill_vu_meter">Level meter</string>
     <string name="fill_waveform">Waveform</string>
     <string name="fill_sunrise">Sunrise</string>
     <string name="fill_spectrum">Spectrum</string>
@@ -853,7 +916,30 @@
     <string name="context_menu_per_page_desc">With more than this, the grid becomes pages you swipe between.</string>
     <string name="about_ideas_name" translatable="false">Deepam Rathod</string>
     <string name="visibility_title">Visibility</string>
-    <string name="visibility_card_subtitle">Apps the handler stays out of</string>
+    <string name="visibility_card_subtitle">When the handler shows: media, calls, the keyboard and apps</string>
+    <string name="visibility_auto_title">When it shows</string>
+    <string name="visibility_auto_desc">With either switch on, the handler is there only while that is happening. With both, while either is. With neither, it is always there.</string>
+    <string name="visibility_media_title">Only while media plays</string>
+    <string name="visibility_media_desc">Steps aside when nothing is playing, and comes back as soon as something starts. It stays a few seconds after the sound stops, so it does not blink out between tracks.</string>
+    <string name="visibility_call_title">Only during calls</string>
+    <string name="visibility_call_desc">Shows while the phone rings and while a call is on, calls in apps included.</string>
+    <string name="visibility_keyboard_title">While typing</string>
+    <string name="visibility_keyboard_desc">What the handler does when the keyboard opens</string>
+    <string name="keyboard_move">Move above the keyboard</string>
+    <string name="keyboard_move_desc">Only when the keyboard would cover it, and only as far as it has to. It slides back when the keyboard closes.</string>
+    <string name="keyboard_motion_title">Moving animation</string>
+    <string name="keyboard_motion_desc">How the bar moves out of the keyboard\'s way, and back again when it closes.</string>
+    <string name="motion_glide">Glide</string>
+    <string name="motion_spring">Spring</string>
+    <string name="motion_bounce">Bounce</string>
+    <string name="motion_quick">Quick</string>
+    <string name="motion_fade">Fade</string>
+    <string name="motion_instant">Instant</string>
+    <string name="keyboard_hide">Hide it</string>
+    <string name="keyboard_hide_desc">Out of sight while you type, back when the keyboard closes.</string>
+    <string name="keyboard_stay">Leave it where it is</string>
+    <string name="keyboard_stay_desc">As before: a handler low on the screen can sit over the keyboard’s edge keys.</string>
+    <string name="keyboard_needs_android_11">Needs Android 11 or later. On this phone the handler stays where it is.</string>
     <string name="visibility_apps_title">Hide in these apps</string>
     <string name="visibility_apps_desc">The handler steps aside while one of these apps is open, and comes back when you leave it.</string>
     <string name="visibility_apps_needs_accessibility">This needs the accessibility service, which tells the app which app is open. Tap to turn it on.</string>
@@ -885,8 +971,6 @@
     <string name="position_from_top">From top</string>
     <string name="position_snap_off_hint">Away from an edge, so Snap to edge was switched off. Turn it back on to send the bar to the nearer side.</string>
     <string name="position_sliders_desc">Where the middle of the bar sits, as a share of the screen. You can also hold the bar and drag it; that position is saved for the way the phone is held at the time.</string>
-    <string name="preview_backdrop_change">Change the background</string>
-    <string name="preview_backdrop_random">Random colour</string>
     <string name="context_menu_group_layout">LAYOUT &amp; SIZE</string>
     <string name="context_menu_group_look">LOOK</string>
     <string name="context_menu_group_items">ITEMS</string>
@@ -900,6 +984,13 @@
     <string name="position_dynamic_desc">Moves the bar with the screen when you rotate the phone. It keeps to the same edge of the phone and lies along the top or bottom in landscape, always resting against the edge. Off, it stays upright on its side of the screen.</string>
     <string name="position_along_edge">Position along edge</string>
     <string name="position_along_edge_desc">Where the middle of the bar sits along its edge, measured with the phone upright. Turned on its side, the bar keeps the same place on the glass.</string>
+    <string name="position_set_initial">Set initial position</string>
+    <string name="position_set_initial_desc">Opens your screen at full size with the bar where it starts. Hold anywhere, then drag to move it into place.</string>
+    <string name="placement_hint">Hold anywhere until the bar lifts, then drag to move it where it should start.</string>
+    <string name="placement_snap_note">Snap to edge is on, so it settles against the nearer side.</string>
+    <string name="placement_dynamic_note">Dynamic position is on, so it always rests against an edge.</string>
+    <string name="placement_readout" translatable="false">%1$s %2$d%%</string>
+    <string name="placement_done">Done</string>
     <string name="group_content">CONTENT</string>
     <string name="group_size_shape">SIZE &amp; SHAPE</string>
     <string name="group_colours">COLOURS</string>
@@ -911,7 +1002,7 @@
     <string name="slider_sound_click">Click</string>
     <string name="slider_sound_adaptive">Adaptive</string>
     <string name="slider_content_colors">Own icon &amp; value colours</string>
-    <string name="slider_content_colors_desc">Off, the icon and the number take the track and fill colours, swapping as the fill passes them.</string>
+    <string name="slider_content_colors_desc">Off, the icon and the number change colour on their own, light or dark, to stand out from the panel and the animation under them.</string>
     <string name="slider_value_color">Value colour</string>
     <string name="slider_icon_color">Icon colour</string>
     <string name="permission_feature_floating_bar">The floating bar</string>
@@ -931,6 +1022,21 @@
     <string name="permission_feature_slider_brightness">Quick slider: Brightness</string>
     <string name="permission_feature_slider_instant_keys">Quick slider: Instant volume keys</string>
     <string name="permission_feature_hide_in_apps">Visibility: Hide in chosen apps</string>
+    <string name="permission_feature_app_gestures">Actions: Gestures for chosen apps</string>
+
+    <!-- Gestures that do something else in chosen apps -->
+    <string name="app_gestures_title">Gestures for chosen apps</string>
+    <string name="app_gestures_row_desc">Different gestures in the apps you choose</string>
+    <string name="app_gestures_intro">Give the bar different gestures in the apps you choose — in YouTube, say, swipe up could set the brightness instead of opening the Quick panel. A gesture you leave alone does what it does in every other app.</string>
+    <string name="app_gestures_add">Add an app</string>
+    <string name="app_gestures_empty">No apps yet. Add one, then change the gestures you want to work differently there.</string>
+    <string name="app_gestures_unchanged">Nothing changed yet</string>
+    <string name="app_gestures_as_everywhere">As everywhere: %1$s</string>
+    <string name="app_gestures_use_everywhere">As everywhere</string>
+    <string name="app_gestures_reset">Back to what it does everywhere</string>
+    <string name="app_gestures_remove">Remove this app</string>
+    <string name="app_gestures_pick_app">Choose an app</string>
+    <string name="app_gestures_none">None</string>
     <string name="permission_needed_by">Needed by %1$s</string>
     <string name="permission_needed_by_more">Needed by %1$s and %2$d more</string>
     <string name="permission_needed_by_list">Needed by what you have set up:</string>
@@ -939,4 +1045,49 @@
     <string name="permission_note_contacts">Needs the Contacts permission to find people. Tap to allow it on the Permissions screen.</string>
     <string name="permission_note_phone">Needs the Phone permission to call directly. Tap to allow it on the Permissions screen.</string>
     <string name="permission_note_overlay">Needs Display over other apps to show the bar. Tap to allow it on the Permissions screen.</string>
+
+    <!-- What's new: every release, from the home screen's bar and the drawer -->
+    <string name="whats_new_title">What’s new</string>
+    <string name="whats_new_version">Version %1$s</string>
+    <string name="whats_new_installed">Installed</string>
+    <string name="whats_new_badge">New</string>
+    <string name="tour_offer_title">There’s a lot new</string>
+    <string name="tour_offer_body">Take a quick tour of what the bar can do now. Nothing you’ve set up will change.</string>
+    <string name="tour_take">Take the tour</string>
+    <string name="tour_menu">App tour</string>
+    <string name="whats_new_first_release">First release on Google Play</string>
+    <!-- A milestone between releases. %1$s is a number already formatted for the language, e.g. 10,000. -->
+    <string name="whats_new_milestone">%1$s+ installs</string>
+    <string name="section_content">Content</string>
+    <string name="section_size_shape">Size &amp; shape</string>
+    <string name="section_colours">Colours</string>
+    <string name="section_animation">Animation</string>
+    <string name="section_behaviour">Behaviour</string>
+    <string name="section_position">Position</string>
+    <string name="section_items">Items</string>
+    <string name="section_common_issues">Common issues</string>
+    <string name="presets_title">Quick presets</string>
+    <string name="subgroup_background">Background</string>
+    <string name="subgroup_stroke">Outline</string>
+    <string name="group_required">Required</string>
+    <string name="group_optional">Optional</string>
+    <string name="group_legal">Legal</string>
+    <string name="group_other_feedback">Anything else</string>
+    <string name="group_how_sent">How it is sent</string>
+    <string name="about_group_support">Support the app</string>
+    <string name="about_group_credits">Credits</string>
+    <string name="faq_group_start">Getting started</string>
+    <string name="faq_group_features">Features</string>
+    <string name="faq_group_tips">Tips</string>
+    <string name="faq_search">Search questions</string>
+    <string name="faq_empty">No question matches “%1$s”.</string>
+    <string name="troubleshoot_group_fixes">Fix it here</string>
+    <string name="troubleshoot_group_steps">Also check</string>
+    <string name="troubleshoot_group_more">More help</string>
+    <string name="preview_title">Preview</string>
+    <!-- The home screen's service row and group headings. -->
+    <string name="home_service_off_desc">Tap to turn it on. Then make it look and act the way you like with Appearance and Actions below.</string>
+    <string name="home_service_on_desc">The bar is on your screen. Swipe it for volume, tap it for your actions, and tap here to turn it off.</string>
+    <string name="home_presets_title">Quick presets</string>
+    <string name="home_presets_desc">Start from a ready-made bar, then tune it under Appearance.</string>
 </resources>

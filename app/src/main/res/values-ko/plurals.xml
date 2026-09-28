@@ -12,4 +12,11 @@
     <plurals name="deck_tiles_count">
         <item quantity="other">%2$d개 중 %1$d개 켜짐</item>
     </plurals>
+    <!-- Translated from the English strings that had none here. -->
+    <plurals name="app_gestures_app_count">
+        <item quantity="other">앱 %1$d개</item>
+    </plurals>
+    <plurals name="app_gestures_changed_count">
+        <item quantity="other">제스처 %1$d개 변경됨</item>
+    </plurals>
 </resources>

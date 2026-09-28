@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">클래식</string>
+    <string name="preset_classic_subtitle">원래의 둥근 버튼: 스와이프로 볼륨, 탭으로 패널</string>
+    <string name="home_advanced_features">고급 기능</string>
+    <string name="home_advanced_features_desc">덱, 빠른 슬라이더, 길게 누르기 메뉴, 표시</string>
+    <string name="expand_advanced_features">고급 기능 보기</string>
+    <string name="collapse_advanced_features">고급 기능 숨기기</string>
+    <string name="mode_advanced_switch">고급 모드</string>
+    <string name="mode_advanced_on_desc">도크 바: 스와이프하면 빠른 슬라이더, 안쪽으로 스와이프하면 덱, 길게 누르면 메뉴</string>
+    <string name="mode_advanced_off_desc">둥근 버튼: 스와이프하면 볼륨, 탭하면 볼륨 패널. 켜면 도크와 패널을 사용할 수 있습니다.</string>
+    <string name="mode_to_simple_title">간단 모드로 바꿀까요?</string>
+    <string name="mode_to_simple_body">바가 둥근 버튼으로 바뀝니다. 위나 아래로 스와이프하면 볼륨, 탭하면 볼륨 패널, 길게 누르면 이동입니다. 빠른 슬라이더, 덱, 길게 누르기 메뉴는 볼륨 키 기능까지 모두 꺼집니다. 언제든지 다시 바꿀 수 있습니다.</string>
+    <string name="mode_to_advanced_title">고급 모드로 바꿀까요?</string>
+    <string name="mode_to_advanced_body">바가 도크로 바뀝니다. 위나 아래로 스와이프하면 빠른 슬라이더, 안쪽으로 스와이프하면 덱, 길게 누르면 길게 누르기 메뉴입니다. 모양과 제스처가 바뀌며, 언제든지 다시 바꿀 수 있습니다.</string>
+    <string name="mode_switch_confirm">바꾸기</string>
+    <string name="mode_switch_cancel">취소</string>
+</resources>

@@ -1,8 +1,14 @@
 package com.newagedevs.gesturevolume.ui.components
 
+import androidx.compose.foundation.Image
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -56,6 +62,26 @@ fun ActionIconImage(
                 modifier = modifier,
                 tint = tint
             )
+        }
+        is ActionIcon.App -> {
+            // The app's own icon, in its own colours: tinting it would make every app the same
+            // grey silhouette. Falls back to the generic mark for an app since uninstalled.
+            val context = LocalContext.current
+            val bitmap = remember(icon.packageName) {
+                runCatching {
+                    context.packageManager.getApplicationIcon(icon.packageName).toBitmap(96, 96).asImageBitmap()
+                }.getOrNull()
+            }
+            if (bitmap != null) {
+                Image(bitmap = bitmap, contentDescription = contentDescription, modifier = modifier)
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.Apps,
+                    contentDescription = contentDescription,
+                    modifier = modifier,
+                    tint = tint
+                )
+            }
         }
     }
 }

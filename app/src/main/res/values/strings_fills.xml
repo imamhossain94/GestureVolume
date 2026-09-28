@@ -13,10 +13,146 @@
     <string name="fill_storm">Storm</string>
     <string name="fill_fireworks">Fireworks</string>
 
+    <!-- The Pixels fill: a grid of lights lit up to the level, with a pattern and settings of its own. -->
+    <string name="fill_pixels">Pixels</string>
+    <string name="pixel_settings_desc">A grid of lights, lit up to the level. Pick a pattern and tune the grid; the preview above shows it as you go.</string>
+    <string name="pixel_pattern">Pattern</string>
+    <string name="pixel_speed">Speed</string>
+    <string name="pixel_columns">Pixels across</string>
+    <string name="pixel_gap">Gap</string>
+    <string name="pixel_roundness">Roundness</string>
+    <string name="pixel_glow">Glow</string>
+    <string name="pixel_rest">Unlit pixels</string>
+    <string name="pixel_speed_value" translatable="false">%1$s×</string>
+    <string name="pixel_percent_value" translatable="false">%1$d%%</string>
+    <string name="pixel_pattern_steady">Steady</string>
+    <string name="pixel_pattern_breathe">Breathe</string>
+    <string name="pixel_pattern_sweep">Sweep</string>
+    <string name="pixel_pattern_pendulum">Pendulum</string>
+    <string name="pixel_pattern_snake">Snake</string>
+    <string name="pixel_pattern_rain">Rain</string>
+    <string name="pixel_pattern_twinkle">Twinkle</string>
+    <string name="pixel_pattern_checkers">Checkers</string>
+    <string name="pixel_pattern_meter">Meter</string>
+    <string name="pixel_pattern_spectrum">Spectrum</string>
+    <string name="pixel_pattern_rainbow">Rainbow</string>
+    <string name="pixel_pattern_aurora">Aurora</string>
+    <string name="pixel_pattern_plasma">Plasma</string>
+    <string name="pixel_pattern_embers">Embers</string>
+    <string name="pixel_pattern_thermal">Thermal</string>
+    <string name="pixel_pattern_confetti">Confetti</string>
+    <string name="pixel_pattern_chromatic">Chromatic</string>
+    <string name="pixel_pattern_candy">Candy</string>
+    <string name="pixel_pattern_ripple">Ripple</string>
+    <string name="pixel_colors_fill_only">This pattern is drawn in the fill colour. The colourful ones — Rain, Meter, Spectrum and the rest — take these colours.</string>
+
+    <!-- The Shaders fill: effects drawn by the phone's graphics chip, Android 13 and later. -->
+    <string name="fill_shader">Shaders</string>
+    <string name="shader_settings_desc">Effects drawn live by your phone\'s graphics chip, lit up to the level and faint above it. Pick one and tune it; the preview above shows it as you go.</string>
+    <string name="shader_effect">Effect</string>
+    <string name="shader_speed">Speed</string>
+    <string name="shader_scale">Scale</string>
+    <string name="shader_brightness">Brightness</string>
+    <string name="shader_grain">Grain</string>
+    <string name="shader_rest">Above the level</string>
+    <string name="shader_speed_still">Still</string>
+    <string name="shader_effect_lava_lamp">Lava lamp</string>
+    <string name="shader_effect_liquid_chrome">Liquid chrome</string>
+    <string name="shader_effect_molten">Molten</string>
+    <string name="shader_effect_aurora">Aurora</string>
+    <string name="shader_effect_ink_smoke">Ink smoke</string>
+    <string name="shader_effect_plasma">Plasma</string>
+    <string name="shader_effect_caustics">Caustics</string>
+    <string name="shader_effect_soap_film">Soap film</string>
+    <string name="shader_effect_mesh">Mesh</string>
+    <string name="shader_effect_clouds">Clouds</string>
+    <string name="shader_effect_smoke">Smoke</string>
+    <string name="shader_effect_starfield">Starfield</string>
+    <string name="shader_detail_warp">Warp</string>
+    <string name="shader_detail_flow">Flow</string>
+    <string name="shader_detail_sway">Sway</string>
+    <string name="shader_detail_distortion">Distortion</string>
+    <string name="shader_detail_softness">Softness</string>
+    <string name="shader_detail_thickness">Thickness</string>
+    <string name="shader_detail_drift">Drift</string>
+    <string name="shader_detail_billow">Billow</string>
+    <string name="shader_detail_swirl">Swirl</string>
+    <string name="shader_detail_density">Density</string>
+
+    <!-- The Effort fill: the track as an AI tool's effort picker, lit to the level and named. -->
+    <string name="fill_effort">Effort</string>
+    <string name="effort_settings_desc">The track as an effort picker, like the ones AI coding tools show: it lights up through Low, High, Extra high, Max and Ultra max as the level rises, and works harder the higher it goes. The preview above runs it.</string>
+    <string name="effort_look">Look</string>
+    <string name="effort_look_steps">Steps</string>
+    <string name="effort_look_dots">Dots</string>
+    <string name="effort_look_steps_desc">A stop for each level, stacked up the track like a slider\'s stops, lit to the one you are on.</string>
+    <string name="effort_look_dots_desc">One bar lit to the level, the level counted in dots beside its name.</string>
+    <string name="effort_speed">Speed</string>
+    <string name="effort_labels">Level names</string>
+    <string name="effort_labels_desc">Name the level on the track as well as lighting it.</string>
+    <string name="effort_level_low">Low</string>
+    <string name="effort_level_high">High</string>
+    <string name="effort_level_extra_high">Extra high</string>
+    <string name="effort_level_max">Max</string>
+    <string name="effort_level_ultra_max">Ultra max</string>
+    <string name="effort_level_extra_high_short">Extra</string>
+    <string name="effort_level_ultra_max_short">Ultra</string>
+    <string name="shader_detail_blobs">Blobs</string>
+
+    <!-- The Glimmer fill: fine dots brightening into a glimmer at the level, a handle on it. -->
+    <string name="fill_glimmer">Glimmer</string>
+    <string name="glimmer_settings_desc">Fine dots that brighten from nothing into a glimmer as they near the level, twinkling as they go, after the dotted effort slider in AI coding tools. The preview above runs it.</string>
+    <string name="glimmer_speed">Speed</string>
+    <string name="glimmer_handle">Handle</string>
+    <string name="glimmer_handle_desc">A handle on the level, as a slider has. Off, the dots simply stop at the level.</string>
+    <string name="glimmer_stops">Stops</string>
+    <string name="glimmer_stops_desc">Six faint marks down the track, one every fifth of the way.</string>
+
+    <!-- The Surge fill: the track lit to the level by a glowing front, in six looks. -->
+    <string name="fill_surge">Surge</string>
+    <string name="surge_settings_desc">The level as a glowing front, the light running back from it into the dark, drawn live by your phone\'s graphics chip. Pick a look and tune it; the preview above shows it as you go.</string>
+    <string name="surge_look">Look</string>
+    <string name="surge_look_curve">Curve</string>
+    <string name="surge_look_electric">Electric</string>
+    <string name="surge_look_honeycomb">Honeycomb</string>
+    <string name="surge_look_streaks">Streaks</string>
+    <string name="surge_look_blocks">Blocks</string>
+    <string name="surge_look_flame">Flame</string>
+    <string name="surge_speed">Speed</string>
+    <string name="surge_size">Size</string>
+    <string name="surge_size_desc">Above 1, more and smaller: more streaks and blocks, smaller cells, a busier edge.</string>
+    <string name="surge_edge">Edge</string>
+    <string name="surge_edge_desc">How far the front strays from the level: from a straight line to deep curves, tongues and steps.</string>
+    <string name="surge_glow">Glow</string>
+    <string name="surge_trail">Trail</string>
+    <string name="surge_trail_desc">How far the light reaches back from the front before it fades into the dark.</string>
+    <string name="surge_rest">Above the level</string>
+
     <!-- The animation's own colours, for the settings screen. -->
     <string name="slider_fill_colors">Animation colours</string>
     <string name="slider_fill_colors_desc">Paint the animation in three colours of your own instead of its own.</string>
     <string name="slider_fill_colors_unsupported">This animation is drawn in the fill colour, so it has no colours of its own to change.</string>
     <string name="slider_fill_color_n">Colour %1$d</string>
     <string name="slider_fill_colors_reset">Reset colours</string>
+    <string name="level_feedback_title">Level feedback</string>
+    <string name="level_feedback_desc">How the animation answers the level: calm when it is low, livelier as it rises, and a flourish at the top.</string>
+    <string name="level_feedback_follow">Livelier as it fills</string>
+    <string name="level_feedback_follow_desc">Moves faster and shines brighter the higher the level, with a flash as it passes each fifth.</string>
+    <string name="level_feedback_low">Glow when low</string>
+    <string name="level_feedback_low_desc">A soft light breathes at the level when it is low, and at the bottom when it is off.</string>
+    <string name="level_feedback_full">Celebrate at the top</string>
+    <string name="level_feedback_full_desc" formatted="false">A flourish when it reaches 100%, and while it stays there. Pick one below.</string>
+    <string name="level_max_title">At the top</string>
+    <string name="level_max_burst">Burst</string>
+    <string name="level_max_ripple">Ripple</string>
+    <string name="level_max_shine">Shine</string>
+    <string name="level_max_sparkle">Sparkle</string>
+    <string name="level_max_confetti">Confetti</string>
+    <string name="level_max_neon">Neon</string>
+    <string name="level_max_pulse">Pulse</string>
+    <string name="glimmer_look">Look</string>
+    <string name="glimmer_look_both">Handle &amp; stops</string>
+    <string name="glimmer_look_handle">Handle</string>
+    <string name="glimmer_look_stops">Stops</string>
+    <string name="glimmer_look_plain">Dots only</string>
 </resources>

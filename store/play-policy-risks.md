@@ -18,7 +18,7 @@ help pages before each submission.
 | 1 | Data safety form says "no data collected", but the ad SDKs collect data | **High** | Correct answers written; **you must update Play Console** |
 | 2 | Privacy policy is from 2023 and does not match the app | **High** | New policy written; **you must publish it** |
 | 3 | Accessibility declaration and in-app disclosure were out of date | **High** | **Fixed** in code and declaration text |
-| 4 | Accessibility API used for non-accessibility features | Low–Medium (was High) | **Reduced**: only system actions, volume keys and hide-in-apps remain; no window content access |
+| 4 | Accessibility API used for non-accessibility features | Low–Medium (was High) | **Reduced**: only system actions, volume keys and foreground-app detection (hide-in-apps, per-app gestures) remain; no window content access |
 | 5 | App-open ad could appear over another app | **High** | **Fixed in code** |
 | 6 | Special-use foreground service needs a declaration | Medium | Declaration text written; video needed |
 | 7 | Interstitial ads at screen transitions | Medium | **Fixed in code** |
@@ -67,8 +67,10 @@ Paste on tap.
 
 **Done.**
 - The in-app disclosure and service description list exactly three uses — system actions, the two
-  volume keys (Instant) and hiding the bar in chosen apps — in English and 11
-  translations (Arabic, Vietnamese and Chinese show the English text).
+  volume keys (Instant) and noticing the app in front, to hide the bar in chosen apps or use the
+  gestures given to them. The third was widened for per-app gestures, so the 11 translations of the
+  three disclosure strings were removed rather than left describing less than the service does;
+  every locale shows the English text until they are translated again.
 - `accessibility_service_config.xml` declares only `typeWindowStateChanged`, with
   `canRetrieveWindowContent="false"`.
 - The declaration, store description and reviewer reply in `play-listing-en.md` match the dialog.
@@ -104,10 +106,10 @@ affirmative consent, an accurate declaration and a video.
 | --- | --- | --- |
 | System actions (lock, screenshot, Back, Home…) | Low — the textbook accepted use | — |
 | Volume-key filtering | Medium — key interception | Only the two volume keys, others passed through, nothing recorded; filter requested only while Instant is on; for the quarter second a Volume down press is undecided, window-state events are checked for the System UI package only, so a button screenshot does not open the panel |
-| Foreground app detection | Low | Package name only, only while apps are chosen, no history, no window content |
+| Foreground app detection | Low | Package name only, only while apps are chosen to hide the bar in or have gestures of their own, no history, no window content. The Play Console declaration and its video must be updated for per-app gestures before the release that adds them |
 
 **If the review still objects:** drop the *Instant* volume keys (this removes
-`canRequestFilterKeyEvents`), leaving only system actions and hide-in-apps.
+`canRequestFilterKeyEvents`), leaving only system actions and foreground-app detection.
 
 ### 6. Special-use foreground service
 

@@ -1,53 +1,270 @@
 package com.newagedevs.gesturevolume.ui.screens.walkthrough
 
+import com.newagedevs.gesturevolume.ui.components.screenWash
+import com.newagedevs.gesturevolume.ui.components.stageBackdrop
 import android.Manifest
 import android.content.Intent
 import android.os.Build
+import android.os.SystemClock
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
+import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.newagedevs.gesturevolume.GestureApplication
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.service.OverlayRuntime
+import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
+import com.newagedevs.gesturevolume.ui.motion.Button
+import com.newagedevs.gesturevolume.ui.motion.IconButton
+import com.newagedevs.gesturevolume.ui.motion.OutlinedButton
+import com.newagedevs.gesturevolume.ui.motion.Springs
+import com.newagedevs.gesturevolume.ui.motion.TextButton
+import com.newagedevs.gesturevolume.ui.motion.pressBounce
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
-import androidx.compose.ui.res.stringResource
-import kotlinx.coroutines.launch
+import com.newagedevs.gesturevolume.utils.PermissionNeeds
+import com.newagedevs.gesturevolume.utils.UserMode
 
-private const val WALKTHROUGH_PAGE_COUNT = 3
+/**
+ * Every page the walkthrough can show, in the order they come. Which tutorial pages appear
+ * depends on the style chosen on [Style]. The order also gives every move a direction, so a page
+ * slides in from the side it sits on, whichever way the user is going.
+ */
+internal enum class WalkPage {
+    Intro, Style, Simple, QuickSlider, Deck, LongPress, Move, Permission, Notifications, Accessibility,
+}
 
+/**
+ * The pages for [mode], in order.
+ *
+ * @param askNotifications whether this phone asks for notifications at all: Android 13 and later.
+ *   Below that they are allowed unless switched off, and a page asking for them would be a page
+ *   with nothing to ask.
+ * @param granted permission pages to leave out, for a tour: an install that has a permission
+ *   already has nothing to be asked on its page. A first walkthrough keeps them all, granted or
+ *   not, and says on each that it is done.
+ */
+internal fun pagesFor(mode: String, askNotifications: Boolean, granted: Set<WalkPage> = emptySet()): List<WalkPage> = buildList {
+    add(WalkPage.Intro)
+    add(WalkPage.Style)
+    if (mode == UserMode.ADVANCED) {
+        add(WalkPage.QuickSlider)
+        add(WalkPage.Deck)
+        add(WalkPage.LongPress)
+    } else {
+        add(WalkPage.Simple)
+    }
+    // Both styles: wherever the bar starts is somewhere, and a thumb has its own idea of where.
+    add(WalkPage.Move)
+    add(WalkPage.Permission)
+    // Both styles, and optional: the bar works without it, and it is where the bar's controls live
+    // while the app is closed.
+    if (askNotifications) add(WalkPage.Notifications)
+    // Advanced only: its defaults are what need the service — volume keys that open the Quick
+    // slider at once, and Lock screen and Screenshot on the Deck. Last, and optional, because the
+    // bar works without it and cannot work without the overlay page.
+    if (mode == UserMode.ADVANCED) add(WalkPage.Accessibility)
+}.filterNot { it.asksPermission && it in granted }
+
+/** The last page that teaches rather than asks: where the walkthrough says "Got it". */
+internal fun lastTutorialOf(pages: List<WalkPage>): WalkPage? = pages.lastOrNull { !it.asksPermission }
+
+/** The pages that ask for a permission, each with Allow and Skip of its own. */
+internal val WalkPage.asksPermission: Boolean
+    get() = this == WalkPage.Permission || this == WalkPage.Notifications || this == WalkPage.Accessibility
+
+/** The words on a page. [scene] is null where the card holds something other than a gesture. */
+private class PageText(
+    @StringRes val chip: Int,
+    @StringRes val title: Int,
+    @StringRes val subtitle: Int,
+    @StringRes val caption: Int?,
+    @StringRes val animation: Int?,
+    val scene: WalkScene?,
+    val points: List<Int>,
+)
+
+/**
+ * The words on [page] for the [mode] highlighted. [tourMode], in a tour, is the style the user is
+ * on: the style page then shows the two styles rather than asking for one.
+ */
+private fun pageText(page: WalkPage, mode: String, tourMode: String? = null): PageText =
+    if (page == WalkPage.Style && tourMode != null) {
+        pageTextFor(page, mode).let {
+            PageText(
+                R.string.walk_style_tour_chip, R.string.walk_style_tour_title,
+                if (tourMode == UserMode.ADVANCED) R.string.walk_style_tour_subtitle_advanced else R.string.walk_style_tour_subtitle_simple,
+                it.caption, it.animation, it.scene, it.points,
+            )
+        }
+    } else {
+        pageTextFor(page, mode)
+    }
+
+private fun pageTextFor(page: WalkPage, mode: String): PageText = when (page) {
+    WalkPage.Intro -> PageText(
+        R.string.walk_intro_chip, R.string.walk_intro_title, R.string.walk_intro_subtitle,
+        R.string.walk_intro_caption, R.string.walk_intro_animation, WalkScene.Intro,
+        listOf(R.string.walk_intro_point_1, R.string.walk_intro_point_2, R.string.walk_intro_point_3, R.string.walk_intro_point_4),
+    )
+    WalkPage.Style -> PageText(
+        R.string.walk_style_chip, R.string.walk_style_title, R.string.walk_style_subtitle,
+        null, null, null,
+        // What the highlighted style brings, so the grid answers "what do I get" as the cards flip.
+        if (mode == UserMode.ADVANCED) {
+            listOf(R.string.walk_style_advanced_point_1, R.string.walk_style_advanced_point_2, R.string.walk_style_advanced_point_3, R.string.walk_style_point_change)
+        } else {
+            listOf(R.string.walk_style_simple_point_1, R.string.walk_style_simple_point_2, R.string.walk_style_simple_point_3, R.string.walk_style_point_change)
+        },
+    )
+    WalkPage.Simple -> PageText(
+        R.string.walk_simple_chip, R.string.walk_simple_title, R.string.walk_simple_subtitle,
+        R.string.walk_simple_caption, R.string.walk_simple_animation, WalkScene.Simple,
+        listOf(R.string.walk_simple_point_1, R.string.walk_simple_point_2, R.string.walk_simple_point_3, R.string.walk_simple_point_4),
+    )
+    WalkPage.QuickSlider -> PageText(
+        R.string.walk_slider_chip, R.string.walk_slider_title, R.string.walk_slider_subtitle,
+        R.string.walk_slider_caption, R.string.walk_slider_animation, WalkScene.QuickSlider,
+        listOf(R.string.walk_slider_point_1, R.string.walk_slider_point_2, R.string.walk_slider_point_3, R.string.walk_slider_point_4),
+    )
+    WalkPage.Deck -> PageText(
+        R.string.walk_deck_chip, R.string.walk_deck_title, R.string.walk_deck_subtitle,
+        R.string.walk_deck_caption, R.string.walk_deck_animation, WalkScene.Deck,
+        listOf(R.string.walk_deck_point_1, R.string.walk_deck_point_2, R.string.walk_deck_point_3, R.string.walk_deck_point_4),
+    )
+    WalkPage.LongPress -> PageText(
+        R.string.walk_menu_chip, R.string.walk_menu_title, R.string.walk_menu_subtitle,
+        R.string.walk_menu_caption, R.string.walk_menu_animation, WalkScene.LongPress,
+        listOf(R.string.walk_menu_point_1, R.string.walk_menu_point_2, R.string.walk_menu_point_3, R.string.walk_menu_point_4),
+    )
+    // The bar the style brings, being moved: the button, or the tab turning to face its new edge.
+    WalkPage.Move -> PageText(
+        R.string.walk_move_chip, R.string.walk_move_title, R.string.walk_move_subtitle,
+        R.string.walk_move_caption, R.string.walk_move_animation,
+        if (mode == UserMode.ADVANCED) WalkScene.MoveTab else WalkScene.MoveButton,
+        listOf(R.string.walk_move_point_1, R.string.walk_move_point_2, R.string.walk_move_point_3, R.string.walk_move_point_4),
+    )
+    WalkPage.Permission -> PageText(
+        R.string.walk_permission_chip, R.string.walk_permission_title, R.string.walk_permission_subtitle,
+        null, R.string.walk_permission_animation, WalkScene.Permission,
+        listOf(R.string.walk_permission_point_1, R.string.walk_permission_point_2, R.string.walk_permission_point_3, R.string.walk_permission_point_4),
+    )
+    WalkPage.Notifications -> PageText(
+        R.string.walk_notif_chip, R.string.walk_notif_title, R.string.walk_notif_subtitle,
+        null, R.string.walk_notif_animation, WalkScene.Notifications,
+        listOf(R.string.walk_notif_point_1, R.string.walk_notif_point_2, R.string.walk_notif_point_3, R.string.walk_notif_point_4),
+    )
+    WalkPage.Accessibility -> PageText(
+        R.string.walk_access_chip, R.string.walk_access_title, R.string.walk_access_subtitle,
+        null, R.string.walk_access_animation, WalkScene.Accessibility,
+        listOf(R.string.walk_access_point_1, R.string.walk_access_point_2, R.string.walk_access_point_3, R.string.walk_access_point_4),
+    )
+}
+
+private val CardShape = RoundedCornerShape(28.dp)
+private val ActionShape = RoundedCornerShape(18.dp)
+private val Granted = Color(0xFF10B981)
+private val EdgeDot = Color(0xFFEF4444)
+
+/**
+ * How soon a refusal of the notification request comes back when no one was asked: Android has
+ * stopped showing it after two refusals. Nobody reads the question and answers it this fast.
+ */
+private const val UNASKED_WITHIN_MS = 500L
+
+/**
+ * The walkthrough: what the bar is, a choice of style, how its parts work, and the permissions it
+ * needs — on a first launch.
+ *
+ * @param tour the same pages as a tour of the app, for someone who already has it set up — offered
+ *   once after an update and kept in the menu. A tour changes nothing: the style page shows the two
+ *   styles without applying either, whose presets would replace the bar the user has made their
+ *   own; the permission pages are only the ones still missing; and leaving it writes nothing.
+ */
 @Composable
 fun WalkthroughScreen(
     viewModel: MainViewModel = hiltViewModel(),
+    tour: Boolean = false,
     onComplete: () -> Unit
 ) {
     val context = LocalContext.current
-    val pagerState = rememberPagerState(pageCount = { WALKTHROUGH_PAGE_COUNT })
-    val scope = rememberCoroutineScope()
-
-    fun goToPage(page: Int) {
-        scope.launch { pagerState.animateScrollToPage(page) }
-    }
 
     DisposableEffect(Unit) {
         viewModel.preference.setAppOpenAdPaused(true)
@@ -56,7 +273,86 @@ fun WalkthroughScreen(
         }
     }
 
+    // The highlighted style is only a leaning until Continue commits it. The pages after the
+    // choice follow the leaning, so flipping between the two cards changes the count as well.
+    // In a tour, the style the user is on, highlighted to begin with and named on the style page.
+    val tourMode = remember { if (tour) viewModel.preference.getUserMode() else null }
+    var selectedMode by rememberSaveable { mutableStateOf(tourMode ?: UserMode.REGULAR) }
+    var modeChosen by rememberSaveable { mutableStateOf(false) }
+    var pageIndex by rememberSaveable { mutableIntStateOf(0) }
+    // A second tap on Start or Skip while the first is navigating away must not finish twice.
+    var finished by remember { mutableStateOf(false) }
+    // A tour's permission pages are the ones missing as it opens. Worked out once, so a permission
+    // granted part-way does not pull its page out from under the page count.
+    val grantedAtStart = remember {
+        if (!tour) {
+            emptySet()
+        } else {
+            buildSet {
+                if (Settings.canDrawOverlays(context)) add(WalkPage.Permission)
+                if (PermissionNeeds.hasNotificationPermission(context)) add(WalkPage.Notifications)
+                if (OverlayRuntime.isAccessibilityEnabled(context)) add(WalkPage.Accessibility)
+            }
+        }
+    }
+    val pages = remember(selectedMode) {
+        pagesFor(
+            selectedMode,
+            askNotifications = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU,
+            granted = grantedAtStart,
+        )
+    }
+    val index = pageIndex.coerceIn(0, pages.lastIndex)
+    val page = pages[index]
+
     val hasOverlayPermission = remember { mutableStateOf(Settings.canDrawOverlays(context)) }
+    val hasNotifications = remember { mutableStateOf(PermissionNeeds.hasNotificationPermission(context)) }
+    val hasAccessibility = remember { mutableStateOf(OverlayRuntime.isAccessibilityEnabled(context)) }
+    var showAccessibilityDisclosure by remember { mutableStateOf(false) }
+
+    /** When the notification request went out, to tell a refusal from no one having been asked. */
+    var notificationsAskedAt by remember { mutableLongStateOf(0L) }
+
+    // Checked on every return to the screen too, not only when the settings screen hands back a
+    // result: some phones come back without one, and the switch can be flipped from elsewhere. The
+    // accessibility list never hands anything back, so this is the only way it is ever seen.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        hasOverlayPermission.value = Settings.canDrawOverlays(context)
+        hasNotifications.value = PermissionNeeds.hasNotificationPermission(context)
+        hasAccessibility.value = OverlayRuntime.isAccessibilityEnabled(context)
+    }
+
+    fun openNotificationSettings() {
+        // Kept paused on the way back as well: the walkthrough lifts it when it closes.
+        viewModel.preference.setAppOpenAdPaused(true)
+        runCatching {
+            context.startActivity(
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            )
+        }
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasNotifications.value = granted
+        // Refused twice before, Android stops showing the question and the answer comes straight
+        // back. Back that fast, no one was asked, so the app's notification settings are the way
+        // left. An answer someone actually gave stands: Skip is beside Allow for moving on.
+        if (!granted && SystemClock.elapsedRealtime() - notificationsAskedAt < UNASKED_WITHIN_MS) {
+            openNotificationSettings()
+        }
+    }
+
+    fun requestNotifications() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        // Asked here, so switching the bar on later does not ask a second time. See
+        // MainViewModel.maybeAskForNotificationPermission.
+        viewModel.preference.setAskedNotificationPermission(true)
+        notificationsAskedAt = SystemClock.elapsedRealtime()
+        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
 
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -64,208 +360,593 @@ fun WalkthroughScreen(
         // Resume app open ads now that the user has returned from the overlay permission screen
         viewModel.preference.setAppOpenAdPaused(false)
         hasOverlayPermission.value = Settings.canDrawOverlays(context)
-        if (hasOverlayPermission.value) {
-            goToPage(pagerState.currentPage + 1)
+    }
+
+    fun goTo(target: Int) {
+        pageIndex = target.coerceIn(0, pages.lastIndex)
+    }
+
+    fun finish() {
+        if (finished) return
+        finished = true
+        // A tour leaves everything as it found it: the style, the first-launch flag and the ads.
+        if (tour) {
+            onComplete()
+            return
+        }
+        // Leaving before the choice is leaving as a regular user: the style that needs no
+        // explaining, and the one a skipped walkthrough has taught nothing more than.
+        if (!modeChosen) viewModel.chooseUserMode(UserMode.REGULAR)
+        viewModel.preference.setFirstLaunchCompleted()
+        // Just walked through: the home screen has no tour to offer.
+        viewModel.preference.markTourOffered()
+        // Onboarding done — now safe to init ads + consent flow off the walkthrough.
+        (context.applicationContext as? GestureApplication)?.initializeAdsIfNeeded()
+        onComplete()
+    }
+
+    fun requestOverlayPermission() {
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            "package:${context.packageName}".toUri()
+        )
+        // Pause ads while the user is in the overlay permission screen
+        viewModel.preference.setAppOpenAdPaused(true)
+        overlayPermissionLauncher.launch(intent)
+    }
+
+    val isLastPage = index == pages.lastIndex
+
+    /** On to the next page, or out of the walkthrough from the last. */
+    fun next() {
+        if (isLastPage) finish() else goTo(index + 1)
+    }
+
+    fun onPrimary() {
+        when (page) {
+            WalkPage.Style -> {
+                // In a tour the styles are only looked at: switched here, the style's preset would
+                // replace the bar the user has made their own. The home screen switches it.
+                if (!tour) {
+                    viewModel.chooseUserMode(selectedMode)
+                    modeChosen = true
+                }
+                goTo(index + 1)
+            }
+            WalkPage.Permission -> if (hasOverlayPermission.value) next() else requestOverlayPermission()
+            WalkPage.Notifications -> if (hasNotifications.value) next() else requestNotifications()
+            // The disclosure first, every time, as everywhere else the app asks for the service.
+            WalkPage.Accessibility -> if (hasAccessibility.value) next() else showAccessibilityDisclosure = true
+            // Out of the walkthrough from the last: a tour with nothing left to ask ends on one.
+            else -> next()
         }
     }
 
+    if (showAccessibilityDisclosure) {
+        AccessibilityDisclosureDialog(
+            onAccept = {
+                showAccessibilityDisclosure = false
+                viewModel.preference.setAcceptedAccessibilityDisclosure(true)
+                // Kept paused on the way back as well: the walkthrough lifts it when it closes.
+                viewModel.preference.setAppOpenAdPaused(true)
+                try {
+                    context.startActivity(OverlayRuntime.accessibilitySettingsIntent())
+                } catch (_: Exception) {
+                    // No accessibility list on this build: nothing to wait for, so on it goes.
+                    next()
+                }
+            },
+            onDismiss = { showAccessibilityDisclosure = false },
+        )
+    }
+
+    // Back steps back through the pages; only on the first does it leave.
+    BackHandler(enabled = index > 0) { goTo(index - 1) }
+
+    val colours = MaterialTheme.colorScheme
+    // A cool wash over the theme's background, shared with the screens that show a preview: see
+    // screenWash. It was a peach wash, which fought the blues of the pictures below.
+
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = colours.background
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // A little transparent color tint behind the content
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                                Color.Transparent
-                            )
-                        )
-                    )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .screenWash()
+                .systemBarsPadding()
+                .padding(horizontal = 20.dp)
+        ) {
+            TopRow(
+                index = index,
+                count = pages.size,
+                // The permission pages have their own Skip beside Allow; two would be one too many.
+                showSkip = !page.asksPermission,
+                // A tour has nothing to put off: it is closed.
+                skipLabel = if (tour) R.string.close else R.string.skip_for_now,
+                onSkip = ::finish,
+                onBack = { goTo(index - 1) },
             )
 
-            Column(
+            AnimatedContent(
+                targetState = page,
+                transitionSpec = {
+                    val direction = if (targetState.ordinal > initialState.ordinal) 1 else -1
+                    (slideInHorizontally(Springs.ScreenOffset) { width -> direction * width / 4 } + fadeIn(Springs.ScreenFade))
+                        .togetherWith(slideOutHorizontally(Springs.ScreenOffset) { width -> -direction * width / 4 } + fadeOut(Springs.ScreenFade))
+                },
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp)
-                    .statusBarsPadding(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Swipeable pages
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                ) { page ->
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        when (page) {
-                            0 -> WalkthroughPage(
-                                title = stringResource(R.string.walkthrough_welcome_title),
-                                description = stringResource(R.string.walkthrough_welcome_desc),
-                                iconRes = R.drawable.ic_launcher_foreground
-                            )
-                            1 -> WalkthroughPage(
-                                title = stringResource(R.string.walkthrough_overlay_title),
-                                description = stringResource(R.string.walkthrough_overlay_desc),
-                                iconRes = R.drawable.ic_layer_group,
-                                isGranted = hasOverlayPermission.value
-                            )
-                            else -> WalkthroughPage(
-                                title = stringResource(R.string.walkthrough_all_set_title),
-                                description = stringResource(R.string.walkthrough_all_set_desc),
-                                iconRes = R.drawable.ic_smile_circle
-                            )
-                        }
-                    }
-                }
-
-                // Page indicators
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(bottom = 32.dp)
-                ) {
-                    for (i in 0 until WALKTHROUGH_PAGE_COUNT) {
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 4.dp)
-                                .size(if (i == pagerState.currentPage) 10.dp else 8.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (i == pagerState.currentPage) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-                                )
-                        )
-                    }
-                }
-
-                // Bottom button
-                Button(
-                    onClick = {
-                        when (pagerState.currentPage) {
-                            0 -> goToPage(1)
-                            1 -> {
-                                if (!hasOverlayPermission.value) {
-                                    val intent = Intent(
-                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                        "package:${context.packageName}".toUri()
-                                    )
-                                    // Pause ads while the user is in the overlay permission screen
-                                    viewModel.preference.setAppOpenAdPaused(true)
-                                    overlayPermissionLauncher.launch(intent)
-                                } else {
-                                    goToPage(2)
-                                }
-                            }
-                            else -> {
-                                viewModel.preference.setFirstLaunchCompleted()
-                                // Onboarding done — now safe to init ads + consent flow off the walkthrough.
-                                (context.applicationContext as? GestureApplication)?.initializeAdsIfNeeded()
-                                onComplete()
-                            }
-                        }
+                    .weight(1f)
+                    .fillMaxWidth(),
+                label = "walkthrough-page",
+            ) { shown ->
+                PageContent(
+                    page = shown,
+                    isLastTutorial = shown == lastTutorialOf(pages),
+                    isLastPage = shown == pages.last(),
+                    selectedMode = selectedMode,
+                    tourMode = tourMode,
+                    onSelectMode = { selectedMode = it },
+                    granted = when (shown) {
+                        WalkPage.Accessibility -> hasAccessibility.value
+                        WalkPage.Notifications -> hasNotifications.value
+                        else -> hasOverlayPermission.value
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text(
-                        text = when (pagerState.currentPage) {
-                            0 -> stringResource(R.string.get_started)
-                            1 -> if (hasOverlayPermission.value) stringResource(R.string.next) else stringResource(R.string.grant_permission)
-                            else -> stringResource(R.string.finish)
-                        },
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                // Skip button for permissions
-                if (pagerState.currentPage in 1..2) {
-                    TextButton(
-                        onClick = { goToPage(pagerState.currentPage + 1) },
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(stringResource(R.string.skip_for_now), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                } else {
-                    Spacer(modifier = Modifier.height(56.dp)) // Maintain spacing
-                }
+                    onPrimary = ::onPrimary,
+                    // Skips this permission, not the rest: the Advanced walkthrough still has the
+                    // accessibility page to offer after the overlay one.
+                    onSkip = ::next,
+                )
             }
         }
     }
 }
 
 @Composable
-fun WalkthroughPage(
-    title: String,
-    description: String,
-    iconRes: Int,
-    isGranted: Boolean = false
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+private fun TopRow(index: Int, count: Int, showSkip: Boolean, @StringRes skipLabel: Int, onSkip: () -> Unit, onBack: () -> Unit) {
+    val colours = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
+        // Back to the page before, from every page but the first: the step the system's Back
+        // already takes, where the eye looks for it. It opens out ahead of the dots as the first
+        // page is left, rather than the dots jumping aside for it.
+        AnimatedVisibility(
+            visible = index > 0,
+            enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
+            exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
         ) {
-            Icon(
-                painter = painterResource(id = iconRes),
-                contentDescription = null,
-                modifier = Modifier.size(60.dp),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            IconButton(onClick = onBack, modifier = Modifier.offset(x = (-8).dp)) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back),
+                    tint = colours.onSurface,
+                )
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+            for (i in 0 until count) {
+                val width by animateDpAsState(
+                    targetValue = if (i == index) 20.dp else 6.dp,
+                    animationSpec = spring(dampingRatio = 0.7f, stiffness = 500f),
+                    label = "progress-width",
+                )
+                val colour by animateColorAsState(
+                    targetValue = if (i <= index) colours.primary else colours.onSurface.copy(alpha = 0.15f),
+                    label = "progress-colour",
+                )
+                Box(
+                    modifier = Modifier
+                        .width(width)
+                        .height(6.dp)
+                        .clip(CircleShape)
+                        .background(colour)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = stringResource(R.string.walk_progress, index + 1, count),
+            style = MaterialTheme.typography.labelMedium,
+            color = colours.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        if (showSkip) {
+            TextButton(onClick = onSkip) {
+                Text(stringResource(skipLabel), color = colours.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PageContent(
+    page: WalkPage,
+    isLastTutorial: Boolean,
+    isLastPage: Boolean,
+    selectedMode: String,
+    tourMode: String?,
+    onSelectMode: (String) -> Unit,
+    granted: Boolean,
+    onPrimary: () -> Unit,
+    onSkip: () -> Unit,
+) {
+    val colours = MaterialTheme.colorScheme
+    val text = pageText(page, selectedMode, tourMode)
+    Column(modifier = Modifier.fillMaxSize()) {
+        Spacer(modifier = Modifier.height(6.dp))
+        Surface(shape = CircleShape, color = colours.secondaryContainer) {
+            Text(
+                text = stringResource(text.chip),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 1.2.sp,
+                color = colours.onSecondaryContainer,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
             )
         }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
+        Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = title,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center
+            text = stringResource(text.title),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Medium,
+            color = colours.onBackground
         )
-
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = stringResource(text.subtitle),
+            style = MaterialTheme.typography.bodyMedium,
+            color = colours.onSurfaceVariant
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = description,
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            lineHeight = 24.sp,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            when {
+                page == WalkPage.Style -> StyleChoice(
+                    selected = selectedMode,
+                    onSelect = onSelectMode,
+                    modifier = Modifier.fillMaxSize()
+                )
+                page == WalkPage.Permission -> PermissionCard(
+                    scene = WalkScene.Permission,
+                    description = stringResource(R.string.walk_permission_animation),
+                    body = stringResource(R.string.walkthrough_overlay_desc),
+                    grantedLabel = stringResource(R.string.permission_granted_check),
+                    settledAt = PERMISSION_SETTLED,
+                    granted = granted,
+                    modifier = Modifier.fillMaxSize()
+                )
+                page == WalkPage.Notifications -> PermissionCard(
+                    scene = WalkScene.Notifications,
+                    description = stringResource(R.string.walk_notif_animation),
+                    body = stringResource(R.string.walk_notif_card),
+                    grantedLabel = stringResource(R.string.walk_notif_granted),
+                    settledAt = NOTIFICATIONS_SETTLED,
+                    granted = granted,
+                    modifier = Modifier.fillMaxSize()
+                )
+                page == WalkPage.Accessibility -> PermissionCard(
+                    scene = WalkScene.Accessibility,
+                    description = stringResource(R.string.walk_access_animation),
+                    body = stringResource(R.string.walk_access_card),
+                    grantedLabel = stringResource(R.string.walk_access_granted),
+                    settledAt = ACCESSIBILITY_SETTLED,
+                    granted = granted,
+                    modifier = Modifier.fillMaxSize()
+                )
+                text.scene != null -> IllustrationCard(
+                    scene = text.scene,
+                    caption = text.caption?.let { stringResource(it) }.orEmpty(),
+                    description = text.animation?.let { stringResource(it) }.orEmpty(),
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
 
-        if (isGranted) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Surface(
-                color = Color(0xFF10B981).copy(alpha = 0.1f),
-                shape = RoundedCornerShape(16.dp)
+        Spacer(modifier = Modifier.height(12.dp))
+        // The style page's grid changes with the highlighted card; a crossfade keeps that calm.
+        Crossfade(targetState = text.points, label = "walkthrough-points") { points ->
+            PointGrid(points)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (page.asksPermission && !granted) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onSkip,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                    shape = ActionShape
+                ) {
+                    Text(stringResource(R.string.skip_for_now), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
+                Button(
+                    onClick = onPrimary,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                    shape = ActionShape
+                ) {
+                    Text(stringResource(R.string.walk_allow), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        } else {
+            val label = when {
+                page.asksPermission -> if (isLastPage) R.string.walk_start else R.string.walk_continue
+                isLastTutorial -> R.string.walk_got_it
+                else -> R.string.walk_continue
+            }
+            Button(
+                onClick = onPrimary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = ActionShape
+            ) {
+                Text(stringResource(label), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+}
+
+@Composable
+private fun IllustrationCard(scene: WalkScene, caption: String, description: String, modifier: Modifier = Modifier) {
+    val colours = MaterialTheme.colorScheme
+    // On the same backdrop as the preview cards: the phone stands on it the same way everywhere.
+    Surface(modifier = modifier, shape = CardShape, color = Color.Transparent) {
+        Column(modifier = Modifier.stageBackdrop()) {
+            WalkthroughIllustration(
+                scene = scene,
+                description = description,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(R.string.permission_granted_check),
-                    color = Color(0xFF10B981),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    text = caption,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = colours.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
                 )
+                ActiveEdge()
+            }
+        }
+    }
+}
+
+/** A red dot, breathing, beside "Active edge": the side of the screen the bar is listening on. */
+@Composable
+private fun ActiveEdge() {
+    val breath = rememberInfiniteTransition(label = "active-edge").animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+        label = "active-edge-alpha",
+    )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(7.dp)
+                // Read in the layer, so the breathing redraws the dot and recomposes nothing.
+                .graphicsLayer { alpha = breath.value }
+                .clip(CircleShape)
+                .background(EdgeDot)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = stringResource(R.string.walk_active_edge),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun StyleChoice(selected: String, onSelect: (String) -> Unit, modifier: Modifier = Modifier) {
+    // Scrolls only where a short screen leaves the two cards less room than they need.
+    Column(
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .selectableGroup(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        StyleCard(
+            mode = UserMode.REGULAR,
+            title = R.string.walk_style_simple_title,
+            body = R.string.walk_style_simple_desc,
+            selected = selected == UserMode.REGULAR,
+            onSelect = onSelect
+        )
+        StyleCard(
+            mode = UserMode.ADVANCED,
+            title = R.string.walk_style_advanced_title,
+            body = R.string.walk_style_advanced_desc,
+            selected = selected == UserMode.ADVANCED,
+            onSelect = onSelect
+        )
+    }
+}
+
+@Composable
+private fun StyleCard(
+    mode: String,
+    @StringRes title: Int,
+    @StringRes body: Int,
+    selected: Boolean,
+    onSelect: (String) -> Unit,
+) {
+    val colours = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(24.dp)
+    val interaction = remember { MutableInteractionSource() }
+    val border by animateColorAsState(
+        targetValue = if (selected) colours.primary else colours.outlineVariant,
+        label = "style-border",
+    )
+    val container by animateColorAsState(
+        targetValue = if (selected) colours.primaryContainer.copy(alpha = 0.55f) else colours.surfaceContainer,
+        label = "style-container",
+    )
+    Surface(
+        shape = shape,
+        color = container,
+        border = BorderStroke(if (selected) 2.dp else 1.dp, border),
+        modifier = Modifier
+            .fillMaxWidth()
+            .pressBounce(interaction)
+            .clip(shape)
+            .selectable(
+                selected = selected,
+                interactionSource = interaction,
+                indication = ripple(),
+                role = Role.RadioButton,
+                onClick = { onSelect(mode) }
+            )
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(shape = RoundedCornerShape(16.dp), color = colours.surfaceContainerHighest) {
+                StylePreview(
+                    advanced = mode == UserMode.ADVANCED,
+                    selected = selected,
+                    modifier = Modifier.size(width = 64.dp, height = 88.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colours.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(body),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colours.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.width(4.dp))
+            // Shows the state; the whole card takes the tap.
+            RadioButton(selected = selected, onClick = null)
+        }
+    }
+}
+
+/** A permission page's card: the switch being flipped, what it is for, and a tick once it is on. */
+@Composable
+private fun PermissionCard(
+    scene: WalkScene,
+    description: String,
+    body: String,
+    grantedLabel: String,
+    settledAt: Float,
+    granted: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val colours = MaterialTheme.colorScheme
+    // On the same backdrop as the preview cards: the phone stands on it the same way everywhere.
+    Surface(modifier = modifier, shape = CardShape, color = Color.Transparent) {
+        Column(modifier = Modifier.stageBackdrop()) {
+            WalkthroughIllustration(
+                scene = scene,
+                description = description,
+                // Once granted there is nothing left to show happening: it rests switched on.
+                settledAt = if (granted) settledAt else null,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            )
+            Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp)) {
+                Text(
+                    text = body,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colours.onSurfaceVariant
+                )
+                AnimatedVisibility(visible = granted) {
+                    Surface(
+                        color = Granted.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.padding(top = 10.dp)
+                    ) {
+                        Text(
+                            text = grantedLabel,
+                            color = Granted,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** What the page covers, two to a row, each row as tall as its taller chip. */
+@Composable
+private fun PointGrid(points: List<Int>) {
+    val colours = MaterialTheme.colorScheme
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        points.chunked(2).forEach { pair ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                pair.forEach { point ->
+                    Surface(
+                        shape = RoundedCornerShape(14.dp),
+                        color = colours.surfaceContainerHigh,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .clip(CircleShape)
+                                    .background(colours.primary)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(point),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = colours.onSurface,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+                if (pair.size == 1) Spacer(modifier = Modifier.weight(1f))
             }
         }
     }

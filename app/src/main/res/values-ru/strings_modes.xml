@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">Классика</string>
+    <string name="preset_classic_subtitle">Исходная круглая кнопка: свайп — громкость, нажатие — панель</string>
+    <string name="home_advanced_features">Расширенные функции</string>
+    <string name="home_advanced_features_desc">Дек, Быстрый ползунок, меню долгого нажатия и видимость</string>
+    <string name="expand_advanced_features">Показать расширенные функции</string>
+    <string name="collapse_advanced_features">Скрыть расширенные функции</string>
+    <string name="mode_advanced_switch">Расширенный режим</string>
+    <string name="mode_advanced_on_desc">Полоса Док: свайп — Быстрый ползунок, свайп внутрь — Дек, удержание — меню</string>
+    <string name="mode_advanced_off_desc">Круглая кнопка: свайп — громкость, касание — панель громкости. Включите, чтобы получить Док и его панели.</string>
+    <string name="mode_to_simple_title">Перейти на простой режим?</string>
+    <string name="mode_to_simple_body">Полоса станет круглой кнопкой: свайп вверх или вниз — громкость, касание — панель громкости, удержание — перемещение. Быстрый ползунок, Дек и меню долгого нажатия выключатся, включая кнопки громкости. Вернуться можно в любой момент.</string>
+    <string name="mode_to_advanced_title">Перейти на расширенный режим?</string>
+    <string name="mode_to_advanced_body">Полоса станет Доком: свайп вверх или вниз — Быстрый ползунок, свайп внутрь — Дек, удержание — меню долгого нажатия. Её вид и жесты заменятся; вернуться можно в любой момент.</string>
+    <string name="mode_switch_confirm">Перейти</string>
+    <string name="mode_switch_cancel">Отмена</string>
+</resources>

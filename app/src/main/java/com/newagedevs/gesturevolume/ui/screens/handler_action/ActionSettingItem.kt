@@ -1,8 +1,15 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_action
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -13,13 +20,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import com.newagedevs.gesturevolume.ui.components.ActionIconImage
-import com.newagedevs.gesturevolume.utils.ActionIcon
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.newagedevs.gesturevolume.ui.components.ActionIconImage
+import com.newagedevs.gesturevolume.utils.ActionIcon
 
+/**
+ * A row that leads somewhere — a screen, a dialog — as the Actions screen's rows do: a tile with
+ * its picture, its name, what it is set to now, and a line on what it is for, the whole row the
+ * thing to tap.
+ *
+ * It used to be a heading and a line, then a separate box underneath to tap: three things to read
+ * before the one to press, and a box that looked like a text field.
+ *
+ * @param borderColor no longer drawn; kept so the callers read as they did.
+ */
 @Composable
 fun ActionSettingItem(
     label: String,
@@ -30,83 +49,77 @@ fun ActionSettingItem(
     showProBadge: Boolean = false,
     onClick: () -> Unit
 ) {
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+    val colours = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(46.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(colours.primaryContainer.copy(alpha = 0.6f)),
+            contentAlignment = Alignment.Center,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            ActionIconImage(
+                icon = icon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = colours.primary,
+            )
+        }
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = label,
-                    fontSize = 15.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = colours.onSurface,
+                    modifier = Modifier.weight(1f, fill = false),
                 )
+                if (showProBadge) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Surface(shape = RoundedCornerShape(6.dp), color = colours.primaryContainer) {
+                        Text(
+                            text = "PRO",
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp,
+                            color = colours.onPrimaryContainer,
+                            letterSpacing = 0.5.sp,
+                        )
+                    }
+                }
+            }
+            Text(
+                text = value,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = colours.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+            if (description.isNotBlank()) {
                 Text(
                     text = description,
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-            }
-
-            if (showProBadge) {
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Text(
-                        text = "PRO",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 10.sp,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        letterSpacing = 0.5.sp
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick),
-            shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            border = BorderStroke(0.5.dp, borderColor.copy(alpha = 0.1f))
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    ActionIconImage(
-                        icon = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = value,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.outline
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colours.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp),
                 )
             }
         }
+        Spacer(modifier = Modifier.width(8.dp))
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            modifier = Modifier.size(22.dp),
+            tint = colours.outline,
+        )
     }
 }

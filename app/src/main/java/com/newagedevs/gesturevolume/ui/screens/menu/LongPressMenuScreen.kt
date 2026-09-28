@@ -1,5 +1,10 @@
 package com.newagedevs.gesturevolume.ui.screens.menu
 
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.Animation
+import androidx.compose.material.icons.automirrored.filled.List
+import com.newagedevs.gesturevolume.ui.components.ChoiceChip
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,7 +32,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.newagedevs.gesturevolume.ui.motion.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -47,7 +52,6 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -65,7 +69,17 @@ import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.overlay.ContextMenuCard
 import com.newagedevs.gesturevolume.overlay.panelFrame
 import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
+import com.newagedevs.gesturevolume.ui.components.HandleLook
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
+import com.newagedevs.gesturevolume.ui.components.DemoGesture
+import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.HowItWorksAction
+import com.newagedevs.gesturevolume.ui.components.scaleToFit
+import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.ui.graphics.graphicsLayer
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
@@ -167,15 +181,25 @@ fun LongPressMenuScreen(
         speed = animationSpeed,
     )
 
-    // One backdrop per visit; see the note in HandlerAppearanceScreen.
-    val backdrop = remember { viewModel.getNextBackground() }
+
+    // A finger pressing and holding the bar until the menu pops up, twice on arrival and on request
+    // after that. The menu waits for the ring to close rather than following it in, because that
+    // is how the real one behaves: nothing, and then the menu.
+    val handlerOnLeft = remember { preference.getHandlerPosition() == "Left" }
+    val gestureDemo = rememberGestureDemoState(MENU_DEMO_STEPS)
+    val menuUp by remember { derivedStateOf { gestureDemo.progressOf(DemoGesture.HOLD) >= 1f } }
+    val menuPop by animateFloatAsState(
+        targetValue = if (menuUp) 1f else 0f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = 480f),
+        label = "demoMenuPop",
+    )
 
     fun persist() = preference.setContextMenuOrder(shown.toList())
 
     val available = HandlerActionCatalog.CONTEXT_MENU_CANDIDATES.filterNot { it.action in shown }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        // The top bar is clear, on the plain page as the preview under it is.
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.context_menu_title)) },
@@ -187,9 +211,12 @@ fun LongPressMenuScreen(
                         )
                     }
                 },
+                actions = { HowItWorksAction(gestureDemo) },
+                // Transparent, as every other screen's: a surface-coloured bar stood out as a band
+                // against the page in the dark theme.
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                    containerColor = Color.Transparent,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
                 modifier = Modifier.statusBarsPadding()
             )
@@ -200,25 +227,59 @@ fun LongPressMenuScreen(
         // worst possible arrangement.
         PreviewSettingsLayout(
             contentPadding = padding,
-            header = {
-                Text(
-                    text = stringResource(R.string.context_menu_desc),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
-            },
+            hint = stringResource(R.string.context_menu_desc),
             preview = { modifier, fillHeight ->
-                PreviewStage(backdrop = backdrop, fillHeight = fillHeight, modifier = modifier) {
+                // As a list, at its own size and from under the status bar down, running off the
+                // bottom of the phone as a long one does on the real screen: fitted to the glass, a
+                // list of many actions was too small to read.
+                val list = layout != ContextMenuLayout.GRID
+                PreviewStage(
+                    fillHeight = fillHeight,
+                    naturalSize = list,
+                    contentAlignment = if (list) Alignment.TopCenter else Alignment.Center,
+                    modifier = modifier,
+                    // The hand reaches in over the frame, as the walkthrough's does.
+                    overGlass = {
+                        GestureDemoOverlay(
+                            state = gestureDemo,
+                            barAtStart = handlerOnLeft,
+                            barInset = 12.dp,
+                            showBar = true,
+                            handle = remember { HandleLook.from(preference) },
+                            modifier = Modifier.matchParentSize(),
+                        )
+                    },
+                    // What the finger is doing, on the stage while the demo plays.
+                    demo = gestureDemo,
+                ) {
                     ContextMenuCard(
                         entries = HandlerActionCatalog.contextMenuEntries(shown.toList()),
                         grid = layout == ContextMenuLayout.GRID,
                         // Inert. This is a picture of the menu, and a tile that ran its action
                         // from the settings screen would be a trap rather than a convenience.
                         onSelect = {},
+                        // Measured at its own size, as the real one is, and drawn as large as fits
+                        // the phone's glass, both ways, under the status bar: the card lays its tiles
+                        // out from its own width, and a menu of many actions is taller than the part
+                        // of the phone that shows. Its top clear of the status bar and the camera,
+                        // which on the glass come down about 36dp of the phone's own.
                         modifier = Modifier
-                            .scale(PREVIEW_SCALE)
-                            .panelFrame { entrance.value },
+                            .scaleToFit(
+                                if (list) 1f else PREVIEW_SCALE,
+                                horizontal = 12.dp,
+                                top = if (list) 30.dp else 44.dp,
+                                bottom = 12.dp,
+                                fitHeight = !list,
+                            )
+                            .panelFrame { entrance.value }
+                            // Popped in by the demo's long press; read in the layer so the spring
+                            // redraws the card without recomposing the screen.
+                            .graphicsLayer {
+                                alpha = menuPop.coerceIn(0f, 1f)
+                                val grow = 0.82f + 0.18f * menuPop
+                                scaleX = grow
+                                scaleY = grow
+                            },
                         theme = panelTheme,
                         surfaceOverride = menuSurface,
                         style = menuStyle,
@@ -228,60 +289,12 @@ fun LongPressMenuScreen(
         ) {
             val grid = layout == ContextMenuLayout.GRID
 
-            // ---- what is in it ------------------------------------------------------------------
-            AppearanceSection(
-                title = stringResource(R.string.context_menu_group_items),
-                summary = stringResource(R.string.context_menu_count, HandlerActionCatalog.contextMenuEntries(shown.toList()).size),
-                initiallyExpanded = true,
-            ) {
-                SectionLabel(stringResource(R.string.context_menu_shown))
-                if (shown.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.context_menu_empty),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                shown.forEachIndexed { index, action ->
-                    val entry = HandlerActionCatalog.entryFor(action) ?: return@forEachIndexed
-                    ShownRow(
-                        entry = entry,
-                        position = index + 1,
-                        pinned = action in HandlerActions.ALWAYS_IN_CONTEXT_MENU,
-                        canMoveUp = index > 0,
-                        canMoveDown = index < shown.lastIndex,
-                        onMoveUp = { shown.move(index, index - 1); persist() },
-                        onMoveDown = { shown.move(index, index + 1); persist() },
-                        onRemove = { shown.removeAt(index); persist() },
-                    )
-                    @Suppress("UNUSED_VARIABLE") val tick = permissionTick
-                    PermissionNeeds.missingFor(context, preference, action)?.let {
-                        PermissionNote(missing = it, onOpenPermissions = onOpenPermissions)
-                        Spacer(Modifier.height(4.dp))
-                    }
-                }
-
-                if (available.isNotEmpty()) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                    SectionLabel(stringResource(R.string.context_menu_hidden))
-                    available.forEach { entry ->
-                        HiddenRow(
-                            entry = entry,
-                            onAdd = { shown.add(entry.action); persist() },
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(12.dp))
-
             // ---- size & shape: its layout, its size, and how it is divided ----------------------
             AppearanceSection(
-                title = stringResource(R.string.group_size_shape),
+                title = stringResource(R.string.section_size_shape),
+                icon = Icons.Filled.AspectRatio,
                 summary = "${menuWidth.toInt()} × ${menuHeight.toInt()}dp",
+                initiallyExpanded = true,
             ) {
                 SectionLabel(stringResource(R.string.context_menu_layout))
                 LayoutSelector(
@@ -362,12 +375,63 @@ fun LongPressMenuScreen(
 
             Spacer(Modifier.height(12.dp))
 
+            // ---- what is in it ------------------------------------------------------------------
+            AppearanceSection(
+                title = stringResource(R.string.section_items),
+                icon = Icons.AutoMirrored.Filled.List,
+                summary = stringResource(R.string.context_menu_count, HandlerActionCatalog.contextMenuEntries(shown.toList()).size),
+            ) {
+                SectionLabel(stringResource(R.string.context_menu_shown))
+                if (shown.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.context_menu_empty),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                shown.forEachIndexed { index, action ->
+                    val entry = HandlerActionCatalog.entryFor(action) ?: return@forEachIndexed
+                    ShownRow(
+                        entry = entry,
+                        position = index + 1,
+                        pinned = action in HandlerActions.ALWAYS_IN_CONTEXT_MENU,
+                        canMoveUp = index > 0,
+                        canMoveDown = index < shown.lastIndex,
+                        onMoveUp = { shown.move(index, index - 1); persist() },
+                        onMoveDown = { shown.move(index, index + 1); persist() },
+                        onRemove = { shown.removeAt(index); persist() },
+                    )
+                    @Suppress("UNUSED_VARIABLE") val tick = permissionTick
+                    PermissionNeeds.missingFor(context, preference, action)?.let {
+                        PermissionNote(missing = it, onOpenPermissions = onOpenPermissions)
+                        Spacer(Modifier.height(4.dp))
+                    }
+                }
+
+                if (available.isNotEmpty()) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                    )
+                    SectionLabel(stringResource(R.string.context_menu_hidden))
+                    available.forEach { entry ->
+                        HiddenRow(
+                            entry = entry,
+                            onAdd = { shown.add(entry.action); persist() },
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
             // ---- colours ------------------------------------------------------------------------
             // The opacity joins the summary only while the menu has a colour of its own; without
             // one the material decides, and a number would describe nothing on screen.
             val themeName = stringResource(panelThemeLabel(panelTheme))
             AppearanceSection(
-                title = stringResource(R.string.group_colours),
+                title = stringResource(R.string.section_colours),
+                icon = Icons.Filled.Palette,
                 summary = if (menuColor != null) {
                     "$themeName · ${(menuAlpha / 255f * 100).toInt()}%"
                 } else {
@@ -420,7 +484,8 @@ fun LongPressMenuScreen(
 
             // ---- animation ----------------------------------------------------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_animation),
+                title = stringResource(R.string.section_animation),
+                icon = Icons.Filled.Animation,
                 summary = "${stringResource(panelAnimationLabel(panelAnimation))} · ${panelAnimationSpeedLabel(animationSpeed)}",
             ) {
                 PanelAnimationSelector(
@@ -457,6 +522,7 @@ fun LongPressMenuScreen(
  */
 private const val PREVIEW_SCALE = 0.8f
 
+
 /** A wrapping row of choices, one of them picked. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -471,19 +537,7 @@ private fun <T> ChoiceChips(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         options.forEach { option ->
-            val on = option == selected
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = if (on) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                onClick = { onSelect(option) },
-            ) {
-                Text(
-                    text = label(option),
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                    fontSize = 13.sp,
-                    color = if (on) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            ChoiceChip(label = label(option), selected = option == selected, onClick = { onSelect(option) })
         }
     }
 }
@@ -701,3 +755,6 @@ private fun HiddenRow(
         )
     }
 }
+
+/** The menu's demo: a long press on the bar, which is what opens it. */
+private val MENU_DEMO_STEPS = listOf(DemoGesture.HOLD)

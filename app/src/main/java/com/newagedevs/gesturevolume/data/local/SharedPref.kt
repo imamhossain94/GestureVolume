@@ -3,12 +3,16 @@ package com.newagedevs.gesturevolume.data.local
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
 import android.view.Gravity
 import androidx.compose.ui.graphics.toArgb
+import com.newagedevs.gesturevolume.utils.BarBehaviour
+import com.newagedevs.gesturevolume.utils.UserMode
 import com.newagedevs.gesturevolume.utils.ContextMenuLayout
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.PanelAnimation
+import com.newagedevs.gesturevolume.utils.ReleaseNotes
 import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.HandlerPresets
@@ -39,13 +43,48 @@ class SharedPref @Inject constructor(
     /** The expanding quick slider's settings. Same file, its own object. */
     val slider: QuickSliderStore by lazy { QuickSliderStore(sharedPreferences) }
 
+    /** Gestures that do something else in chosen apps. Same file, its own object. */
+    val appGestures: AppGestureStore by lazy { AppGestureStore(sharedPreferences) }
+
     init {
         // Read before either pin writes its flag, which would make every install look lived-in.
         val freshInstall = sharedPreferences.all.isEmpty()
         pinLegacyAppearanceDefaults(freshInstall)
         pinEdgeAppearanceDefaults(freshInstall)
         pinPreDockBehaviourDefaults(freshInstall)
+        // A fresh install has nothing new to be told about: everything is new. Only an update
+        // marks What's new as unread.
+        if (freshInstall) markWhatsNewSeen()
     }
+
+    /** The version whose What's new was last opened, or null when it never has been. */
+    fun getWhatsNewSeenVersion(): String? = sharedPreferences.getString(WHATS_NEW_SEEN, null)
+
+    /** What's new has been read for the version installed now. */
+    fun markWhatsNewSeen() {
+        sharedPreferences.edit { putString(WHATS_NEW_SEEN, ReleaseNotes.normalize(BuildConfig.VERSION_NAME)) }
+    }
+
+    /**
+     * Whether the home screen should offer the tour of the app, once: to an install that was set up
+     * before this walkthrough existed — an update — and has not been offered it since. The
+     * walkthrough only runs on a first launch, so without this everyone who updated would never
+     * see it. A fresh install marks it offered as its walkthrough finishes, having just had it.
+     */
+    fun shouldOfferTour(): Boolean = !isFirstLaunch() && sharedPreferences.getString(TOUR_OFFERED, null) != CURRENT_TOUR
+
+    /** The tour has been offered: taken, or put off from the card. */
+    fun markTourOffered() {
+        sharedPreferences.edit { putString(TOUR_OFFERED, CURRENT_TOUR) }
+    }
+
+    /**
+     * Whether the installed version has notes the user has not opened yet: after an update, until
+     * What's new is opened. A version with no notes has nothing to be unread.
+     */
+    fun hasUnseenWhatsNew(): Boolean =
+        ReleaseNotes.releaseFor(BuildConfig.VERSION_NAME) != null &&
+            getWhatsNewSeenVersion() != ReleaseNotes.normalize(BuildConfig.VERSION_NAME)
 
     /**
      * Freezes the behaviour defaults from before the Dock preset described them onto an install
@@ -128,6 +167,65 @@ class SharedPref @Inject constructor(
         setPanelAnimation(behaviour.panelAnimation)
         setContextMenuLayout(behaviour.menuLayout)
         setContextMenuPerPage(behaviour.menuPerPage)
+    }
+
+    /**
+     * Makes [preset] the bar outright: its look, where it sits, and everything it does.
+     *
+     * For choosing a [UserMode], where there is no Appearance screen in between to carry the look
+     * through its state holder the way applying a preset there does — so this writes what that
+     * screen's save would, plus [writePresetBehaviour].
+     */
+    fun applyPreset(preset: HandlerPresets.Preset) {
+        setHandlerWidthDp(preset.width)
+        setHandlerHeightDp(preset.height)
+        setHandlerColor(preset.bgColor.toArgb())
+        setHandlerBackgroundAlpha(preset.bgAlpha)
+        setHandlerStrokeColor(preset.strokeColor.toArgb())
+        setHandlerStrokeWidth(preset.strokeWidth)
+        setHandlerStrokeAlpha(preset.strokeAlpha)
+        setHandlerCornerRadiusTL(preset.topLeft)
+        setHandlerCornerRadiusTR(preset.topRight)
+        setHandlerCornerRadiusBL(preset.bottomLeft)
+        setHandlerCornerRadiusBR(preset.bottomRight)
+        setHandlerShape(preset.shape)
+        setHandlerShapeFlare(preset.flare)
+        setHandlerIconRes(preset.iconRes)
+        setHandlerIconSize(preset.iconSize)
+        setHandlerIconColor(preset.iconColor.toArgb())
+        setHandlerShowIcon(preset.showIcon)
+        setHandlerVibrateOnClick(preset.vibrate)
+        setHandlerEdgeMarginDp(preset.edgeMargin)
+        preset.placement?.let { placement ->
+            setHandlerPosition(if (placement.gravity == Gravity.START) "Left" else "Right")
+            setHandlerSnapToEdge(placement.snapToEdge)
+            setHandlerPosXFraction(true, placement.posXFraction)
+            setHandlerPosXFraction(false, placement.posXFraction)
+        }
+        setHandlerPositionFraction(preset.positionFraction)
+        setHandlerPosYFraction(true, preset.positionFraction)
+        setHandlerPosYFraction(false, preset.positionFraction)
+        setHandlerDynamicPosition(preset.behaviour.dynamicPosition)
+        writePresetBehaviour(preset.behaviour)
+    }
+
+    /**
+     * Which kind of user the app is set up for. See [UserMode].
+     *
+     * Unset means nobody has chosen yet. A fresh install is regular until its walkthrough says
+     * otherwise; an install from before modes existed has been living with the advanced features
+     * all along, and folding them away on an update would be the same surprise the other way round.
+     */
+    fun getUserMode(): String =
+        sharedPreferences.getString(USER_MODE, null)?.let(UserMode::sanitize)
+            ?: if (isFirstLaunch()) UserMode.REGULAR else UserMode.ADVANCED
+
+    fun setUserMode(value: String) = sharedPreferences.edit { putString(USER_MODE, UserMode.sanitize(value)) }
+
+    /** Sets the app up for a [mode] user: the mode, and that mode's preset as the bar. */
+    fun applyUserMode(mode: String) {
+        setUserMode(mode)
+        applyPreset(UserMode.presetFor(mode))
     }
 
     /**
@@ -295,10 +393,10 @@ class SharedPref @Inject constructor(
         /**
          * Where a fresh install puts the bar vertically, read from the Default preset.
          *
-         * Paired with a horizontal default of 1f — flush right — the preset's 0.2 puts the bar a
-         * fifth of the way down the right edge, clear of the status bar and of the part of the
-         * screen a thumb scrolls through. It has been an eighth and a half before this, and the
-         * bar can be dragged anywhere.
+         * Paired with a horizontal default of 1f — flush right — the preset's 0.21 puts the bar a
+         * little over a fifth of the way down the right edge, clear of the status bar and of the
+         * part of the screen a thumb scrolls through. It has been an eighth, a half and a fifth
+         * before this, and the bar can be dragged anywhere.
          *
          * An install that predates a change keeps whatever it had: see
          * [pinLegacyAppearanceDefaults] and [pinPreDockBehaviourDefaults].
@@ -367,6 +465,23 @@ class SharedPref @Inject constructor(
         const val SHOW_VOLUME_PERCENT = "handlerShowVolumePercent"
         const val VOLUME_STREAM_MODE = "handlerVolumeStreamMode"
         const val HANDLER_EDGE_SWIPE_MENU = "handlerEdgeSwipeMenu"
+        const val SWIPE_STEP_PERCENT = "handlerSwipeStepPercent"
+        const val KEYBOARD_BEHAVIOUR = "handlerKeyboardBehaviour"
+        const val KEYBOARD_MOTION = "handlerKeyboardMotion"
+        const val SHOW_ONLY_WHILE_MEDIA = "handlerShowOnlyWhileMedia"
+        const val SHOW_ONLY_WHILE_CALL = "handlerShowOnlyWhileCall"
+        const val WHATS_NEW_SEEN = "whatsNewSeenVersion"
+        const val TOUR_OFFERED = "tourOfferedVersion"
+
+        /**
+         * The tour the home screen offers, named for the release that brought it: see
+         * [shouldOfferTour]. Bumped when a release changes the walkthrough enough to be worth
+         * offering again to everyone who has seen or been offered this one.
+         */
+        const val CURRENT_TOUR = "1.5.1"
+        const val USER_MODE = "userMode"
+        const val DOUBLE_TAP_MS = "handlerDoubleTapMs"
+        const val LONG_PRESS_MS = "handlerLongPressMs"
 
         // 1.4.0: the two extra tap and swipe slots.
         const val HANDLER_TRIPLE_TAP = "handlerTripleTap"
@@ -805,6 +920,90 @@ class SharedPref @Inject constructor(
 
     fun setShowVolumePercent(value: Boolean) {
         sharedPreferences.edit { putBoolean(SHOW_VOLUME_PERCENT, value) }
+    }
+
+    /**
+     * How much one swipe up or down moves the volume or the brightness:
+     * [BarBehaviour.SWIPE_STEP_BY_LENGTH], or a percentage of the range that each swipe moves by
+     * once, however long it is.
+     *
+     * By length is the default and what the bar has always done — a step for every finger's width
+     * of travel. A fixed amount is for the thumb that flicks: an ordinary flick crossed four or five
+     * of those steps, a third of the range, where the user had meant one nudge.
+     */
+    fun getSwipeStepPercent(): Int =
+        sharedPreferences.getInt(SWIPE_STEP_PERCENT, BarBehaviour.SWIPE_STEP_BY_LENGTH)
+            .takeIf { it in BarBehaviour.SWIPE_STEP_PERCENTS } ?: BarBehaviour.SWIPE_STEP_BY_LENGTH
+
+    fun setSwipeStepPercent(value: Int) {
+        sharedPreferences.edit {
+            putInt(
+                SWIPE_STEP_PERCENT,
+                value.takeIf { it in BarBehaviour.SWIPE_STEP_PERCENTS } ?: BarBehaviour.SWIPE_STEP_BY_LENGTH
+            )
+        }
+    }
+
+    /**
+     * What the bar does while the on-screen keyboard is open: [BarBehaviour.KEYBOARD_MOVE] it up
+     * clear of the keys, [BarBehaviour.KEYBOARD_HIDE] it until the keyboard closes, or
+     * [BarBehaviour.KEYBOARD_STAY] where it is.
+     *
+     * Move is the default. Left where it was, a bar low on the screen lay over the keyboard's edge
+     * keys — the one place on screen the user is certain to be touching — and a bar is only ever
+     * moved when the keyboard would actually cover it.
+     */
+    fun getKeyboardBehaviour(): String =
+        sharedPreferences.getString(KEYBOARD_BEHAVIOUR, BarBehaviour.KEYBOARD_MOVE)
+            ?.takeIf { it in BarBehaviour.KEYBOARD_BEHAVIOURS } ?: BarBehaviour.KEYBOARD_MOVE
+
+    /**
+     * How the bar moves up clear of the keyboard and back down: one of [BarBehaviour.KEYBOARD_MOTIONS].
+     * The glide it has always made, unless another is chosen.
+     */
+    fun getKeyboardMotion(): String =
+        BarBehaviour.sanitizeMotion(sharedPreferences.getString(KEYBOARD_MOTION, BarBehaviour.MOTION_GLIDE))
+
+    fun setKeyboardMotion(value: String) {
+        sharedPreferences.edit { putString(KEYBOARD_MOTION, BarBehaviour.sanitizeMotion(value)) }
+    }
+
+    fun setKeyboardBehaviour(value: String) {
+        sharedPreferences.edit {
+            putString(
+                KEYBOARD_BEHAVIOUR,
+                value.takeIf { it in BarBehaviour.KEYBOARD_BEHAVIOURS } ?: BarBehaviour.KEYBOARD_MOVE
+            )
+        }
+    }
+
+    /**
+     * Show the bar only while something is playing. With this or [getShowOnlyWhileCall] on, the bar
+     * steps aside whenever none of the chosen conditions holds; with both off, the default, it is
+     * always there.
+     */
+    fun getShowOnlyWhileMedia(): Boolean = sharedPreferences.getBoolean(SHOW_ONLY_WHILE_MEDIA, false)
+
+    fun setShowOnlyWhileMedia(value: Boolean) {
+        sharedPreferences.edit { putBoolean(SHOW_ONLY_WHILE_MEDIA, value) }
+    }
+
+    /**
+     * How long the second tap of a double tap may take to arrive, in ms, or 0 for automatic —
+     * the platform's window, raised for a target at the screen edge. See `TapTiming`.
+     */
+    fun getDoubleTapMs(): Int = sharedPreferences.getInt(DOUBLE_TAP_MS, 0).coerceAtLeast(0)
+    fun setDoubleTapMs(value: Int) = sharedPreferences.edit { putInt(DOUBLE_TAP_MS, value.coerceAtLeast(0)) }
+
+    /** How long a hold is before it is a long press, in ms, or 0 for the platform's own. */
+    fun getLongPressMs(): Int = sharedPreferences.getInt(LONG_PRESS_MS, 0).coerceAtLeast(0)
+    fun setLongPressMs(value: Int) = sharedPreferences.edit { putInt(LONG_PRESS_MS, value.coerceAtLeast(0)) }
+
+    /** Show the bar only while a call is on or the phone is ringing. See [getShowOnlyWhileMedia]. */
+    fun getShowOnlyWhileCall(): Boolean = sharedPreferences.getBoolean(SHOW_ONLY_WHILE_CALL, false)
+
+    fun setShowOnlyWhileCall(value: Boolean) {
+        sharedPreferences.edit { putBoolean(SHOW_ONLY_WHILE_CALL, value) }
     }
 
     /**
@@ -1537,8 +1736,12 @@ class SharedPref @Inject constructor(
             .filter { sharedPreferences.contains(it) }
             .associateWith { sharedPreferences.getInt(it, 0) }
         val keptOptOut = isSupportOptedOut()
+        // Which What's new was read is not a setting either: a reset should not announce the
+        // update again.
+        val keptWhatsNewSeen = getWhatsNewSeenVersion()
         sharedPreferences.edit {
             clear()
+            if (keptWhatsNewSeen != null) putString(WHATS_NEW_SEEN, keptWhatsNewSeen)
             putBoolean(PRO_FEATURE_ACTIVATION, keptPro)
             if (keptInstallTime > 0L) putLong(FIRST_INSTALL_TIME, keptInstallTime)
             keptLongs.forEach { (key, value) -> putLong(key, value) }

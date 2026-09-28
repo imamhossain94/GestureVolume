@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">クラシック</string>
+    <string name="preset_classic_subtitle">元祖の丸いボタン：スワイプで音量、タップでパネル</string>
+    <string name="home_advanced_features">高度な機能</string>
+    <string name="home_advanced_features_desc">デッキ、クイックスライダー、長押しメニュー、表示</string>
+    <string name="expand_advanced_features">高度な機能を表示</string>
+    <string name="collapse_advanced_features">高度な機能を隠す</string>
+    <string name="mode_advanced_switch">アドバンスモード</string>
+    <string name="mode_advanced_on_desc">ドックバー: スワイプでクイックスライダー、内側スワイプでデッキ、長押しでメニュー</string>
+    <string name="mode_advanced_off_desc">丸いボタン: スワイプで音量、タップで音量パネル。オンにするとドックとそのパネルを使えます。</string>
+    <string name="mode_to_simple_title">シンプルに切り替えますか？</string>
+    <string name="mode_to_simple_body">バーが丸いボタンになります。上下にスワイプで音量、タップで音量パネル、長押しで移動です。クイックスライダー、デッキ、長押しメニューは、音量ボタンの設定も含めてオフになります。いつでも元に戻せます。</string>
+    <string name="mode_to_advanced_title">アドバンスに切り替えますか？</string>
+    <string name="mode_to_advanced_body">バーがドックになります。上下にスワイプでクイックスライダー、内側にスワイプでデッキ、長押しで長押しメニューです。見た目とジェスチャーは置き換えられます。いつでも元に戻せます。</string>
+    <string name="mode_switch_confirm">切り替える</string>
+    <string name="mode_switch_cancel">キャンセル</string>
+</resources>

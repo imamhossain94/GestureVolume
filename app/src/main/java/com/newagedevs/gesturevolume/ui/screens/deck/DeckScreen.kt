@@ -1,5 +1,13 @@
 package com.newagedevs.gesturevolume.ui.screens.deck
 
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.Animation
+import com.newagedevs.gesturevolume.ui.components.ChoiceChip
+import com.newagedevs.gesturevolume.ui.components.HandleLook
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
 import com.newagedevs.gesturevolume.ui.util.permissionsRoute
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
@@ -22,7 +30,7 @@ import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.newagedevs.gesturevolume.ui.motion.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -57,6 +65,13 @@ import com.newagedevs.gesturevolume.overlay.deck.DeckTiles
 import com.newagedevs.gesturevolume.overlay.panelFrame
 import com.newagedevs.gesturevolume.overlay.rememberPanelEntrance
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
+import com.newagedevs.gesturevolume.ui.components.DemoGesture
+import com.newagedevs.gesturevolume.ui.components.GestureDemoOverlay
+import com.newagedevs.gesturevolume.ui.components.HowItWorksAction
+import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
@@ -134,9 +149,12 @@ fun DeckScreen(
     var panelAnimation by remember { mutableStateOf(viewModel.preference.getPanelAnimation()) }
     var animationSpeed by remember { mutableFloatStateOf(viewModel.preference.getPanelAnimationSpeed()) }
 
-    // One backdrop per visit; see the note in HandlerAppearanceScreen.
-    val backdrop = remember { viewModel.getNextBackground() }
     val handlerOnLeft = remember { preference.getHandlerPosition() == "Left" }
+    // A finger swiping in off the bar with the Deck following it out, twice on arrival and on
+    // request after that. Which physical way "out" is follows the stage, which puts the Deck at the
+    // start edge when the bar is on the left.
+    val gestureDemo = rememberGestureDemoState(DECK_DEMO_STEPS)
+    val deckOnLeft = handlerOnLeft != (LocalLayoutDirection.current == LayoutDirection.Rtl)
     val previewTiles = remember(version) {
         DeckTiles.visible(store.getTileOrder(), store.getEnabledTiles())
     }
@@ -178,6 +196,7 @@ fun DeckScreen(
     }
 
     Scaffold(
+        // The top bar is clear, on the plain page as the preview under it is.
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.deck_title)) },
@@ -186,6 +205,7 @@ fun DeckScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
+                actions = { HowItWorksAction(gestureDemo) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -198,31 +218,63 @@ fun DeckScreen(
         // so every colour and every number on this screen was set blind and checked by going out
         // and opening the thing.
         PreviewSettingsLayout(
+            hint = stringResource(R.string.deck_card_subtitle),
             contentPadding = padding,
             preview = { modifier, fillHeight ->
                 PreviewStage(
-                    backdrop = backdrop,
                     contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
                     fillHeight = fillHeight,
                     modifier = modifier,
+                    // The hand reaches in over the frame, as the walkthrough's does.
+                    overGlass = {
+                        GestureDemoOverlay(
+                            state = gestureDemo,
+                            barAtStart = handlerOnLeft,
+                            barInset = 12.dp,
+                            showBar = true,
+                            handle = remember { HandleLook.from(preference) },
+                            modifier = Modifier.matchParentSize(),
+                        )
+                    },
+                    // What the finger is doing, on the stage while the demo plays.
+                    demo = gestureDemo,
                 ) {
+                    // As tall as the Deck is on the phone, as far as the part of the phone that
+                    // shows will take it: the glass is the phone's screen, drawn smaller.
+                    val screenHeight = LocalConfiguration.current.let { maxOf(it.screenWidthDp, it.screenHeightDp) }
+                    BoxWithConstraints(
+                        modifier = Modifier.matchParentSize(),
+                        contentAlignment = if (handlerOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
+                    ) {
                     DeckPreviewStrip(
                         tiles = previewTiles,
                         palette = previewPalette,
                         widthDp = width,
                         cornerDp = corner,
                         glass = PanelTheme.hasLitEdge(panelTheme),
+                        heightDp = minOf(screenHeight * height, maxHeight.value * 0.8f),
                         modifier = Modifier
                             .padding(horizontal = 14.dp)
-                            .panelFrame { entrance.value },
+                            .panelFrame { entrance.value }
+                            // In step with the demo's swipe: out from the edge and into view as the
+                            // finger crosses the stage. Read in the layer, so the frames of the
+                            // demo redraw the strip without recomposing the screen.
+                            .graphicsLayer {
+                                val reveal = gestureDemo.progressOf(DemoGesture.SWIPE_IN)
+                                // `this.`, because the screen's own `alpha` (the background opacity) would shadow it.
+                                this.alpha = reveal
+                                translationX = (1f - reveal) * 44.dp.toPx() * (if (deckOnLeft) -1f else 1f)
+                            },
                     )
+                    }
                 }
             },
         ) {
             // ---- content ------------------------------------------------------------------------
             // What the Deck holds, and which half of it comes first.
             AppearanceSection(
-                title = stringResource(R.string.group_content),
+                title = stringResource(R.string.section_content),
+                icon = Icons.Filled.Widgets,
                 summary = pluralStringResource(R.plurals.deck_tiles_count, tilesOn, tilesOn, DeckTiles.ALL.size),
                 initiallyExpanded = true,
             ) {
@@ -287,7 +339,8 @@ fun DeckScreen(
 
             // ---- size & shape -------------------------------------------------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_size_shape),
+                title = stringResource(R.string.section_size_shape),
+                icon = Icons.Filled.AspectRatio,
                 summary = "${width.toInt()}dp · ${(height * 100).toInt()}% · ${corner.toInt()}dp",
             ) {
                 SliderControl(
@@ -323,7 +376,8 @@ fun DeckScreen(
             // ---- colours ------------------------------------------------------------------------
             // The material first, because it decides how much of the colours under it shows.
             AppearanceSection(
-                title = stringResource(R.string.group_colours),
+                title = stringResource(R.string.section_colours),
+                icon = Icons.Filled.Palette,
                 summary = "${stringResource(panelThemeLabel(panelTheme))} · ${(alpha / 255f * 100).toInt()}%",
             ) {
                 PanelThemeSelector(
@@ -362,7 +416,8 @@ fun DeckScreen(
 
             // ---- animation ----------------------------------------------------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_animation),
+                title = stringResource(R.string.section_animation),
+                icon = Icons.Filled.Animation,
                 summary = "${stringResource(panelAnimationLabel(panelAnimation))} · ${panelAnimationSpeedLabel(animationSpeed)}",
             ) {
                 // One choice for how every panel moves, shared with the long-press menu and the
@@ -390,7 +445,8 @@ fun DeckScreen(
 
             // ---- behaviour ----------------------------------------------------------------------
             AppearanceSection(
-                title = stringResource(R.string.group_behaviour),
+                title = stringResource(R.string.section_behaviour),
+                icon = Icons.Filled.Tune,
                 summary = if (autoClose == 0) {
                     stringResource(R.string.deck_auto_close_never)
                 } else {
@@ -432,22 +488,12 @@ private fun AutoCloseChips(selected: Int, onSelect: (Int) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         listOf(0, 5, 10, 20, 30).forEach { seconds ->
-            val on = selected == seconds
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = if (on) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surfaceVariant,
-                onClick = { onSelect(seconds) }
-            ) {
-                Text(
-                    text = if (seconds == 0) stringResource(R.string.deck_auto_close_never)
-                    else stringResource(R.string.deck_auto_close_seconds, seconds),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    fontSize = 13.sp,
-                    color = if (on) MaterialTheme.colorScheme.onPrimaryContainer
-                    else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            ChoiceChip(
+                label = if (seconds == 0) stringResource(R.string.deck_auto_close_never)
+                else stringResource(R.string.deck_auto_close_seconds, seconds),
+                selected = selected == seconds,
+                onClick = { onSelect(seconds) },
+            )
         }
     }
 }
@@ -477,3 +523,6 @@ fun TileGlyph(icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: M
         tint = MaterialTheme.colorScheme.primary
     )
 }
+
+/** The Deck's demo: a swipe in off the bar, which is what opens it. */
+private val DECK_DEMO_STEPS = listOf(DemoGesture.SWIPE_IN)

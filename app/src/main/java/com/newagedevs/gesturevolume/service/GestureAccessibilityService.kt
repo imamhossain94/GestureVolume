@@ -28,7 +28,8 @@ import javax.inject.Inject
  * takes the two volume keys and hands every other key straight back.
  *
  * **It can see which app is on screen**, when the user has picked apps for the bar to step aside
- * in. It reads the package and class of the window that came to the front and nothing inside it.
+ * in, or given apps gestures of their own. It reads the package and class of the window that came
+ * to the front and nothing inside it.
  *
  * **It never reads what is inside a window**, this app's or any other's. The service declares
  * `canRetrieveWindowContent="false"`, so no window content is available to it at all.
@@ -54,16 +55,18 @@ class GestureAccessibilityService : AccessibilityService() {
     /**
      * Subscribes to exactly the events the current settings need.
      *
-     * With no apps for the bar to step aside in, that is nothing at all. The XML declaration has
-     * to name the event types the service *may* use, so the honest version of "not looking" is to
-     * set the live subscription to zero here rather than to receive and discard.
+     * With no apps for the bar to step aside in and none with gestures of their own, that is
+     * nothing at all. The XML declaration has to name the event types the service *may* use, so the
+     * honest version of "not looking" is to set the live subscription to zero here rather than to
+     * receive and discard.
      */
     fun applyEventSubscription() {
         val info = runCatching { serviceInfo }.getOrNull() ?: return
         var types = 0
         // Which app is in front, and only while the user has picked apps for the bar to step aside
-        // in. Nothing about the window is read but its package and class.
-        val watchApps = preference.getHandlerHiddenApps().isNotEmpty()
+        // in or changed a gesture for one. Nothing about the window is read but its package and
+        // class.
+        val watchApps = watchingApps()
         // Also, for the moment a Volume down press is waiting, whether a window of the system's own
         // comes up: see [setWatchingSystemWindows].
         val watchWindows = watchApps || watchingSystemWindows
@@ -127,7 +130,7 @@ class GestureAccessibilityService : AccessibilityService() {
      * over an app the user is still in.
      */
     private fun foregroundAppOf(event: AccessibilityEvent): String? {
-        if (preference.getHandlerHiddenApps().isEmpty()) return null
+        if (!watchingApps()) return null
         val pkg = event.packageName?.toString() ?: return null
         val cls = event.className?.toString() ?: return null
         val isActivity = activityClasses.getOrPut("$pkg/$cls") {
@@ -135,6 +138,13 @@ class GestureAccessibilityService : AccessibilityService() {
         }
         return if (isActivity) pkg else null
     }
+
+    /**
+     * Whether the app in front is worth knowing: some app hides the bar, or has a gesture changed
+     * for it. An app listed for gestures with nothing changed yet does not count.
+     */
+    private fun watchingApps(): Boolean =
+        preference.getHandlerHiddenApps().isNotEmpty() || preference.appGestures.hasOverrides()
 
     override fun onInterrupt() = Unit
 

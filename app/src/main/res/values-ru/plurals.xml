@@ -24,4 +24,17 @@
         <item quantity="many">%1$d из %2$d включено</item>
         <item quantity="other">%1$d из %2$d включено</item>
     </plurals>
+    <!-- Translated from the English strings that had none here. -->
+    <plurals name="app_gestures_app_count">
+        <item quantity="one">%1$d приложение</item>
+        <item quantity="few">%1$d приложения</item>
+        <item quantity="many">%1$d приложений</item>
+        <item quantity="other">%1$d приложения</item>
+    </plurals>
+    <plurals name="app_gestures_changed_count">
+        <item quantity="one">%1$d жест изменён</item>
+        <item quantity="few">%1$d жеста изменено</item>
+        <item quantity="many">%1$d жестов изменено</item>
+        <item quantity="other">%1$d жеста изменено</item>
+    </plurals>
 </resources>

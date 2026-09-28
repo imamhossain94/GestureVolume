@@ -67,8 +67,6 @@ object SliderFill {
     /** Water: deep below, bright at a rippling surface that throws light down into it, bubbles rising. */
     const val LIQUID = "liquid"
 
-    /** A level meter: segments lit green to red by height over their own glow, a peak hold over the level. */
-    const val VU_METER = "vuMeter"
 
     /** Three signals crossing up the fill, glowing where they meet. Louder swings wider. */
     const val WAVEFORM = "waveform"
@@ -116,6 +114,40 @@ object SliderFill {
     const val FIREWORKS = "fireworks"
 
     /**
+     * A grid of pixels lit up to the level, a pattern running through them — the one style with
+     * settings of its own: its pattern, speed, pixels across, gap, roundness, glow and how much of an
+     * unlit pixel shows. See [PixelFill].
+     */
+    const val PIXELS = "pixels"
+
+    /**
+     * The track painted by a small program on the graphics chip — molten rock, liquid chrome, a
+     * lava lamp — with settings of its own like [PIXELS]. Android 13 and later only. See [ShaderFill].
+     */
+    const val SHADER = "shader"
+
+    /**
+     * The track as an effort picker, like the ones AI coding tools offer — Low, High, Extra high,
+     * Max, Ultra max — lit to the level and named, working harder the higher it goes. Settings of
+     * its own, like [PIXELS]. See [EffortFill].
+     */
+    const val EFFORT = "effort"
+
+    /**
+     * The track as a field of fine dots brightening into a lavender glimmer at the level, a white
+     * handle on it and six stops down the track, after Claude Code's dotted effort slider. Settings
+     * of its own, like [PIXELS]. See [GlimmerFill].
+     */
+    const val GLIMMER = "glimmer"
+
+    /**
+     * The track lit to the level by a glowing front — a curve of light, a crackling edge, a
+     * honeycomb, streaks, blocks or a flame — with settings of its own like [PIXELS]. Drawn on the
+     * graphics chip, so Android 13 and later only, like [SHADER]. See [SurgeFill].
+     */
+    const val SURGE = "surge"
+
+    /**
      * Every style, in the order they are offered.
      *
      * Five earlier ones — a charging band, two block walls, a breath and a sheen — are gone rather
@@ -123,9 +155,12 @@ object SliderFill {
      * anybody would choose twice. A preference holding one of them now sanitises to [SOLID], which
      * is the honest outcome; leaving them in the list to avoid that would have been keeping nine
      * options to protect five that were not worth having.
+     *
+     * The level meter ("vuMeter") went the same way later: segments lit by a bouncing peak read as
+     * music playing, and a panel setting the volume is not playing anything.
      */
     val ALL = listOf(
-        SOLID, LIQUID, VU_METER, WAVEFORM, SUNRISE,
+        SOLID, PIXELS, SHADER, SURGE, EFFORT, GLIMMER, LIQUID, WAVEFORM, SUNRISE,
         SPECTRUM, GALAXY, SILK, TIDE_UP, AURORA,
         PLASMA, HOLOGRAM, NEBULA, EMBER, SONAR,
         CIRCUIT, DOT_MATRIX, CYBERPUNK, MATRIX_RAIN, RUNE,
@@ -156,7 +191,6 @@ object SliderFill {
         SONAR -> 3600
         CIRCUIT -> 3200
         LIQUID -> 6000
-        VU_METER -> 1400
         WAVEFORM -> 2400
         // Slow, and a full turn of the fan is one ray's width: the rays are identical, so moving
         // by exactly one spacing is a seamless loop however long the cycle is.
@@ -182,6 +216,12 @@ object SliderFill {
         // One bolt a cycle. Any more often and it is a strobe, not a storm.
         STORM -> 6000
         FIREWORKS -> 4800
+        // Its own pattern and speed decide; see PixelFill.cycleMs(Style).
+        PIXELS -> PixelFill.cycleMs(PixelFill.SPECTRUM)
+        // Only a tick: a shader keeps its own time, which runs on rather than looping. So do the
+        // surge, the effort picker, whose sheen quickens with the level, and the glimmer, whose
+        // speed is set.
+        SHADER, SURGE, EFFORT, GLIMMER -> 10_000
         else -> 1
     }
 
@@ -229,7 +269,7 @@ object SliderFill {
     fun isPictorial(id: String): Boolean = when (sanitize(id)) {
         DOT_MATRIX, NEBULA, CYBERPUNK, MATRIX_RAIN, RUNE,
         PLASMA, AURORA, HOLOGRAM, EMBER, SONAR, CIRCUIT,
-        LIQUID, VU_METER, WAVEFORM, SUNRISE, SPECTRUM, GALAXY, SILK,
+        LIQUID, WAVEFORM, SUNRISE, SPECTRUM, GALAXY, SILK,
         FIREFLIES, SNOWFALL, HEARTBEAT, NEON, OCEAN, GRADIENT, CONFETTI, WARP, STORM, FIREWORKS -> true
         else -> false
     }
@@ -237,10 +277,13 @@ object SliderFill {
     /**
      * Whether the user's own animation colours can stand in for the style's.
      *
-     * Exactly the pictorial ones. The rest are drawn in the fill's and the track's colours, which
-     * the user already chooses; a second set of colours for them would be a setting that does nothing.
+     * The pictorial ones, [SHADER], [SURGE], [EFFORT], [GLIMMER], and [PIXELS], whose colourful patterns take them (its single-colour ones
+     * do not: see [PixelFill.supportsCustomColors]). The rest are drawn in the fill's and the track's
+     * colours, which the user already chooses; a second set of colours for them would be a setting
+     * that does nothing.
      */
-    fun supportsCustomColors(id: String): Boolean = isPictorial(id)
+    fun supportsCustomColors(id: String): Boolean =
+        isPictorial(id) || sanitize(id).let { it == PIXELS || it == SHADER || it == SURGE || it == EFFORT || it == GLIMMER }
 
     /**
      * The colours a pictorial style paints with, brightest first, as `0xAARRGGBB`.
@@ -260,8 +303,7 @@ object SliderFill {
         EMBER -> longArrayOf(0xFFFFE9A8, 0xE6FF9D3D, 0x99FF5A1E)
         SONAR -> longArrayOf(0xFF8CFFD8, 0xFF2ED6A0)
         CIRCUIT -> longArrayOf(0xFF9CFFE6, 0xFF1F7A5A)
-        LIQUID -> longArrayOf(0xFF7FE6FF, 0xFF2D8FE6, 0xFF0B2A6B, 0xFFFFFFFF)
-        VU_METER -> longArrayOf(0xFF3DE68A, 0xFFFFC23D, 0xFFFF4F61, 0xFFFFFFFF)
+        LIQUID -> longArrayOf(0xFFA8F5FF, 0xFF3CC6F2, 0xFF4A5CF0, 0xFFFFFFFF)
         WAVEFORM -> longArrayOf(0xFF4FE3FF, 0xFFFF5CC8, 0xFF9B7CFF)
         SUNRISE -> longArrayOf(0xFFFFE3A1, 0xFFFF8A3D, 0xFFC2386B, 0xFF3A1450)
         SPECTRUM -> longArrayOf(0xFFFF9AD5, 0xFFB79CFF, 0xFF8CD9FF, 0xFF8CFFD1, 0xFFFFE98C, 0xFFFFB38C)
@@ -299,8 +341,10 @@ object SliderFill {
      * Galaxy's sky into a pastel wash with the stars lost in it. What the user is choosing is the
      * colour of the light, and the dark it shines in is what lets it read as light at all.
      */
-    fun paletteWith(id: String, custom: IntArray?): LongArray {
-        val base = palette(id)
+    fun paletteWith(id: String, custom: IntArray?): LongArray = recolour(palette(id), custom)
+
+    /** [base] recoloured with [custom], by the rules [paletteWith] describes. Shared with [ShaderFill]. */
+    fun recolour(base: LongArray, custom: IntArray?): LongArray {
         if (custom == null || custom.isEmpty()) return base
         val n = base.size
         return LongArray(n) { i ->

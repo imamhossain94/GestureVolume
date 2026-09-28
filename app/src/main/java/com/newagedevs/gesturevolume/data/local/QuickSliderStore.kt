@@ -2,6 +2,12 @@ package com.newagedevs.gesturevolume.data.local
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.newagedevs.gesturevolume.utils.PixelFill
+import com.newagedevs.gesturevolume.utils.ShaderFill
+import com.newagedevs.gesturevolume.utils.EffortFill
+import com.newagedevs.gesturevolume.utils.GlimmerFill
+import com.newagedevs.gesturevolume.utils.SurgeFill
+import com.newagedevs.gesturevolume.utils.LevelFeedback
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.HandlerShape
 
@@ -100,6 +106,38 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val SHOW_ICON = "sliderShowIcon"
         private const val AUTO_BRIGHTNESS_OFF = "sliderDisableAutoBrightness"
         private const val FILL_STYLE = "sliderFillStyle"
+        private const val PIXEL_PATTERN = "sliderPixelPattern"
+        private const val PIXEL_SPEED = "sliderPixelSpeed"
+        private const val PIXEL_COLUMNS = "sliderPixelColumns"
+        private const val PIXEL_GAP = "sliderPixelGap"
+        private const val PIXEL_ROUNDNESS = "sliderPixelRoundness"
+        private const val PIXEL_GLOW = "sliderPixelGlow"
+        private const val PIXEL_REST = "sliderPixelRest"
+        private const val SHADER_EFFECT = "sliderShaderEffect"
+        private const val SHADER_SPEED = "sliderShaderSpeed"
+        private const val SHADER_SCALE = "sliderShaderScale"
+        private const val SHADER_DETAIL = "sliderShaderDetail"
+        private const val SHADER_BRIGHTNESS = "sliderShaderBrightness"
+        private const val SHADER_GRAIN = "sliderShaderGrain"
+        private const val SHADER_REST = "sliderShaderRest"
+        private const val EFFORT_LOOK = "sliderEffortLook"
+        private const val EFFORT_SPEED = "sliderEffortSpeed"
+        private const val EFFORT_LABELS = "sliderEffortLabels"
+        private const val GLIMMER_SPEED = "sliderGlimmerSpeed"
+        private const val GLIMMER_HANDLE = "sliderGlimmerHandle"
+        private const val GLIMMER_STOPS = "sliderGlimmerStops"
+        private const val SURGE_LOOK = "sliderSurgeLook"
+        private const val SURGE_SPEED = "sliderSurgeSpeed"
+        private const val SURGE_SIZE = "sliderSurgeSize"
+        private const val SURGE_EDGE = "sliderSurgeEdge"
+        private const val SURGE_GLOW = "sliderSurgeGlow"
+        private const val SURGE_TRAIL = "sliderSurgeTrail"
+        private const val SURGE_REST = "sliderSurgeRest"
+        private const val FEEDBACK_SPEED = "sliderFeedbackSpeed"
+        private const val FEEDBACK_FOLLOW = "sliderFeedbackFollow"
+        private const val FEEDBACK_LOW = "sliderFeedbackLow"
+        private const val FEEDBACK_FULL = "sliderFeedbackFull"
+        private const val FEEDBACK_MAX = "sliderFeedbackMax"
         private const val FOLLOW_HANDLER = "sliderFollowHandlerShape"
         private const val OPEN_ON_VOLUME_KEY = "sliderOpenOnVolumeKey"
         private const val VOLUME_KEYS = "sliderVolumeKeys"
@@ -198,7 +236,7 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
          * changed; only the part that is painted has. See `QuickSliderView.setDrawnThickness`.
          */
         const val MIN_THICKNESS = 10f
-        const val DEFAULT_THICKNESS = 28f
+        const val DEFAULT_THICKNESS = 32f
 
         /** The furthest the open panel may stand in from the edge. See [getEdgeOffsetDp]. */
         const val MAX_EDGE_OFFSET = 48f
@@ -429,6 +467,167 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     /** What the filled portion does while the panel is open. See [SliderFill]. */
     fun getFillStyle(): String = SliderFill.sanitize(prefs.getString(FILL_STYLE, null))
     fun setFillStyle(value: String) = prefs.edit { putString(FILL_STYLE, SliderFill.sanitize(value)) }
+
+    /**
+     * The Pixels fill's own settings: its pattern, and the six things about the grid the user
+     * tunes. Only read while [getFillStyle] is [SliderFill.PIXELS], and kept when it is not, so
+     * trying another fill and coming back finds the grid as it was left.
+     */
+    fun getPixelStyle(): PixelFill.Style {
+        val d = PixelFill.Style()
+        return PixelFill.Style(
+            pattern = prefs.getString(PIXEL_PATTERN, d.pattern) ?: d.pattern,
+            speed = prefs.getFloat(PIXEL_SPEED, d.speed),
+            columns = prefs.getInt(PIXEL_COLUMNS, d.columns),
+            gap = prefs.getFloat(PIXEL_GAP, d.gap),
+            roundness = prefs.getFloat(PIXEL_ROUNDNESS, d.roundness),
+            glow = prefs.getFloat(PIXEL_GLOW, d.glow),
+            rest = prefs.getFloat(PIXEL_REST, d.rest),
+        ).sanitized()
+    }
+
+    fun setPixelStyle(value: PixelFill.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putString(PIXEL_PATTERN, s.pattern)
+            putFloat(PIXEL_SPEED, s.speed)
+            putInt(PIXEL_COLUMNS, s.columns)
+            putFloat(PIXEL_GAP, s.gap)
+            putFloat(PIXEL_ROUNDNESS, s.roundness)
+            putFloat(PIXEL_GLOW, s.glow)
+            putFloat(PIXEL_REST, s.rest)
+        }
+    }
+
+    /**
+     * The Shaders fill's own settings: its effect, and the six things every effect answers to.
+     * Kept while another fill is chosen, like the Pixels grid's.
+     */
+    fun getShaderStyle(): ShaderFill.Style {
+        val d = ShaderFill.Style()
+        return ShaderFill.Style(
+            effect = prefs.getString(SHADER_EFFECT, d.effect) ?: d.effect,
+            speed = prefs.getFloat(SHADER_SPEED, d.speed),
+            scale = prefs.getFloat(SHADER_SCALE, d.scale),
+            detail = prefs.getFloat(SHADER_DETAIL, d.detail),
+            brightness = prefs.getFloat(SHADER_BRIGHTNESS, d.brightness),
+            grain = prefs.getFloat(SHADER_GRAIN, d.grain),
+            rest = prefs.getFloat(SHADER_REST, d.rest),
+        ).sanitized()
+    }
+
+    fun setShaderStyle(value: ShaderFill.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putString(SHADER_EFFECT, s.effect)
+            putFloat(SHADER_SPEED, s.speed)
+            putFloat(SHADER_SCALE, s.scale)
+            putFloat(SHADER_DETAIL, s.detail)
+            putFloat(SHADER_BRIGHTNESS, s.brightness)
+            putFloat(SHADER_GRAIN, s.grain)
+            putFloat(SHADER_REST, s.rest)
+        }
+    }
+
+    /**
+     * The Effort fill's own settings: its look, how fast it moves, and whether the level is named.
+     * Kept while another fill is chosen, like the Pixels grid's.
+     */
+    fun getEffortStyle(): EffortFill.Style {
+        val d = EffortFill.Style()
+        return EffortFill.Style(
+            look = prefs.getString(EFFORT_LOOK, d.look) ?: d.look,
+            speed = prefs.getFloat(EFFORT_SPEED, d.speed),
+            labels = prefs.getBoolean(EFFORT_LABELS, d.labels),
+        ).sanitized()
+    }
+
+    fun setEffortStyle(value: EffortFill.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putString(EFFORT_LOOK, s.look)
+            putFloat(EFFORT_SPEED, s.speed)
+            putBoolean(EFFORT_LABELS, s.labels)
+        }
+    }
+
+    /**
+     * The Glimmer fill's own settings: how fast it moves, and whether it has a handle and stops.
+     * Kept while another fill is chosen, like the Pixels grid's.
+     */
+    fun getGlimmerStyle(): GlimmerFill.Style {
+        val d = GlimmerFill.Style()
+        return GlimmerFill.Style(
+            speed = prefs.getFloat(GLIMMER_SPEED, d.speed),
+            handle = prefs.getBoolean(GLIMMER_HANDLE, d.handle),
+            stops = prefs.getBoolean(GLIMMER_STOPS, d.stops),
+        ).sanitized()
+    }
+
+    fun setGlimmerStyle(value: GlimmerFill.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putFloat(GLIMMER_SPEED, s.speed)
+            putBoolean(GLIMMER_HANDLE, s.handle)
+            putBoolean(GLIMMER_STOPS, s.stops)
+        }
+    }
+
+    /**
+     * The Surge fill's own settings: its look, and the six things every look answers to. Kept while
+     * another fill is chosen, like the shader's.
+     */
+    fun getSurgeStyle(): SurgeFill.Style {
+        val d = SurgeFill.Style()
+        return SurgeFill.Style(
+            look = prefs.getString(SURGE_LOOK, d.look) ?: d.look,
+            speed = prefs.getFloat(SURGE_SPEED, d.speed),
+            size = prefs.getFloat(SURGE_SIZE, d.size),
+            edge = prefs.getFloat(SURGE_EDGE, d.edge),
+            glow = prefs.getFloat(SURGE_GLOW, d.glow),
+            trail = prefs.getFloat(SURGE_TRAIL, d.trail),
+            rest = prefs.getFloat(SURGE_REST, d.rest),
+        ).sanitized()
+    }
+
+    fun setSurgeStyle(value: SurgeFill.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putString(SURGE_LOOK, s.look)
+            putFloat(SURGE_SPEED, s.speed)
+            putFloat(SURGE_SIZE, s.size)
+            putFloat(SURGE_EDGE, s.edge)
+            putFloat(SURGE_GLOW, s.glow)
+            putFloat(SURGE_TRAIL, s.trail)
+            putFloat(SURGE_REST, s.rest)
+        }
+    }
+
+    /**
+     * How every fill answers the level, and how fast the fills without a speed of their own move.
+     * One setting for all of them: see [LevelFeedback].
+     */
+    fun getLevelFeedback(): LevelFeedback.Style {
+        val d = LevelFeedback.Style()
+        return LevelFeedback.Style(
+            speed = prefs.getFloat(FEEDBACK_SPEED, d.speed),
+            follow = prefs.getBoolean(FEEDBACK_FOLLOW, d.follow),
+            low = prefs.getBoolean(FEEDBACK_LOW, d.low),
+            full = prefs.getBoolean(FEEDBACK_FULL, d.full),
+            max = prefs.getString(FEEDBACK_MAX, d.max) ?: d.max,
+        ).sanitized()
+    }
+
+    fun setLevelFeedback(value: LevelFeedback.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putFloat(FEEDBACK_SPEED, s.speed)
+            putBoolean(FEEDBACK_FOLLOW, s.follow)
+            putBoolean(FEEDBACK_LOW, s.low)
+            putBoolean(FEEDBACK_FULL, s.full)
+            putString(FEEDBACK_MAX, s.max)
+        }
+    }
 
     /**
      * Whether the fill animations are painted in the user's colours rather than their own.

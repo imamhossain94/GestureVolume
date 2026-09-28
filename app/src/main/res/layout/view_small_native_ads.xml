@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The home screen's native ad, laid out as one more card in the grid above it.
+  The home screen's native ad, laid out as one more row of the Advanced features group.
 
   Structure only. Every colour and background is applied at runtime from the app's Compose theme
   (ApplovinAdsManager.styleNativeAdView), because that theme follows the in-app Light/Dark choice
   and the wallpaper's dynamic colours, neither of which an XML colour resource can see. The card
   itself is the Compose Card the home screen wraps this in.
 
-  Sizes follow NavigationCard's compact card: 12dp padding, a 32dp icon chip, a 14sp title and
-  12sp secondary text, and a 12dp gap to what comes next.
+  Sizes follow the home screen's rows (HomeRows): 14dp across and 12dp down, a 46dp icon tile with
+  14dp corners, a 16sp title and 12sp secondary text, 14dp between the tile and the words.
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -17,7 +17,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:paddingHorizontal="14dp"
+    android:paddingVertical="12dp">
 
     <!-- The icon chip, the title over the Ad chip and advertiser, and the network's options. -->
     <LinearLayout
@@ -28,8 +29,8 @@
 
         <FrameLayout
             android:id="@+id/icon_chip"
-            android:layout_width="32dp"
-            android:layout_height="32dp">
+            android:layout_width="46dp"
+            android:layout_height="46dp">
 
             <ImageView
                 android:id="@+id/icon_image_view"
@@ -42,7 +43,7 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="14dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -53,7 +54,7 @@
                 android:ellipsize="end"
                 android:fontFamily="sans-serif-medium"
                 android:maxLines="1"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 tools:text="Pandora Music" />
 
             <LinearLayout

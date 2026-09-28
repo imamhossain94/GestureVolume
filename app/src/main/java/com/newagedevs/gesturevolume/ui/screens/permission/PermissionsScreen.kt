@@ -1,5 +1,12 @@
 package com.newagedevs.gesturevolume.ui.screens.permission
 
+import com.newagedevs.gesturevolume.ui.components.rowColor
+import com.newagedevs.gesturevolume.ui.components.cardShape
+import com.newagedevs.gesturevolume.ui.components.IconTile
+import com.newagedevs.gesturevolume.ui.components.HeroCard
+import com.newagedevs.gesturevolume.ui.components.GroupHeading
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.material.icons.filled.Shield
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -40,12 +47,12 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.newagedevs.gesturevolume.ui.motion.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.newagedevs.gesturevolume.ui.motion.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -249,6 +256,10 @@ fun PermissionsScreen(
             )
         }
     ) { padding ->
+        // The optional group: three always, the notification permission on Android 13 and later,
+        // what the notification carries, and the two for the Deck.
+        val controlsAt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) 4 else 3
+        val optionalShape = { index: Int -> cardShape(index, controlsAt + 3) }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -256,43 +267,25 @@ fun PermissionsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
-            // Header Info
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f)
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+            // At the top, as the action picker opens: where things stand. It used to be a line of
+            // instructions up here and an "All set" card at the foot, below every card it was about.
+            HeroCard(
+                title = stringResource(if (overlayPermissionGranted) R.string.all_set else R.string.permissions),
+                text = stringResource(
+                    if (overlayPermissionGranted) R.string.all_required_permissions_granted else R.string.permissions_header_info
+                ),
+                leading = {
+                    IconTile(
+                        if (overlayPermissionGranted) Icons.Default.CheckCircle else Icons.Default.Shield,
+                        lit = true,
+                        size = 56.dp,
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = stringResource(R.string.permissions_header_info),
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        lineHeight = 20.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Required Permissions Section
-            Text(
-                text = stringResource(R.string.required_permissions),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                letterSpacing = 1.2.sp,
-                modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
+                },
             )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            GroupHeading(stringResource(R.string.group_required))
 
             // Overlay Permission. The bar is always drawn by the foreground service, which
             // cannot draw it without this.
@@ -309,6 +302,7 @@ fun PermissionsScreen(
                 warning = neededBy(needs, Permission.OVERLAY),
                 modifier = cardModifier(Permission.OVERLAY),
                 highlight = highlightOf(Permission.OVERLAY),
+                shape = cardShape(0, 1),
                 onRequestPermission = {
                     val intent = Intent(
                         Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -320,17 +314,9 @@ fun PermissionsScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Optional Permissions Section
-            Text(
-                text = stringResource(R.string.optional_permissions),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                letterSpacing = 1.2.sp,
-                modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
-            )
+            GroupHeading(stringResource(R.string.group_optional))
 
             // Modify system settings — the brightness actions, the brightness panel and tile, and
             // auto-rotate.
@@ -348,6 +334,7 @@ fun PermissionsScreen(
                 },
                 modifier = cardModifier(Permission.WRITE_SETTINGS),
                 highlight = highlightOf(Permission.WRITE_SETTINGS),
+                shape = optionalShape(0),
                 onRequestPermission = {
                     val intent = Intent(
                         Settings.ACTION_MANAGE_WRITE_SETTINGS,
@@ -362,7 +349,7 @@ fun PermissionsScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(3.dp))
 
             // The accessibility service: the system actions, the opt-in volume keys, and the
             // opt-in app watching. Granted on the system's own list, after the disclosure.
@@ -380,6 +367,7 @@ fun PermissionsScreen(
                 },
                 modifier = cardModifier(Permission.ACCESSIBILITY),
                 highlight = highlightOf(Permission.ACCESSIBILITY),
+                shape = optionalShape(1),
                 onRequestPermission = { showAccessibilityDisclosure = true },
                 onDisablePermission = {
                     // Switched off on the same system list it was switched on.
@@ -392,7 +380,7 @@ fun PermissionsScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(3.dp))
 
             // Do Not Disturb access — the Do Not Disturb action and tile.
             PermissionCard(
@@ -409,6 +397,7 @@ fun PermissionsScreen(
                 },
                 modifier = cardModifier(Permission.NOTIFICATION_POLICY),
                 highlight = highlightOf(Permission.NOTIFICATION_POLICY),
+                shape = optionalShape(2),
                 onRequestPermission = {
                     viewModel.preference.setAppOpenAdPaused(true)
                     try {
@@ -423,7 +412,7 @@ fun PermissionsScreen(
             // strict sense: the service runs without it. It is, however, the only way to bring
             // back a bar hidden from the long-press menu without opening the app.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(3.dp))
 
                 PermissionCard(
                     title = stringResource(R.string.notification_permission),
@@ -439,6 +428,7 @@ fun PermissionsScreen(
                     },
                     modifier = cardModifier(Permission.NOTIFICATIONS),
                     highlight = highlightOf(Permission.NOTIFICATIONS),
+                    shape = optionalShape(3),
                     onRequestPermission = {
                         notificationPermissionLauncher.launch(
                             Manifest.permission.POST_NOTIFICATIONS
@@ -451,8 +441,9 @@ fun PermissionsScreen(
             // a switch among the gesture settings on the Actions screen, where nothing beside it
             // was about notifications. Shown on every version: below Android 13 there is no
             // permission card above it, but there is still a notification.
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(3.dp))
             NotificationControlsCard(
+                shape = optionalShape(controlsAt),
                 checked = showNotification,
                 onCheckedChange = { on ->
                     showNotification = on
@@ -476,7 +467,7 @@ fun PermissionsScreen(
                 },
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(3.dp))
 
             // Contacts — only the Deck's search uses it.
             PermissionCard(
@@ -489,10 +480,11 @@ fun PermissionsScreen(
                 borderColor = if (contactsGranted) Color(0xFF10B981) else Color(0xFF8B5CF6),
                 modifier = cardModifier(Permission.CONTACTS),
                 highlight = highlightOf(Permission.CONTACTS),
+                shape = optionalShape(controlsAt + 1),
                 onRequestPermission = { contactsLauncher.launch(Manifest.permission.READ_CONTACTS) }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(3.dp))
 
             // Phone — only "call directly" uses it.
             PermissionCard(
@@ -505,49 +497,12 @@ fun PermissionsScreen(
                 borderColor = if (phoneGranted) Color(0xFF10B981) else Color(0xFF8B5CF6),
                 modifier = cardModifier(Permission.PHONE),
                 highlight = highlightOf(Permission.PHONE),
+                shape = optionalShape(controlsAt + 2),
                 onRequestPermission = { phoneLauncher.launch(Manifest.permission.CALL_PHONE) }
             )
 
 
             Spacer(modifier = Modifier.height(32.dp))
-
-            // All Set Card
-            if (overlayPermissionGranted) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = stringResource(R.string.all_set),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = stringResource(R.string.all_required_permissions_granted),
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                                lineHeight = 18.sp
-                            )
-                        }
-                    }
-                }
-            }
-
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
@@ -560,16 +515,17 @@ fun PermissionsScreen(
  */
 @Composable
 private fun NotificationControlsCard(
+    shape: Shape,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onOpenChannelSettings: () -> Unit,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+        shape = shape,
+        color = rowColor()
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
             SettingSwitchItem(
                 title = stringResource(R.string.show_notification_title),
                 description = stringResource(R.string.show_notification_desc),

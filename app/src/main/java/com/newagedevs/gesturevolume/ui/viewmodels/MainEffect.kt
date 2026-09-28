@@ -32,6 +32,8 @@ sealed class MainEffect {
     object ShowLanguageDialog : MainEffect()
     object NavigateToTroubleshoot : MainEffect()
     object NavigateToFaq : MainEffect()
+    object NavigateToWhatsNew : MainEffect()
+    object NavigateToTour : MainEffect()
 
     /** Open the system accessibility settings, after the disclosure has been accepted. */
     object OpenAccessibilitySettings : MainEffect()

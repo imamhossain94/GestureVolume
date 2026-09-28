@@ -11,8 +11,19 @@ data class DeckNote(val id: Long, val text: String, val timeMillis: Long)
 /** One checklist entry. */
 data class DeckChecklistItem(val id: Long, val text: String, val done: Boolean)
 
-/** One quick-dial button: a name to show and a number to call. */
-data class QuickDialEntry(val id: Long, val name: String, val number: String)
+/**
+ * One quick-dial button: a name to show, a number, and where tapping it goes.
+ *
+ * [via] is one of [SearchStore.ALL_NUMBER_ACTIONS] — a call, an SMS, or a WhatsApp or Telegram chat
+ * with that person — so the button can open the conversation itself rather than only dial. Entries
+ * saved before it existed have none, and read back as a call, which is all they ever did.
+ */
+data class QuickDialEntry(
+    val id: Long,
+    val name: String,
+    val number: String,
+    val via: String = SearchStore.NUMBER_DIAL,
+)
 
 /**
  * Everything the Deck remembers: how it looks, what it holds, and the notes, checklist and
@@ -111,18 +122,32 @@ class DeckStore(private val prefs: SharedPreferences) {
     // ---- quick dial -----------------------------------------------------------------------------
 
     fun getQuickDial(): List<QuickDialEntry> = readObjects(QUICK_DIAL) { o ->
-        QuickDialEntry(o.getLong("id"), o.getString("name"), o.getString("number"))
+        QuickDialEntry(
+            o.getLong("id"),
+            o.getString("name"),
+            o.getString("number"),
+            // Absent on every entry saved before there was a choice, and unknown from a newer
+            // build: either way, a call.
+            o.optString("via").takeIf { it in SearchStore.ALL_NUMBER_ACTIONS } ?: SearchStore.NUMBER_DIAL
+        )
     }
 
     fun setQuickDial(entries: List<QuickDialEntry>) = writeObjects(QUICK_DIAL, entries) { e ->
-        JSONObject().put("id", e.id).put("name", e.name).put("number", e.number)
+        JSONObject().put("id", e.id).put("name", e.name).put("number", e.number).put("via", e.via)
     }
 
-    fun addQuickDial(name: String, number: String): QuickDialEntry {
-        val entry = QuickDialEntry(System.currentTimeMillis(), name.trim(), number.trim())
+    fun addQuickDial(name: String, number: String, via: String = SearchStore.NUMBER_DIAL): QuickDialEntry {
+        val entry = QuickDialEntry(System.currentTimeMillis(), name.trim(), number.trim(), via)
         setQuickDial(getQuickDial() + entry)
         return entry
     }
+
+    /** Replaces the entry with [entry]'s id, keeping its place in the row. */
+    fun updateQuickDial(entry: QuickDialEntry) = setQuickDial(
+        getQuickDial().map {
+            if (it.id == entry.id) entry.copy(name = entry.name.trim(), number = entry.number.trim()) else it
+        }
+    )
 
     fun removeQuickDial(id: Long) = setQuickDial(getQuickDial().filterNot { it.id == id })
 

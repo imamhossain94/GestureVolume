@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="how_it_works">Como funciona</string>
+    <string name="demo_tap">Toque</string>
+    <string name="demo_swipe_up">Deslizar para cima</string>
+    <string name="demo_swipe_down">Deslizar para baixo</string>
+    <string name="demo_swipe_in">Deslizar para dentro</string>
+    <string name="demo_hold">Segurar</string>
+    <string name="demo_does_nothing">Não faz nada</string>
+</resources>

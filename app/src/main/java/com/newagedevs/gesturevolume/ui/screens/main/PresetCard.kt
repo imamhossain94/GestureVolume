@@ -50,103 +50,6 @@ import com.newagedevs.gesturevolume.utils.HandlerShape
  * the preset's own proportions, corners and outline — a tab as a tab, the bubble as a circle held
  * off the edge — because telling the presets apart at a glance is the one thing this row is for.
  */
-@Composable
-fun PresetCard(
-    modifier: Modifier = Modifier,
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    gradientColors: List<Color>, // kept for API compatibility
-    previewWidth: Dp = 20.dp,
-    previewCorner: Dp = 10.dp,
-    /**
-     * The radius on the side that faces the screen edge, when it differs from [previewCorner].
-     *
-     * The Edge bar is rounded on the inside and all but square where it meets the edge, and a
-     * swatch that showed it as a symmetric pill would be advertising a shape the preset does not
-     * apply. Null keeps both sides the same, which is every other preset.
-     */
-    previewOuterCorner: Dp? = null,
-    /**
-     * The outline the swatch is cut to, when the preset is not a rounded rectangle.
-     *
-     * Drawn from [HandlerShape]'s own geometry rather than approximated with a corner radius, so
-     * the card advertises the shape the preset actually applies.
-     */
-    previewShape: String = HandlerShape.ROUNDED,
-    previewFlare: Float = HandlerShape.DEFAULT_FLARE,
-    /** A circle held a little off the edge rather than a bar against it: the floating bubble. */
-    previewRound: Boolean = false,
-    previewColor: Color = MaterialTheme.colorScheme.primary,
-    previewAlpha: Float = 0.8f,
-    isSelected: Boolean = false,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
-        ),
-        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = subtitle,
-                    fontSize = 12.sp,
-                    lineHeight = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            MiniScreen(
-                barWidth = previewWidth,
-                barCorner = previewCorner,
-                barOuterCorner = previewOuterCorner,
-                shape = previewShape,
-                flare = previewFlare,
-                round = previewRound,
-                color = previewColor.copy(alpha = previewAlpha),
-            )
-        }
-    }
-}
-
 /**
  * A small screen, and the preset's bar against its right edge.
  *
@@ -154,7 +57,7 @@ fun PresetCard(
  * relative to one another: the Edge still reads as the thinnest and the bubble as the widest.
  */
 @Composable
-private fun MiniScreen(
+internal fun MiniScreen(
     barWidth: Dp,
     barCorner: Dp,
     barOuterCorner: Dp?,
@@ -162,19 +65,18 @@ private fun MiniScreen(
     flare: Float,
     round: Boolean,
     color: Color,
+    /** The screen's size: a row's 46dp tile on the home screen. */
+    screenWidth: Dp = SCREEN_SIZE,
+    screenHeight: Dp = SCREEN_SIZE,
 ) {
-    val onSurface = MaterialTheme.colorScheme.onSurface
     val width = (barWidth * SWATCH_SCALE).coerceIn(4.dp, 22.dp)
-    val height = if (round) width else SCREEN_HEIGHT * 0.6f
+    val height = if (round) width else screenHeight * 0.66f
     Box(
         modifier = Modifier
-            .size(SCREEN_WIDTH, SCREEN_HEIGHT)
-            .clip(RoundedCornerShape(10.dp))
-            .background(
-                Brush.verticalGradient(
-                    listOf(onSurface.copy(alpha = 0.05f), onSurface.copy(alpha = 0.12f))
-                )
-            ),
+            .size(screenWidth, screenHeight)
+            .clip(RoundedCornerShape(14.dp))
+            // The tile every other row's icon sits on, so the presets' pictures read as icons.
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)),
         contentAlignment = Alignment.CenterEnd
     ) {
         val barModifier = Modifier
@@ -220,5 +122,5 @@ private fun MiniScreen(
 /** How much smaller than the preset's own swatch numbers the bar is drawn. */
 private const val SWATCH_SCALE = 0.6f
 
-private val SCREEN_WIDTH = 46.dp
-private val SCREEN_HEIGHT = 76.dp
+/** A row's icon tile: the size every row on the home screen gives its picture. */
+private val SCREEN_SIZE = 46.dp

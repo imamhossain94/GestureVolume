@@ -21,12 +21,23 @@ import com.newagedevs.gesturevolume.utils.HandlerShape
  * The rounded case is drawn to match what `GradientDrawable` did, deliberately: the stroke sits
  * *inside* the bounds, so a bar with a stroke is the same size as a bar without one. Anything else
  * and turning a stroke on would nudge the bar's edge off the side of the screen.
+ *
+ * A tab is the exception on one side. Its straight side is the screen edge itself, so it is
+ * neither stroked nor inset: a border drawn there was a line along the frame of the phone, and an
+ * inset left a hairline of the app showing between the glass and a bar that is meant to grow out
+ * of it.
  */
 class HandlerShapeDrawable : Drawable() {
 
     private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
     private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
     private val path = Path()
+
+    /**
+     * What the stroke follows. The same outline as [path] for a rounded bar; for a tab, the outline
+     * left open along the screen edge. See the class note.
+     */
+    private val strokePath = Path()
 
     /** Set whenever anything that changes the outline changes; cleared on the next draw. */
     private var pathDirty = true
@@ -115,45 +126,55 @@ class HandlerShapeDrawable : Drawable() {
         if (pathDirty) rebuildPath()
         if (path.isEmpty) return
         canvas.drawPath(path, fillPaint)
-        if (strokePaint.strokeWidth > 0f) canvas.drawPath(path, strokePaint)
+        if (strokePaint.strokeWidth > 0f) canvas.drawPath(strokePath, strokePaint)
     }
 
     private fun rebuildPath() {
         pathDirty = false
         path.reset()
+        strokePath.reset()
 
         val b = bounds
-        val inset = strokePaint.strokeWidth / 2f
-        val left = b.left + inset
-        val top = b.top + inset
-        val right = b.right - inset
-        val bottom = b.bottom - inset
-        val width = right - left
-        val height = bottom - top
-        if (width <= 0f || height <= 0f) return
+        // The bar as it stands upright, thickness across and length down, whichever way it is
+        // actually lying. Built in its own space from the origin and moved into place after.
+        val uprightWidth = (if (horizontal) b.height() else b.width()).toFloat()
+        val uprightHeight = (if (horizontal) b.width() else b.height()).toFloat()
+        buildOutline(uprightWidth, uprightHeight, strokePaint.strokeWidth / 2f)
+        if (path.isEmpty) return
 
+        val place = Matrix()
         if (horizontal) {
-            buildOutline(0f, 0f, height, width)
             // x' = y + left, y' = x + top: the upright bar's thickness runs down the screen.
-            path.transform(Matrix().apply { setValues(floatArrayOf(0f, 1f, left, 1f, 0f, top, 0f, 0f, 1f)) })
+            place.setValues(floatArrayOf(0f, 1f, b.left.toFloat(), 1f, 0f, b.top.toFloat(), 0f, 0f, 1f))
         } else {
-            buildOutline(left, top, width, height)
+            place.setTranslate(b.left.toFloat(), b.top.toFloat())
         }
+        path.transform(place)
+        strokePath.transform(place)
     }
 
-    private fun buildOutline(left: Float, top: Float, width: Float, height: Float) {
+    private fun buildOutline(width: Float, height: Float, inset: Float) {
         if (shape == HandlerShape.TAB) {
-            val outline = HandlerShape.tabOutline(width, height, flare, edgeOnLeft)
-            path.moveTo(left + outline[0], top + outline[1])
+            // Inset from the three sides that are drawn, and not from the screen edge.
+            val shapeWidth = width - inset
+            val shapeHeight = height - inset * 2f
+            if (shapeWidth <= 0f || shapeHeight <= 0f) return
+            val offsetX = if (edgeOnLeft) 0f else inset
+            val outline = HandlerShape.tabOutline(shapeWidth, shapeHeight, flare, edgeOnLeft)
+            path.moveTo(offsetX + outline[0], inset + outline[1])
             var i = 2
             while (i < outline.size) {
-                path.lineTo(left + outline[i], top + outline[i + 1])
+                path.lineTo(offsetX + outline[i], inset + outline[i + 1])
                 i += 2
             }
-            // Closes along the screen edge, which is the one straight side of a tab.
+            // The stroke stops here, at the bottom tip, so nothing is drawn along the glass.
+            strokePath.set(path)
+            // The fill closes along the screen edge, which is the one straight side of a tab.
             path.close()
         } else {
-            path.addRoundRect(left, top, left + width, top + height, cornerRadii, Path.Direction.CW)
+            if (width - inset * 2f <= 0f || height - inset * 2f <= 0f) return
+            path.addRoundRect(inset, inset, width - inset, height - inset, cornerRadii, Path.Direction.CW)
+            strokePath.set(path)
         }
     }
 

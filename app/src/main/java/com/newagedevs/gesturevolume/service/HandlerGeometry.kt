@@ -6,6 +6,7 @@ import android.util.DisplayMetrics
 import android.view.Surface
 import android.view.WindowInsets
 import android.view.WindowManager
+import com.newagedevs.gesturevolume.utils.HandlerPresets
 import kotlin.math.roundToInt
 
 /**
@@ -278,6 +279,10 @@ object HandlerGeometry {
         return null
     }
 
-    /** Matches [com.newagedevs.gesturevolume.data.local.SharedPref.getHandlerPositionFraction]. */
-    const val DEFAULT_POSITION_FRACTION = 0.12f
+    /**
+     * Matches [com.newagedevs.gesturevolume.data.local.SharedPref.getHandlerPositionFraction]:
+     * taken from the presets rather than written out again, which is how it had drifted to a
+     * default two changes old.
+     */
+    const val DEFAULT_POSITION_FRACTION = HandlerPresets.POSITION_FRACTION
 }

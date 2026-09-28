@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="how_it_works">使用方法</string>
+    <string name="demo_tap">轻点</string>
+    <string name="demo_swipe_up">上滑</string>
+    <string name="demo_swipe_down">下滑</string>
+    <string name="demo_swipe_in">向内滑动</string>
+    <string name="demo_hold">按住</string>
+    <string name="demo_does_nothing">无操作</string>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The pill in a preview's corner that replays the finger showing how the handler opens it. -->
+    <string name="how_it_works">How it works</string>
+
+    <!-- Along the top of the Appearance preview while its finger plays: the gesture, and what it is
+         set to do. "Swipe up · Increase volume". -->
+    <string name="demo_caption" translatable="false">%1$s · %2$s</string>
+    <string name="demo_tap">Tap</string>
+    <string name="demo_swipe_up">Swipe up</string>
+    <string name="demo_swipe_down">Swipe down</string>
+    <string name="demo_swipe_in">Swipe inward</string>
+    <string name="demo_hold">Hold</string>
+    <string name="demo_does_nothing">Does nothing</string>
+</resources>

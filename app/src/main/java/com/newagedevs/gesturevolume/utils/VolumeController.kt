@@ -43,6 +43,9 @@ class VolumeController(private val context: Context) {
          * a bug rather than a setting — and every device reports a floor of 1.
          */
         const val VOICE_CALL_FLOOR = 1
+
+        /** [AudioManager.MODE_CALL_SCREENING], which only exists from Android 11. */
+        const val MODE_CALL_SCREENING = 4
     }
 
     /**
@@ -73,16 +76,27 @@ class VolumeController(private val context: Context) {
     @Volatile
     private var cachedMode: Int = AudioStreamResolver.MODE_NORMAL
 
+    /**
+     * Told, on the main thread, whenever what is playing or the audio mode may have changed: for
+     * the bar that shows itself only while something plays or a call is on. Null when nobody asks.
+     */
+    @Volatile
+    var onActivityChanged: (() -> Unit)? = null
+
     private val playbackCallback = object : AudioManager.AudioPlaybackCallback() {
         override fun onPlaybackConfigChanged(configs: MutableList<AudioPlaybackConfiguration>?) {
             this@VolumeController.configs = configs?.toList() ?: emptyList()
             noteMusicActivity()
+            onActivityChanged?.invoke()
         }
     }
 
     private val modeListener: Any? =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            AudioManager.OnModeChangedListener { mode -> cachedMode = mode }
+            AudioManager.OnModeChangedListener { mode ->
+                cachedMode = mode
+                onActivityChanged?.invoke()
+            }
         } else {
             null
         }
@@ -117,6 +131,30 @@ class VolumeController(private val context: Context) {
     private fun noteMusicActivity() {
         val playing = runCatching { audio?.isMusicActive == true }.getOrDefault(false)
         if (playing) lastMusicActiveAt = SystemClock.elapsedRealtime()
+    }
+
+    /** Whether media is playing this moment. One binder call; not for the touch path. */
+    fun isMusicActiveNow(): Boolean = runCatching { audio?.isMusicActive == true }.getOrDefault(false)
+
+    /**
+     * Whether a call is on — a phone call, or a call app holding the audio — or the phone is
+     * ringing, or a call is being screened.
+     *
+     * From the audio mode, which says all of that without the phone-state permission the telephony
+     * APIs want. Kept warm by the mode listener from Android 12; asked for directly before it.
+     */
+    fun isCallOrRinging(): Boolean {
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            cachedMode
+        } else {
+            runCatching { audio?.mode ?: AudioManager.MODE_NORMAL }.getOrDefault(AudioManager.MODE_NORMAL)
+        }
+        return mode == AudioManager.MODE_IN_CALL ||
+            mode == AudioManager.MODE_IN_COMMUNICATION ||
+            mode == AudioManager.MODE_RINGTONE ||
+            // AudioManager.MODE_CALL_SCREENING, from Android 11; a plain number, since it is never
+            // reported before then anyway.
+            mode == MODE_CALL_SCREENING
     }
 
     /**
@@ -326,6 +364,27 @@ class VolumeController(private val context: Context) {
         }.getOrDefault(false)
         if (!written) return null
 
+        val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
+        return ((target - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
+    }
+
+    /**
+     * Moves the resolved stream [indices] steps at once: a swipe set to move the volume by a fixed
+     * amount rather than by its length. The same contract as [step], which it is for one index —
+     * and for a route whose index cannot be read, where the platform is handed one relative step
+     * because there is no honest way to count out more.
+     */
+    fun stepBy(res: Resolution, direction: Int, indices: Int, showUi: Boolean): Int? {
+        if (indices <= 1 || res.opaque) return step(res, direction, showUi)
+        val manager = audio ?: return null
+        val flags = if (showUi) AudioManager.FLAG_SHOW_UI else 0
+        val current = runCatching { manager.getStreamVolume(res.stream) }.getOrNull() ?: return null
+        val target = (current + direction * indices).coerceIn(res.minIndex, res.maxIndex)
+        if (target == current) return null
+        val written = runCatching {
+            manager.setStreamVolume(res.stream, target, flags); true
+        }.getOrDefault(false)
+        if (!written) return null
         val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
         return ((target - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
     }

@@ -4,9 +4,14 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,22 +22,24 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -40,14 +47,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -56,21 +69,34 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.R
-import com.newagedevs.gesturevolume.service.OverlayRuntime
+import com.newagedevs.gesturevolume.data.local.AppGestureStore.Slot
+import com.newagedevs.gesturevolume.ui.components.HowItWorksAction
+import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
+import com.newagedevs.gesturevolume.ui.components.ActionIconImage
 import com.newagedevs.gesturevolume.ui.components.DndAccessDialog
+import com.newagedevs.gesturevolume.ui.components.PermissionNote
+import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
+import com.newagedevs.gesturevolume.ui.components.isLandscape
+import com.newagedevs.gesturevolume.ui.components.actionDisplayName
+import com.newagedevs.gesturevolume.ui.motion.Button
+import com.newagedevs.gesturevolume.ui.motion.IconButton
+import com.newagedevs.gesturevolume.ui.motion.OutlinedButton
+import com.newagedevs.gesturevolume.ui.motion.TextButton
+import com.newagedevs.gesturevolume.ui.screens.app_gestures.appGesturesSummary
+import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
+import com.newagedevs.gesturevolume.ui.screens.quick_slider.sliderTargetLabel
+import com.newagedevs.gesturevolume.ui.view.TapTiming
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
-import com.newagedevs.gesturevolume.ui.screens.quick_slider.sliderTargetLabel
 import com.newagedevs.gesturevolume.utils.ActionIcon
 import com.newagedevs.gesturevolume.utils.AudioStreamCatalog
+import com.newagedevs.gesturevolume.utils.BarBehaviour
 import com.newagedevs.gesturevolume.utils.DeviceToggles
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
-import com.newagedevs.gesturevolume.ui.components.PermissionNote
-import com.newagedevs.gesturevolume.ui.screens.handler_appearance.AppearanceSection
-import androidx.compose.runtime.mutableIntStateOf
+import com.newagedevs.gesturevolume.utils.VolumeStreamMode
 
 /** Starts a system settings screen, pausing the app-open ad for the round trip. */
 private fun openSystemScreen(context: android.content.Context, viewModel: MainViewModel, intent: Intent) {
@@ -82,60 +108,70 @@ private fun openSystemScreen(context: android.content.Context, viewModel: MainVi
     }
 }
 
+/**
+ * What the bar does: its eight gestures, and the settings that shape them.
+ *
+ * Laid out as a list of gestures rather than a list of settings. Each gesture is one line — a
+ * picture of it, its name, and what it does — and the whole line opens a screen to choose from
+ * ([ActionPickerScreen]). It used to be a heading, a sentence, and a box to tap for each of them,
+ * which was three things to read to learn one, and a dialog of tiles to choose in.
+ *
+ * At the top, the bar itself to try them on ([GestureTryPad]), which answers the question the
+ * list cannot: "which of these did I just do?"
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HandlerActionsScreen(
     viewModel: MainViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
+    onPickAction: (Slot) -> Unit = {},
     onOpenQuickSlider: () -> Unit = {},
     onOpenLongPressMenu: () -> Unit = {},
+    onOpenAppGestures: () -> Unit = {},
     onOpenPermissions: (PermissionNeeds.Permission?) -> Unit = {}
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val state by viewModel.state.collectAsState()
+    val preference = viewModel.preference
+    val onLeft = remember { preference.getHandlerPosition() == "Left" }
 
-    var showClickActionDialog by remember { mutableStateOf(false) }
-    var showDoubleClickActionDialog by remember { mutableStateOf(false) }
-    var showTripleClickActionDialog by remember { mutableStateOf(false) }
-    var showLongClickActionDialog by remember { mutableStateOf(false) }
-    var showSwipeUpDialog by remember { mutableStateOf(false) }
-    var showSwipeDownDialog by remember { mutableStateOf(false) }
-    var showSwipeInDialog by remember { mutableStateOf(false) }
-    var showSwipeOutDialog by remember { mutableStateOf(false) }
+    // Summaries of the screens these rows lead to, re-read on return: those screens write straight
+    // through to preferences, which this one cannot hear.
+    var sliderTarget by remember { mutableStateOf(preference.slider.getTarget()) }
+    var contextMenuItems by remember { mutableStateOf(preference.getContextMenuOrder()) }
 
-    // Summary of the slider's own screen, so the row says what a long swipe will actually do
-    // rather than only that the feature exists. Refreshed on resume below, because the screen
-    // that changes these is a separate destination and writes straight through to preferences.
-    var sliderTarget by remember { mutableStateOf(viewModel.preference.slider.getTarget()) }
-
-    // Read once into local state rather than on every recomposition: these are plain SharedPref
-    // booleans with no observable wrapper, so the switch's own state is what drives the UI and the
-    // preference is written behind it.
-    var volumeStreamMode by remember { mutableStateOf(viewModel.preference.getVolumeStreamMode()) }
-    var showVolumeStreamDialog by remember { mutableStateOf(false) }
-    var contextMenuItems by remember { mutableStateOf(viewModel.preference.getContextMenuOrder()) }
-    var contextMenuLayout by remember { mutableStateOf(viewModel.preference.getContextMenuLayout()) }
+    // Read once into local state: plain SharedPref values with no observable wrapper, so the
+    // controls' own state drives the UI and the preference is written behind it.
+    var volumeStreamMode by remember { mutableStateOf(preference.getVolumeStreamMode()) }
+    var swipeStepPercent by remember { mutableIntStateOf(preference.getSwipeStepPercent()) }
+    var doubleTapMs by remember { mutableIntStateOf(preference.getDoubleTapMs()) }
+    var longPressMs by remember { mutableIntStateOf(preference.getLongPressMs()) }
 
     // Bumped on every return, so the notes under the actions re-read what has been granted since:
     // every one of those permissions is given on a system screen this one cannot hear back from.
     var permissionTick by remember { mutableIntStateOf(0) }
-    val actionNote: @Composable (String) -> Unit = { action ->
+    val actionNote: @Composable ColumnScope.(String) -> Unit = { action ->
         @Suppress("UNUSED_VARIABLE") val tick = permissionTick
-        PermissionNeeds.missingFor(context, viewModel.preference, action)?.let {
-            PermissionNote(missing = it, onOpenPermissions = onOpenPermissions)
+        PermissionNeeds.missingFor(context, preference, action)?.let {
+            PermissionNote(
+                missing = it,
+                onOpenPermissions = onOpenPermissions,
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+            )
         }
     }
 
     // Coming back from a system screen this screen sent the user to — the WRITE_SETTINGS grant,
-    // the Do Not Disturb access, the accessibility list — has to lift the app-open ad
-    // pause those set. Without this the pause was set and never cleared, silencing app-open ads
-    // for the rest of the install.
+    // the Do Not Disturb access, the accessibility list — has to lift the app-open ad pause those
+    // set. Without this the pause was set and never cleared, silencing app-open ads for the rest
+    // of the install.
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                viewModel.preference.setAppOpenAdPaused(false)
-                sliderTarget = viewModel.preference.slider.getTarget()
+                preference.setAppOpenAdPaused(false)
+                sliderTarget = preference.slider.getTarget()
+                contextMenuItems = preference.getContextMenuOrder()
                 permissionTick++
                 viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
             }
@@ -147,16 +183,15 @@ fun HandlerActionsScreen(
     val writeSettingsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        viewModel.preference.setAppOpenAdPaused(false)
+        preference.setAppOpenAdPaused(false)
         viewModel.onEvent(MainEvent.WriteSettingsResult(context))
     }
 
-    // Asked only when a brightness action is actually chosen — never at startup.
+    // Asked only when a brightness action is actually chosen — never at startup. The picker is
+    // a screen of its own, and comes back here with the question pending.
     if (state.pendingWriteSettingsRequest) {
         AlertDialog(
-            onDismissRequest = {
-                viewModel.onEvent(MainEvent.CancelPendingBrightnessAction)
-            },
+            onDismissRequest = { viewModel.onEvent(MainEvent.CancelPendingBrightnessAction) },
             title = {
                 Text(
                     text = stringResource(R.string.brightness_permission_title),
@@ -178,11 +213,11 @@ fun HandlerActionsScreen(
                             Settings.ACTION_MANAGE_WRITE_SETTINGS,
                             "package:${context.packageName}".toUri()
                         )
-                        viewModel.preference.setAppOpenAdPaused(true)
+                        preference.setAppOpenAdPaused(true)
                         try {
                             writeSettingsLauncher.launch(intent)
                         } catch (_: Exception) {
-                            viewModel.preference.setAppOpenAdPaused(false)
+                            preference.setAppOpenAdPaused(false)
                             viewModel.onEvent(MainEvent.CancelPendingBrightnessAction)
                         }
                     },
@@ -193,9 +228,7 @@ fun HandlerActionsScreen(
             },
             dismissButton = {
                 OutlinedButton(
-                    onClick = {
-                        viewModel.onEvent(MainEvent.CancelPendingBrightnessAction)
-                    },
+                    onClick = { viewModel.onEvent(MainEvent.CancelPendingBrightnessAction) },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(stringResource(R.string.cancel))
@@ -210,12 +243,8 @@ fun HandlerActionsScreen(
     // system action chosen while the service is off.
     if (state.showAccessibilityPrompt) {
         AccessibilityDisclosureDialog(
-            onAccept = {
-                viewModel.openAccessibilitySettings()
-            },
-            onDismiss = {
-                viewModel.onEvent(MainEvent.DismissAccessibilityPrompt)
-            }
+            onAccept = { viewModel.openAccessibilitySettings() },
+            onDismiss = { viewModel.onEvent(MainEvent.DismissAccessibilityPrompt) }
         )
     }
 
@@ -229,19 +258,13 @@ fun HandlerActionsScreen(
         )
     }
 
-    if (showVolumeStreamDialog) {
-        VolumeStreamDialog(
-            selected = volumeStreamMode,
-            onDismiss = { showVolumeStreamDialog = false },
-            onConfirm = { picked ->
-                volumeStreamMode = picked
-                viewModel.preference.setVolumeStreamMode(picked)
-                showVolumeStreamDialog = false
-            }
-        )
-    }
+    // The finger acting the gestures out on the pad, from the ? as on the preview screens. Only on
+    // request: the pad is for the user's own tries, and this screen is the one they come back to
+    // whenever they change what a gesture does.
+    val gestureDemo = rememberGestureDemoState(ACTIONS_DEMO_STEPS, autoPlays = 0)
 
     Scaffold(
+        // The top bar is clear, on the plain page as the preview under it is.
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.handler_actions)) },
@@ -250,6 +273,7 @@ fun HandlerActionsScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
+                actions = { HowItWorksAction(gestureDemo) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -258,330 +282,428 @@ fun HandlerActionsScreen(
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
-        ) {
-            // Tap Actions Section
-            AppearanceSection(
-                title = stringResource(R.string.tap_actions),
-                initiallyExpanded = true,
-            ) {
-                Column {
-                    ActionSettingItem(
-                        label = stringResource(R.string.single_tap_action),
-                        description = stringResource(R.string.single_tap_desc),
-                        value = actionLabel(state.clickAction),
-                        icon = state.clickActionIcon,
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        showProBadge = false,
-                        onClick = { showClickActionDialog = true }
-                    )
-                    actionNote(state.clickAction)
-
-                    RowDivider()
-
-                    ActionSettingItem(
-                        label = stringResource(R.string.double_tap_action),
-                        description = stringResource(R.string.double_tap_desc),
-                        value = actionLabel(state.doubleClickAction),
-                        icon = state.doubleClickActionIcon,
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        showProBadge = false,
-                        onClick = { showDoubleClickActionDialog = true }
-                    )
-                    actionNote(state.doubleClickAction)
-
-                    RowDivider()
-
-                    ActionSettingItem(
-                        label = stringResource(R.string.triple_tap_action),
-                        description = stringResource(R.string.triple_tap_desc),
-                        value = actionLabel(state.tripleClickAction),
-                        icon = state.tripleClickActionIcon,
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        showProBadge = false,
-                        onClick = { showTripleClickActionDialog = true }
-                    )
-                    actionNote(state.tripleClickAction)
-
-                    RowDivider()
-
-                    ActionSettingItem(
-                        label = stringResource(R.string.long_press_action),
-                        description = stringResource(R.string.long_press_desc),
-                        value = actionLabel(state.longClickAction),
-                        icon = state.longClickActionIcon,
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        showProBadge = false,
-                        onClick = { showLongClickActionDialog = true }
-                    )
-                    actionNote(state.longClickAction)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Gesture Actions Section
-            AppearanceSection(
-                title = stringResource(R.string.gesture_actions),
-                initiallyExpanded = true,
-            ) {
-                Column {
-                    ActionSettingItem(
-                        label = stringResource(R.string.swipe_up_action),
-                        description = stringResource(R.string.swipe_up_desc),
-                        value = actionLabel(state.swipeUpAction),
-                        icon = state.swipeUpActionIcon,
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        showProBadge = false,
-                        onClick = { showSwipeUpDialog = true }
-                    )
-                    actionNote(state.swipeUpAction)
-
-                    RowDivider()
-
-                    ActionSettingItem(
-                        label = stringResource(R.string.swipe_down_action),
-                        description = stringResource(R.string.swipe_down_desc),
-                        value = actionLabel(state.swipeDownAction),
-                        icon = state.swipeDownActionIcon,
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        showProBadge = false,
-                        onClick = { showSwipeDownDialog = true }
-                    )
-                    actionNote(state.swipeDownAction)
-
-                    RowDivider()
-
-                    ActionSettingItem(
-                        label = stringResource(R.string.swipe_in_action),
-                        description = stringResource(R.string.swipe_in_desc),
-                        value = actionLabel(state.swipeInAction),
-                        icon = state.swipeInActionIcon,
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        showProBadge = false,
-                        onClick = { showSwipeInDialog = true }
-                    )
-                    actionNote(state.swipeInAction)
-
-                    RowDivider()
-
-                    ActionSettingItem(
-                        label = stringResource(R.string.swipe_out_action),
-                        description = stringResource(R.string.swipe_out_desc),
-                        value = actionLabel(state.swipeOutAction),
-                        icon = state.swipeOutActionIcon,
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        showProBadge = false,
-                        onClick = { showSwipeOutDialog = true }
-                    )
-                    actionNote(state.swipeOutAction)
-
-                    RowDivider()
-
-                    // Sits with the gestures because the panel is opened by one — whichever slot
-                    // above the user has put "Quick panel" in. What this row leads to is the
-                    // panel's own settings: what it drives, how big it is, how hard it buzzes.
-                    ActionSettingItem(
-                        label = stringResource(R.string.quick_slider_title),
-                        description = stringResource(R.string.quick_slider_desc),
-                        value = stringResource(sliderTargetLabel(sliderTarget)),
-                        icon = ActionIcon.Res(R.drawable.ic_brightness_up),
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        showProBadge = false,
-                        onClick = onOpenQuickSlider
-                    )
-                    actionNote(HandlerActions.OPEN_QUICK_SLIDER)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Behaviour Section
-            AppearanceSection(
-                title = stringResource(R.string.behaviour_section),
-                initiallyExpanded = false,
-            ) {
-                Column {
-                    ActionSettingItem(
-                        label = stringResource(R.string.context_menu_section),
-                        description = stringResource(R.string.context_menu_desc),
-                        // Counted through the catalog, so the summary matches the menu the user
-                        // will actually see — pinned entries included.
-                        value = stringResource(
-                            R.string.context_menu_count,
-                            HandlerActionCatalog.contextMenuEntries(contextMenuItems).size
-                        ),
-                        icon = ActionIcon.Res(R.drawable.ic_move),
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        showProBadge = false,
-                        onClick = onOpenLongPressMenu
-                    )
-
-                    RowDivider()
-
-                    ActionSettingItem(
-                        label = stringResource(R.string.volume_stream_title),
-                        description = stringResource(R.string.volume_stream_desc),
-                        value = stringResource(AudioStreamCatalog.labelForMode(volumeStreamMode)),
-                        icon = ActionIcon.Res(R.drawable.ic_music_ui),
-                        borderColor = MaterialTheme.colorScheme.primary,
-                        showProBadge = false,
-                        onClick = { showVolumeStreamDialog = true }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Info Card
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f)
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = stringResource(R.string.customize_how_you_interact_with_the_volume_handler_through_taps_and_gestures),
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        lineHeight = 20.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+        val tryPad: @Composable (Modifier, Boolean) -> Unit = { padModifier, fillHeight ->
+            GestureTryPad(
+                preference = preference,
+                actions = Slot.entries.associateWith { actionFor(state, it) },
+                doubleTapMs = doubleTapMs,
+                longPressMs = longPressMs,
+                onLeft = onLeft,
+                onChange = onPickAction,
+                modifier = padModifier,
+                demo = gestureDemo,
+                fillHeight = fillHeight,
+            )
         }
-    }
-
-    // Dialogs
-    if (showClickActionDialog) {
-        TapActionDialog(
-            title = stringResource(R.string.single_tap_action),
-            currentAction = state.clickAction,
-            onDismiss = { showClickActionDialog = false },
-            onSelect = { action ->
-                viewModel.onEvent(MainEvent.SetClickAction(action, context))
-                showClickActionDialog = false
+        val groups: @Composable ColumnScope.() -> Unit = {
+            // ---- taps -----------------------------------------------------------------------
+            GroupLabel(stringResource(R.string.actions_taps))
+            Segments {
+                TAP_SLOTS.forEachIndexed { index, slot ->
+                    SlotRow(state = state, slot = slot, onLeft = onLeft, shape = segmentShape(index, TAP_SLOTS.size),
+                        onClick = { onPickAction(slot) }, note = actionNote)
+                }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ---- swipes ---------------------------------------------------------------------
+            // The amount sits between the two swipes it tunes and the two it does not: only the
+            // volume and brightness bindings move by an amount, and only up and down hold them.
+            GroupLabel(stringResource(R.string.actions_swipes))
+            Segments {
+                SlotRow(state, Slot.SWIPE_UP, onLeft, segmentShape(0, 5), { onPickAction(Slot.SWIPE_UP) }, actionNote)
+                SlotRow(state, Slot.SWIPE_DOWN, onLeft, segmentShape(1, 5), { onPickAction(Slot.SWIPE_DOWN) }, actionNote)
+                SwipeAmount(
+                    percent = swipeStepPercent,
+                    shape = segmentShape(2, 5),
+                    onChange = {
+                        swipeStepPercent = it
+                        preference.setSwipeStepPercent(it)
+                    },
+                )
+                SlotRow(state, Slot.SWIPE_IN, onLeft, segmentShape(3, 5), { onPickAction(Slot.SWIPE_IN) }, actionNote)
+                SlotRow(state, Slot.SWIPE_OUT, onLeft, segmentShape(4, 5), { onPickAction(Slot.SWIPE_OUT) }, actionNote)
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ---- the screens these gestures lead on to ------------------------------------------
+            GroupLabel(stringResource(R.string.actions_more))
+            Segments {
+                // The Quick panel is opened by one of the gestures above; what it adjusts, how big
+                // it is and how hard it buzzes are its own screen's.
+                LinkRow(
+                    icon = ActionIcon.QuickPanel,
+                    title = stringResource(R.string.quick_slider_title),
+                    summary = stringResource(sliderTargetLabel(sliderTarget)),
+                    shape = segmentShape(0, 3),
+                    onClick = onOpenQuickSlider,
+                ) { actionNote(HandlerActions.OPEN_QUICK_SLIDER) }
+                LinkRow(
+                    icon = ActionIcon.Vector(Icons.Filled.Menu),
+                    title = stringResource(R.string.context_menu_section),
+                    // Counted through the catalog, so the summary matches the menu the user will
+                    // actually see — pinned entries included.
+                    summary = stringResource(
+                        R.string.context_menu_count,
+                        HandlerActionCatalog.contextMenuEntries(contextMenuItems).size
+                    ),
+                    shape = segmentShape(1, 3),
+                    onClick = onOpenLongPressMenu,
+                )
+                @Suppress("UNUSED_VARIABLE") val tick = permissionTick
+                LinkRow(
+                    icon = ActionIcon.Vector(Icons.Filled.Apps),
+                    title = stringResource(R.string.app_gestures_title),
+                    summary = appGesturesSummary(preference.appGestures),
+                    shape = segmentShape(2, 3),
+                    onClick = onOpenAppGestures,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ---- behaviour ------------------------------------------------------------------
+            GroupLabel(stringResource(R.string.behaviour_section))
+            Segments {
+                VolumeStream(
+                    mode = volumeStreamMode,
+                    shape = segmentShape(0, 2),
+                    onChange = {
+                        volumeStreamMode = it
+                        preference.setVolumeStreamMode(it)
+                    },
+                )
+                // Read by the bar when it is next put up, which is the moment this screen is left;
+                // and by the pad at the top straight away, which is where to feel the difference.
+                TapTimingCard(
+                    doubleTapMs = doubleTapMs,
+                    longPressMs = longPressMs,
+                    shape = segmentShape(1, 2),
+                    onDoubleTapChange = {
+                        doubleTapMs = it
+                        preference.setDoubleTapMs(it)
+                    },
+                    onLongPressChange = {
+                        longPressMs = it
+                        preference.setLongPressMs(it)
+                    },
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+        // The pad where the preview screens put their preview, and pinned as theirs is: above the
+        // gestures upright, only the gestures scrolling under it; beside them on its side, two
+        // fifths of the width and as tall as the screen allows — so trying a gesture and changing
+        // it are both in view, whichever way the phone is held.
+        PreviewSettingsLayout(contentPadding = padding, preview = tryPad, content = groups)
+    }
+}
+
+/** Rows grouped into one card, a hairline of the page between them. See [segmentShape]. */
+@Composable
+private fun Segments(content: @Composable ColumnScope.() -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(3.dp), content = content)
+}
+
+/** [slot] and what it does everywhere, with the permission that action still waits for. */
+@Composable
+private fun SlotRow(
+    state: com.newagedevs.gesturevolume.ui.viewmodels.MainState,
+    slot: Slot,
+    onLeft: Boolean,
+    shape: Shape,
+    onClick: () -> Unit,
+    note: @Composable ColumnScope.(String) -> Unit,
+) {
+    val action = actionFor(state, slot)
+    val nothing = HandlerActions.isDisabled(action)
+    GestureRow(
+        slot = slot,
+        onLeft = onLeft,
+        actionIcon = actionIconFor(state, slot),
+        actionText = if (nothing) stringResource(R.string.actions_not_set) else actionDisplayName(action),
+        dimmed = nothing,
+        shape = shape,
+        onClick = onClick,
+    ) { note(action) }
+}
+
+/** A row that leads to another screen: its icon, its name, and what is set there now. */
+@Composable
+private fun LinkRow(
+    icon: ActionIcon,
+    title: String,
+    summary: String,
+    shape: Shape,
+    onClick: () -> Unit,
+    footer: @Composable ColumnScope.() -> Unit = {},
+) {
+    val colours = MaterialTheme.colorScheme
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(colours.surfaceVariant.copy(alpha = 0.65f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(colours.secondaryContainer.copy(alpha = 0.8f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                ActionIconImage(
+                    icon = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = colours.onSecondaryContainer,
+                )
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colours.onSurface,
+                )
+                Text(
+                    text = summary,
+                    fontSize = 14.sp,
+                    color = colours.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = colours.outline,
+                modifier = Modifier.size(22.dp),
+            )
+        }
+        footer()
+    }
+}
+
+/** A card of the settings list: a title, the line under it, and the control. */
+@Composable
+private fun SettingCard(
+    title: String,
+    description: String,
+    shape: Shape,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f))
+            .padding(16.dp)
+    ) {
+        Text(
+            text = title,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
         )
-    }
-
-    if (showDoubleClickActionDialog) {
-        TapActionDialog(
-            title = stringResource(R.string.double_tap_action),
-            currentAction = state.doubleClickAction,
-            onDismiss = { showDoubleClickActionDialog = false },
-            onSelect = { action ->
-                viewModel.onEvent(MainEvent.SetDoubleClickAction(action, context))
-                showDoubleClickActionDialog = false
-            }
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp, bottom = 12.dp),
         )
+        content()
     }
+}
 
-    if (showTripleClickActionDialog) {
-        TapActionDialog(
-            title = stringResource(R.string.triple_tap_action),
-            currentAction = state.tripleClickAction,
-            onDismiss = { showTripleClickActionDialog = false },
-            onSelect = { action ->
-                viewModel.onEvent(MainEvent.SetTripleClickAction(action, context))
-                showTripleClickActionDialog = false
+/**
+ * How far one swipe up or down moves the volume, as chips rather than behind a dialog: four short
+ * answers, all of them visible, and what the chosen one means said under them.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SwipeAmount(percent: Int, shape: Shape, onChange: (Int) -> Unit) {
+    SettingCard(
+        title = stringResource(R.string.swipe_amount_title),
+        description = stringResource(R.string.swipe_amount_desc),
+        shape = shape,
+    ) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.selectableGroup(),
+        ) {
+            BarBehaviour.SWIPE_STEP_PERCENTS.forEach { option ->
+                val selected = option == percent
+                FilterChip(
+                    selected = selected,
+                    onClick = { onChange(option) },
+                    label = { Text(swipeAmountLabel(option)) },
+                    leadingIcon = if (selected) {
+                        { Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize)) }
+                    } else {
+                        null
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                )
             }
-        )
-    }
-
-    if (showLongClickActionDialog) {
-        TapActionDialog(
-            title = stringResource(R.string.long_press_action),
-            currentAction = state.longClickAction,
-            allowReposition = true,
-            onDismiss = { showLongClickActionDialog = false },
-            onSelect = { action ->
-                viewModel.onEvent(MainEvent.SetLongClickAction(action, context))
-                showLongClickActionDialog = false
-            }
-        )
-    }
-
-    if (showSwipeUpDialog) {
-        SwipeActionDialog(
-            title = stringResource(R.string.swipe_up_action),
-            currentAction = state.swipeUpAction,
-            isSwipeUp = true,
-            onDismiss = { showSwipeUpDialog = false },
-            onSelect = { action ->
-                viewModel.onEvent(MainEvent.SetSwipeUpAction(action, context))
-                showSwipeUpDialog = false
-            }
-        )
-    }
-
-    if (showSwipeDownDialog) {
-        SwipeActionDialog(
-            title = stringResource(R.string.swipe_down_action),
-            currentAction = state.swipeDownAction,
-            isSwipeUp = false,
-            onDismiss = { showSwipeDownDialog = false },
-            onSelect = { action ->
-                viewModel.onEvent(MainEvent.SetSwipeDownAction(action, context))
-                showSwipeDownDialog = false
-            }
-        )
-    }
-
-    if (showSwipeInDialog) {
-        TapActionDialog(
-            title = stringResource(R.string.swipe_in_action),
-            currentAction = state.swipeInAction,
-            onDismiss = { showSwipeInDialog = false },
-            onSelect = { action ->
-                viewModel.onEvent(MainEvent.SetSwipeInAction(action, context))
-                showSwipeInDialog = false
-            }
-        )
-    }
-
-    if (showSwipeOutDialog) {
-        TapActionDialog(
-            title = stringResource(R.string.swipe_out_action),
-            currentAction = state.swipeOutAction,
-            onDismiss = { showSwipeOutDialog = false },
-            onSelect = { action ->
-                viewModel.onEvent(MainEvent.SetSwipeOutAction(action, context))
-                showSwipeOutDialog = false
-            }
+        }
+        Text(
+            text = if (percent == BarBehaviour.SWIPE_STEP_BY_LENGTH) {
+                stringResource(R.string.swipe_amount_by_length_desc)
+            } else {
+                stringResource(R.string.swipe_amount_percent_desc, percent)
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 10.dp),
         )
     }
 }
 
 /**
- * The translated name of an action, for the summary rows.
- *
- * The rows used to show the raw identifier — "Mute or Unmute", in English, in every locale —
- * because the identifier is what the preference stores. The catalog knows the label.
+ * Which volume the bar changes, as the three choices themselves with what each one means. They are
+ * genuinely three intentions — see `VolumeStreamMode` — and each carries its consequence under it,
+ * which a dialog hid until it was opened.
  */
 @Composable
-private fun actionLabel(action: String): String =
-    HandlerActionCatalog.entryFor(action)?.let { stringResource(it.labelRes) } ?: action
-
-@Composable
-private fun RowDivider() {
-    Spacer(modifier = Modifier.height(16.dp))
-    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-    Spacer(modifier = Modifier.height(16.dp))
+private fun VolumeStream(mode: String, shape: Shape, onChange: (String) -> Unit) {
+    val chosen = VolumeStreamMode.sanitize(mode)
+    SettingCard(
+        title = stringResource(R.string.volume_stream_title),
+        description = stringResource(R.string.volume_stream_desc),
+        shape = shape,
+    ) {
+        Column(modifier = Modifier.selectableGroup()) {
+            VolumeStreamMode.ALL.forEach { option ->
+                val selected = option == chosen
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(
+                            if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f) else Color.Transparent
+                        )
+                        .selectable(selected = selected, role = Role.RadioButton, onClick = { onChange(option) })
+                        .padding(horizontal = 4.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    // The whole row is the target; a second one inside it would let a screen reader
+                    // announce the same choice twice.
+                    RadioButton(selected = selected, onClick = null, modifier = Modifier.padding(horizontal = 8.dp))
+                    Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                        Text(
+                            text = stringResource(AudioStreamCatalog.labelForMode(option)),
+                            fontSize = 15.sp,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = stringResource(AudioStreamCatalog.descriptionForMode(option)),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 2.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
+
+/**
+ * The tap timings: the automatic figures until moved, then the user's own, each with the way back
+ * to automatic once it has been moved — which there was not, so a slider nudged once stayed the
+ * user's for good.
+ */
+@Composable
+private fun TapTimingCard(
+    doubleTapMs: Int,
+    longPressMs: Int,
+    shape: Shape,
+    onDoubleTapChange: (Int) -> Unit,
+    onLongPressChange: (Int) -> Unit,
+) {
+    SettingCard(
+        title = stringResource(R.string.tap_timing_title),
+        description = stringResource(R.string.tap_timing_desc),
+        shape = shape,
+    ) {
+        TimingSlider(
+            label = stringResource(R.string.tap_timing_double),
+            ms = doubleTapMs,
+            automatic = TapTiming.automaticDoubleTapMs.toInt(),
+            range = TapTiming.MIN_DOUBLE_TAP_MS..TapTiming.MAX_DOUBLE_TAP_MS,
+            step = 25f,
+            onChange = onDoubleTapChange,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        TimingSlider(
+            label = stringResource(R.string.tap_timing_long),
+            ms = longPressMs,
+            automatic = TapTiming.automaticLongPressMs.toInt(),
+            range = TapTiming.MIN_LONG_PRESS_MS..TapTiming.MAX_LONG_PRESS_MS,
+            step = 50f,
+            onChange = onLongPressChange,
+        )
+        Text(
+            text = stringResource(R.string.tap_timing_try),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(top = 8.dp),
+        )
+    }
+}
+
+/** One timing: 0 is automatic, shown as the figure it stands for. */
+@Composable
+private fun TimingSlider(
+    label: String,
+    ms: Int,
+    automatic: Int,
+    range: IntRange,
+    step: Float,
+    onChange: (Int) -> Unit,
+) {
+    val custom = ms > 0
+    val shown = if (custom) ms else automatic
+    SliderControl(
+        label = label,
+        value = shown.toFloat(),
+        valueRange = range.first.toFloat()..range.last.toFloat(),
+        valueDisplay = if (custom) {
+            stringResource(R.string.tap_timing_value, shown)
+        } else {
+            stringResource(R.string.tap_timing_auto, shown)
+        },
+        borderColor = MaterialTheme.colorScheme.primary,
+        step = step,
+        onValueChange = { onChange(it.toInt()) },
+    )
+    if (custom) {
+        TextButton(onClick = { onChange(0) }) {
+            Text(stringResource(R.string.tap_timing_use_auto))
+        }
+    }
+}
+
+/** "By how far you swipe", or "10% per swipe". */
+@Composable
+private fun swipeAmountLabel(percent: Int): String =
+    if (percent == BarBehaviour.SWIPE_STEP_BY_LENGTH) {
+        stringResource(R.string.swipe_amount_by_length)
+    } else {
+        stringResource(R.string.swipe_amount_percent, percent)
+    }

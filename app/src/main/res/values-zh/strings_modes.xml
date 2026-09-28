@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">经典</string>
+    <string name="preset_classic_subtitle">最初的圆形按钮：滑动调音量，点按打开面板</string>
+    <string name="home_advanced_features">高级功能</string>
+    <string name="home_advanced_features_desc">Deck、快捷滑块、长按菜单和可见性</string>
+    <string name="expand_advanced_features">显示高级功能</string>
+    <string name="collapse_advanced_features">隐藏高级功能</string>
+    <string name="mode_advanced_switch">高级模式</string>
+    <string name="mode_advanced_on_desc">Dock 滑条：滑动打开快捷滑块，向内滑动打开 Deck，按住打开菜单</string>
+    <string name="mode_advanced_off_desc">圆形按钮：滑动调节音量，点按打开音量面板。开启后可使用 Dock 及其面板。</string>
+    <string name="mode_to_simple_title">切换到简洁模式？</string>
+    <string name="mode_to_simple_body">滑条将变为圆形按钮：上下滑动调节音量，点按打开音量面板，按住可移动。快捷滑块、Deck 和长按菜单都会关闭，音量键功能也包括在内。你可以随时切换回来。</string>
+    <string name="mode_to_advanced_title">切换到高级模式？</string>
+    <string name="mode_to_advanced_body">滑条将变为 Dock：上下滑动打开快捷滑块，向内滑动打开 Deck，按住打开长按菜单。它的外观和手势会被替换；你可以随时切换回来。</string>
+    <string name="mode_switch_confirm">切换</string>
+    <string name="mode_switch_cancel">取消</string>
+</resources>

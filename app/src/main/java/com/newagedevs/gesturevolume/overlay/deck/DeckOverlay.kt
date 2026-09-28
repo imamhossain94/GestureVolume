@@ -43,9 +43,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.newagedevs.gesturevolume.ui.motion.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -71,6 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.QuickDialEntry
+import com.newagedevs.gesturevolume.data.local.SearchStore
 import kotlin.math.max
 import kotlin.math.min
 
@@ -558,20 +561,46 @@ private fun QuickDialButton(entry: QuickDialEntry, palette: DeckPalette, onClick
             .joinToString("") { it.first().uppercase() }
             .ifEmpty { "#" }
     }
-    Box(
-        modifier = Modifier
-            .size(44.dp)
-            .clip(CircleShape)
-            .background(palette.accent.copy(alpha = 0.22f))
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = initials,
-            color = palette.accent,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold
-        )
+    // A button that opens a chat wears a small mark, so two for one person — call them, message
+    // them — can be told apart. A call wears none, which is what every button did before.
+    val badge = when (entry.via) {
+        SearchStore.NUMBER_SMS -> Icons.Filled.Sms
+        SearchStore.NUMBER_WHATSAPP, SearchStore.NUMBER_TELEGRAM -> Icons.AutoMirrored.Filled.Chat
+        else -> null
+    }
+    Box(modifier = Modifier.size(44.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(CircleShape)
+                .background(palette.accent.copy(alpha = 0.22f))
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = initials,
+                color = palette.accent,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        if (badge != null) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(palette.accent),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = badge,
+                    contentDescription = null,
+                    tint = palette.onAccent,
+                    modifier = Modifier.size(10.dp)
+                )
+            }
+        }
     }
 }
 
@@ -728,11 +757,20 @@ fun DeckPreviewStrip(
     cornerDp: Float,
     glass: Boolean,
     modifier: Modifier = Modifier,
+    /** How tall the strip is, as on the phone; null for as tall as [PREVIEW_TILE_COUNT] tiles. */
+    heightDp: Float? = null,
 ) {
     val shape = RoundedCornerShape(cornerDp.dp)
+    // As many as the strip holds, as the real one shows as many as it holds and scrolls the rest.
+    val count = if (heightDp == null) {
+        PREVIEW_TILE_COUNT
+    } else {
+        ((heightDp - STRIP_PADDING_DP * 2 + TILE_GAP_DP) / (TILE_DP + TILE_GAP_DP)).toInt().coerceAtLeast(1)
+    }
     Column(
         modifier = modifier
             .width(widthDp.dp)
+            .then(if (heightDp != null) Modifier.height(heightDp.dp) else Modifier)
             .clip(shape)
             .background(palette.background)
             .then(if (glass) Modifier.liquidGlass(cornerDp.dp, palette.light) else Modifier)
@@ -742,7 +780,7 @@ fun DeckPreviewStrip(
     ) {
         // However many fit the stage. The real strip scrolls; a preview that scrolled would be
         // inviting a gesture that tells the user nothing.
-        tiles.take(PREVIEW_TILE_COUNT).forEach { tile ->
+        tiles.take(count).forEach { tile ->
             TileButton(
                 icon = tile.icon,
                 label = stringResource(tile.labelRes),
@@ -756,3 +794,8 @@ fun DeckPreviewStrip(
 
 /** As many tiles as the preview stage has room for without the last one being clipped. */
 private const val PREVIEW_TILE_COUNT = 4
+
+/** A tile, the gap between two, and the strip's own padding at each end, in dp: see [TileButton]. */
+private const val TILE_DP = 44f
+private const val TILE_GAP_DP = 6f
+private const val STRIP_PADDING_DP = 10f

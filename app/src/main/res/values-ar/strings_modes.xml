@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">كلاسيكي</string>
+    <string name="preset_classic_subtitle">الزر الدائري الأصلي: اسحب للصوت، وانقر للوحة</string>
+    <string name="home_advanced_features">الميزات المتقدمة</string>
+    <string name="home_advanced_features_desc">Deck، والمنزلق السريع، وقائمة الضغط المطوّل، والظهور</string>
+    <string name="expand_advanced_features">إظهار الميزات المتقدمة</string>
+    <string name="collapse_advanced_features">إخفاء الميزات المتقدمة</string>
+    <string name="mode_advanced_switch">الوضع المتقدم</string>
+    <string name="mode_advanced_on_desc">شريط Dock: مرّر للمنزلق السريع، ومرّر للداخل لـ Deck، واضغط مطوّلًا للقائمة</string>
+    <string name="mode_advanced_off_desc">الزر الدائري: مرّر لتغيير الصوت، وانقر للوحة الصوت. فعّله لاستخدام Dock ولوحاته.</string>
+    <string name="mode_to_simple_title">التبديل إلى البسيط؟</string>
+    <string name="mode_to_simple_body">يصبح الشريط الزر الدائري: مرّر لأعلى أو لأسفل لتغيير الصوت، وانقر للوحة الصوت، واضغط مطوّلًا لتحريكه. يتم إيقاف المنزلق السريع وDeck وقائمة الضغط المطوّل، ومعها أزرار الصوت. يمكنك العودة في أي وقت.</string>
+    <string name="mode_to_advanced_title">التبديل إلى المتقدم؟</string>
+    <string name="mode_to_advanced_body">يصبح الشريط Dock: مرّر لأعلى أو لأسفل للمنزلق السريع، ومرّر للداخل لـ Deck، واضغط مطوّلًا لقائمة الضغط المطوّل. يُستبدل مظهره وإيماءاته؛ ويمكنك العودة في أي وقت.</string>
+    <string name="mode_switch_confirm">تبديل</string>
+    <string name="mode_switch_cancel">إلغاء</string>
+</resources>
