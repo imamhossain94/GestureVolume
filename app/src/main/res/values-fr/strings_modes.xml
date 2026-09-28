@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">Classique</string>
+    <string name="preset_classic_subtitle">Le bouton rond d’origine</string>
+    <string name="home_advanced_features">Fonctions avancées</string>
+    <string name="home_advanced_features_desc">Deck, Curseur rapide, menu d’appui long et visibilité</string>
+    <string name="expand_advanced_features">Afficher les fonctions avancées</string>
+    <string name="collapse_advanced_features">Masquer les fonctions avancées</string>
+    <string name="mode_advanced_switch">Mode avancé</string>
+    <string name="mode_advanced_on_desc">La barre Dock : balayez pour le Curseur rapide, vers l’intérieur pour le Deck, maintenez pour le menu</string>
+    <string name="mode_advanced_off_desc">Le bouton rond : balayez pour le volume, touchez pour le panneau de volume. Activez pour le Dock et ses panneaux.</string>
+    <string name="mode_to_simple_title">Passer en mode Simple ?</string>
+    <string name="mode_to_simple_body">Votre barre devient le bouton rond : balayez vers le haut ou le bas pour le volume, touchez pour le panneau de volume, maintenez pour la déplacer. Le Curseur rapide, le Deck et le menu d’appui long sont désactivés, touches de volume comprises. Vous pouvez revenir en arrière à tout moment.</string>
+    <string name="mode_to_advanced_title">Passer en mode Avancé ?</string>
+    <string name="mode_to_advanced_body">Votre barre devient le Dock : balayez vers le haut ou le bas pour le Curseur rapide, vers l’intérieur pour le Deck, maintenez pour le menu d’appui long. Son apparence et ses gestes sont remplacés ; vous pouvez revenir en arrière à tout moment.</string>
+    <string name="mode_switch_confirm">Changer</string>
+    <string name="mode_switch_cancel">Annuler</string>
+</resources>

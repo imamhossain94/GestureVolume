@@ -155,6 +155,7 @@ fun MainNavigation(
                 is MainEffect.NavigateToTroubleshoot -> navController.navigate("troubleshoot")
                 is MainEffect.NavigateToFaq -> navController.navigate("faq")
                 is MainEffect.NavigateToWhatsNew -> navController.navigate("whats_new")
+                is MainEffect.NavigateToTour -> navController.navigate("tour")
                 is MainEffect.OpenAccessibilitySettings -> {
                     viewModel.preference.setAppOpenAdPaused(true)
                     try {
@@ -226,14 +227,26 @@ fun MainNavigation(
                         onNavigateToFaq = { navController.navigate("faq") },
                         onNavigateToUpgrade = { navController.navigate("upgrade") },
                         onNavigateToVisibility = { navController.navigate("visibility") },
-                        onNavigateToWhatsNew = { navController.navigate("whats_new") }
+                        onNavigateToWhatsNew = { navController.navigate("whats_new") },
+                        onNavigateToTour = { navController.navigate("tour") }
+                    )
+                }
+
+                // The walkthrough's pages as a tour, for an app already set up: changes nothing,
+                // and goes back to wherever it was opened from.
+                composable("tour") {
+                    WalkthroughScreen(
+                        viewModel = viewModel,
+                        tour = true,
+                        onComplete = { navController.navigateBackOnce() }
                     )
                 }
 
                 composable("whats_new") {
                     WhatsNewScreen(
                         onNavigateBack = { navController.navigateBackOnce() },
-                        onSeen = { viewModel.markWhatsNewSeen() }
+                        onSeen = { viewModel.markWhatsNewSeen() },
+                        onTakeTour = { navController.navigate("tour") }
                     )
                 }
 

@@ -1,5 +1,7 @@
 package com.newagedevs.gesturevolume.ui.screens.handler_appearance
 
+import com.newagedevs.gesturevolume.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -58,7 +60,7 @@ fun ColorPickerDialog(
         header = Custom(
             header = @Composable() {
                 Text(
-                    text = "Select the color and transparency of the handler",
+                    text = stringResource(R.string.select_the_color_and_transparency_of_the_handler),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 20.dp)

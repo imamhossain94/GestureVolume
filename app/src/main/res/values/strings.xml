@@ -430,7 +430,7 @@
     <string name="faq_q_battery">Does it drain the battery?</string>
     <string name="faq_a_battery">Very little. The bar is a small window that draws nothing until you touch it, and the app does no work in the background between gestures. Turning off battery optimisation, which Troubleshoot suggests, does not make it use more power — it only stops the system killing it.</string>
     <string name="faq_q_games">The bar gets in the way in games and full-screen video.</string>
-    <string name="faq_a_games">Move it somewhere the app you are using does not need — long press and drag — or make it smaller and more transparent under Appearance. The Ghost preset is close to invisible while still being there. For a game you play often, hiding the bar from the long-press menu and bringing it back from the notification afterwards is the cleanest option.</string>
+    <string name="faq_a_games">Move it somewhere the app you are using does not need — long press and drag — or make it smaller and more transparent under Appearance. For a game you play often, hiding the bar from the long-press menu and bringing it back from the notification afterwards is the cleanest option.</string>
     <string name="panel_theme">Panel style</string>
     <string name="panel_theme_desc">How the Deck, the Quick panel and the long-press menu are drawn. Gloss, Clear and Paper are pale with dark text on them. Frosted, Glass, Gloss, Clear, Acrylic and Amethyst blur the screen behind the panel, which needs Android 12 or newer; where the system will not blur, the panel stays translucent.</string>
     <string name="panel_theme_solid">Solid</string>
@@ -708,7 +708,7 @@
     <string name="quick_dial_via_whatsapp">WhatsApp</string>
     <string name="quick_dial_via_telegram">Telegram</string>
     <!-- A quick-dial row that opens a chat: the app, then the number. -->
-    <string name="quick_dial_via_line">%1$s · %2$s</string>
+    <string name="quick_dial_via_line" translatable="false">%1$s · %2$s</string>
     <string name="quick_dial_country_code_hint">WhatsApp and Telegram need the country code. Start the number with +, or set the country code below.</string>
     <string name="quick_dial_settings_title">CALLS AND CHATS</string>
     <string name="quick_dial_settings_desc">Shared with the Deck’s search.</string>
@@ -988,7 +988,7 @@
     <string name="placement_hint">Hold anywhere until the bar lifts, then drag to move it where it should start.</string>
     <string name="placement_snap_note">Snap to edge is on, so it settles against the nearer side.</string>
     <string name="placement_dynamic_note">Dynamic position is on, so it always rests against an edge.</string>
-    <string name="placement_readout">%1$s %2$d%%</string>
+    <string name="placement_readout" translatable="false">%1$s %2$d%%</string>
     <string name="placement_done">Done</string>
     <string name="group_content">CONTENT</string>
     <string name="group_size_shape">SIZE &amp; SHAPE</string>
@@ -1050,6 +1050,10 @@
     <string name="whats_new_version">Version %1$s</string>
     <string name="whats_new_installed">Installed</string>
     <string name="whats_new_badge">New</string>
+    <string name="tour_offer_title">There’s a lot new</string>
+    <string name="tour_offer_body">Take a quick tour of what the bar can do now. Nothing you’ve set up will change.</string>
+    <string name="tour_take">Take the tour</string>
+    <string name="tour_menu">App tour</string>
     <string name="whats_new_first_release">First release on Google Play</string>
     <!-- A milestone between releases. %1$s is a number already formatted for the language, e.g. 10,000. -->
     <string name="whats_new_milestone">%1$s+ installs</string>

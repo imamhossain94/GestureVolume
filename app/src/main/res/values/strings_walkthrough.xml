@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Walkthrough: the frame around every page -->
-    <string name="walk_progress">%1$d/%2$d</string>
+    <string name="walk_progress" translatable="false">%1$d/%2$d</string>
     <string name="walk_continue">Continue</string>
     <string name="walk_got_it">Got it</string>
     <string name="walk_allow">Allow</string>
@@ -34,6 +34,11 @@
     <string name="walk_style_advanced_point_2">Deck of shortcuts</string>
     <string name="walk_style_advanced_point_3">Long-press menu</string>
     <string name="walk_style_point_change">Change it any time</string>
+    <!-- The style page in the tour, for someone already using the app: shows the styles, chooses nothing. -->
+    <string name="walk_style_tour_chip">TWO STYLES</string>
+    <string name="walk_style_tour_title">Two ways to use it</string>
+    <string name="walk_style_tour_subtitle_simple">You’re on Simple. Tap Advanced to see what it adds. Switch for real on the home screen.</string>
+    <string name="walk_style_tour_subtitle_advanced">You’re on Advanced. Tap Simple to see the other way. Switch for real on the home screen.</string>
 
     <!-- Simple: how the button works -->
     <string name="walk_simple_chip">HOW IT WORKS</string>

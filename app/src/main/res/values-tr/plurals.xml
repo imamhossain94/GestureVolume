@@ -16,4 +16,13 @@
         <item quantity="one">%2$d kutucuktan %1$d tanesi açık</item>
         <item quantity="other">%2$d kutucuktan %1$d tanesi açık</item>
     </plurals>
+    <!-- Translated from the English strings that had none here. -->
+    <plurals name="app_gestures_app_count">
+        <item quantity="one">%1$d uygulama</item>
+        <item quantity="other">%1$d uygulama</item>
+    </plurals>
+    <plurals name="app_gestures_changed_count">
+        <item quantity="one">%1$d hareket değişti</item>
+        <item quantity="other">%1$d hareket değişti</item>
+    </plurals>
 </resources>

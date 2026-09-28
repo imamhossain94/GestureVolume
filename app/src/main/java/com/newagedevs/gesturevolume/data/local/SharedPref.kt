@@ -66,6 +66,19 @@ class SharedPref @Inject constructor(
     }
 
     /**
+     * Whether the home screen should offer the tour of the app, once: to an install that was set up
+     * before this walkthrough existed — an update — and has not been offered it since. The
+     * walkthrough only runs on a first launch, so without this everyone who updated would never
+     * see it. A fresh install marks it offered as its walkthrough finishes, having just had it.
+     */
+    fun shouldOfferTour(): Boolean = !isFirstLaunch() && sharedPreferences.getString(TOUR_OFFERED, null) != CURRENT_TOUR
+
+    /** The tour has been offered: taken, or put off from the card. */
+    fun markTourOffered() {
+        sharedPreferences.edit { putString(TOUR_OFFERED, CURRENT_TOUR) }
+    }
+
+    /**
      * Whether the installed version has notes the user has not opened yet: after an update, until
      * What's new is opened. A version with no notes has nothing to be unread.
      */
@@ -458,6 +471,14 @@ class SharedPref @Inject constructor(
         const val SHOW_ONLY_WHILE_MEDIA = "handlerShowOnlyWhileMedia"
         const val SHOW_ONLY_WHILE_CALL = "handlerShowOnlyWhileCall"
         const val WHATS_NEW_SEEN = "whatsNewSeenVersion"
+        const val TOUR_OFFERED = "tourOfferedVersion"
+
+        /**
+         * The tour the home screen offers, named for the release that brought it: see
+         * [shouldOfferTour]. Bumped when a release changes the walkthrough enough to be worth
+         * offering again to everyone who has seen or been offered this one.
+         */
+        const val CURRENT_TOUR = "1.5.1"
         const val USER_MODE = "userMode"
         const val DOUBLE_TAP_MS = "handlerDoubleTapMs"
         const val LONG_PRESS_MS = "handlerLongPressMs"

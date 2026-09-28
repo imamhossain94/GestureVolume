@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import com.newagedevs.gesturevolume.ui.motion.NavigationDrawerItem
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -161,6 +162,14 @@ fun NavigationDrawerContent(
                     icon = R.drawable.ic_help,
                     label = stringResource(R.string.faq),
                     onClick = { onMenuItemClick("FAQ") }
+                )
+
+                // The walkthrough's pages again, changing nothing: see WalkthroughScreen's tour.
+                NavigationDrawerItem(
+                    icon = R.drawable.ic_help,
+                    vector = Icons.Outlined.Explore,
+                    label = stringResource(R.string.tour_menu),
+                    onClick = { onMenuItemClick("Tour") }
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))

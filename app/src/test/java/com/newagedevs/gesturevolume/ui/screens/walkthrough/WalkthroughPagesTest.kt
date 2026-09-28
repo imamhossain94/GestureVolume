@@ -65,4 +65,34 @@ class WalkthroughPagesTest {
             }
         }
     }
+
+    @Test
+    fun `a tour leaves out the permissions already granted, and only those`() {
+        val all = setOf(WalkPage.Permission, WalkPage.Notifications, WalkPage.Accessibility)
+        assertEquals(
+            listOf(
+                WalkPage.Intro, WalkPage.Style, WalkPage.QuickSlider, WalkPage.Deck, WalkPage.LongPress, WalkPage.Move,
+            ),
+            pagesFor(UserMode.ADVANCED, askNotifications = true, granted = all),
+        )
+        assertEquals(
+            listOf(WalkPage.Intro, WalkPage.Style, WalkPage.Simple, WalkPage.Move, WalkPage.Notifications),
+            pagesFor(UserMode.REGULAR, askNotifications = true, granted = setOf(WalkPage.Permission)),
+        )
+        // Only permission pages are ever left out, whatever the set holds.
+        modes.forEach { mode ->
+            val lessons = pagesFor(mode, askNotifications = true).filterNot { it.asksPermission }
+            assertEquals(mode, lessons, pagesFor(mode, askNotifications = true, granted = WalkPage.entries.toSet()))
+        }
+    }
+
+    @Test
+    fun `got it is on the last lesson, whether or not permission pages follow it`() {
+        modes.forEach { mode ->
+            listOf(emptySet(), setOf(WalkPage.Permission, WalkPage.Notifications, WalkPage.Accessibility)).forEach { granted ->
+                val pages = pagesFor(mode, askNotifications = true, granted = granted)
+                assertEquals("$mode $granted", WalkPage.Move, lastTutorialOf(pages))
+            }
+        }
+    }
 }

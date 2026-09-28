@@ -16,4 +16,13 @@
         <item quantity="one">%2$dটির মধ্যে %1$dটি চালু</item>
         <item quantity="other">%2$dটির মধ্যে %1$dটি চালু</item>
     </plurals>
+    <!-- Translated from the English strings that had none here. -->
+    <plurals name="app_gestures_app_count">
+        <item quantity="one">%1$dটি অ্যাপ</item>
+        <item quantity="other">%1$dটি অ্যাপ</item>
+    </plurals>
+    <plurals name="app_gestures_changed_count">
+        <item quantity="one">%1$dটি জেসচার বদলানো হয়েছে</item>
+        <item quantity="other">%1$dটি জেসচার বদলানো হয়েছে</item>
+    </plurals>
 </resources>

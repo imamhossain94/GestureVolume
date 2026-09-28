@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">क्लासिक</string>
+    <string name="preset_classic_subtitle">मूल गोल बटन</string>
+    <string name="home_advanced_features">उन्नत सुविधाएँ</string>
+    <string name="home_advanced_features_desc">डेक, त्वरित स्लाइडर, लॉन्ग-प्रेस मेन्यू और दृश्यता</string>
+    <string name="expand_advanced_features">उन्नत सुविधाएँ दिखाएँ</string>
+    <string name="collapse_advanced_features">उन्नत सुविधाएँ छिपाएँ</string>
+    <string name="mode_advanced_switch">उन्नत मोड</string>
+    <string name="mode_advanced_on_desc">डॉक बार: त्वरित स्लाइडर के लिए स्वाइप करें, डेक के लिए अंदर की ओर स्वाइप करें, मेन्यू के लिए दबाकर रखें</string>
+    <string name="mode_advanced_off_desc">गोल बटन: वॉल्यूम के लिए स्वाइप करें, वॉल्यूम पैनल के लिए टैप करें। डॉक और उसके पैनल के लिए चालू करें।</string>
+    <string name="mode_to_simple_title">सरल पर जाएँ?</string>
+    <string name="mode_to_simple_body">आपका बार गोल बटन बन जाएगा: वॉल्यूम के लिए ऊपर या नीचे स्वाइप करें, वॉल्यूम पैनल के लिए टैप करें, हिलाने के लिए दबाकर रखें। त्वरित स्लाइडर, डेक और लॉन्ग-प्रेस मेन्यू बंद हो जाएँगे, वॉल्यूम कुंजियाँ भी। आप कभी भी वापस बदल सकते हैं।</string>
+    <string name="mode_to_advanced_title">उन्नत पर जाएँ?</string>
+    <string name="mode_to_advanced_body">आपका बार डॉक बन जाएगा: त्वरित स्लाइडर के लिए ऊपर या नीचे स्वाइप करें, डेक के लिए अंदर की ओर स्वाइप करें, लॉन्ग-प्रेस मेन्यू के लिए दबाकर रखें। इसका रूप और जेस्चर बदल दिए जाएँगे; आप कभी भी वापस बदल सकते हैं।</string>
+    <string name="mode_switch_confirm">बदलें</string>
+    <string name="mode_switch_cancel">रद्द करें</string>
+</resources>

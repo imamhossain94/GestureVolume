@@ -16,4 +16,15 @@
         <item quantity="one">%1$d di %2$d attivo</item>
         <item quantity="other">%1$d di %2$d attivi</item>
     </plurals>
+    <!-- Translated from the English strings that had none here. -->
+    <plurals name="app_gestures_app_count">
+        <item quantity="one">%1$d app</item>
+        <item quantity="many">%1$d app</item>
+        <item quantity="other">%1$d app</item>
+    </plurals>
+    <plurals name="app_gestures_changed_count">
+        <item quantity="one">%1$d gesto modificato</item>
+        <item quantity="many">%1$d gesti modificati</item>
+        <item quantity="other">%1$d gesti modificati</item>
+    </plurals>
 </resources>

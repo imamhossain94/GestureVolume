@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.ui.components.TourCard
 import com.newagedevs.gesturevolume.utils.ReleaseNotes
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
@@ -66,6 +67,8 @@ fun WhatsNewScreen(
     onNavigateBack: () -> Unit,
     /** Called once when the screen opens, so the "new" marker on the home screen goes. */
     onSeen: () -> Unit,
+    /** Opens the tour of the app, offered at the top: the new things shown rather than listed. */
+    onTakeTour: (() -> Unit)? = null,
 ) {
     LaunchedEffect(Unit) { onSeen() }
 
@@ -106,6 +109,9 @@ fun WhatsNewScreen(
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                if (onTakeTour != null) {
+                    item(key = "tour") { TourCard(onTakeTour = onTakeTour) }
+                }
                 itemsIndexed(
                     ReleaseNotes.HISTORY,
                     key = { _, entry ->

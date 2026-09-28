@@ -16,4 +16,13 @@
         <item quantity="one">%2$d में से %1$d चालू</item>
         <item quantity="other">%2$d में से %1$d चालू</item>
     </plurals>
+    <!-- Translated from the English strings that had none here. -->
+    <plurals name="app_gestures_app_count">
+        <item quantity="one">%1$d ऐप</item>
+        <item quantity="other">%1$d ऐप</item>
+    </plurals>
+    <plurals name="app_gestures_changed_count">
+        <item quantity="one">%1$d जेस्चर बदला</item>
+        <item quantity="other">%1$d जेस्चर बदले</item>
+    </plurals>
 </resources>

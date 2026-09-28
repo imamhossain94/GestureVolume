@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="how_it_works">यह कैसे काम करता है</string>
+    <string name="demo_tap">टैप</string>
+    <string name="demo_swipe_up">ऊपर स्वाइप</string>
+    <string name="demo_swipe_down">नीचे स्वाइप</string>
+    <string name="demo_swipe_in">अंदर स्वाइप</string>
+    <string name="demo_hold">दबाकर रखें</string>
+    <string name="demo_does_nothing">कुछ नहीं करता</string>
+</resources>

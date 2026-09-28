@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">Cổ điển</string>
+    <string name="preset_classic_subtitle">Nút tròn nguyên bản</string>
+    <string name="home_advanced_features">Tính năng nâng cao</string>
+    <string name="home_advanced_features_desc">Deck, Thanh trượt nhanh, menu nhấn giữ và hiển thị</string>
+    <string name="expand_advanced_features">Hiện tính năng nâng cao</string>
+    <string name="collapse_advanced_features">Ẩn tính năng nâng cao</string>
+    <string name="mode_advanced_switch">Chế độ nâng cao</string>
+    <string name="mode_advanced_on_desc">Thanh Dock: vuốt để mở Thanh trượt nhanh, vuốt vào trong để mở Deck, giữ để mở menu</string>
+    <string name="mode_advanced_off_desc">Nút tròn: vuốt để chỉnh âm lượng, chạm để mở bảng âm lượng. Bật để dùng Dock và các bảng của nó.</string>
+    <string name="mode_to_simple_title">Chuyển sang Đơn giản?</string>
+    <string name="mode_to_simple_body">Thanh của bạn sẽ thành nút tròn: vuốt lên hoặc xuống để chỉnh âm lượng, chạm để mở bảng âm lượng, giữ để di chuyển. Thanh trượt nhanh, Deck và menu nhấn giữ sẽ bị tắt, kể cả phím âm lượng. Bạn có thể chuyển lại bất cứ lúc nào.</string>
+    <string name="mode_to_advanced_title">Chuyển sang Nâng cao?</string>
+    <string name="mode_to_advanced_body">Thanh của bạn sẽ thành Dock: vuốt lên hoặc xuống để mở Thanh trượt nhanh, vuốt vào trong để mở Deck, giữ để mở menu nhấn giữ. Giao diện và cử chỉ của thanh sẽ được thay thế; bạn có thể chuyển lại bất cứ lúc nào.</string>
+    <string name="mode_switch_confirm">Chuyển</string>
+    <string name="mode_switch_cancel">Hủy</string>
+</resources>

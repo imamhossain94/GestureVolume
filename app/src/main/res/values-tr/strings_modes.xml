@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">Klasik</string>
+    <string name="preset_classic_subtitle">Orijinal yuvarlak düğme</string>
+    <string name="home_advanced_features">Gelişmiş özellikler</string>
+    <string name="home_advanced_features_desc">Deck, Hızlı kaydırıcı, uzun basma menüsü ve görünürlük</string>
+    <string name="expand_advanced_features">Gelişmiş özellikleri göster</string>
+    <string name="collapse_advanced_features">Gelişmiş özellikleri gizle</string>
+    <string name="mode_advanced_switch">Gelişmiş mod</string>
+    <string name="mode_advanced_on_desc">Dock çubuğu: Hızlı kaydırıcı için kaydır, Deck için içeri kaydır, menü için basılı tut</string>
+    <string name="mode_advanced_off_desc">Yuvarlak düğme: ses için kaydır, ses paneli için dokun. Dock ve panelleri için aç.</string>
+    <string name="mode_to_simple_title">Basit moda geçilsin mi?</string>
+    <string name="mode_to_simple_body">Çubuğun yuvarlak düğmeye dönüşür: ses için yukarı veya aşağı kaydır, ses paneli için dokun, taşımak için basılı tut. Hızlı kaydırıcı, Deck ve uzun basma menüsü, ses tuşları da dâhil kapatılır. İstediğin zaman geri dönebilirsin.</string>
+    <string name="mode_to_advanced_title">Gelişmiş moda geçilsin mi?</string>
+    <string name="mode_to_advanced_body">Çubuğun Dock’a dönüşür: Hızlı kaydırıcı için yukarı veya aşağı kaydır, Deck için içeri kaydır, uzun basma menüsü için basılı tut. Görünümü ve hareketleri değiştirilir; istediğin zaman geri dönebilirsin.</string>
+    <string name="mode_switch_confirm">Geç</string>
+    <string name="mode_switch_cancel">İptal</string>
+</resources>

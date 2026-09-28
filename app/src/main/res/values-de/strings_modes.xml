@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translated from the English strings that had none here. -->
+    <string name="preset_classic_title">Klassisch</string>
+    <string name="preset_classic_subtitle">Der ursprüngliche runde Knopf</string>
+    <string name="home_advanced_features">Erweiterte Funktionen</string>
+    <string name="home_advanced_features_desc">Deck, Schnellregler, Menü bei langem Drücken und Sichtbarkeit</string>
+    <string name="expand_advanced_features">Erweiterte Funktionen anzeigen</string>
+    <string name="collapse_advanced_features">Erweiterte Funktionen ausblenden</string>
+    <string name="mode_advanced_switch">Erweiterter Modus</string>
+    <string name="mode_advanced_on_desc">Die Dock-Leiste: wischen für den Schnellregler, nach innen wischen für das Deck, halten für das Menü</string>
+    <string name="mode_advanced_off_desc">Der runde Knopf: wischen für die Lautstärke, tippen für das Lautstärkefeld. Einschalten für das Dock und seine Panels.</string>
+    <string name="mode_to_simple_title">Zu Einfach wechseln?</string>
+    <string name="mode_to_simple_body">Deine Leiste wird zum runden Knopf: nach oben oder unten wischen für die Lautstärke, tippen für das Lautstärkefeld, halten zum Verschieben. Schnellregler, Deck und Menü bei langem Drücken werden ausgeschaltet, die Lautstärketasten eingeschlossen. Du kannst jederzeit zurückwechseln.</string>
+    <string name="mode_to_advanced_title">Zu Erweitert wechseln?</string>
+    <string name="mode_to_advanced_body">Deine Leiste wird zum Dock: nach oben oder unten wischen für den Schnellregler, nach innen wischen für das Deck, halten für das Menü bei langem Drücken. Aussehen und Gesten werden ersetzt; du kannst jederzeit zurückwechseln.</string>
+    <string name="mode_switch_confirm">Wechseln</string>
+    <string name="mode_switch_cancel">Abbrechen</string>
+</resources>

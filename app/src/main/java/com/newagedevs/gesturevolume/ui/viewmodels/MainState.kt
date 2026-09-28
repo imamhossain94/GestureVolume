@@ -72,6 +72,11 @@ data class MainState(
      * "New" in the drawer. See SharedPref.hasUnseenWhatsNew.
      */
     val hasUnseenWhatsNew: Boolean = false,
+    /**
+     * Whether the home screen offers the tour of the app: once, after an update, until it is taken
+     * or put off. See SharedPref.shouldOfferTour.
+     */
+    val showTourOffer: Boolean = false,
     /** Regular or advanced: whether the home screen opens its advanced features. See UserMode. */
     val userMode: String = com.newagedevs.gesturevolume.utils.UserMode.REGULAR,
     val theme: Int = 0,

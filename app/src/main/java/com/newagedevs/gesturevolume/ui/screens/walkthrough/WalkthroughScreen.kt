@@ -117,8 +117,11 @@ internal enum class WalkPage {
  * @param askNotifications whether this phone asks for notifications at all: Android 13 and later.
  *   Below that they are allowed unless switched off, and a page asking for them would be a page
  *   with nothing to ask.
+ * @param granted permission pages to leave out, for a tour: an install that has a permission
+ *   already has nothing to be asked on its page. A first walkthrough keeps them all, granted or
+ *   not, and says on each that it is done.
  */
-internal fun pagesFor(mode: String, askNotifications: Boolean): List<WalkPage> = buildList {
+internal fun pagesFor(mode: String, askNotifications: Boolean, granted: Set<WalkPage> = emptySet()): List<WalkPage> = buildList {
     add(WalkPage.Intro)
     add(WalkPage.Style)
     if (mode == UserMode.ADVANCED) {
@@ -138,10 +141,13 @@ internal fun pagesFor(mode: String, askNotifications: Boolean): List<WalkPage> =
     // slider at once, and Lock screen and Screenshot on the Deck. Last, and optional, because the
     // bar works without it and cannot work without the overlay page.
     if (mode == UserMode.ADVANCED) add(WalkPage.Accessibility)
-}
+}.filterNot { it.asksPermission && it in granted }
+
+/** The last page that teaches rather than asks: where the walkthrough says "Got it". */
+internal fun lastTutorialOf(pages: List<WalkPage>): WalkPage? = pages.lastOrNull { !it.asksPermission }
 
 /** The pages that ask for a permission, each with Allow and Skip of its own. */
-private val WalkPage.asksPermission: Boolean
+internal val WalkPage.asksPermission: Boolean
     get() = this == WalkPage.Permission || this == WalkPage.Notifications || this == WalkPage.Accessibility
 
 /** The words on a page. [scene] is null where the card holds something other than a gesture. */
@@ -155,7 +161,24 @@ private class PageText(
     val points: List<Int>,
 )
 
-private fun pageText(page: WalkPage, mode: String): PageText = when (page) {
+/**
+ * The words on [page] for the [mode] highlighted. [tourMode], in a tour, is the style the user is
+ * on: the style page then shows the two styles rather than asking for one.
+ */
+private fun pageText(page: WalkPage, mode: String, tourMode: String? = null): PageText =
+    if (page == WalkPage.Style && tourMode != null) {
+        pageTextFor(page, mode).let {
+            PageText(
+                R.string.walk_style_tour_chip, R.string.walk_style_tour_title,
+                if (tourMode == UserMode.ADVANCED) R.string.walk_style_tour_subtitle_advanced else R.string.walk_style_tour_subtitle_simple,
+                it.caption, it.animation, it.scene, it.points,
+            )
+        }
+    } else {
+        pageTextFor(page, mode)
+    }
+
+private fun pageTextFor(page: WalkPage, mode: String): PageText = when (page) {
     WalkPage.Intro -> PageText(
         R.string.walk_intro_chip, R.string.walk_intro_title, R.string.walk_intro_subtitle,
         R.string.walk_intro_caption, R.string.walk_intro_animation, WalkScene.Intro,
@@ -226,9 +249,19 @@ private val EdgeDot = Color(0xFFEF4444)
  */
 private const val UNASKED_WITHIN_MS = 500L
 
+/**
+ * The walkthrough: what the bar is, a choice of style, how its parts work, and the permissions it
+ * needs — on a first launch.
+ *
+ * @param tour the same pages as a tour of the app, for someone who already has it set up — offered
+ *   once after an update and kept in the menu. A tour changes nothing: the style page shows the two
+ *   styles without applying either, whose presets would replace the bar the user has made their
+ *   own; the permission pages are only the ones still missing; and leaving it writes nothing.
+ */
 @Composable
 fun WalkthroughScreen(
     viewModel: MainViewModel = hiltViewModel(),
+    tour: Boolean = false,
     onComplete: () -> Unit
 ) {
     val context = LocalContext.current
@@ -242,13 +275,32 @@ fun WalkthroughScreen(
 
     // The highlighted style is only a leaning until Continue commits it. The pages after the
     // choice follow the leaning, so flipping between the two cards changes the count as well.
-    var selectedMode by rememberSaveable { mutableStateOf(UserMode.REGULAR) }
+    // In a tour, the style the user is on, highlighted to begin with and named on the style page.
+    val tourMode = remember { if (tour) viewModel.preference.getUserMode() else null }
+    var selectedMode by rememberSaveable { mutableStateOf(tourMode ?: UserMode.REGULAR) }
     var modeChosen by rememberSaveable { mutableStateOf(false) }
     var pageIndex by rememberSaveable { mutableIntStateOf(0) }
     // A second tap on Start or Skip while the first is navigating away must not finish twice.
     var finished by remember { mutableStateOf(false) }
+    // A tour's permission pages are the ones missing as it opens. Worked out once, so a permission
+    // granted part-way does not pull its page out from under the page count.
+    val grantedAtStart = remember {
+        if (!tour) {
+            emptySet()
+        } else {
+            buildSet {
+                if (Settings.canDrawOverlays(context)) add(WalkPage.Permission)
+                if (PermissionNeeds.hasNotificationPermission(context)) add(WalkPage.Notifications)
+                if (OverlayRuntime.isAccessibilityEnabled(context)) add(WalkPage.Accessibility)
+            }
+        }
+    }
     val pages = remember(selectedMode) {
-        pagesFor(selectedMode, askNotifications = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        pagesFor(
+            selectedMode,
+            askNotifications = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU,
+            granted = grantedAtStart,
+        )
     }
     val index = pageIndex.coerceIn(0, pages.lastIndex)
     val page = pages[index]
@@ -317,10 +369,17 @@ fun WalkthroughScreen(
     fun finish() {
         if (finished) return
         finished = true
+        // A tour leaves everything as it found it: the style, the first-launch flag and the ads.
+        if (tour) {
+            onComplete()
+            return
+        }
         // Leaving before the choice is leaving as a regular user: the style that needs no
         // explaining, and the one a skipped walkthrough has taught nothing more than.
         if (!modeChosen) viewModel.chooseUserMode(UserMode.REGULAR)
         viewModel.preference.setFirstLaunchCompleted()
+        // Just walked through: the home screen has no tour to offer.
+        viewModel.preference.markTourOffered()
         // Onboarding done — now safe to init ads + consent flow off the walkthrough.
         (context.applicationContext as? GestureApplication)?.initializeAdsIfNeeded()
         onComplete()
@@ -346,15 +405,20 @@ fun WalkthroughScreen(
     fun onPrimary() {
         when (page) {
             WalkPage.Style -> {
-                viewModel.chooseUserMode(selectedMode)
-                modeChosen = true
+                // In a tour the styles are only looked at: switched here, the style's preset would
+                // replace the bar the user has made their own. The home screen switches it.
+                if (!tour) {
+                    viewModel.chooseUserMode(selectedMode)
+                    modeChosen = true
+                }
                 goTo(index + 1)
             }
             WalkPage.Permission -> if (hasOverlayPermission.value) next() else requestOverlayPermission()
             WalkPage.Notifications -> if (hasNotifications.value) next() else requestNotifications()
             // The disclosure first, every time, as everywhere else the app asks for the service.
             WalkPage.Accessibility -> if (hasAccessibility.value) next() else showAccessibilityDisclosure = true
-            else -> goTo(index + 1)
+            // Out of the walkthrough from the last: a tour with nothing left to ask ends on one.
+            else -> next()
         }
     }
 
@@ -399,6 +463,8 @@ fun WalkthroughScreen(
                 count = pages.size,
                 // The permission pages have their own Skip beside Allow; two would be one too many.
                 showSkip = !page.asksPermission,
+                // A tour has nothing to put off: it is closed.
+                skipLabel = if (tour) R.string.close else R.string.skip_for_now,
                 onSkip = ::finish,
                 onBack = { goTo(index - 1) },
             )
@@ -417,9 +483,10 @@ fun WalkthroughScreen(
             ) { shown ->
                 PageContent(
                     page = shown,
-                    isLastTutorial = shown == pages.getOrNull(pages.indexOf(WalkPage.Permission) - 1),
+                    isLastTutorial = shown == lastTutorialOf(pages),
                     isLastPage = shown == pages.last(),
                     selectedMode = selectedMode,
+                    tourMode = tourMode,
                     onSelectMode = { selectedMode = it },
                     granted = when (shown) {
                         WalkPage.Accessibility -> hasAccessibility.value
@@ -437,7 +504,7 @@ fun WalkthroughScreen(
 }
 
 @Composable
-private fun TopRow(index: Int, count: Int, showSkip: Boolean, onSkip: () -> Unit, onBack: () -> Unit) {
+private fun TopRow(index: Int, count: Int, showSkip: Boolean, @StringRes skipLabel: Int, onSkip: () -> Unit, onBack: () -> Unit) {
     val colours = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
@@ -490,7 +557,7 @@ private fun TopRow(index: Int, count: Int, showSkip: Boolean, onSkip: () -> Unit
         Spacer(modifier = Modifier.weight(1f))
         if (showSkip) {
             TextButton(onClick = onSkip) {
-                Text(stringResource(R.string.skip_for_now), color = colours.onSurfaceVariant)
+                Text(stringResource(skipLabel), color = colours.onSurfaceVariant)
             }
         }
     }
@@ -502,13 +569,14 @@ private fun PageContent(
     isLastTutorial: Boolean,
     isLastPage: Boolean,
     selectedMode: String,
+    tourMode: String?,
     onSelectMode: (String) -> Unit,
     granted: Boolean,
     onPrimary: () -> Unit,
     onSkip: () -> Unit,
 ) {
     val colours = MaterialTheme.colorScheme
-    val text = pageText(page, selectedMode)
+    val text = pageText(page, selectedMode, tourMode)
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(6.dp))
         Surface(shape = CircleShape, color = colours.secondaryContainer) {

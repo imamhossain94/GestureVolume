@@ -23,8 +23,8 @@
     <string name="pixel_roundness">Roundness</string>
     <string name="pixel_glow">Glow</string>
     <string name="pixel_rest">Unlit pixels</string>
-    <string name="pixel_speed_value">%1$s×</string>
-    <string name="pixel_percent_value">%1$d%%</string>
+    <string name="pixel_speed_value" translatable="false">%1$s×</string>
+    <string name="pixel_percent_value" translatable="false">%1$d%%</string>
     <string name="pixel_pattern_steady">Steady</string>
     <string name="pixel_pattern_breathe">Breathe</string>
     <string name="pixel_pattern_sweep">Sweep</string>

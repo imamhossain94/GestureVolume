@@ -62,7 +62,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.helper.PrivacyChoices
+import com.newagedevs.gesturevolume.ui.components.TourCard
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEvent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import androidx.compose.runtime.remember
@@ -82,6 +88,7 @@ fun MainScreen(
     onNavigateToUpgrade: () -> Unit,
     onNavigateToVisibility: () -> Unit,
     onNavigateToWhatsNew: () -> Unit = {},
+    onNavigateToTour: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
@@ -197,6 +204,27 @@ fun MainScreen(
                         .widthIn(max = CONTENT_MAX_WIDTH)
                         .padding(horizontal = 16.dp)
                 ) {
+                    // The tour, offered once after an update: first on the page, where an update's
+                    // user looks when the app opens. Answered either way, it goes for good.
+                    AnimatedVisibility(
+                        visible = state.showTourOffer,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically(),
+                    ) {
+                        TourCard(
+                            onTakeTour = {
+                                viewModel.dismissTourOffer()
+                                onNavigateToTour()
+                            },
+                            onWhatsNew = {
+                                viewModel.dismissTourOffer()
+                                onNavigateToWhatsNew()
+                            },
+                            onDismiss = { viewModel.dismissTourOffer() },
+                            modifier = Modifier.padding(bottom = GAP),
+                        )
+                    }
+
                     // What the view model re-read on the last return here. Only the Permissions card
                     // warns: a badge on every card whose screen held a waiting setting put the same
                     // warning in three or four places at once, and read as each of them being broken.

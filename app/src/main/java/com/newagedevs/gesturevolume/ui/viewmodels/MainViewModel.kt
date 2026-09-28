@@ -91,6 +91,7 @@ class MainViewModel @Inject constructor(
             swipeOutActionIcon = getActionIcon(preference.getHandlerSwipeOutAction()),
             isHandlerHidden = preference.isHandlerHidden(),
             hasUnseenWhatsNew = preference.hasUnseenWhatsNew(),
+            showTourOffer = preference.shouldOfferTour(),
             userMode = preference.getUserMode(),
             theme = preference.getTheme(),
             language = preference.getLanguage()
@@ -106,6 +107,12 @@ class MainViewModel @Inject constructor(
         preference.applyUserMode(mode)
         initializeData()
         context?.let { sendUpdateToService(it) }
+    }
+
+    /** The tour's card was answered — taken, or put off — and is not offered again. */
+    fun dismissTourOffer() {
+        preference.markTourOffered()
+        _state.value = _state.value.copy(showTourOffer = false)
     }
 
     /** What's new was opened: the marker on the home screen goes until the next update. */
@@ -601,6 +608,9 @@ class MainViewModel @Inject constructor(
             }
             "What's new" -> viewModelScope.launch {
                 _effect.send(MainEffect.NavigateToWhatsNew)
+            }
+            "Tour" -> viewModelScope.launch {
+                _effect.send(MainEffect.NavigateToTour)
             }
             "Reset" -> viewModelScope.launch {
                 _effect.send(MainEffect.ConfirmResetApp)
