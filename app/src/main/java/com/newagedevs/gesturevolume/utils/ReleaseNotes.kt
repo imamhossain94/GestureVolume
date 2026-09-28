@@ -39,6 +39,7 @@ object ReleaseNotes {
             date = null,
             notes = listOf(
                 "🙂 Simple or Advanced — the original round button is back, and the extras fold away until you want them",
+                "🏠 A redesigned home screen — your bar, the advanced features and the presets, each in a group of its own",
                 "🙋 Gestures for chosen apps — give YouTube, or any app, gestures of its own",
                 "🟩 Pixels — a new Quick panel fill: a grid of lights with 19 patterns you can tune",
                 "✨ Shaders — 12 live effects for the Quick panel, from lava lamp to liquid chrome (Android 13+)",
@@ -55,6 +56,8 @@ object ReleaseNotes {
                 "💬 Quick dial straight into a WhatsApp, Telegram or SMS chat",
                 "📏 A bar as thin as 1 dp, and tabs with no line along the screen edge",
                 "🆕 This What's new screen",
+                "🧭 A tour of the app for everyone who updates, and nothing you set up changes",
+                "🌍 Every screen in all 15 languages, and each language shown in its own name",
                 "🛠 Fixes and updated libraries",
             ),
         ),
