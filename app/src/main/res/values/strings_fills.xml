@@ -141,7 +141,7 @@
     <string name="level_feedback_low">Glow when low</string>
     <string name="level_feedback_low_desc">A soft light breathes at the level when it is low, and at the bottom when it is off.</string>
     <string name="level_feedback_full">Celebrate at the top</string>
-    <string name="level_feedback_full_desc">A flourish when it reaches 100%, and while it stays there. Pick one below.</string>
+    <string name="level_feedback_full_desc" formatted="false">A flourish when it reaches 100%, and while it stays there. Pick one below.</string>
     <string name="level_max_title">At the top</string>
     <string name="level_max_burst">Burst</string>
     <string name="level_max_ripple">Ripple</string>

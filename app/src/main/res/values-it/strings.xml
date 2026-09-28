@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">Aspetto salvato</string>
     <string name="appearance">Aspetto</string>
-    <string name="appearance_desc">Colore, forma e dimensioni</string>
+    <string name="appearance_desc">Colore, forma, dimensione e icona, con anteprima dal vivo</string>
     <string name="customize_handler">Personalizza il gestore</string>
     <string name="actions">Azioni</string>
-    <string name="actions_desc">Cosa fanno tocchi e gesti</string>
+    <string name="actions_desc">Cosa fanno tocco, pressione e scorrimento, con un’area per provarli</string>
 
     <!-- Navigation -->
     <string name="pro_version">Versione Pro</string>
@@ -209,22 +209,6 @@
     <string name="icon_close">Vicino</string>
     <string name="crown">Corona</string>
 
-    <!-- Languages -->
-    <string name="lang_english">English</string>
-    <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">Arabic</string>
-    <string name="lang_hindi">Hindi</string>
-    <string name="lang_korean">Korean</string>
-    <string name="lang_japanese">Japanese</string>
-    <string name="lang_chinese">Chinese</string>
-    <string name="lang_german">German</string>
-    <string name="lang_spanish">Spanish</string>
-    <string name="lang_french">French</string>
-    <string name="lang_italian">Italian</string>
-    <string name="lang_portuguese">Portuguese</string>
-    <string name="lang_russian">Russian</string>
-    <string name="lang_turkish">Turkish</string>
-    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">Predefinito del sistema</string>
@@ -237,7 +221,7 @@
 
     <!-- Presets -->
     <string name="preset_bold_title">Grassetto</string>
-    <string name="preset_bold_subtitle">Grandi e grandi visibile</string>
+    <string name="preset_bold_subtitle">Una bolla rotonda che fluttua vicino al bordo, facile da trovare</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">Premi nuovamente indietro per uscire</string>
@@ -365,7 +349,7 @@
     <string name="edge_swipe_menu_desc">Scorri dalla barra verso il centro dello schermo per aprire il menu delle azioni. Disattivato per impostazione predefinita, perché il gesto Indietro del sistema si esegue allo stesso modo.</string>
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">Bordo</string>
-    <string name="preset_edge_subtitle">Pillola sottile, a filo del lato</string>
+    <string name="preset_edge_subtitle">Una pillola sottile, a filo del lato e fuori dai piedi</string>
     <string name="action_group_handler">Barra</string>
     <string name="action_group_volume">Volume e luminosità</string>
     <string name="action_group_deck">Deck e strumenti</string>
@@ -900,7 +884,7 @@
     <string name="quick_dial_settings_title">CHIAMATE E CHAT</string>
     <string name="quick_dial_settings_desc">In comune con la ricerca del Deck.</string>
     <string name="preset_dock_title">Dock</string>
-    <string name="preset_dock_subtitle">Linguetta curva sul bordo</string>
+    <string name="preset_dock_subtitle">Una linguetta curva sul bordo che si apre in pannelli</string>
     <string name="shape_uppercase">FORMA</string>
     <string name="shape_rounded">Arrotondata</string>
     <string name="shape_tab">Linguetta</string>
@@ -1026,4 +1010,8 @@
     <string name="whats_new_badge">Nuovo</string>
     <string name="whats_new_first_release">Prima versione su Google Play</string>
     <string name="whats_new_milestone">%1$s+ installazioni</string>
+    <string name="home_service_off_desc">Tocca per attivarla. Poi scegli come appare e cosa fa in Aspetto e Azioni, qui sotto.</string>
+    <string name="home_service_on_desc">La barra è sullo schermo. Scorrila per il volume, toccala per le tue azioni e tocca qui per disattivarla.</string>
+    <string name="home_presets_title">Preimpostazioni rapide</string>
+    <string name="home_presets_desc">Parti da una barra già pronta, poi regolala in Aspetto.</string>
 </resources>

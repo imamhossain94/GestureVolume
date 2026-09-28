@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">外观已保存</string>
     <string name="appearance">外观</string>
-    <string name="appearance_desc">颜色、形状与尺寸</string>
+    <string name="appearance_desc">颜色、形状、大小和图标，实时预览</string>
     <string name="customize_handler">自定义处理程序</string>
     <string name="actions">操作</string>
-    <string name="actions_desc">点按和滑动的操作</string>
+    <string name="actions_desc">每次点按、长按和滑动的作用，还有试用板</string>
 
     <!-- Navigation -->
     <string name="pro_version">专业版</string>
@@ -210,22 +210,6 @@
     <string name="icon_close">关闭</string>
     <string name="crown">王冠</string>
 
-    <!-- Languages -->
-    <string name="lang_english">English</string>
-    <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">Arabic</string>
-    <string name="lang_hindi">Hindi</string>
-    <string name="lang_korean">Korean</string>
-    <string name="lang_japanese">Japanese</string>
-    <string name="lang_chinese">Chinese</string>
-    <string name="lang_german">German</string>
-    <string name="lang_spanish">Spanish</string>
-    <string name="lang_french">French</string>
-    <string name="lang_italian">Italian</string>
-    <string name="lang_portuguese">Portuguese</string>
-    <string name="lang_russian">Russian</string>
-    <string name="lang_turkish">Turkish</string>
-    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">系统默认值</string>
@@ -238,7 +222,7 @@
 
     <!-- Presets -->
     <string name="preset_bold_title">大胆的</string>
-    <string name="preset_bold_subtitle">大&amp;可见的</string>
+    <string name="preset_bold_subtitle">悬浮在边缘旁的圆形气泡，一眼就能找到</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">再次按返回键退出</string>
@@ -366,7 +350,7 @@
     <string name="edge_swipe_menu_desc">从悬浮条向屏幕中间滑动即可打开操作菜单。默认关闭，因为系统的返回手势也是这样操作的。</string>
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">边缘</string>
-    <string name="preset_edge_subtitle">紧贴侧边的细长条</string>
+    <string name="preset_edge_subtitle">贴边的细长胶囊，不碍事</string>
     <string name="icon_sun">太阳</string>
     <string name="icon_dim">暗</string>
     <string name="upgrade_tagline">一次购买，永久拥有。</string>
@@ -882,7 +866,7 @@
     <string name="slider_auto_brightness">关闭自动亮度</string>
     <string name="slider_auto_brightness_desc">在亮度滑块打开期间。否则光线传感器会在一两秒内撤销你的设置。服务停止时会恢复原设置。</string>
     <string name="preset_dock_title">Dock</string>
-    <string name="preset_dock_subtitle">弧形边缘标签</string>
+    <string name="preset_dock_subtitle">贴边的弧形标签，可展开面板</string>
     <string name="shape_uppercase">形状</string>
     <string name="shape_rounded">圆角</string>
     <string name="shape_tab">标签</string>
@@ -1026,4 +1010,8 @@
     <string name="whats_new_badge">新</string>
     <string name="whats_new_first_release">首次在 Google Play 上发布</string>
     <string name="whats_new_milestone">安装量突破 %1$s</string>
+    <string name="home_service_off_desc">点按即可开启。然后在下方的“外观”和“操作”中设置它的样子和功能。</string>
+    <string name="home_service_on_desc">滑条已在屏幕上。滑动调节音量，点按执行你的操作，点按这里即可关闭。</string>
+    <string name="home_presets_title">快速预设</string>
+    <string name="home_presets_desc">从现成的滑条开始，再在“外观”中调整。</string>
 </resources>

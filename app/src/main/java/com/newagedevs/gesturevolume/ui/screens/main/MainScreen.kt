@@ -1,5 +1,10 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.background
+import com.newagedevs.gesturevolume.ui.screens.handler_action.segmentShape
+import androidx.compose.material.icons.filled.PowerSettingsNew
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +49,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -225,165 +232,8 @@ fun MainScreen(
                         )
                     }
 
-                    // What the view model re-read on the last return here. Only the Permissions card
-                    // warns: a badge on every card whose screen held a waiting setting put the same
-                    // warning in three or four places at once, and read as each of them being broken.
-                    val permissionNeeds = state.permissionNeeds
-                    val serviceCard: @Composable (Modifier) -> Unit = { modifier ->
-                        ServiceControlCard(
-                            modifier = modifier,
-                            isRunning = state.isRunning,
-                            onToggle = { viewModel.onEvent(MainEvent.ToggleService(it, context)) }
-                        )
-                    }
-                    val appearance: @Composable (Modifier) -> Unit = { modifier ->
-                        NavigationCard(
-                            modifier = modifier,
-                            title = stringResource(R.string.appearance),
-                            subtitle = stringResource(R.string.appearance_desc),
-                            icon = R.drawable.ic_color_palette,
-                            gradientColors = listOf(Color(0xFF6366F1), Color(0xFF8B5CF6)),
-                            stacked = true,
-                            compact = !wide,
-                            onClick = { onNavigateToAppearance(null) }
-                        )
-                    }
-                    val actions: @Composable (Modifier) -> Unit = { modifier ->
-                        NavigationCard(
-                            modifier = modifier,
-                            title = stringResource(R.string.actions),
-                            subtitle = stringResource(R.string.actions_desc),
-                            icon = R.drawable.ic_app_open,
-                            gradientColors = listOf(Color(0xFF10B981), Color(0xFF06B6D4)),
-                            stacked = true,
-                            compact = !wide,
-                            onClick = onNavigateToActions
-                        )
-                    }
-                    // The Deck and the Quick panel side by side: the bar's two panels, and a user
-                    // looking for one will look wherever they found the other.
-                    val deck: @Composable (Modifier) -> Unit = { modifier ->
-                        NavigationCard(
-                            modifier = modifier,
-                            title = stringResource(R.string.deck_title),
-                            subtitle = stringResource(R.string.deck_card_subtitle),
-                            icon = R.drawable.ic_layer,
-                            gradientColors = listOf(Color(0xFFF59E0B), Color(0xFFEF4444)),
-                            stacked = true,
-                            compact = !wide,
-                            onClick = onNavigateToDeck
-                        )
-                    }
-                    val quickPanel: @Composable (Modifier) -> Unit = { modifier ->
-                        NavigationCard(
-                            modifier = modifier,
-                            title = stringResource(R.string.quick_slider_title),
-                            subtitle = stringResource(R.string.quick_panel_card_subtitle),
-                            icon = R.drawable.ic_brightness_up,
-                            gradientColors = listOf(Color(0xFF06B6D4), Color(0xFF3B82F6)),
-                            stacked = true,
-                            compact = !wide,
-                            onClick = onNavigateToQuickPanel
-                        )
-                    }
-                    // The long-press menu beside Visibility: the two settings about the bar itself
-                    // rather than about something it opens.
-                    val longPressMenu: @Composable (Modifier) -> Unit = { modifier ->
-                        NavigationCard(
-                            modifier = modifier,
-                            title = stringResource(R.string.context_menu_title),
-                            subtitle = stringResource(R.string.long_press_menu_card_subtitle),
-                            icon = R.drawable.ic_move,
-                            gradientColors = listOf(Color(0xFF8B5CF6), Color(0xFFEC4899)),
-                            stacked = true,
-                            compact = !wide,
-                            onClick = onNavigateToLongPressMenu
-                        )
-                    }
-                    val visibility: @Composable (Modifier) -> Unit = { modifier ->
-                        NavigationCard(
-                            modifier = modifier,
-                            title = stringResource(R.string.visibility_title),
-                            subtitle = stringResource(R.string.visibility_card_subtitle),
-                            icon = R.drawable.ic_visibility_hide,
-                            gradientColors = listOf(Color(0xFF14B8A6), Color(0xFF3B82F6)),
-                            stacked = true,
-                            compact = !wide,
-                            onClick = onNavigateToVisibility
-                        )
-                    }
-
-                    if (wide) {
-                        // A true four-column grid. The widths are worked out from the column
-                        // rather than shared out by weight: a row whose first card is two columns
-                        // wide has one gap fewer than a row of four, and weights would leave its
-                        // edges a few dp off the edges of the row beneath it.
-                        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                            val cell = (maxWidth - GAP * (GRID_COLUMNS - 1)) / GRID_COLUMNS
-                            val span = { n: Int -> cell * n + GAP * (n - 1) }
-                            Column(verticalArrangement = Arrangement.spacedBy(GAP)) {
-                                GridRow {
-                                    serviceCard(Modifier.width(span(2)).fillMaxHeight())
-                                    appearance(Modifier.width(span(1)).fillMaxHeight())
-                                    actions(Modifier.width(span(1)).fillMaxHeight())
-                                }
-                                AdvancedFeaturesGroup(
-                                    userMode = state.userMode,
-                                    onChangeMode = { viewModel.chooseUserMode(it, context) },
-                                ) {
-                                    GridRow {
-                                        deck(Modifier.width(span(1)).fillMaxHeight())
-                                        quickPanel(Modifier.width(span(1)).fillMaxHeight())
-                                        longPressMenu(Modifier.width(span(1)).fillMaxHeight())
-                                        visibility(Modifier.width(span(1)).fillMaxHeight())
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        // The switch beside the two most visited pages, stacked, the switch as tall
-                        // as the pair.
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            horizontalArrangement = Arrangement.spacedBy(GAP)
-                        ) {
-                            serviceCard(Modifier.weight(1f).fillMaxHeight())
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                verticalArrangement = Arrangement.spacedBy(GAP)
-                            ) {
-                                // Shared evenly: a card fills the height it is given, so without the
-                                // weights the first one took the whole column and pushed the second
-                                // out of it.
-                                appearance(Modifier.fillMaxWidth().weight(1f))
-                                actions(Modifier.fillMaxWidth().weight(1f))
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(GAP))
-                        // Folded away for a regular user: the home screen is then the app as it
-                        // was, the switch and the two pages the bar needs. See AdvancedFeaturesGroup.
-                        AdvancedFeaturesGroup(
-                            userMode = state.userMode,
-                            onChangeMode = { viewModel.chooseUserMode(it, context) },
-                        ) {
-                            GridRow {
-                                deck(Modifier.weight(1f).fillMaxHeight())
-                                quickPanel(Modifier.weight(1f).fillMaxHeight())
-                            }
-                            GridRow {
-                                longPressMenu(Modifier.weight(1f).fillMaxHeight())
-                                visibility(Modifier.weight(1f).fillMaxHeight())
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(GAP))
-
-                    // The route back from "Hide handler". Only while there is something to undo.
+                    // The route back from "Hide handler", before everything else: while it shows,
+                    // the bar the rest of the screen is about is not on screen.
                     if (state.isRunning && state.isHandlerHidden) {
                         HandlerHiddenCard(
                             onShowHandler = {
@@ -394,8 +244,12 @@ fun MainScreen(
                         Spacer(modifier = Modifier.height(GAP))
                     }
 
+                    // What the view model re-read on the last return here. Only the Permissions row
+                    // warns: a badge on every row whose screen held a waiting setting put the same
+                    // warning in three or four places at once, and read as each of them being broken.
+                    val permissionNeeds = state.permissionNeeds
                     // The count, the chips and the reason all come from the same list the notes on
-                    // the other screens read, so the card and the screens can never disagree.
+                    // the other screens read, so the row and the screens can never disagree.
                     val firstNeed = permissionNeeds.first
                     val featureCount = permissionNeeds.all.map { it.feature }.distinct().size
                     val permissionReason = firstNeed?.let { need ->
@@ -406,79 +260,177 @@ fun MainScreen(
                             stringResource(R.string.permission_needed_by, name)
                         }
                     }
-                    PermissionsStatusCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        hasOverlayPermission = state.hasOverlayPermission,
-                        missingPermissionCount = permissionNeeds.missingCount,
-                        compact = !wide,
-                        overlay = if (permissionNeeds.overlayMissing) {
-                            PermissionChipState.MISSING
-                        } else {
-                            PermissionChipState.GRANTED
-                        },
-                        accessibility = when {
-                            state.isAccessibilityEnabled -> PermissionChipState.GRANTED
-                            permissionNeeds.accessibilityMissing -> PermissionChipState.MISSING
-                            else -> PermissionChipState.OPTIONAL
-                        },
-                        writeSettings = when {
-                            state.hasWriteSettingsPermission -> PermissionChipState.GRANTED
-                            permissionNeeds.writeSettingsMissing -> PermissionChipState.MISSING
-                            else -> PermissionChipState.OPTIONAL
-                        },
-                        otherMissing = (permissionNeeds.missingCount - listOf(
-                            permissionNeeds.overlayMissing,
-                            permissionNeeds.accessibilityMissing,
-                            permissionNeeds.writeSettingsMissing,
-                        ).count { it }).coerceAtLeast(0),
-                        reason = permissionReason,
-                        // Straight to the first thing to fix, flashed there so it is found at once.
-                        onClick = { onNavigateToPermissions(firstNeed?.permission) }
-                    )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = stringResource(R.string.quick_presets),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(bottom = 10.dp),
-                        letterSpacing = 0.5.sp
-                    )
-
-                    PresetCardsGrid(
-                        viewModel = viewModel,
-                        context = context,
-                        // The same four columns as the cards above, on its side.
-                        columns = if (wide) GRID_COLUMNS else 2,
-                        onNavigateToAppearance = { presetId ->
-                            scope.launch { drawerState.close() }
-                            onNavigateToAppearance(presetId)
+                    // The screen as the Actions and Visibility screens are: each group's rows joined
+                    // into one card. First the bar itself, with no heading over it — the switch says
+                    // what the group is — then how it looks, what it does, and what it still needs.
+                    val barGroup: @Composable (Modifier) -> Unit = { groupModifier ->
+                        Column(modifier = groupModifier) {
+                            HomeSegments {
+                                HomeToggleRow(
+                                    icon = Icons.Filled.PowerSettingsNew,
+                                    title = stringResource(if (state.isRunning) R.string.service_active else R.string.service_inactive),
+                                    // Off, where to begin; on, where it is.
+                                    summary = stringResource(if (state.isRunning) R.string.home_service_on_desc else R.string.home_service_off_desc),
+                                    checked = state.isRunning,
+                                    shape = segmentShape(0, 4),
+                                    onCheckedChange = { viewModel.onEvent(MainEvent.ToggleService(it, context)) },
+                                    highlight = true,
+                                )
+                                HomeLinkRow(
+                                    icon = { HomeIconTile(painterResource(R.drawable.ic_color_palette)) },
+                                    title = stringResource(R.string.appearance),
+                                    summary = stringResource(R.string.appearance_desc),
+                                    shape = segmentShape(1, 4),
+                                    onClick = { onNavigateToAppearance(null) },
+                                )
+                                HomeLinkRow(
+                                    icon = { HomeIconTile(painterResource(R.drawable.ic_app_open)) },
+                                    title = stringResource(R.string.actions),
+                                    summary = stringResource(R.string.actions_desc),
+                                    shape = segmentShape(2, 4),
+                                    onClick = onNavigateToActions,
+                                )
+                                PermissionsStatusCard(
+                                    hasOverlayPermission = state.hasOverlayPermission,
+                                    missingPermissionCount = permissionNeeds.missingCount,
+                                    overlay = if (permissionNeeds.overlayMissing) {
+                                        PermissionChipState.MISSING
+                                    } else {
+                                        PermissionChipState.GRANTED
+                                    },
+                                    accessibility = when {
+                                        state.isAccessibilityEnabled -> PermissionChipState.GRANTED
+                                        permissionNeeds.accessibilityMissing -> PermissionChipState.MISSING
+                                        else -> PermissionChipState.OPTIONAL
+                                    },
+                                    writeSettings = when {
+                                        state.hasWriteSettingsPermission -> PermissionChipState.GRANTED
+                                        permissionNeeds.writeSettingsMissing -> PermissionChipState.MISSING
+                                        else -> PermissionChipState.OPTIONAL
+                                    },
+                                    otherMissing = (permissionNeeds.missingCount - listOf(
+                                        permissionNeeds.overlayMissing,
+                                        permissionNeeds.accessibilityMissing,
+                                        permissionNeeds.writeSettingsMissing,
+                                    ).count { it }).coerceAtLeast(0),
+                                    reason = permissionReason,
+                                    shape = segmentShape(3, 4),
+                                    // Straight to the first thing to fix, flashed there so it is found at once.
+                                    onClick = { onNavigateToPermissions(firstNeed?.permission) }
+                                )
+                            }
                         }
-                    )
-
-                    // Last, after everything the screen is for. It sat between the Permissions card
-                    // and the presets, where it split the settings in two and was the first thing
-                    // under the cards a user came here to use.
-                    if (!state.isProActivated && !com.newagedevs.gesturevolume.BuildConfig.ADS_DISABLED) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        // The same card as every other on this screen, surface and corner and no
-                        // border or shadow, so the ad sits in the grid rather than on top of it. What
-                        // is inside takes its colours from the theme as well: see
-                        // ApplovinAdsManager.styleNativeAdView.
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+                    }
+                    // Then the parts of an advanced setup, folded away for a regular user. See
+                    // AdvancedFeaturesGroup. The Deck and the Quick slider together, the bar's two
+                    // panels; the long-press menu and Visibility together, the settings about the
+                    // bar itself.
+                    // Whether the native ad has loaded: until then its slot in the group takes no room.
+                    var adShown by remember { mutableStateOf(false) }
+                    val advancedGroup: @Composable (Modifier) -> Unit = { groupModifier ->
+                        AdvancedFeaturesGroup(
+                            userMode = state.userMode,
+                            onChangeMode = { viewModel.chooseUserMode(it, context) },
+                            modifier = groupModifier,
+                            rows = listOf(
+                                { shape ->
+                                    HomeLinkRow(
+                                        icon = { HomeIconTile(painterResource(R.drawable.ic_layer)) },
+                                        title = stringResource(R.string.deck_title),
+                                        summary = stringResource(R.string.deck_card_subtitle),
+                                        shape = shape,
+                                        onClick = onNavigateToDeck,
+                                    )
+                                },
+                                { shape ->
+                                    HomeLinkRow(
+                                        icon = { HomeIconTile(painterResource(R.drawable.ic_brightness_up)) },
+                                        title = stringResource(R.string.quick_slider_title),
+                                        summary = stringResource(R.string.quick_panel_card_subtitle),
+                                        shape = shape,
+                                        onClick = onNavigateToQuickPanel,
+                                    )
+                                },
+                                { shape ->
+                                    HomeLinkRow(
+                                        icon = { HomeIconTile(painterResource(R.drawable.ic_move)) },
+                                        title = stringResource(R.string.context_menu_title),
+                                        summary = stringResource(R.string.long_press_menu_card_subtitle),
+                                        shape = shape,
+                                        onClick = onNavigateToLongPressMenu,
+                                    )
+                                },
+                                { shape ->
+                                    HomeLinkRow(
+                                        icon = { HomeIconTile(painterResource(R.drawable.ic_visibility_hide)) },
+                                        title = stringResource(R.string.visibility_title),
+                                        summary = stringResource(R.string.visibility_card_subtitle),
+                                        shape = shape,
+                                        onClick = onNavigateToVisibility,
+                                    )
+                                },
                             ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                        ) {
-                            viewModel.adsManager?.NativeAdWidget(
-                                modifier = Modifier.wrapContentHeight()
+                            // The native ad, as a row of the group: under the mode switch, where it
+                            // sits among the rows rather than on top of them. Its surface is the
+                            // rows'; what is inside takes the rows' colours too — see
+                            // ApplovinAdsManager.styleNativeAdView.
+                            ad = if (!state.isProActivated && !com.newagedevs.gesturevolume.BuildConfig.ADS_DISABLED) {
+                                { shape ->
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(shape)
+                                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f))
+                                    ) {
+                                        viewModel.adsManager?.NativeAdWidget(
+                                            modifier = Modifier.wrapContentHeight(),
+                                            onShownChange = { adShown = it },
+                                        )
+                                    }
+                                }
+                            } else {
+                                null
+                            },
+                            adShown = adShown,
+                        )
+                    }
+
+                    // Last, the presets, as a list like the advanced features.
+                    val presetsGroup: @Composable (Modifier) -> Unit = { groupModifier ->
+                        Column(modifier = groupModifier) {
+                            HomeHeading(
+                                title = stringResource(R.string.home_presets_title),
+                                hint = stringResource(R.string.home_presets_desc),
+                            )
+                            PresetCardsGrid(
+                                viewModel = viewModel,
+                                context = context,
+                                onNavigateToAppearance = { presetId ->
+                                    scope.launch { drawerState.close() }
+                                    onNavigateToAppearance(presetId)
+                                }
                             )
                         }
+                    }
+
+                    if (wide) {
+                        // Two columns on a wide screen: the bar on its own on the left, where the
+                        // switch is always in reach, and everything else on the right.
+                        Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                            barGroup(Modifier.weight(1f))
+                            Column(modifier = Modifier.weight(1f)) {
+                                advancedGroup(Modifier.fillMaxWidth())
+                                Spacer(modifier = Modifier.height(24.dp))
+                                presetsGroup(Modifier.fillMaxWidth())
+                            }
+                        }
+                    } else {
+                        barGroup(Modifier.fillMaxWidth())
+                        Spacer(modifier = Modifier.height(24.dp))
+                        advancedGroup(Modifier.fillMaxWidth())
+                        Spacer(modifier = Modifier.height(24.dp))
+                        presetsGroup(Modifier.fillMaxWidth())
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -488,25 +440,10 @@ fun MainScreen(
     }
 }
 
-/** One row of the grid, every card in it held to the height of the tallest. */
-@Composable
-private fun GridRow(content: @Composable RowScope.() -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min),
-        horizontalArrangement = Arrangement.spacedBy(GAP),
-        content = content,
-    )
-}
-
 private val GAP: Dp = 12.dp
 
 /** The widest the home screen's column grows before it is centred instead. */
 private val CONTENT_MAX_WIDTH: Dp = 920.dp
 
-/** How many columns the grid has on its side. */
-private const val GRID_COLUMNS = 4
-
-/** From this width the cards go into the four-column grid. */
+/** From this width the groups sit in two columns. */
 private const val WIDE_LAYOUT_DP = 600

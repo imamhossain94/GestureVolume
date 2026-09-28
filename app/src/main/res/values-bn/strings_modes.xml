@@ -2,7 +2,7 @@
 <resources>
     <!-- Translated from the English strings that had none here. -->
     <string name="preset_classic_title">ক্লাসিক</string>
-    <string name="preset_classic_subtitle">আসল গোল বোতাম</string>
+    <string name="preset_classic_subtitle">আসল গোল বোতাম: ভলিউমের জন্য সোয়াইপ, প্যানেলের জন্য ট্যাপ</string>
     <string name="home_advanced_features">অ্যাডভান্সড ফিচার</string>
     <string name="home_advanced_features_desc">ডেক, দ্রুত স্লাইডার, লং-প্রেস মেনু ও দৃশ্যমানতা</string>
     <string name="expand_advanced_features">অ্যাডভান্সড ফিচার দেখান</string>

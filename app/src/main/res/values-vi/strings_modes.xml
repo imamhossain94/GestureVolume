@@ -2,7 +2,7 @@
 <resources>
     <!-- Translated from the English strings that had none here. -->
     <string name="preset_classic_title">Cổ điển</string>
-    <string name="preset_classic_subtitle">Nút tròn nguyên bản</string>
+    <string name="preset_classic_subtitle">Nút tròn nguyên bản: vuốt để chỉnh âm lượng, chạm để mở bảng</string>
     <string name="home_advanced_features">Tính năng nâng cao</string>
     <string name="home_advanced_features_desc">Deck, Thanh trượt nhanh, menu nhấn giữ và hiển thị</string>
     <string name="expand_advanced_features">Hiện tính năng nâng cao</string>

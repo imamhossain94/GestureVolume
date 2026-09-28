@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">외모가 저장되었습니다</string>
     <string name="appearance">모습</string>
-    <string name="appearance_desc">색상, 모양, 크기</string>
+    <string name="appearance_desc">색, 모양, 크기, 아이콘을 실시간 미리보기로</string>
     <string name="customize_handler">핸들러 사용자 정의</string>
     <string name="actions">행위</string>
-    <string name="actions_desc">탭과 스와이프 동작</string>
+    <string name="actions_desc">탭, 길게 누르기, 스와이프의 동작과 직접 해 볼 수 있는 패드</string>
 
     <!-- Navigation -->
     <string name="pro_version">프로 버전</string>
@@ -209,22 +209,6 @@
     <string name="icon_close">닫다</string>
     <string name="crown">왕관</string>
 
-    <!-- Languages -->
-    <string name="lang_english">English</string>
-    <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">Arabic</string>
-    <string name="lang_hindi">Hindi</string>
-    <string name="lang_korean">Korean</string>
-    <string name="lang_japanese">Japanese</string>
-    <string name="lang_chinese">Chinese</string>
-    <string name="lang_german">German</string>
-    <string name="lang_spanish">Spanish</string>
-    <string name="lang_french">French</string>
-    <string name="lang_italian">Italian</string>
-    <string name="lang_portuguese">Portuguese</string>
-    <string name="lang_russian">Russian</string>
-    <string name="lang_turkish">Turkish</string>
-    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">시스템 기본값</string>
@@ -237,7 +221,7 @@
 
     <!-- Presets -->
     <string name="preset_bold_title">용감한</string>
-    <string name="preset_bold_subtitle">대형 &amp; 보이는</string>
+    <string name="preset_bold_subtitle">가장자리 옆에 떠 있는 둥근 버블, 찾기 쉬워요</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">뒤로 버튼을 다시 누르면 종료</string>
@@ -365,7 +349,7 @@
     <string name="edge_swipe_menu_desc">바에서 화면 가운데 쪽으로 쒸어 작업 메뉴를 엽니다. 시스템 뒤로 가기 제스처와 동작이 같아 기본값은 꺼짐입니다.</string>
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">가장자리</string>
-    <string name="preset_edge_subtitle">가장자리에 붙는 얇은 바</string>
+    <string name="preset_edge_subtitle">가장자리에 붙은 가는 알약, 방해되지 않아요</string>
     <string name="action_group_handler">핸들러</string>
     <string name="action_group_volume">음량 및 밝기</string>
     <string name="action_group_deck">덱 및 도구</string>
@@ -900,7 +884,7 @@
     <string name="quick_dial_settings_title">전화 및 채팅</string>
     <string name="quick_dial_settings_desc">덱 검색과 함께 사용됩니다.</string>
     <string name="preset_dock_title">도크</string>
-    <string name="preset_dock_subtitle">곡선형 가장자리 탭</string>
+    <string name="preset_dock_subtitle">가장자리에서 패널로 열리는 곡선 탭</string>
     <string name="shape_uppercase">모양</string>
     <string name="shape_rounded">둥근 모서리</string>
     <string name="shape_tab">탭</string>
@@ -1026,4 +1010,8 @@
     <string name="whats_new_badge">새 기능</string>
     <string name="whats_new_first_release">Google Play 첫 출시</string>
     <string name="whats_new_milestone">%1$s+ 설치</string>
+    <string name="home_service_off_desc">탭해서 켜세요. 그다음 아래 모습과 행위에서 모양과 동작을 원하는 대로 바꾸세요.</string>
+    <string name="home_service_on_desc">바가 화면에 있습니다. 스와이프하면 볼륨, 탭하면 설정한 동작이 실행되고, 여기를 탭하면 꺼집니다.</string>
+    <string name="home_presets_title">빠른 프리셋</string>
+    <string name="home_presets_desc">준비된 바로 시작한 뒤 모습에서 다듬으세요.</string>
 </resources>

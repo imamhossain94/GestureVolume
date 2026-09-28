@@ -2,7 +2,7 @@
 <resources>
     <!-- Translated from the English strings that had none here. -->
     <string name="preset_classic_title">كلاسيكي</string>
-    <string name="preset_classic_subtitle">الزر الدائري الأصلي</string>
+    <string name="preset_classic_subtitle">الزر الدائري الأصلي: اسحب للصوت، وانقر للوحة</string>
     <string name="home_advanced_features">الميزات المتقدمة</string>
     <string name="home_advanced_features_desc">Deck، والمنزلق السريع، وقائمة الضغط المطوّل، والظهور</string>
     <string name="expand_advanced_features">إظهار الميزات المتقدمة</string>

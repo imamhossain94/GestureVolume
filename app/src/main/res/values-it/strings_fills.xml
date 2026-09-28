@@ -13,7 +13,7 @@
     <string name="level_feedback_low">Bagliore quando è basso</string>
     <string name="level_feedback_low_desc">Una luce tenue respira sul livello quando è basso, e in fondo quando è spento.</string>
     <string name="level_feedback_full">Festa in cima</string>
-    <string name="level_feedback_full_desc">Un effetto quando arriva al 100% e finché resta lì. Scegline uno qui sotto.</string>
+    <string name="level_feedback_full_desc" formatted="false">Un effetto quando arriva al 100% e finché resta lì. Scegline uno qui sotto.</string>
     <string name="level_max_title">In cima</string>
     <string name="level_max_burst">Esplosione</string>
     <string name="level_max_ripple">Onde</string>

@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">Apparence enregistrée</string>
     <string name="appearance">Apparence</string>
-    <string name="appearance_desc">Couleur, forme et taille</string>
+    <string name="appearance_desc">Couleur, forme, taille et icône, avec un aperçu en direct</string>
     <string name="customize_handler">Personnaliser le gestionnaire</string>
-    <string name="actions">Actes</string>
-    <string name="actions_desc">Rôle des appuis et gestes</string>
+    <string name="actions">Actions</string>
+    <string name="actions_desc">Ce que fait chaque appui, appui long et glissement, et une zone pour les essayer</string>
 
     <!-- Navigation -->
     <string name="pro_version">Version Pro</string>
@@ -209,22 +209,6 @@
     <string name="icon_close">Fermer</string>
     <string name="crown">Couronne</string>
 
-    <!-- Languages -->
-    <string name="lang_english">English</string>
-    <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">Arabic</string>
-    <string name="lang_hindi">Hindi</string>
-    <string name="lang_korean">Korean</string>
-    <string name="lang_japanese">Japanese</string>
-    <string name="lang_chinese">Chinese</string>
-    <string name="lang_german">German</string>
-    <string name="lang_spanish">Spanish</string>
-    <string name="lang_french">French</string>
-    <string name="lang_italian">Italian</string>
-    <string name="lang_portuguese">Portuguese</string>
-    <string name="lang_russian">Russian</string>
-    <string name="lang_turkish">Turkish</string>
-    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">Système par défaut</string>
@@ -237,7 +221,7 @@
 
     <!-- Presets -->
     <string name="preset_bold_title">Audacieux</string>
-    <string name="preset_bold_subtitle">Grand &amp; visible</string>
+    <string name="preset_bold_subtitle">Une bulle ronde qui flotte près du bord, facile à trouver</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">Appuyez à nouveau pour quitter</string>
@@ -365,7 +349,7 @@
     <string name="edge_swipe_menu_desc">Balaye depuis la barre vers le centre de l’écran pour ouvrir le menu d’actions. Désactivé par défaut, car le geste Retour du système se fait de la même manière.</string>
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">Bord</string>
-    <string name="preset_edge_subtitle">Pilule fine, collée au bord</string>
+    <string name="preset_edge_subtitle">Une fine pilule, collée au bord et discrète</string>
     <string name="action_group_handler">Barre</string>
     <string name="action_group_volume">Volume et luminosité</string>
     <string name="action_group_deck">Deck et outils</string>
@@ -900,7 +884,7 @@
     <string name="quick_dial_settings_title">APPELS ET DISCUSSIONS</string>
     <string name="quick_dial_settings_desc">Partagé avec la recherche du Deck.</string>
     <string name="preset_dock_title">Dock</string>
-    <string name="preset_dock_subtitle">Onglet de bord incurvé</string>
+    <string name="preset_dock_subtitle">Un onglet incurvé sur le bord qui s’ouvre en panneaux</string>
     <string name="shape_uppercase">FORME</string>
     <string name="shape_rounded">Arrondie</string>
     <string name="shape_tab">Onglet</string>
@@ -1026,4 +1010,8 @@
     <string name="whats_new_badge">Nouveau</string>
     <string name="whats_new_first_release">Première sortie sur Google Play</string>
     <string name="whats_new_milestone">%1$s+ installations</string>
+    <string name="home_service_off_desc">Touchez pour l’activer. Choisissez ensuite son apparence et ce qu’elle fait dans Apparence et Actions, ci-dessous.</string>
+    <string name="home_service_on_desc">La barre est à l’écran. Glissez-la pour le volume, touchez-la pour vos actions, et touchez ici pour la désactiver.</string>
+    <string name="home_presets_title">Préréglages rapides</string>
+    <string name="home_presets_desc">Partez d’une barre toute prête, puis ajustez-la dans Apparence.</string>
 </resources>

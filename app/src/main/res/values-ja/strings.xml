@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">外観が保存されました</string>
     <string name="appearance">外観</string>
-    <string name="appearance_desc">色・形・サイズ</string>
+    <string name="appearance_desc">色・形・サイズ・アイコンを、ライブプレビューで</string>
     <string name="customize_handler">ハンドラーのカスタマイズ</string>
     <string name="actions">アクション</string>
-    <string name="actions_desc">タップとスワイプの動作</string>
+    <string name="actions_desc">タップ・長押し・スワイプの動作と、試せるパッド</string>
 
     <!-- Navigation -->
     <string name="pro_version">プロ版</string>
@@ -209,22 +209,6 @@
     <string name="icon_close">近い</string>
     <string name="crown">クラウン</string>
 
-    <!-- Languages -->
-    <string name="lang_english">English</string>
-    <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">Arabic</string>
-    <string name="lang_hindi">Hindi</string>
-    <string name="lang_korean">Korean</string>
-    <string name="lang_japanese">Japanese</string>
-    <string name="lang_chinese">Chinese</string>
-    <string name="lang_german">German</string>
-    <string name="lang_spanish">Spanish</string>
-    <string name="lang_french">French</string>
-    <string name="lang_italian">Italian</string>
-    <string name="lang_portuguese">Portuguese</string>
-    <string name="lang_russian">Russian</string>
-    <string name="lang_turkish">Turkish</string>
-    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">システムのデフォルト</string>
@@ -237,7 +221,7 @@
 
     <!-- Presets -->
     <string name="preset_bold_title">大胆な</string>
-    <string name="preset_bold_subtitle">大型＆大型見える</string>
+    <string name="preset_bold_subtitle">端から少し浮いた丸いバブル。すぐ見つかります</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">もう一度戻るボタンを押して終了</string>
@@ -365,7 +349,7 @@
     <string name="edge_swipe_menu_desc">バーから画面中央に向かってスワイプすると操作メニューが開きます。システムの戻る操作と同じ動きのため、初期状態ではオフです。</string>
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">エッジ</string>
-    <string name="preset_edge_subtitle">端に寄る細いピル形</string>
+    <string name="preset_edge_subtitle">端にぴったり沿った細いピル。邪魔になりません</string>
     <string name="action_group_handler">ハンドラー</string>
     <string name="action_group_volume">音量と明るさ</string>
     <string name="action_group_deck">デッキとツール</string>
@@ -900,7 +884,7 @@
     <string name="quick_dial_settings_title">通話とチャット</string>
     <string name="quick_dial_settings_desc">デッキの検索と共通です。</string>
     <string name="preset_dock_title">ドック</string>
-    <string name="preset_dock_subtitle">端に沿った曲線のタブ</string>
+    <string name="preset_dock_subtitle">端にある曲線のタブ。パネルが開きます</string>
     <string name="shape_uppercase">形</string>
     <string name="shape_rounded">角丸</string>
     <string name="shape_tab">タブ</string>
@@ -1026,4 +1010,8 @@
     <string name="whats_new_badge">新着</string>
     <string name="whats_new_first_release">Google Play で初リリース</string>
     <string name="whats_new_milestone">%1$s 以上のインストール</string>
+    <string name="home_service_off_desc">タップしてオンにします。見た目と動作は、下の外観とアクションで好みに合わせられます。</string>
+    <string name="home_service_on_desc">バーは画面に表示されています。スワイプで音量、タップで設定した操作。ここをタップするとオフになります。</string>
+    <string name="home_presets_title">クイックプリセット</string>
+    <string name="home_presets_desc">用意されたバーから始めて、外観で調整できます。</string>
 </resources>

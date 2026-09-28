@@ -2,7 +2,7 @@
 <resources>
     <!-- Translated from the English strings that had none here. -->
     <string name="preset_classic_title">クラシック</string>
-    <string name="preset_classic_subtitle">オリジナルの丸いボタン</string>
+    <string name="preset_classic_subtitle">元祖の丸いボタン：スワイプで音量、タップでパネル</string>
     <string name="home_advanced_features">高度な機能</string>
     <string name="home_advanced_features_desc">デッキ、クイックスライダー、長押しメニュー、表示</string>
     <string name="expand_advanced_features">高度な機能を表示</string>

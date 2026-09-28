@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">Đã lưu giao diện</string>
     <string name="appearance">Vẻ bề ngoài</string>
-    <string name="appearance_desc">Màu, hình dạng, kích thước</string>
+    <string name="appearance_desc">Màu, hình dạng, kích thước và biểu tượng, xem trước trực tiếp</string>
     <string name="customize_handler">Tùy chỉnh trình xử lý</string>
     <string name="actions">hành động</string>
-    <string name="actions_desc">Tác dụng của chạm và vuốt</string>
+    <string name="actions_desc">Mỗi lần chạm, giữ và vuốt làm gì, cùng một ô để thử</string>
 
     <!-- Navigation -->
     <string name="pro_version">Phiên bản chuyên nghiệp</string>
@@ -210,22 +210,6 @@
     <string name="icon_close">Đóng</string>
     <string name="crown">Vương miện</string>
 
-    <!-- Languages -->
-    <string name="lang_english">English</string>
-    <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">Arabic</string>
-    <string name="lang_hindi">Hindi</string>
-    <string name="lang_korean">Korean</string>
-    <string name="lang_japanese">Japanese</string>
-    <string name="lang_chinese">Chinese</string>
-    <string name="lang_german">German</string>
-    <string name="lang_spanish">Spanish</string>
-    <string name="lang_french">French</string>
-    <string name="lang_italian">Italian</string>
-    <string name="lang_portuguese">Portuguese</string>
-    <string name="lang_russian">Russian</string>
-    <string name="lang_turkish">Turkish</string>
-    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">Mặc định hệ thống</string>
@@ -238,7 +222,7 @@
 
     <!-- Presets -->
     <string name="preset_bold_title">In đậm</string>
-    <string name="preset_bold_subtitle">Lớn &amp; dễ thấy</string>
+    <string name="preset_bold_subtitle">Một bong bóng tròn nổi cạnh mép, dễ tìm thấy</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">Nhấn lại lần nữa để thoát</string>
@@ -366,7 +350,7 @@
     <string name="edge_swipe_menu_desc">Vuốt từ thanh về phía giữa màn hình để mở menu thao tác. Mặc định tắt, vì cử chỉ Quay lại của hệ thống cũng được thực hiện theo cách này.</string>
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">Cạnh</string>
-    <string name="preset_edge_subtitle">Thanh mỏng sát mép</string>
+    <string name="preset_edge_subtitle">Một viên thuốc mảnh, sát mép và không vướng víu</string>
     <string name="icon_sun">Mặt trời</string>
     <string name="icon_dim">Mờ</string>
     <string name="upgrade_tagline">Mua một lần. Dùng mãi mãi.</string>
@@ -882,7 +866,7 @@
     <string name="slider_auto_brightness">Tắt độ sáng thích ứng</string>
     <string name="slider_auto_brightness_desc">Khi thanh trượt độ sáng đang mở. Nếu không, cảm biến ánh sáng sẽ hoàn tác mức bạn đặt chỉ sau một hai giây. Nó được bật lại khi dịch vụ dừng.</string>
     <string name="preset_dock_title">Dock</string>
-    <string name="preset_dock_subtitle">Thẻ cạnh bo cong</string>
+    <string name="preset_dock_subtitle">Một thẻ cong ở mép, mở ra các bảng</string>
     <string name="shape_uppercase">HÌNH DẠNG</string>
     <string name="shape_rounded">Bo tròn</string>
     <string name="shape_tab">Thẻ</string>
@@ -1026,4 +1010,8 @@
     <string name="whats_new_badge">Mới</string>
     <string name="whats_new_first_release">Phát hành lần đầu trên Google Play</string>
     <string name="whats_new_milestone">%1$s+ lượt cài đặt</string>
+    <string name="home_service_off_desc">Chạm để bật. Sau đó chỉnh giao diện và cách hoạt động trong Giao diện và Hành động bên dưới.</string>
+    <string name="home_service_on_desc">Thanh đang ở trên màn hình. Vuốt để chỉnh âm lượng, chạm để dùng thao tác của bạn, và chạm vào đây để tắt.</string>
+    <string name="home_presets_title">Cài đặt sẵn nhanh</string>
+    <string name="home_presets_desc">Bắt đầu từ một thanh có sẵn, rồi tinh chỉnh trong Giao diện.</string>
 </resources>

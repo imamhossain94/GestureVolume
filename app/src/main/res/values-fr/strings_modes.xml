@@ -2,7 +2,7 @@
 <resources>
     <!-- Translated from the English strings that had none here. -->
     <string name="preset_classic_title">Classique</string>
-    <string name="preset_classic_subtitle">Le bouton rond d’origine</string>
+    <string name="preset_classic_subtitle">Le bouton rond d’origine : glissez pour le volume, touchez pour le panneau</string>
     <string name="home_advanced_features">Fonctions avancées</string>
     <string name="home_advanced_features_desc">Deck, Curseur rapide, menu d’appui long et visibilité</string>
     <string name="expand_advanced_features">Afficher les fonctions avancées</string>

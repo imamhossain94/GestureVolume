@@ -2,7 +2,7 @@
 <resources>
     <!-- Translated from the English strings that had none here. -->
     <string name="preset_classic_title">क्लासिक</string>
-    <string name="preset_classic_subtitle">मूल गोल बटन</string>
+    <string name="preset_classic_subtitle">मूल गोल बटन: वॉल्यूम के लिए स्वाइप, पैनल के लिए टैप</string>
     <string name="home_advanced_features">उन्नत सुविधाएँ</string>
     <string name="home_advanced_features_desc">डेक, त्वरित स्लाइडर, लॉन्ग-प्रेस मेन्यू और दृश्यता</string>
     <string name="expand_advanced_features">उन्नत सुविधाएँ दिखाएँ</string>

@@ -13,7 +13,7 @@
     <string name="level_feedback_low">Brilho quando está baixo</string>
     <string name="level_feedback_low_desc">Uma luz suave respira no nível quando está baixo, e em baixo quando está desligado.</string>
     <string name="level_feedback_full">Celebrar no topo</string>
-    <string name="level_feedback_full_desc">Um efeito ao chegar a 100% e enquanto ficar lá. Escolha um abaixo.</string>
+    <string name="level_feedback_full_desc" formatted="false">Um efeito ao chegar a 100% e enquanto ficar lá. Escolha um abaixo.</string>
     <string name="level_max_title">No topo</string>
     <string name="level_max_burst">Explosão</string>
     <string name="level_max_ripple">Ondas</string>

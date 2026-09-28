@@ -2,7 +2,7 @@
 <resources>
     <!-- Translated from the English strings that had none here. -->
     <string name="preset_classic_title">Clássico</string>
-    <string name="preset_classic_subtitle">O botão redondo original</string>
+    <string name="preset_classic_subtitle">O botão redondo original: deslize para o volume, toque para o painel</string>
     <string name="home_advanced_features">Recursos avançados</string>
     <string name="home_advanced_features_desc">Deck, Controle rápido, menu de pressão longa e visibilidade</string>
     <string name="expand_advanced_features">Mostrar recursos avançados</string>

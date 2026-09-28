@@ -13,7 +13,7 @@
     <string name="level_feedback_low">কম থাকলে আভা</string>
     <string name="level_feedback_low_desc">লেভেল কম থাকলে সেখানে একটি নরম আলো শ্বাস নেয়, আর বন্ধ থাকলে নিচে।</string>
     <string name="level_feedback_full">শীর্ষে উদযাপন</string>
-    <string name="level_feedback_full_desc">১০০%-এ পৌঁছালে এবং সেখানে থাকা পর্যন্ত একটি ইফেক্ট। নিচে থেকে একটি বেছে নিন।</string>
+    <string name="level_feedback_full_desc" formatted="false">১০০%-এ পৌঁছালে এবং সেখানে থাকা পর্যন্ত একটি ইফেক্ট। নিচে থেকে একটি বেছে নিন।</string>
     <string name="level_max_title">শীর্ষে</string>
     <string name="level_max_burst">বিস্ফোরণ</string>
     <string name="level_max_ripple">ঢেউ</string>

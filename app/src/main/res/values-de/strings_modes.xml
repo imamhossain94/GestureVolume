@@ -2,7 +2,7 @@
 <resources>
     <!-- Translated from the English strings that had none here. -->
     <string name="preset_classic_title">Klassisch</string>
-    <string name="preset_classic_subtitle">Der ursprüngliche runde Knopf</string>
+    <string name="preset_classic_subtitle">Der ursprüngliche runde Knopf: Wischen für Lautstärke, Tippen für das Feld</string>
     <string name="home_advanced_features">Erweiterte Funktionen</string>
     <string name="home_advanced_features_desc">Deck, Schnellregler, Menü bei langem Drücken und Sichtbarkeit</string>
     <string name="expand_advanced_features">Erweiterte Funktionen anzeigen</string>

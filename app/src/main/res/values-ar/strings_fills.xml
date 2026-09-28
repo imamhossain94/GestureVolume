@@ -13,7 +13,7 @@
     <string name="level_feedback_low">توهّج عند الانخفاض</string>
     <string name="level_feedback_low_desc">ضوء خافت يتنفس عند المستوى حين يكون منخفضًا، وفي الأسفل حين يكون متوقفًا.</string>
     <string name="level_feedback_full">احتفال عند القمة</string>
-    <string name="level_feedback_full_desc">تأثير عند الوصول إلى 100% وطوال بقائه هناك. اختر واحدًا أدناه.</string>
+    <string name="level_feedback_full_desc" formatted="false">تأثير عند الوصول إلى 100% وطوال بقائه هناك. اختر واحدًا أدناه.</string>
     <string name="level_max_title">عند القمة</string>
     <string name="level_max_burst">انفجار</string>
     <string name="level_max_ripple">تموّجات</string>

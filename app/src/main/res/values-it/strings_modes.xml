@@ -2,7 +2,7 @@
 <resources>
     <!-- Translated from the English strings that had none here. -->
     <string name="preset_classic_title">Classico</string>
-    <string name="preset_classic_subtitle">Il pulsante rotondo originale</string>
+    <string name="preset_classic_subtitle">Il pulsante rotondo originale: scorri per il volume, tocca per il pannello</string>
     <string name="home_advanced_features">Funzioni avanzate</string>
     <string name="home_advanced_features_desc">Deck, Cursore rapido, menu a pressione prolungata e visibilità</string>
     <string name="expand_advanced_features">Mostra le funzioni avanzate</string>

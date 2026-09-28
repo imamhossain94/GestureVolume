@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">Aussehen gespeichert</string>
     <string name="appearance">Aussehen</string>
-    <string name="appearance_desc">Farbe, Form &amp; Größe</string>
+    <string name="appearance_desc">Farbe, Form, Größe und Symbol, mit Live-Vorschau</string>
     <string name="customize_handler">Handler anpassen</string>
     <string name="actions">Aktionen</string>
-    <string name="actions_desc">Was Tippen &amp; Wischen tun</string>
+    <string name="actions_desc">Was Tippen, Halten und Wischen tun – mit einem Feld zum Ausprobieren</string>
 
     <!-- Navigation -->
     <string name="pro_version">Pro-Version</string>
@@ -209,22 +209,6 @@
     <string name="icon_close">Schließen</string>
     <string name="crown">Krone</string>
 
-    <!-- Languages -->
-    <string name="lang_english">English</string>
-    <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">Arabic</string>
-    <string name="lang_hindi">Hindi</string>
-    <string name="lang_korean">Korean</string>
-    <string name="lang_japanese">Japanese</string>
-    <string name="lang_chinese">Chinese</string>
-    <string name="lang_german">German</string>
-    <string name="lang_spanish">Spanish</string>
-    <string name="lang_french">French</string>
-    <string name="lang_italian">Italian</string>
-    <string name="lang_portuguese">Portuguese</string>
-    <string name="lang_russian">Russian</string>
-    <string name="lang_turkish">Turkish</string>
-    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">Systemstandard</string>
@@ -237,7 +221,7 @@
 
     <!-- Presets -->
     <string name="preset_bold_title">Deutlich</string>
-    <string name="preset_bold_subtitle">Groß &amp; sichtbar</string>
+    <string name="preset_bold_subtitle">Eine runde Blase, die neben dem Rand schwebt und leicht zu finden ist</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">Erneut tippen, um zu beenden</string>
@@ -365,7 +349,7 @@
     <string name="edge_swipe_menu_desc">Wische von der Leiste zur Bildschirmmitte, um das Aktionsmenü zu öffnen. Standardmäßig aus, weil die Zurück-Geste des Systems genauso ausgeführt wird.</string>
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">Kante</string>
-    <string name="preset_edge_subtitle">Schmale Pille, bündig am Rand</string>
+    <string name="preset_edge_subtitle">Eine schmale Pille, bündig am Rand und nicht im Weg</string>
     <string name="action_group_handler">Leiste</string>
     <string name="action_group_volume">Lautstärke &amp; Helligkeit</string>
     <string name="action_group_deck">Deck &amp; Werkzeuge</string>
@@ -900,7 +884,7 @@
     <string name="quick_dial_settings_title">ANRUFE UND CHATS</string>
     <string name="quick_dial_settings_desc">Gilt auch für die Suche im Deck.</string>
     <string name="preset_dock_title">Dock</string>
-    <string name="preset_dock_subtitle">Geschwungene Lasche am Rand</string>
+    <string name="preset_dock_subtitle">Eine geschwungene Lasche am Rand, die sich zu Panels öffnet</string>
     <string name="shape_uppercase">FORM</string>
     <string name="shape_rounded">Abgerundet</string>
     <string name="shape_tab">Lasche</string>
@@ -1026,4 +1010,8 @@
     <string name="whats_new_badge">Neu</string>
     <string name="whats_new_first_release">Erste Veröffentlichung bei Google Play</string>
     <string name="whats_new_milestone">%1$s+ Installationen</string>
+    <string name="home_service_off_desc">Tippe zum Einschalten. Passe dann unten unter Aussehen und Aktionen an, wie sie aussieht und was sie tut.</string>
+    <string name="home_service_on_desc">Die Leiste ist auf deinem Bildschirm. Wische für die Lautstärke, tippe für deine Aktionen – und tippe hier zum Ausschalten.</string>
+    <string name="home_presets_title">Schnellvorlagen</string>
+    <string name="home_presets_desc">Starte mit einer fertigen Leiste und passe sie dann unter Aussehen an.</string>
 </resources>

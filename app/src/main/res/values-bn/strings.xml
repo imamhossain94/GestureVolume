@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">চেহারা সংরক্ষিত</string>
     <string name="appearance">চেহারা</string>
-    <string name="appearance_desc">রং, গড়ন ও আকার</string>
+    <string name="appearance_desc">রং, আকৃতি, সাইজ আর আইকন, লাইভ প্রিভিউসহ</string>
     <string name="customize_handler">হ্যান্ডলার কাস্টমাইজ করুন</string>
     <string name="actions">কর্ম</string>
-    <string name="actions_desc">ট্যাপ ও সোয়াইপ কী করে</string>
+    <string name="actions_desc">প্রতিটি ট্যাপ, হোল্ড আর সোয়াইপ কী করে, আর চেষ্টা করার একটি প্যাড</string>
 
     <!-- Navigation -->
     <string name="pro_version">প্রো সংস্করণ</string>
@@ -209,22 +209,6 @@
     <string name="icon_close">বন্ধ</string>
     <string name="crown">মুকুট</string>
 
-    <!-- Languages -->
-    <string name="lang_english">English</string>
-    <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">Arabic</string>
-    <string name="lang_hindi">Hindi</string>
-    <string name="lang_korean">Korean</string>
-    <string name="lang_japanese">Japanese</string>
-    <string name="lang_chinese">Chinese</string>
-    <string name="lang_german">German</string>
-    <string name="lang_spanish">Spanish</string>
-    <string name="lang_french">French</string>
-    <string name="lang_italian">Italian</string>
-    <string name="lang_portuguese">Portuguese</string>
-    <string name="lang_russian">Russian</string>
-    <string name="lang_turkish">Turkish</string>
-    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">সিস্টেম ডিফল্ট</string>
@@ -237,7 +221,7 @@
 
     <!-- Presets -->
     <string name="preset_bold_title">সাহসী</string>
-    <string name="preset_bold_subtitle">বড় &amp; দৃশ্যমান</string>
+    <string name="preset_bold_subtitle">কিনারার পাশে ভাসমান গোল বাবল, সহজে খুঁজে পাওয়া যায়</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">প্রস্থান করতে আবার ব্যাক চাপুন</string>
@@ -365,7 +349,7 @@
     <string name="edge_swipe_menu_desc">মেনু খুলতে বার থেকে স্ক্রিনের মাঝের দিকে সোয়াইপ করুন। ডিফল্টভাবে বন্ধ, কারণ সিস্টেমের ব্যাক অঙ্গভঙ্গিও একইভাবে করা হয়।</string>
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">এজ</string>
-    <string name="preset_edge_subtitle">পাশে লেগা সরু পিল</string>
+    <string name="preset_edge_subtitle">কিনারা ঘেঁষা সরু পিল, পথ আটকায় না</string>
     <string name="action_group_handler">হ্যান্ডলার</string>
     <string name="action_group_volume">ভলিউম ও উজ্জ্বলতা</string>
     <string name="action_group_deck">ডেক ও টুল</string>
@@ -900,7 +884,7 @@
     <string name="quick_dial_settings_title">কল ও চ্যাট</string>
     <string name="quick_dial_settings_desc">ডেকের সার্চের সঙ্গে একই।</string>
     <string name="preset_dock_title">ডক</string>
-    <string name="preset_dock_subtitle">বাঁকানো কিনারার ট্যাব</string>
+    <string name="preset_dock_subtitle">কিনারায় বাঁকানো ট্যাব, যা প্যানেলে খোলে</string>
     <string name="shape_uppercase">আকৃতি</string>
     <string name="shape_rounded">গোলাকার</string>
     <string name="shape_tab">ট্যাব</string>
@@ -1026,4 +1010,8 @@
     <string name="whats_new_badge">নতুন</string>
     <string name="whats_new_first_release">Google Play-তে প্রথম প্রকাশ</string>
     <string name="whats_new_milestone">%1$s+ ইনস্টল</string>
+    <string name="home_service_off_desc">চালু করতে ট্যাপ করুন। তারপর নিচের চেহারা আর কর্ম থেকে এর রূপ ও কাজ নিজের মতো করে নিন।</string>
+    <string name="home_service_on_desc">বারটি আপনার স্ক্রিনে আছে। ভলিউমের জন্য সোয়াইপ করুন, আপনার কাজের জন্য ট্যাপ করুন, আর বন্ধ করতে এখানে ট্যাপ করুন।</string>
+    <string name="home_presets_title">দ্রুত প্রিসেট</string>
+    <string name="home_presets_desc">তৈরি একটি বার দিয়ে শুরু করুন, তারপর চেহারা থেকে সাজিয়ে নিন।</string>
 </resources>

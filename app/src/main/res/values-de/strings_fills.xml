@@ -13,7 +13,7 @@
     <string name="level_feedback_low">Glühen bei niedrigem Pegel</string>
     <string name="level_feedback_low_desc">Ein sanftes Licht atmet am Pegel, wenn er niedrig ist, und unten, wenn er aus ist.</string>
     <string name="level_feedback_full">Feiern ganz oben</string>
-    <string name="level_feedback_full_desc">Ein Effekt, wenn 100 % erreicht sind, und solange der Pegel dort bleibt. Wähle unten einen aus.</string>
+    <string name="level_feedback_full_desc" formatted="false">Ein Effekt, wenn 100 % erreicht sind, und solange der Pegel dort bleibt. Wähle unten einen aus.</string>
     <string name="level_max_title">Ganz oben</string>
     <string name="level_max_burst">Lichtstoß</string>
     <string name="level_max_ripple">Wellen</string>

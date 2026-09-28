@@ -2,7 +2,7 @@
 <resources>
     <!-- Translated from the English strings that had none here. -->
     <string name="preset_classic_title">Klasik</string>
-    <string name="preset_classic_subtitle">Orijinal yuvarlak düğme</string>
+    <string name="preset_classic_subtitle">Orijinal yuvarlak düğme: ses için kaydır, panel için dokun</string>
     <string name="home_advanced_features">Gelişmiş özellikler</string>
     <string name="home_advanced_features_desc">Deck, Hızlı kaydırıcı, uzun basma menüsü ve görünürlük</string>
     <string name="expand_advanced_features">Gelişmiş özellikleri göster</string>

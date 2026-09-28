@@ -13,7 +13,7 @@
     <string name="level_feedback_low">कम होने पर चमक</string>
     <string name="level_feedback_low_desc">लेवल कम होने पर वहाँ एक हल्की रोशनी साँस लेती है, और बंद होने पर सबसे नीचे।</string>
     <string name="level_feedback_full">ऊपर पहुँचने पर जश्न</string>
-    <string name="level_feedback_full_desc">100% पर पहुँचने पर और वहाँ रहने तक एक प्रभाव। नीचे से एक चुनें।</string>
+    <string name="level_feedback_full_desc" formatted="false">100% पर पहुँचने पर और वहाँ रहने तक एक प्रभाव। नीचे से एक चुनें।</string>
     <string name="level_max_title">सबसे ऊपर</string>
     <string name="level_max_burst">विस्फोट</string>
     <string name="level_max_ripple">लहरें</string>

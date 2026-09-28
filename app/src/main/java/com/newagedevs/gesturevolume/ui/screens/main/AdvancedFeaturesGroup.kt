@@ -1,5 +1,10 @@
 package com.newagedevs.gesturevolume.ui.screens.main
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
+import com.newagedevs.gesturevolume.ui.screens.handler_action.segmentShape
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
@@ -11,6 +16,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -54,109 +60,62 @@ import com.newagedevs.gesturevolume.utils.UserMode
 
 /**
  * The home screen's advanced features — the Deck, the Quick slider, the long-press menu and
- * Visibility — behind one header, with the switch between a regular and an advanced user at the
- * top of them.
+ * Visibility — as a group in the Actions and Visibility screens' design: its heading, then the
+ * switch between a regular and an advanced user as the group's first row, and the four under it.
  *
- * Folded for a regular user and open for an advanced one, on first showing; after that the header
- * is the user's. The home screen of a regular user is then what the app used to be — the switch,
- * the look and the gestures — which is the look the users who asked for it missed, and nothing
- * the others use has gone anywhere.
+ * For a regular user the four are folded behind a last row that shows them, so the home screen is
+ * what the app used to be; for an advanced one they are always there. Nothing the others use has
+ * gone anywhere.
  *
  * Switching mode replaces the bar's look and gestures with that mode's preset, so it asks first:
  * a switch that quietly rewrote someone's tuned bar would be worse than no switch.
  *
- * @param content the four cards, laid out by the caller to match its grid.
+ * @param rows the four rows, each told its shape in the group.
+ * @param ad a native ad, as a row of its own under the mode switch; null for Pro, and for a build
+ *   without ads. Always composed, so it can load, but it only counts as a row — a gap above it and
+ *   a place in the group's corners — while [adShown].
  */
 @Composable
 fun AdvancedFeaturesGroup(
     userMode: String,
     onChangeMode: (String) -> Unit,
     modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit,
+    rows: List<@Composable (Shape) -> Unit>,
+    ad: (@Composable (Shape) -> Unit)? = null,
+    adShown: Boolean = false,
 ) {
     val advanced = UserMode.sanitize(userMode) == UserMode.ADVANCED
-    var expanded by rememberSaveable { mutableStateOf(advanced) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
     var confirming by rememberSaveable { mutableStateOf<String?>(null) }
-
-    val chevron by animateFloatAsState(
-        targetValue = if (expanded) 180f else 0f,
-        animationSpec = spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMediumLow),
-        label = "advancedChevron",
-    )
-    val expandLabel = stringResource(R.string.expand_advanced_features)
-    val collapseLabel = stringResource(R.string.collapse_advanced_features)
+    val shown = advanced || expanded
+    val adRows = if (ad != null && adShown) 1 else 0
+    val count = 1 + adRows + (if (shown) rows.size else 0) + (if (advanced) 0 else 1)
 
     Column(modifier = modifier) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = !expanded }
-                .semantics {
-                    role = Role.Button
-                    stateDescription = if (expanded) collapseLabel else expandLabel
-                },
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.AutoAwesome,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(22.dp),
+        HomeHeading(
+            title = stringResource(R.string.home_advanced_features),
+            hint = stringResource(R.string.home_advanced_features_desc),
+        )
+        HomeSegments(modifier = Modifier.animateContentSize(spring(stiffness = Spring.StiffnessMediumLow))) {
+            // The switch and the ad as one child of the group, so an ad not yet loaded adds no gap.
+            Column {
+                HomeToggleRow(
+                    icon = Icons.Outlined.AutoAwesome,
+                    title = stringResource(R.string.mode_advanced_switch),
+                    summary = stringResource(if (advanced) R.string.mode_advanced_on_desc else R.string.mode_advanced_off_desc),
+                    checked = advanced,
+                    shape = segmentShape(0, count),
+                    onCheckedChange = { confirming = if (advanced) UserMode.REGULAR else UserMode.ADVANCED },
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.home_advanced_features),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = stringResource(R.string.home_advanced_features_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                if (ad != null) {
+                    Box(modifier = Modifier.padding(top = if (adRows == 1) 3.dp else 0.dp)) {
+                        ad(segmentShape(1, count))
+                    }
                 }
-                Icon(
-                    imageVector = Icons.Default.ExpandMore,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.rotate(chevron),
-                )
             }
-        }
-
-        AnimatedVisibility(
-            visible = expanded,
-            enter = expandVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMediumLow,
-                    visibilityThreshold = IntSize.VisibilityThreshold,
-                )
-            ) + fadeIn(spring(stiffness = Spring.StiffnessMedium)),
-            exit = shrinkVertically(
-                animationSpec = spring(
-                    stiffness = Spring.StiffnessMedium,
-                    visibilityThreshold = IntSize.VisibilityThreshold,
-                )
-            ) + fadeOut(spring(stiffness = Spring.StiffnessMedium)),
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Spacer(modifier = Modifier.height(0.dp))
-                ModeSwitchRow(
-                    advanced = advanced,
-                    onToggle = { confirming = if (advanced) UserMode.REGULAR else UserMode.ADVANCED },
-                )
-                content()
+            if (shown) rows.forEachIndexed { i, row -> row(segmentShape(i + 1 + adRows, count)) }
+            if (!advanced) {
+                ExpanderRow(expanded = expanded, shape = segmentShape(count - 1, count)) { expanded = !expanded }
             }
         }
     }
@@ -184,39 +143,36 @@ fun AdvancedFeaturesGroup(
     }
 }
 
-/** Regular or advanced, as a switch, with what each one means under it. */
+/** Shows or folds the four, for a regular user: the group's last row. */
 @Composable
-private fun ModeSwitchRow(advanced: Boolean, onToggle: () -> Unit) {
-    Card(
+private fun ExpanderRow(expanded: Boolean, shape: Shape, onClick: () -> Unit) {
+    val chevron by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMediumLow),
+        label = "advancedChevron",
+    )
+    val colours = MaterialTheme.colorScheme
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onToggle),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            .clip(shape)
+            .background(colours.surfaceVariant.copy(alpha = 0.65f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.mode_advanced_switch),
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = stringResource(if (advanced) R.string.mode_advanced_on_desc else R.string.mode_advanced_off_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            // The row is the control; the switch only shows its state, so a tap anywhere asks.
-            Switch(checked = advanced, onCheckedChange = { onToggle() })
-        }
+        Text(
+            text = stringResource(if (expanded) R.string.collapse_advanced_features else R.string.expand_advanced_features),
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
+            color = colours.primary,
+            modifier = Modifier.weight(1f).padding(start = 4.dp),
+        )
+        Icon(
+            imageVector = Icons.Default.ExpandMore,
+            contentDescription = null,
+            tint = colours.primary,
+            modifier = Modifier.rotate(chevron),
+        )
     }
 }

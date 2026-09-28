@@ -2,7 +2,7 @@
 <resources>
     <!-- Translated from the English strings that had none here. -->
     <string name="preset_classic_title">Классика</string>
-    <string name="preset_classic_subtitle">Исходная круглая кнопка</string>
+    <string name="preset_classic_subtitle">Исходная круглая кнопка: свайп — громкость, нажатие — панель</string>
     <string name="home_advanced_features">Расширенные функции</string>
     <string name="home_advanced_features_desc">Дек, Быстрый ползунок, меню долгого нажатия и видимость</string>
     <string name="expand_advanced_features">Показать расширенные функции</string>

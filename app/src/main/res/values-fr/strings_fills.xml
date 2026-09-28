@@ -13,7 +13,7 @@
     <string name="level_feedback_low">Lueur quand c’est bas</string>
     <string name="level_feedback_low_desc">Une douce lumière respire au niveau quand il est bas, et en bas quand il est coupé.</string>
     <string name="level_feedback_full">Fête tout en haut</string>
-    <string name="level_feedback_full_desc">Un effet quand il atteint 100 %, et tant qu’il y reste. Choisissez-en un ci-dessous.</string>
+    <string name="level_feedback_full_desc" formatted="false">Un effet quand il atteint 100 %, et tant qu’il y reste. Choisissez-en un ci-dessous.</string>
     <string name="level_max_title">Tout en haut</string>
     <string name="level_max_burst">Éclat</string>
     <string name="level_max_ripple">Ondes</string>

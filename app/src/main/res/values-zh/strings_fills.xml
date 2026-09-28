@@ -13,7 +13,7 @@
     <string name="level_feedback_low">低时发光</string>
     <string name="level_feedback_low_desc">电平较低时在电平处、关闭时在底部，一道柔光缓缓呼吸。</string>
     <string name="level_feedback_full">到顶庆祝</string>
-    <string name="level_feedback_full_desc">到达 100% 时以及停留在顶部期间的效果。在下方选择一个。</string>
+    <string name="level_feedback_full_desc" formatted="false">到达 100% 时以及停留在顶部期间的效果。在下方选择一个。</string>
     <string name="level_max_title">到顶时</string>
     <string name="level_max_burst">迸发</string>
     <string name="level_max_ripple">涟漪</string>

@@ -2,7 +2,7 @@
 <resources>
     <!-- Translated from the English strings that had none here. -->
     <string name="preset_classic_title">经典</string>
-    <string name="preset_classic_subtitle">最初的圆形按钮</string>
+    <string name="preset_classic_subtitle">最初的圆形按钮：滑动调音量，点按打开面板</string>
     <string name="home_advanced_features">高级功能</string>
     <string name="home_advanced_features_desc">Deck、快捷滑块、长按菜单和可见性</string>
     <string name="expand_advanced_features">显示高级功能</string>

@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">GestureVolume</string>
 
-    <string name="landscape_appearance_settings">लैंडस्केप उपस्थिति सेटिंग्स</string>
+    <string name="landscape_appearance_settings">लैंडस्केप दिखावट सेटिंग्स</string>
     <string name="click_">स्विच को सक्रिय करने के लिए चेक करें और लैंडस्केप स्क्रीन पर हैंडलर कॉन्फ़िगर करें।</string>
     <string name="configure">कॉन्फ़िगर करें</string>
     <string name="please">कृपया हैंडलर स्थिति कॉन्फ़िगर करने के लिए अपने फोन को पोर्ट्रेट मोड में घुमाएं।</string>
@@ -125,12 +125,12 @@
     <string name="tap_gesture_settings">टैप करें &amp; इशारा सेटिंग्स</string>
 
     <!-- Appearance -->
-    <string name="appearance_saved">उपस्थिति सहेजी गई</string>
-    <string name="appearance">उपस्थिति</string>
-    <string name="appearance_desc">रंग, आकृति और आकार</string>
+    <string name="appearance_saved">दिखावट सहेजी गई</string>
+    <string name="appearance">दिखावट</string>
+    <string name="appearance_desc">रंग, आकार, साइज़ और आइकन, लाइव प्रीव्यू के साथ</string>
     <string name="customize_handler">हैंडलर को अनुकूलित करें</string>
     <string name="actions">कार्रवाई</string>
-    <string name="actions_desc">टैप और स्वाइप क्या करते हैं</string>
+    <string name="actions_desc">हर टैप, होल्ड और स्वाइप क्या करता है, और आज़माने के लिए एक पैड</string>
 
     <!-- Navigation -->
     <string name="pro_version">प्रो संस्करण</string>
@@ -146,7 +146,7 @@
     <string name="walkthrough_overlay_title">ओवरले अनुमति</string>
     <string name="walkthrough_overlay_desc">अन्य ऐप्स के शीर्ष पर वॉल्यूम हैंडलर दिखाने के लिए, हमें \'अन्य ऐप्स पर ड्रा करें\' अनुमति की आवश्यकता है।</string>
     <string name="walkthrough_all_set_title">तुम सब सेट हो!</string>
-    <string name="walkthrough_all_set_desc">जेस्चर वॉल्यूम उपयोग के लिए तैयार है। मुख्य स्क्रीन में उपस्थिति और क्रियाओं को अनुकूलित करें।</string>
+    <string name="walkthrough_all_set_desc">जेस्चर वॉल्यूम उपयोग के लिए तैयार है। मुख्य स्क्रीन में दिखावट और क्रियाओं को अनुकूलित करें।</string>
     <string name="get_started">शुरू हो जाओ</string>
     <string name="next">अगला</string>
     <string name="finish">खत्म करना</string>
@@ -209,22 +209,6 @@
     <string name="icon_close">बंद करना</string>
     <string name="crown">ताज</string>
 
-    <!-- Languages -->
-    <string name="lang_english">English</string>
-    <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">Arabic</string>
-    <string name="lang_hindi">Hindi</string>
-    <string name="lang_korean">Korean</string>
-    <string name="lang_japanese">Japanese</string>
-    <string name="lang_chinese">Chinese</string>
-    <string name="lang_german">German</string>
-    <string name="lang_spanish">Spanish</string>
-    <string name="lang_french">French</string>
-    <string name="lang_italian">Italian</string>
-    <string name="lang_portuguese">Portuguese</string>
-    <string name="lang_russian">Russian</string>
-    <string name="lang_turkish">Turkish</string>
-    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">प्रणालीगत चूक</string>
@@ -237,7 +221,7 @@
 
     <!-- Presets -->
     <string name="preset_bold_title">बोल्ड</string>
-    <string name="preset_bold_subtitle">बड़ा और amp; दृश्यमान</string>
+    <string name="preset_bold_subtitle">किनारे के पास तैरता गोल बुलबुला, आसानी से दिखे</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">बाहर निकलने के लिए फिर से वापस दबाएं</string>
@@ -365,7 +349,7 @@
     <string name="edge_swipe_menu_desc">एक्शन मेनू खोलने के लिए बार से स्क्रीन के बीच की ओर स्वाइप करें। डिफ़ॉल्ट रूप से बंद, क्योंकि सिस्टम का बैक ज़ेस्चर भी ऐसे ही किया जाता है।</string>
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">किनारा</string>
-    <string name="preset_edge_subtitle">पतली पट्टी, किनारे से सटी हुई</string>
+    <string name="preset_edge_subtitle">किनारे से सटी पतली गोली, रास्ते से हटकर</string>
     <string name="action_group_handler">हैंडलर</string>
     <string name="action_group_volume">वॉल्यूम और चमक</string>
     <string name="action_group_deck">डेक और टूल</string>
@@ -825,7 +809,7 @@
     <string name="faq_q_where_is_bar">बार कहाँ है? मुझे वह नहीं दिख रहा।</string>
     <string name="faq_a_where_is_bar">यह ऐप खुला रहने तक बार छिपा रहता है, ताकि वह अपनी ही सेटिंग्स को न ढके। होम दबाएँ और वह वापस आ जाएगा। अगर फिर भी न दिखे, तो देखें कि सेवा चालू है — होम स्क्रीन के ऊपर वाला बड़ा स्विच — और अनुमतियाँ कार्ड कुछ नहीं माँग रहा।</string>
     <string name="faq_q_move_bar">बार को कैसे हिलाएँ?</string>
-    <string name="faq_a_move_bar">उसे दबाकर रखें, कंपन का इंतज़ार करें, फिर खींचें। वह स्क्रीन पर कहीं भी जा सकता है, और जहाँ आप छोड़ते हैं वह जगह पोर्ट्रेट और लैंडस्केप के लिए अलग-अलग याद रहती है। वह किस तरफ़ से शुरू हो, यह उपस्थिति › स्थिति में भी सेट किया जा सकता है।</string>
+    <string name="faq_a_move_bar">उसे दबाकर रखें, कंपन का इंतज़ार करें, फिर खींचें। वह स्क्रीन पर कहीं भी जा सकता है, और जहाँ आप छोड़ते हैं वह जगह पोर्ट्रेट और लैंडस्केप के लिए अलग-अलग याद रहती है। वह किस तरफ़ से शुरू हो, यह दिखावट › स्थिति में भी सेट किया जा सकता है।</string>
     <string name="faq_q_hide_bar">बार को कुछ देर के लिए कैसे हटाएँ?</string>
     <string name="faq_a_hide_bar">उसे देर तक दबाएँ और हैंडलर छिपाएँ चुनें। वह तब तक हटा रहता है जब तक आप उसे वापस न लाएँ — सूचना से, या इस ऐप की होम स्क्रीन पर दिखने वाले कार्ड से। सेवा को पूरी तरह बंद करने के लिए उसी स्क्रीन के ऊपर वाला स्विच है।</string>
     <string name="faq_q_bar_disappears">बार बार-बार अपने आप गायब हो जाता है।</string>
@@ -853,7 +837,7 @@
     <string name="faq_q_battery">क्या यह बैटरी खाता है?</string>
     <string name="faq_a_battery">बहुत कम। बार एक छोटी विंडो है जो छूने तक कुछ नहीं बनाती, और जेस्चर के बीच ऐप बैकग्राउंड में कोई काम नहीं करता। बैटरी अनुकूलन बंद करने से, जिसका सुझाव समस्या निवारण देता है, बैटरी ज़्यादा खर्च नहीं होती — बस सिस्टम उसे बंद नहीं करता।</string>
     <string name="faq_q_games">गेम और फ़ुल-स्क्रीन वीडियो में बार बीच में आता है।</string>
-    <string name="faq_a_games">उसे ऐसी जगह ले जाएँ जिसकी आपके ऐप को ज़रूरत न हो — देर तक दबाएँ और खींचें — या उपस्थिति में उसे छोटा और ज़्यादा पारदर्शी करें। जो गेम आप अक्सर खेलते हैं, उसके लिए सबसे साफ़ तरीका है लॉन्ग-प्रेस मेन्यू से बार छिपाना और बाद में सूचना से वापस लाना।</string>
+    <string name="faq_a_games">उसे ऐसी जगह ले जाएँ जिसकी आपके ऐप को ज़रूरत न हो — देर तक दबाएँ और खींचें — या दिखावट में उसे छोटा और ज़्यादा पारदर्शी करें। जो गेम आप अक्सर खेलते हैं, उसके लिए सबसे साफ़ तरीका है लॉन्ग-प्रेस मेन्यू से बार छिपाना और बाद में सूचना से वापस लाना।</string>
     <string name="panel_theme">पैनल स्टाइल</string>
     <string name="panel_theme_solid">Solid</string>
     <string name="panel_theme_frosted">Frosted</string>
@@ -900,7 +884,7 @@
     <string name="quick_dial_settings_title">कॉल और चैट</string>
     <string name="quick_dial_settings_desc">डेक की खोज के साथ साझा।</string>
     <string name="preset_dock_title">डॉक</string>
-    <string name="preset_dock_subtitle">घुमावदार किनारे वाला टैब</string>
+    <string name="preset_dock_subtitle">किनारे पर घुमावदार टैब जो पैनल में खुलता है</string>
     <string name="shape_uppercase">आकृति</string>
     <string name="shape_rounded">गोल कोने</string>
     <string name="shape_tab">टैब</string>
@@ -1026,4 +1010,8 @@
     <string name="whats_new_badge">नया</string>
     <string name="whats_new_first_release">Google Play पर पहली रिलीज़</string>
     <string name="whats_new_milestone">%1$s+ इंस्टॉल</string>
+    <string name="home_service_off_desc">चालू करने के लिए टैप करें। फिर नीचे दिखावट और कार्रवाई में तय करें कि यह कैसा दिखे और क्या करे।</string>
+    <string name="home_service_on_desc">हैंडलर आपकी स्क्रीन पर है। वॉल्यूम के लिए स्वाइप करें, अपनी क्रियाओं के लिए टैप करें, और बंद करने के लिए यहाँ टैप करें।</string>
+    <string name="home_presets_title">क्विक प्रीसेट</string>
+    <string name="home_presets_desc">तैयार हैंडलर से शुरू करें, फिर उसे दिखावट में बदलें।</string>
 </resources>

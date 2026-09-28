@@ -13,7 +13,7 @@
     <string name="level_feedback_low">低いときに光る</string>
     <string name="level_feedback_low_desc">レベルが低いときはその位置で、オフのときは下端で、やわらかな光が呼吸します。</string>
     <string name="level_feedback_full">最上部でお祝い</string>
-    <string name="level_feedback_full_desc">100%に達したとき、そしてそのままの間に演出が入ります。下から選んでください。</string>
+    <string name="level_feedback_full_desc" formatted="false">100%に達したとき、そしてそのままの間に演出が入ります。下から選んでください。</string>
     <string name="level_max_title">最上部</string>
     <string name="level_max_burst">バースト</string>
     <string name="level_max_ripple">波紋</string>

@@ -13,7 +13,7 @@
     <string name="level_feedback_low">낮을 때 빛나기</string>
     <string name="level_feedback_low_desc">레벨이 낮을 때는 그 위치에서, 꺼져 있을 때는 맨 아래에서 부드러운 빛이 숨 쉽니다.</string>
     <string name="level_feedback_full">맨 위에서 축하</string>
-    <string name="level_feedback_full_desc">100%에 도달했을 때와 그 상태로 있는 동안 효과가 나타납니다. 아래에서 고르세요.</string>
+    <string name="level_feedback_full_desc" formatted="false">100%에 도달했을 때와 그 상태로 있는 동안 효과가 나타납니다. 아래에서 고르세요.</string>
     <string name="level_max_title">맨 위</string>
     <string name="level_max_burst">버스트</string>
     <string name="level_max_ripple">물결</string>

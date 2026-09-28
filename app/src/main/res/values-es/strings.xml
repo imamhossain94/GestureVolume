@@ -127,10 +127,10 @@
     <!-- Appearance -->
     <string name="appearance_saved">Apariencia guardada</string>
     <string name="appearance">Apariencia</string>
-    <string name="appearance_desc">Color, forma y tamaño</string>
+    <string name="appearance_desc">Color, forma, tamaño e icono, con vista previa en vivo</string>
     <string name="customize_handler">Personalizar controlador</string>
     <string name="actions">Acciones</string>
-    <string name="actions_desc">Qué hacen toques y gestos</string>
+    <string name="actions_desc">Qué hace cada toque, pulsación y deslizamiento, y un panel para probarlos</string>
 
     <!-- Navigation -->
     <string name="pro_version">Versión Pro</string>
@@ -209,22 +209,6 @@
     <string name="icon_close">Cerca</string>
     <string name="crown">Corona</string>
 
-    <!-- Languages -->
-    <string name="lang_english">English</string>
-    <string name="lang_bangla">Bangla</string>
-    <string name="lang_arabic">Arabic</string>
-    <string name="lang_hindi">Hindi</string>
-    <string name="lang_korean">Korean</string>
-    <string name="lang_japanese">Japanese</string>
-    <string name="lang_chinese">Chinese</string>
-    <string name="lang_german">German</string>
-    <string name="lang_spanish">Spanish</string>
-    <string name="lang_french">French</string>
-    <string name="lang_italian">Italian</string>
-    <string name="lang_portuguese">Portuguese</string>
-    <string name="lang_russian">Russian</string>
-    <string name="lang_turkish">Turkish</string>
-    <string name="lang_vietnamese">Vietnamese</string>
 
     <!-- Theme Options -->
     <string name="system_default">Valor predeterminado del sistema</string>
@@ -237,7 +221,7 @@
 
     <!-- Presets -->
     <string name="preset_bold_title">Atrevido</string>
-    <string name="preset_bold_subtitle">Grande y amplio. visible</string>
+    <string name="preset_bold_subtitle">Una burbuja redonda que flota junto al borde, fácil de encontrar</string>
 
     <!-- Missing Strings -->
     <string name="press_back_again_to_exit">Presione Atrás nuevamente para salir.</string>
@@ -365,7 +349,7 @@
     <string name="edge_swipe_menu_desc">Desliza desde la barra hacia el centro de la pantalla para abrir el menú de acciones. Desactivado de forma predeterminada, porque el gesto Atrás del sistema se hace igual.</string>
     <!-- 1.3.5: edge preset -->
     <string name="preset_edge_title">Borde</string>
-    <string name="preset_edge_subtitle">Píldora fina, pegada al lateral</string>
+    <string name="preset_edge_subtitle">Una píldora fina, pegada al lado y sin estorbar</string>
     <string name="action_group_handler">Barra</string>
     <string name="action_group_volume">Volumen y brillo</string>
     <string name="action_group_deck">Deck y herramientas</string>
@@ -900,7 +884,7 @@
     <string name="quick_dial_settings_title">LLAMADAS Y CHATS</string>
     <string name="quick_dial_settings_desc">Compartido con la búsqueda del Deck.</string>
     <string name="preset_dock_title">Dock</string>
-    <string name="preset_dock_subtitle">Pestaña curva en el borde</string>
+    <string name="preset_dock_subtitle">Una pestaña curva en el borde que se abre en paneles</string>
     <string name="shape_uppercase">FORMA</string>
     <string name="shape_rounded">Redondeada</string>
     <string name="shape_tab">Pestaña</string>
@@ -1026,4 +1010,8 @@
     <string name="whats_new_badge">Nuevo</string>
     <string name="whats_new_first_release">Primera versión en Google Play</string>
     <string name="whats_new_milestone">%1$s+ instalaciones</string>
+    <string name="home_service_off_desc">Toca para activarla. Luego ajusta cómo se ve y qué hace en Apariencia y Acciones, aquí abajo.</string>
+    <string name="home_service_on_desc">La barra está en tu pantalla. Deslízala para el volumen, tócala para tus acciones y toca aquí para desactivarla.</string>
+    <string name="home_presets_title">Preajustes rápidos</string>
+    <string name="home_presets_desc">Empieza con una barra lista y ajústala después en Apariencia.</string>
 </resources>

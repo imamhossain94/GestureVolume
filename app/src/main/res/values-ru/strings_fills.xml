@@ -13,7 +13,7 @@
     <string name="level_feedback_low">Свечение на низком уровне</string>
     <string name="level_feedback_low_desc">Мягкий свет «дышит» на уровне, когда он низкий, и внизу, когда он выключен.</string>
     <string name="level_feedback_full">Праздник наверху</string>
-    <string name="level_feedback_full_desc">Эффект при достижении 100% и пока уровень остаётся там. Выберите ниже.</string>
+    <string name="level_feedback_full_desc" formatted="false">Эффект при достижении 100% и пока уровень остаётся там. Выберите ниже.</string>
     <string name="level_max_title">Наверху</string>
     <string name="level_max_burst">Вспышка</string>
     <string name="level_max_ripple">Волны</string>

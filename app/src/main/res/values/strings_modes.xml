@@ -3,7 +3,7 @@
     <!-- Regular and advanced users: the Classic preset, the home screen's folded group, and the
          switch between the two. -->
     <string name="preset_classic_title">Classic</string>
-    <string name="preset_classic_subtitle">The original round button</string>
+    <string name="preset_classic_subtitle">The original round button: swipe for volume, tap for the panel</string>
 
     <string name="home_advanced_features">Advanced features</string>
     <string name="home_advanced_features_desc">Deck, Quick slider, long-press menu and visibility</string>
