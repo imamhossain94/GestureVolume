@@ -33,8 +33,8 @@ interface OverlayServiceInterface {
  * Since 1.4.0 everything about the overlay itself — the handler window, its gestures, the
  * long-press menu, the Deck, the indicator — lives in [OverlayController], which this service
  * runs. [GestureAccessibilityService] reaches that controller through
- * [OverlayRuntime.activeController] for the volume keys and the app in front, but never draws
- * anything itself. What is left here is what only a foreground service
+ * [OverlayRuntime.activeController] for the volume keys and the app in front, and draws only a
+ * copy of the bar on the lock screen, where Android hides this one's. What is left here is what only a foreground service
  * has: the notification Android requires of one, its channels and buttons, and the service
  * lifecycle that keeps the bar alive across task removal and system restarts.
  */
@@ -101,6 +101,9 @@ class OverlayService : Service(), OverlayServiceInterface {
             preference = preference,
             host = controllerHost
         )
+        // Started while the phone is locked — after an update, say — the bar belongs on the lock
+        // screen as well, where this one cannot be seen.
+        OverlayRuntime.accessibilityService?.onBarChanged()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -271,6 +274,8 @@ class OverlayService : Service(), OverlayServiceInterface {
         // is still the safe choice, and the restarted instance takes brightness back over on the
         // next swipe.
         if (::controller.isInitialized) controller.destroy(restoreBrightness = true)
+        // Stopped, so off the lock screen too.
+        OverlayRuntime.accessibilityService?.onBarChanged()
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
@@ -318,6 +323,10 @@ class OverlayService : Service(), OverlayServiceInterface {
                     startForegroundService()
                 }
                 else -> controller.handleCommand(action)
+            }
+            // The lock screen's bar is the same bar: restyled, shown or hidden with it.
+            if (action == "update" || action == "user_show" || action == "user_hide") {
+                OverlayRuntime.accessibilityService?.onBarChanged()
             }
         } ?: run {
             // Service started without action (including a START_STICKY relaunch): show the handler.

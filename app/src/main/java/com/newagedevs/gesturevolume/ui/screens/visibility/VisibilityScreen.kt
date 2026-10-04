@@ -45,6 +45,7 @@ import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.ScreenLockPortrait
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
@@ -101,12 +102,13 @@ import kotlinx.coroutines.withContext
 
 /**
  * When the bar shows: only while media plays or a call is on, what it does while the keyboard is
- * open, and the apps it steps aside in.
+ * open, whether it shows on the lock screen, and the apps it steps aside in.
  *
  * The first two take no permission at all — the overlay hears what is playing and the audio mode on
- * its own, and asks the window manager where the keyboard is. The apps take the accessibility
- * service, which is what knows which app is in front, so the screen says so plainly and offers the
- * way to turn it on, rather than letting a tick quietly do nothing.
+ * its own, and asks the window manager where the keyboard is. The lock screen and the apps take the
+ * accessibility service — the one thing Android draws over the lock screen, and the one that knows
+ * which app is in front — so the screen says so plainly and offers the way to turn it on, rather
+ * than letting a switch or a tick quietly do nothing.
  *
  * Laid out as the Actions screen is: each group a card of rows, each row an icon, what it is, and
  * its switch or its tick, the whole row the thing to tap; and the choice of what the bar does while
@@ -252,7 +254,11 @@ fun VisibilityScreen(
                             .navigationBarsPadding()
                             .padding(top = 8.dp, bottom = 24.dp),
                     ) {
-                        AutoHideSection(preference)
+                        AutoHideSection(
+                            preference,
+                            accessibilityOn = accessibilityOn,
+                            onTurnOnAccessibility = { onOpenPermissions(PermissionNeeds.Permission.ACCESSIBILITY) },
+                        )
                     }
                     // A LazyColumn of its own, not a scrolling Column around one: a lazy list inside
                     // a vertical scroll has no height to measure against and throws.
@@ -277,6 +283,8 @@ fun VisibilityScreen(
                 item(key = "settings") {
                     AutoHideSection(
                         preference,
+                        accessibilityOn = accessibilityOn,
+                        onTurnOnAccessibility = { onOpenPermissions(PermissionNeeds.Permission.ACCESSIBILITY) },
                         modifier = Modifier.padding(start = SIDE_MARGIN, end = SIDE_MARGIN, top = 8.dp, bottom = 24.dp),
                     )
                 }
@@ -288,13 +296,20 @@ fun VisibilityScreen(
 
 /**
  * The bar's two other reasons to step aside, above the apps: nothing it was asked to show for is
- * happening, and the keyboard is open.
+ * happening, and the keyboard is open. And the one place it is missing from unless asked: the lock
+ * screen.
  *
- * Both are read live by the overlay, so a change here only has to ask it to look again.
+ * All are read live by the overlay, so a change here only has to ask it to look again.
  */
 @Composable
-private fun AutoHideSection(preference: SharedPref, modifier: Modifier = Modifier) {
+private fun AutoHideSection(
+    preference: SharedPref,
+    accessibilityOn: Boolean,
+    onTurnOnAccessibility: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var onlyMedia by remember { mutableStateOf(preference.getShowOnlyWhileMedia()) }
+    var onLockScreen by remember { mutableStateOf(preference.getShowOnLockScreen()) }
     var onlyCall by remember { mutableStateOf(preference.getShowOnlyWhileCall()) }
     var keyboard by remember { mutableStateOf(preference.getKeyboardBehaviour()) }
     var motion by remember { mutableStateOf(preference.getKeyboardMotion()) }
@@ -381,6 +396,34 @@ private fun AutoHideSection(preference: SharedPref, modifier: Modifier = Modifie
                     }
                 }
             }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // ---- on the lock screen -------------------------------------------------------------
+        // The accessibility service draws it there, so its note, as over the apps below, until it
+        // is on. The switch still takes: the bar comes to the lock screen once the service does.
+        Heading(stringResource(R.string.visibility_lock_title), stringResource(R.string.visibility_lock_desc))
+        if (!accessibilityOn) {
+            PermissionNote(
+                missing = PermissionNeeds.Permission.ACCESSIBILITY,
+                onOpenPermissions = { onTurnOnAccessibility() },
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+        }
+        Segments {
+            ToggleRow(
+                icon = Icons.Filled.ScreenLockPortrait,
+                title = stringResource(R.string.visibility_lock_show_title),
+                description = stringResource(R.string.visibility_lock_show_desc),
+                checked = onLockScreen,
+                shape = segmentShape(0, 1),
+                onCheckedChange = {
+                    onLockScreen = it
+                    preference.setShowOnLockScreen(it)
+                    OverlayRuntime.accessibilityService?.refreshLockScreenBar()
+                },
+            )
         }
     }
 }

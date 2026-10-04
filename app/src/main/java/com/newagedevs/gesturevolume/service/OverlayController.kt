@@ -96,18 +96,28 @@ import com.newagedevs.gesturevolume.utils.QuickSliderIcons
  * when it is touched.
  *
  * Extracted from `OverlayService` in 1.4.0, which runs it: the service keeps the notification
- * and the service lifecycle, and this keeps the bar. The accessibility service never draws; it
- * reaches this controller through [OverlayRuntime.activeController] to hand it the volume keys
- * and the app in front.
+ * and the service lifecycle, and this keeps the bar. The accessibility service reaches this
+ * controller through [OverlayRuntime.activeController] to hand it the volume keys and the app in
+ * front, and runs a second one of its own on the lock screen: see the lockScreen parameter.
  *
- * Every window this creates uses [windowType], which is `TYPE_APPLICATION_OVERLAY` and needs the
- * overlay permission.
+ * Every window this creates uses [windowType]: `TYPE_APPLICATION_OVERLAY` from the foreground
+ * service, which needs the overlay permission, or, for the lock screen, `TYPE_ACCESSIBILITY_OVERLAY`
+ * from the accessibility service. See [lockScreen].
+ *
+ * @param lockScreen this is the second bar, the one the accessibility service puts on the lock
+ *   screen while the phone is locked: Android draws every `TYPE_APPLICATION_OVERLAY` window under
+ *   the lock screen, so the foreground service's bar cannot be seen there. It runs beside that
+ *   bar, never instead of it, so it never becomes [OverlayRuntime.activeController] and never
+ *   picks up the Deck's timer. And with the phone in anyone's hand, it does only what is
+ *   [HandlerActions.worksWhileLocked]: the volume, the Quick panel and the system's own toggles.
+ *   The Deck, the menu, moving the bar and opening apps wait for the phone to be unlocked.
  */
 class OverlayController(
     private val context: Context,
     private val windowType: Int,
     private val preference: SharedPref,
-    private val host: Host
+    private val host: Host,
+    private val lockScreen: Boolean = false,
 ) {
 
     interface Host {
@@ -509,7 +519,9 @@ class OverlayController(
     init {
         (context.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager)
             ?.registerDisplayListener(displayListener, mainHandler)
-        restoreTimer()
+        // The foreground service's bar keeps the timer. Picked up here as well, one that ran out
+        // while the phone was locked would buzz and ring twice.
+        if (!lockScreen) restoreTimer()
     }
 
     /**
@@ -605,7 +617,9 @@ class OverlayController(
      */
     init {
         registerVolumeWatcher()
-        OverlayRuntime.activeController = this
+        // The lock screen's bar is a guest beside this one: the keys, the app in front and the
+        // settings screens all mean the foreground service's.
+        if (!lockScreen) OverlayRuntime.activeController = this
     }
 
     /** True between the first and last step of a swipe that is driving the volume itself. */
@@ -2053,8 +2067,9 @@ class OverlayController(
 
     private val gestureHost = object : HandlerGestureDetector.Host {
 
+        // Never on the lock screen: the hold that moves the bar there is answered in runAction.
         override fun isLongPressReposition(): Boolean =
-            slotAction(AppGestureStore.Slot.LONG_PRESS) == HandlerActions.REPOSITION
+            !lockScreen && slotAction(AppGestureStore.Slot.LONG_PRESS) == HandlerActions.REPOSITION
 
         override fun isDoubleTapArmed(): Boolean =
             slotAction(AppGestureStore.Slot.DOUBLE_TAP) != HandlerActions.NONE
@@ -3518,7 +3533,8 @@ class OverlayController(
      * bar, which is the behaviour that shipped before this menu existed.
      */
     private fun showContextMenu() {
-        if (destroyed) return
+        // Its apps and shortcuts wait for the unlock too. See [showDeck].
+        if (destroyed || lockScreen) return
         val wm = windowManager ?: return
         val params = handlerParams ?: return
         val currentFrame = frame ?: return
@@ -3659,7 +3675,9 @@ class OverlayController(
      * own window stays where it is underneath.
      */
     fun showDeck(tile: String? = null) {
-        if (destroyed) return
+        // Its contacts, notes and apps are not for whoever picks up a locked phone. runAction has
+        // already said so; this keeps any other way in shut as well.
+        if (destroyed || lockScreen) return
         val wm = windowManager ?: return
         hideContextMenu()
 
@@ -4072,7 +4090,14 @@ class OverlayController(
      */
     fun runAction(action: String) {
         if (destroyed) return
-        if (action == HandlerActions.REPOSITION || action == HandlerActions.NONE) return
+        if (action == HandlerActions.NONE) return
+        // On the lock screen, the rest — the hold that moves the bar among them — is said to wait
+        // for the unlock rather than done, or left to do nothing with no word why.
+        if (lockScreen && !HandlerActions.worksWhileLocked(action)) {
+            showIndicatorMessage(context.getString(R.string.lock_screen_unlock_first))
+            return
+        }
+        if (action == HandlerActions.REPOSITION) return
         if (preference.getHandlerVibrateOnClick()) {
             vibratorService?.vibrate(
                 VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE)

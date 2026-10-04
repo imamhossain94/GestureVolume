@@ -2,11 +2,19 @@ package com.newagedevs.gesturevolume.service
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.app.KeyguardManager
+import android.content.BroadcastReceiver
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.res.Configuration
 import android.os.Build
+import android.os.PowerManager
 import android.view.KeyEvent
+import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
+import androidx.core.content.ContextCompat
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.utils.HandlerActions
@@ -14,8 +22,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 /**
- * The accessibility service, back after its 1.3.4 retirement and doing three things. It never
- * draws the bar: that is always [OverlayService], with the overlay permission and its notification.
+ * The accessibility service, back after its 1.3.4 retirement and doing four things. The bar is
+ * always [OverlayService]'s, with the overlay permission and its notification; this draws only a
+ * copy of it on the lock screen, where that one cannot be seen.
  *
  * **It performs the system actions** — lock the screen, take a screenshot, Back, Home, Recents,
  * the notification shade, quick settings, the power menu. Every one of these is a
@@ -30,6 +39,12 @@ import javax.inject.Inject
  * **It can see which app is on screen**, when the user has picked apps for the bar to step aside
  * in, or given apps gestures of their own. It reads the package and class of the window that came
  * to the front and nothing inside it.
+ *
+ * **It can put the bar on the lock screen**, when the user asks for it there. Android draws every
+ * app's overlay under the lock screen, the foreground service's bar included; only this service's
+ * windows are drawn over it. So while the phone is locked, and only then, this draws a second bar
+ * that does what the lock screen lets anyone do, and takes it away at the unlock. See
+ * [refreshLockScreenBar].
  *
  * **It never reads what is inside a window**, this app's or any other's. The service declares
  * `canRetrieveWindowContent="false"`, so no window content is available to it at all.
@@ -50,6 +65,105 @@ class GestureAccessibilityService : AccessibilityService() {
         super.onServiceConnected()
         OverlayRuntime.accessibilityService = this
         applyEventSubscription()
+        // Screen on and off, and the unlock: what the bar on the lock screen comes and goes with.
+        // Only ever sent by the system, to receivers registered at run time. Exported for the
+        // reason the controller's volume receiver is: only the system can send these, and some
+        // builds do not deliver them to a receiver that is not.
+        if (!screenReceiverRegistered) {
+            ContextCompat.registerReceiver(
+                this,
+                screenReceiver,
+                IntentFilter().apply {
+                    addAction(Intent.ACTION_SCREEN_ON)
+                    addAction(Intent.ACTION_SCREEN_OFF)
+                    addAction(Intent.ACTION_USER_PRESENT)
+                },
+                ContextCompat.RECEIVER_EXPORTED,
+            )
+            screenReceiverRegistered = true
+        }
+        refreshLockScreenBar()
+    }
+
+    // ---- the bar on the lock screen ------------------------------------------------------------
+
+    /** The bar this service draws on the lock screen, while there is one. */
+    private var lockScreenBar: OverlayController? = null
+
+    /** The lock screen's bar can neither hide nor stop the bar, so it has nothing to tell. */
+    private val lockScreenHost = object : OverlayController.Host {
+        override fun onNotificationStateChanged() = Unit
+        override fun onStopRequested() = Unit
+    }
+
+    private var screenReceiverRegistered = false
+
+    private val screenReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) = refreshLockScreenBar()
+    }
+
+    /**
+     * Puts the bar on the lock screen, or takes it off, for how things stand now.
+     *
+     * It is there while the user has asked for it ([SharedPref.getShowOnLockScreen]), the
+     * foreground service's bar is up, the screen is on and the phone is locked. It is the same bar,
+     * read from the same settings, put up by its own [OverlayController] with `lockScreen` set, so
+     * it does only what the lock screen lets anyone do. At the unlock it goes, and the foreground
+     * service's bar, which was there under the lock screen all along, is what is left.
+     *
+     * Asked again as the screen goes on and off and the phone is unlocked, as the setting changes,
+     * and as the foreground service's bar starts, stops, or is changed: see [onBarChanged].
+     */
+    fun refreshLockScreenBar() {
+        if (!wantsLockScreenBar()) {
+            // Not handing back brightness: the foreground service's bar carries on.
+            lockScreenBar?.destroy(restoreBrightness = false)
+            lockScreenBar = null
+            return
+        }
+        if (lockScreenBar != null) return
+        lockScreenBar = OverlayController(
+            context = this,
+            windowType = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+            preference = preference,
+            host = lockScreenHost,
+            lockScreen = true,
+        ).also { it.show() }
+    }
+
+    /**
+     * The foreground service's bar was started, stopped, shown, hidden or restyled. The bar on the
+     * lock screen is put up afresh, so it is the same one, or not there at all.
+     */
+    fun onBarChanged() {
+        lockScreenBar?.destroy(restoreBrightness = false)
+        lockScreenBar = null
+        refreshLockScreenBar()
+    }
+
+    private fun wantsLockScreenBar(): Boolean {
+        if (!preference.getShowOnLockScreen()) return false
+        // The foreground service's bar is up: the only controller ever made the active one. Hidden
+        // by the user, it stays hidden here too, since the controller checks that itself.
+        if (OverlayRuntime.activeController == null) return false
+        val power = getSystemService(PowerManager::class.java) ?: return false
+        if (!power.isInteractive) return false
+        val keyguard = getSystemService(KeyguardManager::class.java) ?: return false
+        return keyguard.isKeyguardLocked
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        lockScreenBar?.onConfigurationChanged()
+    }
+
+    private fun releaseLockScreen() {
+        lockScreenBar?.destroy(restoreBrightness = false)
+        lockScreenBar = null
+        if (screenReceiverRegistered) {
+            runCatching { unregisterReceiver(screenReceiver) }
+            screenReceiverRegistered = false
+        }
     }
 
     /**
@@ -198,11 +312,13 @@ class GestureAccessibilityService : AccessibilityService() {
     override fun onUnbind(intent: Intent?): Boolean {
         // Nothing will report the app in front any more, so the bar must not stay away for one.
         OverlayRuntime.activeController?.clearForegroundApp()
+        releaseLockScreen()
         if (OverlayRuntime.accessibilityService === this) OverlayRuntime.accessibilityService = null
         return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
+        releaseLockScreen()
         if (OverlayRuntime.accessibilityService === this) OverlayRuntime.accessibilityService = null
         super.onDestroy()
     }

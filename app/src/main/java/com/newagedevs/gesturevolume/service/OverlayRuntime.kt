@@ -15,8 +15,10 @@ import androidx.core.content.ContextCompat
  *
  * The bar has one host: the foreground service [OverlayService], which needs the overlay
  * permission and, because Android will not run one without a notification, a notification. The
- * accessibility service never draws; it performs the system actions and passes the volume keys and
- * the app in front to the controller the foreground service runs, found through [activeController].
+ * accessibility service performs the system actions and passes the volume keys and the app in front
+ * to the controller the foreground service runs, found through [activeController]. The one thing
+ * it draws is a copy of the bar on the lock screen, where Android hides the foreground service's,
+ * and only while the phone is locked: see [GestureAccessibilityService.refreshLockScreenBar].
  *
  * Everything that talks to the bar — the Activity's show/hide on resume/pause, the notification
  * buttons, the boot receiver, the ViewModel's toggle — goes through here.

@@ -265,6 +265,27 @@ object HandlerActions {
     /** True when the action needs Do Not Disturb access. */
     fun needsNotificationPolicy(action: String): Boolean = action == TOGGLE_DND
 
+    /**
+     * What the bar on the lock screen may do, with the phone in whoever's hand: what the lock
+     * screen itself lets anyone do. The volume and the Quick panel, the brightness, the torch, the
+     * ringer, Do Not Disturb, rotation and the media keys, and the system actions, which are the
+     * system's to carry out and its lock screen's to refuse.
+     *
+     * Everything else waits for the unlock. The Deck and the menu show contacts, notes and apps;
+     * opening an app would only open it behind the lock screen; moving, hiding or stopping the bar
+     * is for its owner. A list of what may run rather than of what may not, so an action added
+     * later stays off the lock screen until someone decides otherwise.
+     */
+    fun worksWhileLocked(action: String): Boolean = action in LOCK_SCREEN_ACTIONS || action in ACCESSIBILITY_ACTIONS
+
+    private val LOCK_SCREEN_ACTIONS: Set<String> = setOf(
+        INCREASE_VOLUME, INCREASE_VOLUME_UI, DECREASE_VOLUME, DECREASE_VOLUME_UI,
+        INCREASE_BRIGHTNESS, DECREASE_BRIGHTNESS, TOGGLE_AUTO_BRIGHTNESS,
+        OPEN_VOLUME_UI, MUTE, MUTE_OR_UNMUTE, OPEN_QUICK_SLIDER,
+        TOGGLE_FLASHLIGHT, TOGGLE_DND, TOGGLE_AUTO_ROTATE, RING_VIBRATE,
+        MEDIA_PLAY_PAUSE, MEDIA_NEXT, MEDIA_PREVIOUS,
+    )
+
     /** True when the volume change should surface the system volume panel. */
     fun showsVolumeUi(action: String): Boolean =
         action == INCREASE_VOLUME_UI || action == DECREASE_VOLUME_UI

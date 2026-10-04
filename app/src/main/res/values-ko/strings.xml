@@ -390,6 +390,7 @@
     <string name="auto_rotate_on">자동 회전 켜짐</string>
     <string name="auto_rotate_off">자동 회전 꺼짐</string>
     <string name="auto_rotate_needs_permission">자동 회전을 바꾸려면 ‘시스템 설정 수정’을 허용하세요</string>
+    <string name="lock_screen_unlock_first">이 기능을 쓰려면 휴대폰 잠금을 해제하세요</string>
     <string name="accessibility_needed_short">이 기능을 쓰려면 GestureVolume 접근성 서비스를 켜세요</string>
     <string name="action_unavailable_on_device">이 동작은 이 기기에서 사용할 수 없습니다</string>
     <string name="triple_tap_action">세 번 탭 동작</string>
@@ -645,6 +646,10 @@
     <string name="visibility_card_subtitle">바가 나타나지 않는 앱</string>
     <string name="visibility_apps_title">이 앱에서 숨기기</string>
     <string name="visibility_apps_desc">이 앱들 중 하나가 열려 있는 동안 바가 비켜나고, 앱을 나가면 돌아옵니다.</string>
+    <string name="visibility_lock_title">잠금 화면</string>
+    <string name="visibility_lock_desc">Android는 어떤 앱의 플로팅 바도 잠금 화면에 표시하지 않습니다. 접근성 서비스를 사용하면 이 바를 잠금 화면에 표시할 수 있습니다.</string>
+    <string name="visibility_lock_show_title">잠금 화면에 표시하기</string>
+    <string name="visibility_lock_show_desc">휴대폰이 잠겨 있는 동안 볼륨, 빠른 패널, 빠른 토글을 쓸 수 있습니다. 덱, 메뉴, 앱 열기는 잠금을 해제할 때까지 기다립니다.</string>
     <string name="visibility_apps_needs_accessibility">접근성 서비스가 필요합니다. 어떤 앱이 열려 있는지 알려줍니다. 눌러서 켜세요.</string>
     <string name="visibility_apps_chosen">숨긴 앱</string>
     <string name="visibility_tab_chosen">숨긴 앱 (%1$d)</string>
@@ -817,7 +822,7 @@
     <string name="faq_q_brightness">볼륨은 바뀌는데 밝기는 왜 안 바뀌나요?</string>
     <string name="faq_a_brightness">밝기에는 “시스템 설정 수정” 권한이 필요하며, Android는 이 권한을 다른 권한과 따로 관리합니다. 권한 카드에서 허용하세요. 또한 앱이 처음 밝기 값을 쓸 때 자동 밝기를 끕니다. 그렇지 않으면 조도 센서가 1~2초 안에 설정한 값을 덮어쓰기 때문입니다.</string>
     <string name="faq_q_accessibility">왜 접근성 서비스를 요청하나요?</string>
-    <string name="faq_a_accessibility">Android가 일반 앱에는 허용하지 않는 동작에만 사용합니다: 뒤로, 홈, 최근 앱, 스크린샷, 화면 잠금, 알림 창, 전원 메뉴. 그 밖의 기능에는 필요하지 않으며, 동작 선택 화면에서 해당 동작에 표시가 있어 고르기 전에 알 수 있습니다. 또한 직접 켠 경우에만 즉시 반응하는 볼륨 키와 선택한 앱에서 바 숨기기에도 사용됩니다.</string>
+    <string name="faq_a_accessibility">Android가 일반 앱에는 허용하지 않는 동작에만 사용합니다: 뒤로, 홈, 최근 앱, 스크린샷, 화면 잠금, 알림 창, 전원 메뉴. 그 밖의 기능에는 필요하지 않으며, 동작 선택 화면에서 해당 동작에 표시가 있어 고르기 전에 알 수 있습니다. 또한 직접 켠 경우에만 즉시 반응하는 볼륨 키, 선택한 앱에서 바 숨기기, 잠금 화면에 바 표시에도 사용됩니다.</string>
     <string name="faq_q_notification">상시 알림을 없앨 수 있나요?</string>
     <string name="faq_a_notification">대부분은 가능합니다. 행위에서 “알림 컨트롤”을 끄세요. 바의 서비스가 실행되는 동안 Android는 알림을 요구하므로 무음 자리표시자는 남지만, 상태 표시줄 아이콘이 사라지고 알림 창 맨 아래로 이동합니다. 앱의 알림 설정에서 완전히 숨길 수 있습니다.</string>
     <string name="faq_q_quick_panel">빠른 패널이란 무엇인가요?</string>
@@ -868,9 +873,9 @@
     <string name="swipe_amount_by_length_desc">손가락 너비만큼 스와이프할 때마다 한 단계씩, 바가 원래 작동하던 방식입니다. 길게 스와이프하면 전체 범위를 지납니다.</string>
     <string name="swipe_amount_percent">스와이프당 %1$d%%</string>
     <string name="swipe_amount_percent_desc">스와이프 길이와 상관없이 한 번에 %1$d%%씩 바뀝니다. 단계가 몇 개뿐인 볼륨은 가장 가까운 단계로 이동합니다.</string>
-    <string name="accessibility_service_summary">볼륨 바에서 쓰는 시스템 바로가기, 즉시 반응하는 볼륨 키, 선택한 앱에서 바 숨기기나 제스처 변경</string>
-    <string name="accessibility_service_description">GestureVolume은 접근성 서비스를 사용해 플로팅 바에 지정한 시스템 동작을 실행합니다: 화면 잠금, 스크린샷, 뒤로 또는 홈, 최근 앱, 알림 창, 빠른 설정, 전원 메뉴. 원하는 경우 볼륨 키를 누르는 즉시 빠른 패널도 열며, 이때는 두 볼륨 키만 확인합니다. 바를 숨길 앱을 고르거나 앱별 제스처를 지정하면 화면에 어떤 앱이 있는지만 확인하고 그 밖의 정보는 보지 않습니다. 다른 것은 읽지 않고 아무것도 수집하지 않으며, 모든 것이 이 기기에 남습니다. 볼륨 낮추기 키 입력을 기다리는 동안에는 시스템 스크린샷이 나타났는지도 확인하여, 버튼으로 찍은 스크린샷이 패널을 열지 않게 합니다.</string>
-    <string name="accessibility_disclosure_message">GestureVolume은 Android 접근성 서비스를 세 가지 용도로 사용하며, 모두 선택 사항입니다.\n\n• 바에 지정한 시스템 동작 실행: 화면 잠금, 스크린샷, 뒤로, 홈, 최근 앱, 알림, 빠른 설정, 전원 메뉴.\n\n• 볼륨 키를 즉시로 설정한 경우에만 두 볼륨 키 확인: 키를 누르는 즉시 빠른 패널을 엽니다. 다른 키는 모두 그대로 전달되며 어떤 키도 기록하지 않습니다. 볼륨 낮추기 키 입력을 기다리는 동안에는 시스템 스크린샷이 나타났는지도 확인하여, 버튼으로 찍은 스크린샷이 패널을 열지 않게 합니다.\n\n• 바를 숨길 앱을 고르거나 앱별 제스처를 지정한 경우에만 화면에 있는 앱 확인: 앱 이름만 보고 그 밖에는 아무것도 보지 않습니다.\n\n그 외에는 아무것도 읽거나 수집하지 않습니다. 기기 밖으로 나가는 것은 없습니다. 설정 › 접근성에서 언제든지 끌 수 있습니다.</string>
+    <string name="accessibility_service_summary">볼륨 바에서 쓰는 시스템 바로가기, 즉시 반응하는 볼륨 키, 잠금 화면의 바, 선택한 앱에서 바 숨기기나 제스처 변경</string>
+    <string name="accessibility_service_description">GestureVolume은 접근성 서비스를 사용해 플로팅 바에 지정한 시스템 동작을 실행합니다: 화면 잠금, 스크린샷, 뒤로 또는 홈, 최근 앱, 알림 창, 빠른 설정, 전원 메뉴. 원하는 경우 볼륨 키를 누르는 즉시 빠른 패널도 열며, 이때는 두 볼륨 키만 확인합니다. 원하는 경우 Android가 모든 앱의 플로팅 바를 숨기는 잠금 화면에도 바를 표시하며, 휴대폰이 잠겨 있는 동안 바는 잠금 화면이 원래 허용하는 볼륨, 빠른 패널, 빠른 토글만 실행합니다. 바를 숨길 앱을 고르거나 앱별 제스처를 지정하면 화면에 어떤 앱이 있는지만 확인하고 그 밖의 정보는 보지 않습니다. 다른 것은 읽지 않고 아무것도 수집하지 않으며, 모든 것이 이 기기에 남습니다. 볼륨 낮추기 키 입력을 기다리는 동안에는 시스템 스크린샷이 나타났는지도 확인하여, 버튼으로 찍은 스크린샷이 패널을 열지 않게 합니다.</string>
+    <string name="accessibility_disclosure_message">GestureVolume은 Android 접근성 서비스를 네 가지 용도로 사용하며, 모두 선택 사항입니다.\n\n• 바에 지정한 시스템 동작 실행: 화면 잠금, 스크린샷, 뒤로, 홈, 최근 앱, 알림, 빠른 설정, 전원 메뉴.\n\n• 볼륨 키를 즉시로 설정한 경우에만 두 볼륨 키 확인: 키를 누르는 즉시 빠른 패널을 엽니다. 다른 키는 모두 그대로 전달되며 어떤 키도 기록하지 않습니다. 볼륨 낮추기 키 입력을 기다리는 동안에는 시스템 스크린샷이 나타났는지도 확인하여, 버튼으로 찍은 스크린샷이 패널을 열지 않게 합니다.\n\n• 바를 숨길 앱을 고르거나 앱별 제스처를 지정한 경우에만 화면에 있는 앱 확인: 앱 이름만 보고 그 밖에는 아무것도 보지 않습니다.\n\n• “잠금 화면에 표시하기”를 켠 경우에만 잠금 화면에 바 표시: Android는 잠금 화면에서 모든 앱의 플로팅 바를 숨깁니다. 휴대폰이 잠겨 있는 동안 바는 잠금 화면이 원래 허용하는 볼륨, 빠른 패널, 빠른 토글만 실행합니다.\n\n그 외에는 아무것도 읽거나 수집하지 않습니다. 기기 밖으로 나가는 것은 없습니다. 설정 › 접근성에서 언제든지 끌 수 있습니다.</string>
     <string name="deck_animation_title">애니메이션</string>
     <string name="deck_animation">열기 및 닫기 애니메이션</string>
     <string name="deck_animation_desc">덱이 나타나는 방식입니다. 닫힐 때는 같은 방식을 거꾸로 재생합니다. 하나를 누르면 위 미리보기에서 열리고 닫히는 모습을 볼 수 있습니다. 길게 누르기 메뉴와 빠른 패널도 같은 방식으로 열립니다.</string>
