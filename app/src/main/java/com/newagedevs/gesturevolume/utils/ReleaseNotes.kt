@@ -38,9 +38,10 @@ object ReleaseNotes {
             version = "1.5.2",
             date = null,
             notes = listOf(
-                "🔒 The bar on your lock screen — turn it on in Visibility",
-                "📱 The welcome tour fits landscape, tablets, small screens and large text",
-                "⚖️ Terms and Conditions in About, and the privacy policy at its new home",
+                "🔒 Show the bar on your lock screen",
+                "📱 The welcome tour fits any screen",
+                "⚖️ Terms and Conditions in About",
+                "🔐 No more Contacts permission",
                 "🛠 Fixes and updated libraries",
             ),
         ),
