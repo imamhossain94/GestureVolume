@@ -411,7 +411,7 @@
     <string name="faq_q_brightness">Why can I change the volume but not the brightness?</string>
     <string name="faq_a_brightness">Brightness needs the “Modify system settings” permission, which Android keeps separate from everything else. Grant it from the Permissions card. The app also turns adaptive brightness off the first time it writes a brightness value, because the light sensor would otherwise overwrite whatever you set within a second or two.</string>
     <string name="faq_q_accessibility">Why does it ask for the accessibility service?</string>
-    <string name="faq_a_accessibility">Only for the actions Android will not let an ordinary app perform: Back, Home, Recents, screenshot, lock screen, the notification shade and the power menu. Nothing else needs it, and the picker marks those actions so you know before you choose one. It is also used, only if you turn them on, for the Instant volume keys and hiding the bar in chosen apps.</string>
+    <string name="faq_a_accessibility">Only for the actions Android will not let an ordinary app perform: Back, Home, Recents, screenshot, lock screen, the notification shade and the power menu. Nothing else needs it, and the picker marks those actions so you know before you choose one. It is also used, only if you turn them on, for the Instant volume keys, hiding the bar in chosen apps, and showing the bar on the lock screen.</string>
     <string name="faq_q_notification">Can I get rid of the ongoing notification?</string>
     <string name="faq_a_notification">Mostly. Turn off “Notification controls” in Actions. Android requires a notification while the bar\'s service runs, so a silent placeholder stays, but it loses its status bar icon and moves to the bottom of the shade. You can hide it completely from the app\'s notification settings.</string>
     <string name="faq_q_quick_panel">What is the Quick panel?</string>
@@ -510,6 +510,8 @@
     <string name="auto_rotate_on">Auto-rotate on</string>
     <string name="auto_rotate_off">Auto-rotate off</string>
     <string name="auto_rotate_needs_permission">Allow Modify system settings to toggle auto-rotate</string>
+    <!-- Said on the bar on the lock screen, for a gesture that waits for the unlock: the Deck, the menu, an app. -->
+    <string name="lock_screen_unlock_first">Unlock your phone to use this</string>
     <string name="accessibility_needed_short">Turn on the GestureVolume accessibility service to use this</string>
     <string name="action_unavailable_on_device">This action is not available on this device</string>
 
@@ -563,12 +565,12 @@
 
     <!-- 1.4.0: the accessibility service -->
     <string name="accessibility_service_label">GestureVolume</string>
-    <string name="accessibility_service_summary">System shortcuts from the volume bar, instant volume keys, and hiding the bar or changing its gestures in chosen apps</string>
-    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also opens the Quick panel the moment you press a volume key, looking at the two volume keys only. If you choose apps to hide the bar in, or give apps gestures of their own, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.</string>
+    <string name="accessibility_service_summary">System shortcuts from the volume bar, instant volume keys, the bar on the lock screen, and hiding the bar or changing its gestures in chosen apps</string>
+    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also opens the Quick panel the moment you press a volume key, looking at the two volume keys only. If you choose, it also draws the bar on the lock screen, where Android hides every app’s floating bar, and while the phone is locked the bar does only what the lock screen already allows: the volume, the Quick panel and quick toggles. If you choose apps to hide the bar in, or give apps gestures of their own, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.</string>
     <string name="accessibility_permission">Accessibility service</string>
     <string name="accessibility_permission_desc">Optional: performs Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and Power menu.</string>
     <string name="accessibility_disclosure_title">Turn on the accessibility service?</string>
-    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for three things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To look at the two volume keys, only if you set the volume keys to Instant: to open the Quick panel the moment you press one. Every other key passes straight on, and no key is recorded. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.\n\n• To see which app is on screen, only if you choose apps to hide the bar in or give apps gestures of their own. It looks at the app’s name and nothing else.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
+    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for four things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To look at the two volume keys, only if you set the volume keys to Instant: to open the Quick panel the moment you press one. Every other key passes straight on, and no key is recorded. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.\n\n• To see which app is on screen, only if you choose apps to hide the bar in or give apps gestures of their own. It looks at the app’s name and nothing else.\n\n• To draw the bar on the lock screen, only if you turn on Show on the lock screen: Android hides every app’s floating bar there. While the phone is locked, the bar does only what the lock screen already allows: the volume, the Quick panel and quick toggles.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
     <string name="accessibility_disclosure_accept">Open Accessibility settings</string>
     <string name="accessibility_disclosure_decline">Not now</string>
     <string name="accessibility_how_to">In the list, open GestureVolume and switch it on.</string>
@@ -942,6 +944,10 @@
     <string name="keyboard_needs_android_11">Needs Android 11 or later. On this phone the handler stays where it is.</string>
     <string name="visibility_apps_title">Hide in these apps</string>
     <string name="visibility_apps_desc">The handler steps aside while one of these apps is open, and comes back when you leave it.</string>
+    <string name="visibility_lock_title">On the lock screen</string>
+    <string name="visibility_lock_desc">Android keeps every app’s floating bar off the lock screen. The accessibility service can put this one there.</string>
+    <string name="visibility_lock_show_title">Show on the lock screen</string>
+    <string name="visibility_lock_show_desc">The volume, the Quick panel and quick toggles while the phone is locked. The Deck, the menu and opening apps wait until you unlock.</string>
     <string name="visibility_apps_needs_accessibility">This needs the accessibility service, which tells the app which app is open. Tap to turn it on.</string>
     <string name="visibility_apps_chosen">HIDDEN IN</string>
     <string name="visibility_tab_chosen">Hidden in (%1$d)</string>

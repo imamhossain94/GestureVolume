@@ -470,6 +470,7 @@ class SharedPref @Inject constructor(
         const val KEYBOARD_MOTION = "handlerKeyboardMotion"
         const val SHOW_ONLY_WHILE_MEDIA = "handlerShowOnlyWhileMedia"
         const val SHOW_ONLY_WHILE_CALL = "handlerShowOnlyWhileCall"
+        const val SHOW_ON_LOCK_SCREEN = "handlerShowOnLockScreen"
         const val WHATS_NEW_SEEN = "whatsNewSeenVersion"
         const val TOUR_OFFERED = "tourOfferedVersion"
 
@@ -1004,6 +1005,17 @@ class SharedPref @Inject constructor(
 
     fun setShowOnlyWhileCall(value: Boolean) {
         sharedPreferences.edit { putBoolean(SHOW_ONLY_WHILE_CALL, value) }
+    }
+
+    /**
+     * Show the bar on the lock screen too, drawn there by the accessibility service: see
+     * `GestureAccessibilityService.refreshLockScreenBar`. Off unless asked for, like every other
+     * use of that service.
+     */
+    fun getShowOnLockScreen(): Boolean = sharedPreferences.getBoolean(SHOW_ON_LOCK_SCREEN, false)
+
+    fun setShowOnLockScreen(value: Boolean) {
+        sharedPreferences.edit { putBoolean(SHOW_ON_LOCK_SCREEN, value) }
     }
 
     /**

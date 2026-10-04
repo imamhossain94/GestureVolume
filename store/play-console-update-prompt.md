@@ -78,7 +78,7 @@ No account, no analytics and no location. Settings, notes and checklist stay on 
 Save. Do not change graphics or screenshots.
 
 2. PRIVACY POLICY — Policy › App content › Privacy policy
-URL: https://newagedevs-privacy-policy.blogspot.com/2023/05/gesture-volume.html
+URL: https://newagedevs.com/products/gesture-volume/privacy
 Also in Store settings, set the privacy policy URL to the same, and the contact email to imamagun94@gmail.com.
 
 3. ADS — App content › Ads

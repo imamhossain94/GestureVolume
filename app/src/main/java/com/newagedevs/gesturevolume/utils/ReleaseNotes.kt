@@ -35,6 +35,16 @@ object ReleaseNotes {
 
     val HISTORY: List<Entry> = listOf(
         Release(
+            version = "1.5.2",
+            date = null,
+            notes = listOf(
+                "🔒 The bar on your lock screen — turn it on in Visibility",
+                "📱 The welcome tour fits landscape, tablets, small screens and large text",
+                "⚖️ Terms and Conditions in About, and the privacy policy at its new home",
+                "🛠 Fixes and updated libraries",
+            ),
+        ),
+        Release(
             version = "1.5.1",
             date = null,
             notes = listOf(

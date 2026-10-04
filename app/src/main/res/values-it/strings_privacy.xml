@@ -3,4 +3,6 @@
     <!-- Ad consent (GDPR / Google UMP): reopen the consent form from About and the drawer. -->
     <string name="privacy_choices">Scelte sulla privacy</string>
     <string name="privacy_choices_error">Impossibile aprire le scelte sulla privacy. Riprova più tardi.</string>
+    <!-- The terms, beside the Privacy Policy on About. -->
+    <string name="terms_of_service">Termini e condizioni</string>
 </resources>

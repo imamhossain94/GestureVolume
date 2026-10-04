@@ -3,4 +3,6 @@
     <!-- Ad consent (GDPR / Google UMP): reopen the consent form from About and the drawer. -->
     <string name="privacy_choices">隐私选项</string>
     <string name="privacy_choices_error">无法打开隐私选项，请稍后再试。</string>
+    <!-- The terms, beside the Privacy Policy on About. -->
+    <string name="terms_of_service">条款和条件</string>
 </resources>

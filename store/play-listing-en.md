@@ -6,8 +6,8 @@ new panel styles, and removes clipboard, weather, song identification and runnin
 notification. `versionName` in `app/build.gradle.kts` is still `1.4.0` — bump it before upload.
 
 Companion documents in this folder:
-- `privacy-policy.html` — paste into Blogger's HTML view at the privacy URL the app links to (see "Links" below)
-- `terms-and-conditions.html` — paste into Blogger's HTML view at the terms URL
+- `privacy-policy.html` — the privacy policy's former Blogger source; the live copy is now on newagedevs.com at the privacy URL the app links to (see "Links" below)
+- `terms-and-conditions.html` — the terms' former Blogger source; the live copy is now on newagedevs.com at the terms URL
 - `play-policy-risks.md` — what could get this listing rejected, and what has been done about it
 
 ---
@@ -16,12 +16,13 @@ Companion documents in this folder:
 
 | Field | Value |
 | --- | --- |
-| Privacy policy URL (Play Console › App content › Privacy policy) | https://newagedevs-privacy-policy.blogspot.com/2023/05/gesture-volume.html |
-| Terms URL (used by the consent form in the app) | https://newagedevs-terms-and-conditions.blogspot.com/2026/06/gesture-volume.html |
+| Privacy policy URL (Play Console › App content › Privacy policy) | https://newagedevs.com/products/gesture-volume/privacy |
+| Terms URL (used by the consent form and the About screen in the app) | https://newagedevs.com/products/gesture-volume/terms |
 | Contact email | imamagun94@gmail.com |
 
-Replace the text at both URLs with the new documents **before** submitting — the app and the ad
-consent form already point at them, and reviewers compare the policy with the Data safety form.
+Both documents moved from Blogger to newagedevs.com on 4 October 2026, and the app, the ad consent
+form and the About screen point at the new URLs. Make sure both pages are live **before** submitting —
+reviewers compare the policy with the Data safety form.
 
 ---
 
@@ -97,6 +98,7 @@ Gesture Volume includes an optional AccessibilityService. It is off until you tu
 1. Performing the system actions you assign — lock screen, screenshot, Back, Home, recent apps, notifications, quick settings, power menu.
 2. Watching the two volume keys, to open the Quick slider instantly.
 3. Noticing which app is open, to hide the bar in apps you chose or use the gestures you gave them.
+4. Showing the bar on the lock screen, if you turn that on. While the phone is locked it does only what the lock screen allows: volume, the Quick slider and quick toggles.
 It cannot read your screen, does not capture what you copy or type, and nothing it sees leaves your phone. Turn it off any time.
 
 ▸ PERMISSIONS
@@ -166,21 +168,24 @@ They are processed only on the device and never transmitted.
 
 Also record a short video showing: the disclosure dialog, turning the service on in Settings, a bar
 action performing Lock screen, choosing an app to hide the bar in, giving an app a gesture of its
-own, and the service being switched off again. The video below predates per-app gestures: record
-a new one that shows it before submitting the updated declaration.
+own, turning on Show on the lock screen (Visibility) and swiping the bar on the lock screen, and the
+service being switched off again. The video below predates per-app gestures and the lock screen:
+record a new one that shows both before submitting the updated declaration.
 
 Video (recorded 14 September 2026, ads-off release build): https://drive.google.com/file/d/1FIes_6bU4usJcwVVLh0mfX5py25D84Ks/view?usp=sharing
 
 ```
-Gesture Volume is an on-screen edge bar for volume, brightness and shortcuts. Its AccessibilityService is optional and off by default. The user turns it on in Settings › Accessibility only after an in-app disclosure dialog listing every use below, which they must accept. isAccessibilityTool is false: this is a convenience feature, not an assistive technology. The bar itself is drawn by a foreground service with the overlay permission, not by the accessibility service.
+Gesture Volume is an on-screen edge bar for volume, brightness and shortcuts. Its AccessibilityService is optional and off by default. The user turns it on in Settings › Accessibility only after an in-app disclosure dialog listing every use below, which they must accept. isAccessibilityTool is false: this is a convenience feature, not an assistive technology. The bar itself is drawn by a foreground service with the overlay permission; the accessibility service draws only the lock-screen copy described in 4.
 
-The service is used for three purposes, each tied to a feature the user chooses:
+The service is used for four purposes, each tied to a feature the user chooses:
 
 1. System actions the user assigns to the bar: GLOBAL_ACTION_LOCK_SCREEN, GLOBAL_ACTION_TAKE_SCREENSHOT, GLOBAL_ACTION_BACK, GLOBAL_ACTION_HOME, GLOBAL_ACTION_RECENTS, GLOBAL_ACTION_NOTIFICATIONS, GLOBAL_ACTION_QUICK_SETTINGS and GLOBAL_ACTION_POWER_DIALOG. No other API allows an app to perform these.
 
 2. Volume keys, only when the user sets the Quick slider's volume keys to Instant: key-event filtering is requested at runtime, only KEYCODE_VOLUME_UP and KEYCODE_VOLUME_DOWN are acted on, every other key is returned unconsumed, and no key is recorded. Used to open the app's volume slider immediately. For the quarter second a Volume-down press is undecided, the service also subscribes to TYPE_WINDOW_STATE_CHANGED and checks only whether the event's package is com.android.systemui, so a Volume-down + Power screenshot does not open the slider.
 
 3. Hiding the bar in apps the user selects, and giving apps gestures of their own, only when the user has set either up: the service subscribes to TYPE_WINDOW_STATE_CHANGED and reads the event's package name to know when one of those apps is in front, so the bar can step aside or use that app's gestures. No history is kept.
+
+4. Showing the bar on the lock screen, only when the user turns on "Show on the lock screen" (off by default): Android draws TYPE_APPLICATION_OVERLAY windows beneath the keyguard, so while the keyguard is locked and the screen is on, the service adds the same bar as a TYPE_ACCESSIBILITY_OVERLAY window, and removes it at ACTION_USER_PRESENT. On the lock screen the bar performs only what the lock screen already allows anyone to do — volume, the app's volume slider, brightness, flashlight, Do Not Disturb, ringer, media keys and the system actions in 1. The app's shortcut panel, its menu, launching apps and moving or hiding the bar are refused until the device is unlocked. No accessibility events are used for this; it follows the screen-on, screen-off and user-present broadcasts.
 
 canRetrieveWindowContent is false: the service cannot read window content, and it does not capture copied or typed text. It subscribes to no accessibility events other than TYPE_WINDOW_STATE_CHANGED, and only while the user has chosen apps to hide the bar in or given an app gestures of its own, or, with Instant volume keys, for the quarter second a Volume-down press is undecided. No data obtained through the API is transmitted off the device, sold, or used for advertising. The app remains fully usable with the service disabled.
 ```
@@ -229,9 +234,9 @@ simplest with mediated ads).
 ## Reply to reviewers, if the accessibility use is questioned
 
 ```
-The AccessibilityService is optional and disabled by default; the bar is drawn by a foreground service, not by the accessibility service. Its primary use is letting users assign system actions — lock screen, screenshot, Back, Home, recents, notification shade, quick settings and power menu — to the app's edge bar; these are only reachable through performGlobalAction.
+The AccessibilityService is optional and disabled by default; the bar is drawn by a foreground service, and the accessibility service draws only a copy of it on the lock screen, where Android hides overlays, when the user turns that on. Its primary use is letting users assign system actions — lock screen, screenshot, Back, Home, recents, notification shade, quick settings and power menu — to the app's edge bar; these are only reachable through performGlobalAction.
 
-Two further uses each sit behind their own in-app setting, both off by default: acting on the two volume keys to open the app's slider, and noticing the foreground app's package name to hide the bar in apps the user picked or to use the gestures the user gave those apps.
+Three further uses each sit behind their own in-app setting, all off by default: acting on the two volume keys to open the app's slider; noticing the foreground app's package name to hide the bar in apps the user picked or to use the gestures the user gave those apps; and showing the bar on the lock screen while the device is locked, where it does only what the lock screen already allows and refuses the app's shortcut panel, menu and app launches until the device is unlocked.
 
-Before the user is sent to Settings › Accessibility, a disclosure dialog names all three uses, states that nothing else is read and nothing leaves the device, and explains how to turn the service off; the user must accept it. canRetrieveWindowContent is false, the service does not capture copied or typed text, subscribes only to window-state changes, and only while apps are chosen or a Volume-down press is undecided, transmits nothing, and the app works fully with the service off.
+Before the user is sent to Settings › Accessibility, a disclosure dialog names all four uses, states that nothing else is read and nothing leaves the device, and explains how to turn the service off; the user must accept it. canRetrieveWindowContent is false, the service does not capture copied or typed text, subscribes only to window-state changes, and only while apps are chosen or a Volume-down press is undecided, transmits nothing, and the app works fully with the service off.
 ```

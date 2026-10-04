@@ -34,6 +34,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -42,11 +43,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -73,15 +76,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -248,6 +257,33 @@ private val EdgeDot = Color(0xFFEF4444)
  * stopped showing it after two refusals. Nobody reads the question and answers it this fast.
  */
 private const val UNASKED_WITHIN_MS = 500L
+
+/** Narrower than this, or not wider than tall, the page stays one column. */
+private val TWO_PANE_MIN_WIDTH = 560.dp
+
+/** The widest the page grows in one column: on a tablet held upright, a phone's page made larger. */
+private val ONE_PANE_MAX_WIDTH = 600.dp
+
+/** The widest the page grows in two columns, the home screen's widest. */
+private val TWO_PANE_MAX_WIDTH = 920.dp
+
+/** How much of the width the card takes in two columns: two fifths, as on the preview screens. */
+private const val CARD_SHARE = 0.4f
+
+/** Between the card and the words in two columns, as on the preview screens. */
+private val PANE_GAP = 20.dp
+
+/** The least height a scene is drawn at, upright: under it, the page scrolls rather than shrinking it. */
+private val SCENE_MIN_HEIGHT = 180.dp
+
+/** How much of the top row Skip may take; the progress has the rest. */
+private const val SKIP_SHARE = 0.5f
+
+/** Narrower than this, at the default text size, the points go one to a row. */
+private val POINTS_TWO_UP_MIN_WIDTH = 260.dp
+
+/** The buttons at the foot of a page: at least this tall, and taller for two lines of words. */
+private val ACTION_HEIGHT = 56.dp
 
 /**
  * The walkthrough: what the bar is, a choice of style, how its parts work, and the permissions it
@@ -451,53 +487,65 @@ fun WalkthroughScreen(
         modifier = Modifier.fillMaxSize(),
         color = colours.background
     ) {
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .screenWash()
-                .systemBarsPadding()
-                .padding(horizontal = 20.dp)
+                .systemBarsPadding(),
+            contentAlignment = Alignment.TopCenter
         ) {
-            TopRow(
-                index = index,
-                count = pages.size,
-                // The permission pages have their own Skip beside Allow; two would be one too many.
-                showSkip = !page.asksPermission,
-                // A tour has nothing to put off: it is closed.
-                skipLabel = if (tour) R.string.close else R.string.skip_for_now,
-                onSkip = ::finish,
-                onBack = { goTo(index - 1) },
-            )
-
-            AnimatedContent(
-                targetState = page,
-                transitionSpec = {
-                    val direction = if (targetState.ordinal > initialState.ordinal) 1 else -1
-                    (slideInHorizontally(Springs.ScreenOffset) { width -> direction * width / 4 } + fadeIn(Springs.ScreenFade))
-                        .togetherWith(slideOutHorizontally(Springs.ScreenOffset) { width -> -direction * width / 4 } + fadeOut(Springs.ScreenFade))
-                },
+            // Wider than tall, and wide enough for two columns: a phone on its side, a tablet. Stacked,
+            // the words and the buttons left the card a strip a few rows high there, or nothing at all.
+            // Measured off the window rather than the orientation, so a split screen counts as its size.
+            val twoPane = maxWidth > maxHeight && maxWidth >= TWO_PANE_MIN_WIDTH
+            Column(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                label = "walkthrough-page",
-            ) { shown ->
-                PageContent(
-                    page = shown,
-                    isLastTutorial = shown == lastTutorialOf(pages),
-                    isLastPage = shown == pages.last(),
-                    selectedMode = selectedMode,
-                    tourMode = tourMode,
-                    onSelectMode = { selectedMode = it },
-                    granted = when (shown) {
-                        WalkPage.Accessibility -> hasAccessibility.value
-                        WalkPage.Notifications -> hasNotifications.value
-                        else -> hasOverlayPermission.value
-                    },
-                    onPrimary = ::onPrimary,
-                    // Skips this permission, not the rest: the Advanced walkthrough still has the
-                    // accessibility page to offer after the overlay one.
-                    onSkip = ::next,
+                    .widthIn(max = if (twoPane) TWO_PANE_MAX_WIDTH else ONE_PANE_MAX_WIDTH)
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp)
+            ) {
+                TopRow(
+                    index = index,
+                    count = pages.size,
+                    // The permission pages have their own Skip beside Allow; two would be one too many.
+                    showSkip = !page.asksPermission,
+                    // A tour has nothing to put off: it is closed.
+                    skipLabel = if (tour) R.string.close else R.string.skip_for_now,
+                    onSkip = ::finish,
+                    onBack = { goTo(index - 1) },
                 )
+
+                AnimatedContent(
+                    targetState = page,
+                    transitionSpec = {
+                        val direction = if (targetState.ordinal > initialState.ordinal) 1 else -1
+                        (slideInHorizontally(Springs.ScreenOffset) { width -> direction * width / 4 } + fadeIn(Springs.ScreenFade))
+                            .togetherWith(slideOutHorizontally(Springs.ScreenOffset) { width -> -direction * width / 4 } + fadeOut(Springs.ScreenFade))
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    label = "walkthrough-page",
+                ) { shown ->
+                    PageContent(
+                        page = shown,
+                        twoPane = twoPane,
+                        isLastTutorial = shown == lastTutorialOf(pages),
+                        isLastPage = shown == pages.last(),
+                        selectedMode = selectedMode,
+                        tourMode = tourMode,
+                        onSelectMode = { selectedMode = it },
+                        granted = when (shown) {
+                            WalkPage.Accessibility -> hasAccessibility.value
+                            WalkPage.Notifications -> hasNotifications.value
+                            else -> hasOverlayPermission.value
+                        },
+                        onPrimary = ::onPrimary,
+                        // Skips this permission, not the rest: the Advanced walkthrough still has the
+                        // accessibility page to offer after the overlay one.
+                        onSkip = ::next,
+                    )
+                }
             }
         }
     }
@@ -506,66 +554,117 @@ fun WalkthroughScreen(
 @Composable
 private fun TopRow(index: Int, count: Int, showSkip: Boolean, @StringRes skipLabel: Int, onSkip: () -> Unit, onBack: () -> Unit) {
     val colours = MaterialTheme.colorScheme
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Back to the page before, from every page but the first: the step the system's Back
-        // already takes, where the eye looks for it. It opens out ahead of the dots as the first
-        // page is left, rather than the dots jumping aside for it.
-        AnimatedVisibility(
-            visible = index > 0,
-            enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
-            exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        // Skip is measured before the progress, so a long one — "Fürs Erste überspringen", or any of
+        // them in large text — is held to about half the row, and the progress makes do with the rest.
+        val skipMaxWidth = maxWidth * SKIP_SHARE
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onBack, modifier = Modifier.offset(x = (-8).dp)) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back),
-                    tint = colours.onSurface,
-                )
+            // Back to the page before, from every page but the first: the step the system's Back
+            // already takes, where the eye looks for it. It opens out ahead of the dots as the first
+            // page is left, rather than the dots jumping aside for it.
+            AnimatedVisibility(
+                visible = index > 0,
+                enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
+                exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
+            ) {
+                IconButton(onClick = onBack, modifier = Modifier.offset(x = (-8).dp)) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
+                        tint = colours.onSurface,
+                    )
+                }
             }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-            for (i in 0 until count) {
-                val width by animateDpAsState(
-                    targetValue = if (i == index) 20.dp else 6.dp,
-                    animationSpec = spring(dampingRatio = 0.7f, stiffness = 500f),
-                    label = "progress-width",
-                )
-                val colour by animateColorAsState(
-                    targetValue = if (i <= index) colours.primary else colours.onSurface.copy(alpha = 0.15f),
-                    label = "progress-colour",
-                )
-                Box(
-                    modifier = Modifier
-                        .width(width)
-                        .height(6.dp)
-                        .clip(CircleShape)
-                        .background(colour)
-                )
-            }
-        }
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(
-            text = stringResource(R.string.walk_progress, index + 1, count),
-            style = MaterialTheme.typography.labelMedium,
-            color = colours.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        if (showSkip) {
-            TextButton(onClick = onSkip) {
-                Text(stringResource(skipLabel), color = colours.onSurfaceVariant)
+            Progress(index = index, count = count, modifier = Modifier.weight(1f))
+            if (showSkip) {
+                TextButton(onClick = onSkip, modifier = Modifier.widthIn(max = skipMaxWidth)) {
+                    Text(
+                        text = stringResource(skipLabel),
+                        color = colours.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
     }
 }
 
+/**
+ * The dots, then "3/9". Where the row has no room for both — a small phone, large text, a long
+ * Skip — the count goes first; where even the dots do not fit, the count stands in for them, since
+ * it says the same in a fraction of the width.
+ */
+@Composable
+private fun Progress(index: Int, count: Int, modifier: Modifier = Modifier) {
+    val colours = MaterialTheme.colorScheme
+    Layout(
+        modifier = modifier.clipToBounds(),
+        content = {
+            Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                for (i in 0 until count) {
+                    val width by animateDpAsState(
+                        targetValue = if (i == index) 20.dp else 6.dp,
+                        animationSpec = spring(dampingRatio = 0.7f, stiffness = 500f),
+                        label = "progress-width",
+                    )
+                    val colour by animateColorAsState(
+                        targetValue = if (i <= index) colours.primary else colours.onSurface.copy(alpha = 0.15f),
+                        label = "progress-colour",
+                    )
+                    Box(
+                        modifier = Modifier
+                            .width(width)
+                            .height(6.dp)
+                            .clip(CircleShape)
+                            .background(colour)
+                    )
+                }
+            }
+            Text(
+                text = stringResource(R.string.walk_progress, index + 1, count),
+                style = MaterialTheme.typography.labelMedium,
+                color = colours.onSurfaceVariant,
+                maxLines = 1
+            )
+        },
+    ) { measurables, constraints ->
+        val free = constraints.copy(minWidth = 0, maxWidth = Constraints.Infinity, minHeight = 0)
+        val dots = measurables[0].measure(free)
+        val counter = measurables[1].measure(free)
+        val gap = 10.dp.roundToPx()
+        val room = constraints.maxWidth
+        val shown = when {
+            dots.width + gap + counter.width <= room -> listOf(dots, counter)
+            dots.width <= room -> listOf(dots)
+            else -> listOf(counter)
+        }
+        val height = shown.maxOf { it.height }.coerceIn(constraints.minHeight, constraints.maxHeight)
+        layout(room, height) {
+            var x = 0
+            shown.forEach {
+                it.place(x, (height - it.height) / 2)
+                x += it.width + gap
+            }
+        }
+    }
+}
+
+/**
+ * One page, in one of two shapes. Upright, the words, the card, the points and the buttons run
+ * down the page, and the card takes whatever height the rest leaves; see [UprightPage]. [twoPane],
+ * the card stands in the left two fifths, as tall as the page, and the rest beside it. Either way
+ * the buttons keep to the bottom, and what scrolls, when the room runs short, is the words.
+ */
 @Composable
 private fun PageContent(
     page: WalkPage,
+    twoPane: Boolean,
     isLastTutorial: Boolean,
     isLastPage: Boolean,
     selectedMode: String,
@@ -577,129 +676,275 @@ private fun PageContent(
 ) {
     val colours = MaterialTheme.colorScheme
     val text = pageText(page, selectedMode, tourMode)
-    Column(modifier = Modifier.fillMaxSize()) {
-        Spacer(modifier = Modifier.height(6.dp))
-        Surface(shape = CircleShape, color = colours.secondaryContainer) {
-            Text(
-                text = stringResource(text.chip),
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 1.2.sp,
-                color = colours.onSecondaryContainer,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-            )
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = stringResource(text.title),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Medium,
-            color = colours.onBackground
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = stringResource(text.subtitle),
-            style = MaterialTheme.typography.bodyMedium,
-            color = colours.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(16.dp))
 
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ) {
-            when {
-                page == WalkPage.Style -> StyleChoice(
-                    selected = selectedMode,
-                    onSelect = onSelectMode,
-                    modifier = Modifier.fillMaxSize()
-                )
-                page == WalkPage.Permission -> PermissionCard(
-                    scene = WalkScene.Permission,
-                    description = stringResource(R.string.walk_permission_animation),
-                    body = stringResource(R.string.walkthrough_overlay_desc),
-                    grantedLabel = stringResource(R.string.permission_granted_check),
-                    settledAt = PERMISSION_SETTLED,
-                    granted = granted,
-                    modifier = Modifier.fillMaxSize()
-                )
-                page == WalkPage.Notifications -> PermissionCard(
-                    scene = WalkScene.Notifications,
-                    description = stringResource(R.string.walk_notif_animation),
-                    body = stringResource(R.string.walk_notif_card),
-                    grantedLabel = stringResource(R.string.walk_notif_granted),
-                    settledAt = NOTIFICATIONS_SETTLED,
-                    granted = granted,
-                    modifier = Modifier.fillMaxSize()
-                )
-                page == WalkPage.Accessibility -> PermissionCard(
-                    scene = WalkScene.Accessibility,
-                    description = stringResource(R.string.walk_access_animation),
-                    body = stringResource(R.string.walk_access_card),
-                    grantedLabel = stringResource(R.string.walk_access_granted),
-                    settledAt = ACCESSIBILITY_SETTLED,
-                    granted = granted,
-                    modifier = Modifier.fillMaxSize()
-                )
-                text.scene != null -> IllustrationCard(
-                    scene = text.scene,
-                    caption = text.caption?.let { stringResource(it) }.orEmpty(),
-                    description = text.animation?.let { stringResource(it) }.orEmpty(),
-                    modifier = Modifier.fillMaxSize()
+    val header: @Composable () -> Unit = {
+        Column {
+            Spacer(modifier = Modifier.height(6.dp))
+            Surface(shape = CircleShape, color = colours.secondaryContainer) {
+                Text(
+                    text = stringResource(text.chip),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.2.sp,
+                    color = colours.onSecondaryContainer,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                 )
             }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(text.title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Medium,
+                color = colours.onBackground
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = stringResource(text.subtitle),
+                style = MaterialTheme.typography.bodyMedium,
+                color = colours.onSurfaceVariant
+            )
         }
+    }
 
-        Spacer(modifier = Modifier.height(12.dp))
+    val card: @Composable (Modifier) -> Unit = { modifier ->
+        when {
+            page == WalkPage.Style -> StyleChoice(
+                selected = selectedMode,
+                onSelect = onSelectMode,
+                modifier = modifier
+            )
+            page == WalkPage.Permission -> PermissionCard(
+                scene = WalkScene.Permission,
+                description = stringResource(R.string.walk_permission_animation),
+                body = stringResource(R.string.walkthrough_overlay_desc),
+                grantedLabel = stringResource(R.string.permission_granted_check),
+                settledAt = PERMISSION_SETTLED,
+                granted = granted,
+                modifier = modifier
+            )
+            page == WalkPage.Notifications -> PermissionCard(
+                scene = WalkScene.Notifications,
+                description = stringResource(R.string.walk_notif_animation),
+                body = stringResource(R.string.walk_notif_card),
+                grantedLabel = stringResource(R.string.walk_notif_granted),
+                settledAt = NOTIFICATIONS_SETTLED,
+                granted = granted,
+                modifier = modifier
+            )
+            page == WalkPage.Accessibility -> PermissionCard(
+                scene = WalkScene.Accessibility,
+                description = stringResource(R.string.walk_access_animation),
+                body = stringResource(R.string.walk_access_card),
+                grantedLabel = stringResource(R.string.walk_access_granted),
+                settledAt = ACCESSIBILITY_SETTLED,
+                granted = granted,
+                modifier = modifier
+            )
+            text.scene != null -> IllustrationCard(
+                scene = text.scene,
+                caption = text.caption?.let { stringResource(it) }.orEmpty(),
+                description = text.animation?.let { stringResource(it) }.orEmpty(),
+                modifier = modifier
+            )
+        }
+    }
+
+    val points: @Composable () -> Unit = {
         // The style page's grid changes with the highlighted card; a crossfade keeps that calm.
         Crossfade(targetState = text.points, label = "walkthrough-points") { points ->
             PointGrid(points)
         }
-        Spacer(modifier = Modifier.height(16.dp))
+    }
 
-        if (page.asksPermission && !granted) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        if (twoPane) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(PANE_GAP)
             ) {
-                OutlinedButton(
-                    onClick = onSkip,
+                // Level with the chip across the way.
+                card(
+                    Modifier
+                        .weight(CARD_SHARE)
+                        .fillMaxHeight()
+                        .padding(top = 6.dp)
+                )
+                Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    shape = ActionShape
+                        .weight(1f - CARD_SHARE)
+                        .fillMaxHeight()
                 ) {
-                    Text(stringResource(R.string.skip_for_now), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                }
-                Button(
-                    onClick = onPrimary,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    shape = ActionShape
-                ) {
-                    Text(stringResource(R.string.walk_allow), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        header()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        points()
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    PageActions(page, granted, isLastTutorial, isLastPage, onPrimary, onSkip)
                 }
             }
         } else {
-            val label = when {
-                page.asksPermission -> if (isLastPage) R.string.walk_start else R.string.walk_continue
-                isLastTutorial -> R.string.walk_got_it
-                else -> R.string.walk_continue
-            }
-            Button(
-                onClick = onPrimary,
+            UprightPage(
+                // The style cards are all there is to that card: no scene to leave room for.
+                sceneFloor = if (page == WalkPage.Style) 0.dp else SCENE_MIN_HEIGHT,
+                header = {
+                    header()
+                    Spacer(modifier = Modifier.height(16.dp))
+                },
+                card = { card(Modifier.fillMaxSize()) },
+                points = {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    points()
+                },
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = ActionShape
-            ) {
-                Text(stringResource(label), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-            }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            PageActions(page, granted, isLastTutorial, isLastPage, onPrimary, onSkip)
         }
         Spacer(modifier = Modifier.height(12.dp))
     }
+}
+
+/**
+ * The page upright: [header] above the card, [points] below it, and the card in between taking
+ * whatever height those two leave.
+ *
+ * Where that would leave the card less than its own words and [sceneFloor] more — a short phone, a
+ * split screen, large text — the page scrolls instead, and the card keeps that much. Squeezed,
+ * the scene shrank to a sliver, and with the phone on its side to nothing at all.
+ */
+@Composable
+private fun UprightPage(
+    sceneFloor: Dp,
+    header: @Composable () -> Unit,
+    card: @Composable () -> Unit,
+    points: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    BoxWithConstraints(modifier = modifier) {
+        val viewport = constraints.maxHeight
+        Layout(
+            contents = listOf(header, card, points),
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+        ) { (above, middle, below), outer ->
+            val width = outer.maxWidth
+            val loose = Constraints(maxWidth = width)
+            val top = above.map { it.measure(loose) }
+            val bottom = below.map { it.measure(loose) }
+            val used = top.sumOf { it.height } + bottom.sumOf { it.height }
+            // The card's own words, a caption or a permission's reason, and room for the scene.
+            val floor = (middle.maxOfOrNull { it.minIntrinsicHeight(width) } ?: 0) + sceneFloor.roundToPx()
+            val cardHeight = maxOf(viewport - used, floor)
+            val cards = middle.map { it.measure(Constraints.fixed(width, cardHeight)) }
+            layout(width, used + cardHeight) {
+                var y = 0
+                (top + cards + bottom).forEach {
+                    it.place(0, y)
+                    y += it.height
+                }
+            }
+        }
+    }
+}
+
+/** Allow and Skip on a page that asks and has not been answered yet; one button on the rest. */
+@Composable
+private fun PageActions(
+    page: WalkPage,
+    granted: Boolean,
+    isLastTutorial: Boolean,
+    isLastPage: Boolean,
+    onPrimary: () -> Unit,
+    onSkip: () -> Unit,
+) {
+    if (page.asksPermission && !granted) {
+        AnswerPair(
+            skip = {
+                OutlinedButton(onClick = onSkip, shape = ActionShape) {
+                    ActionLabel(R.string.skip_for_now)
+                }
+            },
+            allow = {
+                Button(onClick = onPrimary, shape = ActionShape) {
+                    ActionLabel(R.string.walk_allow)
+                }
+            },
+        )
+    } else {
+        val label = when {
+            page.asksPermission -> if (isLastPage) R.string.walk_start else R.string.walk_continue
+            isLastTutorial -> R.string.walk_got_it
+            else -> R.string.walk_continue
+        }
+        Button(
+            onClick = onPrimary,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = ACTION_HEIGHT),
+            shape = ActionShape
+        ) {
+            ActionLabel(label)
+        }
+    }
+}
+
+/**
+ * Skip and Allow side by side, half the width each, where both words fit on one line there; where
+ * either would not, Allow above Skip, each the full width. Halved, "Fürs Erste überspringen" in
+ * large text broke mid-word over four lines.
+ */
+@Composable
+private fun AnswerPair(skip: @Composable () -> Unit, allow: @Composable () -> Unit) {
+    Layout(
+        modifier = Modifier.fillMaxWidth(),
+        content = {
+            skip()
+            allow()
+        },
+    ) { measurables, constraints ->
+        val (skipButton, allowButton) = measurables
+        val width = constraints.maxWidth
+        val gap = 12.dp.roundToPx()
+        val minHeight = ACTION_HEIGHT.roundToPx()
+        val half = (width - gap) / 2
+        val sideBySide = measurables.all { it.maxIntrinsicWidth(Constraints.Infinity) <= half }
+        if (sideBySide) {
+            val each = Constraints(minWidth = half, maxWidth = half, minHeight = minHeight)
+            val left = skipButton.measure(each)
+            val right = allowButton.measure(each)
+            val height = maxOf(left.height, right.height)
+            layout(width, height) {
+                left.placeRelative(0, 0)
+                right.placeRelative(width - half, 0)
+            }
+        } else {
+            val each = Constraints(minWidth = width, maxWidth = width, minHeight = minHeight)
+            val top = allowButton.measure(each)
+            val bottom = skipButton.measure(each)
+            layout(width, top.height + gap + bottom.height) {
+                top.placeRelative(0, 0)
+                bottom.placeRelative(0, top.height + gap)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActionLabel(@StringRes label: Int) {
+    Text(
+        text = stringResource(label),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.SemiBold,
+        textAlign = TextAlign.Center
+    )
 }
 
 @Composable
@@ -763,7 +1008,8 @@ private fun ActiveEdge() {
 
 @Composable
 private fun StyleChoice(selected: String, onSelect: (String) -> Unit, modifier: Modifier = Modifier) {
-    // Scrolls only where a short screen leaves the two cards less room than they need.
+    // Scrolls only beside the words, on a page on its side too short for the two cards. Upright the
+    // whole page scrolls instead, and this always has room for both.
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
@@ -905,48 +1151,56 @@ private fun PermissionCard(
     }
 }
 
-/** What the page covers, two to a row, each row as tall as its taller chip. */
+/**
+ * What the page covers, two to a row, each row as tall as its taller chip. One to a row where two
+ * would leave each chip too narrow for its words: a small phone, or large text, which used to cut
+ * every chip off at its second line.
+ */
 @Composable
 private fun PointGrid(points: List<Int>) {
     val colours = MaterialTheme.colorScheme
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        points.chunked(2).forEach { pair ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                pair.forEach { point ->
-                    Surface(
-                        shape = RoundedCornerShape(14.dp),
-                        color = colours.surfaceContainerHigh,
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
+    val fontScale = LocalDensity.current.fontScale
+    BoxWithConstraints {
+        val perRow = if (maxWidth < POINTS_TWO_UP_MIN_WIDTH * fontScale) 1 else 2
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            points.chunked(perRow).forEach { pair ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    pair.forEach { point ->
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = colours.surfaceContainerHigh,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .clip(CircleShape)
-                                    .background(colours.primary)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(point),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = colours.onSurface,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(colours.primary)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(point),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = colours.onSurface,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
+                    if (pair.size < perRow) Spacer(modifier = Modifier.weight(1f))
                 }
-                if (pair.size == 1) Spacer(modifier = Modifier.weight(1f))
             }
         }
     }

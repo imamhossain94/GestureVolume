@@ -46,8 +46,8 @@ android {
         applicationId = "com.newagedevs.gesturevolume"
         minSdk = 26
         targetSdk = 37
-        versionCode = 38
-        versionName = "1.5.1"
+        versionCode = 39
+        versionName = "1.5.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -169,6 +169,7 @@ dependencies {
     implementation(libs.vungle.adapter)
     implementation(libs.facebook.adapter)
     implementation(libs.unityads.adapter)
+    implementation(libs.mintegral.adapter)
 
     // Testing
     testImplementation(libs.junit)

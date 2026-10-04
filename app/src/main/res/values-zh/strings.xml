@@ -536,7 +536,7 @@
     <string name="faq_q_brightness">为什么能调音量却不能调亮度？</string>
     <string name="faq_a_brightness">调节亮度需要“修改系统设置”权限，Android 将其与其他权限分开管理。请在“权限”卡片中授予。本应用第一次写入亮度值时还会关闭自动亮度，否则光线传感器会在一两秒内覆盖你设置的亮度。</string>
     <string name="faq_q_accessibility">为什么要求开启无障碍服务？</string>
-    <string name="faq_a_accessibility">仅用于 Android 不允许普通应用执行的操作：返回、主屏幕、最近应用、截屏、锁屏、通知栏和电源菜单。其他功能都不需要它，操作选择器会标出这些操作，让你在选择前就知道。此外，只有在你开启时，它才会用于音量键即时响应以及在所选应用中隐藏滑条。</string>
+    <string name="faq_a_accessibility">仅用于 Android 不允许普通应用执行的操作：返回、主屏幕、最近应用、截屏、锁屏、通知栏和电源菜单。其他功能都不需要它，操作选择器会标出这些操作，让你在选择前就知道。此外，只有在你开启时，它才会用于音量键即时响应、在所选应用中隐藏滑条以及在锁屏界面上显示滑条。</string>
     <string name="faq_q_notification">可以去掉常驻通知吗？</string>
     <string name="faq_a_notification">基本可以。在“操作”中关闭“通知栏控制”。滑条服务运行期间 Android 要求保留一条通知，因此会留下一个静默占位通知，但它不再显示状态栏图标，并会移到通知栏底部。你可以在本应用的通知设置中将其彻底隐藏。</string>
     <string name="faq_q_quick_panel">什么是快捷面板？</string>
@@ -617,6 +617,7 @@
     <string name="auto_rotate_on">自动旋转已开启</string>
     <string name="auto_rotate_off">自动旋转已关闭</string>
     <string name="auto_rotate_needs_permission">请允许“修改系统设置”以切换自动旋转</string>
+    <string name="lock_screen_unlock_first">请解锁手机以使用此功能</string>
     <string name="accessibility_needed_short">请开启 GestureVolume 无障碍服务以使用此功能</string>
     <string name="action_unavailable_on_device">此设备不支持该操作</string>
     <string name="triple_tap_action">三击操作</string>
@@ -636,12 +637,12 @@
     <string name="swipe_amount_percent">每次滑动 %1$d%%</string>
     <string name="swipe_amount_percent_desc">无论滑动长短，每次滑动都调节 %1$d%%。级数很少的音量会调到最接近的一级。</string>
     <string name="accessibility_service_label">GestureVolume</string>
-    <string name="accessibility_service_summary">从音量滑条执行系统快捷操作、音量键即时响应，以及在所选应用中隐藏滑条或更改其手势</string>
-    <string name="accessibility_service_description">GestureVolume 使用无障碍服务来执行你分配给悬浮滑条的系统操作——锁屏、截屏、返回或回到主屏幕、打开最近应用、通知栏、快捷设置和电源菜单。如果你选择开启，它还会在你按下音量键的瞬间打开快捷面板，且只关注两个音量键。如果你选择了要隐藏滑条的应用，或为某些应用设置了专属手势，它会记下屏幕上是哪个应用，除此之外不记录该应用的任何信息。它不读取其他任何内容，不收集任何数据，所有内容都保留在本设备上。在等待音量减小键的按压期间，它还会留意系统截屏是否已出现，这样用按键截屏时就不会打开面板。</string>
+    <string name="accessibility_service_summary">从音量滑条执行系统快捷操作、音量键即时响应、锁屏界面上的滑条，以及在所选应用中隐藏滑条或更改其手势</string>
+    <string name="accessibility_service_description">GestureVolume 使用无障碍服务来执行你分配给悬浮滑条的系统操作——锁屏、截屏、返回或回到主屏幕、打开最近应用、通知栏、快捷设置和电源菜单。如果你选择开启，它还会在你按下音量键的瞬间打开快捷面板，且只关注两个音量键。如果你选择开启，它还会在锁屏界面上显示滑条（Android 会在锁屏界面隐藏所有应用的悬浮滑条），手机锁定期间，滑条只执行锁屏界面本就允许的操作：音量、快捷面板和快捷开关。如果你选择了要隐藏滑条的应用，或为某些应用设置了专属手势，它会记下屏幕上是哪个应用，除此之外不记录该应用的任何信息。它不读取其他任何内容，不收集任何数据，所有内容都保留在本设备上。在等待音量减小键的按压期间，它还会留意系统截屏是否已出现，这样用按键截屏时就不会打开面板。</string>
     <string name="accessibility_permission">无障碍服务</string>
     <string name="accessibility_permission_desc">可选：执行锁屏、截屏、返回、主屏幕、最近应用、通知栏、快捷设置和电源菜单。</string>
     <string name="accessibility_disclosure_title">开启无障碍服务？</string>
-    <string name="accessibility_disclosure_message">GestureVolume 将 Android 的无障碍服务用于三件事，全部可选：\n\n• 执行你分配给滑条的系统操作：锁屏、截屏、返回、主屏幕、最近应用、通知栏、快捷设置和电源菜单。\n\n• 关注两个音量键（仅当你将音量键设为“即时”时）：在你按下其中一个时立即打开快捷面板。其他所有按键都会直接放行，也不会记录任何按键。在等待音量减小键的按压期间，它还会留意系统截屏是否已出现，这样用按键截屏时就不会打开面板。\n\n• 查看屏幕上是哪个应用（仅当你选择了要隐藏滑条的应用或为应用设置了专属手势时）。它只看应用名称，不看其他内容。\n\n它不会读取或收集任何其他内容。任何数据都不会离开你的设备。你可以随时在“设置 › 无障碍”中将其关闭。</string>
+    <string name="accessibility_disclosure_message">GestureVolume 将 Android 的无障碍服务用于四件事，全部可选：\n\n• 执行你分配给滑条的系统操作：锁屏、截屏、返回、主屏幕、最近应用、通知栏、快捷设置和电源菜单。\n\n• 关注两个音量键（仅当你将音量键设为“即时”时）：在你按下其中一个时立即打开快捷面板。其他所有按键都会直接放行，也不会记录任何按键。在等待音量减小键的按压期间，它还会留意系统截屏是否已出现，这样用按键截屏时就不会打开面板。\n\n• 查看屏幕上是哪个应用（仅当你选择了要隐藏滑条的应用或为应用设置了专属手势时）。它只看应用名称，不看其他内容。\n\n• 在锁屏界面上显示滑条（仅当你开启“在锁屏界面上显示”时）：Android 会在锁屏界面隐藏所有应用的悬浮滑条。手机锁定期间，滑条只执行锁屏界面本就允许的操作：音量、快捷面板和快捷开关。\n\n它不会读取或收集任何其他内容。任何数据都不会离开你的设备。你可以随时在“设置 › 无障碍”中将其关闭。</string>
     <string name="accessibility_disclosure_accept">打开无障碍设置</string>
     <string name="accessibility_disclosure_decline">暂不</string>
     <string name="accessibility_how_to">在列表中打开 GestureVolume 并将其开启。</string>
@@ -969,6 +970,10 @@
     <string name="keyboard_needs_android_11">需要 Android 11 或更高版本。在此手机上滑条会保持原位。</string>
     <string name="visibility_apps_title">在这些应用中隐藏</string>
     <string name="visibility_apps_desc">打开其中任一应用时滑条会自动隐藏，离开后回来。</string>
+    <string name="visibility_lock_title">锁屏界面</string>
+    <string name="visibility_lock_desc">Android 不允许任何应用的悬浮滑条出现在锁屏界面上。无障碍服务可以把这个滑条放到锁屏界面上。</string>
+    <string name="visibility_lock_show_title">在锁屏界面上显示</string>
+    <string name="visibility_lock_show_desc">手机锁定时可使用音量、快捷面板和快捷开关。Deck、菜单和打开应用要等到解锁后才能使用。</string>
     <string name="visibility_apps_needs_accessibility">此功能需要无障碍服务，由它告诉本应用当前打开的是哪个应用。点按即可开启。</string>
     <string name="visibility_apps_chosen">隐藏于</string>
     <string name="visibility_tab_chosen">隐藏于（%1$d）</string>

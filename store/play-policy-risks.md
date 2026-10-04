@@ -55,8 +55,8 @@ accessibility uses, every permission, AppLovin and each mediated network with li
 choices, Google Play services, retention, children, GDPR/CCPA rights and contact.
 
 **You must.** Replace the text at
-https://newagedevs-privacy-policy.blogspot.com/2023/05/gesture-volume.html, and publish
-`terms-and-conditions.html` at the terms URL (the current terms mention a "device administrator"
+https://newagedevs.com/products/gesture-volume/privacy (moved from Blogger on 4 October 2026), and publish
+the terms at https://newagedevs.com/products/gesture-volume/terms (the current terms mention a "device administrator"
 permission the app does not use, and have no purchase, refund, advertising or governing-law sections).
 
 ### 3. Accessibility declaration and disclosure — fixed
@@ -96,7 +96,8 @@ affirmative consent, an accurate declaration and a video.
 - **Clipboard capture, clipboard history and Paste on tap** — the service no longer observes copies
   and can no longer read window content.
 - **Running without a notification** — the bar is always hosted by the foreground service with the
-  overlay permission; the accessibility service draws nothing.
+  overlay permission. The accessibility service draws only the lock-screen copy below, and only
+  while the phone is locked.
 - **Hide in screenshots** — the key filter no longer hides the bar on Volume down; the Deck's
   Screenshot tile takes a picture with the bar out of it.
 
@@ -106,10 +107,12 @@ affirmative consent, an accurate declaration and a video.
 | --- | --- | --- |
 | System actions (lock, screenshot, Back, Home…) | Low — the textbook accepted use | — |
 | Volume-key filtering | Medium — key interception | Only the two volume keys, others passed through, nothing recorded; filter requested only while Instant is on; for the quarter second a Volume down press is undecided, window-state events are checked for the System UI package only, so a button screenshot does not open the panel |
+| Bar on the lock screen (1.5.2) | Medium — the service draws a `TYPE_ACCESSIBILITY_OVERLAY` window | Off by default, behind Visibility › Show on the lock screen; only while the keyguard is locked and the screen is on, gone at the unlock; does only what the lock screen allows (volume, Quick slider, toggles, system actions), refusing the Deck, the menu and app launches; no accessibility events used. Named in the disclosure, the service description and the declaration |
 | Foreground app detection | Low | Package name only, only while apps are chosen to hide the bar in or have gestures of their own, no history, no window content. The Play Console declaration and its video must be updated for per-app gestures before the release that adds them |
 
-**If the review still objects:** drop the *Instant* volume keys (this removes
-`canRequestFilterKeyEvents`), leaving only system actions and foreground-app detection.
+**If the review still objects:** drop the bar on the lock screen first (it is the one use that
+draws), then the *Instant* volume keys (this removes `canRequestFilterKeyEvents`), leaving only
+system actions and foreground-app detection.
 
 ### 6. Special-use foreground service
 
@@ -158,6 +161,7 @@ keys — check it in a build with the real keys.
 ## Before you submit — checklist
 
 - [x] Paste `privacy-policy.html` at the privacy URL and `terms-and-conditions.html` at the terms URL (Blogger › Edit post › HTML view) — live pages checked 14 September 2026, both dated 13 September 2026
+- [ ] Legal pages moved to newagedevs.com (4 October 2026): check https://newagedevs.com/products/gesture-volume/privacy and https://newagedevs.com/products/gesture-volume/terms are live, then set the new privacy URL in Play Console (App content › Privacy policy, and Store settings)
 - [ ] Update the Data safety form from `play-listing-en.md` (no weather row)
 - [ ] Paste the new Accessibility API declaration (three uses) and upload its video — video recorded: https://drive.google.com/file/d/1FIes_6bU4usJcwVVLh0mfX5py25D84Ks/view?usp=sharing
 - [ ] Complete the Foreground service declaration and upload its video — video recorded: https://drive.google.com/file/d/1bO_3olqE8H6aPhh2rDlBRNyfrtitxQXT/view?usp=sharing
