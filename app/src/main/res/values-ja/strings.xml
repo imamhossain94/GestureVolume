@@ -540,8 +540,6 @@
     <string name="search_sources_title">検索対象</string>
     <string name="search_index_apps">インストール済みアプリ</string>
     <string name="search_index_apps_desc">名前でアプリを探して起動します。</string>
-    <string name="search_index_contacts">連絡先</string>
-    <string name="search_index_contacts_desc">名前や番号で人を探します。連絡先の権限が必要です。</string>
     <string name="search_calculator">インライン電卓</string>
     <string name="search_calculator_desc">式を入力すると、入力しながら答えが出ます。</string>
     <string name="search_providers_title">ウェブ検索</string>
@@ -564,8 +562,6 @@
     <string name="provider_wikipedia">Wikipedia</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">連絡先</string>
-    <string name="contacts_permission_desc">任意: デッキの検索が名前で人を見つけられるようにします。</string>
     <string name="phone_permission">電話</string>
     <string name="phone_permission_desc">任意: クイックダイヤルと検索が電話アプリを使わずに直接発信できるようにします。</string>
     <string name="search_placeholder">何でも検索…</string>
@@ -716,7 +712,6 @@
     <string name="permission_feature_notification_controls">権限: 通知の操作ボタン</string>
     <string name="permission_feature_menu_entry">長押しメニュー: 項目</string>
     <string name="permission_feature_deck_tile">デッキ: タイル</string>
-    <string name="permission_feature_deck_contacts">デッキの検索: 連絡先</string>
     <string name="permission_feature_deck_direct_call">デッキの検索: そのまま発信</string>
     <string name="permission_feature_slider_brightness">クイックスライダー: 画面の明るさ</string>
     <string name="permission_feature_slider_instant_keys">クイックスライダー: 音量ボタンで即表示</string>
@@ -726,7 +721,6 @@
     <string name="permission_needed_by_list">次の設定で必要です:</string>
     <string name="nav_card_needs_permission">権限が必要です</string>
     <string name="permission_note_notifications">操作ボタンを表示するには通知の権限が必要です。タップして権限画面で許可してください。</string>
-    <string name="permission_note_contacts">人を検索するには連絡先の権限が必要です。タップして権限画面で許可してください。</string>
     <string name="permission_note_phone">そのまま発信するには電話の権限が必要です。タップして権限画面で許可してください。</string>
     <string name="permission_note_overlay">バーを表示するには「他のアプリの上に重ねて表示」が必要です。タップして権限画面で許可してください。</string>
     <string name="keyboard_motion_title">移動アニメーション</string>

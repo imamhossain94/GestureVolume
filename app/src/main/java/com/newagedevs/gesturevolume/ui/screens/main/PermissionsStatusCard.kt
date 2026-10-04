@@ -72,7 +72,7 @@ fun PermissionsStatusCard(
     overlay: PermissionChipState = if (hasOverlayPermission) PermissionChipState.GRANTED else PermissionChipState.MISSING,
     accessibility: PermissionChipState = PermissionChipState.OPTIONAL,
     writeSettings: PermissionChipState = PermissionChipState.OPTIONAL,
-    /** Missing permissions not shown as a chip of their own: Do Not Disturb, contacts and so on. */
+    /** Missing permissions not shown as a chip of their own: Do Not Disturb, phone and so on. */
     otherMissing: Int = 0,
     /** What the first missing permission is needed by, shown in place of the description. */
     reason: String? = null,

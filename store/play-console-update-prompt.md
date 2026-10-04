@@ -48,7 +48,7 @@ Actions include the Deck, Quick slider, volume panel, mute, brightness, flashlig
 
 ▸ THE DECK
 • Pinned apps and quick-dial contacts
-• Search: apps, contacts, sums, numbers to call or text, and the web — with voice search
+• Search: apps, quick-dial people, sums, numbers to call or text, and the web — with voice search
 • Volume, brightness and media controls
 • Timer, calculator, coin toss, notes and checklist
 • QR scanner, screenshot, lock, flashlight, Wi-Fi and Bluetooth
@@ -68,7 +68,7 @@ Gesture Volume includes an optional AccessibilityService. It is off until you tu
 It cannot read your screen, does not capture what you copy or type, and nothing it sees leaves your phone. Turn it off any time.
 
 ▸ PERMISSIONS
-Required: Display over other apps. Asked only when you use the feature: the accessibility service, Notifications, Modify system settings, Do Not Disturb access, Contacts and Phone.
+Required: Display over other apps. Asked only when you use the feature: the accessibility service, Notifications, Modify system settings, Do Not Disturb access and Phone.
 
 ▸ PRIVACY
 No account, no analytics and no location. Settings, notes and checklist stay on your phone. The free version shows ads from AppLovin and partners, who may use your advertising ID; change your ad consent any time in Privacy choices. Pro, a one-time purchase, removes ads.

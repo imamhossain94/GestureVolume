@@ -729,8 +729,6 @@
     <string name="search_sources_title">SOURCES</string>
     <string name="search_index_apps">Installed apps</string>
     <string name="search_index_apps_desc">Find and launch apps by name.</string>
-    <string name="search_index_contacts">Contacts</string>
-    <string name="search_index_contacts_desc">Find people by name or number. Needs the Contacts permission.</string>
     <string name="search_calculator">Inline calculator</string>
     <string name="search_calculator_desc">Type a sum and see the answer as you type.</string>
     <string name="search_providers_title">WEB SEARCH</string>
@@ -753,8 +751,6 @@
     <string name="provider_wikipedia">Wikipedia</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">Contacts</string>
-    <string name="contacts_permission_desc">Optional: lets the Deck’s search find people by name.</string>
     <string name="phone_permission">Phone</string>
     <string name="phone_permission_desc">Optional: lets quick dial and search place calls directly, without the dialer.</string>
     <!-- 1.4.0: the search card -->
@@ -1023,7 +1019,6 @@
     <string name="permission_feature_notification_controls">Permissions: Notification controls</string>
     <string name="permission_feature_menu_entry">Long-press menu: Entries</string>
     <string name="permission_feature_deck_tile">Deck: Tiles</string>
-    <string name="permission_feature_deck_contacts">Deck search: Contacts</string>
     <string name="permission_feature_deck_direct_call">Deck search: Call directly</string>
     <string name="permission_feature_slider_brightness">Quick slider: Brightness</string>
     <string name="permission_feature_slider_instant_keys">Quick slider: Instant volume keys</string>
@@ -1048,7 +1043,6 @@
     <string name="permission_needed_by_list">Needed by what you have set up:</string>
     <string name="nav_card_needs_permission">Needs a permission</string>
     <string name="permission_note_notifications">Needs the Notifications permission to show the controls. Tap to allow it on the Permissions screen.</string>
-    <string name="permission_note_contacts">Needs the Contacts permission to find people. Tap to allow it on the Permissions screen.</string>
     <string name="permission_note_phone">Needs the Phone permission to call directly. Tap to allow it on the Permissions screen.</string>
     <string name="permission_note_overlay">Needs Display over other apps to show the bar. Tap to allow it on the Permissions screen.</string>
 

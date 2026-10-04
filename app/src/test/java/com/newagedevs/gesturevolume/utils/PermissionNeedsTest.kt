@@ -22,7 +22,7 @@ class PermissionNeedsTest {
 
     private val nothingGranted = Grants(
         overlay = false, writeSettings = false, accessibility = false, notificationPolicy = false,
-        notifications = false, contacts = false, phone = false
+        notifications = false, phone = false
     )
 
     /** Everything refused except the overlay, so the overlay need does not crowd each assertion. */
@@ -161,15 +161,12 @@ class PermissionNeedsTest {
     }
 
     @Test
-    fun `deck search switches need contacts and phone`() {
+    fun `deck direct call needs phone`() {
         assertEquals(
-            listOf(
-                Need(Permission.CONTACTS, Feature.DECK_SEARCH_CONTACTS),
-                Need(Permission.PHONE, Feature.DECK_DIRECT_CALL),
-            ),
-            compute(Config(searchContacts = true, directCall = true), Grants(contacts = false, phone = false))
+            listOf(Need(Permission.PHONE, Feature.DECK_DIRECT_CALL)),
+            compute(Config(directCall = true), Grants(phone = false))
         )
-        assertTrue(compute(Config(), Grants(contacts = false, phone = false)).isEmpty())
+        assertTrue(compute(Config(), Grants(phone = false)).isEmpty())
     }
 
     @Test

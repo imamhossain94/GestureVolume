@@ -430,7 +430,6 @@
     <string name="permission_feature_notification_controls">权限：通知栏控制</string>
     <string name="permission_feature_menu_entry">长按菜单：菜单项</string>
     <string name="permission_feature_deck_tile">Deck：磁贴</string>
-    <string name="permission_feature_deck_contacts">Deck 搜索：联系人</string>
     <string name="permission_feature_deck_direct_call">Deck 搜索：直接拨打</string>
     <string name="permission_feature_slider_brightness">快捷滑块：亮度</string>
     <string name="permission_feature_slider_instant_keys">快捷滑块：音量键即时响应</string>
@@ -440,7 +439,6 @@
     <string name="permission_needed_by_list">你设置的以下功能需要：</string>
     <string name="nav_card_needs_permission">需要一项权限</string>
     <string name="permission_note_notifications">需要通知权限才能显示控制按钮。点按即可在权限页面中允许。</string>
-    <string name="permission_note_contacts">需要通讯录权限才能查找联系人。点按即可在权限页面中允许。</string>
     <string name="permission_note_phone">需要电话权限才能直接拨打。点按即可在权限页面中允许。</string>
     <string name="permission_note_overlay">需要“显示在其他应用之上”权限才能显示悬浮条。点按即可在权限页面中允许。</string>
     <string name="keyboard_motion_title">移动动画</string>
@@ -790,8 +788,6 @@
     <string name="search_sources_title">来源</string>
     <string name="search_index_apps">已安装的应用</string>
     <string name="search_index_apps_desc">按名称查找并启动应用。</string>
-    <string name="search_index_contacts">联系人</string>
-    <string name="search_index_contacts_desc">按姓名或号码查找联系人。需要通讯录权限。</string>
     <string name="search_calculator">内置计算器</string>
     <string name="search_calculator_desc">输入算式，边输入边显示结果。</string>
     <string name="search_providers_title">网页搜索</string>
@@ -814,8 +810,6 @@
     <string name="provider_wikipedia">维基百科</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">通讯录</string>
-    <string name="contacts_permission_desc">可选：让 Deck 的搜索按姓名查找联系人。</string>
     <string name="phone_permission">电话</string>
     <string name="phone_permission_desc">可选：让快速拨号和搜索直接拨打电话，无需经过拨号器。</string>
     <string name="search_placeholder">搜索任何内容…</string>

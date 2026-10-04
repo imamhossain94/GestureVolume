@@ -57,7 +57,6 @@ fun permissionNoteText(permission: PermissionNeeds.Permission): Int = when (perm
     PermissionNeeds.Permission.ACCESSIBILITY -> R.string.permission_note_accessibility
     PermissionNeeds.Permission.NOTIFICATION_POLICY -> R.string.permission_note_dnd
     PermissionNeeds.Permission.NOTIFICATIONS -> R.string.permission_note_notifications
-    PermissionNeeds.Permission.CONTACTS -> R.string.permission_note_contacts
     PermissionNeeds.Permission.PHONE -> R.string.permission_note_phone
 }
 

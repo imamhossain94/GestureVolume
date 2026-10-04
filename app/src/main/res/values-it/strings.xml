@@ -540,8 +540,6 @@
     <string name="search_sources_title">FONTI</string>
     <string name="search_index_apps">App installate</string>
     <string name="search_index_apps_desc">Trova e avvia le app per nome.</string>
-    <string name="search_index_contacts">Contatti</string>
-    <string name="search_index_contacts_desc">Trova persone per nome o numero. Richiede l’autorizzazione Contatti.</string>
     <string name="search_calculator">Calcolatrice integrata</string>
     <string name="search_calculator_desc">Digita un calcolo e vedi il risultato mentre scrivi.</string>
     <string name="search_providers_title">RICERCA WEB</string>
@@ -564,8 +562,6 @@
     <string name="provider_wikipedia">Wikipedia</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">Contatti</string>
-    <string name="contacts_permission_desc">Facoltativo: consente alla ricerca del Deck di trovare persone per nome.</string>
     <string name="phone_permission">Telefono</string>
     <string name="phone_permission_desc">Facoltativo: consente a chiamata rapida e ricerca di chiamare direttamente, senza il telefono.</string>
     <string name="search_placeholder">Cerca qualsiasi cosa…</string>
@@ -716,7 +712,6 @@
     <string name="permission_feature_notification_controls">Autorizzazioni: Controlli nella notifica</string>
     <string name="permission_feature_menu_entry">Menu a pressione prolungata: Voci</string>
     <string name="permission_feature_deck_tile">Deck: Riquadri</string>
-    <string name="permission_feature_deck_contacts">Ricerca del Deck: Contatti</string>
     <string name="permission_feature_deck_direct_call">Ricerca del Deck: Chiama direttamente</string>
     <string name="permission_feature_slider_brightness">Cursore rapido: Luminosità</string>
     <string name="permission_feature_slider_instant_keys">Cursore rapido: Tasti del volume immediati</string>
@@ -726,7 +721,6 @@
     <string name="permission_needed_by_list">Serve a ciò che hai impostato:</string>
     <string name="nav_card_needs_permission">Serve un\'autorizzazione</string>
     <string name="permission_note_notifications">Serve l\'autorizzazione Notifiche per mostrare i controlli. Tocca per consentirla dalla schermata Autorizzazioni.</string>
-    <string name="permission_note_contacts">Serve l\'autorizzazione Contatti per trovare le persone. Tocca per consentirla dalla schermata Autorizzazioni.</string>
     <string name="permission_note_phone">Serve l\'autorizzazione Telefono per chiamare direttamente. Tocca per consentirla dalla schermata Autorizzazioni.</string>
     <string name="permission_note_overlay">Serve Visualizza su altre app per mostrare la barra. Tocca per consentirlo dalla schermata Autorizzazioni.</string>
     <string name="keyboard_motion_title">Animazione di spostamento</string>

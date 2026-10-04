@@ -60,7 +60,7 @@ A panel that slides out beside the bar.
 
 - **Pinned apps** — as many as you like.
 - **Quick dial** — one-tap call buttons, added from the system contact picker or typed by hand.
-- **Search** — apps, contacts, arithmetic answered as you type, phone numbers routed to the
+- **Search** — apps, quick-dial people, arithmetic answered as you type, phone numbers routed to the
   dialler / SMS / WhatsApp / Telegram, and the web across seven providers. Voice search included.
 - **Tiles** — volume, brightness, media transport, timer, calculator, notes, clipboard history,
   checklist, weather, QR scanner, song identification, screenshot, lock, flashlight, Do Not
@@ -106,7 +106,6 @@ Requested at the moment the feature that needs it is switched on, and never befo
 | `POST_NOTIFICATIONS` | The shade's Show / Settings / Stop row |
 | `WRITE_SETTINGS` | Brightness and auto-rotate |
 | `ACCESS_NOTIFICATION_POLICY` | The Do Not Disturb toggle |
-| `READ_CONTACTS` | Contact search in the Deck |
 | `CALL_PHONE` | Calling without stopping at the dialler |
 | `ACCESS_COARSE_LOCATION` | The weather tile |
 

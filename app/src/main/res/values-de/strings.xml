@@ -540,8 +540,6 @@
     <string name="search_sources_title">QUELLEN</string>
     <string name="search_index_apps">Installierte Apps</string>
     <string name="search_index_apps_desc">Apps nach Namen finden und starten.</string>
-    <string name="search_index_contacts">Kontakte</string>
-    <string name="search_index_contacts_desc">Personen nach Name oder Nummer finden. Benötigt die Kontakte-Berechtigung.</string>
     <string name="search_calculator">Rechner in der Suche</string>
     <string name="search_calculator_desc">Tippe eine Rechnung und sieh das Ergebnis beim Tippen.</string>
     <string name="search_providers_title">WEBSUCHE</string>
@@ -564,8 +562,6 @@
     <string name="provider_wikipedia">Wikipedia</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">Kontakte</string>
-    <string name="contacts_permission_desc">Optional: lässt die Suche im Deck Personen nach Namen finden.</string>
     <string name="phone_permission">Telefon</string>
     <string name="phone_permission_desc">Optional: lässt Kurzwahl und Suche direkt anrufen, ohne die Telefon-App.</string>
     <string name="search_placeholder">Alles durchsuchen…</string>
@@ -716,7 +712,6 @@
     <string name="permission_feature_notification_controls">Berechtigungen: Benachrichtigungs-Steuerung</string>
     <string name="permission_feature_menu_entry">Menü bei langem Drücken: Einträge</string>
     <string name="permission_feature_deck_tile">Deck: Kacheln</string>
-    <string name="permission_feature_deck_contacts">Deck-Suche: Kontakte</string>
     <string name="permission_feature_deck_direct_call">Deck-Suche: Direkt anrufen</string>
     <string name="permission_feature_slider_brightness">Schnellregler: Helligkeit</string>
     <string name="permission_feature_slider_instant_keys">Schnellregler: Sofortige Lautstärketasten</string>
@@ -726,7 +721,6 @@
     <string name="permission_needed_by_list">Benötigt von deinen Einstellungen:</string>
     <string name="nav_card_needs_permission">Braucht eine Berechtigung</string>
     <string name="permission_note_notifications">Benötigt die Berechtigung „Benachrichtigungen“, um die Steuerung anzuzeigen. Tippe, um sie auf dem Bildschirm „Berechtigungen“ zu erlauben.</string>
-    <string name="permission_note_contacts">Benötigt die Berechtigung „Kontakte“, um Personen zu finden. Tippe, um sie auf dem Bildschirm „Berechtigungen“ zu erlauben.</string>
     <string name="permission_note_phone">Benötigt die Berechtigung „Telefon“, um direkt anzurufen. Tippe, um sie auf dem Bildschirm „Berechtigungen“ zu erlauben.</string>
     <string name="permission_note_overlay">Benötigt „Anzeige über anderen Apps“, um die Leiste zu zeigen. Tippe, um es auf dem Bildschirm „Berechtigungen“ zu erlauben.</string>
     <string name="keyboard_motion_title">Bewegungsanimation</string>

@@ -540,8 +540,6 @@
     <string name="search_sources_title">উৎস</string>
     <string name="search_index_apps">ইনস্টল করা অ্যাপ</string>
     <string name="search_index_apps_desc">নাম দিয়ে অ্যাপ খুঁজে চালু করুন।</string>
-    <string name="search_index_contacts">পরিচিতি</string>
-    <string name="search_index_contacts_desc">নাম বা নম্বর দিয়ে মানুষ খুঁজুন। পরিচিতির অনুমতি দরকার।</string>
     <string name="search_calculator">ইনলাইন ক্যালকুলেটর</string>
     <string name="search_calculator_desc">হিসাব লিখুন, লেখার সঙ্গে সঙ্গেই ফল দেখুন।</string>
     <string name="search_providers_title">ওয়েব সার্চ</string>
@@ -564,8 +562,6 @@
     <string name="provider_wikipedia">উইকিপিডিয়া</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">পরিচিতি</string>
-    <string name="contacts_permission_desc">ঐচ্ছিক: ডেকের সার্চকে নাম দিয়ে মানুষ খুঁজতে দেয়।</string>
     <string name="phone_permission">ফোন</string>
     <string name="phone_permission_desc">ঐচ্ছিক: ডায়ালার ছাড়াই কুইক ডায়াল ও সার্চকে সরাসরি কল করতে দেয়।</string>
     <string name="search_placeholder">যা খুশি খুঁজুন…</string>
@@ -716,7 +712,6 @@
     <string name="permission_feature_notification_controls">অনুমতি: নোটিফিকেশন নিয়ন্ত্রণ</string>
     <string name="permission_feature_menu_entry">লং-প্রেস মেনু: আইটেম</string>
     <string name="permission_feature_deck_tile">ডেক: টাইল</string>
-    <string name="permission_feature_deck_contacts">ডেক সার্চ: পরিচিতি</string>
     <string name="permission_feature_deck_direct_call">ডেক সার্চ: সরাসরি কল</string>
     <string name="permission_feature_slider_brightness">দ্রুত স্লাইডার: উজ্জ্বলতা</string>
     <string name="permission_feature_slider_instant_keys">দ্রুত স্লাইডার: তাৎক্ষণিক ভলিউম কী</string>
@@ -726,7 +721,6 @@
     <string name="permission_needed_by_list">আপনার সেট করা এগুলোর জন্য দরকার:</string>
     <string name="nav_card_needs_permission">একটি অনুমতি দরকার</string>
     <string name="permission_note_notifications">নিয়ন্ত্রণ দেখাতে নোটিফিকেশন অনুমতি লাগবে। অনুমতি স্ক্রিনে এটি দিতে ট্যাপ করুন।</string>
-    <string name="permission_note_contacts">মানুষ খুঁজতে পরিচিতি অনুমতি লাগবে। অনুমতি স্ক্রিনে এটি দিতে ট্যাপ করুন।</string>
     <string name="permission_note_phone">সরাসরি কল করতে ফোন অনুমতি লাগবে। অনুমতি স্ক্রিনে এটি দিতে ট্যাপ করুন।</string>
     <string name="permission_note_overlay">বার দেখাতে ‘অন্যান্য অ্যাপের উপরে প্রদর্শন’ লাগবে। অনুমতি স্ক্রিনে এটি দিতে ট্যাপ করুন।</string>
     <string name="keyboard_motion_title">সরে যাওয়ার অ্যানিমেশন</string>

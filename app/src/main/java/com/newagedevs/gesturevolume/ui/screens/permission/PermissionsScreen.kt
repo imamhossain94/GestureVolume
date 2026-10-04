@@ -39,7 +39,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.BrightnessHigh
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.DoNotDisturbOn
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
@@ -125,9 +124,6 @@ fun PermissionsScreen(
     var dndAccessGranted by remember {
         mutableStateOf(PermissionNeeds.hasNotificationPolicyAccess(context))
     }
-    var contactsGranted by remember {
-        mutableStateOf(PermissionNeeds.hasPermission(context, Manifest.permission.READ_CONTACTS))
-    }
     var phoneGranted by remember {
         mutableStateOf(PermissionNeeds.hasPermission(context, Manifest.permission.CALL_PHONE))
     }
@@ -149,7 +145,6 @@ fun PermissionsScreen(
                 notificationsGranted = PermissionNeeds.hasNotificationPermission(context)
                 accessibilityEnabled = OverlayRuntime.isAccessibilityEnabled(context)
                 dndAccessGranted = PermissionNeeds.hasNotificationPolicyAccess(context)
-                contactsGranted = PermissionNeeds.hasPermission(context, Manifest.permission.READ_CONTACTS)
                 phoneGranted = PermissionNeeds.hasPermission(context, Manifest.permission.CALL_PHONE)
                 needs = PermissionNeeds.read(context, viewModel.preference)
                 viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
@@ -187,9 +182,6 @@ fun PermissionsScreen(
     fun cardModifier(permission: Permission): Modifier =
         Modifier.bringIntoViewRequester(requesters.getValue(permission))
 
-    val contactsLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { contactsGranted = it }
     val phoneLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { phoneGranted = it }
@@ -257,9 +249,9 @@ fun PermissionsScreen(
         }
     ) { padding ->
         // The optional group: three always, the notification permission on Android 13 and later,
-        // what the notification carries, and the two for the Deck.
+        // what the notification carries, and the one for the Deck.
         val controlsAt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) 4 else 3
-        val optionalShape = { index: Int -> cardShape(index, controlsAt + 3) }
+        val optionalShape = { index: Int -> cardShape(index, controlsAt + 2) }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -469,23 +461,6 @@ fun PermissionsScreen(
 
             Spacer(modifier = Modifier.height(3.dp))
 
-            // Contacts — only the Deck's search uses it.
-            PermissionCard(
-                title = stringResource(R.string.contacts_permission),
-                description = stringResource(R.string.contacts_permission_desc),
-                icon = Icons.Default.Contacts,
-                isGranted = contactsGranted,
-                isOptional = true,
-                warning = neededBy(needs, Permission.CONTACTS),
-                borderColor = if (contactsGranted) Color(0xFF10B981) else Color(0xFF8B5CF6),
-                modifier = cardModifier(Permission.CONTACTS),
-                highlight = highlightOf(Permission.CONTACTS),
-                shape = optionalShape(controlsAt + 1),
-                onRequestPermission = { contactsLauncher.launch(Manifest.permission.READ_CONTACTS) }
-            )
-
-            Spacer(modifier = Modifier.height(3.dp))
-
             // Phone — only "call directly" uses it.
             PermissionCard(
                 title = stringResource(R.string.phone_permission),
@@ -497,7 +472,7 @@ fun PermissionsScreen(
                 borderColor = if (phoneGranted) Color(0xFF10B981) else Color(0xFF8B5CF6),
                 modifier = cardModifier(Permission.PHONE),
                 highlight = highlightOf(Permission.PHONE),
-                shape = optionalShape(controlsAt + 2),
+                shape = optionalShape(controlsAt + 1),
                 onRequestPermission = { phoneLauncher.launch(Manifest.permission.CALL_PHONE) }
             )
 

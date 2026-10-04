@@ -430,7 +430,6 @@
     <string name="permission_feature_notification_controls">Quyền: Điều khiển trên thông báo</string>
     <string name="permission_feature_menu_entry">Menu nhấn giữ: Mục</string>
     <string name="permission_feature_deck_tile">Deck: Ô</string>
-    <string name="permission_feature_deck_contacts">Tìm kiếm Deck: Danh bạ</string>
     <string name="permission_feature_deck_direct_call">Tìm kiếm Deck: Gọi trực tiếp</string>
     <string name="permission_feature_slider_brightness">Thanh trượt nhanh: Độ sáng</string>
     <string name="permission_feature_slider_instant_keys">Thanh trượt nhanh: Phím âm lượng tức thì</string>
@@ -440,7 +439,6 @@
     <string name="permission_needed_by_list">Cần cho những gì bạn đã thiết lập:</string>
     <string name="nav_card_needs_permission">Cần một quyền</string>
     <string name="permission_note_notifications">Cần quyền Thông báo để hiển thị các nút điều khiển. Chạm để cho phép trong màn hình Quyền.</string>
-    <string name="permission_note_contacts">Cần quyền Danh bạ để tìm người. Chạm để cho phép trong màn hình Quyền.</string>
     <string name="permission_note_phone">Cần quyền Điện thoại để gọi trực tiếp. Chạm để cho phép trong màn hình Quyền.</string>
     <string name="permission_note_overlay">Cần quyền Hiển thị trên các ứng dụng khác để hiện thanh. Chạm để cho phép trong màn hình Quyền.</string>
     <string name="keyboard_motion_title">Hiệu ứng di chuyển</string>
@@ -790,8 +788,6 @@
     <string name="search_sources_title">NGUỒN</string>
     <string name="search_index_apps">Ứng dụng đã cài</string>
     <string name="search_index_apps_desc">Tìm và mở ứng dụng theo tên.</string>
-    <string name="search_index_contacts">Danh bạ</string>
-    <string name="search_index_contacts_desc">Tìm người theo tên hoặc số. Cần quyền Danh bạ.</string>
     <string name="search_calculator">Máy tính tích hợp</string>
     <string name="search_calculator_desc">Nhập phép tính và xem kết quả ngay khi gõ.</string>
     <string name="search_providers_title">TÌM KIẾM TRÊN WEB</string>
@@ -814,8 +810,6 @@
     <string name="provider_wikipedia">Wikipedia</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">Danh bạ</string>
-    <string name="contacts_permission_desc">Tùy chọn: cho phép tìm kiếm của Deck tìm người theo tên.</string>
     <string name="phone_permission">Điện thoại</string>
     <string name="phone_permission_desc">Tùy chọn: cho phép quay số nhanh và tìm kiếm gọi trực tiếp, không qua trình quay số.</string>
     <string name="search_placeholder">Tìm mọi thứ…</string>

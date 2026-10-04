@@ -540,8 +540,6 @@
     <string name="search_sources_title">KAYNAKLAR</string>
     <string name="search_index_apps">Yüklü uygulamalar</string>
     <string name="search_index_apps_desc">Uygulamaları ada göre bul ve başlat.</string>
-    <string name="search_index_contacts">Kişiler</string>
-    <string name="search_index_contacts_desc">Kişileri ada veya numaraya göre bul. Kişiler iznini gerektirir.</string>
     <string name="search_calculator">Satır içi hesap makinesi</string>
     <string name="search_calculator_desc">Bir işlem yaz, sonucu yazarken gör.</string>
     <string name="search_providers_title">WEB ARAMASI</string>
@@ -564,8 +562,6 @@
     <string name="provider_wikipedia">Vikipedi</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">Kişiler</string>
-    <string name="contacts_permission_desc">İsteğe bağlı: Deck aramasının kişileri ada göre bulmasını sağlar.</string>
     <string name="phone_permission">Telefon</string>
     <string name="phone_permission_desc">İsteğe bağlı: hızlı arama ve aramanın telefonu açmadan doğrudan aramasını sağlar.</string>
     <string name="search_placeholder">Her şeyi ara…</string>
@@ -716,7 +712,6 @@
     <string name="permission_feature_notification_controls">İzinler: Bildirim denetimleri</string>
     <string name="permission_feature_menu_entry">Uzun basma menüsü: Öğeler</string>
     <string name="permission_feature_deck_tile">Deck: Kutucuklar</string>
-    <string name="permission_feature_deck_contacts">Deck araması: Kişiler</string>
     <string name="permission_feature_deck_direct_call">Deck araması: Doğrudan ara</string>
     <string name="permission_feature_slider_brightness">Hızlı kaydırıcı: Parlaklık</string>
     <string name="permission_feature_slider_instant_keys">Hızlı kaydırıcı: Anında ses tuşları</string>
@@ -726,7 +721,6 @@
     <string name="permission_needed_by_list">Ayarladıklarınızdan bunlar gerektiriyor:</string>
     <string name="nav_card_needs_permission">Bir izin gerekiyor</string>
     <string name="permission_note_notifications">Denetimleri göstermek için Bildirimler izni gerekir. İzinler ekranından izin vermek için dokun.</string>
-    <string name="permission_note_contacts">Kişileri bulmak için Kişiler izni gerekir. İzinler ekranından izin vermek için dokun.</string>
     <string name="permission_note_phone">Doğrudan aramak için Telefon izni gerekir. İzinler ekranından izin vermek için dokun.</string>
     <string name="permission_note_overlay">Çubuğu göstermek için Diğer uygulamaların üzerinde görüntüle izni gerekir. İzinler ekranından izin vermek için dokun.</string>
     <string name="keyboard_motion_title">Hareket animasyonu</string>

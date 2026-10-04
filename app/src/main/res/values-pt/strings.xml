@@ -540,8 +540,6 @@
     <string name="search_sources_title">FONTES</string>
     <string name="search_index_apps">Apps instaladas</string>
     <string name="search_index_apps_desc">Encontra e abre apps pelo nome.</string>
-    <string name="search_index_contacts">Contactos</string>
-    <string name="search_index_contacts_desc">Encontra pessoas por nome ou número. Precisa da permissão Contactos.</string>
     <string name="search_calculator">Calculadora integrada</string>
     <string name="search_calculator_desc">Escreve uma conta e vê o resultado enquanto escreves.</string>
     <string name="search_providers_title">PESQUISA NA WEB</string>
@@ -564,8 +562,6 @@
     <string name="provider_wikipedia">Wikipédia</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">Contactos</string>
-    <string name="contacts_permission_desc">Opcional: permite que a pesquisa do Deck encontre pessoas pelo nome.</string>
     <string name="phone_permission">Telefone</string>
     <string name="phone_permission_desc">Opcional: permite que a marcação rápida e a pesquisa liguem diretamente, sem o telefone.</string>
     <string name="search_placeholder">Pesquisar o que quer que seja…</string>
@@ -716,7 +712,6 @@
     <string name="permission_feature_notification_controls">Permissões: Controles na notificação</string>
     <string name="permission_feature_menu_entry">Menu de pressão longa: Itens</string>
     <string name="permission_feature_deck_tile">Deck: Blocos</string>
-    <string name="permission_feature_deck_contacts">Pesquisa do Deck: Contactos</string>
     <string name="permission_feature_deck_direct_call">Pesquisa do Deck: Ligar diretamente</string>
     <string name="permission_feature_slider_brightness">Controle rápido: Brilho</string>
     <string name="permission_feature_slider_instant_keys">Controle rápido: Teclas de volume instantâneas</string>
@@ -726,7 +721,6 @@
     <string name="permission_needed_by_list">Necessária para o que configurou:</string>
     <string name="nav_card_needs_permission">Precisa de uma permissão</string>
     <string name="permission_note_notifications">Precisa da permissão de Notificações para mostrar os controles. Toque para permitir na tela Permissões.</string>
-    <string name="permission_note_contacts">Precisa da permissão de Contactos para encontrar pessoas. Toque para permitir na tela Permissões.</string>
     <string name="permission_note_phone">Precisa da permissão de Telefone para ligar diretamente. Toque para permitir na tela Permissões.</string>
     <string name="permission_note_overlay">Precisa de Exibir sobre outros aplicativos para mostrar a barra. Toque para permitir na tela Permissões.</string>
     <string name="keyboard_motion_title">Animação de movimento</string>
