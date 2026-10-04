@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Policy
@@ -225,7 +226,7 @@ fun AboutScreen(
                 // Privacy choices reopens the ad consent form, for users who were asked for consent
                 // in the first place. Re-checked on every resume: the ad SDK may finish initialising
                 // after this screen is first drawn.
-                val legalRows = if (showPrivacyChoices) 2 else 1
+                val legalRows = if (showPrivacyChoices) 3 else 2
                 GroupHeading(stringResource(R.string.group_legal))
                 RowGroup {
                     KitRow(
@@ -234,10 +235,16 @@ fun AboutScreen(
                         leading = { IconTile(Icons.Filled.Policy) },
                         onClick = { openWebPage(context, Constants.PRIVACY_POLICY_URL) {} },
                     )
+                    KitRow(
+                        title = stringResource(R.string.terms_of_service),
+                        shape = cardShape(1, legalRows),
+                        leading = { IconTile(Icons.Filled.Gavel) },
+                        onClick = { openWebPage(context, Constants.TERMS_OF_SERVICE_URL) {} },
+                    )
                     if (showPrivacyChoices) {
                         KitRow(
                             title = stringResource(R.string.privacy_choices),
-                            shape = cardShape(1, legalRows),
+                            shape = cardShape(2, legalRows),
                             leading = { IconTile(Icons.Filled.PrivacyTip) },
                             onClick = onOpenPrivacyChoices,
                         )

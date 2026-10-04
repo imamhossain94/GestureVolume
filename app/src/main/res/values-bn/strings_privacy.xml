@@ -3,4 +3,6 @@
     <!-- Ad consent (GDPR / Google UMP): reopen the consent form from About and the drawer. -->
     <string name="privacy_choices">গোপনীয়তা পছন্দসমূহ</string>
     <string name="privacy_choices_error">গোপনীয়তা পছন্দসমূহ খোলা যায়নি। পরে আবার চেষ্টা করুন।</string>
+    <!-- The terms, beside the Privacy Policy on About. -->
+    <string name="terms_of_service">শর্তাবলী</string>
 </resources>
