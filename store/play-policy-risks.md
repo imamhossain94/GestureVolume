@@ -23,7 +23,7 @@ help pages before each submission.
 | 6 | Special-use foreground service needs a declaration | Medium | Declaration text written; video needed |
 | 7 | Interstitial ads at screen transitions | Medium | **Fixed in code** |
 | 8 | No way to change ad consent later (GDPR) | Medium | **Fixed in code** |
-| 9 | Location, contacts and phone permissions | Low (was Low–Medium) | **Location removed**; contacts and phone remain, on-device only |
+| 9 | Location, contacts and phone permissions | Low (was Low–Medium) | **Location and contacts removed**; phone remains, on-device only |
 | 10 | "Open source" claim with no licence file | Low | Listing reworded |
 | 11 | Credits for assets no longer shipped | Low | Removed from listing |
 | 12 | Notes included in Android backup | Low | Disclosed in policy |
@@ -143,7 +143,10 @@ keys — check it in a build with the real keys.
 
 9. **Permissions.** `ACCESS_COARSE_LOCATION` is gone with the weather tile, so there is no location
    prompt, no location in the prominent-disclosure rules and no weather row in the Data safety form.
-   `READ_CONTACTS` and `CALL_PHONE` remain, asked only when their switches are turned on in the
+   `READ_CONTACTS` is gone too (1.5.2): Play Console asked for a Contacts permission declaration,
+   and the Deck's search now matches quick-dial entries instead, which the system contact picker
+   fills without any permission. The manifest strips it with `tools:node="remove"`, so a library
+   cannot bring it back. `CALL_PHONE` remains, asked only when its switch is turned on in the
    Deck's search settings, and used on the device only.
 10. **Licence.** The repository has no `LICENSE` file, so "open source" was misleading. The listing no
     longer says it; the terms explain the position. Add a licence if you want the claim back.

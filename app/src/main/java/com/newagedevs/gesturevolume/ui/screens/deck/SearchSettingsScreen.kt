@@ -79,9 +79,9 @@ fun numberActionLabel(id: String): Int = when (id) {
 /**
  * What the Deck's search looks through, and where the rest goes.
  *
- * The two switches that need a runtime permission — contacts and direct calls — ask for it the
- * moment they are switched on and switch themselves back off if it is refused, so the setting
- * never claims something the permission does not allow.
+ * The one switch that needs a runtime permission — direct calls — asks for it the moment it is
+ * switched on and switches itself back off if it is refused, so the setting never claims something
+ * the permission does not allow.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +93,6 @@ fun SearchSettingsScreen(
     val context = LocalContext.current
     val store = viewModel.preference.search
     var indexApps by remember { mutableStateOf(store.getIndexApps()) }
-    var indexContacts by remember { mutableStateOf(store.getIndexContacts()) }
     var calculator by remember { mutableStateOf(store.getInlineCalculator()) }
     var providers by remember { mutableStateOf(store.getProviders()) }
     var defaultProvider by remember { mutableStateOf(store.getDefaultProvider()) }
@@ -101,11 +100,8 @@ fun SearchSettingsScreen(
     var directCall by remember { mutableStateOf(store.getDirectCall()) }
     var prefix by remember { mutableStateOf(store.getDialPrefix()) }
 
-    // Re-read on return: either permission can be revoked in system settings while the switch
-    // that needs it stays on, and then the note under that switch is the only sign of it.
-    var contactsGranted by remember {
-        mutableStateOf(PermissionNeeds.hasPermission(context, Manifest.permission.READ_CONTACTS))
-    }
+    // Re-read on return: the permission can be revoked in system settings while the switch that
+    // needs it stays on, and then the note under that switch is the only sign of it.
     var phoneGranted by remember {
         mutableStateOf(PermissionNeeds.hasPermission(context, Manifest.permission.CALL_PHONE))
     }
@@ -113,7 +109,6 @@ fun SearchSettingsScreen(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                contactsGranted = PermissionNeeds.hasPermission(context, Manifest.permission.READ_CONTACTS)
                 phoneGranted = PermissionNeeds.hasPermission(context, Manifest.permission.CALL_PHONE)
             }
         }
@@ -121,11 +116,6 @@ fun SearchSettingsScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    val contactsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        indexContacts = granted
-        contactsGranted = granted
-        store.setIndexContacts(granted)
-    }
     val phoneLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         directCall = granted
         phoneGranted = granted
@@ -167,26 +157,6 @@ fun SearchSettingsScreen(
                     checked = indexApps,
                     onCheckedChange = { indexApps = it; store.setIndexApps(it) }
                 )
-                Sep()
-                SettingSwitchItem(
-                    title = stringResource(R.string.search_index_contacts),
-                    description = stringResource(R.string.search_index_contacts_desc),
-                    checked = indexContacts,
-                    onCheckedChange = { on ->
-                        if (on && !granted(Manifest.permission.READ_CONTACTS)) {
-                            contactsLauncher.launch(Manifest.permission.READ_CONTACTS)
-                        } else {
-                            indexContacts = on
-                            store.setIndexContacts(on)
-                        }
-                    }
-                )
-                if (indexContacts && !contactsGranted) {
-                    PermissionNote(
-                        missing = PermissionNeeds.Permission.CONTACTS,
-                        onOpenPermissions = onOpenPermissions,
-                    )
-                }
                 Sep()
                 SettingSwitchItem(
                     title = stringResource(R.string.search_calculator),

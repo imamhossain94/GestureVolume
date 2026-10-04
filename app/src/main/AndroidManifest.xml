@@ -17,12 +17,17 @@
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 
     <!--
-      Optional, both runtime-prompted at the moment their switch is flipped on the Deck's search
-      settings and never before: Contacts lets the search find people by name, Phone lets quick
-      dial and search place a call without stopping at the dialer.
+      Optional, runtime-prompted at the moment its switch is flipped on the Deck's search settings
+      and never before: lets quick dial and search place a call without stopping at the dialer.
     -->
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <!--
+      Never wanted, and kept out of the merged manifest should a library ever bring it in: Google
+      Play asks for a declaration from any app holding it. Quick dial picks a contact with the
+      system picker, which needs no permission, and the search matches quick-dial entries instead.
+    -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" tools:node="remove" />
 
     <!-- The flashlight tile. Declared optional so the app still installs on devices without one. -->
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />

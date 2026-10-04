@@ -540,8 +540,6 @@
     <string name="search_sources_title">검색 대상</string>
     <string name="search_index_apps">설치된 앱</string>
     <string name="search_index_apps_desc">이름으로 앱을 찾아 실행합니다.</string>
-    <string name="search_index_contacts">연락처</string>
-    <string name="search_index_contacts_desc">이름이나 번호로 사람을 찾습니다. 연락처 권한이 필요합니다.</string>
     <string name="search_calculator">인라인 계산기</string>
     <string name="search_calculator_desc">수식을 입력하면 입력하는 대로 답이 나옵니다.</string>
     <string name="search_providers_title">웹 검색</string>
@@ -564,8 +562,6 @@
     <string name="provider_wikipedia">위키백과</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">연락처</string>
-    <string name="contacts_permission_desc">선택 사항: 덱 검색이 이름으로 사람을 찾을 수 있게 합니다.</string>
     <string name="phone_permission">전화</string>
     <string name="phone_permission_desc">선택 사항: 단축 다이얼과 검색이 전화 앱 없이 바로 전화를 걸 수 있게 합니다.</string>
     <string name="search_placeholder">무엇이든 검색…</string>
@@ -716,7 +712,6 @@
     <string name="permission_feature_notification_controls">권한: 알림 컨트롤</string>
     <string name="permission_feature_menu_entry">길게 누르기 메뉴: 항목</string>
     <string name="permission_feature_deck_tile">덱: 타일</string>
-    <string name="permission_feature_deck_contacts">덱 검색: 연락처</string>
     <string name="permission_feature_deck_direct_call">덱 검색: 바로 전화 걸기</string>
     <string name="permission_feature_slider_brightness">빠른 슬라이더: 밝기</string>
     <string name="permission_feature_slider_instant_keys">빠른 슬라이더: 즉시 반응하는 볼륨 키</string>
@@ -726,7 +721,6 @@
     <string name="permission_needed_by_list">설정한 다음 항목에 필요합니다:</string>
     <string name="nav_card_needs_permission">권한이 필요합니다</string>
     <string name="permission_note_notifications">컨트롤을 표시하려면 알림 권한이 필요합니다. 눌러서 권한 화면에서 허용하세요.</string>
-    <string name="permission_note_contacts">사람을 찾으려면 연락처 권한이 필요합니다. 눌러서 권한 화면에서 허용하세요.</string>
     <string name="permission_note_phone">바로 전화를 걸려면 전화 권한이 필요합니다. 눌러서 권한 화면에서 허용하세요.</string>
     <string name="permission_note_overlay">바를 표시하려면 ‘다른 앱 위에 표시’가 필요합니다. 눌러서 권한 화면에서 허용하세요.</string>
     <string name="keyboard_motion_title">이동 애니메이션</string>

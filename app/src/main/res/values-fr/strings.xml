@@ -540,8 +540,6 @@
     <string name="search_sources_title">SOURCES</string>
     <string name="search_index_apps">Applis installées</string>
     <string name="search_index_apps_desc">Trouve et lance des applis par leur nom.</string>
-    <string name="search_index_contacts">Contacts</string>
-    <string name="search_index_contacts_desc">Trouve des personnes par nom ou numéro. Nécessite l’autorisation Contacts.</string>
     <string name="search_calculator">Calculatrice intégrée</string>
     <string name="search_calculator_desc">Saisis un calcul et vois le résultat à mesure que tu tapes.</string>
     <string name="search_providers_title">RECHERCHE WEB</string>
@@ -564,8 +562,6 @@
     <string name="provider_wikipedia">Wikipédia</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">Contacts</string>
-    <string name="contacts_permission_desc">Facultatif : permet à la recherche du Deck de trouver des personnes par leur nom.</string>
     <string name="phone_permission">Téléphone</string>
     <string name="phone_permission_desc">Facultatif : permet à la numérotation rapide et à la recherche d’appeler directement, sans le téléphone.</string>
     <string name="search_placeholder">Rechercher n’importe quoi…</string>
@@ -716,7 +712,6 @@
     <string name="permission_feature_notification_controls">Autorisations : Commandes dans la notification</string>
     <string name="permission_feature_menu_entry">Menu d\'appui long : Entrées</string>
     <string name="permission_feature_deck_tile">Deck : Tuiles</string>
-    <string name="permission_feature_deck_contacts">Recherche du Deck : Contacts</string>
     <string name="permission_feature_deck_direct_call">Recherche du Deck : Appeler directement</string>
     <string name="permission_feature_slider_brightness">Curseur rapide : Luminosité</string>
     <string name="permission_feature_slider_instant_keys">Curseur rapide : Touches de volume instantanées</string>
@@ -726,7 +721,6 @@
     <string name="permission_needed_by_list">Requis par ce que tu as configuré :</string>
     <string name="nav_card_needs_permission">Nécessite une autorisation</string>
     <string name="permission_note_notifications">Nécessite l\'autorisation Notifications pour afficher les commandes. Touche pour l\'autoriser depuis l\'écran Autorisations.</string>
-    <string name="permission_note_contacts">Nécessite l\'autorisation Contacts pour trouver des personnes. Touche pour l\'autoriser depuis l\'écran Autorisations.</string>
     <string name="permission_note_phone">Nécessite l\'autorisation Téléphone pour appeler directement. Touche pour l\'autoriser depuis l\'écran Autorisations.</string>
     <string name="permission_note_overlay">Nécessite Afficher sur d\'autres applications pour montrer la barre. Touche pour l\'autoriser depuis l\'écran Autorisations.</string>
     <string name="keyboard_motion_title">Animation de déplacement</string>

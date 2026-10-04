@@ -540,8 +540,6 @@
     <string name="search_sources_title">ИСТОЧНИКИ</string>
     <string name="search_index_apps">Установленные приложения</string>
     <string name="search_index_apps_desc">Находите и запускайте приложения по названию.</string>
-    <string name="search_index_contacts">Контакты</string>
-    <string name="search_index_contacts_desc">Находите людей по имени или номеру. Требуется разрешение «Контакты».</string>
     <string name="search_calculator">Калькулятор в строке</string>
     <string name="search_calculator_desc">Введите выражение и увидите результат по мере набора.</string>
     <string name="search_providers_title">ПОИСК В ВЕБЕ</string>
@@ -564,8 +562,6 @@
     <string name="provider_wikipedia">Википедия</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">Контакты</string>
-    <string name="contacts_permission_desc">Необязательно: позволяет поиску в Деке находить людей по имени.</string>
     <string name="phone_permission">Телефон</string>
     <string name="phone_permission_desc">Необязательно: позволяет быстрому набору и поиску звонить напрямую, без телефона.</string>
     <string name="search_placeholder">Искать что угодно…</string>
@@ -716,7 +712,6 @@
     <string name="permission_feature_notification_controls">Разрешения: кнопки в уведомлении</string>
     <string name="permission_feature_menu_entry">Меню долгого нажатия: пункты</string>
     <string name="permission_feature_deck_tile">Дек: плитки</string>
-    <string name="permission_feature_deck_contacts">Поиск в Деке: контакты</string>
     <string name="permission_feature_deck_direct_call">Поиск в Деке: звонить сразу</string>
     <string name="permission_feature_slider_brightness">Быстрый ползунок: яркость</string>
     <string name="permission_feature_slider_instant_keys">Быстрый ползунок: мгновенные кнопки громкости</string>
@@ -726,7 +721,6 @@
     <string name="permission_needed_by_list">Нужно для ваших настроек:</string>
     <string name="nav_card_needs_permission">Нужно разрешение</string>
     <string name="permission_note_notifications">Чтобы показывать кнопки, нужно разрешение «Уведомления». Нажмите, чтобы разрешить на экране «Разрешения».</string>
-    <string name="permission_note_contacts">Чтобы находить людей, нужно разрешение «Контакты». Нажмите, чтобы разрешить на экране «Разрешения».</string>
     <string name="permission_note_phone">Чтобы звонить сразу, нужно разрешение «Телефон». Нажмите, чтобы разрешить на экране «Разрешения».</string>
     <string name="permission_note_overlay">Чтобы показывать панель, нужно разрешение «Поверх других приложений». Нажмите, чтобы разрешить на экране «Разрешения».</string>
     <string name="keyboard_motion_title">Анимация перемещения</string>

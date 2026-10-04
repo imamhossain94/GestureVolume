@@ -540,8 +540,6 @@
     <string name="search_sources_title">स्रोत</string>
     <string name="search_index_apps">इंस्टॉल किए ऐप</string>
     <string name="search_index_apps_desc">नाम से ऐप खोजें और खोलें।</string>
-    <string name="search_index_contacts">संपर्क</string>
-    <string name="search_index_contacts_desc">नाम या नंबर से लोगों को खोजें। संपर्क की अनुमति चाहिए।</string>
     <string name="search_calculator">इनलाइन कैलकुलेटर</string>
     <string name="search_calculator_desc">गणना लिखें और लिखते ही उत्तर देखें।</string>
     <string name="search_providers_title">वेब खोज</string>
@@ -564,8 +562,6 @@
     <string name="provider_wikipedia">विकिपीडिया</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">संपर्क</string>
-    <string name="contacts_permission_desc">वैकल्पिक: डेक की खोज को नाम से लोगों को ढूँढने देती है।</string>
     <string name="phone_permission">फ़ोन</string>
     <string name="phone_permission_desc">वैकल्पिक: क्विक डायल और खोज को डायलर के बिना सीधे कॉल करने देती है।</string>
     <string name="search_placeholder">कुछ भी खोजें…</string>
@@ -716,7 +712,6 @@
     <string name="permission_feature_notification_controls">अनुमतियाँ: सूचना नियंत्रण</string>
     <string name="permission_feature_menu_entry">लॉन्ग-प्रेस मेन्यू: आइटम</string>
     <string name="permission_feature_deck_tile">डेक: टाइल</string>
-    <string name="permission_feature_deck_contacts">डेक खोज: संपर्क</string>
     <string name="permission_feature_deck_direct_call">डेक खोज: सीधे कॉल करें</string>
     <string name="permission_feature_slider_brightness">त्वरित स्लाइडर: चमक</string>
     <string name="permission_feature_slider_instant_keys">त्वरित स्लाइडर: तुरंत वॉल्यूम कुंजियाँ</string>
@@ -726,7 +721,6 @@
     <string name="permission_needed_by_list">आपकी इन सेटिंग्स को इसकी ज़रूरत है:</string>
     <string name="nav_card_needs_permission">एक अनुमति चाहिए</string>
     <string name="permission_note_notifications">नियंत्रण दिखाने के लिए सूचना अनुमति चाहिए। अनुमतियाँ स्क्रीन पर इसे देने के लिए टैप करें।</string>
-    <string name="permission_note_contacts">लोगों को खोजने के लिए संपर्क अनुमति चाहिए। अनुमतियाँ स्क्रीन पर इसे देने के लिए टैप करें।</string>
     <string name="permission_note_phone">सीधे कॉल करने के लिए फ़ोन अनुमति चाहिए। अनुमतियाँ स्क्रीन पर इसे देने के लिए टैप करें।</string>
     <string name="permission_note_overlay">बार दिखाने के लिए ‘अन्य ऐप्स पर प्रदर्शित करें’ चाहिए। अनुमतियाँ स्क्रीन पर इसे देने के लिए टैप करें।</string>
     <string name="keyboard_motion_title">हटने का एनिमेशन</string>

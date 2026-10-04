@@ -430,7 +430,6 @@
     <string name="permission_feature_notification_controls">الأذونات: أزرار الإشعار</string>
     <string name="permission_feature_menu_entry">قائمة الضغط المطوّل: العناصر</string>
     <string name="permission_feature_deck_tile">Deck: المربعات</string>
-    <string name="permission_feature_deck_contacts">بحث Deck: جهات الاتصال</string>
     <string name="permission_feature_deck_direct_call">بحث Deck: الاتصال مباشرة</string>
     <string name="permission_feature_slider_brightness">المنزلق السريع: السطوع</string>
     <string name="permission_feature_slider_instant_keys">المنزلق السريع: أزرار الصوت الفورية</string>
@@ -440,7 +439,6 @@
     <string name="permission_needed_by_list">تحتاجه الإعدادات التي اخترتها:</string>
     <string name="nav_card_needs_permission">يحتاج إلى إذن</string>
     <string name="permission_note_notifications">يتطلب إذن الإشعارات لإظهار الأزرار. انقر للسماح به من شاشة الأذونات.</string>
-    <string name="permission_note_contacts">يتطلب إذن جهات الاتصال للعثور على الأشخاص. انقر للسماح به من شاشة الأذونات.</string>
     <string name="permission_note_phone">يتطلب إذن الهاتف للاتصال مباشرة. انقر للسماح به من شاشة الأذونات.</string>
     <string name="permission_note_overlay">يتطلب «العرض على التطبيقات الأخرى» لإظهار الشريط. انقر للسماح به من شاشة الأذونات.</string>
     <string name="keyboard_motion_title">حركة الانتقال</string>
@@ -790,8 +788,6 @@
     <string name="search_sources_title">المصادر</string>
     <string name="search_index_apps">التطبيقات المثبّتة</string>
     <string name="search_index_apps_desc">ابحث عن التطبيقات وشغّلها بالاسم.</string>
-    <string name="search_index_contacts">جهات الاتصال</string>
-    <string name="search_index_contacts_desc">ابحث عن الأشخاص بالاسم أو الرقم. يتطلب إذن جهات الاتصال.</string>
     <string name="search_calculator">آلة حاسبة مدمجة</string>
     <string name="search_calculator_desc">اكتب عملية حسابية وشاهد النتيجة أثناء الكتابة.</string>
     <string name="search_providers_title">البحث على الويب</string>
@@ -814,8 +810,6 @@
     <string name="provider_wikipedia">ويكيبيديا</string>
     <string name="provider_duckduckgo">DuckDuckGo</string>
     <string name="provider_amazon">Amazon</string>
-    <string name="contacts_permission">جهات الاتصال</string>
-    <string name="contacts_permission_desc">اختياري: يتيح لبحث Deck العثور على الأشخاص بالاسم.</string>
     <string name="phone_permission">الهاتف</string>
     <string name="phone_permission_desc">اختياري: يتيح للاتصال السريع والبحث إجراء المكالمات مباشرة، دون لوحة الاتصال.</string>
     <string name="search_placeholder">ابحث عن أي شيء…</string>

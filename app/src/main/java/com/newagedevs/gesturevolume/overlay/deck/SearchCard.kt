@@ -1,9 +1,6 @@
 package com.newagedevs.gesturevolume.overlay.deck
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.provider.ContactsContract
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,11 +42,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.data.local.QuickDialEntry
 import com.newagedevs.gesturevolume.data.local.SearchStore
+import com.newagedevs.gesturevolume.ui.screens.deck.quickDialViaLabel
 import com.newagedevs.gesturevolume.utils.NumberIntents
 import com.newagedevs.gesturevolume.utils.SearchRouter
 import kotlinx.coroutines.Dispatchers
@@ -59,14 +57,16 @@ import kotlinx.coroutines.withContext
 /** One thing the search found on the phone. */
 private sealed interface SearchHit {
     data class App(val packageName: String, val label: String, val icon: ImageBitmap?) : SearchHit
-    data class Contact(val name: String, val number: String) : SearchHit
+    data class QuickDial(val entry: QuickDialEntry) : SearchHit
 }
 
 /**
- * The Deck's search: apps, contacts, sums and the web, in one field.
+ * The Deck's search: apps, quick-dial people, sums and the web, in one field.
  *
- * Everything on the phone is matched as the user types, off the main thread and debounced, so a
- * long contact list does not stutter the field. What is not on the phone is routed by
+ * Everything on the phone is matched as the user types, debounced so a fast typist filters once.
+ * People are the user's own quick-dial entries rather than the phone's contacts: reading those
+ * would take the Contacts permission, which Google Play asks a declaration for and the system
+ * picker on the Quick dial screen does without. What is not on the phone is routed by
  * [SearchRouter] — a sum is answered inline, a phone number offers to dial, and anything else
  * goes to whichever providers are switched on.
  */
@@ -83,6 +83,7 @@ fun SearchCard(actions: DeckActions, palette: DeckPalette) {
     val calculatorOn = remember { store.getInlineCalculator() }
     val numberAction = remember { store.getNumberAction() }
     val defaultProvider = remember { store.getDefaultProvider() }
+    val quickDial = remember { env.preference.deck.getQuickDial() }
 
     // Loaded once per opening, then filtered in memory: the package manager is far too slow to
     // call on every keystroke, and a phone has a few hundred launchable apps at most.
@@ -103,12 +104,11 @@ fun SearchCard(actions: DeckActions, palette: DeckPalette) {
         // A beat before searching, so a fast typist queries once rather than once per letter.
         delay(140)
         val appHits = apps.filter { it.label.contains(trimmed, ignoreCase = true) }.take(6)
-        val contactHits = if (store.getIndexContacts() && hasContactsPermission(context)) {
-            withContext(Dispatchers.IO) { queryContacts(context, trimmed) }
-        } else {
-            emptyList()
-        }
-        hits = appHits + contactHits
+        val peopleHits = quickDial
+            .filter { it.name.contains(trimmed, ignoreCase = true) || it.number.contains(trimmed) }
+            .take(4)
+            .map { SearchHit.QuickDial(it) }
+        hits = appHits + peopleHits
     }
 
     val route = remember(query, calculatorOn) {
@@ -203,14 +203,19 @@ fun SearchCard(actions: DeckActions, palette: DeckPalette) {
                     }
                 ) { actions.launchApp(hit.packageName) }
 
-                is SearchHit.Contact -> ResultRow(
-                    title = hit.name,
-                    subtitle = hit.number,
+                // Opened the way its own button in the Deck opens it, a chat included.
+                is SearchHit.QuickDial -> ResultRow(
+                    title = hit.entry.name,
+                    subtitle = if (hit.entry.via == SearchStore.NUMBER_DIAL) {
+                        hit.entry.number
+                    } else {
+                        stringResource(R.string.quick_dial_via_line, stringResource(quickDialViaLabel(hit.entry.via)), hit.entry.number)
+                    },
                     palette = palette,
                     leading = {
                         Icon(Icons.Filled.Call, contentDescription = null, tint = palette.accent, modifier = Modifier.size(22.dp))
                     }
-                ) { openNumber(actions, hit.number, numberAction) }
+                ) { openNumber(actions, hit.entry.number, hit.entry.via) }
             }
         }
 
@@ -323,34 +328,6 @@ private fun startVoiceSearch(actions: DeckActions) {
         actions.message(context.getString(R.string.search_voice_unavailable))
     }
 }
-
-private fun hasContactsPermission(context: android.content.Context): Boolean =
-    ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) ==
-        PackageManager.PERMISSION_GRANTED
-
-/** Up to four contacts matching [query] by name or number. */
-private fun queryContacts(context: android.content.Context, query: String): List<SearchHit.Contact> =
-    runCatching {
-        val uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
-        val projection = arrayOf(
-            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-            ContactsContract.CommonDataKinds.Phone.NUMBER
-        )
-        val selection =
-            "${ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME} LIKE ? OR " +
-                "${ContactsContract.CommonDataKinds.Phone.NUMBER} LIKE ?"
-        val args = arrayOf("%$query%", "%$query%")
-        context.contentResolver.query(uri, projection, selection, args, null)?.use { cursor ->
-            val seen = mutableSetOf<String>()
-            val out = mutableListOf<SearchHit.Contact>()
-            while (cursor.moveToNext() && out.size < 4) {
-                val name = cursor.getString(0) ?: continue
-                val number = cursor.getString(1) ?: continue
-                if (seen.add(name)) out += SearchHit.Contact(name, number)
-            }
-            out
-        } ?: emptyList()
-    }.getOrDefault(emptyList())
 
 private fun loadApps(context: android.content.Context): List<SearchHit.App> {
     val pm = context.packageManager

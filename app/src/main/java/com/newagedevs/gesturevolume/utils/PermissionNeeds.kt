@@ -37,7 +37,6 @@ object PermissionNeeds {
         ACCESSIBILITY,
         NOTIFICATION_POLICY,
         NOTIFICATIONS,
-        CONTACTS,
         PHONE,
     }
 
@@ -58,7 +57,6 @@ object PermissionNeeds {
         NOTIFICATION_CONTROLS(Screen.PERMISSIONS, R.string.permission_feature_notification_controls),
         LONG_PRESS_MENU_ENTRY(Screen.LONG_PRESS_MENU, R.string.permission_feature_menu_entry),
         DECK_TILE(Screen.DECK, R.string.permission_feature_deck_tile),
-        DECK_SEARCH_CONTACTS(Screen.DECK, R.string.permission_feature_deck_contacts),
         DECK_DIRECT_CALL(Screen.DECK, R.string.permission_feature_deck_direct_call),
         QUICK_SLIDER_BRIGHTNESS(Screen.QUICK_SLIDER, R.string.permission_feature_slider_brightness),
         QUICK_SLIDER_INSTANT_KEYS(Screen.QUICK_SLIDER, R.string.permission_feature_slider_instant_keys),
@@ -87,7 +85,6 @@ object PermissionNeeds {
          */
         val appGestureActions: List<String> = emptyList(),
         val notificationControls: Boolean = false,
-        val searchContacts: Boolean = false,
         val directCall: Boolean = false,
     )
 
@@ -98,7 +95,6 @@ object PermissionNeeds {
         val accessibility: Boolean = true,
         val notificationPolicy: Boolean = true,
         val notifications: Boolean = true,
-        val contacts: Boolean = true,
         val phone: Boolean = true,
     ) {
         fun has(permission: Permission): Boolean = when (permission) {
@@ -107,7 +103,6 @@ object PermissionNeeds {
             Permission.ACCESSIBILITY -> accessibility
             Permission.NOTIFICATION_POLICY -> notificationPolicy
             Permission.NOTIFICATIONS -> notifications
-            Permission.CONTACTS -> contacts
             Permission.PHONE -> phone
         }
     }
@@ -180,7 +175,6 @@ object PermissionNeeds {
             permissionsFor(action, config.sliderTarget).forEach { need(it, Feature.LONG_PRESS_MENU_ENTRY) }
         }
         config.deckTiles.forEach { id -> permissionForDeckTile(id)?.let { need(it, Feature.DECK_TILE) } }
-        if (config.searchContacts) need(Permission.CONTACTS, Feature.DECK_SEARCH_CONTACTS)
         if (config.directCall) need(Permission.PHONE, Feature.DECK_DIRECT_CALL)
 
         if (config.sliderTarget == QuickSliderStore.TARGET_BRIGHTNESS) {
@@ -225,7 +219,6 @@ object PermissionNeeds {
         hideInApps = preference.getHandlerHiddenApps().isNotEmpty(),
         appGestureActions = preference.appGestures.getProfiles().values.flatMap { it.values },
         notificationControls = preference.getShowNotification(),
-        searchContacts = preference.search.getIndexContacts(),
         directCall = preference.search.getDirectCall(),
     )
 
@@ -236,7 +229,6 @@ object PermissionNeeds {
         accessibility = OverlayRuntime.isAccessibilityEnabled(context),
         notificationPolicy = hasNotificationPolicyAccess(context),
         notifications = hasNotificationPermission(context),
-        contacts = hasPermission(context, Manifest.permission.READ_CONTACTS),
         phone = hasPermission(context, Manifest.permission.CALL_PHONE),
     )
 

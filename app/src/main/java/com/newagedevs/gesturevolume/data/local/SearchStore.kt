@@ -33,7 +33,6 @@ class SearchStore(private val prefs: SharedPreferences) {
         val ALL_NUMBER_ACTIONS: List<String> = listOf(NUMBER_DIAL, NUMBER_SMS, NUMBER_WHATSAPP, NUMBER_TELEGRAM)
 
         private const val INDEX_APPS = "searchIndexApps"
-        private const val INDEX_CONTACTS = "searchIndexContacts"
         private const val CALCULATOR = "searchInlineCalculator"
         private const val PROVIDERS = "searchProviders"
         private const val DEFAULT_PROVIDER = "searchDefaultProvider"
@@ -44,10 +43,6 @@ class SearchStore(private val prefs: SharedPreferences) {
 
     fun getIndexApps(): Boolean = prefs.getBoolean(INDEX_APPS, true)
     fun setIndexApps(value: Boolean) = prefs.edit { putBoolean(INDEX_APPS, value) }
-
-    /** Off by default: it is the one switch that needs the Contacts permission. */
-    fun getIndexContacts(): Boolean = prefs.getBoolean(INDEX_CONTACTS, false)
-    fun setIndexContacts(value: Boolean) = prefs.edit { putBoolean(INDEX_CONTACTS, value) }
 
     fun getInlineCalculator(): Boolean = prefs.getBoolean(CALCULATOR, true)
     fun setInlineCalculator(value: Boolean) = prefs.edit { putBoolean(CALCULATOR, value) }
