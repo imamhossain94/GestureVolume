@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video tutorials: the screen that lists them, the row at the top of the FAQ that leads there,
+         and the play button in a feature screen's top bar. The videos themselves are in English. -->
+    <string name="tutorials">वीडियो ट्यूटोरियल</string>
+    <string name="tutorials_summary">ऐप के हर हिस्से के लिए एक छोटा वीडियो</string>
+    <string name="tutorials_intro">हर वीडियो YouTube में खुलता है और लगभग एक मिनट का है। वीडियो में लिखा टेक्स्ट अंग्रेज़ी में है।</string>
+    <!-- Read out for the play button in a screen's top bar. %1$s: the video's title, e.g. The Deck. -->
+    <string name="tutorial_watch">वीडियो देखें: %1$s</string>
+    <string name="tutorial_cannot_open">इस फ़ोन पर कोई ऐप यह वीडियो नहीं खोल सकता</string>
+
+    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <string name="tutorial_getting_started">शुरुआत</string>
+    <string name="tutorial_getting_started_summary">टूर, ज़रूरी एकमात्र अनुमति, और इसे चालू करना</string>
+    <string name="tutorial_swipe_volume">एक स्वाइप में वॉल्यूम</string>
+    <string name="tutorial_swipe_volume_summary">गोल बटन: स्वाइप करें, टैप करें, हिलाएँ</string>
+    <string name="tutorial_quick_slider">त्वरित स्लाइडर</string>
+    <string name="tutorial_quick_slider_summary">आपकी उंगली के साथ चलने वाला वॉल्यूम और चमक का ट्रैक</string>
+    <string name="tutorial_deck">डेक</string>
+    <string name="tutorial_deck_summary">आपके ऐप, संपर्क और टूल, बार से अंदर बस एक स्वाइप में</string>
+    <string name="tutorial_search">डेक में खोज</string>
+    <string name="tutorial_search_summary">ऐप, क्विक डायल संपर्क, गणना और वेब, लिखते-लिखते</string>
+    <string name="tutorial_menu">लॉन्ग-प्रेस मेन्यू</string>
+    <string name="tutorial_menu_summary">सबसे ज़्यादा इस्तेमाल होने वाली क्रियाओं के लिए बार दबाकर रखें</string>
+    <string name="tutorial_actions">चुनें कि हर जेस्चर क्या करे</string>
+    <string name="tutorial_actions_summary">टैप, होल्ड और स्वाइप, सभी ऐप्स के लिए या सिर्फ़ एक के लिए</string>
+    <string name="tutorial_appearance">बार को अपने हिसाब से सजाएँ</string>
+    <string name="tutorial_appearance_summary">प्रीसेट, साइज़, आकार, रंग और जगह</string>
+    <string name="tutorial_visibility">बार बीच में न आए</string>
+    <string name="tutorial_visibility_summary">कुछ ऐप्स में, टाइप करते समय, या मीडिया चलने तक बार छिपाएँ</string>
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video tutorials: the screen that lists them, the row at the top of the FAQ that leads there,
+         and the play button in a feature screen's top bar. The videos themselves are in English. -->
+    <string name="tutorials">Video eğitimleri</string>
+    <string name="tutorials_summary">Uygulamanın her bölümü için kısa bir video</string>
+    <string name="tutorials_intro">Her video YouTube\'da açılır ve yaklaşık bir dakika sürer. Videolardaki metinler İngilizcedir.</string>
+    <!-- Read out for the play button in a screen's top bar. %1$s: the video's title, e.g. The Deck. -->
+    <string name="tutorial_watch">Videoyu izle: %1$s</string>
+    <string name="tutorial_cannot_open">Bu telefonda videoyu açabilecek bir uygulama yok</string>
+
+    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <string name="tutorial_getting_started">Başlarken</string>
+    <string name="tutorial_getting_started_summary">Tur, gereken tek izin ve çubuğu açma</string>
+    <string name="tutorial_swipe_volume">Kaydırarak ses</string>
+    <string name="tutorial_swipe_volume_summary">Yuvarlak düğme: kaydır, dokun, taşı</string>
+    <string name="tutorial_quick_slider">Hızlı kaydırıcı</string>
+    <string name="tutorial_quick_slider_summary">Parmağını izleyen bir ses ve parlaklık yolu</string>
+    <string name="tutorial_deck">Deck</string>
+    <string name="tutorial_deck_summary">Uygulamaların, kişilerin ve araçların, çubuktan içeri tek kaydırmada</string>
+    <string name="tutorial_search">Deck\'te arama</string>
+    <string name="tutorial_search_summary">Uygulamalar, hızlı arama kişileri, işlemler ve web, sen yazarken</string>
+    <string name="tutorial_menu">Uzun basma menüsü</string>
+    <string name="tutorial_menu_summary">En çok kullandığın eylemler için çubuğu basılı tut</string>
+    <string name="tutorial_actions">Her hareketin ne yapacağını seç</string>
+    <string name="tutorial_actions_summary">Dokunma, basılı tutma ve kaydırma; tüm uygulamalarda ya da yalnızca birinde</string>
+    <string name="tutorial_appearance">Çubuğu kendine göre ayarla</string>
+    <string name="tutorial_appearance_summary">Hazır ayarlar, boyut, biçim, renk ve konum</string>
+    <string name="tutorial_visibility">Ayak altında olmasın</string>
+    <string name="tutorial_visibility_summary">Çubuğu bazı uygulamalarda, yazarken ya da medya çalana kadar gizle</string>
+</resources>

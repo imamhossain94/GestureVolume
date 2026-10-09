@@ -606,6 +606,9 @@ class MainViewModel @Inject constructor(
             "FAQ" -> viewModelScope.launch {
                 _effect.send(MainEffect.NavigateToFaq)
             }
+            "Tutorials" -> viewModelScope.launch {
+                _effect.send(MainEffect.NavigateToTutorials)
+            }
             "What's new" -> viewModelScope.launch {
                 _effect.send(MainEffect.NavigateToWhatsNew)
             }

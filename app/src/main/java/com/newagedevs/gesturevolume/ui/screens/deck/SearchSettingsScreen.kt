@@ -5,6 +5,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
+import com.newagedevs.gesturevolume.ui.components.Tutorial
+import com.newagedevs.gesturevolume.ui.components.TutorialAction
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 
 import androidx.compose.ui.Alignment
@@ -134,6 +136,7 @@ fun SearchSettingsScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
+                actions = { TutorialAction(Tutorial.SEARCH) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer

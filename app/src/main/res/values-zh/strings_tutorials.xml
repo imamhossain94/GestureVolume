@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video tutorials: the screen that lists them, the row at the top of the FAQ that leads there,
+         and the play button in a feature screen's top bar. The videos themselves are in English. -->
+    <string name="tutorials">视频教程</string>
+    <string name="tutorials_summary">应用的每个部分都有一段短视频</string>
+    <string name="tutorials_intro">每个视频都会在 YouTube 中打开，时长约一分钟。视频中的文字为英文。</string>
+    <!-- Read out for the play button in a screen's top bar. %1$s: the video's title, e.g. The Deck. -->
+    <string name="tutorial_watch">观看视频：%1$s</string>
+    <string name="tutorial_cannot_open">此手机上没有可以打开该视频的应用</string>
+
+    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <string name="tutorial_getting_started">入门</string>
+    <string name="tutorial_getting_started_summary">导览、唯一需要的权限，以及如何开启</string>
+    <string name="tutorial_swipe_volume">一滑调音量</string>
+    <string name="tutorial_swipe_volume_summary">圆形按钮：滑动、点按、移动</string>
+    <string name="tutorial_quick_slider">快捷滑块</string>
+    <string name="tutorial_quick_slider_summary">跟随手指的音量与亮度轨道</string>
+    <string name="tutorial_deck">Deck</string>
+    <string name="tutorial_deck_summary">你的应用、联系人和工具，从滑条向内一滑即达</string>
+    <string name="tutorial_search">在 Deck 中搜索</string>
+    <string name="tutorial_search_summary">边输入边找应用、快速拨号联系人、算式和网页</string>
+    <string name="tutorial_menu">长按菜单</string>
+    <string name="tutorial_menu_summary">按住滑条，使用最常用的操作</string>
+    <string name="tutorial_actions">选择每个手势的作用</string>
+    <string name="tutorial_actions_summary">点按、长按和滑动，适用于所有应用或单个应用</string>
+    <string name="tutorial_appearance">打造你的专属滑条</string>
+    <string name="tutorial_appearance_summary">预设、大小、形状、颜色和位置</string>
+    <string name="tutorial_visibility">不碍事</string>
+    <string name="tutorial_visibility_summary">在部分应用中、输入时或播放媒体前隐藏滑条</string>
+</resources>

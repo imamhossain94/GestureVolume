@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video tutorials: the screen that lists them, the row at the top of the FAQ that leads there,
+         and the play button in a feature screen's top bar. The videos themselves are in English. -->
+    <string name="tutorials">Video tutorials</string>
+    <string name="tutorials_summary">A short video for each part of the app</string>
+    <string name="tutorials_intro">Each video opens in YouTube and runs for about a minute. The text in the videos is in English.</string>
+    <!-- Read out for the play button in a screen's top bar. %1$s: the video's title, e.g. The Deck. -->
+    <string name="tutorial_watch">Watch the video: %1$s</string>
+    <string name="tutorial_cannot_open">No app on this phone can open the video</string>
+
+    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <string name="tutorial_getting_started">Getting started</string>
+    <string name="tutorial_getting_started_summary">The tour, the one permission it needs, and switching it on</string>
+    <string name="tutorial_swipe_volume">Volume with a swipe</string>
+    <string name="tutorial_swipe_volume_summary">The round button: swipe it, tap it, move it</string>
+    <string name="tutorial_quick_slider">The Quick slider</string>
+    <string name="tutorial_quick_slider_summary">A volume and brightness track that follows your finger</string>
+    <string name="tutorial_deck">The Deck</string>
+    <string name="tutorial_deck_summary">Your apps, people and tools, one swipe in from the bar</string>
+    <string name="tutorial_search">Search in the Deck</string>
+    <string name="tutorial_search_summary">Apps, quick-dial people, sums and the web, as you type</string>
+    <string name="tutorial_menu">The long-press menu</string>
+    <string name="tutorial_menu_summary">Hold the bar for the actions you use most</string>
+    <string name="tutorial_actions">Choose what each gesture does</string>
+    <string name="tutorial_actions_summary">Taps, holds and swipes, for every app or just one</string>
+    <string name="tutorial_appearance">Make the bar yours</string>
+    <string name="tutorial_appearance_summary">Presets, size, shape, colour and where it sits</string>
+    <string name="tutorial_visibility">Keep it out of the way</string>
+    <string name="tutorial_visibility_summary">Hide the bar in some apps, while you type, or until media plays</string>
+</resources>

@@ -88,6 +88,8 @@ import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
+import com.newagedevs.gesturevolume.ui.components.Tutorial
+import com.newagedevs.gesturevolume.ui.components.TutorialAction
 import com.newagedevs.gesturevolume.ui.components.isLandscape
 import com.newagedevs.gesturevolume.ui.motion.IconButton
 import com.newagedevs.gesturevolume.ui.screens.deck.InstalledApp
@@ -178,6 +180,7 @@ fun VisibilityScreen(
                         )
                     }
                 },
+                actions = { TutorialAction(Tutorial.VISIBILITY) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer

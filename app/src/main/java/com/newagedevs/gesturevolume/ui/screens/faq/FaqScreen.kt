@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.ViewSidebar
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.OndemandVideo
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -97,6 +98,7 @@ import com.newagedevs.gesturevolume.ui.motion.TextButton
 fun FaqScreen(
     onNavigateBack: () -> Unit,
     onNavigateToTroubleshoot: () -> Unit,
+    onNavigateToTutorials: () -> Unit,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     Scaffold(
@@ -165,6 +167,22 @@ fun FaqScreen(
                         .fillMaxWidth()
                         .padding(top = 4.dp, bottom = 20.dp),
                 )
+
+                // The videos, first: someone who opened help without a question in mind is often
+                // better served watching the feature than reading about it. Not while searching,
+                // when the questions that match are the answer.
+                if (q.isEmpty()) {
+                    RowGroup {
+                        KitRow(
+                            title = stringResource(R.string.tutorials),
+                            description = stringResource(R.string.tutorials_summary),
+                            shape = cardShape(0, 1),
+                            leading = { IconTile(Icons.Outlined.OndemandVideo, lit = true) },
+                            onClick = onNavigateToTutorials,
+                        )
+                    }
+                    Spacer(Modifier.height(24.dp))
+                }
 
                 if (groups.isEmpty()) {
                     Text(

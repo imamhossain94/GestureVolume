@@ -25,6 +25,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
+import com.newagedevs.gesturevolume.ui.components.Tutorial
+import com.newagedevs.gesturevolume.ui.components.TutorialAction
 import com.newagedevs.gesturevolume.ui.motion.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -211,6 +213,11 @@ fun AppGesturesScreen(
                     }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
+                },
+                // On the list of apps only: picking an app or editing one is a task under way, and
+                // the video's second half walks through exactly that.
+                actions = {
+                    if (!picking && editing == null) TutorialAction(Tutorial.ACTIONS)
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,

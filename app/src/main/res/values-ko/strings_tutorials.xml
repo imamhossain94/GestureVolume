@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video tutorials: the screen that lists them, the row at the top of the FAQ that leads there,
+         and the play button in a feature screen's top bar. The videos themselves are in English. -->
+    <string name="tutorials">동영상 튜토리얼</string>
+    <string name="tutorials_summary">앱의 각 부분을 다룬 짧은 동영상</string>
+    <string name="tutorials_intro">각 동영상은 YouTube에서 열리며 길이는 1분 정도입니다. 동영상 속 텍스트는 영어입니다.</string>
+    <!-- Read out for the play button in a screen's top bar. %1$s: the video's title, e.g. The Deck. -->
+    <string name="tutorial_watch">동영상 보기: %1$s</string>
+    <string name="tutorial_cannot_open">이 휴대폰에는 동영상을 열 수 있는 앱이 없습니다</string>
+
+    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <string name="tutorial_getting_started">시작하기</string>
+    <string name="tutorial_getting_started_summary">둘러보기, 꼭 필요한 권한 하나, 그리고 켜는 방법</string>
+    <string name="tutorial_swipe_volume">스와이프로 볼륨 조절</string>
+    <string name="tutorial_swipe_volume_summary">둥근 버튼: 스와이프, 탭, 이동</string>
+    <string name="tutorial_quick_slider">빠른 슬라이더</string>
+    <string name="tutorial_quick_slider_summary">손가락을 따라오는 볼륨·밝기 트랙</string>
+    <string name="tutorial_deck">덱</string>
+    <string name="tutorial_deck_summary">바에서 안쪽으로 한 번 스와이프하면 나오는 앱, 연락처, 도구</string>
+    <string name="tutorial_search">덱에서 검색</string>
+    <string name="tutorial_search_summary">입력하는 대로 찾는 앱, 단축 다이얼 연락처, 계산, 웹</string>
+    <string name="tutorial_menu">길게 누르기 메뉴</string>
+    <string name="tutorial_menu_summary">바를 길게 눌러 자주 쓰는 동작을 바로</string>
+    <string name="tutorial_actions">제스처마다 할 일 정하기</string>
+    <string name="tutorial_actions_summary">탭, 길게 누르기, 스와이프를 모든 앱에 또는 한 앱에만</string>
+    <string name="tutorial_appearance">나만의 바 만들기</string>
+    <string name="tutorial_appearance_summary">프리셋, 크기, 모양, 색상, 위치</string>
+    <string name="tutorial_visibility">방해되지 않게</string>
+    <string name="tutorial_visibility_summary">일부 앱에서, 입력 중에, 또는 미디어가 재생될 때까지 바 숨기기</string>
+</resources>

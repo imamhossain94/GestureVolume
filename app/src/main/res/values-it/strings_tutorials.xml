@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video tutorials: the screen that lists them, the row at the top of the FAQ that leads there,
+         and the play button in a feature screen's top bar. The videos themselves are in English. -->
+    <string name="tutorials">Video tutorial</string>
+    <string name="tutorials_summary">Un breve video per ogni parte dell\'app</string>
+    <string name="tutorials_intro">Ogni video si apre in YouTube e dura circa un minuto. Il testo nei video è in inglese.</string>
+    <!-- Read out for the play button in a screen's top bar. %1$s: the video's title, e.g. The Deck. -->
+    <string name="tutorial_watch">Guarda il video: %1$s</string>
+    <string name="tutorial_cannot_open">Nessuna app su questo telefono può aprire il video</string>
+
+    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <string name="tutorial_getting_started">Per iniziare</string>
+    <string name="tutorial_getting_started_summary">Il tour, l\'unica autorizzazione necessaria e l\'attivazione</string>
+    <string name="tutorial_swipe_volume">Il volume con uno scorrimento</string>
+    <string name="tutorial_swipe_volume_summary">Il pulsante rotondo: scorrilo, toccalo, spostalo</string>
+    <string name="tutorial_quick_slider">Il Cursore rapido</string>
+    <string name="tutorial_quick_slider_summary">Una pista di volume e luminosità che segue il tuo dito</string>
+    <string name="tutorial_deck">Il Deck</string>
+    <string name="tutorial_deck_summary">Le tue app, i contatti e gli strumenti, scorrendo dalla barra verso l\'interno</string>
+    <string name="tutorial_search">Ricerca nel Deck</string>
+    <string name="tutorial_search_summary">App, contatti in chiamata rapida, calcoli e web, mentre scrivi</string>
+    <string name="tutorial_menu">Il menu a pressione prolungata</string>
+    <string name="tutorial_menu_summary">Tieni premuta la barra per le azioni che usi di più</string>
+    <string name="tutorial_actions">Scegli cosa fa ogni gesto</string>
+    <string name="tutorial_actions_summary">Tocchi, pressioni e scorrimenti, per tutte le app o solo una</string>
+    <string name="tutorial_appearance">Una barra tutta tua</string>
+    <string name="tutorial_appearance_summary">Preimpostazioni, dimensione, forma, colore e posizione</string>
+    <string name="tutorial_visibility">Che non dia fastidio</string>
+    <string name="tutorial_visibility_summary">Nascondi la barra in alcune app, mentre scrivi o finché non parte la riproduzione</string>
+</resources>

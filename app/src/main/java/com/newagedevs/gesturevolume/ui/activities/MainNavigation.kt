@@ -62,6 +62,7 @@ import com.newagedevs.gesturevolume.ui.screens.main.MainScreen
 import com.newagedevs.gesturevolume.ui.screens.quick_slider.QuickSliderScreen
 import com.newagedevs.gesturevolume.ui.screens.permission.PermissionsScreen
 import com.newagedevs.gesturevolume.ui.screens.troubleshoot.TroubleshootScreen
+import com.newagedevs.gesturevolume.ui.screens.tutorials.TutorialsScreen
 import com.newagedevs.gesturevolume.ui.screens.walkthrough.WalkthroughScreen
 import com.newagedevs.gesturevolume.ui.util.navigateBackOnce
 import com.newagedevs.gesturevolume.ui.viewmodels.MainEffect
@@ -154,6 +155,7 @@ fun MainNavigation(
                 is MainEffect.ShowLanguageDialog -> showLanguageDialog = true
                 is MainEffect.NavigateToTroubleshoot -> navController.navigate("troubleshoot")
                 is MainEffect.NavigateToFaq -> navController.navigate("faq")
+                is MainEffect.NavigateToTutorials -> navController.navigate("tutorials")
                 is MainEffect.NavigateToWhatsNew -> navController.navigate("whats_new")
                 is MainEffect.NavigateToTour -> navController.navigate("tour")
                 is MainEffect.OpenAccessibilitySettings -> {
@@ -430,8 +432,13 @@ fun MainNavigation(
                             navController.navigate("troubleshoot") {
                                 popUpTo("faq") { inclusive = true }
                             }
-                        }
+                        },
+                        onNavigateToTutorials = { navController.navigate("tutorials") }
                     )
+                }
+
+                composable("tutorials") {
+                    TutorialsScreen(onNavigateBack = { navController.popBackStack() })
                 }
 
                 composable("troubleshoot") {

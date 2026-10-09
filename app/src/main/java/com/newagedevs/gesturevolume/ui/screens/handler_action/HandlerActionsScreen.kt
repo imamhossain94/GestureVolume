@@ -71,6 +71,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.AppGestureStore.Slot
 import com.newagedevs.gesturevolume.ui.components.HowItWorksAction
+import com.newagedevs.gesturevolume.ui.components.Tutorial
+import com.newagedevs.gesturevolume.ui.components.TutorialAction
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
 import com.newagedevs.gesturevolume.ui.components.ActionIconImage
@@ -273,7 +275,10 @@ fun HandlerActionsScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
-                actions = { HowItWorksAction(gestureDemo) },
+                actions = {
+                    TutorialAction(Tutorial.ACTIONS)
+                    HowItWorksAction(gestureDemo)
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer

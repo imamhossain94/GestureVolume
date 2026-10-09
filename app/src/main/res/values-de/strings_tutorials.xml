@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video tutorials: the screen that lists them, the row at the top of the FAQ that leads there,
+         and the play button in a feature screen's top bar. The videos themselves are in English. -->
+    <string name="tutorials">Videoanleitungen</string>
+    <string name="tutorials_summary">Ein kurzes Video zu jedem Teil der App</string>
+    <string name="tutorials_intro">Jedes Video öffnet sich in YouTube und dauert etwa eine Minute. Der Text in den Videos ist auf Englisch.</string>
+    <!-- Read out for the play button in a screen's top bar. %1$s: the video's title, e.g. The Deck. -->
+    <string name="tutorial_watch">Video ansehen: %1$s</string>
+    <string name="tutorial_cannot_open">Keine App auf diesem Handy kann das Video öffnen</string>
+
+    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <string name="tutorial_getting_started">Erste Schritte</string>
+    <string name="tutorial_getting_started_summary">Der Rundgang, die eine nötige Berechtigung und das Einschalten</string>
+    <string name="tutorial_swipe_volume">Lautstärke mit einem Wisch</string>
+    <string name="tutorial_swipe_volume_summary">Der runde Knopf: wischen, tippen, verschieben</string>
+    <string name="tutorial_quick_slider">Der Schnellregler</string>
+    <string name="tutorial_quick_slider_summary">Eine Lautstärke- und Helligkeitsbahn, die deinem Finger folgt</string>
+    <string name="tutorial_deck">Das Deck</string>
+    <string name="tutorial_deck_summary">Deine Apps, Kontakte und Werkzeuge, mit einem Wisch von der Leiste nach innen</string>
+    <string name="tutorial_search">Suche im Deck</string>
+    <string name="tutorial_search_summary">Apps, Kurzwahl-Kontakte, Rechnungen und das Web, schon beim Tippen</string>
+    <string name="tutorial_menu">Das Menü bei langem Drücken</string>
+    <string name="tutorial_menu_summary">Halte die Leiste gedrückt für deine meistgenutzten Aktionen</string>
+    <string name="tutorial_actions">Lege fest, was jede Geste tut</string>
+    <string name="tutorial_actions_summary">Tippen, Halten und Wischen, für alle Apps oder nur eine</string>
+    <string name="tutorial_appearance">Gestalte deine Leiste</string>
+    <string name="tutorial_appearance_summary">Vorlagen, Größe, Form, Farbe und wo sie sitzt</string>
+    <string name="tutorial_visibility">Damit sie nicht stört</string>
+    <string name="tutorial_visibility_summary">Die Leiste in manchen Apps, beim Tippen oder bis zur Medienwiedergabe ausblenden</string>
+</resources>
