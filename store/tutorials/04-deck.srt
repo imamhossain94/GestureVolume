@@ -1,0 +1,127 @@
+1
+00:00:00,400 --> 00:00:00,810
+The Deck.
+
+2
+00:00:00,850 --> 00:00:03,560
+Your apps, people and tools,
+one swipe in from the bar.
+
+3
+00:00:04,300 --> 00:00:05,434
+Swipe in from the tab.
+
+4
+00:00:05,474 --> 00:00:08,210
+Swipe from the Dock toward
+the middle of the screen.
+
+5
+00:00:08,250 --> 00:00:11,360
+Out slides the Deck: your
+people, your apps and your tools.
+
+6
+00:00:11,700 --> 00:00:12,349
+Tap a tile.
+
+7
+00:00:12,389 --> 00:00:13,790
+Some tiles act at once.
+
+8
+00:00:13,830 --> 00:00:17,360
+Flashlight switches the torch
+on, and its tile lights up.
+
+9
+00:00:17,700 --> 00:00:18,725
+Or open a card.
+
+10
+00:00:18,765 --> 00:00:21,281
+Others open a card beside the strip.
+
+11
+00:00:21,321 --> 00:00:24,760
+Volume has sliders for
+media, ringtone and alarm.
+
+12
+00:00:25,100 --> 00:00:26,177
+Start a timer.
+
+13
+00:00:26,217 --> 00:00:28,969
+Tap Timer, pick a length and Start.
+
+14
+00:00:29,009 --> 00:00:32,160
+It keeps counting after the Deck closes.
+
+15
+00:00:32,500 --> 00:00:32,984
+Close it.
+
+16
+00:00:33,024 --> 00:00:35,081
+Tap anywhere outside, or press Back.
+
+17
+00:00:35,121 --> 00:00:37,760
+Left alone, it closes
+itself after 10 seconds.
+
+18
+00:00:38,100 --> 00:00:39,967
+Open the Deck settings.
+
+19
+00:00:40,007 --> 00:00:44,360
+In Gesture Volume, under
+Advanced features, tap Deck.
+
+20
+00:00:44,700 --> 00:00:46,235
+Turn tiles on or off.
+
+21
+00:00:46,275 --> 00:00:49,760
+Tap Deck tiles and switch
+on the ones you want.
+
+22
+00:00:49,800 --> 00:00:53,360
+Coin toss and Dice start
+off; Screenshot can go.
+
+23
+00:00:53,700 --> 00:00:54,996
+Add people to call.
+
+24
+00:00:55,036 --> 00:00:59,287
+Back on the Deck screen, Quick
+dial puts people in the strip:
+
+25
+00:00:59,327 --> 00:01:01,960
+one tap calls them or opens a message.
+
+26
+00:01:02,300 --> 00:01:03,436
+Toss a coin.
+
+27
+00:01:03,476 --> 00:01:07,749
+Coin toss now waits at
+the end of the strip:
+
+28
+00:01:07,789 --> 00:01:12,160
+scroll down to it, tap
+it, then tap the coin.
+
+29
+00:01:13,050 --> 00:01:17,510
+Up next: Search in the Deck.

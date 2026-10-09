@@ -1,0 +1,188 @@
+{
+ "series": {
+  "n": 5,
+  "of": 9,
+  "id": "search",
+  "title": "Search in the Deck",
+  "sub": "Apps, contacts, sums and the web, as you type",
+  "next": "The long-press menu"
+ },
+ "duration": 55.85,
+ "chapters": [
+  {
+   "t": 0,
+   "title": "Open search"
+  },
+  {
+   "t": 11.15,
+   "title": "Sums, apps and people"
+  },
+  {
+   "t": 30.95,
+   "title": "Numbers and the web"
+  }
+ ],
+ "steps": [
+  {
+   "at": 4.15,
+   "end": 11.15,
+   "title": "Open the Deck, tap Search",
+   "text": "Swipe in from the tab, then tap Search. The keyboard comes up, ready for you to type.",
+   "chapter": "Open search"
+  },
+  {
+   "at": 11.15,
+   "end": 18.75,
+   "title": "Work out a sum",
+   "text": "Type a sum and the answer appears as you type. Tap Copy result to copy it.",
+   "chapter": "Sums, apps and people"
+  },
+  {
+   "at": 18.75,
+   "end": 24.95,
+   "title": "Find an app",
+   "text": "Type part of an app’s name and it shows up. One tap opens it.",
+   "chapter": "Sums, apps and people"
+  },
+  {
+   "at": 24.95,
+   "end": 30.95,
+   "title": "Find a contact",
+   "text": "Your quick-dial people show up too, ready to call or message.",
+   "chapter": "Sums, apps and people"
+  },
+  {
+   "at": 30.95,
+   "end": 37.35,
+   "title": "Call a number",
+   "text": "Type a phone number and one tap opens the dialer with it.",
+   "chapter": "Numbers and the web"
+  },
+  {
+   "at": 37.35,
+   "end": 44.95,
+   "title": "Search the web",
+   "text": "Anything else goes to the web. Pick a provider, or press Search on the keyboard for your default.",
+   "chapter": "Numbers and the web"
+  },
+  {
+   "at": 44.95,
+   "end": 50.35,
+   "title": "Close it",
+   "text": "Tap anywhere outside, or press Back. The Deck slides away and the tab comes back.",
+   "chapter": "Numbers and the web"
+  }
+ ],
+ "subtitles": [
+  {
+   "a": 0.4,
+   "b": 1.2953846153846156,
+   "text": "Search in the Deck."
+  },
+  {
+   "a": 1.3353846153846156,
+   "b": 3.5600000000000005,
+   "text": "Apps, contacts, sums and\nthe web, as you type."
+  },
+  {
+   "a": 4.300000000000001,
+   "b": 5.843636363636365,
+   "text": "Open the Deck, tap Search."
+  },
+  {
+   "a": 5.883636363636365,
+   "b": 8.21909090909091,
+   "text": "Swipe in from the tab, then tap Search."
+  },
+  {
+   "a": 8.25909090909091,
+   "b": 10.96,
+   "text": "The keyboard comes up,\nready for you to type."
+  },
+  {
+   "a": 11.3,
+   "b": 12.504318181818183,
+   "text": "Work out a sum."
+  },
+  {
+   "a": 12.544318181818182,
+   "b": 16.320227272727273,
+   "text": "Type a sum and the answer\nappears as you type."
+  },
+  {
+   "a": 16.360227272727272,
+   "b": 18.560000000000002,
+   "text": "Tap Copy result to copy it."
+  },
+  {
+   "a": 18.9,
+   "b": 19.843333333333334,
+   "text": "Find an app."
+  },
+  {
+   "a": 19.883333333333333,
+   "b": 23.366944444444446,
+   "text": "Type part of an app’s\nname and it shows up."
+  },
+  {
+   "a": 23.406944444444445,
+   "b": 24.76,
+   "text": "One tap opens it."
+  },
+  {
+   "a": 25.099999999999998,
+   "b": 26.185,
+   "text": "Find a contact."
+  },
+  {
+   "a": 26.224999999999998,
+   "b": 30.76,
+   "text": "Your quick-dial people show up\ntoo, ready to call or message."
+  },
+  {
+   "a": 31.099999999999998,
+   "b": 32.26281690140845,
+   "text": "Call a number."
+  },
+  {
+   "a": 32.30281690140845,
+   "b": 37.160000000000004,
+   "text": "Type a phone number and one\ntap opens the dialer with it."
+  },
+  {
+   "a": 37.5,
+   "b": 38.446486486486485,
+   "text": "Search the web."
+  },
+  {
+   "a": 38.486486486486484,
+   "b": 40.41945945945946,
+   "text": "Anything else goes to the web."
+  },
+  {
+   "a": 40.45945945945946,
+   "b": 44.760000000000005,
+   "text": "Pick a provider, or press Search\non the keyboard for your default."
+  },
+  {
+   "a": 45.1,
+   "b": 45.57573033707865,
+   "text": "Close it."
+  },
+  {
+   "a": 45.61573033707865,
+   "b": 47.63865168539326,
+   "text": "Tap anywhere outside, or press Back."
+  },
+  {
+   "a": 47.67865168539326,
+   "b": 50.160000000000004,
+   "text": "The Deck slides away\nand the tab comes back."
+  },
+  {
+   "a": 51.05,
+   "b": 55.510000000000005,
+   "text": "Up next: The long-press menu."
+  }
+ ]
+}

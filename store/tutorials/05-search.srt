@@ -1,0 +1,95 @@
+1
+00:00:00,400 --> 00:00:01,295
+Search in the Deck.
+
+2
+00:00:01,335 --> 00:00:03,560
+Apps, contacts, sums and
+the web, as you type.
+
+3
+00:00:04,300 --> 00:00:05,844
+Open the Deck, tap Search.
+
+4
+00:00:05,884 --> 00:00:08,219
+Swipe in from the tab, then tap Search.
+
+5
+00:00:08,259 --> 00:00:10,960
+The keyboard comes up,
+ready for you to type.
+
+6
+00:00:11,300 --> 00:00:12,504
+Work out a sum.
+
+7
+00:00:12,544 --> 00:00:16,320
+Type a sum and the answer
+appears as you type.
+
+8
+00:00:16,360 --> 00:00:18,560
+Tap Copy result to copy it.
+
+9
+00:00:18,900 --> 00:00:19,843
+Find an app.
+
+10
+00:00:19,883 --> 00:00:23,367
+Type part of an app’s
+name and it shows up.
+
+11
+00:00:23,407 --> 00:00:24,760
+One tap opens it.
+
+12
+00:00:25,100 --> 00:00:26,185
+Find a contact.
+
+13
+00:00:26,225 --> 00:00:30,760
+Your quick-dial people show up
+too, ready to call or message.
+
+14
+00:00:31,100 --> 00:00:32,263
+Call a number.
+
+15
+00:00:32,303 --> 00:00:37,160
+Type a phone number and one
+tap opens the dialer with it.
+
+16
+00:00:37,500 --> 00:00:38,446
+Search the web.
+
+17
+00:00:38,486 --> 00:00:40,419
+Anything else goes to the web.
+
+18
+00:00:40,459 --> 00:00:44,760
+Pick a provider, or press Search
+on the keyboard for your default.
+
+19
+00:00:45,100 --> 00:00:45,576
+Close it.
+
+20
+00:00:45,616 --> 00:00:47,639
+Tap anywhere outside, or press Back.
+
+21
+00:00:47,679 --> 00:00:50,160
+The Deck slides away
+and the tab comes back.
+
+22
+00:00:51,050 --> 00:00:55,510
+Up next: The long-press menu.

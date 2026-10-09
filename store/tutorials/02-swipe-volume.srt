@@ -1,0 +1,88 @@
+1
+00:00:00,400 --> 00:00:01,360
+Volume with a swipe.
+
+2
+00:00:01,400 --> 00:00:03,560
+The round button: swipe
+it, tap it, move it.
+
+3
+00:00:04,300 --> 00:00:05,227
+Meet the round button.
+
+4
+00:00:05,267 --> 00:00:08,481
+In the Simple style, a small round
+button sits on the edge of your screen,
+
+5
+00:00:08,521 --> 00:00:09,360
+on top of every app.
+
+6
+00:00:09,700 --> 00:00:10,475
+Swipe up on it.
+
+7
+00:00:10,515 --> 00:00:12,975
+Each bit you swipe turns
+the volume up a step.
+
+8
+00:00:13,015 --> 00:00:14,606
+The level shows on the button,
+
+9
+00:00:14,646 --> 00:00:17,160
+and Android’s volume
+slider comes up beside it.
+
+10
+00:00:17,500 --> 00:00:19,375
+Swipe down to turn it down.
+
+11
+00:00:19,415 --> 00:00:23,560
+Swipe the other way and it
+steps back down just as quickly.
+
+12
+00:00:23,900 --> 00:00:26,134
+Tap it for the volume slider.
+
+13
+00:00:26,174 --> 00:00:30,760
+A tap brings up Android’s own
+volume slider, ready to drag.
+
+14
+00:00:31,100 --> 00:00:32,029
+Hold it to pick it up.
+
+15
+00:00:32,069 --> 00:00:34,408
+Keep your finger on it until
+it dims and shows arrows.
+
+16
+00:00:34,448 --> 00:00:37,360
+The long-press menu opens too, and
+steps aside as soon as you move.
+
+17
+00:00:37,700 --> 00:00:39,485
+Drag it anywhere, then let go.
+
+18
+00:00:39,525 --> 00:00:42,466
+Up or down the edge, or
+across to the other side.
+
+19
+00:00:42,506 --> 00:00:44,960
+Let go and it settles on the nearer edge.
+
+20
+00:00:45,850 --> 00:00:50,310
+Up next: The Quick slider.
