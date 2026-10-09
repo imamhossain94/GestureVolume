@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="margin:0"><div id="root"></div>
+<script type="module">
+import { buildPromo } from '../kit/promo.js';
+const q = new URLSearchParams(location.search);
+window.sceneReady = (async () => {
+  window.scene = await buildPromo(document.getElementById('root'), { vertical: q.get('v') === '1' });
+})();
+</script></body></html>

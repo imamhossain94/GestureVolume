@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1330px;height:960px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, PHONE_ICONS } from '../kit/phone.js';
+import { quickSliderSettings, mountQuickSliderSettings, preparePanelSettings } from '../kit/panelsettings.js';
+const q = new URLSearchParams(location.search);
+const set = q.get('set') || 'a';
+const SETS = {
+  a: [{ open: 'content' }, { open: 'size' }, { open: 'colours', scroll: 120 }],
+  b: [{ open: 'animation', scroll: 250 }, { open: 'animation', scroll: 1080 }, { open: 'behaviour', scroll: 290 }],
+  c: [{ open: 'animation', fill: { kind: 'pixels' }, scroll: 820 }, { open: 'animation', fill: { kind: 'surge', look: 'flame' }, scroll: 820 }, { open: 'animation', fill: 'effort', scroll: 820 }],
+  d: [{ open: 'animation', fill: { kind: 'glimmer' }, scroll: 820 }, { open: 'animation', fill: 'solid', scroll: 560, theme: 'glass' }, { open: 'animation', fill: { kind: 'shader', effect: 'aurora' }, flourish: 'neon', scroll: 1500 }],
+  f: [{ open: 'animation', fill: 'liquid', scroll: 560 }, { open: 'animation', fill: 'sunrise', theme: 'midnight', scroll: 560 }, { open: 'animation', fill: 'heartbeat', scroll: 560, rowScroll: { fill: 1700 } }],
+  g: [{ animation: 'flip' }, { animation: 'blinds' }, { animation: 'swing', fill: 'solid' }],
+  h: [{ open: 'animation', animColours: 1, scroll: 560 }, { open: 'animation', animColours: 1, fill: 'galaxy', scroll: 560 }, { open: 'animation', animColours: 1, fill: { kind: 'pixels', pattern: 'rainbow' }, scroll: 560, rowScroll: { fill: 1240 } }],
+  i: [{ open: 'animation', animColours: 1, fill: 'effort', scroll: 560 }, { open: 'animation', animColours: 1, fill: { kind: 'glimmer' }, scroll: 560 }, { open: 'animation', animColours: 1, fill: 'solid', scroll: 1250 }],
+  e: [{ open: 'content', theme: 'aero', fill: 'solid' }, { open: 'size', matchShape: 0, panelShape: 'rounded', fill: { kind: 'pixels', pattern: 'rainbow' } }, { open: 'behaviour', scroll: 600, volumeKeys: 'follow', accessibility: false }],
+};
+window.sceneReady = (async () => {
+  await loadIcons(PHONE_ICONS); await preparePanelSettings(); await fontsReady();
+  const draws = [];
+  for (const o of SETS[set]) {
+    const p = new Phone({ wallpaper: null, radius: 30, darkIcons: true }); p.wall.style.display = 'none';
+    const s = quickSliderSettings(o);
+    p.below.appendChild(s); document.getElementById('row').appendChild(p.el);
+    draws.push(mountQuickSliderSettings(s));
+  }
+  const z = +(q.get('zoom') || 1);
+  if (z !== 1) { const r = document.getElementById('row'); r.style.transformOrigin = '0 0'; r.style.transform = `scale(${z}) translate(${-(+q.get('ox') || 0)}px,${-(+q.get('oy') || 0)}px)`; }
+  await imagesReady();
+  window.scene = { width: 1330, height: 960, duration: 0, seek(t) { const v = q.get('value'); const st = (i) => ({ t, value: v == null ? null : +v, e: q.get('e') ? +q.get('e').split(',')[i] : 1, entrance: q.get('ent') ? +q.get('ent').split(',')[i] : null, grabbed: !!q.get('grab') }); draws.forEach((d, i) => d(st(i))); } };
+})();
+</script></body></html>

@@ -1,0 +1,22 @@
+/* Fonts: Roboto is what FontFamily.Default resolves to on Android, so the app's screens use it.
+   Plus Jakarta Sans is the store art's own voice: captions, titles, the video's words. */
+@font-face { font-family: Roboto; font-weight: 300; src: url(../node_modules/@fontsource/roboto/files/roboto-latin-300-normal.woff2) format('woff2'); }
+@font-face { font-family: Roboto; font-weight: 400; src: url(../node_modules/@fontsource/roboto/files/roboto-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-family: Roboto; font-weight: 500; src: url(../node_modules/@fontsource/roboto/files/roboto-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: Roboto; font-weight: 600; src: url(../node_modules/@fontsource/roboto/files/roboto-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-family: Roboto; font-weight: 700; src: url(../node_modules/@fontsource/roboto/files/roboto-latin-700-normal.woff2) format('woff2'); }
+@font-face { font-family: "Roboto Mono"; font-weight: 500; src: url(../node_modules/@fontsource/roboto-mono/files/roboto-mono-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 400; src: url(../node_modules/@fontsource/plus-jakarta-sans/files/plus-jakarta-sans-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 500; src: url(../node_modules/@fontsource/plus-jakarta-sans/files/plus-jakarta-sans-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 600; src: url(../node_modules/@fontsource/plus-jakarta-sans/files/plus-jakarta-sans-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 700; src: url(../node_modules/@fontsource/plus-jakarta-sans/files/plus-jakarta-sans-latin-700-normal.woff2) format('woff2'); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 800; src: url(../node_modules/@fontsource/plus-jakarta-sans/files/plus-jakarta-sans-latin-800-normal.woff2) format('woff2'); }
+@font-face { font-family: Outfit; font-weight: 400; src: url(../node_modules/@fontsource/outfit/files/outfit-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-family: Outfit; font-weight: 600; src: url(../node_modules/@fontsource/outfit/files/outfit-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-family: Outfit; font-weight: 700; src: url(../node_modules/@fontsource/outfit/files/outfit-latin-700-normal.woff2) format('woff2'); }
+@font-face { font-family: Outfit; font-weight: 800; src: url(../node_modules/@fontsource/outfit/files/outfit-latin-800-normal.woff2) format('woff2'); }
+
+/* Nothing animates by itself: every frame is set by the scene's seek(t). */
+*, *::before, *::after { box-sizing: border-box; transition: none !important; animation: none !important; }
+html, body { margin: 0; padding: 0; overflow: hidden; }
+body { font-family: Roboto, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }

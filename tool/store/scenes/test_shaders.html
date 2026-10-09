@@ -1,0 +1,26 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#0b0b14;width:1500px;height:760px">
+<div id="row" style="display:flex;flex-wrap:wrap;gap:14px;padding:16px;color:#ccc;font:12px Roboto"></div>
+<script type="module">
+import { ShaderCanvas, loadShaders } from '../kit/agsl.js';
+const names = ['aurora','caustics','clouds','ink-smoke','lava-lamp','liquid-chrome','mesh','molten','plasma','smoke','soap-film','starfield','surge-blocks','surge-curve','surge-electric','surge-flame','surge-honeycomb','surge-streaks'];
+const W = 64, H = 300;
+const items = [];
+window.sceneReady = (async () => {
+  await loadShaders(names);
+  for (const n of names) {
+    const sc = new ShaderCanvas(n, W, H, 2);
+    const box = document.createElement('div');
+    box.style.cssText = 'display:grid;gap:4px;justify-items:center';
+    sc.canvas.style.borderRadius = '22px';
+    sc.canvas.style.background = 'rgba(255,255,255,.06)';
+    box.append(sc.canvas, Object.assign(document.createElement('span'), { textContent: n }));
+    document.getElementById('row').appendChild(box);
+    items.push(sc);
+  }
+  window.scene = { width: 1500, height: 760, duration: 4, seek(t) {
+    for (const sc of items) sc.draw({ origin: [0, 0], size: [W, H], time: 3 + t, level: H * 0.35, rest: 0.25, scale: 1, detail: 0.5, bright: 1, grain: 0.3, alpha: 1, edge: 0.5, glow: 0.6, trail: 0.5,
+      c0: '#1E1B4B', c1: '#6D28D9', c2: '#A78BFA', c3: '#F0ABFC' });
+  } };
+})();
+</script></body></html>

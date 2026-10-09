@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1748px;height:955px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, PHONE_ICONS } from '../kit/phone.js';
+import { deckTilesScreen, appShortcutsScreen, DECKSETTINGS_ICONS, TILE_ORDER } from '../kit/decksettings.js';
+window.sceneReady = (async () => {
+  await loadIcons([...PHONE_ICONS, ...DECKSETTINGS_ICONS]); await fontsReady();
+  const order = ['search', 'calculator', 'flashlight', ...TILE_ORDER.filter((x) => !['search', 'calculator', 'flashlight'].includes(x))];
+  const screens = [
+    deckTilesScreen({}),
+    deckTilesScreen({ order, enabled: { search: 1, calculator: 1, flashlight: 1, screenshot: 1, volume: 1, media: 1, timer: 1, notes: 1, brightness: 0.5, dice: 1 }, missing: ['screenshot'], scroll: 380 }),
+    appShortcutsScreen({}),
+    appShortcutsScreen({ pinned: ['camera', 'music', 'maps'], scroll: 0 }),
+  ];
+  for (const s of screens) {
+    const p = new Phone({ wallpaper: null, radius: 30, darkIcons: true }); p.wall.style.display = 'none';
+    p.below.appendChild(s); document.getElementById('row').appendChild(p.el);
+  }
+  await imagesReady();
+  window.scene = { width: 1748, height: 955, duration: 0, seek() {} };
+})();
+</script></body></html>

@@ -1,0 +1,69 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1748px;height:955px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, PHONE_ICONS, homeScreen } from '../kit/phone.js';
+import { walkthroughPage, mountWalkthrough, accessibilityDisclosure, permissionsScreen, systemOverlaySettings, systemAccessibilitySettings,
+  notificationPermissionDialog, lockScreen, TOUR_ICONS } from '../kit/tour.js';
+
+// Each phone: { make: () => element, t: scene time, dark: status icons, wall: wallpaper, over: () => overlay element }
+const W = (o, t = 0) => ({ make: () => walkthroughPage(o), t });
+const SETS = {
+  1: [W({ page: 'intro' }, 1.7), W({ page: 'style' }), W({ page: 'simple' }, 3.6), W({ page: 'move' }, 3.6)],
+  2: [W({ page: 'permission' }, 0.8), W({ page: 'permission', granted: true }), W({ page: 'notifications' }, 1.1), W({ page: 'notifications', granted: true })],
+  3: [W({ page: 'style', highlighted: 'advanced' }), W({ page: 'quickslider', mode: 'advanced' }, 2.2), W({ page: 'deck', mode: 'advanced' }, 1.7), W({ page: 'longpress', mode: 'advanced' }, 2.33)],
+  4: [W({ page: 'move', mode: 'advanced' }, 3.6), W({ page: 'permission', mode: 'advanced', granted: true }), W({ page: 'accessibility', mode: 'advanced' }, 1.1), W({ page: 'accessibility', mode: 'advanced', granted: true })],
+  5: [W({ page: 'style', from: 'intro', k: 0.12 }, 0.3), W({ page: 'simple', from: 'style', k: 0.3 }, 0.3), W({ page: 'permission', granted: 0.5 }), W({ page: 'style', tour: true, highlighted: 'advanced', tourMode: 'regular' })],
+  6: [{ make: () => permissionsScreen({}) }, { make: () => permissionsScreen({ scroll: 420, granted: { accessibility: true, settings: true }, controls: 0 }) },
+      { make: () => permissionsScreen({ granted: { overlay: false }, warnings: { overlay: ['The floating bar'] }, highlight: 'overlay', flash: 0.45 }) },
+      { make: () => walkthroughPage({ page: 'accessibility', mode: 'advanced' }), t: 1.1, over: () => accessibilityDisclosure({ k: 1 }) }],
+  7: [{ make: () => systemOverlaySettings({ k: 0 }) }, { make: () => systemOverlaySettings({ k: 1 }) }, { make: () => systemAccessibilitySettings({ k: 0 }) },
+      { make: () => systemAccessibilitySettings({ k: 0, dialog: 1 }) }],
+  8: [{ make: () => walkthroughPage({ page: 'notifications' }), t: 1.1, over: () => notificationPermissionDialog({ k: 1 }) },
+      { make: () => null, wall: 'dusk', dark: false, over: () => lockScreen({}) }, { make: () => systemAccessibilitySettings({ k: 1 }) },
+      { make: () => walkthroughPage({ page: 'permission' }), t: 0.8, over: () => accessibilityDisclosure({ k: 0.6 }) }],
+  9: [W({ page: 'intro' }, 0.4), W({ page: 'simple' }, 1.0), W({ page: 'simple' }, 3.0), W({ page: 'simple' }, 5.4)],
+  10: [W({ page: 'style', highlighted: 'advanced', pick: 0.35 }), W({ page: 'permission' }, 2.0), W({ page: 'notifications' }, 2.6), W({ page: 'accessibility', mode: 'advanced' }, 3.3)],
+  12: [W({ page: 'style', from: 'intro', k: 0.04 }, 0.1), W({ page: 'style', from: 'intro', k: 0.1 }, 0.1), W({ page: 'intro', from: 'style', k: 0.1 }, 0.1), W({ page: 'notifications', from: 'permission', k: 0.08 }, 0.1)],
+  11: [W({ page: 'deck', mode: 'advanced' }, 2.5), W({ page: 'longpress', mode: 'advanced' }, 1.2), W({ page: 'move' }, 4.6), W({ page: 'quickslider', mode: 'advanced' }, 3.6)],
+};
+const prog = (t, a, d) => Math.min(1, Math.max(0, (t - a) / d));
+const L = (stateAt, start = () => 0) => ({ stateAt, start });
+SETS[13] = [
+  // Intro, Continue at 1.0 s, the Style page (Advanced tapped at 2.0 s), Continue at 3.0 s.
+  L((t) => t < 1 ? { page: 'intro' } : t < 3 ? { page: 'style', from: 'intro', k: prog(t, 1, 0.5), highlighted: t < 2 ? 'regular' : 'advanced', mode: t < 2 ? 'regular' : 'advanced', pick: t < 2 ? 1 : prog(t, 2, 0.3) }
+    : { page: 'quickslider', mode: 'advanced', from: 'style', k: prog(t, 3, 0.5) }, (t) => (t < 1 ? 0 : t < 3 ? 1 : 3)),
+  // The Permission page: Allow, then granted at 2.0 s (the chip expands), Continue at 3.0 s.
+  L((t) => t < 3 ? { page: 'permission', granted: t < 2 ? false : prog(t, 2, 0.35) } : { page: 'notifications', from: 'permission', k: prog(t, 3, 0.5) }, (t) => (t < 3 ? 0 : 3)),
+];
+const set = SETS[new URLSearchParams(location.search).get('set') || '1'];
+
+window.sceneReady = (async () => {
+  await loadIcons([...PHONE_ICONS, ...TOUR_ICONS]); await fontsReady();
+  const draws = [], lives = [];
+  for (const o of set.filter((x) => x.stateAt)) {
+    const p = new Phone({ wallpaper: null, radius: 30, darkIcons: true }); p.wall.style.display = 'none';
+    const box = document.createElement('div'); box.style.cssText = 'position:absolute;inset:0';
+    p.below.appendChild(box); document.getElementById('row').appendChild(p.el);
+    const draw = mountWalkthrough(box);
+    let key = null;
+    lives.push((t) => { const st = o.stateAt(t); const k = JSON.stringify(st); if (k !== key) { key = k; box.replaceChildren(walkthroughPage(st)); } draw(t - o.start(t), t); });
+  }
+  for (const o of set.filter((x) => !x.stateAt)) {
+    const p = new Phone({ wallpaper: o.wall || null, radius: 30, darkIcons: o.dark ?? true });
+    if (!o.wall) p.wall.style.display = 'none';
+    const el = o.make();
+    if (el) p.below.appendChild(el);
+    if (o.over) p.overlay.appendChild(o.over());
+    document.getElementById('row').appendChild(p.el);
+    if (el) draws.push(() => mountWalkthrough(el)(o.t || 0));
+  }
+  await imagesReady();
+  draws.forEach((d) => d());
+  window.scene = { width: 1748, height: 955, duration: 4, seek(t) { lives.forEach((f) => f(t)); } };
+  window.targets = () => [...document.querySelectorAll('.phone')].map((ph) => {
+    const pr = ph.getBoundingClientRect();
+    return Object.fromEntries([...ph.querySelectorAll('[data-target]')].map((e) => { const r = e.getBoundingClientRect(); return [e.dataset.target, [Math.round(r.left - pr.left + r.width / 2), Math.round(r.top - pr.top + r.height / 2)]]; }));
+  });
+})();
+</script></body></html>

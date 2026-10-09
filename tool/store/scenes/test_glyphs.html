@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#fff;width:1100px;height:420px"><div id="g" style="display:grid;grid-template-columns:repeat(8,130px);gap:6px;padding:10px"></div>
+<script type="module">
+import { loadIcons, fontsReady } from '../kit/core.js';
+import { gestureGlyph, SLOTS, ACTIONS_ICONS } from '../kit/actions.js';
+const T = '#4F46E5', B = 'rgba(75,85,99,.3)';
+const bar = '<rect x="17.5" y="7" width="5" height="26" rx="2.5" fill="' + B + '"/>', barH = '<rect x="26.5" y="7" width="5" height="26" rx="2.5" fill="' + B + '"/>';
+const tap = `<circle cx="20" cy="20" r="3.4" fill="${T}"/> <circle cx="20" cy="20" r="6.7" fill="none" stroke="${T}" stroke-opacity=".8" stroke-width="1.5"/>`;
+const dbl = tap + `<circle cx="20" cy="20" r="10" fill="none" stroke="${T}" stroke-opacity=".6" stroke-width="1.5"/>`;
+const SPEC = {
+  tap: bar + tap, doubleTap: bar + dbl, tripleTap: bar + dbl + `<circle cx="20" cy="20" r="13.3" fill="none" stroke="${T}" stroke-opacity=".4" stroke-width="1.5"/>`,
+  longPress: bar + `<circle cx="20" cy="20" r="3.6" fill="${T}"/><circle cx="20" cy="20" r="9" fill="none" stroke="${T}" stroke-opacity=".22" stroke-width="2"/><path d="M20 11 A9 9 0 1 1 11 20" fill="none" stroke="${T}" stroke-width="2" stroke-linecap="round"/>`,
+  swipeUp: bar + `<circle cx="20" cy="29" r="3" fill="${T}"/><path d="M20 29 V10 M20 10 L23.22 13.82 M20 10 L16.78 13.82" stroke="${T}" stroke-width="2.2" stroke-linecap="round" fill="none"/>`,
+  swipeDown: bar + `<circle cx="20" cy="11" r="3" fill="${T}"/><path d="M20 11 V30 M20 30 L16.78 26.18 M20 30 L23.22 26.18" stroke="${T}" stroke-width="2.2" stroke-linecap="round" fill="none"/>`,
+  swipeIn: barH + `<circle cx="29" cy="20" r="3" fill="${T}"/><path d="M29 20 H7 M7 20 L10.82 16.78 M7 20 L10.82 23.22" stroke="${T}" stroke-width="2.2" stroke-linecap="round" fill="none"/>`,
+  swipeOut: barH + `<circle cx="9" cy="20" r="3" fill="${T}"/><path d="M9 20 H34 M34 20 L30.18 23.22 M34 20 L30.18 16.78" stroke="${T}" stroke-width="2.2" stroke-linecap="round" fill="none"/>`,
+};
+window.sceneReady = (async () => {
+  await loadIcons(ACTIONS_ICONS); await fontsReady();
+  const g = document.getElementById('g');
+  for (const s of SLOTS) g.insertAdjacentHTML('beforeend', `<div style="display:flex;gap:4px">${gestureGlyph(s.key, 62)}<svg width="62" height="62" viewBox="0 0 40 40">${SPEC[s.key]}</svg></div>`);
+  for (const s of SLOTS) g.insertAdjacentHTML('beforeend', `<div style="display:flex;gap:4px;background:#E9EEFD">${gestureGlyph(s.key, 62, { onLeft: true })}<div style="font:12px Roboto;padding-top:20px">${s.name}<br>(left bar)</div></div>`);
+  window.scene = { width: 1100, height: 200, duration: 0, seek() {} };
+})();
+</script></body></html>

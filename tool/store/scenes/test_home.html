@@ -1,0 +1,16 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1330px;height:960px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, PHONE_ICONS } from '../kit/phone.js';
+import { homeAppScreen, HOME_ICONS, SCREEN_ICONS } from '../kit/screens.js';
+window.sceneReady = (async () => {
+  await loadIcons([...PHONE_ICONS, ...HOME_ICONS, ...SCREEN_ICONS]); await fontsReady();
+  for (const o of [{ running: false }, { running: true, advanced: true }, { running: true, advanced: true, scroll: 380 }]) {
+    const p = new Phone({ wallpaper: null, radius: 30, darkIcons: true }); p.wall.style.display = 'none';
+    p.below.appendChild(homeAppScreen(o)); document.getElementById('row').appendChild(p.el);
+  }
+  await imagesReady();
+  window.scene = { width: 1330, height: 960, duration: 0, seek() {} };
+})();
+</script></body></html>

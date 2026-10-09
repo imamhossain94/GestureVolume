@@ -1,0 +1,87 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="margin:0;width:1024px;height:500px"><div id="root" style="position:relative;width:1024px;height:500px;overflow:hidden"></div>
+<script type="module">
+// Google Play feature graphic, 1024 x 500. A: the brief in store/play-listing-en.md — the bar at
+// the right edge grown into the Quick slider, on a plain gradient, the line on the left third.
+// B: the icon and name beside a phone with the Deck open. The middle stays clear in both, because
+// Play lays its play button there when the listing has a video.
+import { h, loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { miniPanel, loadDrawables, QuickPanel } from '../kit/quickpanel.js';
+import { gvIcon, Phone, homeScreen, PHONE_ICONS } from '../kit/phone.js';
+import { EdgeBar, PRESETS } from '../kit/quickpanel.js';
+import { Deck, DECK_ICONS, mediaCard } from '../kit/deck.js';
+const q = new URLSearchParams(location.search);
+const variant = q.get('v') || 'a';
+const root = document.getElementById('root');
+window.sceneReady = (async () => {
+  await loadIcons([...PHONE_ICONS, ...DECK_ICONS]);
+  await loadDrawables(['ic_vol_increase']);
+  await QuickPanel.shadersFor([{ kind: 'shader', effect: 'plasma' }]);
+  await fontsReady();
+  const draws = [];
+  let W = 1024, H = 500;
+  if (variant === 'yt') {
+    // The promo's YouTube thumbnail: variant A's idea at 16:9, drawn at 1920 x 1080.
+    W = 1920; H = 1080;
+    root.style.width = W + 'px'; root.style.height = H + 'px';
+    document.body.style.width = W + 'px'; document.body.style.height = H + 'px';
+    root.appendChild(h(`<div style="position:absolute;inset:0;background:
+        radial-gradient(circle 760px at 80% 35%, rgba(170,123,255,.55), rgba(170,123,255,0) 70%),
+        radial-gradient(circle 700px at 95% 100%, rgba(45,212,191,.28), rgba(45,212,191,0) 70%),
+        radial-gradient(circle 640px at 5% 110%, rgba(251,113,133,.25), rgba(251,113,133,0) 70%),
+        linear-gradient(120deg,#1A1150 0%,#2C209A 55%,#3B1F8E 100%)"></div>`));
+    root.appendChild(h(`<div style="position:absolute;left:120px;top:0;bottom:0;width:1240px;display:flex;flex-direction:column;justify-content:center">
+        <div style="display:flex;align-items:center;gap:26px">${gvIcon(104, 'squircle')}
+          <div style="font:800 56px/1 'Plus Jakarta Sans';color:#fff;letter-spacing:-.01em">Gesture Volume</div></div>
+        <div style="margin-top:56px;font:800 150px/1 'Plus Jakarta Sans';letter-spacing:-.04em;color:#fff">Volume.<br>Brightness.<br><span style="color:#C9C2FF">Everything else.</span></div>
+      </div>`));
+    root.appendChild(h(`<div style="position:absolute;right:-120px;top:60px;width:560px;height:960px;background:radial-gradient(closest-side,rgba(255,154,90,.38),rgba(255,154,90,0))"></div>`));
+    const k = 4.1;
+    const host = h(`<div style="position:absolute;right:0;top:${540 - 110 * k}px;width:32px;height:220px;transform-origin:100% 0;transform:scale(${k})"></div>`);
+    root.appendChild(host);
+    const d = miniPanel(host, { w: 32, h: 220, shape: 'tab', flare: 0.22, fill: { kind: 'shader', effect: 'plasma' }, showValue: true, showIcon: true });
+    draws.push((t) => d({ value: 0.72, t: 2 + t, fillTime: 11 + t }));
+  } else if (variant === 'a') {
+    root.appendChild(h(`<div style="position:absolute;inset:0;background:
+        radial-gradient(circle 420px at 78% 30%, rgba(170,123,255,.55), rgba(170,123,255,0) 70%),
+        radial-gradient(circle 380px at 92% 95%, rgba(45,212,191,.28), rgba(45,212,191,0) 70%),
+        radial-gradient(circle 360px at 10% 110%, rgba(251,113,133,.25), rgba(251,113,133,0) 70%),
+        linear-gradient(120deg,#1A1150 0%,#2C209A 55%,#3B1F8E 100%)"></div>`));
+    root.appendChild(h(`<div style="position:absolute;left:64px;top:92px;width:560px">
+        <div style="display:flex;align-items:center;gap:14px">${gvIcon(52, 'squircle')}
+          <div style="font:700 26px/1 'Plus Jakarta Sans';color:#fff;letter-spacing:-.01em">Gesture Volume</div></div>
+        <div style="margin-top:34px;font:800 58px/1.04 'Plus Jakarta Sans';letter-spacing:-.03em;color:#fff">Volume.<br>Brightness.<br><span style="color:#C9C2FF">Everything else.</span></div>
+      </div>`));
+    // The panel against the right edge, as on a phone: 32 x 220 dp drawn twice the size.
+    root.appendChild(h(`<div style="position:absolute;right:-60px;top:40px;width:260px;height:420px;background:radial-gradient(closest-side,rgba(255,154,90,.35),rgba(255,154,90,0))"></div>`));
+    const host = h(`<div style="position:absolute;right:0;top:${250 - 220 * 1.06}px;width:32px;height:220px;transform-origin:100% 0;transform:scale(2.12)"></div>`);
+    root.appendChild(host);
+    const d = miniPanel(host, { w: 32, h: 220, shape: 'tab', flare: 0.22, fill: { kind: 'shader', effect: 'plasma' }, showValue: true, showIcon: true });
+    draws.push((t) => d({ value: 0.72, t: 2 + t, fillTime: 11 + t }));
+  } else {
+    root.appendChild(h(`<div style="position:absolute;inset:0;background:
+        radial-gradient(circle 480px at 85% 20%, rgba(124,92,255,.5), rgba(124,92,255,0) 70%),
+        radial-gradient(circle 300px at 70% 100%, rgba(45,212,191,.25), rgba(45,212,191,0) 70%),
+        linear-gradient(120deg,#120C3A,#2C209A)"></div>`));
+    root.appendChild(h(`<div style="position:absolute;left:64px;top:118px;width:400px">
+        ${gvIcon(96, 'squircle')}
+        <div style="margin-top:26px;font:800 54px/1.02 'Plus Jakarta Sans';letter-spacing:-.03em;color:#fff">Gesture Volume</div>
+        <div style="margin-top:14px;font:500 24px/1.3 'Plus Jakarta Sans';color:#C9C2FF">An edge bar for volume, brightness and a deck of tools</div></div>`));
+    const phone = new Phone({ wallpaper: 'ocean', radius: 46 });
+    phone.below.appendChild(homeScreen());
+    const bar = new EdgeBar(phone, PRESETS.dock);
+    const deck = new Deck(phone, bar, { people: [{ name: 'Mom', via: 'call' }, { name: 'Alex Kim', via: 'whatsapp' }], apps: ['camera', 'music', 'maps'] });
+    deck.showCard('media', mediaCard({ playing: true, volume: 0.62 }));
+    deck.setActive('media', true);
+    const holder = h(`<div style="position:absolute;left:600px;top:48px;width:${412 * 0.92 + 12}px;padding:6px;border-radius:${46 * 0.92 + 6}px;background:rgba(255,255,255,.92);
+        transform:rotate(-8deg);transform-origin:50% 0;box-shadow:0 30px 60px rgba(5,3,20,.6)">
+        <div class="scr" style="width:${412 * 0.92}px;height:${915 * 0.92}px;border-radius:${46 * 0.92}px;overflow:hidden;position:relative"></div></div>`);
+    phone.el.style.transform = 'scale(0.92)';
+    holder.querySelector('.scr').appendChild(phone.el);
+    root.appendChild(holder);
+    draws.push(() => { bar.draw({ alpha: 0 }); deck.set({}); });
+  }
+  await imagesReady(root);
+  window.scene = { width: W, height: H, duration: 0, seek(t) { draws.forEach((d) => d(t)); } };
+})();
+</script></body></html>

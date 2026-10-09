@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1760px;height:960px">
+<div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, homeScreen, PHONE_ICONS } from '../kit/phone.js';
+import { EdgeBar, PRESETS, loadDrawables } from '../kit/quickpanel.js';
+import { Deck, DECK_ICONS, searchCard, mediaCard, coinCard, coinAt } from '../kit/deck.js';
+import { LongPressMenu, MENU_ICONS } from '../kit/menu.js';
+window.sceneReady = (async () => {
+  await loadIcons([...PHONE_ICONS, ...DECK_ICONS, ...MENU_ICONS]); await fontsReady();
+  await loadDrawables(['ic_vol_increase', 'ic_move']);
+  const mk = (wp) => { const p = new Phone({ wallpaper: wp, radius: 30 }); p.below.appendChild(homeScreen()); document.getElementById('row').appendChild(p.el); return p; };
+  const people = [{ name: 'Mom', via: 'call' }, { name: 'Alex Kim', via: 'whatsapp' }];
+  // 1: deck with media card
+  let p = mk('dusk'); let bar = new EdgeBar(p, PRESETS.dock); bar.draw({ alpha: 0 });
+  let d = new Deck(p, bar, { people, apps: ['camera', 'music', 'maps'] });
+  d.showCard('media', mediaCard({})); d.setActive('media', true); d.set({});
+  // 2: search
+  p = mk('ocean'); bar = new EdgeBar(p, PRESETS.dock); bar.draw({ alpha: 0 });
+  d = new Deck(p, bar, {}); d.showCard('search', searchCard({ query: '12*8+4', answer: '100' })); d.setActive('search', true); d.set({});
+  // 3: coin mid flip
+  p = mk('sunset'); bar = new EdgeBar(p, PRESETS.dock); bar.draw({ alpha: 0 });
+  d = new Deck(p, bar, { tiles: ['search', 'flashlight', 'coin', 'dice', 'volume', 'timer', 'notes'] });
+  const cc = coinCard({ heads: 3, tails: 2, result: '', streak: '' }); d.showCard('coin', cc); d.setActive('coin', true); d.set({});
+  // 4: glass menu
+  p = mk('dusk'); bar = new EdgeBar(p, PRESETS.dock); bar.draw({ cue: 1 });
+  const m = new LongPressMenu(p, bar, { theme: 'glass' }); m.set({});
+  await imagesReady();
+  window.scene = { width: 1760, height: 960, duration: 0, seek() { cc.drawCoin(coinAt(0.36, 0, 7)); } };
+})();
+</script></body></html>

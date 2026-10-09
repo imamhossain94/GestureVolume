@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1748px;height:955px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, homeScreen, PHONE_ICONS } from '../kit/phone.js';
+import { EdgeBar, PRESETS, loadDrawables } from '../kit/quickpanel.js';
+import { Deck, DECK_ICONS } from '../kit/deck.js';
+import { brightnessCard, calculatorCard, notesCard, checklistCard, diceCard, DECKSETTINGS_ICONS } from '../kit/decksettings.js';
+window.sceneReady = (async () => {
+  await loadIcons([...PHONE_ICONS, ...DECK_ICONS, ...DECKSETTINGS_ICONS]); await fontsReady();
+  await loadDrawables(['ic_vol_increase', 'ic_move']);
+  const q = new URLSearchParams(location.search);
+  const set = q.get('set') || 'a';
+  const mk = (wp) => { const p = new Phone({ wallpaper: wp, radius: 30 }); p.below.appendChild(homeScreen()); document.getElementById('row').appendChild(p.el); return p; };
+  const tiles = ['search', 'flashlight', 'brightness', 'calculator', 'notes', 'checklist', 'dice'];
+  const people = [{ name: 'Mom', via: 'call' }, { name: 'Alex Kim', via: 'sms' }];
+  // content: (palette) => element, so a card is drawn in its Deck's own palette.
+  const show = (wp, id, content, opts = {}) => {
+    const p = mk(wp); const bar = new EdgeBar(p, PRESETS.dock); bar.draw({ alpha: 0 });
+    const d = new Deck(p, bar, { tiles, ...opts }); d.showCard(id, content(d.p)); d.setActive(id, true); d.set({});
+    return d;
+  };
+  if (set === 'a') {
+    show('dusk', 'brightness', (p) => brightnessCard({ value: 0.62, auto: 0, p }));
+    show('ocean', 'calculator', (p) => calculatorCard({ input: '12*8+4', p }));
+    show('sunset', 'notes', (p) => notesCard({ draft: 'Buy oat milk', focused: true, notes: ['Gate code 4417, ring twice', 'Call Sam about Saturday, and ask Priya whether the table for six is still booked'], p }), { people, apps: ['camera', 'music'] });
+    show('forest', 'checklist', (p) => checklistCard({ items: [{ text: 'Eggs', done: true }, { text: 'Bread' }, { text: 'Coffee beans, the dark roast' }, { text: 'Batteries', done: true }], p }));
+  } else if (set === 'b') {
+    show('dusk', 'dice', (p) => diceCard({ dice: [3, 4], p }));
+    show('midnight', 'dice', (p) => diceCard({ dice: [6, 2], angle: 130, p }), { theme: 'paper' });
+    show('pastel', 'brightness', (p) => brightnessCard({ allowed: false, p }), { theme: 'paper' });
+    show('sunset', 'checklist', (p) => checklistCard({ draft: 'Stamps', focused: true, items: [{ text: 'Eggs', done: true }, { text: 'Bread' }], p }), { theme: 'paper' });
+  } else {
+    show('ocean', 'notes', (p) => notesCard({ p }));
+    show('dusk', 'dice', (p) => diceCard({ p }));
+    show('forest', 'brightness', (p) => brightnessCard({ value: 0.3, auto: 1, p }), { theme: 'glass' });
+    show('sunset', 'calculator', (p) => calculatorCard({ input: '', pressed: '7', systemApp: false, p }), { theme: 'midnight' });
+  }
+  await imagesReady();
+  window.scene = { width: 1748, height: 955, duration: 0, seek() {} };
+})();
+</script></body></html>

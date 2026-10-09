@@ -1,0 +1,36 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:2200px;height:980px">
+<div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, homeScreen, PHONE_ICONS } from '../kit/phone.js';
+import { EdgeBar, QuickPanel, PRESETS, loadDrawables } from '../kit/quickpanel.js';
+const cases = [
+  { e: 0, value: 0.4, fill: { kind: 'solid' }, wp: 'dusk' },
+  { e: 0.5, value: 0.4, fill: { kind: 'solid' }, wp: 'dusk', entrance: 0.5 },
+  { e: 1, value: 0.62, fill: { kind: 'solid' }, wp: 'ocean', grabbed: true },
+  { e: 1, value: 0.7, fill: { kind: 'shader', effect: 'aurora' }, wp: 'sunset' },
+  { e: 1, value: 1, fill: { kind: 'surge', look: 'curve' }, wp: 'dusk', fullS: 0.35 },
+];
+window.sceneReady = (async () => {
+  await loadIcons(PHONE_ICONS); await fontsReady();
+  await loadDrawables(['ic_vol_increase', 'ic_move', 'ic_brightness_up']);
+  await QuickPanel.shadersFor(cases.map((c) => c.fill));
+  const items = [];
+  for (const c of cases) {
+    const p = new Phone({ wallpaper: c.wp, radius: 30 });
+    p.below.appendChild(homeScreen());
+    document.getElementById('row').appendChild(p.el);
+    const bar = new EdgeBar(p, PRESETS.dock);
+    const qp = new QuickPanel(p, bar, { fill: c.fill });
+    items.push({ c, bar, qp });
+  }
+  await imagesReady();
+  window.scene = { width: 2200, height: 980, duration: 0, seek(t) {
+    for (const { c, bar, qp } of items) {
+      bar.draw({ alpha: c.e > 0 ? 0 : 1 });
+      qp.draw({ e: c.e, value: c.value, t: 2.3, fillTime: 12.5, fullS: c.fullS ?? -1, grabbed: c.grabbed, entrance: c.entrance ?? null });
+    }
+  } };
+})();
+</script></body></html>

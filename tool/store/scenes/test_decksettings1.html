@@ -1,0 +1,27 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1748px;height:955px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+// The Deck settings screen. ?set=a (default): fresh install, an edited state, Animation and
+// Behaviour open, Paper with a wider strip. ?set=b: every section open, at four scroll positions.
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, PHONE_ICONS } from '../kit/phone.js';
+import { deckScreen, DECKSETTINGS_ICONS } from '../kit/decksettings.js';
+window.sceneReady = (async () => {
+  await loadIcons([...PHONE_ICONS, ...DECKSETTINGS_ICONS]); await fontsReady();
+  const all = ['content', 'size', 'colours', 'animation', 'behaviour'];
+  const states = new URLSearchParams(location.search).get('set') === 'b'
+    ? [380, 620, 1180, 1934].map((scroll) => ({ open: all, scroll }))
+    : [
+      {},
+      { open: ['content', 'colours'], theme: 'glass', counts: { apps: 3, contacts: 2, notes: 1 }, toolsFirst: 1, scroll: 520 },
+      { open: ['animation', 'behaviour'], animation: 'slide', speed: 1.0, scroll: 0 },
+      { open: ['size', 'colours'], theme: 'paper', width: 72, corner: 24, autoClose: 20, scroll: 300 },
+    ];
+  for (const o of states) {
+    const p = new Phone({ wallpaper: null, radius: 30, darkIcons: true }); p.wall.style.display = 'none';
+    p.below.appendChild(deckScreen(o)); document.getElementById('row').appendChild(p.el);
+  }
+  await imagesReady();
+  window.scene = { width: 1748, height: 955, duration: 0, seek() {} };
+})();
+</script></body></html>

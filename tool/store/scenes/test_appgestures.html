@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1752px;height:960px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, PHONE_ICONS } from '../kit/phone.js';
+import { appGesturesScreen, chooseAppScreen, appGestureEditor, launchAppChooser, actionPicker, screenLayout, ACTIONS_ICONS } from '../kit/actions.js';
+window.sceneReady = (async () => {
+  await loadIcons([...PHONE_ICONS, ...ACTIONS_ICONS]); await fontsReady();
+  const q = new URLSearchParams(location.search);
+  const sets = {
+    a: [
+      () => appGesturesScreen({ accessibility: false }),
+      () => appGesturesScreen({ apps: [{ key: 'video', slots: { swipeUp: 'increase-brightness' } }, 'music', { key: 'games', changed: 2 }] }),
+      () => chooseAppScreen({ exclude: ['video'] }),
+      () => appGestureEditor({ app: 'video', slots: { swipeUp: 'increase-brightness' }, missing: ['writeSettings'] }),
+    ],
+    b: [
+      () => appGestureEditor({ app: 'music', mode: 'regular', accessibility: false, slots: { doubleTap: 'play-pause', swipeIn: 'next-track' } }),
+      () => chooseAppScreen({ query: 'm', focused: true }),
+      () => launchAppChooser({ selected: 'music' }),
+      () => actionPicker({ slot: 'swipeUp', app: 'video', selected: 'increase-brightness', scroll: 120 }),
+    ],
+  };
+  window.layouts = [];
+  for (const f of sets[q.get('set') || 'a']) {
+    const p = new Phone({ wallpaper: null, radius: 30, darkIcons: true }); p.wall.style.display = 'none';
+    const el = f();
+    window.layouts.push(screenLayout(el));
+    p.below.appendChild(el); document.getElementById('row').appendChild(p.el);
+  }
+  await imagesReady();
+  window.scene = { width: 1752, height: 960, duration: 0, seek() {} };
+})();
+</script></body></html>

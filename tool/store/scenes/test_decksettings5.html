@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1748px;height:955px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { h, loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, PHONE_ICONS } from '../kit/phone.js';
+import { deckScreen, deckAnimationRow, deckThemeRow, DECKSETTINGS_ICONS } from '../kit/decksettings.js';
+window.sceneReady = (async () => {
+  await loadIcons([...PHONE_ICONS, ...DECKSETTINGS_ICONS]); await fontsReady();
+  const add = (el) => { const p = new Phone({ wallpaper: null, radius: 30, darkIcons: true }); p.wall.style.display = 'none'; p.below.appendChild(el); document.getElementById('row').appendChild(p.el); };
+  add(deckScreen({ open: ['animation'], animation: 'flip', preview: 0.35, demo: true, scroll: 230, speed: 1.6 }));
+  add(deckScreen({ tileNote: true, theme: 'amethyst', counts: { tiles: 9 }, tiles: ['search', 'calculator', 'flashlight', 'screenshot', 'volume'] }));
+  // Rows posed mid-loop, and every theme tile, on a plain card.
+  const card = h(`<div style="position:absolute;inset:0;background:#fff;padding:40px 16px;display:flex;flex-direction:column;gap:14px"></div>`);
+  for (const ms of [250, 500, 800, 2300]) {
+    card.appendChild(h(`<div style="font:12px Roboto;color:#444">ms ${ms}</div>`));
+    card.appendChild(h(deckAnimationRow('pop', { ms, scroll: ms === 2300 ? 0 : (ms === 250 ? 0 : ms === 500 ? 430 : 860) })));
+  }
+  add(card);
+  const card2 = h(`<div style="position:absolute;inset:0;background:#fff;padding:40px 16px;display:flex;flex-direction:column;gap:14px"></div>`);
+  for (const s of [0, 344, 502]) card2.appendChild(h(deckThemeRow('glass', { scroll: s })));
+  add(card2);
+  await imagesReady();
+  window.scene = { width: 1748, height: 955, duration: 0, seek() {} };
+})();
+</script></body></html>

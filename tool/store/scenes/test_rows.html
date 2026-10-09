@@ -1,0 +1,30 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#fff;width:1330px;height:960px"><div id="grid" style="display:grid;grid-template-columns:repeat(3,380px);gap:24px 40px;padding:20px;transform-origin:0 0"></div>
+<script type="module">
+import { fontsReady, imagesReady } from '../kit/core.js';
+import { panelThemeRow, panelAnimationRow, mountPanelRows, preparePanelSettings } from '../kit/panelsettings.js';
+const q = new URLSearchParams(location.search);
+const times = (q.get('times') || '0.12,0.3,2.3').split(',').map(Number);
+window.sceneReady = (async () => {
+  await preparePanelSettings({ shaders: false }); await fontsReady();
+  const grid = document.getElementById('grid');
+  grid.style.transform = `scale(${+(q.get('zoom') || 1)})`;
+  const draws = [];
+  for (const scroll of [0, 344, 688, 1032]) {
+    for (const t of times) {
+      const cell = document.createElement('div');
+      cell.innerHTML = `<div style="font:500 12px Roboto;color:#888;margin-bottom:4px">t=${t} scroll=${scroll}</div>`;
+      const row = panelAnimationRow({ selected: 'slide', scroll });
+      cell.appendChild(row); grid.appendChild(cell);
+      const d = mountPanelRows(row); draws.push(() => d({ t }));
+    }
+  }
+  for (const scroll of [0, 344, 502]) {
+    const cell = document.createElement('div');
+    cell.appendChild(panelThemeRow({ selected: ['solid', 'glass', 'amethyst'][scroll === 0 ? 0 : scroll === 344 ? 1 : 2], scroll }));
+    grid.appendChild(cell);
+  }
+  await imagesReady();
+  window.scene = { width: 1330, height: 960, duration: 0, seek() { draws.forEach((d) => d()); } };
+})();
+</script></body></html>

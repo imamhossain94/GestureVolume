@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1768px;height:960px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, PHONE_ICONS } from '../kit/phone.js';
+import { M3_ICONS } from '../kit/m3.js';
+import { appearanceScreenFull, APPEARANCE2_ICONS } from '../kit/appearance2.js';
+const q = new URLSearchParams(location.search);
+const SETS = {
+  // Dock defaults, each section open in turn.
+  a: [{ open: 'content' }, { open: 'size', scroll: 330 }, { open: 'colours', scroll: 400 }, { open: 'position', scroll: 480 }],
+  // Position (Dock) further down; Behaviour; Classic with a custom colour; Bold with its icon.
+  b: [{ open: 'position', scroll: 900 }, { open: ['behaviour'], scroll: 0, dirty: true, saved: 1 },
+      { preset: 'classic', look: { color: '#E11D48' }, open: 'colours', scroll: 380, dirty: true },
+      { preset: 'bold', open: 'content', dirty: true }],
+  // Classic Position (dynamic off), Edge Size (per-corner), dragging a slider mid-way, a section half open.
+  d: [{ open: null }, { preset: 'classic', open: 'content' }, { preset: 'edge', open: 'content', look: { side: 'left', showIcon: true } },
+      { preset: 'dock', look: { showIcon: true, icon: 'ic_star', iconColor: '#FDE047', color: '#FF312E81', h: 200, stroke: { w: 2, color: '#FFFFFFFF' } }, open: 'size', scroll: 600, dirty: true }],
+  e: [{ preset: 'classic', look: { side: 'left' }, open: 'position', scroll: 480, demo: { playing: true, panel: 0.6, level: 67, caption: 'Swipe down · Decrease volume and show UI', captionIcon: 'drawable/ic_vol_decrease' } },
+      { preset: 'classic', demo: { playing: true, brightness: 1, brightnessLevel: 30, caption: 'Swipe down · Brightness', captionIcon: 'drawable/ic_brightness_up' } },
+      { preset: 'edge', look: { snap: false, x: 0.62, y: 0.4, dynamic: false }, open: 'position', scroll: 480, snapNote: true },
+      { preset: 'bold', look: { vibrate: false }, open: ['behaviour', 'content'], demo: { readout: '40%' } }],
+  c: [{ preset: 'classic', open: 'position', scroll: 560 }, { preset: 'classic', open: 'position', scroll: 1200, look: { same: true } },
+      { preset: 'edge', open: 'size', scroll: 330, dragging: 'corner-tl' }, { preset: 'dock', open: { size: 0.45 }, look: { w: 40 }, dragging: 'width', dirty: 0.5,
+        demo: { playing: true, panel: 1, level: 53, readout: '53%', caption: 'Swipe up · Quick panel', captionIcon: 'drawable/ic_vol_increase' } }],
+};
+window.sceneReady = (async () => {
+  await loadIcons([...new Set([...PHONE_ICONS, ...M3_ICONS, ...APPEARANCE2_ICONS])]); await fontsReady();
+  const set = SETS[q.get('set') || 'a'];
+  const report = [];
+  for (const o of set) {
+    const p = new Phone({ wallpaper: null, radius: 30, darkIcons: true }); p.wall.style.display = 'none';
+    const el = appearanceScreenFull(o);
+    p.below.appendChild(el); document.getElementById('row').appendChild(p.el);
+    const L = el.layout;
+    report.push(JSON.stringify({ o: o.open, viewportTop: L.viewportTop, max: L.maxScroll, sections: ['content', 'size', 'colours', 'behaviour', 'position'].map((s) => (L.content['section-' + s] + L.viewportTop).toFixed(1)) }));
+  }
+  console.warn(report.join('\n'));
+  await imagesReady();
+  window.scene = { width: 1768, height: 960, duration: 0, seek() {} };
+})();
+</script></body></html>
