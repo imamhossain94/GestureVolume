@@ -22,6 +22,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import com.newagedevs.gesturevolume.ui.components.Tutorial
+import com.newagedevs.gesturevolume.ui.components.TutorialAction
 import com.newagedevs.gesturevolume.ui.motion.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -317,7 +319,10 @@ fun QuickSliderScreen(
                         )
                     }
                 },
-                actions = { HowItWorksAction(demo) },
+                actions = {
+                    TutorialAction(Tutorial.QUICK_SLIDER)
+                    HowItWorksAction(demo)
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer

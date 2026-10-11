@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1330px;height:960px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, PHONE_ICONS } from '../kit/phone.js';
+import { longPressMenuScreen, mountLongPressMenu, preparePanelSettings } from '../kit/panelsettings.js';
+const q = new URLSearchParams(location.search);
+const set = q.get('set') || 'a';
+const SETS = {
+  a: [{}, { scroll: 380 }, { open: ['colours', 'animation'], scroll: 0 }],
+  b: [{ open: 'items', scroll: 120 }, { open: 'items', scroll: 900 }, { open: 'animation', layout: 'list', theme: 'glass' }],
+  c: [{ open: 'colours', theme: 'aero', ownColour: 1, scroll: 300 }, { open: { size: 0.5 }, theme: 'paper', perPage: 4 }, { open: 'size', layout: 'list', lines: 'horizontal', theme: 'midnight', width: 300 }],
+};
+window.sceneReady = (async () => {
+  await loadIcons(PHONE_ICONS); await preparePanelSettings({ shaders: false }); await fontsReady();
+  const draws = [];
+  for (const o of SETS[set]) {
+    const p = new Phone({ wallpaper: null, radius: 30, darkIcons: true }); p.wall.style.display = 'none';
+    const s = longPressMenuScreen(o);
+    p.below.appendChild(s); document.getElementById('row').appendChild(p.el);
+    draws.push(mountLongPressMenu(s));
+  }
+  const z = +(q.get('zoom') || 1);
+  if (z !== 1) { const r = document.getElementById('row'); r.style.transformOrigin = '0 0'; r.style.transform = `scale(${z}) translate(${-(+q.get('ox') || 0)}px,${-(+q.get('oy') || 0)}px)`; }
+  await imagesReady();
+  window.scene = { width: 1330, height: 960, duration: 0, seek(t) { draws.forEach((d) => d({ t })); } };
+})();
+</script></body></html>

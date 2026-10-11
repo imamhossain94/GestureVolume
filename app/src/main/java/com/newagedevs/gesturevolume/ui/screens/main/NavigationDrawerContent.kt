@@ -12,6 +12,7 @@ import com.newagedevs.gesturevolume.ui.motion.NavigationDrawerItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.NewReleases
+import androidx.compose.material.icons.outlined.OndemandVideo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.Alignment
@@ -162,6 +163,14 @@ fun NavigationDrawerContent(
                     icon = R.drawable.ic_help,
                     label = stringResource(R.string.faq),
                     onClick = { onMenuItemClick("FAQ") }
+                )
+
+                // The YouTube series, a video for each part of the app: see TutorialsScreen.
+                NavigationDrawerItem(
+                    icon = 0,
+                    vector = Icons.Outlined.OndemandVideo,
+                    label = stringResource(R.string.tutorials),
+                    onClick = { onMenuItemClick("Tutorials") }
                 )
 
                 // The walkthrough's pages again, changing nothing: see WalkthroughScreen's tour.

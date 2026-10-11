@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="width:1920px;height:1080px;position:relative">
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, homeScreen, PHONE_ICONS } from '../kit/phone.js';
+import { Backdrop, Finger, FingerScript, caption, showBetween, Cues } from '../kit/stage.js';
+window.sceneReady = (async () => {
+  await loadIcons(PHONE_ICONS); await fontsReady();
+  const bd = new Backdrop(1920, 1080); document.body.appendChild(bd.el);
+  const p = new Phone({ wallpaper: 'dusk', radius: 44, scale: 1.05 });
+  p.el.style.position = 'absolute'; p.el.style.left = '1150px'; p.el.style.top = '60px';
+  p.el.style.boxShadow = '0 40px 90px rgba(0,0,0,.45)';
+  p.below.appendChild(homeScreen()); document.body.appendChild(p.el);
+  const f = new Finger(p.top);
+  const fs = new FingerScript([{ at: 0.5, tap: [330, 690] }, { at: 1.4, drag: [[390, 520], [390, 360]], dur: 0.7 }, { at: 2.6, hide: true }]);
+  const cap = caption('Volume on the edge'); cap.style.cssText += ';position:absolute;left:160px;top:420px;width:820px';
+  document.body.appendChild(cap);
+  await imagesReady();
+  const cues = new Cues().fromFinger(fs, { drag: 'swipe' });
+  window.scene = { width: 1920, height: 1080, duration: 3, music: 'promo', cues: cues.list,
+    seek(t) { bd.draw(t); f.set(fs.state(t)); showBetween(cap, t, 0.2, 2.8); } };
+})();
+</script></body></html>

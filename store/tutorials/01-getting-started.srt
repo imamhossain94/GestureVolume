@@ -1,0 +1,96 @@
+1
+00:00:00,400 --> 00:00:01,136
+Getting started.
+
+2
+00:00:01,176 --> 00:00:03,560
+Set it up and give it the
+one permission it needs.
+
+3
+00:00:04,300 --> 00:00:05,395
+Open Gesture Volume.
+
+4
+00:00:05,435 --> 00:00:06,926
+The first time you open it,
+
+5
+00:00:06,966 --> 00:00:10,160
+a short tour shows how the
+bar works, one page at a time.
+
+6
+00:00:10,500 --> 00:00:11,264
+Pick a style.
+
+7
+00:00:11,304 --> 00:00:14,358
+Simple puts a round button
+on the edge for volume.
+
+8
+00:00:14,398 --> 00:00:18,875
+Advanced adds the Dock, the Quick
+slider, the Deck and a long-press menu.
+
+9
+00:00:18,915 --> 00:00:20,360
+You can switch any time.
+
+10
+00:00:20,700 --> 00:00:21,835
+Learn the moves.
+
+11
+00:00:21,875 --> 00:00:25,875
+The next pages play each
+gesture out: swipe for volume,
+
+12
+00:00:25,915 --> 00:00:28,960
+tap for the volume panel, hold to move it.
+
+13
+00:00:29,300 --> 00:00:30,989
+Allow the bar on screen.
+
+14
+00:00:31,029 --> 00:00:35,743
+Tap Allow, switch on Allow display
+over other apps, and come back.
+
+15
+00:00:35,783 --> 00:00:39,560
+That one switch lets the
+bar sit on top of your apps.
+
+16
+00:00:39,900 --> 00:00:42,156
+Notifications, if you like. Optional:
+
+17
+00:00:42,196 --> 00:00:46,809
+allow notifications and the bar’s
+controls wait in your notification shade,
+
+18
+00:00:46,849 --> 00:00:48,360
+even with the app closed.
+
+19
+00:00:48,700 --> 00:00:50,173
+Turn on the service.
+
+20
+00:00:50,213 --> 00:00:53,350
+Tap Service inactive to switch the bar on.
+
+21
+00:00:53,390 --> 00:00:57,360
+Go home, and the round button
+is waiting on the edge.
+
+22
+00:00:58,250 --> 00:01:02,710
+Up next: Volume with a swipe.

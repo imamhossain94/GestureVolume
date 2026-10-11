@@ -1,0 +1,126 @@
+1
+00:00:00,400 --> 00:00:01,116
+The Quick slider.
+
+2
+00:00:01,156 --> 00:00:03,560
+A volume and brightness track
+that follows your finger.
+
+3
+00:00:04,300 --> 00:00:05,928
+Turn on Advanced mode.
+
+4
+00:00:05,968 --> 00:00:09,038
+The Quick slider comes with the Dock bar.
+
+5
+00:00:09,078 --> 00:00:13,360
+Open Gesture Volume, switch
+on Advanced mode and confirm.
+
+6
+00:00:13,700 --> 00:00:14,425
+Meet the Dock.
+
+7
+00:00:14,465 --> 00:00:18,960
+Back on your home screen, the round button
+is now the Dock: a slim tab on the edge.
+
+8
+00:00:19,300 --> 00:00:20,935
+Swipe the tab up or down.
+
+9
+00:00:20,975 --> 00:00:26,360
+It grows into the Quick slider, and every
+bit you swipe moves the level one step.
+
+10
+00:00:26,700 --> 00:00:28,270
+Touch the track to set it.
+
+11
+00:00:28,310 --> 00:00:33,226
+Touch anywhere on the open track: the
+level jumps to your finger and follows it.
+
+12
+00:00:33,266 --> 00:00:34,960
+Let go and it tucks back in.
+
+13
+00:00:35,300 --> 00:00:36,395
+Or press a volume key.
+
+14
+00:00:36,435 --> 00:00:37,840
+With Volume keys on Instant,
+
+15
+00:00:37,880 --> 00:00:41,296
+a key opens the slider on the spot
+and moves it one step per press.
+
+16
+00:00:41,336 --> 00:00:43,360
+Instant needs the accessibility service.
+
+17
+00:00:43,700 --> 00:00:44,629
+Open its settings.
+
+18
+00:00:44,669 --> 00:00:47,914
+In Gesture Volume, under Advanced
+features, tap Quick slider.
+
+19
+00:00:47,954 --> 00:00:49,960
+The preview runs your slider as it is.
+
+20
+00:00:50,300 --> 00:00:51,267
+Pick a fill.
+
+21
+00:00:51,307 --> 00:00:54,035
+Open Animation and choose a fill.
+
+22
+00:00:54,075 --> 00:01:00,160
+Shaders and Surge are live effects;
+the preview at the top runs each one.
+
+23
+00:01:00,500 --> 00:01:01,973
+Celebrate at the top.
+
+24
+00:01:02,013 --> 00:01:07,375
+With Celebrate at the top on, a flourish
+plays when the level reaches 100%.
+
+25
+00:01:07,415 --> 00:01:08,960
+Pick the one you like.
+
+26
+00:01:09,300 --> 00:01:10,730
+Choose what it adjusts.
+
+27
+00:01:10,770 --> 00:01:13,606
+Under Content, pick
+Brightness or one volume.
+
+28
+00:01:13,646 --> 00:01:17,760
+Adaptive follows whatever is
+playing: a call, an alarm, or media.
+
+29
+00:01:18,650 --> 00:01:23,110
+Up next: The Deck.

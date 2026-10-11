@@ -1,0 +1,188 @@
+{
+ "series": {
+  "n": 9,
+  "of": 9,
+  "id": "visibility",
+  "title": "Keep it out of the way",
+  "sub": "Hide the bar in some apps, while you type, or until media plays",
+  "next": null
+ },
+ "duration": 65.64999999999999,
+ "chapters": [
+  {
+   "t": 0,
+   "title": "When it shows"
+  },
+  {
+   "t": 17.75,
+   "title": "While you type"
+  },
+  {
+   "t": 35.15,
+   "title": "Apps and the lock screen"
+  }
+ ],
+ "steps": [
+  {
+   "at": 4.15,
+   "end": 10.55,
+   "title": "Open Visibility",
+   "text": "In Gesture Volume, under Advanced features, tap Visibility.",
+   "chapter": "When it shows"
+  },
+  {
+   "at": 10.55,
+   "end": 17.75,
+   "title": "Choose when it shows",
+   "text": "Two switches: only while media plays, or only during calls. Leave both off and it is always there.",
+   "chapter": "When it shows"
+  },
+  {
+   "at": 17.75,
+   "end": 26.15,
+   "title": "Pick what happens as you type",
+   "text": "Move above the keyboard, hide, or stay put. Moving, it can glide, spring or bounce out of the way.",
+   "chapter": "While you type"
+  },
+  {
+   "at": 26.15,
+   "end": 35.15,
+   "title": "Type in another app",
+   "text": "In any app, as the keyboard comes up the bar springs above it, and goes back when you are done.",
+   "chapter": "While you type"
+  },
+  {
+   "at": 35.15,
+   "end": 43.55,
+   "title": "Pick apps to hide it in",
+   "text": "Back in Visibility, tick the apps where it should step aside. Here, Video.",
+   "chapter": "Apps and the lock screen"
+  },
+  {
+   "at": 43.55,
+   "end": 50.75,
+   "title": "There, it steps aside",
+   "text": "Open Video and the bar is gone. Leave it, and the bar is back.",
+   "chapter": "Apps and the lock screen"
+  },
+  {
+   "at": 50.75,
+   "end": 60.15,
+   "title": "Show it on the lock screen",
+   "text": "Turn on Show on the lock screen and the bar is there too, for volume and quick toggles.",
+   "chapter": "Apps and the lock screen"
+  }
+ ],
+ "subtitles": [
+  {
+   "a": 0.4,
+   "b": 1.205977011494253,
+   "text": "Keep it out of the way."
+  },
+  {
+   "a": 1.245977011494253,
+   "b": 3.56,
+   "text": "Hide the bar in some apps, while\nyou type, or until media plays."
+  },
+  {
+   "a": 4.300000000000001,
+   "b": 5.561333333333334,
+   "text": "Open Visibility."
+  },
+  {
+   "a": 5.601333333333334,
+   "b": 10.360000000000001,
+   "text": "In Gesture Volume, under Advanced\nfeatures, tap Visibility."
+  },
+  {
+   "a": 10.700000000000001,
+   "b": 11.887966101694918,
+   "text": "Choose when it shows."
+  },
+  {
+   "a": 11.927966101694917,
+   "b": 15.337966101694917,
+   "text": "Two switches: only while media\nplays, or only during calls."
+  },
+  {
+   "a": 15.377966101694916,
+   "b": 17.560000000000002,
+   "text": "Leave both off and it is always there."
+  },
+  {
+   "a": 17.9,
+   "b": 19.773385826771655,
+   "text": "Pick what happens as you type."
+  },
+  {
+   "a": 19.813385826771654,
+   "b": 22.515905511811027,
+   "text": "Move above the keyboard,\nhide, or stay put."
+  },
+  {
+   "a": 22.555905511811027,
+   "b": 25.960000000000004,
+   "text": "Moving, it can glide, spring\nor bounce out of the way."
+  },
+  {
+   "a": 26.299999999999997,
+   "b": 27.786315789473683,
+   "text": "Type in another app."
+  },
+  {
+   "a": 27.826315789473682,
+   "b": 32.5178947368421,
+   "text": "In any app, as the keyboard comes\nup the bar springs above it,"
+  },
+  {
+   "a": 32.5578947368421,
+   "b": 34.96,
+   "text": "and goes back when you are done."
+  },
+  {
+   "a": 35.3,
+   "b": 37.24367346938775,
+   "text": "Pick apps to hide it in."
+  },
+  {
+   "a": 37.28367346938775,
+   "b": 43.36,
+   "text": "Back in Visibility, tick the apps where\nit should step aside. Here, Video."
+  },
+  {
+   "a": 43.699999999999996,
+   "b": 45.4889156626506,
+   "text": "There, it steps aside."
+  },
+  {
+   "a": 45.5289156626506,
+   "b": 48.06602409638554,
+   "text": "Open Video and the bar is gone."
+  },
+  {
+   "a": 48.10602409638554,
+   "b": 50.56,
+   "text": "Leave it, and the bar is back."
+  },
+  {
+   "a": 50.9,
+   "b": 53.034336283185844,
+   "text": "Show it on the lock screen."
+  },
+  {
+   "a": 53.07433628318584,
+   "b": 57.62460176991151,
+   "text": "Turn on Show on the lock screen\nand the bar is there too,"
+  },
+  {
+   "a": 57.664601769911506,
+   "b": 59.96,
+   "text": "for volume and quick toggles."
+  },
+  {
+   "a": 60.849999999999994,
+   "b": 65.30999999999999,
+   "text": "Thanks for watching."
+  }
+ ]
+}

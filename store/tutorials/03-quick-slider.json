@@ -1,0 +1,237 @@
+{
+ "series": {
+  "n": 3,
+  "of": 9,
+  "id": "quick-slider",
+  "title": "The Quick slider",
+  "sub": "A volume and brightness track that follows your finger",
+  "next": "The Deck"
+ },
+ "duration": 83.44999999999999,
+ "chapters": [
+  {
+   "t": 0,
+   "title": "Turn on Advanced mode"
+  },
+  {
+   "t": 19.15,
+   "title": "Open it"
+  },
+  {
+   "t": 43.55,
+   "title": "Fills and what it adjusts"
+  }
+ ],
+ "steps": [
+  {
+   "at": 4.15,
+   "end": 13.55,
+   "title": "Turn on Advanced mode",
+   "text": "The Quick slider comes with the Dock bar. Open Gesture Volume, switch on Advanced mode and confirm.",
+   "chapter": "Turn on Advanced mode"
+  },
+  {
+   "at": 13.55,
+   "end": 19.15,
+   "title": "Meet the Dock",
+   "text": "Back on your home screen, the round button is now the Dock: a slim tab on the edge.",
+   "chapter": "Turn on Advanced mode"
+  },
+  {
+   "at": 19.15,
+   "end": 26.549999999999997,
+   "title": "Swipe the tab up or down",
+   "text": "It grows into the Quick slider, and every bit you swipe moves the level one step.",
+   "chapter": "Open it"
+  },
+  {
+   "at": 26.549999999999997,
+   "end": 35.15,
+   "title": "Touch the track to set it",
+   "text": "Touch anywhere on the open track: the level jumps to your finger and follows it. Let go and it tucks back in.",
+   "chapter": "Open it"
+  },
+  {
+   "at": 35.15,
+   "end": 43.55,
+   "title": "Or press a volume key",
+   "text": "With Volume keys on Instant, a key opens the slider on the spot and moves it one step per press. Instant needs the accessibility service.",
+   "chapter": "Open it"
+  },
+  {
+   "at": 43.55,
+   "end": 50.15,
+   "title": "Open its settings",
+   "text": "In Gesture Volume, under Advanced features, tap Quick slider. The preview runs your slider as it is.",
+   "chapter": "Fills and what it adjusts"
+  },
+  {
+   "at": 50.15,
+   "end": 60.349999999999994,
+   "title": "Pick a fill",
+   "text": "Open Animation and choose a fill. Shaders and Surge are live effects; the preview at the top runs each one.",
+   "chapter": "Fills and what it adjusts"
+  },
+  {
+   "at": 60.349999999999994,
+   "end": 69.14999999999999,
+   "title": "Celebrate at the top",
+   "text": "With Celebrate at the top on, a flourish plays when the level reaches 100%. Pick the one you like.",
+   "chapter": "Fills and what it adjusts"
+  },
+  {
+   "at": 69.14999999999999,
+   "end": 77.94999999999999,
+   "title": "Choose what it adjusts",
+   "text": "Under Content, pick Brightness or one volume. Adaptive follows whatever is playing: a call, an alarm, or media.",
+   "chapter": "Fills and what it adjusts"
+  }
+ ],
+ "subtitles": [
+  {
+   "a": 0.4,
+   "b": 1.1155555555555556,
+   "text": "The Quick slider."
+  },
+  {
+   "a": 1.1555555555555557,
+   "b": 3.5600000000000005,
+   "text": "A volume and brightness track\nthat follows your finger."
+  },
+  {
+   "a": 4.300000000000001,
+   "b": 5.928333333333334,
+   "text": "Turn on Advanced mode."
+  },
+  {
+   "a": 5.968333333333334,
+   "b": 9.037500000000001,
+   "text": "The Quick slider comes with the Dock bar."
+  },
+  {
+   "a": 9.0775,
+   "b": 13.360000000000001,
+   "text": "Open Gesture Volume, switch\non Advanced mode and confirm."
+  },
+  {
+   "a": 13.700000000000001,
+   "b": 14.424948453608248,
+   "text": "Meet the Dock."
+  },
+  {
+   "a": 14.464948453608248,
+   "b": 18.96,
+   "text": "Back on your home screen, the round button\nis now the Dock: a slim tab on the edge."
+  },
+  {
+   "a": 19.299999999999997,
+   "b": 20.93452830188679,
+   "text": "Swipe the tab up or down."
+  },
+  {
+   "a": 20.97452830188679,
+   "b": 26.36,
+   "text": "It grows into the Quick slider, and every\nbit you swipe moves the level one step."
+  },
+  {
+   "a": 26.699999999999996,
+   "b": 28.270447761194028,
+   "text": "Touch the track to set it."
+  },
+  {
+   "a": 28.310447761194027,
+   "b": 33.225671641791045,
+   "text": "Touch anywhere on the open track: the\nlevel jumps to your finger and follows it."
+  },
+  {
+   "a": 33.265671641791045,
+   "b": 34.96,
+   "text": "Let go and it tucks back in."
+  },
+  {
+   "a": 35.3,
+   "b": 36.39503184713376,
+   "text": "Or press a volume key."
+  },
+  {
+   "a": 36.43503184713376,
+   "b": 37.83961783439491,
+   "text": "With Volume keys on Instant,"
+  },
+  {
+   "a": 37.87961783439491,
+   "b": 41.29630573248408,
+   "text": "a key opens the slider on the spot\nand moves it one step per press."
+  },
+  {
+   "a": 41.33630573248408,
+   "b": 43.36000000000001,
+   "text": "Instant needs the accessibility service."
+  },
+  {
+   "a": 43.699999999999996,
+   "b": 44.629230769230766,
+   "text": "Open its settings."
+  },
+  {
+   "a": 44.669230769230765,
+   "b": 47.91384615384615,
+   "text": "In Gesture Volume, under Advanced\nfeatures, tap Quick slider."
+  },
+  {
+   "a": 47.95384615384615,
+   "b": 49.96,
+   "text": "The preview runs your slider as it is."
+  },
+  {
+   "a": 50.3,
+   "b": 51.26677966101695,
+   "text": "Pick a fill."
+  },
+  {
+   "a": 51.30677966101695,
+   "b": 54.035423728813555,
+   "text": "Open Animation and choose a fill."
+  },
+  {
+   "a": 54.075423728813554,
+   "b": 60.16,
+   "text": "Shaders and Surge are live effects;\nthe preview at the top runs each one."
+  },
+  {
+   "a": 60.49999999999999,
+   "b": 61.97271186440677,
+   "text": "Celebrate at the top."
+  },
+  {
+   "a": 62.01271186440677,
+   "b": 67.37525423728812,
+   "text": "With Celebrate at the top on, a flourish\nplays when the level reaches 100%."
+  },
+  {
+   "a": 67.41525423728812,
+   "b": 68.95999999999998,
+   "text": "Pick the one you like."
+  },
+  {
+   "a": 69.3,
+   "b": 70.72992481203006,
+   "text": "Choose what it adjusts."
+  },
+  {
+   "a": 70.76992481203007,
+   "b": 73.60586466165412,
+   "text": "Under Content, pick\nBrightness or one volume."
+  },
+  {
+   "a": 73.64586466165413,
+   "b": 77.75999999999998,
+   "text": "Adaptive follows whatever is\nplaying: a call, an alarm, or media."
+  },
+  {
+   "a": 78.64999999999999,
+   "b": 83.10999999999999,
+   "text": "Up next: The Deck."
+  }
+ ]
+}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video tutorials: the screen that lists them, the row at the top of the FAQ that leads there,
+         and the play button in a feature screen's top bar. The videos themselves are in English. -->
+    <string name="tutorials">ভিডিও টিউটোরিয়াল</string>
+    <string name="tutorials_summary">অ্যাপের প্রতিটি অংশের জন্য একটি ছোট ভিডিও</string>
+    <string name="tutorials_intro">প্রতিটি ভিডিও YouTube-এ খোলে আর প্রায় এক মিনিট চলে। ভিডিওর লেখাগুলো ইংরেজিতে।</string>
+    <!-- Read out for the play button in a screen's top bar. %1$s: the video's title, e.g. The Deck. -->
+    <string name="tutorial_watch">ভিডিওটি দেখুন: %1$s</string>
+    <string name="tutorial_cannot_open">এই ফোনে ভিডিওটি খুলতে পারে এমন কোনো অ্যাপ নেই</string>
+
+    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <string name="tutorial_getting_started">শুরু করুন</string>
+    <string name="tutorial_getting_started_summary">ট্যুর, দরকারি একমাত্র অনুমতি, আর চালু করা</string>
+    <string name="tutorial_swipe_volume">এক সোয়াইপে ভলিউম</string>
+    <string name="tutorial_swipe_volume_summary">গোল বোতাম: সোয়াইপ করুন, ট্যাপ করুন, সরান</string>
+    <string name="tutorial_quick_slider">দ্রুত স্লাইডার</string>
+    <string name="tutorial_quick_slider_summary">আঙুলের সঙ্গে চলা ভলিউম ও উজ্জ্বলতার ট্র্যাক</string>
+    <string name="tutorial_deck">ডেক</string>
+    <string name="tutorial_deck_summary">আপনার অ্যাপ, পরিচিতি আর টুল, বার থেকে ভেতরে এক সোয়াইপে</string>
+    <string name="tutorial_search">ডেকে সার্চ</string>
+    <string name="tutorial_search_summary">অ্যাপ, কুইক ডায়াল পরিচিতি, হিসাব আর ওয়েব, লেখার সঙ্গে সঙ্গে</string>
+    <string name="tutorial_menu">লং-প্রেস মেনু</string>
+    <string name="tutorial_menu_summary">বেশি ব্যবহার করা অ্যাকশনের জন্য বার চেপে ধরুন</string>
+    <string name="tutorial_actions">প্রতিটি জেসচার কী করবে, বেছে নিন</string>
+    <string name="tutorial_actions_summary">ট্যাপ, হোল্ড আর সোয়াইপ, সব অ্যাপে বা শুধু একটিতে</string>
+    <string name="tutorial_appearance">বারটি নিজের মতো সাজান</string>
+    <string name="tutorial_appearance_summary">প্রিসেট, সাইজ, আকৃতি, রং আর অবস্থান</string>
+    <string name="tutorial_visibility">বারটি যেন বাধা না দেয়</string>
+    <string name="tutorial_visibility_summary">কিছু অ্যাপে, টাইপ করার সময়, বা মিডিয়া না চলা পর্যন্ত বার লুকিয়ে রাখুন</string>
+</resources>

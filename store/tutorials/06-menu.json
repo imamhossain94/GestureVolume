@@ -1,0 +1,215 @@
+{
+ "series": {
+  "n": 6,
+  "of": 9,
+  "id": "menu",
+  "title": "The long-press menu",
+  "sub": "Hold the bar for the actions you use most",
+  "next": "Choose what each gesture does"
+ },
+ "duration": 71.25,
+ "chapters": [
+  {
+   "t": 0,
+   "title": "Open the menu"
+  },
+  {
+   "t": 25.750000000000004,
+   "title": "Choose its actions"
+  },
+  {
+   "t": 59.15,
+   "title": "Try it"
+  }
+ ],
+ "steps": [
+  {
+   "at": 4.15,
+   "end": 11.350000000000001,
+   "title": "Hold the tab",
+   "text": "Keep your finger on the Dock until the ring closes. The menu opens beside it, and stays when you let go.",
+   "chapter": "Open the menu"
+  },
+  {
+   "at": 11.350000000000001,
+   "end": 17.950000000000003,
+   "title": "Tap an action",
+   "text": "Each tile runs its action and the menu closes. Here, the flashlight comes on.",
+   "chapter": "Open the menu"
+  },
+  {
+   "at": 17.950000000000003,
+   "end": 25.750000000000004,
+   "title": "Hold and drag to move it",
+   "text": "Hold, then move instead of letting go: the menu steps aside and the bar follows your finger.",
+   "chapter": "Open the menu"
+  },
+  {
+   "at": 25.750000000000004,
+   "end": 32.35,
+   "title": "Open its settings",
+   "text": "In Gesture Volume, under Advanced features, tap Long-press menu. The preview shows the menu as it is.",
+   "chapter": "Choose its actions"
+  },
+  {
+   "at": 32.35,
+   "end": 42.75,
+   "title": "Choose the actions",
+   "text": "Open Items: remove what you never use, and add what you want from Available. Here, Screenshot in place of Stop service.",
+   "chapter": "Choose its actions"
+  },
+  {
+   "at": 42.75,
+   "end": 51.15,
+   "title": "Pick a panel style",
+   "text": "Under Colours, choose how it is drawn. Glass blurs what is behind it; the Deck and the Quick slider use the same style.",
+   "chapter": "Choose its actions"
+  },
+  {
+   "at": 51.15,
+   "end": 59.15,
+   "title": "Choose how it opens",
+   "text": "Under Animation, pick an opening animation. The preview plays it each time you pick one.",
+   "chapter": "Choose its actions"
+  },
+  {
+   "at": 59.15,
+   "end": 65.75,
+   "title": "Hold the tab again",
+   "text": "Your actions, in the style and animation you picked.",
+   "chapter": "Try it"
+  }
+ ],
+ "subtitles": [
+  {
+   "a": 0.4,
+   "b": 1.3922580645161289,
+   "text": "The long-press menu."
+  },
+  {
+   "a": 1.432258064516129,
+   "b": 3.56,
+   "text": "Hold the bar for the actions you use most."
+  },
+  {
+   "a": 4.300000000000001,
+   "b": 5.033275862068966,
+   "text": "Hold the tab."
+  },
+  {
+   "a": 5.073275862068966,
+   "b": 8.06689655172414,
+   "text": "Keep your finger on the\nDock until the ring closes."
+  },
+  {
+   "a": 8.10689655172414,
+   "b": 11.160000000000002,
+   "text": "The menu opens beside it,\nand stays when you let go."
+  },
+  {
+   "a": 11.500000000000002,
+   "b": 12.440000000000003,
+   "text": "Tap an action."
+  },
+  {
+   "a": 12.480000000000002,
+   "b": 15.660000000000004,
+   "text": "Each tile runs its action\nand the menu closes."
+  },
+  {
+   "a": 15.700000000000003,
+   "b": 17.760000000000005,
+   "text": "Here, the flashlight comes on."
+  },
+  {
+   "a": 18.1,
+   "b": 19.67637931034483,
+   "text": "Hold and drag to move it."
+  },
+  {
+   "a": 19.71637931034483,
+   "b": 22.13327586206897,
+   "text": "Hold, then move instead of letting go:"
+  },
+  {
+   "a": 22.17327586206897,
+   "b": 25.560000000000006,
+   "text": "the menu steps aside and\nthe bar follows your finger."
+  },
+  {
+   "a": 25.900000000000002,
+   "b": 26.821016949152547,
+   "text": "Open its settings."
+  },
+  {
+   "a": 26.861016949152546,
+   "b": 30.23796610169492,
+   "text": "In Gesture Volume, under Advanced\nfeatures, tap Long-press menu."
+  },
+  {
+   "a": 30.27796610169492,
+   "b": 32.160000000000004,
+   "text": "The preview shows the menu as it is."
+  },
+  {
+   "a": 32.5,
+   "b": 33.8607299270073,
+   "text": "Choose the actions."
+  },
+  {
+   "a": 33.9007299270073,
+   "b": 39.4636496350365,
+   "text": "Open Items: remove what you never use,\nand add what you want from Available."
+  },
+  {
+   "a": 39.503649635036496,
+   "b": 42.56,
+   "text": "Here, Screenshot in place of Stop service."
+  },
+  {
+   "a": 42.9,
+   "b": 43.98335766423357,
+   "text": "Pick a panel style."
+  },
+  {
+   "a": 44.02335766423357,
+   "b": 46.23007299270073,
+   "text": "Under Colours, choose how it is drawn."
+  },
+  {
+   "a": 46.270072992700726,
+   "b": 50.96,
+   "text": "Glass blurs what is behind it; the Deck\nand the Quick slider use the same style."
+  },
+  {
+   "a": 51.3,
+   "b": 52.699252336448595,
+   "text": "Choose how it opens."
+  },
+  {
+   "a": 52.739252336448594,
+   "b": 55.793644859813085,
+   "text": "Under Animation, pick\nan opening animation."
+  },
+  {
+   "a": 55.833644859813084,
+   "b": 58.96,
+   "text": "The preview plays it\neach time you pick one."
+  },
+  {
+   "a": 59.3,
+   "b": 60.945915492957745,
+   "text": "Hold the tab again."
+  },
+  {
+   "a": 60.985915492957744,
+   "b": 65.55999999999999,
+   "text": "Your actions, in the style\nand animation you picked."
+  },
+  {
+   "a": 66.45,
+   "b": 70.91,
+   "text": "Up next: Choose what each gesture does."
+  }
+ ]
+}

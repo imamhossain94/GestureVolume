@@ -35,8 +35,16 @@ object ReleaseNotes {
 
     val HISTORY: List<Entry> = listOf(
         Release(
-            version = "1.5.2",
+            version = "1.5.3",
             date = null,
+            notes = listOf(
+                "🎬 Video tutorials — a short video for each part of the app, in the menu and the FAQ",
+                "▶️ A play button on each feature screen opens its own video",
+            ),
+        ),
+        Release(
+            version = "1.5.2",
+            date = LocalDate.of(2026, 10, 4),
             notes = listOf(
                 "🔒 Show the bar on your lock screen",
                 "📱 The welcome tour fits any screen",

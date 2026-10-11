@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video tutorials: the screen that lists them, the row at the top of the FAQ that leads there,
+         and the play button in a feature screen's top bar. The videos themselves are in English. -->
+    <string name="tutorials">Video hướng dẫn</string>
+    <string name="tutorials_summary">Một video ngắn cho từng phần của ứng dụng</string>
+    <string name="tutorials_intro">Mỗi video mở trong YouTube và dài khoảng một phút. Chữ trong video là tiếng Anh.</string>
+    <!-- Read out for the play button in a screen's top bar. %1$s: the video's title, e.g. The Deck. -->
+    <string name="tutorial_watch">Xem video: %1$s</string>
+    <string name="tutorial_cannot_open">Không có ứng dụng nào trên điện thoại này mở được video</string>
+
+    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <string name="tutorial_getting_started">Bắt đầu</string>
+    <string name="tutorial_getting_started_summary">Hướng dẫn ứng dụng, quyền duy nhất cần cấp và cách bật</string>
+    <string name="tutorial_swipe_volume">Âm lượng chỉ với một cú vuốt</string>
+    <string name="tutorial_swipe_volume_summary">Nút tròn: vuốt, chạm, di chuyển</string>
+    <string name="tutorial_quick_slider">Thanh trượt nhanh</string>
+    <string name="tutorial_quick_slider_summary">Rãnh âm lượng và độ sáng đi theo ngón tay bạn</string>
+    <string name="tutorial_deck">Deck</string>
+    <string name="tutorial_deck_summary">Ứng dụng, người liên hệ và công cụ, chỉ một cú vuốt vào trong từ thanh</string>
+    <string name="tutorial_search">Tìm kiếm trong Deck</string>
+    <string name="tutorial_search_summary">Ứng dụng, liên hệ quay số nhanh, phép tính và web, ngay khi bạn gõ</string>
+    <string name="tutorial_menu">Menu nhấn giữ</string>
+    <string name="tutorial_menu_summary">Nhấn giữ thanh để mở các hành động bạn dùng nhiều nhất</string>
+    <string name="tutorial_actions">Chọn tác dụng của từng cử chỉ</string>
+    <string name="tutorial_actions_summary">Chạm, giữ và vuốt, cho mọi ứng dụng hoặc chỉ một</string>
+    <string name="tutorial_appearance">Thanh theo cách của bạn</string>
+    <string name="tutorial_appearance_summary">Cài đặt sẵn, kích thước, hình dạng, màu sắc và vị trí</string>
+    <string name="tutorial_visibility">Để thanh không gây vướng</string>
+    <string name="tutorial_visibility_summary">Ẩn thanh trong một số ứng dụng, khi bạn gõ, hoặc đến khi phát phương tiện</string>
+</resources>

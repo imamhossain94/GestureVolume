@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:452px;height:200px">
+<script type="module">
+import { loadIcons, fontsReady } from '../kit/core.js';
+import { PHONE_ICONS } from '../kit/phone.js';
+import { M3_ICONS } from '../kit/m3.js';
+import * as A from '../kit/appearance2.js';
+window.sceneReady = (async () => {
+  await loadIcons([...new Set([...PHONE_ICONS, ...M3_ICONS, ...A.APPEARANCE2_ICONS])]); await fontsReady();
+  const dups = [];
+  const names = (el) => { const l = [...el.querySelectorAll('[data-target]')].map((t) => t.dataset.target); l.forEach((x, i) => { if (l.indexOf(x) !== i) dups.push(x); }); return [...new Set(l)]; };
+  const all = new Set();
+  const out = [];
+  const add = (label, el) => { const n = names(el); n.forEach((x) => all.add(x)); out.push(`${label}: ${n.join(' ')}`); };
+  for (const preset of A.PRESET_IDS) for (const look of [{}, { dynamic: false }, { same: true, dynamic: false }, { showIcon: true }]) {
+    names(A.appearanceScreenFull({ preset, look, open: ['content', 'size', 'colours', 'behaviour', 'position'], perCorner: true })).forEach((x) => all.add(x));
+    names(A.appearanceScreenFull({ preset, look: { ...look, shape: 'tab' }, open: 'size' })).forEach((x) => all.add(x));
+  }
+  out.push('APPEARANCE: ' + [...all].join(' '));
+  add('UNSAVED', A.unsavedChangesDialog({}));
+  add('ICON', A.iconPickerDialog({}));
+  add('COLOR', A.colorPickerDialog({}));
+  add('EDITOR', A.placementEditor({}));
+  const vis = new Set();
+  for (const o of [{ accessibility: false }, { query: 'm' }, { tab: 'hidden' }]) names(A.visibilityScreenFull(o)).forEach((x) => vis.add(x));
+  out.push('VISIBILITY: ' + [...vis].join(' '));
+  out.push('ICONS: ' + A.APPEARANCE2_ICONS.length + ' duplicates: ' + JSON.stringify([...new Set(dups)]));
+  console.warn(out.join('\n'));
+  window.scene = { width: 452, height: 200, duration: 0, seek() {} };
+})();
+</script></body></html>

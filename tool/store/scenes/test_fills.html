@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#fff;width:1330px;height:960px"><div id="grid" style="display:flex;flex-wrap:wrap;gap:14px 10px;padding:16px;width:620px;transform-origin:0 0"></div>
+<script type="module">
+import { fontsReady } from '../kit/core.js';
+import { fillPanel } from '../kit/panelfills.js';
+import '../kit/pictorialfills.js';
+import { FILLS, preparePanelSettings, normalizeFill } from '../kit/panelsettings.js';
+const q = new URLSearchParams(location.search);
+const level = +(q.get('level') || 0.62);
+window.sceneReady = (async () => {
+  await preparePanelSettings(); await fontsReady();
+  const grid = document.getElementById('grid');
+  grid.style.transform = `scale(${+(q.get('zoom') || 2)})`;
+  const tiles = [];
+  for (const f of FILLS) {
+    const cell = document.createElement('div');
+    cell.style.cssText = 'width:52px;display:flex;flex-direction:column;align-items:center;gap:3px';
+    cell.innerHTML = `<div style="position:relative;width:40px;height:80px;border-radius:12px;background:linear-gradient(140deg,#D9CCFF,#9DB2FA)"><div class="h" style="position:absolute;left:8px;top:5px;width:24px;height:70px"></div></div>
+      <div style="font:500 8px Roboto;color:#555;white-space:nowrap">${f.label}</div>`;
+    grid.appendChild(cell);
+    const fill = normalizeFill(f.id);
+    tiles.push({ p: fillPanel(cell.querySelector('.h'), { fill, room: 0 }), id: f.id });
+  }
+  window.scene = { width: 1330, height: 960, duration: 0, seek(t) {
+    for (const { p, id } of tiles) {
+      const cyc = { liquid: 6, waveform: 2.4, sunrise: 9, spectrum: 7, galaxy: 24, silk: 7, 'tide-up': 2.6, aurora: 9, plasma: 9, hologram: 4, nebula: 7, ember: 3, sonar: 3.6, circuit: 3.2, 'dot-matrix': 2, cyberpunk: 2.4, 'matrix-rain': 3, rune: 4.2, 'tide-down': 2.6, stripes: 2.4, fireflies: 8, snowfall: 12, heartbeat: 2.4, neon: 1.6, ocean: 6, gradient: 8, confetti: 6, warp: 3, storm: 6, fireworks: 4.8, pixels: 2 }[id] || 1;
+      const paced = t * (0.55 + 1.05 * level);
+      p.draw({ value: level, t, fillTime: 7 + paced, phase: (paced / cyc) % 1, fullS: -1, stepS: -1 });
+    }
+  } };
+})();
+</script></body></html>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video tutorials: the screen that lists them, the row at the top of the FAQ that leads there,
+         and the play button in a feature screen's top bar. The videos themselves are in English. -->
+    <string name="tutorials">Видеоуроки</string>
+    <string name="tutorials_summary">Короткое видео о каждой части приложения</string>
+    <string name="tutorials_intro">Каждое видео открывается в YouTube и длится около минуты. Текст в видео — на английском.</string>
+    <!-- Read out for the play button in a screen's top bar. %1$s: the video's title, e.g. The Deck. -->
+    <string name="tutorial_watch">Смотреть видео: %1$s</string>
+    <string name="tutorial_cannot_open">На этом телефоне нет приложения, которое может открыть видео</string>
+
+    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <string name="tutorial_getting_started">Начало работы</string>
+    <string name="tutorial_getting_started_summary">Тур, единственное нужное разрешение и включение</string>
+    <string name="tutorial_swipe_volume">Громкость одним свайпом</string>
+    <string name="tutorial_swipe_volume_summary">Круглая кнопка: свайп, касание, перемещение</string>
+    <string name="tutorial_quick_slider">Быстрый ползунок</string>
+    <string name="tutorial_quick_slider_summary">Дорожка громкости и яркости, которая следует за пальцем</string>
+    <string name="tutorial_deck">Дек</string>
+    <string name="tutorial_deck_summary">Ваши приложения, контакты и инструменты — один свайп внутрь от полосы</string>
+    <string name="tutorial_search">Поиск в Деке</string>
+    <string name="tutorial_search_summary">Приложения, контакты быстрого набора, вычисления и веб — прямо при наборе</string>
+    <string name="tutorial_menu">Меню долгого нажатия</string>
+    <string name="tutorial_menu_summary">Удерживайте полосу, чтобы открыть самые нужные действия</string>
+    <string name="tutorial_actions">Выберите, что делает каждый жест</string>
+    <string name="tutorial_actions_summary">Нажатия, удержания и свайпы — для всех приложений или для одного</string>
+    <string name="tutorial_appearance">Полоса на ваш вкус</string>
+    <string name="tutorial_appearance_summary">Пресеты, размер, форма, цвет и положение</string>
+    <string name="tutorial_visibility">Чтобы не мешала</string>
+    <string name="tutorial_visibility_summary">Скрывайте полосу в некоторых приложениях, при наборе текста или пока не играет медиа</string>
+</resources>

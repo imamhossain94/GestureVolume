@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="margin:0"><div id="root"></div>
+<script type="module">
+import { buildTutorial } from '../kit/tutorial.js';
+const q = new URLSearchParams(location.search);
+window.sceneReady = (async () => {
+  const id = q.get('id');
+  const mod = await import(`../kit/tutorials/${id}.js`);
+  window.scene = await buildTutorial(document.getElementById('root'), id, mod.script, { icons: mod.ICONS || [], prepare: mod.prepare, wallpaper: mod.WALLPAPER || 'dusk', thumb: q.get('thumb') ? mod.THUMB : null });
+})();
+</script></body></html>

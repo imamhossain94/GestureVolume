@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Animation
 import com.newagedevs.gesturevolume.ui.components.ChoiceChip
 import com.newagedevs.gesturevolume.ui.components.HandleLook
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
+import com.newagedevs.gesturevolume.ui.components.Tutorial
+import com.newagedevs.gesturevolume.ui.components.TutorialAction
 import com.newagedevs.gesturevolume.ui.util.permissionsRoute
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 
@@ -205,7 +207,10 @@ fun DeckScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
-                actions = { HowItWorksAction(gestureDemo) },
+                actions = {
+                    TutorialAction(Tutorial.DECK)
+                    HowItWorksAction(gestureDemo)
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer

@@ -1,0 +1,181 @@
+{
+ "series": {
+  "n": 1,
+  "of": 9,
+  "id": "getting-started",
+  "title": "Getting started",
+  "sub": "Set it up and give it the one permission it needs",
+  "next": "Volume with a swipe"
+ },
+ "duration": 63.05,
+ "chapters": [
+  {
+   "t": 0,
+   "title": "The welcome tour"
+  },
+  {
+   "t": 29.15,
+   "title": "Permissions"
+  },
+  {
+   "t": 48.55,
+   "title": "Switch it on"
+  }
+ ],
+ "steps": [
+  {
+   "at": 4.15,
+   "end": 10.350000000000001,
+   "title": "Open Gesture Volume",
+   "text": "The first time you open it, a short tour shows how the bar works, one page at a time.",
+   "chapter": "The welcome tour"
+  },
+  {
+   "at": 10.350000000000001,
+   "end": 20.55,
+   "title": "Pick a style",
+   "text": "Simple puts a round button on the edge for volume. Advanced adds the Dock, the Quick slider, the Deck and a long-press menu. You can switch any time.",
+   "chapter": "The welcome tour"
+  },
+  {
+   "at": 20.55,
+   "end": 29.15,
+   "title": "Learn the moves",
+   "text": "The next pages play each gesture out: swipe for volume, tap for the volume panel, hold to move it.",
+   "chapter": "The welcome tour"
+  },
+  {
+   "at": 29.15,
+   "end": 39.75,
+   "title": "Allow the bar on screen",
+   "text": "Tap Allow, switch on Allow display over other apps, and come back. That one switch lets the bar sit on top of your apps.",
+   "chapter": "Permissions"
+  },
+  {
+   "at": 39.75,
+   "end": 48.55,
+   "title": "Notifications, if you like",
+   "text": "Optional: allow notifications and the bar’s controls wait in your notification shade, even with the app closed.",
+   "chapter": "Permissions"
+  },
+  {
+   "at": 48.55,
+   "end": 57.55,
+   "title": "Turn on the service",
+   "text": "Tap Service inactive to switch the bar on. Go home, and the round button is waiting on the edge.",
+   "chapter": "Switch it on"
+  }
+ ],
+ "subtitles": [
+  {
+   "a": 0.4,
+   "b": 1.1357575757575757,
+   "text": "Getting started."
+  },
+  {
+   "a": 1.1757575757575758,
+   "b": 3.56,
+   "text": "Set it up and give it the\none permission it needs."
+  },
+  {
+   "a": 4.300000000000001,
+   "b": 5.394615384615386,
+   "text": "Open Gesture Volume."
+  },
+  {
+   "a": 5.434615384615386,
+   "b": 6.926346153846155,
+   "text": "The first time you open it,"
+  },
+  {
+   "a": 6.966346153846155,
+   "b": 10.160000000000002,
+   "text": "a short tour shows how the\nbar works, one page at a time."
+  },
+  {
+   "a": 10.500000000000002,
+   "b": 11.264375000000003,
+   "text": "Pick a style."
+  },
+  {
+   "a": 11.304375000000002,
+   "b": 14.358125000000003,
+   "text": "Simple puts a round button\non the edge for volume."
+  },
+  {
+   "a": 14.398125000000002,
+   "b": 18.875000000000004,
+   "text": "Advanced adds the Dock, the Quick\nslider, the Deck and a long-press menu."
+  },
+  {
+   "a": 18.915000000000003,
+   "b": 20.360000000000003,
+   "text": "You can switch any time."
+  },
+  {
+   "a": 20.7,
+   "b": 21.835221238938054,
+   "text": "Learn the moves."
+  },
+  {
+   "a": 21.875221238938053,
+   "b": 25.875044247787613,
+   "text": "The next pages play each\ngesture out: swipe for volume,"
+  },
+  {
+   "a": 25.915044247787613,
+   "b": 28.960000000000004,
+   "text": "tap for the volume panel, hold to move it."
+  },
+  {
+   "a": 29.299999999999997,
+   "b": 30.988671328671327,
+   "text": "Allow the bar on screen."
+  },
+  {
+   "a": 31.028671328671326,
+   "b": 35.742517482517485,
+   "text": "Tap Allow, switch on Allow display\nover other apps, and come back."
+  },
+  {
+   "a": 35.782517482517484,
+   "b": 39.56,
+   "text": "That one switch lets the\nbar sit on top of your apps."
+  },
+  {
+   "a": 39.9,
+   "b": 42.1556204379562,
+   "text": "Notifications, if you like. Optional:"
+  },
+  {
+   "a": 42.1956204379562,
+   "b": 46.80890510948905,
+   "text": "allow notifications and the bar’s\ncontrols wait in your notification shade,"
+  },
+  {
+   "a": 46.848905109489046,
+   "b": 48.35999999999999,
+   "text": "even with the app closed."
+  },
+  {
+   "a": 48.699999999999996,
+   "b": 50.173043478260865,
+   "text": "Turn on the service."
+  },
+  {
+   "a": 50.213043478260865,
+   "b": 53.350434782608694,
+   "text": "Tap Service inactive to switch the bar on."
+  },
+  {
+   "a": 53.39043478260869,
+   "b": 57.36,
+   "text": "Go home, and the round button\nis waiting on the edge."
+  },
+  {
+   "a": 58.24999999999999,
+   "b": 62.71,
+   "text": "Up next: Volume with a swipe."
+  }
+ ]
+}

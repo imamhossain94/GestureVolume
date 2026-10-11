@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1600px;height:955px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, PHONE_ICONS } from '../kit/phone.js';
+import * as D from '../kit/decksettings.js';
+window.sceneReady = (async () => {
+  await loadIcons([...PHONE_ICONS, ...D.DECKSETTINGS_ICONS]); await fontsReady();
+  const contacts = [{ name: 'Mom', number: '+1 555 0132', via: 'call' }, { name: 'Alex Kim', number: '+1 555 0148', via: 'sms' }];
+  const notes = [{ text: 'Pick up the dry cleaning before 6', time: '10/9/26, 3:45 PM' }];
+  const builders = {
+    deck: () => D.deckScreen({}),
+    deckAll: () => D.deckScreen({ open: ['content', 'size', 'colours', 'animation', 'behaviour'] }),
+    tiles: () => D.deckTilesScreen({}),
+    apps: () => D.appShortcutsScreen({ pinned: ['camera', 'music', 'maps'] }),
+    dial: () => D.quickDialScreen({ contacts, dialog: { name: 'Sam', number: '555', via: 'whatsapp' } }),
+    search: () => D.searchSettingsScreen({}),
+    notes: () => D.notesScreen({ notes, dialog: { text: 'x' } }),
+  };
+  const p = new Phone({ wallpaper: null, radius: 30, darkIcons: true }); p.wall.style.display = 'none';
+  document.getElementById('row').appendChild(p.el);
+  const report = {};
+  for (const [k, b] of Object.entries(builders)) {
+    const el = b(); p.below.appendChild(el);
+    const sc = el.querySelector('.scroll'), cont = el.querySelector('.scroll-content');
+    const names = [...el.querySelectorAll('[data-target]')].map((e) => e.dataset.target);
+    const dup = names.filter((n, i) => names.indexOf(n) !== i);
+    report[k] = { viewport: Math.round(sc.getBoundingClientRect().height), content: Math.round(cont.getBoundingClientRect().height), maxScroll: Math.round(cont.getBoundingClientRect().height - sc.getBoundingClientRect().height), targets: names.length, dup, sample: names.slice(0, 200) };
+    el.remove();
+  }
+  window.report = report;
+  // The report, printed beside the phone: scroll extents, duplicate names (none expected), targets.
+  const pre = document.createElement('pre');
+  pre.style.cssText = 'margin:0;color:#ddd;font:11px/1.35 "Roboto Mono",monospace;white-space:pre-wrap;width:1100px';
+  pre.textContent = Object.entries(report).map(([k, v]) => `${k}: viewport ${v.viewport}, content ${v.content}, max scroll ${v.maxScroll}, ${v.targets} targets${v.dup.length ? ', DUPLICATES ' + v.dup.join(' ') : ''}\n  ${v.sample.join(' ')}`).join('\n\n');
+  document.getElementById('row').appendChild(pre);
+  window.scene = { width: 1600, height: 955, duration: 0, seek() {} };
+})();
+</script></body></html>

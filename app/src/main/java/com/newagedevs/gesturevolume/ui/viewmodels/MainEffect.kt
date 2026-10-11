@@ -32,6 +32,7 @@ sealed class MainEffect {
     object ShowLanguageDialog : MainEffect()
     object NavigateToTroubleshoot : MainEffect()
     object NavigateToFaq : MainEffect()
+    object NavigateToTutorials : MainEffect()
     object NavigateToWhatsNew : MainEffect()
     object NavigateToTour : MainEffect()
 

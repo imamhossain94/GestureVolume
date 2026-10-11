@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1748px;height:955px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, PHONE_ICONS } from '../kit/phone.js';
+import { searchSettingsScreen, notesScreen, DECKSETTINGS_ICONS } from '../kit/decksettings.js';
+window.sceneReady = (async () => {
+  await loadIcons([...PHONE_ICONS, ...DECKSETTINGS_ICONS]); await fontsReady();
+  const notes = [{ text: 'Pick up the dry cleaning before 6', time: '10/9/26, 3:45 PM' }, { text: 'Gate code 4417 — ring twice, then wait for Priya to come down', time: '10/8/26, 9:12 AM' }, { text: 'Wi-Fi password: maple-river-42', time: '10/2/26, 7:30 PM' }];
+  const screens = [
+    searchSettingsScreen({}),
+    searchSettingsScreen({ providers: ['google', 'maps', 'wikipedia', 'duckduckgo'], defaultProvider: 'wikipedia', numberAction: 'sms', directCall: 1, phoneNote: true, prefix: '44', scroll: 330 }),
+    notesScreen({ draft: 'Call Sam about Saturday', focused: true, notes }),
+    notesScreen({ notes, dialog: { text: 'Wi-Fi password: maple-river-42' } }),
+  ];
+  for (const s of screens) {
+    const p = new Phone({ wallpaper: null, radius: 30, darkIcons: true }); p.wall.style.display = 'none';
+    p.below.appendChild(s); document.getElementById('row').appendChild(p.el);
+  }
+  await imagesReady();
+  window.scene = { width: 1748, height: 955, duration: 0, seek() {} };
+})();
+</script></body></html>

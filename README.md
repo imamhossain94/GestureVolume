@@ -86,6 +86,9 @@ the Deck, so neither host carries a copy.
 - 15 languages: English, Bangla, Arabic, Hindi, Korean, Japanese, Chinese, German, Spanish,
   French, Italian, Portuguese, Russian, Turkish, Vietnamese.
 - Light, dark and system themes.
+- Video tutorials: nine short YouTube videos, listed under Video tutorials in the drawer and at
+  the top of the FAQ, and a ▶ in each feature screen's top bar opens that screen's own. They open
+  in YouTube; nothing is embedded.
 - A one-time Pro purchase removes ads.
 
 ---

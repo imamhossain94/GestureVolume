@@ -1,0 +1,167 @@
+{
+ "series": {
+  "n": 2,
+  "of": 9,
+  "id": "swipe-volume",
+  "title": "Volume with a swipe",
+  "sub": "The round button: swipe it, tap it, move it",
+  "next": "The Quick slider"
+ },
+ "duration": 50.65,
+ "chapters": [
+  {
+   "t": 0,
+   "title": "Swipe for volume"
+  },
+  {
+   "t": 23.75,
+   "title": "Tap it, hold it, move it"
+  }
+ ],
+ "steps": [
+  {
+   "at": 4.15,
+   "end": 9.55,
+   "title": "Meet the round button",
+   "text": "In the Simple style, a small round button sits on the edge of your screen, on top of every app.",
+   "chapter": "Swipe for volume"
+  },
+  {
+   "at": 9.55,
+   "end": 17.35,
+   "title": "Swipe up on it",
+   "text": "Each bit you swipe turns the volume up a step. The level shows on the button, and Android’s volume slider comes up beside it.",
+   "chapter": "Swipe for volume"
+  },
+  {
+   "at": 17.35,
+   "end": 23.75,
+   "title": "Swipe down to turn it down",
+   "text": "Swipe the other way and it steps back down just as quickly.",
+   "chapter": "Swipe for volume"
+  },
+  {
+   "at": 23.75,
+   "end": 30.95,
+   "title": "Tap it for the volume slider",
+   "text": "A tap brings up Android’s own volume slider, ready to drag.",
+   "chapter": "Tap it, hold it, move it"
+  },
+  {
+   "at": 30.95,
+   "end": 37.55,
+   "title": "Hold it to pick it up",
+   "text": "Keep your finger on it until it dims and shows arrows. The long-press menu opens too, and steps aside as soon as you move.",
+   "chapter": "Tap it, hold it, move it"
+  },
+  {
+   "at": 37.55,
+   "end": 45.15,
+   "title": "Drag it anywhere, then let go",
+   "text": "Up or down the edge, or across to the other side. Let go and it settles on the nearer edge.",
+   "chapter": "Tap it, hold it, move it"
+  }
+ ],
+ "subtitles": [
+  {
+   "a": 0.4,
+   "b": 1.3599999999999999,
+   "text": "Volume with a swipe."
+  },
+  {
+   "a": 1.4,
+   "b": 3.56,
+   "text": "The round button: swipe\nit, tap it, move it."
+  },
+  {
+   "a": 4.300000000000001,
+   "b": 5.227241379310345,
+   "text": "Meet the round button."
+  },
+  {
+   "a": 5.267241379310345,
+   "b": 8.480689655172416,
+   "text": "In the Simple style, a small round\nbutton sits on the edge of your screen,"
+  },
+  {
+   "a": 8.520689655172415,
+   "b": 9.360000000000001,
+   "text": "on top of every app."
+  },
+  {
+   "a": 9.700000000000001,
+   "b": 10.47521739130435,
+   "text": "Swipe up on it."
+  },
+  {
+   "a": 10.515217391304349,
+   "b": 12.97521739130435,
+   "text": "Each bit you swipe turns\nthe volume up a step."
+  },
+  {
+   "a": 13.015217391304349,
+   "b": 14.605652173913045,
+   "text": "The level shows on the button,"
+  },
+  {
+   "a": 14.645652173913044,
+   "b": 17.160000000000004,
+   "text": "and Android’s volume\nslider comes up beside it."
+  },
+  {
+   "a": 17.5,
+   "b": 19.37511627906977,
+   "text": "Swipe down to turn it down."
+  },
+  {
+   "a": 19.415116279069768,
+   "b": 23.560000000000002,
+   "text": "Swipe the other way and it\nsteps back down just as quickly."
+  },
+  {
+   "a": 23.9,
+   "b": 26.133863636363635,
+   "text": "Tap it for the volume slider."
+  },
+  {
+   "a": 26.173863636363635,
+   "b": 30.76,
+   "text": "A tap brings up Android’s own\nvolume slider, ready to drag."
+  },
+  {
+   "a": 31.099999999999998,
+   "b": 32.02923076923077,
+   "text": "Hold it to pick it up."
+  },
+  {
+   "a": 32.06923076923077,
+   "b": 34.40825174825175,
+   "text": "Keep your finger on it until\nit dims and shows arrows."
+  },
+  {
+   "a": 34.44825174825175,
+   "b": 37.36,
+   "text": "The long-press menu opens too, and\nsteps aside as soon as you move."
+  },
+  {
+   "a": 37.699999999999996,
+   "b": 39.485,
+   "text": "Drag it anywhere, then let go."
+  },
+  {
+   "a": 39.525,
+   "b": 42.465833333333336,
+   "text": "Up or down the edge, or\nacross to the other side."
+  },
+  {
+   "a": 42.505833333333335,
+   "b": 44.96,
+   "text": "Let go and it settles on the nearer edge."
+  },
+  {
+   "a": 45.849999999999994,
+   "b": 50.31,
+   "text": "Up next: The Quick slider."
+  }
+ ]
+}

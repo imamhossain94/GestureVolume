@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video tutorials: the screen that lists them, the row at the top of the FAQ that leads there,
+         and the play button in a feature screen's top bar. The videos themselves are in English. -->
+    <string name="tutorials">動画チュートリアル</string>
+    <string name="tutorials_summary">アプリの各機能を短い動画で紹介</string>
+    <string name="tutorials_intro">動画は YouTube で開き、どれも1分ほどです。動画内のテキストは英語です。</string>
+    <!-- Read out for the play button in a screen's top bar. %1$s: the video's title, e.g. The Deck. -->
+    <string name="tutorial_watch">動画を見る：%1$s</string>
+    <string name="tutorial_cannot_open">この端末には動画を開けるアプリがありません</string>
+
+    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <string name="tutorial_getting_started">はじめに</string>
+    <string name="tutorial_getting_started_summary">ツアー、必要な唯一の権限、オンにする方法</string>
+    <string name="tutorial_swipe_volume">スワイプで音量</string>
+    <string name="tutorial_swipe_volume_summary">丸いボタン：スワイプ、タップ、移動</string>
+    <string name="tutorial_quick_slider">クイックスライダー</string>
+    <string name="tutorial_quick_slider_summary">指の動きについてくる音量と明るさのトラック</string>
+    <string name="tutorial_deck">デッキ</string>
+    <string name="tutorial_deck_summary">アプリ、連絡先、ツールを、バーから内側へのスワイプひとつで</string>
+    <string name="tutorial_search">デッキで検索</string>
+    <string name="tutorial_search_summary">アプリ、クイックダイヤルの連絡先、計算、ウェブを入力しながら</string>
+    <string name="tutorial_menu">長押しメニュー</string>
+    <string name="tutorial_menu_summary">バーを長押しして、よく使うアクションをすぐに</string>
+    <string name="tutorial_actions">ジェスチャーごとの動作を選ぶ</string>
+    <string name="tutorial_actions_summary">タップ、長押し、スワイプを、全アプリ共通でも特定のアプリだけでも</string>
+    <string name="tutorial_appearance">バーを自分好みに</string>
+    <string name="tutorial_appearance_summary">プリセット、サイズ、形、色、表示位置</string>
+    <string name="tutorial_visibility">邪魔にならないように</string>
+    <string name="tutorial_visibility_summary">特定のアプリや入力中、またはメディアが再生されるまでバーを隠す</string>
+</resources>

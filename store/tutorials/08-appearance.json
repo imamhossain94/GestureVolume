@@ -1,0 +1,166 @@
+{
+ "series": {
+  "n": 8,
+  "of": 9,
+  "id": "appearance",
+  "title": "Make the bar yours",
+  "sub": "Presets, size, shape, colour and where it sits",
+  "next": "Keep it out of the way"
+ },
+ "duration": 59.45,
+ "chapters": [
+  {
+   "t": 0,
+   "title": "Presets"
+  },
+  {
+   "t": 19.35,
+   "title": "Size, shape and colour"
+  },
+  {
+   "t": 37.75,
+   "title": "Where it sits"
+  }
+ ],
+ "steps": [
+  {
+   "at": 4.15,
+   "end": 10.55,
+   "title": "Open Appearance",
+   "text": "In Gesture Volume, tap Appearance. The preview at the top shows the bar on a phone.",
+   "chapter": "Presets"
+  },
+  {
+   "at": 10.55,
+   "end": 19.35,
+   "title": "Start from a preset",
+   "text": "Quick presets set the whole look at once: Classic, Dock, Edge and Bold.",
+   "chapter": "Presets"
+  },
+  {
+   "at": 19.35,
+   "end": 28.35,
+   "title": "Size and shape",
+   "text": "Open Size & shape and drag Width and Height. Rounded or Tab sets how the ends look.",
+   "chapter": "Size, shape and colour"
+  },
+  {
+   "at": 28.35,
+   "end": 37.75,
+   "title": "Pick a colour",
+   "text": "Under Colours, tap Fill and choose a colour. The preview takes it straight away.",
+   "chapter": "Size, shape and colour"
+  },
+  {
+   "at": 37.75,
+   "end": 45.75,
+   "title": "Choose a side",
+   "text": "Under Position, put it on the left or the right, and set how far down the edge it sits.",
+   "chapter": "Where it sits"
+  },
+  {
+   "at": 45.75,
+   "end": 53.95,
+   "title": "Save it",
+   "text": "Tap Save. Go home, and your bar is on the edge just as you made it.",
+   "chapter": "Where it sits"
+  }
+ ],
+ "subtitles": [
+  {
+   "a": 0.4,
+   "b": 1.2812121212121212,
+   "text": "Make the bar yours."
+  },
+  {
+   "a": 1.3212121212121213,
+   "b": 3.56,
+   "text": "Presets, size, shape,\ncolour and where it sits."
+  },
+  {
+   "a": 4.300000000000001,
+   "b": 5.255918367346939,
+   "text": "Open Appearance."
+  },
+  {
+   "a": 5.295918367346939,
+   "b": 7.372244897959184,
+   "text": "In Gesture Volume, tap Appearance."
+  },
+  {
+   "a": 7.412244897959184,
+   "b": 10.36,
+   "text": "The preview at the top\nshows the bar on a phone."
+  },
+  {
+   "a": 10.700000000000001,
+   "b": 12.52813186813187,
+   "text": "Start from a preset."
+  },
+  {
+   "a": 12.56813186813187,
+   "b": 19.160000000000004,
+   "text": "Quick presets set the whole look at\nonce: Classic, Dock, Edge and Bold."
+  },
+  {
+   "a": 19.5,
+   "b": 20.80536082474227,
+   "text": "Size and shape."
+  },
+  {
+   "a": 20.84536082474227,
+   "b": 24.75175257731959,
+   "text": "Open Size & shape and\ndrag Width and Height."
+  },
+  {
+   "a": 24.79175257731959,
+   "b": 28.160000000000004,
+   "text": "Rounded or Tab sets how the ends look."
+  },
+  {
+   "a": 28.5,
+   "b": 29.82989247311828,
+   "text": "Pick a colour."
+  },
+  {
+   "a": 29.86989247311828,
+   "b": 34.135268817204306,
+   "text": "Under Colours, tap Fill\nand choose a colour."
+  },
+  {
+   "a": 34.175268817204305,
+   "b": 37.56,
+   "text": "The preview takes it straight away."
+  },
+  {
+   "a": 37.9,
+   "b": 38.938,
+   "text": "Choose a side."
+  },
+  {
+   "a": 38.978,
+   "b": 42.63400000000001,
+   "text": "Under Position, put it\non the left or the right,"
+  },
+  {
+   "a": 42.67400000000001,
+   "b": 45.56000000000001,
+   "text": "and set how far down the edge it sits."
+  },
+  {
+   "a": 45.9,
+   "b": 47.756,
+   "text": "Save it. Tap Save."
+  },
+  {
+   "a": 47.796,
+   "b": 53.760000000000005,
+   "text": "Go home, and your bar is on\nthe edge just as you made it."
+  },
+  {
+   "a": 54.65,
+   "b": 59.11000000000001,
+   "text": "Up next: Keep it out of the way."
+  }
+ ]
+}

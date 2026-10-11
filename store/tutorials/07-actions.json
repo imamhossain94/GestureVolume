@@ -1,0 +1,176 @@
+{
+ "series": {
+  "n": 7,
+  "of": 9,
+  "id": "actions",
+  "title": "Choose what each gesture does",
+  "sub": "Taps, holds and swipes, for every app or just one",
+  "next": "Make the bar yours"
+ },
+ "duration": 57.25,
+ "chapters": [
+  {
+   "t": 0,
+   "title": "The Actions screen"
+  },
+  {
+   "t": 19.15,
+   "title": "Change an action"
+  },
+  {
+   "t": 33.55,
+   "title": "Gestures for one app"
+  }
+ ],
+ "steps": [
+  {
+   "at": 4.15,
+   "end": 10.75,
+   "title": "Open Actions",
+   "text": "In Gesture Volume, tap Actions. Every tap, hold and swipe the bar understands is listed here.",
+   "chapter": "The Actions screen"
+  },
+  {
+   "at": 10.75,
+   "end": 19.15,
+   "title": "Try a gesture on the pad",
+   "text": "The pad at the top holds your real bar. Try a gesture on it, and the line below says what that gesture does.",
+   "chapter": "The Actions screen"
+  },
+  {
+   "at": 19.15,
+   "end": 24.95,
+   "title": "Pick a gesture to change",
+   "text": "Tap a gesture to change it. Double tap does nothing yet, so give it a job.",
+   "chapter": "Change an action"
+  },
+  {
+   "at": 24.95,
+   "end": 33.55,
+   "title": "Choose an action",
+   "text": "Actions come in groups: the bar, volume, the Deck, your device, media and system. Tap one and you are done.",
+   "chapter": "Change an action"
+  },
+  {
+   "at": 33.55,
+   "end": 42.75,
+   "title": "Give an app its own gestures",
+   "text": "Under More, open Gestures for chosen apps, tap Add and pick the app.",
+   "chapter": "Gestures for one app"
+  },
+  {
+   "at": 42.75,
+   "end": 51.75,
+   "title": "Change a gesture just there",
+   "text": "Set Swipe up to Increase brightness. In Video, swiping up now brightens the screen; everywhere else it works as before.",
+   "chapter": "Gestures for one app"
+  }
+ ],
+ "subtitles": [
+  {
+   "a": 0.4,
+   "b": 1.56,
+   "text": "Choose what each gesture does."
+  },
+  {
+   "a": 1.6,
+   "b": 3.56,
+   "text": "Taps, holds and swipes,\nfor every app or just one."
+  },
+  {
+   "a": 4.300000000000001,
+   "b": 5.040000000000001,
+   "text": "Open Actions."
+  },
+  {
+   "a": 5.080000000000001,
+   "b": 6.9,
+   "text": "In Gesture Volume, tap Actions."
+  },
+  {
+   "a": 6.94,
+   "b": 10.56,
+   "text": "Every tap, hold and swipe the\nbar understands is listed here."
+  },
+  {
+   "a": 10.9,
+   "b": 12.39409090909091,
+   "text": "Try a gesture on the pad."
+  },
+  {
+   "a": 12.434090909090909,
+   "b": 14.787272727272727,
+   "text": "The pad at the top holds your real bar."
+  },
+  {
+   "a": 14.827272727272726,
+   "b": 18.96,
+   "text": "Try a gesture on it, and the line\nbelow says what that gesture does."
+  },
+  {
+   "a": 19.299999999999997,
+   "b": 20.663061224489795,
+   "text": "Pick a gesture to change."
+  },
+  {
+   "a": 20.703061224489794,
+   "b": 22.178367346938774,
+   "text": "Tap a gesture to change it."
+  },
+  {
+   "a": 22.218367346938773,
+   "b": 24.76,
+   "text": "Double tap does nothing\nyet, so give it a job."
+  },
+  {
+   "a": 25.099999999999998,
+   "b": 26.207154471544715,
+   "text": "Choose an action."
+  },
+  {
+   "a": 26.247154471544714,
+   "b": 31.6730081300813,
+   "text": "Actions come in groups: the bar, volume,\nthe Deck, your device, media and system."
+  },
+  {
+   "a": 31.7130081300813,
+   "b": 33.36,
+   "text": "Tap one and you are done."
+  },
+  {
+   "a": 33.699999999999996,
+   "b": 36.32082474226804,
+   "text": "Give an app its own gestures."
+  },
+  {
+   "a": 36.360824742268036,
+   "b": 42.56,
+   "text": "Under More, open Gestures for chosen\napps, tap Add and pick the app."
+  },
+  {
+   "a": 42.9,
+   "b": 44.54,
+   "text": "Change a gesture just there."
+  },
+  {
+   "a": 44.58,
+   "b": 46.7,
+   "text": "Set Swipe up to Increase brightness."
+  },
+  {
+   "a": 46.74,
+   "b": 49.46,
+   "text": "In Video, swiping up now\nbrightens the screen;"
+  },
+  {
+   "a": 49.5,
+   "b": 51.56,
+   "text": "everywhere else it works as before."
+  },
+  {
+   "a": 52.449999999999996,
+   "b": 56.910000000000004,
+   "text": "Up next: Make the bar yours."
+  }
+ ]
+}

@@ -1,0 +1,82 @@
+1
+00:00:00,400 --> 00:00:01,281
+Make the bar yours.
+
+2
+00:00:01,321 --> 00:00:03,560
+Presets, size, shape,
+colour and where it sits.
+
+3
+00:00:04,300 --> 00:00:05,256
+Open Appearance.
+
+4
+00:00:05,296 --> 00:00:07,372
+In Gesture Volume, tap Appearance.
+
+5
+00:00:07,412 --> 00:00:10,360
+The preview at the top
+shows the bar on a phone.
+
+6
+00:00:10,700 --> 00:00:12,528
+Start from a preset.
+
+7
+00:00:12,568 --> 00:00:19,160
+Quick presets set the whole look at
+once: Classic, Dock, Edge and Bold.
+
+8
+00:00:19,500 --> 00:00:20,805
+Size and shape.
+
+9
+00:00:20,845 --> 00:00:24,752
+Open Size & shape and
+drag Width and Height.
+
+10
+00:00:24,792 --> 00:00:28,160
+Rounded or Tab sets how the ends look.
+
+11
+00:00:28,500 --> 00:00:29,830
+Pick a colour.
+
+12
+00:00:29,870 --> 00:00:34,135
+Under Colours, tap Fill
+and choose a colour.
+
+13
+00:00:34,175 --> 00:00:37,560
+The preview takes it straight away.
+
+14
+00:00:37,900 --> 00:00:38,938
+Choose a side.
+
+15
+00:00:38,978 --> 00:00:42,634
+Under Position, put it
+on the left or the right,
+
+16
+00:00:42,674 --> 00:00:45,560
+and set how far down the edge it sits.
+
+17
+00:00:45,900 --> 00:00:47,756
+Save it. Tap Save.
+
+18
+00:00:47,796 --> 00:00:53,760
+Go home, and your bar is on
+the edge just as you made it.
+
+19
+00:00:54,650 --> 00:00:59,110
+Up next: Keep it out of the way.

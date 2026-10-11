@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1300px;height:960px">
+<div id="row" style="display:flex;gap:24px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, homeScreen, PHONE_ICONS } from '../kit/phone.js';
+window.sceneReady = (async () => {
+  await loadIcons(PHONE_ICONS);
+  await fontsReady();
+  for (const wp of ['dusk', 'ocean', 'sunset']) {
+    const p = new Phone({ wallpaper: wp, radius: 36 });
+    p.below.appendChild(homeScreen());
+    document.getElementById('row').appendChild(p.el);
+  }
+  await imagesReady();
+  window.scene = { width: 1300, height: 960, duration: 0, seek() {} };
+})();
+</script></body></html>

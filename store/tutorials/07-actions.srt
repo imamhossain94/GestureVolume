@@ -1,0 +1,90 @@
+1
+00:00:00,400 --> 00:00:01,560
+Choose what each gesture does.
+
+2
+00:00:01,600 --> 00:00:03,560
+Taps, holds and swipes,
+for every app or just one.
+
+3
+00:00:04,300 --> 00:00:05,040
+Open Actions.
+
+4
+00:00:05,080 --> 00:00:06,900
+In Gesture Volume, tap Actions.
+
+5
+00:00:06,940 --> 00:00:10,560
+Every tap, hold and swipe the
+bar understands is listed here.
+
+6
+00:00:10,900 --> 00:00:12,394
+Try a gesture on the pad.
+
+7
+00:00:12,434 --> 00:00:14,787
+The pad at the top holds your real bar.
+
+8
+00:00:14,827 --> 00:00:18,960
+Try a gesture on it, and the line
+below says what that gesture does.
+
+9
+00:00:19,300 --> 00:00:20,663
+Pick a gesture to change.
+
+10
+00:00:20,703 --> 00:00:22,178
+Tap a gesture to change it.
+
+11
+00:00:22,218 --> 00:00:24,760
+Double tap does nothing
+yet, so give it a job.
+
+12
+00:00:25,100 --> 00:00:26,207
+Choose an action.
+
+13
+00:00:26,247 --> 00:00:31,673
+Actions come in groups: the bar, volume,
+the Deck, your device, media and system.
+
+14
+00:00:31,713 --> 00:00:33,360
+Tap one and you are done.
+
+15
+00:00:33,700 --> 00:00:36,321
+Give an app its own gestures.
+
+16
+00:00:36,361 --> 00:00:42,560
+Under More, open Gestures for chosen
+apps, tap Add and pick the app.
+
+17
+00:00:42,900 --> 00:00:44,540
+Change a gesture just there.
+
+18
+00:00:44,580 --> 00:00:46,700
+Set Swipe up to Increase brightness.
+
+19
+00:00:46,740 --> 00:00:49,460
+In Video, swiping up now
+brightens the screen;
+
+20
+00:00:49,500 --> 00:00:51,560
+everywhere else it works as before.
+
+21
+00:00:52,450 --> 00:00:56,910
+Up next: Make the bar yours.

@@ -1,0 +1,237 @@
+{
+ "series": {
+  "n": 4,
+  "of": 9,
+  "id": "deck",
+  "title": "The Deck",
+  "sub": "Your apps, people and tools, one swipe in from the bar",
+  "next": "Search in the Deck"
+ },
+ "duration": 77.85000000000001,
+ "chapters": [
+  {
+   "t": 0,
+   "title": "Open the Deck"
+  },
+  {
+   "t": 37.95,
+   "title": "Choose what is in it"
+  },
+  {
+   "t": 62.150000000000006,
+   "title": "Heads or tails"
+  }
+ ],
+ "steps": [
+  {
+   "at": 4.15,
+   "end": 11.55,
+   "title": "Swipe in from the tab",
+   "text": "Swipe from the Dock toward the middle of the screen. Out slides the Deck: your people, your apps and your tools.",
+   "chapter": "Open the Deck"
+  },
+  {
+   "at": 11.55,
+   "end": 17.55,
+   "title": "Tap a tile",
+   "text": "Some tiles act at once. Flashlight switches the torch on, and its tile lights up.",
+   "chapter": "Open the Deck"
+  },
+  {
+   "at": 17.55,
+   "end": 24.950000000000003,
+   "title": "Or open a card",
+   "text": "Others open a card beside the strip. Volume has sliders for media, ringtone and alarm.",
+   "chapter": "Open the Deck"
+  },
+  {
+   "at": 24.950000000000003,
+   "end": 32.35,
+   "title": "Start a timer",
+   "text": "Tap Timer, pick a length and Start. It keeps counting after the Deck closes.",
+   "chapter": "Open the Deck"
+  },
+  {
+   "at": 32.35,
+   "end": 37.95,
+   "title": "Close it",
+   "text": "Tap anywhere outside, or press Back. Left alone, it closes itself after 10 seconds.",
+   "chapter": "Open the Deck"
+  },
+  {
+   "at": 37.95,
+   "end": 44.550000000000004,
+   "title": "Open the Deck settings",
+   "text": "In Gesture Volume, under Advanced features, tap Deck.",
+   "chapter": "Choose what is in it"
+  },
+  {
+   "at": 44.550000000000004,
+   "end": 53.550000000000004,
+   "title": "Turn tiles on or off",
+   "text": "Tap Deck tiles and switch on the ones you want. Coin toss and Dice start off; Screenshot can go.",
+   "chapter": "Choose what is in it"
+  },
+  {
+   "at": 53.550000000000004,
+   "end": 62.150000000000006,
+   "title": "Add people to call",
+   "text": "Back on the Deck screen, Quick dial puts people in the strip: one tap calls them or opens a message.",
+   "chapter": "Choose what is in it"
+  },
+  {
+   "at": 62.150000000000006,
+   "end": 72.35000000000001,
+   "title": "Toss a coin",
+   "text": "Coin toss now waits at the end of the strip: scroll down to it, tap it, then tap the coin.",
+   "chapter": "Heads or tails"
+  }
+ ],
+ "subtitles": [
+  {
+   "a": 0.4,
+   "b": 0.81,
+   "text": "The Deck."
+  },
+  {
+   "a": 0.8500000000000001,
+   "b": 3.56,
+   "text": "Your apps, people and tools,\none swipe in from the bar."
+  },
+  {
+   "a": 4.300000000000001,
+   "b": 5.434436090225565,
+   "text": "Swipe in from the tab."
+  },
+  {
+   "a": 5.474436090225565,
+   "b": 8.210375939849627,
+   "text": "Swipe from the Dock toward\nthe middle of the screen."
+  },
+  {
+   "a": 8.250375939849626,
+   "b": 11.360000000000003,
+   "text": "Out slides the Deck: your\npeople, your apps and your tools."
+  },
+  {
+   "a": 11.700000000000001,
+   "b": 12.34901098901099,
+   "text": "Tap a tile."
+  },
+  {
+   "a": 12.38901098901099,
+   "b": 13.789670329670331,
+   "text": "Some tiles act at once."
+  },
+  {
+   "a": 13.82967032967033,
+   "b": 17.360000000000003,
+   "text": "Flashlight switches the torch\non, and its tile lights up."
+  },
+  {
+   "a": 17.7,
+   "b": 18.725,
+   "text": "Or open a card."
+  },
+  {
+   "a": 18.765,
+   "b": 21.281000000000002,
+   "text": "Others open a card beside the strip."
+  },
+  {
+   "a": 21.321,
+   "b": 24.760000000000005,
+   "text": "Volume has sliders for\nmedia, ringtone and alarm."
+  },
+  {
+   "a": 25.1,
+   "b": 26.176853932584272,
+   "text": "Start a timer."
+  },
+  {
+   "a": 26.21685393258427,
+   "b": 28.968988764044948,
+   "text": "Tap Timer, pick a length and Start."
+  },
+  {
+   "a": 29.008988764044947,
+   "b": 32.160000000000004,
+   "text": "It keeps counting after the Deck closes."
+  },
+  {
+   "a": 32.5,
+   "b": 32.98417582417583,
+   "text": "Close it."
+  },
+  {
+   "a": 33.02417582417583,
+   "b": 35.080879120879125,
+   "text": "Tap anywhere outside, or press Back."
+  },
+  {
+   "a": 35.120879120879124,
+   "b": 37.760000000000005,
+   "text": "Left alone, it closes\nitself after 10 seconds."
+  },
+  {
+   "a": 38.1,
+   "b": 39.966578947368426,
+   "text": "Open the Deck settings."
+  },
+  {
+   "a": 40.006578947368425,
+   "b": 44.36000000000001,
+   "text": "In Gesture Volume, under\nAdvanced features, tap Deck."
+  },
+  {
+   "a": 44.7,
+   "b": 46.23500000000001,
+   "text": "Turn tiles on or off."
+  },
+  {
+   "a": 46.275000000000006,
+   "b": 49.760000000000005,
+   "text": "Tap Deck tiles and switch\non the ones you want."
+  },
+  {
+   "a": 49.800000000000004,
+   "b": 53.36000000000001,
+   "text": "Coin toss and Dice start\noff; Screenshot can go."
+  },
+  {
+   "a": 53.7,
+   "b": 54.996440677966106,
+   "text": "Add people to call."
+  },
+  {
+   "a": 55.036440677966105,
+   "b": 59.2871186440678,
+   "text": "Back on the Deck screen, Quick\ndial puts people in the strip:"
+  },
+  {
+   "a": 59.3271186440678,
+   "b": 61.96000000000001,
+   "text": "one tap calls them or opens a message."
+  },
+  {
+   "a": 62.300000000000004,
+   "b": 63.43623762376238,
+   "text": "Toss a coin."
+  },
+  {
+   "a": 63.47623762376238,
+   "b": 67.74910891089108,
+   "text": "Coin toss now waits at\nthe end of the strip:"
+  },
+  {
+   "a": 67.78910891089109,
+   "b": 72.16,
+   "text": "scroll down to it, tap\nit, then tap the coin."
+  },
+  {
+   "a": 73.05000000000001,
+   "b": 77.51,
+   "text": "Up next: Search in the Deck."
+  }
+ ]
+}

@@ -46,8 +46,8 @@ android {
         applicationId = "com.newagedevs.gesturevolume"
         minSdk = 26
         targetSdk = 37
-        versionCode = 40
-        versionName = "1.5.2"
+        versionCode = 41
+        versionName = "1.5.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

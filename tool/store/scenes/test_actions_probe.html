@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:452px;height:955px"><div id="row" style="padding:20px"></div>
+<script type="module">
+// Builds every screen of kit/actions.js in many states with only ACTIONS_ICONS loaded (an icon
+// missing from the list throws), and leaves their layouts in window.probe.
+import { loadIcons, fontsReady } from '../kit/core.js';
+import * as A from '../kit/actions.js';
+window.sceneReady = (async () => {
+  await loadIcons(A.ACTIONS_ICONS); await fontsReady();
+  const out = { errors: [], layouts: {} };
+  const tryIt = (name, f) => { try { const el = f(); out.layouts[name] = el.layout || A.screenLayout(el); } catch (e) { out.errors.push(name + ': ' + e.message); } };
+  for (const mode of ['advanced', 'regular']) tryIt('actions-' + mode, () => A.actionsScreen({ mode }));
+  tryIt('actions-tried', () => A.actionsScreen({ tried: { gesture: 'swipeIn' } }));
+  tryIt('actions-everything', () => A.actionsScreen({ mode: 'regular', sliderTarget: 'brightness', missing: ['writeSettings', 'accessibility', 'dnd'], side: 'left',
+    slots: { tap: 'lock', doubleTap: 'dnd', tripleTap: 'auto-rotate', swipeUp: 'increase-brightness', swipeDown: 'decrease-brightness', swipeIn: 'launch-app:games', swipeOut: 'Open quick panel' },
+    demo: { gesture: 'swipeIn', hand: { alpha: 0.5 } }, touch: { x: 10, y: 10 }, doubleTapMs: 250, longPressMs: 1200, dragging: 'long-press', swipeStep: 20, stream: 'keys', dialog: 'dnd' }));
+  // Every action in every slot's picker, selected.
+  for (const s of A.SLOTS) for (const g of A.pickerGroups(s.key)) for (const a of g.actions) tryIt(`pick-${s.key}-${a.id}`, () => A.actionPicker({ slot: s.key, selected: a.id }));
+  for (const s of A.SLOTS) tryIt('picker-' + s.key, () => A.actionPicker({ slot: s.key }));
+  tryIt('picker-app', () => A.actionPicker({ slot: 'swipeUp', app: 'video' }));
+  tryIt('picker-empty', () => A.actionPicker({ slot: 'tap', query: 'zzz' }));
+  tryIt('launch-chooser', () => A.launchAppChooser({ selected: 'music' }));
+  tryIt('app-list-empty', () => A.appGesturesScreen({ accessibility: false }));
+  tryIt('app-list', () => A.appGesturesScreen({ apps: ['video', 'music', 'games'] }));
+  tryIt('choose-app', () => A.chooseAppScreen({}));
+  tryIt('editor', () => A.appGestureEditor({ app: 'video', slots: { swipeUp: 'increase-brightness' } }));
+  tryIt('editor-noacc', () => A.appGestureEditor({ app: 'video', accessibility: false }));
+  for (const k of Object.keys(out.layouts)) if (k.startsWith('pick-')) delete out.layouts[k];
+  window.probe = out;
+  document.getElementById('row').appendChild(A.actionsScreen({}));
+  window.scene = { width: 452, height: 955, duration: 0, seek() {} };
+})();
+</script></body></html>

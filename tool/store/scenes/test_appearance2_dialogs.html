@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="background:#222;width:1768px;height:960px"><div id="row" style="display:flex;gap:20px;padding:20px"></div>
+<script type="module">
+import { loadIcons, fontsReady, imagesReady } from '../kit/core.js';
+import { Phone, PHONE_ICONS } from '../kit/phone.js';
+import { M3_ICONS } from '../kit/m3.js';
+import { appearanceScreenFull, unsavedChangesDialog, iconPickerDialog, colorPickerDialog, placementEditor, APPEARANCE2_ICONS } from '../kit/appearance2.js';
+const q = new URLSearchParams(location.search);
+window.sceneReady = (async () => {
+  await loadIcons([...new Set([...PHONE_ICONS, ...M3_ICONS, ...APPEARANCE2_ICONS])]); await fontsReady();
+  const mk = (screen, over, dark = true) => {
+    const p = new Phone({ wallpaper: null, radius: 30, darkIcons: dark }); p.wall.style.display = 'none';
+    if (screen) p.below.appendChild(screen);
+    if (over) p.below.appendChild(over);
+    document.getElementById('row').appendChild(p.el);
+    return p;
+  };
+  const out = [];
+  if ((q.get('set') || 'a') === 'a') {
+    mk(appearanceScreenFull({ preset: 'dock', look: { w: 20 }, open: 'size', dirty: true }), unsavedChangesDialog({}));
+    mk(appearanceScreenFull({ preset: 'bold', open: 'content', dirty: true, scroll: 60 }), iconPickerDialog({ selected: 'ic_vol_increase' }));
+    mk(appearanceScreenFull({ preset: 'classic', open: 'colours', scroll: 330 }), colorPickerDialog({}));
+    mk(appearanceScreenFull({ preset: 'classic', open: 'colours', scroll: 330 }), colorPickerDialog({ hex: '#80FF0000' }));
+    for (const d of document.querySelectorAll('.dialog')) { const r = d.getBoundingClientRect(); out.push(`dialog ${r.width.toFixed(1)}x${r.height.toFixed(1)} top ${(r.top - 20).toFixed(1)}`); }
+  } else if (q.get('set') === 'c') {
+    mk(appearanceScreenFull({ preset: 'bold', open: 'content', dirty: true }), iconPickerDialog({ selected: 'Star', scroll: 253 }));
+    mk(appearanceScreenFull({ preset: 'bold', open: 'content', dirty: true }), iconPickerDialog({ selected: 'ic_move', scroll: 120, k: 0.5 }));
+    mk(appearanceScreenFull({ preset: 'dock', open: 'colours', scroll: 330 }), colorPickerDialog({ hex: 'white', k: 0.6 }));
+    mk(null, placementEditor({ preset: 'dock', look: { showIcon: true, icon: 'ic_star' }, dragging: 0.5, y: 0.6 }), false);
+  } else {
+    mk(null, placementEditor({ preset: 'dock' }), false);
+    mk(null, placementEditor({ preset: 'dock', dragging: true, y: 0.35 }), false);
+    mk(null, placementEditor({ preset: 'classic', look: { snap: false }, dragging: 1, x: 0.62, y: 0.48 }), false);
+    mk(null, placementEditor({ preset: 'bold', side: 'left' }), false);
+    for (const t of ['placement-bar', 'placement-cancel', 'placement-done']) for (const e of document.querySelectorAll(`[data-target="${t}"]`)) { const r = e.getBoundingClientRect(); out.push(`${t} ${(r.left - 20).toFixed(1)},${(r.top - 20).toFixed(1)} ${r.width.toFixed(1)}x${r.height.toFixed(1)}`); }
+  }
+  console.warn(out.join('\n'));
+  await imagesReady();
+  window.scene = { width: 1768, height: 960, duration: 0, seek() {} };
+})();
+</script></body></html>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video tutorials: the screen that lists them, the row at the top of the FAQ that leads there,
+         and the play button in a feature screen's top bar. The videos themselves are in English. -->
+    <string name="tutorials">Tutoriels vidéo</string>
+    <string name="tutorials_summary">Une courte vidéo pour chaque partie de l\'app</string>
+    <string name="tutorials_intro">Chaque vidéo s\'ouvre dans YouTube et dure environ une minute. Le texte des vidéos est en anglais.</string>
+    <!-- Read out for the play button in a screen's top bar. %1$s: the video's title, e.g. The Deck. -->
+    <string name="tutorial_watch">Voir la vidéo : %1$s</string>
+    <string name="tutorial_cannot_open">Aucune appli sur ce téléphone ne peut ouvrir la vidéo</string>
+
+    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <string name="tutorial_getting_started">Premiers pas</string>
+    <string name="tutorial_getting_started_summary">La visite, la seule autorisation nécessaire et l\'activation</string>
+    <string name="tutorial_swipe_volume">Le volume d\'un balayage</string>
+    <string name="tutorial_swipe_volume_summary">Le bouton rond : balayez-le, touchez-le, déplacez-le</string>
+    <string name="tutorial_quick_slider">Le Curseur rapide</string>
+    <string name="tutorial_quick_slider_summary">Une piste de volume et de luminosité qui suit votre doigt</string>
+    <string name="tutorial_deck">Le Deck</string>
+    <string name="tutorial_deck_summary">Vos applis, contacts et outils, d\'un balayage vers l\'intérieur depuis la barre</string>
+    <string name="tutorial_search">La recherche dans le Deck</string>
+    <string name="tutorial_search_summary">Applis, contacts en numérotation rapide, calculs et web, pendant la saisie</string>
+    <string name="tutorial_menu">Le menu d\'appui long</string>
+    <string name="tutorial_menu_summary">Maintenez la barre pour les actions que vous utilisez le plus</string>
+    <string name="tutorial_actions">Choisissez ce que fait chaque geste</string>
+    <string name="tutorial_actions_summary">Appuis, appuis longs et balayages, pour toutes les applis ou une seule</string>
+    <string name="tutorial_appearance">Une barre à votre image</string>
+    <string name="tutorial_appearance_summary">Préréglages, taille, forme, couleur et emplacement</string>
+    <string name="tutorial_visibility">Pour qu\'elle ne gêne pas</string>
+    <string name="tutorial_visibility_summary">Masquez la barre dans certaines applis, pendant la saisie ou tant qu\'aucun média n\'est lu</string>
+</resources>
