@@ -59,6 +59,8 @@ object DeviceCareSettings {
         // Samsung (One UI)
         "com.samsung.android.lool" to "com.samsung.android.sm.ui.battery.BatteryActivity",
         "com.samsung.android.lool" to "com.samsung.android.sm.battery.ui.BatteryActivity",
+        // Infinix / TECNO / itel (Transsion XOS, HiOS, itel OS): Phone Master's auto-start list
+        "com.transsion.phonemaster" to "com.cyin.himgr.autostart.AutoStartActivity",
         // Letv, Asus, Nokia and other smaller skins
         "com.letv.android.letvsafe" to "com.letv.android.letvsafe.AutobootManageActivity",
         "com.asus.mobilemanager" to "com.asus.mobilemanager.entry.FunctionActivity",
