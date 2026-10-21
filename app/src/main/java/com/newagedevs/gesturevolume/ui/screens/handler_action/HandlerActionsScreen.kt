@@ -386,14 +386,10 @@ fun HandlerActionsScreen(
                     doubleTapMs = doubleTapMs,
                     longPressMs = longPressMs,
                     shape = segmentShape(1, 2),
-                    onDoubleTapChange = {
-                        doubleTapMs = it
-                        preference.setDoubleTapMs(it)
-                    },
-                    onLongPressChange = {
-                        longPressMs = it
-                        preference.setLongPressMs(it)
-                    },
+                    onDoubleTapChange = { doubleTapMs = it },
+                    onLongPressChange = { longPressMs = it },
+                    onDoubleTapChangeFinished = { preference.setDoubleTapMs(doubleTapMs) },
+                    onLongPressChangeFinished = { preference.setLongPressMs(longPressMs) },
                 )
             }
 
@@ -640,6 +636,9 @@ private fun TapTimingCard(
     shape: Shape,
     onDoubleTapChange: (Int) -> Unit,
     onLongPressChange: (Int) -> Unit,
+    /** Where each is written: once its change is complete, not every frame. See SliderControl. */
+    onDoubleTapChangeFinished: () -> Unit,
+    onLongPressChangeFinished: () -> Unit,
 ) {
     SettingCard(
         title = stringResource(R.string.tap_timing_title),
@@ -653,6 +652,7 @@ private fun TapTimingCard(
             range = TapTiming.MIN_DOUBLE_TAP_MS..TapTiming.MAX_DOUBLE_TAP_MS,
             step = 25f,
             onChange = onDoubleTapChange,
+            onChangeFinished = onDoubleTapChangeFinished,
         )
         Spacer(modifier = Modifier.height(8.dp))
         TimingSlider(
@@ -662,6 +662,7 @@ private fun TapTimingCard(
             range = TapTiming.MIN_LONG_PRESS_MS..TapTiming.MAX_LONG_PRESS_MS,
             step = 50f,
             onChange = onLongPressChange,
+            onChangeFinished = onLongPressChangeFinished,
         )
         Text(
             text = stringResource(R.string.tap_timing_try),
@@ -681,6 +682,7 @@ private fun TimingSlider(
     range: IntRange,
     step: Float,
     onChange: (Int) -> Unit,
+    onChangeFinished: () -> Unit,
 ) {
     val custom = ms > 0
     val shown = if (custom) ms else automatic
@@ -696,9 +698,10 @@ private fun TimingSlider(
         borderColor = MaterialTheme.colorScheme.primary,
         step = step,
         onValueChange = { onChange(it.toInt()) },
+        onValueChangeFinished = onChangeFinished,
     )
     if (custom) {
-        TextButton(onClick = { onChange(0) }) {
+        TextButton(onClick = { onChange(0); onChangeFinished() }) {
             Text(stringResource(R.string.tap_timing_use_auto))
         }
     }

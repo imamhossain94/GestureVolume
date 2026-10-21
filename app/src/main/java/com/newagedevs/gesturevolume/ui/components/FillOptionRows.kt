@@ -181,9 +181,16 @@ fun LevelFeedbackControls(
     fillStyle: String,
     look: FillTileLook,
     modifier: Modifier = Modifier,
+    /**
+     * A change is complete — the slider let go, a switch or flourish picked. Where a caller writes
+     * the setting, so a drag is written once rather than every frame. See SliderControl.
+     */
+    onChangeFinished: (() -> Unit)? = null,
 ) {
     val locale = LocalConfiguration.current.locales[0]
     val decimals = NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 2 }
+    // A pick is complete as it is made; the slider's change only once it is let go.
+    val pick: (LevelFeedback.Style) -> Unit = { onChange(it); onChangeFinished?.invoke() }
     Column(modifier = modifier) {
         Text(
             text = stringResource(R.string.level_feedback_title),
@@ -205,6 +212,7 @@ fun LevelFeedbackControls(
                 borderColor = accent,
                 step = 0.25f,
                 onValueChange = { onChange(style.copy(speed = it)) },
+                onValueChangeFinished = onChangeFinished,
             )
             Spacer(modifier = Modifier.height(12.dp))
         }
@@ -212,26 +220,26 @@ fun LevelFeedbackControls(
             title = stringResource(R.string.level_feedback_follow),
             description = stringResource(R.string.level_feedback_follow_desc),
             checked = style.follow,
-            onCheckedChange = { onChange(style.copy(follow = it)) },
+            onCheckedChange = { pick(style.copy(follow = it)) },
         )
         Spacer(modifier = Modifier.height(12.dp))
         SettingSwitchItem(
             title = stringResource(R.string.level_feedback_low),
             description = stringResource(R.string.level_feedback_low_desc),
             checked = style.low,
-            onCheckedChange = { onChange(style.copy(low = it)) },
+            onCheckedChange = { pick(style.copy(low = it)) },
         )
         Spacer(modifier = Modifier.height(12.dp))
         SettingSwitchItem(
             title = stringResource(R.string.level_feedback_full),
             description = stringResource(R.string.level_feedback_full_desc),
             checked = style.full,
-            onCheckedChange = { onChange(style.copy(full = it)) },
+            onCheckedChange = { pick(style.copy(full = it)) },
         )
         // Under its switch, and only while it is on: a choice of nothing is not a choice.
         if (style.full) {
             Spacer(modifier = Modifier.height(16.dp))
-            MaxFlourishRow(style = style, fillStyle = fillStyle, look = look, onChange = onChange)
+            MaxFlourishRow(style = style, fillStyle = fillStyle, look = look, onChange = pick)
         }
     }
 }

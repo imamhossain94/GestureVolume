@@ -336,6 +336,10 @@ class SharedPref @Inject constructor(
     }
 
     private companion object {
+        /** See [isAppInForeground]. Process-wide, whichever instance writes it. */
+        @Volatile
+        var appInForeground = false
+
         const val PRO_FEATURE_ACTIVATION = "proFeatureActivation"
         const val IS_RUNNING = "isRunning"
         const val HANDLER_POSITION = "handlerPosition"
@@ -458,7 +462,6 @@ class SharedPref @Inject constructor(
         const val HANDLER_POS_Y_LANDSCAPE = "handlerPosYFractionLandscape"
 
         const val HANDLER_HIDDEN = "handlerHidden"
-        const val APP_IN_FOREGROUND = "appInForeground"
         const val HANDLER_HIDDEN_APPS = "handlerHiddenApps"
         const val HANDLER_POS_SAME_BOTH = "handlerPosSameBothOrientations"
         const val HANDLER_DYNAMIC_POSITION = "handlerDynamicPosition"
@@ -874,20 +877,25 @@ class SharedPref @Inject constructor(
     /**
      * Whether the app's own UI is on screen right now.
      *
-     * In preferences rather than in memory, and that is the whole point of it. The activity tells
-     * the service to hide the bar as it comes to the foreground, but a *cold* start races: the
-     * command is sent while the service process is still coming up, so it can arrive before the
-     * controller exists — or be processed before the controller has drawn the bar — and either way
-     * the bar appears on top of the app that just asked for it to go away. A flag both sides can
-     * read has no ordering to get wrong: whoever creates the bar checks it, whenever that happens.
+     * A flag rather than a command, and that is the whole point of it. The activity tells the
+     * service to hide the bar as it comes to the foreground, but a *cold* start races: the command
+     * is sent while the service is still coming up, so it can arrive before the controller exists
+     * — or be processed before the controller has drawn the bar — and either way the bar appears on
+     * top of the app that just asked for it to go away. A flag both sides can read has no ordering
+     * to get wrong: whoever creates the bar checks it, whenever that happens.
      *
-     * Written on every resume and pause, so it is also correct after the service is killed and
-     * restarted by the system while the app sits in front of it.
+     * Held in memory, not in the preferences file. The activity, the service and the accessibility
+     * service share one process, so memory is read by both sides just as the file was, and the
+     * file cost an fsync on the main thread every time the app was opened or closed: each write was
+     * followed at once by a show or hide command, and a service command waits for every pending
+     * write to reach the disk first — the "fsync lock contention" ANR. Memory is also right after a
+     * crash, which the file was not: a process that died with the app in front left `true` behind,
+     * and the restarted service drew no bar until the app had been opened and closed again.
      */
-    fun isAppInForeground(): Boolean = sharedPreferences.getBoolean(APP_IN_FOREGROUND, false)
+    fun isAppInForeground(): Boolean = appInForeground
 
     fun setAppInForeground(value: Boolean) {
-        sharedPreferences.edit { putBoolean(APP_IN_FOREGROUND, value) }
+        appInForeground = value
     }
 
     fun isHandlerHidden(): Boolean = sharedPreferences.getBoolean(HANDLER_HIDDEN, false)

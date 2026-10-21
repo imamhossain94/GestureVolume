@@ -54,9 +54,16 @@ fun EffortFillControls(
     /** How the tiles in its row are dressed: the panel as the user has it. */
     look: FillTileLook,
     modifier: Modifier = Modifier,
+    /**
+     * A change is complete — a slider let go, a look or switch picked. Where a caller writes the
+     * setting, so a drag is written once rather than every frame. See SliderControl.
+     */
+    onChangeFinished: (() -> Unit)? = null,
 ) {
     val locale = LocalConfiguration.current.locales[0]
     val decimals = NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 2 }
+    // A pick is complete as it is made; a slider's change only once it is let go.
+    val pick: (EffortFill.Style) -> Unit = { onChange(it); onChangeFinished?.invoke() }
 
     Column(modifier = modifier) {
         Text(
@@ -65,7 +72,7 @@ fun EffortFillControls(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 10.dp),
         )
-        EffortLookRow(style = style, look = look, onChange = onChange)
+        EffortLookRow(style = style, look = look, onChange = pick)
         AnimatedContent(
             targetState = style.look,
             transitionSpec = { fadeIn() togetherWith fadeOut() },
@@ -88,13 +95,14 @@ fun EffortFillControls(
             borderColor = accent,
             step = 0.25f,
             onValueChange = { onChange(style.copy(speed = it)) },
+            onValueChangeFinished = onChangeFinished,
         )
         Spacer(modifier = Modifier.height(12.dp))
         SettingSwitchItem(
             title = stringResource(R.string.effort_labels),
             description = stringResource(R.string.effort_labels_desc),
             checked = style.labels,
-            onCheckedChange = { onChange(style.copy(labels = it)) },
+            onCheckedChange = { pick(style.copy(labels = it)) },
         )
     }
 }

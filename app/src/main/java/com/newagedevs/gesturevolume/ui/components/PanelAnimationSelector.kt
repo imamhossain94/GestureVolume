@@ -47,6 +47,8 @@ fun PanelAnimationSelector(
     /** How fast they run, as a multiple of the catalogue's own timing. */
     speed: Float = 1f,
     onSpeedChange: ((Float) -> Unit)? = null,
+    /** Where the speed is written: once a drag is let go, not every frame. See SliderControl. */
+    onSpeedChangeFinished: (() -> Unit)? = null,
     /** The heading and the line under it, for a screen that says more about its own panel. */
     title: String = stringResource(R.string.panel_animation),
     description: String = stringResource(R.string.panel_animation_desc),
@@ -83,6 +85,7 @@ fun PanelAnimationSelector(
                 valueDisplay = panelAnimationSpeedLabel(speed),
                 borderColor = MaterialTheme.colorScheme.primary,
                 onValueChange = onSpeedChange,
+                onValueChangeFinished = onSpeedChangeFinished,
             )
         }
     }
