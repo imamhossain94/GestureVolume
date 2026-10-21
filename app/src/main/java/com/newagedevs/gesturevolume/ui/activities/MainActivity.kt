@@ -26,7 +26,10 @@ import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.review.ReviewManagerFactory
@@ -60,6 +63,35 @@ class MainActivity : AppCompatActivity() {
      * them overlapping is to not ask for the second one.
      */
     private var updateFlowActive = false
+
+    /**
+     * True from launching Play's update screen until it reports back. See [startImmediateUpdate].
+     *
+     * Not [updateFlowActive], which stays true for the rest of the Activity's life so the review
+     * keeps out of the way: guarding on that would also stop onResume putting the screen back
+     * over an update the user left half-way through.
+     */
+    private var updateFlowShowing = false
+
+    private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
+
+    /**
+     * Play's update screen, launched through the Activity Result API rather than the deprecated
+     * requestCode overload. That one sent the update's IntentSender from inside the listener, and
+     * a send that fails — the PendingIntent is FLAG_ONE_SHOT, so a second launch from the same
+     * AppUpdateInfo, or one Play has already cancelled — threw SendIntentException out of it: the
+     * app's top crash. Through the launcher a failed send comes back as RESULT_CANCELED.
+     */
+    private val updateFlowLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        // Gone, whichever way it went, so the next check may show it again. An immediate update
+        // that installs restarts the app before this is reached.
+        updateFlowShowing = false
+        if (result.resultCode != RESULT_OK) {
+            android.util.Log.w("MainActivity", "In-app update not completed: ${result.resultCode}")
+        }
+    }
 
     private val reviewRunnable = Runnable { launchReviewFlow() }
     private val reviewHandler = android.os.Handler(android.os.Looper.getMainLooper())
@@ -158,16 +190,9 @@ class MainActivity : AppCompatActivity() {
         sendServiceCommand("hide")
 
         // Resume App Update if needed
-        val appUpdateManager = AppUpdateManagerFactory.create(this)
         appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
-                updateFlowActive = true
-                appUpdateManager.startUpdateFlowForResult(
-                    appUpdateInfo,
-                    AppUpdateType.IMMEDIATE,
-                    this,
-                    1001
-                )
+                startImmediateUpdate(appUpdateInfo)
             }
         }
 
@@ -204,21 +229,37 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkForAppUpdate() {
-        val appUpdateManager = AppUpdateManagerFactory.create(this)
-        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
-
-        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
                 && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
             ) {
-                updateFlowActive = true
-                appUpdateManager.startUpdateFlowForResult(
-                    appUpdateInfo,
-                    AppUpdateType.IMMEDIATE,
-                    this,
-                    1001
-                )
+                startImmediateUpdate(appUpdateInfo)
             }
+        }
+    }
+
+    /**
+     * Shows Play's immediate-update screen, at most once at a time.
+     *
+     * [appUpdateInfo] is always the one just fetched for this attempt, never one kept from an
+     * earlier check: its PendingIntent is FLAG_ONE_SHOT, spent by the first launch. onCreate and
+     * onResume each fetch their own and either can answer first, so the guard keeps a second
+     * answer from launching over a screen that is already up.
+     */
+    private fun startImmediateUpdate(appUpdateInfo: AppUpdateInfo) {
+        // The info arrives asynchronously, and the user may have left in the meantime.
+        if (updateFlowShowing || isFinishing || isDestroyed) return
+        updateFlowActive = true
+        updateFlowShowing = try {
+            appUpdateManager.startUpdateFlowForResult(
+                appUpdateInfo,
+                updateFlowLauncher,
+                AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
+            )
+        } catch (e: Exception) {
+            // Whatever the cause, not worth a crash: the next launch checks again.
+            android.util.Log.w("MainActivity", "Could not start the in-app update", e)
+            false
         }
     }
 
