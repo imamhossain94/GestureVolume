@@ -89,6 +89,7 @@ class OverlayService : Service(), OverlayServiceInterface {
     private val controllerHost = object : OverlayController.Host {
         override fun onNotificationStateChanged() = startForegroundService()
         override fun onStopRequested() = stopServiceEntirely()
+        override fun onOverlayPermissionMissing() = stopForMissingOverlayPermission()
     }
 
     override fun onCreate() {
@@ -348,6 +349,23 @@ class OverlayService : Service(), OverlayServiceInterface {
         // started, or the user would turn it on and get nothing.
         preference.setHandlerHidden(false)
         controller.hide()
+        stopForegroundAndSelf()
+    }
+
+    /**
+     * "Display over other apps" is off, so there is no bar to host: stop, quietly.
+     *
+     * Not [stopServiceEntirely]. That is the user switching the bar off, and it clears the running
+     * preference; this is the permission being taken away, and the preference is left saying the
+     * user wants the bar, so the next time the app is opened — where the permission is asked for
+     * again — `repairServiceIfNeeded` brings it back as soon as it is granted.
+     *
+     * Safe against the startForegroundService() contract: every command, and onCreate, posts the
+     * notification before anything can get here.
+     */
+    private fun stopForMissingOverlayPermission() {
+        android.util.Log.w("OverlayService", "No overlay permission; stopping until it is granted")
+        if (::controller.isInitialized) controller.hide()
         stopForegroundAndSelf()
     }
 

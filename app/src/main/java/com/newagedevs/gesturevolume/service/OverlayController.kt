@@ -129,6 +129,14 @@ class OverlayController(
 
         /** The user asked, from the bar, for the whole thing to stop. */
         fun onStopRequested()
+
+        /**
+         * The bar could not go on screen because "Display over other apps" is off: revoked while
+         * the service ran, or gone before a START_STICKY relaunch or a restart after the task was
+         * swiped away, none of which ask for it. Nothing can draw the bar until it is granted
+         * again, so the foreground service stops rather than sit in the shade with nothing to show.
+         */
+        fun onOverlayPermissionMissing()
     }
 
     companion object {
@@ -1484,6 +1492,13 @@ class OverlayController(
         // the keyboard's way. See [applyContextVisibility] and [applyKeyboardAvoidance].
         if (hiddenForContext || hiddenForKeyboard) return
         if (handlerView != null) return
+        // Last, so it only answers when the bar really is about to be drawn. Without the
+        // permission addView throws BadTokenException ("permission denied for window type 2038"),
+        // which 1.2.x let escape from onStartCommand.
+        if (!canDrawOverlayWindows()) {
+            host.onOverlayPermissionMissing()
+            return
+        }
 
         val handlerPosition = preference.getHandlerPosition()
         val handlerWidth = preference.getHandlerWidthDp()
@@ -1566,8 +1581,22 @@ class OverlayController(
             handlerView = null
             handlerParams = null
             gestureDetector = null
+            // Refused for want of the permission even though the check above passed: it was
+            // revoked in between, or this build's answer lags the setting.
+            if (e is WindowManager.BadTokenException || e is SecurityException) {
+                host.onOverlayPermissionMissing()
+            }
         }
     }
+
+    /**
+     * Whether this controller's windows may go on screen. The foreground service's are
+     * TYPE_APPLICATION_OVERLAY, which need "Display over other apps"; the lock screen's, from the
+     * accessibility service, are TYPE_ACCESSIBILITY_OVERLAY and need nothing.
+     */
+    private fun canDrawOverlayWindows(): Boolean =
+        windowType != WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY ||
+            Settings.canDrawOverlays(context)
 
     @SuppressLint("RtlHardcoded")
     private fun buildHandlerParams(
