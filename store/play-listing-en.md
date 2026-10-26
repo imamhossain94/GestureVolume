@@ -117,15 +117,17 @@ and it must match the in-app disclosure and the declaration below.
 
 ## What's new (500 max)
 
+For 1.5.4 (build 42):
+
 ```
-🎚 Quick slider — a full-height track that grows out of the bar, with animated fills, your own colours and an optional adaptive step sound
-🔄 Dynamic position — the bar follows your phone's edge when you rotate
-👁 Visibility — hide the bar in chosen apps
-🪟 New panel styles and entrance animations
-🪙 A redesigned coin toss
-🔐 Privacy choices — change your ad consent any time
-🛠 Fixes, including a freeze when opening the app
+🛠 Crash fixes, including one when an app update was offered
+🧊 No more freezes when opening or closing the app on some phones
+🎚 Settings sliders save when you let go, so dragging stays smooth
+🔁 The bar stays on or off the way you left it, and comes back after the app restarts
+🛡 If you turn off Display over other apps, the bar stops cleanly and returns once you allow it
+📱 Troubleshoot opens auto-start settings on Infinix, TECNO and itel phones
 ```
+451 characters.
 
 ---
 

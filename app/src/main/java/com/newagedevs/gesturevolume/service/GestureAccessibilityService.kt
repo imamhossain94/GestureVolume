@@ -90,10 +90,14 @@ class GestureAccessibilityService : AccessibilityService() {
     /** The bar this service draws on the lock screen, while there is one. */
     private var lockScreenBar: OverlayController? = null
 
-    /** The lock screen's bar can neither hide nor stop the bar, so it has nothing to tell. */
+    /**
+     * The lock screen's bar can neither hide nor stop the bar, so it has nothing to tell. Its
+     * windows are accessibility overlays, which need no overlay permission to go missing.
+     */
     private val lockScreenHost = object : OverlayController.Host {
         override fun onNotificationStateChanged() = Unit
         override fun onStopRequested() = Unit
+        override fun onOverlayPermissionMissing() = Unit
     }
 
     private var screenReceiverRegistered = false

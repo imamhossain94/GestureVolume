@@ -453,7 +453,8 @@ fun QuickSliderScreen(
                     valueRange = 120f..320f,
                     valueDisplay = "${length.toInt()}dp",
                     borderColor = accent,
-                    onValueChange = { length = it; store.setLengthDp(it) }
+                    onValueChange = { length = it },
+                    onValueChangeFinished = { store.setLengthDp(length) }
                 )
                 Hint(stringResource(R.string.slider_length_desc))
                 Sep()
@@ -465,7 +466,8 @@ fun QuickSliderScreen(
                     value = thickness,
                     valueDisplay = "${thickness.toInt()}dp",
                     borderColor = accent,
-                    onValueChange = { thickness = it; store.setThicknessDp(it) }
+                    onValueChange = { thickness = it },
+                    onValueChangeFinished = { store.setThicknessDp(thickness) }
                 )
                 Sep()
                 SliderControl(
@@ -474,7 +476,8 @@ fun QuickSliderScreen(
                     valueRange = 0f..QuickSliderStore.MAX_EDGE_OFFSET,
                     valueDisplay = "${edgeOffset.toInt()}dp",
                     borderColor = accent,
-                    onValueChange = { edgeOffset = it; store.setEdgeOffsetDp(it) }
+                    onValueChange = { edgeOffset = it },
+                    onValueChangeFinished = { store.setEdgeOffsetDp(edgeOffset) }
                 )
                 Hint(stringResource(R.string.slider_edge_offset_desc))
                 Sep()
@@ -490,7 +493,7 @@ fun QuickSliderScreen(
                 // want the bar's answer to it.
                 if (followBar && barShape == HandlerShape.TAB) {
                     Spacer(modifier = Modifier.height(12.dp))
-                    SweepSlider(panelFlare) { panelFlare = it; store.setShapeFlare(it) }
+                    SweepSlider(panelFlare, onChangeFinished = { store.setShapeFlare(panelFlare) }) { panelFlare = it }
                 }
                 if (!followBar) {
                     Sep()
@@ -500,16 +503,16 @@ fun QuickSliderScreen(
                     )
                     if (panelShape == HandlerShape.TAB) {
                         Spacer(modifier = Modifier.height(12.dp))
-                        SweepSlider(panelFlare) { panelFlare = it; store.setShapeFlare(it) }
+                        SweepSlider(panelFlare, onChangeFinished = { store.setShapeFlare(panelFlare) }) { panelFlare = it }
                     } else {
                         val setCorners = {
                             store.setCorners(cornerTL, cornerTR, cornerBL, cornerBR)
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-                        CornerSlider(stringResource(R.string.top_left), cornerTL) { cornerTL = it; setCorners() }
-                        CornerSlider(stringResource(R.string.top_right), cornerTR) { cornerTR = it; setCorners() }
-                        CornerSlider(stringResource(R.string.bottom_left), cornerBL) { cornerBL = it; setCorners() }
-                        CornerSlider(stringResource(R.string.bottom_right), cornerBR) { cornerBR = it; setCorners() }
+                        CornerSlider(stringResource(R.string.top_left), cornerTL, setCorners) { cornerTL = it }
+                        CornerSlider(stringResource(R.string.top_right), cornerTR, setCorners) { cornerTR = it }
+                        CornerSlider(stringResource(R.string.bottom_left), cornerBL, setCorners) { cornerBL = it }
+                        CornerSlider(stringResource(R.string.bottom_right), cornerBR, setCorners) { cornerBR = it }
                     }
                 }
                 // How far the number and the icon stand in from the ends: spacing, so here with the
@@ -522,7 +525,8 @@ fun QuickSliderScreen(
                         valueRange = 0f..QuickSliderStore.MAX_CONTENT_PADDING,
                         valueDisplay = "${valueMargin.toInt()}dp",
                         borderColor = accent,
-                        onValueChange = { valueMargin = it; store.setValueMarginDp(it) }
+                        onValueChange = { valueMargin = it },
+                        onValueChangeFinished = { store.setValueMarginDp(valueMargin) }
                     )
                 }
                 if (showIcon) {
@@ -533,7 +537,8 @@ fun QuickSliderScreen(
                         valueRange = 0f..QuickSliderStore.MAX_CONTENT_PADDING,
                         valueDisplay = "${iconMargin.toInt()}dp",
                         borderColor = accent,
-                        onValueChange = { iconMargin = it; store.setIconMarginDp(it) }
+                        onValueChange = { iconMargin = it },
+                        onValueChangeFinished = { store.setIconMarginDp(iconMargin) }
                     )
                 }
             }
@@ -613,9 +618,9 @@ fun QuickSliderScreen(
                     speed = animationSpeed,
                     onSpeedChange = {
                         animationSpeed = it
-                        viewModel.preference.setPanelAnimationSpeed(it)
                         replay++
                     },
+                    onSpeedChangeFinished = { viewModel.preference.setPanelAnimationSpeed(animationSpeed) },
                 )
                 Sep()
                 // Every tile, in the fill row and in the rows under it, dressed as the panel is.
@@ -641,8 +646,9 @@ fun QuickSliderScreen(
                     PixelFillControls(
                         style = pixelStyle,
                         accent = accent,
-                        onChange = { pixelStyle = it; store.setPixelStyle(it) },
+                        onChange = { pixelStyle = it },
                         look = tileLook,
+                        onChangeFinished = { store.setPixelStyle(pixelStyle) },
                     )
                 }
                 if (fillStyle == SliderFill.SHADER) {
@@ -650,8 +656,9 @@ fun QuickSliderScreen(
                     ShaderFillControls(
                         style = shaderStyle,
                         accent = accent,
-                        onChange = { shaderStyle = it; store.setShaderStyle(it) },
+                        onChange = { shaderStyle = it },
                         look = tileLook,
+                        onChangeFinished = { store.setShaderStyle(shaderStyle) },
                     )
                 }
                 if (fillStyle == SliderFill.SURGE) {
@@ -659,8 +666,9 @@ fun QuickSliderScreen(
                     SurgeFillControls(
                         style = surgeStyle,
                         accent = accent,
-                        onChange = { surgeStyle = it; store.setSurgeStyle(it) },
+                        onChange = { surgeStyle = it },
                         look = tileLook,
+                        onChangeFinished = { store.setSurgeStyle(surgeStyle) },
                     )
                 }
                 if (fillStyle == SliderFill.EFFORT) {
@@ -668,8 +676,9 @@ fun QuickSliderScreen(
                     EffortFillControls(
                         style = effortStyle,
                         accent = accent,
-                        onChange = { effortStyle = it; store.setEffortStyle(it) },
+                        onChange = { effortStyle = it },
                         look = tileLook,
+                        onChangeFinished = { store.setEffortStyle(effortStyle) },
                     )
                 }
                 if (fillStyle == SliderFill.GLIMMER) {
@@ -677,8 +686,9 @@ fun QuickSliderScreen(
                     GlimmerFillControls(
                         style = glimmerStyle,
                         accent = accent,
-                        onChange = { glimmerStyle = it; store.setGlimmerStyle(it) },
+                        onChange = { glimmerStyle = it },
                         look = tileLook,
+                        onChangeFinished = { store.setGlimmerStyle(glimmerStyle) },
                     )
                 }
                 // How every fill but the Effort picker answers the level; the picker has its own.
@@ -689,9 +699,10 @@ fun QuickSliderScreen(
                         accent = accent,
                         showSpeed = fillStyle != SliderFill.PIXELS && fillStyle != SliderFill.SHADER &&
                             fillStyle != SliderFill.SURGE && fillStyle != SliderFill.GLIMMER,
-                        onChange = { levelFeedback = it; store.setLevelFeedback(it) },
+                        onChange = { levelFeedback = it },
                         fillStyle = fillStyle,
                         look = tileLook,
+                        onChangeFinished = { store.setLevelFeedback(levelFeedback) },
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
@@ -1069,8 +1080,9 @@ private fun SliderPreview(
     }
 }
 
+/** [onChangeFinished] is where the setting is written: once per drag. See SliderControl. */
 @Composable
-private fun SweepSlider(flare: Float, onChange: (Float) -> Unit) {
+private fun SweepSlider(flare: Float, onChangeFinished: () -> Unit, onChange: (Float) -> Unit) {
     SliderControl(
         label = stringResource(R.string.end_sweep),
         value = flare * 100f,
@@ -1078,11 +1090,13 @@ private fun SweepSlider(flare: Float, onChange: (Float) -> Unit) {
         valueDisplay = "${(flare * 100f).toInt()}%",
         borderColor = MaterialTheme.colorScheme.primary,
         onValueChange = { onChange(it / 100f) },
+        onValueChangeFinished = onChangeFinished,
     )
 }
 
+/** [onChangeFinished] is where the setting is written: once per drag. See SliderControl. */
 @Composable
-private fun CornerSlider(label: String, value: Float, onChange: (Float) -> Unit) {
+private fun CornerSlider(label: String, value: Float, onChangeFinished: () -> Unit, onChange: (Float) -> Unit) {
     SliderControl(
         label = label,
         value = value,
@@ -1090,6 +1104,7 @@ private fun CornerSlider(label: String, value: Float, onChange: (Float) -> Unit)
         valueDisplay = "${value.toInt()}dp",
         borderColor = MaterialTheme.colorScheme.primary,
         onValueChange = onChange,
+        onValueChangeFinished = onChangeFinished,
     )
 }
 

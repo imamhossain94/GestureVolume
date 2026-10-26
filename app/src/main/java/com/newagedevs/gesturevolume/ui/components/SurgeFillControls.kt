@@ -46,16 +46,23 @@ fun SurgeFillControls(
     /** How the tiles in its row are dressed: the panel as the user has it. */
     look: FillTileLook,
     modifier: Modifier = Modifier,
+    /**
+     * A change is complete — a slider let go, a look picked. Where a caller writes the setting, so
+     * a drag is written once rather than every frame. See SliderControl.
+     */
+    onChangeFinished: (() -> Unit)? = null,
 ) {
     val locale = LocalConfiguration.current.locales[0]
     val decimals = NumberFormat.getNumberInstance(locale).apply {
         minimumFractionDigits = 1
         maximumFractionDigits = 2
     }
+    // A pick is complete as it is made; a slider's change only once it is let go.
+    val pick: (SurgeFill.Style) -> Unit = { onChange(it); onChangeFinished?.invoke() }
 
     Column(modifier = modifier) {
         Hint(R.string.surge_settings_desc)
-        SurgeLookRow(style = style, look = look, onChange = onChange)
+        SurgeLookRow(style = style, look = look, onChange = pick)
 
         Spacer(modifier = Modifier.height(16.dp))
         SliderControl(
@@ -70,6 +77,7 @@ fun SurgeFillControls(
             borderColor = accent,
             step = 0.1f,
             onValueChange = { onChange(style.copy(speed = it)) },
+            onValueChangeFinished = onChangeFinished,
         )
         Spacer(modifier = Modifier.height(12.dp))
         SliderControl(
@@ -80,18 +88,19 @@ fun SurgeFillControls(
             borderColor = accent,
             step = 0.1f,
             onValueChange = { onChange(style.copy(size = it)) },
+            onValueChangeFinished = onChangeFinished,
         )
         Hint(R.string.surge_size_desc)
         Spacer(modifier = Modifier.height(12.dp))
-        Percent(R.string.surge_edge, style.edge, 0f, 1f, accent) { onChange(style.copy(edge = it)) }
+        Percent(R.string.surge_edge, style.edge, 0f, 1f, accent, onChangeFinished) { onChange(style.copy(edge = it)) }
         Hint(R.string.surge_edge_desc)
         Spacer(modifier = Modifier.height(12.dp))
-        Percent(R.string.surge_glow, style.glow, 0f, 1f, accent) { onChange(style.copy(glow = it)) }
+        Percent(R.string.surge_glow, style.glow, 0f, 1f, accent, onChangeFinished) { onChange(style.copy(glow = it)) }
         Spacer(modifier = Modifier.height(12.dp))
-        Percent(R.string.surge_trail, style.trail, 0f, 1f, accent) { onChange(style.copy(trail = it)) }
+        Percent(R.string.surge_trail, style.trail, 0f, 1f, accent, onChangeFinished) { onChange(style.copy(trail = it)) }
         Hint(R.string.surge_trail_desc)
         Spacer(modifier = Modifier.height(12.dp))
-        Percent(R.string.surge_rest, style.rest, 0f, SurgeFill.MAX_REST, accent) { onChange(style.copy(rest = it)) }
+        Percent(R.string.surge_rest, style.rest, 0f, SurgeFill.MAX_REST, accent, onChangeFinished) { onChange(style.copy(rest = it)) }
     }
 }
 
@@ -108,7 +117,15 @@ private fun Hint(@StringRes text: Int) {
 
 /** A [min]..[max] fraction, shown and nudged as whole percentages. */
 @Composable
-private fun Percent(@StringRes label: Int, value: Float, min: Float, max: Float, accent: Color, onChange: (Float) -> Unit) {
+private fun Percent(
+    @StringRes label: Int,
+    value: Float,
+    min: Float,
+    max: Float,
+    accent: Color,
+    onChangeFinished: (() -> Unit)?,
+    onChange: (Float) -> Unit,
+) {
     SliderControl(
         label = stringResource(label),
         value = value * 100f,
@@ -116,5 +133,6 @@ private fun Percent(@StringRes label: Int, value: Float, min: Float, max: Float,
         valueDisplay = stringResource(R.string.pixel_percent_value, (value * 100f).roundToInt()),
         borderColor = accent,
         onValueChange = { onChange((it / 100f).coerceIn(min, max)) },
+        onValueChangeFinished = onChangeFinished,
     )
 }

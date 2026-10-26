@@ -63,9 +63,16 @@ fun PixelFillControls(
     /** How the tiles in its row are dressed: the panel as the user has it. */
     look: FillTileLook,
     modifier: Modifier = Modifier,
+    /**
+     * A change is complete — a slider let go, a pattern picked. Where a caller writes the setting,
+     * so a drag is written once rather than every frame. See SliderControl.
+     */
+    onChangeFinished: (() -> Unit)? = null,
 ) {
     val locale = LocalConfiguration.current.locales[0]
     val decimals = NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 2 }
+    // A pick is complete as it is made; a slider's change only once it is let go.
+    val pick: (PixelFill.Style) -> Unit = { onChange(it); onChangeFinished?.invoke() }
 
     Column(modifier = modifier) {
         Text(
@@ -74,7 +81,7 @@ fun PixelFillControls(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 10.dp),
         )
-        PixelPatternRow(style = style, look = look, onChange = onChange)
+        PixelPatternRow(style = style, look = look, onChange = pick)
 
         Spacer(modifier = Modifier.height(16.dp))
         SliderControl(
@@ -85,6 +92,7 @@ fun PixelFillControls(
             borderColor = accent,
             step = 0.25f,
             onValueChange = { onChange(style.copy(speed = it)) },
+            onValueChangeFinished = onChangeFinished,
         )
         Spacer(modifier = Modifier.height(12.dp))
         SliderControl(
@@ -94,21 +102,29 @@ fun PixelFillControls(
             valueDisplay = style.columns.toString(),
             borderColor = accent,
             onValueChange = { onChange(style.copy(columns = it.roundToInt())) },
+            onValueChangeFinished = onChangeFinished,
         )
         Spacer(modifier = Modifier.height(12.dp))
-        PercentSlider(R.string.pixel_gap, style.gap, PixelFill.MAX_GAP, accent) { onChange(style.copy(gap = it)) }
+        PercentSlider(R.string.pixel_gap, style.gap, PixelFill.MAX_GAP, accent, onChangeFinished) { onChange(style.copy(gap = it)) }
         Spacer(modifier = Modifier.height(12.dp))
-        PercentSlider(R.string.pixel_roundness, style.roundness, 1f, accent) { onChange(style.copy(roundness = it)) }
+        PercentSlider(R.string.pixel_roundness, style.roundness, 1f, accent, onChangeFinished) { onChange(style.copy(roundness = it)) }
         Spacer(modifier = Modifier.height(12.dp))
-        PercentSlider(R.string.pixel_glow, style.glow, 1f, accent) { onChange(style.copy(glow = it)) }
+        PercentSlider(R.string.pixel_glow, style.glow, 1f, accent, onChangeFinished) { onChange(style.copy(glow = it)) }
         Spacer(modifier = Modifier.height(12.dp))
-        PercentSlider(R.string.pixel_rest, style.rest, PixelFill.MAX_REST, accent) { onChange(style.copy(rest = it)) }
+        PercentSlider(R.string.pixel_rest, style.rest, PixelFill.MAX_REST, accent, onChangeFinished) { onChange(style.copy(rest = it)) }
     }
 }
 
 /** A 0..[max] fraction, shown and nudged as whole percentages. */
 @Composable
-private fun PercentSlider(label: Int, value: Float, max: Float, accent: Color, onChange: (Float) -> Unit) {
+private fun PercentSlider(
+    label: Int,
+    value: Float,
+    max: Float,
+    accent: Color,
+    onChangeFinished: (() -> Unit)?,
+    onChange: (Float) -> Unit,
+) {
     val percent = (value * 100f).roundToInt()
     SliderControl(
         label = stringResource(label),
@@ -117,5 +133,6 @@ private fun PercentSlider(label: Int, value: Float, max: Float, accent: Color, o
         valueDisplay = stringResource(R.string.pixel_percent_value, percent),
         borderColor = accent,
         onValueChange = { onChange((it / 100f).coerceIn(0f, max)) },
+        onValueChangeFinished = onChangeFinished,
     )
 }

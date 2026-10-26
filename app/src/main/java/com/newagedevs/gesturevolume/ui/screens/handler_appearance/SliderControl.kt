@@ -70,6 +70,13 @@ fun SliderControl(
     modifier: Modifier = Modifier,
     /** What one tap of a nudge button is worth, in the slider's own units. */
     step: Float = 1f,
+    /**
+     * Called once a change is complete — a drag let go, a tap on the track, a nudge. The place to
+     * write a setting: a drag reports every frame, each write rewrites the whole preferences file,
+     * and the next activity stop or service command waits on the main thread for whatever is
+     * still queued.
+     */
+    onValueChangeFinished: (() -> Unit)? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val dragged by interactionSource.collectIsDraggedAsState()
@@ -84,6 +91,8 @@ fun SliderControl(
             snapped + step * direction
         }
         onValueChange(next.coerceIn(valueRange.start, valueRange.endInclusive))
+        // A nudge is complete in itself; held, each repeat is one.
+        onValueChangeFinished?.invoke()
     }
 
     Column(modifier = modifier) {
@@ -140,6 +149,7 @@ fun SliderControl(
         Slider(
             value = value,
             onValueChange = onValueChange,
+            onValueChangeFinished = onValueChangeFinished,
             valueRange = valueRange,
             interactionSource = interactionSource,
             modifier = Modifier

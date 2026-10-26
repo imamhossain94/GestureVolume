@@ -354,7 +354,8 @@ fun DeckScreen(
                     valueRange = 48f..96f,
                     valueDisplay = "${width.toInt()}dp",
                     borderColor = MaterialTheme.colorScheme.primary,
-                    onValueChange = { width = it; store.setWidthDp(it) }
+                    onValueChange = { width = it },
+                    onValueChangeFinished = { store.setWidthDp(width) }
                 )
                 ThinDivider()
                 SliderControl(
@@ -363,7 +364,8 @@ fun DeckScreen(
                     valueRange = 0.3f..0.95f,
                     valueDisplay = "${(height * 100).toInt()}%",
                     borderColor = MaterialTheme.colorScheme.primary,
-                    onValueChange = { height = it; store.setHeightFraction(it) }
+                    onValueChange = { height = it },
+                    onValueChangeFinished = { store.setHeightFraction(height) }
                 )
                 ThinDivider()
                 SliderControl(
@@ -372,7 +374,8 @@ fun DeckScreen(
                     valueRange = 0f..48f,
                     valueDisplay = "${corner.toInt()}dp",
                     borderColor = MaterialTheme.colorScheme.primary,
-                    onValueChange = { corner = it; store.setCornerRadiusDp(it) }
+                    onValueChange = { corner = it },
+                    onValueChangeFinished = { store.setCornerRadiusDp(corner) }
                 )
             }
 
@@ -406,7 +409,8 @@ fun DeckScreen(
                     valueRange = 60f..255f,
                     valueDisplay = "${(alpha / 255f * 100).toInt()}%",
                     borderColor = MaterialTheme.colorScheme.primary,
-                    onValueChange = { alpha = it.toInt(); store.setBackgroundAlpha(alpha) }
+                    onValueChange = { alpha = it.toInt() },
+                    onValueChangeFinished = { store.setBackgroundAlpha(alpha) }
                 )
                 ThinDivider()
                 ColorPickerControl(
@@ -438,9 +442,9 @@ fun DeckScreen(
                     speed = animationSpeed,
                     onSpeedChange = {
                         animationSpeed = it
-                        viewModel.preference.setPanelAnimationSpeed(it)
                         demo++
                     },
+                    onSpeedChangeFinished = { viewModel.preference.setPanelAnimationSpeed(animationSpeed) },
                     title = stringResource(R.string.deck_animation),
                     description = stringResource(R.string.deck_animation_desc),
                 )

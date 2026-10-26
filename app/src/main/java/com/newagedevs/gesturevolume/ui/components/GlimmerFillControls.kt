@@ -31,6 +31,11 @@ fun GlimmerFillControls(
     /** How the tiles in its row are dressed: the panel as the user has it. */
     look: FillTileLook,
     modifier: Modifier = Modifier,
+    /**
+     * A change is complete — a slider let go, a look picked. Where a caller writes the setting, so
+     * a drag is written once rather than every frame. See SliderControl.
+     */
+    onChangeFinished: (() -> Unit)? = null,
 ) {
     val locale = LocalConfiguration.current.locales[0]
     val decimals = NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 2 }
@@ -42,7 +47,8 @@ fun GlimmerFillControls(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 10.dp),
         )
-        GlimmerLookRow(style = style, look = look, onChange = onChange)
+        // A pick is complete as it is made; the slider's change only once it is let go.
+        GlimmerLookRow(style = style, look = look, onChange = { onChange(it); onChangeFinished?.invoke() })
         Spacer(modifier = Modifier.height(16.dp))
         SliderControl(
             label = stringResource(R.string.glimmer_speed),
@@ -52,6 +58,7 @@ fun GlimmerFillControls(
             borderColor = accent,
             step = 0.25f,
             onValueChange = { onChange(style.copy(speed = it)) },
+            onValueChangeFinished = onChangeFinished,
         )
     }
 }

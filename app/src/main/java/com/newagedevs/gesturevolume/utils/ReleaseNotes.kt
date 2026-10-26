@@ -35,6 +35,18 @@ object ReleaseNotes {
 
     val HISTORY: List<Entry> = listOf(
         Release(
+            version = "1.5.4",
+            date = null,
+            notes = listOf(
+                "🛠 Crash fixes, including one when an app update was offered",
+                "🧊 No more freezes when opening or closing the app on some phones",
+                "🎚 Settings sliders save when you let go, so dragging stays smooth",
+                "🔁 The bar stays on or off the way you left it, and comes back after the app restarts",
+                "🛡 If you turn off Display over other apps, the bar stops cleanly and returns once you allow it",
+                "📱 Troubleshoot opens auto-start settings on Infinix, TECNO and itel phones",
+            ),
+        ),
+        Release(
             version = "1.5.3",
             date = null,
             notes = listOf(

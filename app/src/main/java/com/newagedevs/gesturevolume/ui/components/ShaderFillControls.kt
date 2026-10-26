@@ -71,12 +71,19 @@ fun ShaderFillControls(
     /** How the tiles in its row are dressed: the panel as the user has it. */
     look: FillTileLook,
     modifier: Modifier = Modifier,
+    /**
+     * A change is complete — a slider let go, an effect picked. Where a caller writes the setting,
+     * so a drag is written once rather than every frame. See SliderControl.
+     */
+    onChangeFinished: (() -> Unit)? = null,
 ) {
     val locale = LocalConfiguration.current.locales[0]
     val decimals = NumberFormat.getNumberInstance(locale).apply {
         minimumFractionDigits = 1
         maximumFractionDigits = 2
     }
+    // A pick is complete as it is made; a slider's change only once it is let go.
+    val pick: (ShaderFill.Style) -> Unit = { onChange(it); onChangeFinished?.invoke() }
 
     Column(modifier = modifier) {
         Text(
@@ -85,7 +92,7 @@ fun ShaderFillControls(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 10.dp),
         )
-        ShaderEffectRow(style = style, look = look, onChange = onChange)
+        ShaderEffectRow(style = style, look = look, onChange = pick)
 
         Spacer(modifier = Modifier.height(16.dp))
         SliderControl(
@@ -100,6 +107,7 @@ fun ShaderFillControls(
             borderColor = accent,
             step = 0.1f,
             onValueChange = { onChange(style.copy(speed = it)) },
+            onValueChangeFinished = onChangeFinished,
         )
         Spacer(modifier = Modifier.height(12.dp))
         SliderControl(
@@ -110,25 +118,34 @@ fun ShaderFillControls(
             borderColor = accent,
             step = 0.1f,
             onValueChange = { onChange(style.copy(scale = it)) },
+            onValueChangeFinished = onChangeFinished,
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Percent(detailLabel(ShaderFill.detail(style.effect)), style.detail, 0f, 1f, accent) {
+        Percent(detailLabel(ShaderFill.detail(style.effect)), style.detail, 0f, 1f, accent, onChangeFinished) {
             onChange(style.copy(detail = it))
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Percent(R.string.shader_brightness, style.brightness, ShaderFill.MIN_BRIGHTNESS, ShaderFill.MAX_BRIGHTNESS, accent) {
+        Percent(R.string.shader_brightness, style.brightness, ShaderFill.MIN_BRIGHTNESS, ShaderFill.MAX_BRIGHTNESS, accent, onChangeFinished) {
             onChange(style.copy(brightness = it))
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Percent(R.string.shader_grain, style.grain, 0f, 1f, accent) { onChange(style.copy(grain = it)) }
+        Percent(R.string.shader_grain, style.grain, 0f, 1f, accent, onChangeFinished) { onChange(style.copy(grain = it)) }
         Spacer(modifier = Modifier.height(12.dp))
-        Percent(R.string.shader_rest, style.rest, 0f, ShaderFill.MAX_REST, accent) { onChange(style.copy(rest = it)) }
+        Percent(R.string.shader_rest, style.rest, 0f, ShaderFill.MAX_REST, accent, onChangeFinished) { onChange(style.copy(rest = it)) }
     }
 }
 
 /** A [min]..[max] fraction, shown and nudged as whole percentages. */
 @Composable
-private fun Percent(label: Int, value: Float, min: Float, max: Float, accent: Color, onChange: (Float) -> Unit) {
+private fun Percent(
+    label: Int,
+    value: Float,
+    min: Float,
+    max: Float,
+    accent: Color,
+    onChangeFinished: (() -> Unit)?,
+    onChange: (Float) -> Unit,
+) {
     SliderControl(
         label = stringResource(label),
         value = value * 100f,
@@ -136,5 +153,6 @@ private fun Percent(label: Int, value: Float, min: Float, max: Float, accent: Co
         valueDisplay = stringResource(R.string.pixel_percent_value, (value * 100f).roundToInt()),
         borderColor = accent,
         onValueChange = { onChange((it / 100f).coerceIn(min, max)) },
+        onValueChangeFinished = onChangeFinished,
     )
 }

@@ -317,7 +317,8 @@ fun LongPressMenuScreen(
                     valueRange = ContextMenuLayout.WIDTH_RANGE,
                     valueDisplay = "${menuWidth.toInt()}dp",
                     borderColor = MaterialTheme.colorScheme.primary,
-                    onValueChange = { menuWidth = it; preference.setContextMenuWidthDp(it) },
+                    onValueChange = { menuWidth = it },
+                    onValueChangeFinished = { preference.setContextMenuWidthDp(menuWidth) },
                     step = 2f,
                 )
                 if (grid) {
@@ -335,7 +336,8 @@ fun LongPressMenuScreen(
                     valueRange = ContextMenuLayout.HEIGHT_RANGE,
                     valueDisplay = "${menuHeight.toInt()}dp",
                     borderColor = MaterialTheme.colorScheme.primary,
-                    onValueChange = { menuHeight = it; preference.setContextMenuHeightDp(it) },
+                    onValueChange = { menuHeight = it },
+                    onValueChangeFinished = { preference.setContextMenuHeightDp(menuHeight) },
                     step = 4f,
                 )
                 Text(
@@ -480,7 +482,8 @@ fun LongPressMenuScreen(
                         valueRange = 40f..255f,
                         valueDisplay = "${(menuAlpha / 255f * 100).toInt()}%",
                         borderColor = MaterialTheme.colorScheme.primary,
-                        onValueChange = { menuAlpha = it.toInt(); preference.setMenuAlpha(it.toInt()) },
+                        onValueChange = { menuAlpha = it.toInt() },
+                        onValueChangeFinished = { preference.setMenuAlpha(menuAlpha) },
                     )
                 }
             }
@@ -506,9 +509,9 @@ fun LongPressMenuScreen(
                     speed = animationSpeed,
                     onSpeedChange = {
                         animationSpeed = it
-                        preference.setPanelAnimationSpeed(it)
                         replay++
                     },
+                    onSpeedChangeFinished = { preference.setPanelAnimationSpeed(animationSpeed) },
                 )
             }
 

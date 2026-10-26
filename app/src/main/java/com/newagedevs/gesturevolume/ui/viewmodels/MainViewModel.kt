@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @HiltViewModel
@@ -58,6 +59,16 @@ class MainViewModel @Inject constructor(
     var overlayService: OverlayServiceInterface? = null
     private var serviceConnection: ServiceConnection? = null
     private var isBound = false
+
+    /**
+     * A binding asked for and not connected yet. BIND_AUTO_CREATE keeps the service up until it
+     * connects, which is what [stopOverlayService] has to allow for when the bar is switched off
+     * in that gap.
+     */
+    private var connectionInFlight: ServiceConnection? = null
+
+    /** Bindings the bar was switched off under before they connected, let go the moment they do. */
+    private val connectionsToDrop = mutableSetOf<ServiceConnection>()
 
     var lastBackPressedTime: Long = 0
 
@@ -349,14 +360,39 @@ class MainViewModel @Inject constructor(
         if (!OverlayRuntime.canHostOverlay(context)) return
         OverlayRuntime.startOverlay(context)
 
-        val service = Intent(context, OverlayService::class.java)
-        serviceConnection = object : ServiceConnection {
+        bindOverlayService(context) {
+            // The service is bound and the handler is configured and ready, which is the
+            // moment setup is finished — the one full-screen ad the grace period allows.
+            if (announceWithAd) maybeShowInterstitialAd(AdPacing.Trigger.SERVICE_STARTED)
+        }
+    }
+
+    /**
+     * Binds to the service, once. A second binding made while the first is still on its way —
+     * onStart's repair and rebind both asking — outlived the stop, which knows about one.
+     *
+     * @param onConnected run when the binding lands, unless the bar was switched off before then.
+     */
+    private fun bindOverlayService(context: Context, onConnected: () -> Unit = {}) {
+        if (isBound || connectionInFlight != null) return
+        // Weakly: this ViewModel outlives the Activity, and Android unbinds a destroyed Activity's
+        // connections itself.
+        val owner = WeakReference(context)
+        val connection = object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName, service: IBinder) {
+                if (connectionInFlight === this) connectionInFlight = null
+                if (connectionsToDrop.remove(this)) {
+                    // Switched off while this was on its way. The service has been through
+                    // onCreate, so it is in the foreground and safe to let go now, and a start
+                    // the user called off is no moment for an ad.
+                    try {
+                        owner.get()?.unbindService(this)
+                    } catch (_: Exception) { /* already unbound */ }
+                    return
+                }
                 overlayService = (service as OverlayService.LocalBinder).instance()
                 isBound = true
-                // The service is bound and the handler is configured and ready, which is the
-                // moment setup is finished — the one full-screen ad the grace period allows.
-                if (announceWithAd) maybeShowInterstitialAd(AdPacing.Trigger.SERVICE_STARTED)
+                onConnected()
             }
 
             override fun onServiceDisconnected(name: ComponentName) {
@@ -364,12 +400,14 @@ class MainViewModel @Inject constructor(
                 isBound = false
             }
         }
-        serviceConnection?.let {
-            try {
-                context.bindService(service, it, Context.BIND_AUTO_CREATE)
-            } catch (_: Exception) {
-                // Bound state is only used for the ad and the reset; the bar is up regardless.
+        serviceConnection = connection
+        try {
+            val service = Intent(context, OverlayService::class.java)
+            if (context.bindService(service, connection, Context.BIND_AUTO_CREATE)) {
+                connectionInFlight = connection
             }
+        } catch (_: Exception) {
+            // Bound state is only used for the ad and the reset; the bar is up regardless.
         }
     }
 
@@ -380,6 +418,13 @@ class MainViewModel @Inject constructor(
                 serviceConnection?.let { context.unbindService(it) }
             } catch (_: Exception) { /* already unbound */ }
             isBound = false
+        } else if (connectionInFlight != null) {
+            // Switched off before the binding has landed. Unbinding now could let the stop below
+            // take the service down before its onCreate has called startForeground — a
+            // RemoteServiceException on Android 8–11, ForegroundServiceDidNotStartInTimeException
+            // after — so the binding is let land and dropped the moment it does, with no ad.
+            connectionInFlight?.let { connectionsToDrop.add(it) }
+            connectionInFlight = null
         }
         overlayService = null
 
@@ -409,25 +454,9 @@ class MainViewModel @Inject constructor(
     fun rebindToServiceIfRunning(context: Context) {
         if (preference.isRunning() && !isBound) {
             if (OverlayRuntime.isServiceRunning(context, OverlayService::class.java)) {
-                val service = Intent(context, OverlayService::class.java)
-                serviceConnection = object : ServiceConnection {
-                    override fun onServiceConnected(name: ComponentName, service: IBinder) {
-                        overlayService = (service as OverlayService.LocalBinder).instance()
-                        isBound = true
-                    }
-
-                    override fun onServiceDisconnected(name: ComponentName) {
-                        overlayService = null
-                        isBound = false
-                    }
-                }
-                serviceConnection?.let {
-                    try {
-                        context.bindService(service, it, Context.BIND_AUTO_CREATE)
-                    } catch (_: Exception) {
-                        // Nothing depends on the binding but the ad and the reset.
-                    }
-                }
+                // Nothing depends on the binding but the ad and the reset. None is made if the
+                // repair one line before this in onStart has just started one.
+                bindOverlayService(context)
             } else {
                 // The service is not up — sync state
                 _state.value = _state.value.copy(isRunning = false)
@@ -716,7 +745,14 @@ class MainViewModel @Inject constructor(
     fun observeCommunicator(activity: Activity) {
         if (messageObserver != null) return
 
+        // A new observer is handed the last command the service received, however old. Replayed
+        // into a rotated or relaunched Activity, the notification's "stop" from an hour before
+        // stopped a bar the user had since switched back on, and a "show" from before they
+        // stopped it from its own menu started it again. Only commands sent from here on are acted
+        // on; how things stand now is read on every resume instead (SyncServiceState).
+        val subscribedAt = LiveDataManager.communicator().sequence
         messageObserver = Observer { message ->
+            if (LiveDataManager.communicator().sequence <= subscribedAt) return@Observer
             when (message) {
                 "show" -> {
                     // Handle show command - could restart or show overlay
