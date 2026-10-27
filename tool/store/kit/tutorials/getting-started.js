@@ -114,4 +114,4 @@ export async function script(T) {
   });
 }
 
-export const THUMB = { t: 13.0, title: 'Get started', cam: { cx: 206, cy: 380, s: 1.45, deg: -5 } };
+export const THUMB = { t: 13.0, title: 'Get started' };

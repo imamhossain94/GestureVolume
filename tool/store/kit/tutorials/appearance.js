@@ -127,4 +127,4 @@ export async function script(T) {
   T.on((t) => { app.render(t); mine.draw({ alpha: t >= homeAt ? 1 : 0 }); });
 }
 
-export const THUMB = { t: 35.0, title: 'Make it yours', cam: { cx: 206, cy: 430, s: 1.45, deg: -5 } };
+export const THUMB = { t: 35.0, title: 'Make it yours', hand: false };

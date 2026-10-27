@@ -11,7 +11,7 @@ import { entries, PROMO, clock, STORE } from './youtube.mjs';
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(ROOT, 'build/gallery');
 const MEDIA = path.join(OUT, 'media');
-const REPO = 'https://github.com/imamhossain94/GestureVolume/tree/claude/sweet-meitner-a3s3e9';
+const REPO = 'https://github.com/imamhossain94/GestureVolume/tree/feat/store-art-bleed';
 
 const SHOTS = [
   ['01-swipe', 'Volume on the edge', 'Swipe the bar and the Quick slider follows your finger'],
@@ -22,7 +22,6 @@ const SHOTS = [
   ['06-appearance', 'Make it yours', 'Presets, size, shape, colour and icon, with a live preview'],
   ['07-menu', 'Hold for more', 'A long-press menu of your own, in glass or solid'],
   ['08-visibility', 'Out of the way', 'Hide the bar in the apps you choose, or while you type'],
-  ['09-coin', 'Heads or tails', 'A coin, dice, a timer and notes, all in the Deck'],
 ];
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -39,14 +38,8 @@ const clip = (src, out, scale) => {
 fs.mkdirSync(path.join(MEDIA, 'shots'), { recursive: true });
 fs.mkdirSync(path.join(MEDIA, 'tut'), { recursive: true });
 const G = path.join(STORE, 'graphics');
-still(path.join(G, 'feature-graphic.png'), path.join(MEDIA, 'feature-a.jpg'), 1024);
-still(path.join(G, 'extras/feature-graphic-b.png'), path.join(MEDIA, 'feature-b.jpg'), 1024);
-for (const style of ['bleed', 'card']) {
-  for (const [id] of SHOTS) {
-    const src = path.join(G, id === '09-coin' ? 'extras' : 'screenshots', style, id + '.png');
-    still(src, path.join(MEDIA, 'shots', `${style}-${id}.jpg`), 540);
-  }
-}
+still(path.join(G, 'feature-graphic.png'), path.join(MEDIA, 'feature.jpg'), 1024);
+for (const [id] of SHOTS) still(path.join(G, 'screenshots/bleed', id + '.png'), path.join(MEDIA, 'shots', `${id}.jpg`), 540);
 const V = path.join(STORE, 'video');
 clip(path.join(V, 'promo-1080p.mp4'), path.join(MEDIA, 'promo.mp4'), '1280:720');
 clip(path.join(V, 'promo-vertical.mp4'), path.join(MEDIA, 'promo-vertical.mp4'), '720:1280');
@@ -61,13 +54,10 @@ const icon = fs.readFileSync(path.join(ROOT, 'build/drawable/ic_launcher_foregro
 const iconUri = 'data:image/svg+xml;base64,' + Buffer.from(icon).toString('base64');
 
 // --- The files, for the table ------------------------------------------------------------------------
-const rel = (f) => path.relative(path.join(STORE, '..'), f);
+const rel = (f) => path.relative(path.join(STORE, '..'), f).split(path.sep).join('/');
 const files = [
-  [path.join(G, 'feature-graphic.png'), 'Feature graphic A, 1024 × 500', 'Main store listing › Feature graphic'],
-  [path.join(G, 'extras/feature-graphic-b.png'), 'Feature graphic B, the alternative', '—'],
+  [path.join(G, 'feature-graphic.png'), 'Feature graphic, 1024 × 500', 'Main store listing › Feature graphic'],
   [path.join(G, 'screenshots/bleed'), '8 phone screenshots, 1080 × 1920, Bleed style', 'Phone screenshots, in order 01–08'],
-  [path.join(G, 'screenshots/card'), 'The same 8 in the Card style', 'Instead of Bleed, if you prefer it'],
-  [path.join(G, 'extras'), 'Coin toss, the 9th shot, in both styles', 'Spare: swap in for any of the 8'],
   [path.join(V, 'promo-1080p.mp4'), 'Promo, 0:30, 1920 × 1080', 'YouTube, then its link in Main store listing › Video'],
   [path.join(V, 'promo-vertical.mp4'), 'Promo, 0:30, 1080 × 1920', 'YouTube Shorts'],
   [path.join(V, 'promo-thumbnail.png'), 'Promo thumbnail, 1280 × 720', 'YouTube thumbnail'],
@@ -82,9 +72,9 @@ const fmt = (n) => (n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.rou
 // --- The page -------------------------------------------------------------------------------------------
 const total = tuts.reduce((n, e) => n + e.duration, 0);
 const copyBlock = (id, label, text) => `<div class="copy"><div class="copy-head"><span>${label}</span><button type="button" data-copy="${id}" data-label="Copy">Copy</button></div><pre id="${id}">${esc(text)}</pre></div>`;
-const shotRow = (style) => `<ol class="shots" data-style="${style}"${style === 'card' ? ' hidden' : ''}>${SHOTS.map(([id, t, s], i) => `
-    <li${i === 8 ? ' class="spare"' : ''}><img src="media/shots/${style}-${id}.jpg" width="540" height="960" loading="lazy" alt="${esc(t)}: ${esc(s)}">
-      <div class="cap"><span class="num">${i === 8 ? 'Spare' : String(i + 1).padStart(2, '0')}</span><strong>${esc(t)}</strong><span>${esc(s)}</span></div></li>`).join('')}</ol>`;
+const shotRow = `<ol class="shots">${SHOTS.map(([id, t, s], i) => `
+    <li><img src="media/shots/${id}.jpg" width="540" height="960" loading="lazy" alt="${esc(t)}: ${esc(s)}">
+      <div class="cap"><span class="num">${String(i + 1).padStart(2, '0')}</span><strong>${esc(t)}</strong><span>${esc(s)}</span></div></li>`).join('')}</ol>`;
 
 const html = `<title>Gesture Volume Store Art</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -136,13 +126,9 @@ figure img, figure video { width: 100%; height: auto; display: block; border-rad
 figcaption { color: var(--muted); font-size: 14px }
 figcaption strong { color: var(--ink) }
 .pill { display: inline-block; font: 700 11px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); margin-right: 6px; vertical-align: 1px }
-.switch { display: inline-flex; padding: 4px; border-radius: 12px; background: var(--soft); gap: 4px; justify-self: start }
-.switch button { font: 600 14px/1 var(--body); border: 0; border-radius: 9px; padding: 10px 16px; background: transparent; color: var(--muted); cursor: pointer }
-.switch button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12) }
 .shots { list-style: none; margin: 0; padding: 0 0 12px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(180px, 220px); gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory }
 .shots li { scroll-snap-align: start; display: grid; gap: 10px; align-content: start }
 .shots img { width: 100%; height: auto; border-radius: 12px; display: block; border: 1px solid var(--line) }
-.shots .spare img { opacity: .75 }
 .cap { display: grid; gap: 2px; font-size: 13px; color: var(--muted) }
 .cap strong { color: var(--ink); font-size: 14px }
 .num { font: 600 12px/1.4 var(--mono); color: var(--accent) }
@@ -175,13 +161,13 @@ pre.cmd { margin: 0; padding: 16px 18px; background: var(--surface); border: 1px
   <header class="top">
     <div class="mark"><img src="${iconUri}" alt=""></div>
     <div class="text">
-      <p class="eyebrow">Store kit · version 1.5.2</p>
+      <p class="eyebrow">Store kit · version 1.5.4</p>
       <h1>Gesture Volume Store Art</h1>
       <p class="lede">Google Play graphics, a 30-second promo in two cuts, and ${tuts.length} YouTube tutorials. Every frame is drawn from the app's own Compose code, shaders and drawables, and rendered in a browser. All of it is in the repository under <code>store/</code>.</p>
       <p><a href="${REPO}/store" target="_blank" rel="noopener">Open store/ on GitHub</a></p>
       <dl class="facts">
-        <div><dt>Feature graphic</dt><dd>2 options</dd></div>
-        <div><dt>Phone screenshots</dt><dd>8 + 1 spare, 2 styles</dd></div>
+        <div><dt>Feature graphic</dt><dd>1024 × 500</dd></div>
+        <div><dt>Phone screenshots</dt><dd>8</dd></div>
         <div><dt>Promo</dt><dd>0:30, 16:9 and 9:16</dd></div>
         <div><dt>Tutorials</dt><dd>${tuts.length} videos, ${clock(total)} in all</dd></div>
       </dl>
@@ -192,9 +178,7 @@ pre.cmd { margin: 0; padding: 16px 18px; background: var(--surface); border: 1px
     <h2 id="confirm">Things to confirm before you upload</h2>
     <ul>
       <li>Everything is drawn from the code, not captured on a phone. Compare a few screens with your own device before you publish.</li>
-      <li>Pick one screenshot style. I would use Bleed (light, the phone large and cropped); Card (dark, the whole phone) is the alternative.</li>
-      <li>Google Play takes 8 phone screenshots and your listing brief lists nine, so the coin toss is kept as a spare.</li>
-      <li>Play lays its play button over the middle of the feature graphic once the listing has a video. Both options keep the middle clear.</li>
+      <li>Once the listing has a video, Play shows the feature graphic as its cover, cropped to 16:9 with a play button over the middle. The words and the sliders sit inside that crop, and the middle is left clear.</li>
       <li>The music is generated by a script and measured at −14 LUFS, but I could not listen to it. Give it a listen.</li>
       <li>The tutorials have on-screen captions and .srt subtitles but no voice. <code>youtube.md</code> has a voice-over script for each if you want to record one.</li>
       <li>Other companies' names appear only where the app itself prints them: the search providers (Google, YouTube, Maps) and the intro of Gestures for chosen apps. The apps, contacts and icons around the app are made up.</li>
@@ -205,20 +189,14 @@ pre.cmd { margin: 0; padding: 16px 18px; background: var(--surface); border: 1px
   <section aria-labelledby="fg">
     <p class="eyebrow">Google Play · 1024 × 500</p>
     <h2 id="fg">Feature graphic</h2>
-    <div class="figs">
-      <figure><img src="media/feature-a.jpg" width="1024" height="500" alt="Feature graphic A: Volume. Brightness. Everything else, beside the Quick slider with a plasma fill"><figcaption><span class="pill">Use this</span><strong>A.</strong> Your brief: the bar grown into the Quick slider at the right edge, the line on the left third.</figcaption></figure>
-      <figure><img src="media/feature-b.jpg" width="1024" height="500" alt="Feature graphic B: the icon and name beside a tilted phone with the Deck open"><figcaption><strong>B.</strong> The icon and name beside a phone with the Deck and its media card open.</figcaption></figure>
-    </div>
+    <figure><img src="media/feature.jpg" width="1024" height="500" alt="Feature graphic: Volume and brightness, your way, beside tilted columns of Quick sliders in different fills"><figcaption>The line on the left and the Quick slider (Classic shape, 72 dp) in a dozen of its fills on the right, both inside the 16:9 crop Play shows behind its play button, the middle left clear.</figcaption></figure>
   </section>
 
   <section aria-labelledby="ss">
     <p class="eyebrow">Google Play · 1080 × 1920, 24-bit PNG</p>
     <h2 id="ss">Phone screenshots</h2>
     <p>In your brief's order; the first three decide installs. Each caption is a title and one line, with no claims Play's metadata rules object to.</p>
-    <div class="switch" role="group" aria-label="Screenshot style">
-      <button type="button" aria-pressed="true" data-style="bleed">Bleed</button><button type="button" aria-pressed="false" data-style="card">Card</button>
-    </div>
-    ${shotRow('bleed')}${shotRow('card')}
+    ${shotRow}
   </section>
 
   <section aria-labelledby="promo">
@@ -265,7 +243,7 @@ pre.cmd { margin: 0; padding: 16px 18px; background: var(--surface); border: 1px
     <pre class="cmd">npm install                                   # fonts, icons and Playwright
 python3 vd2svg.py --all ../../app/src/main/res/drawable build/drawable
 python3 extract_shaders.py                    # the Quick slider's fills, from the Kotlin
-node render-graphics.mjs                      # feature graphics and screenshots
+node render-graphics.mjs                      # feature graphic and screenshots
 python3 finish.py                             # 24-bit PNG, checked against Play's limits
 node render.mjs video promo ../../store/video/promo-1080p.mp4
 node render.mjs video promo ../../store/video/promo-vertical.mp4 --query v=1
@@ -278,10 +256,6 @@ node gallery.mjs                              # this page</pre>
 </main>
 
 <script>
-document.querySelectorAll('.switch button').forEach((b) => b.addEventListener('click', () => {
-  document.querySelectorAll('.switch button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-  document.querySelectorAll('.shots').forEach((row) => { row.hidden = row.dataset.style !== b.dataset.style; });
-}));
 document.addEventListener('click', async (e) => {
   const b = e.target.closest('[data-copy]');
   if (!b) return;

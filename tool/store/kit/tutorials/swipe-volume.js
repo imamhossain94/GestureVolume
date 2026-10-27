@@ -120,4 +120,4 @@ export async function script(T) {
   });
 }
 
-export const THUMB = { t: 12.4, title: 'Swipe for volume', cam: { cx: 320, cy: 300, s: 2.0, deg: -5 } };
+export const THUMB = { t: 11.5, title: 'Swipe for volume' };

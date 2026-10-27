@@ -1,20 +1,19 @@
-// YouTube thumbnails (1280 x 720, drawn at 1920 x 1080 and scaled down): the app's name, a title
-// big enough to read on a phone, and the phone showing the moment that matters, tilted a little.
+// YouTube thumbnails (1280 x 720, drawn at 1920 x 1080 and scaled down), in the style of the Bleed
+// screenshots: dark words on their light backdrop on the left, and the phone upright on the right,
+// large and cropped at the bottom, the same size and in the same place in every one.
 import { h } from './core.js';
-import { gvIcon } from './phone.js';
 
-export function thumbOverlay({ title, badge = null, sub = null }) {
-  return h(`<div class="thumb" style="position:absolute;inset:0;z-index:50;pointer-events:none">
-      <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(16,11,51,.92) 0%,rgba(16,11,51,.78) 40%,rgba(16,11,51,0) 62%)"></div>
-      <div style="position:absolute;left:110px;top:0;bottom:0;width:930px;display:flex;flex-direction:column;justify-content:center">
-        <div style="display:flex;align-items:center;gap:24px">${gvIcon(92, 'squircle')}
-          <div style="font:800 50px/1 'Plus Jakarta Sans';letter-spacing:-.01em;color:#fff;white-space:nowrap">Gesture Volume</div></div>
-        <div style="margin-top:44px;font:800 164px/.96 'Plus Jakarta Sans';letter-spacing:-.045em;color:#fff;text-wrap:balance">${title}</div>
-        ${sub ? `<div style="margin-top:40px;font:600 50px/1.22 'Plus Jakarta Sans';color:#C9C2FF;text-wrap:balance">${sub}</div>` : ''}
-        ${badge ? `<div style="margin-top:48px;align-self:flex-start;border-radius:999px;background:#7C6CF6;padding:16px 36px;font:800 44px/1 'Plus Jakarta Sans';color:#fff;white-space:nowrap">${badge}</div>` : ''}
-      </div></div>`);
+export function thumbOverlay({ title, sub = null, badge = null }) {
+  // A hyphenated word stays whole, so "Long-press" never breaks after its hyphen.
+  title = title.replace(/\S+-\S+/g, (w) => `<span style="white-space:nowrap">${w}</span>`);
+  return h(`<div class="thumb" style="position:absolute;left:120px;top:0;bottom:0;width:900px;z-index:50;pointer-events:none;display:flex;flex-direction:column;justify-content:center">
+      <div style="font:700 32px/1 'Plus Jakarta Sans';letter-spacing:.16em;text-transform:uppercase;color:#4F46E5">Gesture Volume</div>
+      <div style="margin-top:30px;font:800 150px/.98 'Plus Jakarta Sans';letter-spacing:-.04em;color:#1E1B4B;text-wrap:balance">${title}</div>
+      ${sub ? `<div style="margin-top:36px;max-width:820px;font:500 46px/1.28 'Plus Jakarta Sans';color:#4F46E5;text-wrap:balance">${sub}</div>` : ''}
+      ${badge ? `<div style="margin-top:48px;align-self:flex-start;border-radius:999px;background:#4F46E5;padding:16px 34px;font:800 40px/1 'Plus Jakarta Sans';color:#fff;white-space:nowrap">${badge}</div>` : ''}
+    </div>`);
 }
 
-// The frame's transform that puts phone point (cx, cy) at (fx, fy), scaled s and turned deg.
-export const thumbTransform = ({ cx, cy, s, deg = -4, fx = 1440, fy = 560 }) =>
-  `translate(${fx}px,${fy}px) rotate(${deg}deg) scale(${s}) translate(${-(cx + 7)}px,${-(cy + 7)}px)`;
+// Where the phone's frame (426 x 929 at scale 1) goes: scaled 1.42, its top 96 px down and its right
+// edge 150 px in from the thumbnail's right edge, so about the top three quarters of the screen show.
+export const thumbTransform = (W = 1920, s = 1.42) => `translate(${W - 150 - 426 * s}px,96px) scale(${s})`;

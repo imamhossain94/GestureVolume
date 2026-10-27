@@ -6,7 +6,7 @@ const q = new URLSearchParams(location.search);
 if (q.get('fill')) { const [kind, name] = q.get('fill').split(':'); window.SHOT_FILL = kind === 'surge' ? { kind, look: name } : kind === 'shader' ? { kind, effect: name } : { kind }; }
 const def = SHOTS.find((s) => s.id === q.get('id')) || SHOTS[+(q.get('n') || 0)];
 window.sceneReady = (async () => {
-  const draw = await composeShot(document.getElementById('root'), def, q.get('style') || 'card');
+  const draw = await composeShot(document.getElementById('root'), def, q.get('style') || 'bleed');
   window.scene = { width: 1080, height: 1920, duration: 0, seek(t) { draw(t); } };
 })();
 </script></body></html>

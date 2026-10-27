@@ -8,11 +8,8 @@ Compare a few screens with a real device before you publish.
 
 | File | Size | Where it goes |
 |---|---|---|
-| `graphics/feature-graphic.png` | 1024 × 500 | Main store listing › Feature graphic. Option A, from the brief in `play-listing-en.md`. |
-| `graphics/extras/feature-graphic-b.png` | 1024 × 500 | The alternative: the icon and name beside a phone with the Deck open. |
+| `graphics/feature-graphic.png` | 1024 × 500 | Main store listing › Feature graphic. "Volume & brightness, your way" beside the Quick slider (Classic shape, 72 dp) in a dozen of its fills, on the Bleed screenshots' backdrop. |
 | `graphics/screenshots/bleed/01–08` | 1080 × 1920 | Phone screenshots, in this order. Light, with the phone large and cropped. |
-| `graphics/screenshots/card/01–08` | 1080 × 1920 | The same eight, dark, with the whole phone. Use one style or the other. |
-| `graphics/extras/*/09-coin.png` | 1080 × 1920 | The ninth shot from the brief. Play takes eight phone screenshots, so it is a spare. |
 
 The screenshots are 24-bit PNG with no alpha, as Play requires. Their captions:
 
@@ -26,11 +23,12 @@ The screenshots are 24-bit PNG with no alpha, as Play requires. Their captions:
 | 06 | Make it yours | Presets, size, shape, colour and icon, with a live preview |
 | 07 | Hold for more | A long-press menu of your own, in glass or solid |
 | 08 | Out of the way | Hide the bar in the apps you choose, or while you type |
-| 09 | Heads or tails | A coin, dice, a timer and notes, all in the Deck |
 
 Play's promo video is a YouTube link: upload `video/promo-1080p.mp4`, then paste its URL into Main
-store listing › Video. Play then lays a play button over the middle of the feature graphic, which
-both options keep clear.
+store listing › Video. Play then shows the feature graphic as the video's cover: cropped to 16:9,
+which takes 68 px off each side, with a play button over the middle. So the words and the sliders
+sit inside that crop, in its left and right thirds, and the middle is left clear. The promo's
+thumbnail is the same layout at 16:9.
 
 ## YouTube
 

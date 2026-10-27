@@ -157,4 +157,4 @@ export async function script(T) {
   });
 }
 
-export const THUMB = { t: 28.5, title: 'The Deck', cam: { cx: 230, cy: 240, s: 2.0, deg: -5 } };
+export const THUMB = { t: 28.5, title: 'The Deck', hand: false };

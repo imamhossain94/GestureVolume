@@ -102,4 +102,4 @@ export async function script(T) {
   });
 }
 
-export const THUMB = { t: 11.0, title: 'Long-press menu', cam: { cx: 260, cy: 230, s: 1.9, deg: -5 } };
+export const THUMB = { t: 11.0, title: 'Long-press menu' };
