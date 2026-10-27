@@ -104,4 +104,4 @@ export async function script(T) {
   T.on((t) => { actionsEl.render(t); picker1.render(t); editor.render(t); });
 }
 
-export const THUMB = { t: 33.5, title: 'Your gestures', cam: { cx: 206, cy: 330, s: 1.5, deg: -5 } };
+export const THUMB = { t: 33.5, title: 'Your gestures' };

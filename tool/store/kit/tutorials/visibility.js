@@ -160,4 +160,4 @@ export async function script(T) {
   });
 }
 
-export const THUMB = { t: 58.6, title: 'Out of the way', cam: { cx: 236, cy: 470, s: 1.3, deg: -5 } };
+export const THUMB = { t: 37.5, title: 'Out of the way', hand: false };

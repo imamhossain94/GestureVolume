@@ -1,4 +1,4 @@
-// YouTube thumbnails, 1280 x 720: the promo's (feature graphic A at 16:9) and one per rendered
+// YouTube thumbnails, 1280 x 720: the promo's (the feature graphic's layout at 16:9) and one per rendered
 // tutorial (its THUMB moment). Drawn at 1920 x 1080 and scaled down.
 //
 //   node render-thumbs.mjs [id ...]

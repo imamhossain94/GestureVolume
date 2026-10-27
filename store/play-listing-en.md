@@ -223,8 +223,10 @@ Nine phone screenshots, in this order; the first three decide installs.
 8. Visibility: the chosen apps beside all apps
 9. The Deck's coin toss mid-flip
 
-Feature graphic (1024×500): the bar at the right edge with the Quick slider grown out of it, on a
-plain gradient, with "Volume. Brightness. Everything else." on the left third.
+Feature graphic (1024×500): "Volume & brightness, your way" on the left third and, on the right
+third, the Quick slider (Classic shape, 72 dp thick) in a dozen of its fills, in tilted columns, on
+the light backdrop of the Bleed screenshots. Play also shows it as the promo video's cover, cropped
+to 16:9 with a play button over the middle, so both stay inside that crop and the middle stays clear.
 
 Content rating questionnaire: no violence, sexual content or gambling; **contains ads**; users
 cannot interact with each other; the app does not share the user's location itself (ad networks may

@@ -155,4 +155,4 @@ function keyFor(ch) {
   return ch;
 }
 
-export const THUMB = { t: 13.0, title: 'Search in the Deck', cam: { cx: 200, cy: 200, s: 2.2, deg: -4, fx: 1470 } };
+export const THUMB = { t: 13.0, title: 'Search in the Deck' };

@@ -1,9 +1,11 @@
 // The Play Store phone screenshots: nine scenes from store/play-listing-en.md's shot list, each
-// drawn by the kit and framed two ways at 1080 x 1920 — "card" (the whole screen under a
-// caption) and "close" (closer in on the part that matters).
+// drawn by the kit and framed at 1080 x 1920 — "bleed" (light, the phone large and cropped, the
+// framing the store uses) or "card" (dark, the whole screen under a caption).
 import { h, icon, loadIcons, fontsReady, imagesReady, clamp } from './core.js';
 import { Phone, homeScreen, PHONE_ICONS, SCREEN, paintWallpaper } from './phone.js';
 import { EdgeBar, QuickPanel, PRESETS, loadDrawables, drawDrawable, tabPoints, DPR } from './quickpanel.js';
+import { FillPanel } from './panelfills.js';
+import './pictorialfills.js';
 import { Deck, DECK_ICONS, searchCard, mediaCard, coinCard, coinAt } from './deck.js';
 import { LongPressMenu, MENU_ICONS } from './menu.js';
 import { appearanceScreen, quickSliderScreen, visibilityScreen, mountQuickSlider, SCREEN_ICONS } from './screens.js';
@@ -15,7 +17,7 @@ import * as M from './m3.js';
 export const ALL_ICONS = [...new Set([...PHONE_ICONS, ...DECK_ICONS, ...MENU_ICONS, ...SCREEN_ICONS, ...SYSTEM_ICONS])];
 export const DRAWABLES = ['ic_vol_increase', 'ic_vol_decrease', 'ic_move', 'ic_brightness_up', 'ic_mute'];
 
-export const HERO_FILL = { kind: 'shader', effect: 'plasma' };
+export const HERO_FILL = { kind: 'surge', look: 'curve' };
 const PEOPLE = [{ name: 'Mom', via: 'call' }, { name: 'Alex Kim', via: 'whatsapp' }];
 
 function addHand(phone, pose) {
@@ -37,9 +39,10 @@ export const SHOTS = [
     build(phone) {
       phone.below.appendChild(homeScreen());
       const bar = new EdgeBar(phone, PRESETS.dock);
-      const qp = new QuickPanel(phone, bar, { fill: window.SHOT_FILL || HERO_FILL });
+      const qp = new FillPanel(phone, bar, { fill: window.SHOT_FILL || HERO_FILL });
+      // At 1.59 s on the feedback clock the sheen has just left the fill, so the still shows none.
       const v = 0.72;
-      return (t) => { bar.draw({ alpha: 0 }); qp.draw({ e: 1, value: v, t: 2.2 + t, fillTime: 11 + t }); };
+      return (t) => { bar.draw({ alpha: 0 }); qp.draw({ e: 1, value: v, t: 1.59 + t, fillTime: 11 + t, phase: ((2.2 + t) / 2.6) % 1 }); };
     },
     wallpaper: 'dusk',
   },

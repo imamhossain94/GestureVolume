@@ -158,16 +158,18 @@ export async function buildTutorial(root, id, script, { icons = [], prepare = nu
   await loadIcons([...new Set([...PHONE_ICONS, ...M3_ICONS, ...icons])]);
   if (prepare) await prepare();
   await fontsReady();
-  root.style.cssText = `position:relative;width:${W}px;height:${H}px;overflow:hidden;background:#100B33`;
+  // The videos are dark; the thumbnails take the light backdrop and frame of the Bleed screenshots.
+  const light = !!thumb;
+  root.style.cssText = `position:relative;width:${W}px;height:${H}px;overflow:hidden;background:${light ? '#F5F3FF' : '#100B33'}`;
 
-  const bd = new Backdrop(W, H, { seed: 40 + n });
+  const bd = new Backdrop(W, H, { light, seed: 40 + n });
   root.appendChild(bd.el);
 
   // --- The phone ----------------------------------------------------------------------------------
   const world = h(`<div style="position:absolute;inset:0"></div>`);
   root.appendChild(world);
-  const frame = h(`<div style="position:absolute;left:0;top:0;transform-origin:0 0;padding:7px;border-radius:53px;background:rgba(255,255,255,.92);
-      box-shadow:0 40px 90px rgba(8,5,30,.55),0 10px 30px rgba(8,5,30,.35)"></div>`);
+  const frame = h(`<div style="position:absolute;left:0;top:0;transform-origin:0 0;padding:7px;border-radius:53px;background:${light ? '#FFFFFF' : 'rgba(255,255,255,.92)'};
+      box-shadow:${light ? '0 30px 80px rgba(49,46,129,.28),0 8px 24px rgba(49,46,129,.18)' : '0 40px 90px rgba(8,5,30,.55),0 10px 30px rgba(8,5,30,.35)'}"></div>`);
   // Side keys, so a video can press them: power, then volume up and down, on the right.
   const key = (y, hgt) => h(`<div style="position:absolute;left:424px;top:${y}px;width:5px;height:${hgt}px;border-radius:0 3px 3px 0;background:rgba(232,230,245,.95);transform-origin:0 50%"></div>`);
   const keys = { power: key(190, 58), up: key(286, 84), down: key(376, 84) };
@@ -351,13 +353,15 @@ export async function buildTutorial(root, id, script, { icons = [], prepare = nu
 
   const series = { n, of: SERIES.length, id, title: meta.title, sub: meta.sub, next: next ? next.title : null };
   if (thumb) {
-    // A still for the thumbnail: the moment thumb.t, the phone where thumb.cam puts it, words over.
+    // A still for the thumbnail: the moment thumb.t, the phone upright on the right, words beside it;
+    // thumb.hand false leaves the hand out.
     for (const el of [header, bar, title, outro, ...caps.map((c) => c.el)]) el.style.display = 'none';
-    root.appendChild(thumbOverlay({ title: thumb.title, badge: `Tutorial ${n}` }));
+    root.appendChild(thumbOverlay({ title: thumb.title, sub: meta.sub, badge: `Tutorial ${n}` }));
     const still = () => {
       seek(thumb.t);
       for (const el of [header, bar, title, outro, ...caps.map((c) => c.el)]) el.style.display = 'none';
-      frame.style.transform = thumbTransform(thumb.cam);
+      if (thumb.hand === false) handWrap.style.display = 'none';
+      frame.style.transform = thumbTransform(W);
       frame.style.opacity = 1;
     };
     return { width: W, height: H, duration: 0, seek: still };

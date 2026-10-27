@@ -194,4 +194,4 @@ export async function script(T) {
   });
 }
 
-export const THUMB = { t: 66.7, title: 'Quick slider', cam: { cx: 206, cy: 236, s: 1.9, deg: -5 } };
+export const THUMB = { t: 66.7, title: 'Quick slider' };

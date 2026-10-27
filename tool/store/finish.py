@@ -13,7 +13,7 @@ def check(path, im):
     name = os.path.relpath(path, ROOT)
     if "feature-graphic" in name and (w, h) != (1024, 500):
         sys.exit(f"{name}: feature graphic must be 1024 x 500, is {w} x {h}")
-    if "screenshots" in name or "extras/card" in name or "extras/bleed" in name:
+    if "screenshots" in name:
         if min(w, h) < 320 or max(w, h) > 3840 or max(w, h) > 2 * min(w, h):
             sys.exit(f"{name}: {w} x {h} breaks Play's screenshot limits")
     return f"{name:44s} {w} x {h}  {os.path.getsize(path) // 1024} KB"
