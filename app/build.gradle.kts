@@ -38,6 +38,11 @@ val hasReleaseSigning = releaseStoreFile != null &&
         releaseKeyPassword != null &&
         file(releaseStoreFile).exists()
 
+// This app's AdMob app, for Google bidding in MAX and Google's consent form (UMP). Not a secret
+// like the AppLovin key and ad units: it ships in the manifest, and the Google Mobile Ads SDK stops
+// the app at launch without one. A release refuses Google's sample app (see preReleaseBuild below).
+val admobAppId = "ca-app-pub-4061500537427923~5810539848"
+
 android {
     namespace = "com.newagedevs.gesturevolume"
     compileSdk = 37
@@ -54,6 +59,8 @@ android {
         // `-PnoAds` builds a copy with every ad switched off — the SDK is never started — for
         // recording store and policy videos. Pro stays locked; only the ads go.
         buildConfigField("boolean", "ADS_DISABLED", project.hasProperty("noAds").toString())
+
+        manifestPlaceholders["admobAppId"] = admobAppId
     }
 
     signingConfigs {
@@ -168,6 +175,9 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.vungle.adapter)
     implementation(libs.facebook.adapter)
+    implementation(libs.google.adapter)
+    // Google's consent form, shown before MAX starts wherever the AdMob message asks for consent.
+    implementation(libs.user.messaging.platform)
     implementation(libs.unityads.adapter)
     implementation(libs.mintegral.adapter)
 
@@ -179,4 +189,17 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+// A release must not ship Google's sample AdMob app: Google bidding would serve nothing, and the
+// consent form would be the sample app's.
+tasks.configureEach {
+    if (name == "preReleaseBuild") {
+        val id = admobAppId
+        doFirst {
+            check(!id.startsWith("ca-app-pub-3940256099942544~")) {
+                "admobAppId is still Google's sample app: set this app's AdMob app ID"
+            }
+        }
+    }
 }

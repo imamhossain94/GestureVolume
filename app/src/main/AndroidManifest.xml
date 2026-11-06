@@ -155,6 +155,13 @@
           stopWithTask="false" keeps the overlay alive when the user swipes the app out of Recents,
           which is the single most common way this service used to die.
         -->
+        <!-- This app's AdMob app (admobAppId in app/build.gradle.kts), for Google bidding in MAX
+             and Google's consent form (UMP). The Google Mobile Ads SDK stops the app at launch
+             without it. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
+
         <service
             android:name=".service.OverlayService"
             android:exported="false"

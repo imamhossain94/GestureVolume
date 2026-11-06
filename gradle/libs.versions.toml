@@ -46,6 +46,10 @@ recyclerview = "1.4.0"
 vungleAdapter = "7.7.9.0"
 facebookAdapter = "6.22.0.1"
 unityadsAdapter = "4.21.0.0"
+# Google bidding in MAX (the AdMob app ID is admobAppId in app/build.gradle.kts), and Google's
+# consent form, which the app shows before starting MAX (GestureApplication.requestConsentAndStartAds)
+googleAdapter = "25.5.0.0"
+userMessagingPlatform = "4.0.0"
 
 # Play Core
 playUpdate = "2.1.0"
@@ -95,11 +99,13 @@ androidx-cardview = { group = "androidx.cardview", name = "cardview", version.re
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 applovin-sdk = { module = "com.applovin:applovin-sdk", version.ref = "applovinSdk" }
 facebook-adapter = { module = "com.applovin.mediation:facebook-adapter", version.ref = "facebookAdapter" }
+google-adapter = { module = "com.applovin.mediation:google-adapter", version.ref = "googleAdapter" }
 inmobi-adapter = { module = "com.applovin.mediation:inmobi-adapter", version.ref = "inmobiAdapter" }
 mintegral-adapter = { module = "com.applovin.mediation:mintegral-adapter", version.ref = "mintegralAdapter" }
 picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
 play-services-code-scanner = { module = "com.google.android.gms:play-services-code-scanner", version.ref = "playServicesCodeScanner" }
+user-messaging-platform = { module = "com.google.android.ump:user-messaging-platform", version.ref = "userMessagingPlatform" }
 unityads-adapter = { module = "com.applovin.mediation:unityads-adapter", version.ref = "unityadsAdapter" }
 vungle-adapter = { module = "com.applovin.mediation:vungle-adapter", version.ref = "vungleAdapter" }
 

@@ -1,7 +1,9 @@
 package com.newagedevs.gesturevolume.helper.extensions
 
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -12,6 +14,13 @@ import com.newagedevs.gesturevolume.BuildConfig
 
 fun getApplicationVersion(): String {
     return BuildConfig.VERSION_NAME
+}
+
+/** The Activity behind a Compose or wrapped context, or null when there is none (a service, say). */
+tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 fun Context.toast(message: String) {

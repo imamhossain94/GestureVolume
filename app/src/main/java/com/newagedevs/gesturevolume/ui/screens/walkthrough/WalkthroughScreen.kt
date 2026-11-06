@@ -98,6 +98,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.newagedevs.gesturevolume.GestureApplication
+import com.newagedevs.gesturevolume.helper.extensions.findActivity
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.components.AccessibilityDisclosureDialog
@@ -416,8 +417,11 @@ fun WalkthroughScreen(
         viewModel.preference.setFirstLaunchCompleted()
         // Just walked through: the home screen has no tour to offer.
         viewModel.preference.markTourOffered()
-        // Onboarding done — now safe to init ads + consent flow off the walkthrough.
-        (context.applicationContext as? GestureApplication)?.initializeAdsIfNeeded()
+        // Onboarding done: Google's consent form, where there is one, and then the ads. Never
+        // over the walkthrough itself.
+        context.findActivity()?.let { activity ->
+            (activity.application as? GestureApplication)?.requestConsentAndStartAds(activity)
+        }
         onComplete()
     }
 
