@@ -69,18 +69,21 @@ A panel that slides out beside the bar.
   and every tile can be switched off.
 
 ### Two hosts, one bar
-The overlay can be drawn by either service:
+The user picks what draws the bar under **Visibility › Draw the bar with** (`BarHost`):
 
-| | Foreground service | Accessibility service |
+| | Display over other apps (foreground service) | Accessibility service |
 | --- | --- | --- |
-| Needs "display over other apps" | yes | no |
+| Needs | "Display over other apps" | the accessibility service, behind its disclosure |
 | Ongoing notification | required by Android | none |
-| System actions (lock, screenshot, …) | no | yes |
+| Shows over Settings and system screens | no — Android hides app overlays there | yes |
+| On the lock screen | only as the accessibility service's restricted copy, if switched on | the same restricted copy; the full bar is put away while locked |
 | Default | ✔ | opt-in |
 
-`OverlayRuntime` routes every command to whichever host is up, and hands the bar over between
-them without the user seeing a gap. `OverlayController` owns the bar, the gestures, the menu and
-the Deck, so neither host carries a copy.
+`OverlayRuntime` routes every command to whichever host is up and hands the bar over between them;
+the accessibility choice falls back to the foreground service while the service is switched off.
+`OverlayController` owns the bar, the gestures, the menu and the Deck, so neither host carries a
+copy. The accessibility service's bar uses `TYPE_ACCESSIBILITY_OVERLAY` windows, and
+`setHiddenWhileLocked` takes them down from screen-off until the unlock.
 
 ### Everything else
 - 15 languages: English, Bangla, Arabic, Hindi, Korean, Japanese, Chinese, German, Spanish,
@@ -89,7 +92,9 @@ the Deck, so neither host carries a copy.
 - Video tutorials: nine short YouTube videos, listed under Video tutorials in the drawer and at
   the top of the FAQ, and a ▶ in each feature screen's top bar opens that screen's own. They open
   in YouTube; nothing is embedded.
-- A one-time Pro purchase removes ads.
+- A one-time Pro purchase removes ads. The free version's ads come through AppLovin MAX, with
+  Google bidding; in the EEA, the UK and Switzerland Google's consent form (UMP) is answered before
+  the ad SDK starts, and Privacy choices reopens it.
 
 ---
 
@@ -100,7 +105,7 @@ Required — **one** of:
 | Permission | Why |
 | --- | --- |
 | `SYSTEM_ALERT_WINDOW` | Draws the bar, when the foreground service hosts it. |
-| `BIND_ACCESSIBILITY_SERVICE` | Draws the bar without a notification, and performs the system actions. Optional, off by default. |
+| `BIND_ACCESSIBILITY_SERVICE` | Draws the bar, when chosen to: over every screen and without a notification. Optional, off by default. |
 
 Requested at the moment the feature that needs it is switched on, and never before:
 
@@ -121,17 +126,20 @@ of this type.
 
 ### What the accessibility service does
 
-Three things, each of which the user opts into:
+Five things, each of which the user opts into, all named in the in-app disclosure:
 
 1. **System actions** — `GLOBAL_ACTION_LOCK_SCREEN`, `TAKE_SCREENSHOT`, `BACK`, `HOME`,
    `RECENTS`, `NOTIFICATIONS`, `QUICK_SETTINGS`, `POWER_DIALOG`. No other API reaches these.
-2. **Hosting the overlay** without a notification.
-3. **Clipboard capture**, off by default: it watches text selection and Copy presses so copied
-   text lands in the app's own history, and pastes a chosen item back on request.
+2. **Drawing the bar**, when chosen under Visibility › Draw the bar with: over every screen,
+   Settings included, and without a notification.
+3. **The two volume keys**, while the Quick slider's volume keys are set to Instant.
+4. **The app in front** (package name only), while apps hide the bar or have gestures of their own.
+5. **The bar on the lock screen**, a restricted copy, while Show on the lock screen is on.
 
-It subscribes to **zero** accessibility events unless clipboard capture is on — see
-`GestureAccessibilityService.applyEventSubscription`. `isAccessibilityTool` is declared `false`:
-this is a convenience feature, not an assistive tool. Nothing is collected or transmitted.
+It subscribes to **zero** accessibility events unless 3 or 4 needs them — see
+`GestureAccessibilityService.applyEventSubscription` — and `canRetrieveWindowContent` is false.
+`isAccessibilityTool` is declared `false`: this is a convenience feature, not an assistive tool.
+Nothing is collected or transmitted.
 
 ---
 
