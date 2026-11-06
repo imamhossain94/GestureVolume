@@ -17,6 +17,7 @@ import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.HandlerPresets
 import com.newagedevs.gesturevolume.utils.HandlerShape
+import com.newagedevs.gesturevolume.utils.BarHost
 import com.newagedevs.gesturevolume.utils.VolumeStreamMode
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import javax.inject.Inject
@@ -474,6 +475,8 @@ class SharedPref @Inject constructor(
         const val SHOW_ONLY_WHILE_MEDIA = "handlerShowOnlyWhileMedia"
         const val SHOW_ONLY_WHILE_CALL = "handlerShowOnlyWhileCall"
         const val SHOW_ON_LOCK_SCREEN = "handlerShowOnLockScreen"
+        /** 1.5.5: what draws the bar. See [com.newagedevs.gesturevolume.utils.BarHost]. */
+        const val BAR_HOST = "barHost"
         const val WHATS_NEW_SEEN = "whatsNewSeenVersion"
         const val TOUR_OFFERED = "tourOfferedVersion"
 
@@ -1024,6 +1027,18 @@ class SharedPref @Inject constructor(
 
     fun setShowOnLockScreen(value: Boolean) {
         sharedPreferences.edit { putBoolean(SHOW_ON_LOCK_SCREEN, value) }
+    }
+
+    /**
+     * What draws the bar: "Display over other apps", the default, or the accessibility service,
+     * which Android also shows on the lock screen and over Settings and other system screens. See
+     * [BarHost] and `OverlayRuntime.effectiveHost`, which falls back to the overlay while the
+     * accessibility service is off.
+     */
+    fun getBarHost(): BarHost = BarHost.fromStored(sharedPreferences.getString(BAR_HOST, null))
+
+    fun setBarHost(host: BarHost) {
+        sharedPreferences.edit { putString(BAR_HOST, host.stored) }
     }
 
     /**

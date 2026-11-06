@@ -20,6 +20,7 @@ import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.helper.ApplovinAdsManager
 import com.newagedevs.gesturevolume.helper.PrivacyChoices
 import com.newagedevs.gesturevolume.utils.AdPacing
+import com.newagedevs.gesturevolume.utils.BarHost
 import com.newagedevs.gesturevolume.utils.SupportPrompter
 import com.newagedevs.gesturevolume.helper.extensions.openAppStore
 import com.newagedevs.gesturevolume.helper.extensions.shareApp
@@ -254,12 +255,14 @@ class MainViewModel @Inject constructor(
     }
 
     private fun toggleService(isRunning: Boolean, context: Context) {
-        // One hard gate: the bar is drawn by the foreground service, which needs the overlay
-        // permission.
+        // One hard gate: something must be able to draw the bar — the accessibility service, when
+        // the user chose it and switched it on, or else the foreground service, which needs the
+        // overlay permission. Without either, the overlay permission is what is asked for: it is
+        // the default, and the Visibility screen offers the other.
         // The notification permission is asked for separately, below, and never blocks: the old
         // code refused to start the service at all when POST_NOTIFICATIONS was declined, which
         // made the toggle fail silently.
-        if (isRunning && !OverlayRuntime.canHostOverlay(context)) {
+        if (isRunning && !OverlayRuntime.canHostOverlay(context, preference)) {
             preference.setRunning(false)
             _state.value = _state.value.copy(isRunning = false)
 
@@ -280,7 +283,11 @@ class MainViewModel @Inject constructor(
             // leaves a hidden bar hidden.
             preference.setHandlerHidden(false)
             _state.value = _state.value.copy(isHandlerHidden = false)
-            maybeAskForNotificationPermission(context)
+            // The notification's buttons are the foreground service's; the accessibility service
+            // posts none, so there is nothing to ask for.
+            if (OverlayRuntime.effectiveHost(context, preference) == BarHost.OVERLAY) {
+                maybeAskForNotificationPermission(context)
+            }
             // The interstitial is requested here but shown when the service actually connects.
             // It used to be shown on this line — before the service had started — so it landed
             // while the user was still waiting to find out whether the thing had worked, and it
@@ -357,8 +364,15 @@ class MainViewModel @Inject constructor(
      *   never connects cannot leave it armed for the next caller.
      */
     private fun startOverlayService(context: Context, announceWithAd: Boolean = false) {
-        if (!OverlayRuntime.canHostOverlay(context)) return
-        OverlayRuntime.startOverlay(context)
+        val host = OverlayRuntime.effectiveHost(context, preference) ?: return
+        OverlayRuntime.startOverlay(context, preference)
+
+        if (host == BarHost.ACCESSIBILITY) {
+            // Nothing to bind: the accessibility service has drawn the bar already, or will the
+            // moment the system binds it, so setup is finished now.
+            if (announceWithAd) maybeShowInterstitialAd(AdPacing.Trigger.SERVICE_STARTED)
+            return
+        }
 
         bindOverlayService(context) {
             // The service is bound and the handler is configured and ready, which is the
@@ -442,7 +456,7 @@ class MainViewModel @Inject constructor(
     fun repairServiceIfNeeded(context: Context) {
         if (!preference.isRunning()) return
         if (OverlayRuntime.isOverlayActive(context)) return
-        if (!OverlayRuntime.canHostOverlay(context)) return
+        if (!OverlayRuntime.canHostOverlay(context, preference)) return
         startOverlayService(context)
     }
 
@@ -452,6 +466,11 @@ class MainViewModel @Inject constructor(
      * was cleared from recents and reopened.
      */
     fun rebindToServiceIfRunning(context: Context) {
+        // The accessibility service's bar has nothing to bind to, and is up, or on its way up as
+        // the system binds the service.
+        if (OverlayRuntime.isAccessibilityHosting ||
+            OverlayRuntime.effectiveHost(context, preference) == BarHost.ACCESSIBILITY
+        ) return
         if (preference.isRunning() && !isBound) {
             if (OverlayRuntime.isServiceRunning(context, OverlayService::class.java)) {
                 // Nothing depends on the binding but the ad and the reset. None is made if the
@@ -462,6 +481,50 @@ class MainViewModel @Inject constructor(
                 _state.value = _state.value.copy(isRunning = false)
             }
         }
+    }
+
+    /**
+     * What draws the bar, from the Visibility screen. See [BarHost].
+     *
+     * Saved first, then, if the bar is running, moved to that host at once: the other host's bar is
+     * taken down as this one's comes up. Choosing the accessibility service before it is switched on
+     * changes nothing on screen yet — the overlay carries on — and the service takes the bar over
+     * the moment the user switches it on. Choosing the overlay without its permission asks for it.
+     */
+    fun setBarHost(host: BarHost, context: Context) {
+        if (preference.getBarHost() == host) return
+        preference.setBarHost(host)
+        if (!preference.isRunning()) return
+        if (!OverlayRuntime.canHostOverlay(context, preference)) {
+            viewModelScope.launch {
+                _effect.send(MainEffect.RequestOverlayPermission)
+                _effect.send(MainEffect.ShowToast(context.getString(R.string.overlay_permission_toast)))
+            }
+            return
+        }
+        OverlayRuntime.startOverlay(context, preference)
+        if (OverlayRuntime.effectiveHost(context, preference) == BarHost.OVERLAY) {
+            // The new foreground service, for the ad and the reset, as on any start.
+            bindOverlayService(context)
+        } else {
+            // The foreground service is handing over and will stop; let its binding go with it.
+            dropOverlayServiceBinding(context)
+        }
+        updatePermissionsStatus(context)
+    }
+
+    /** Unbinds from the foreground service without stopping anything. */
+    private fun dropOverlayServiceBinding(context: Context) {
+        if (isBound) {
+            try {
+                serviceConnection?.let { context.unbindService(it) }
+            } catch (_: Exception) { /* already unbound */ }
+            isBound = false
+        } else if (connectionInFlight != null) {
+            connectionInFlight?.let { connectionsToDrop.add(it) }
+            connectionInFlight = null
+        }
+        overlayService = null
     }
 
     /**
@@ -757,7 +820,7 @@ class MainViewModel @Inject constructor(
                 "show" -> {
                     // Handle show command - could restart or show overlay
                     if (!_state.value.isRunning &&
-                        OverlayRuntime.canHostOverlay(activity)
+                        OverlayRuntime.canHostOverlay(activity, preference)
                     ) {
                         preference.setRunning(true)
                         startOverlayService(activity)
@@ -777,6 +840,9 @@ class MainViewModel @Inject constructor(
                 // the next ON_RESUME.
                 "user_hide" -> _state.value = _state.value.copy(isHandlerHidden = true)
                 "user_show" -> _state.value = _state.value.copy(isHandlerHidden = false)
+                // The foreground service handed the bar to the accessibility service and is
+                // stopping. A binding kept from before would keep it alive with nothing to draw.
+                OverlayService.ACTION_HANDOVER -> dropOverlayServiceBinding(activity)
                 else -> Unit
             }
         }
