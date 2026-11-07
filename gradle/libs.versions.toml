@@ -35,17 +35,17 @@ constraintlayout = "2.2.2"
 cardview = "1.0.0"
 
 # Ads
-applovinSdk = "13.6.4"
-playServicesBase = "18.11.0"
+applovinSdk = "13.7.0"
+playServicesBase = "18.11.1"
 playServicesCodeScanner = "16.1.0"
-# Pinned to 11.4.1.3: InMobi 11.5.0's Play Billing purchase reader crashes ("Already resumed"); revisit when InMobi ships a release newer than 11.5.0.
-inmobiAdapter = "11.4.1.3"
-mintegralAdapter = "17.1.81.0"
+# Held at 11.4.1.3 until SDK 11.5.1: 11.5.0's Play Billing reader (com.inmobi.media.b50) resumed its coroutine twice and crashed ("Already resumed"); 11.5.1's (com.inmobi.media.d50) checks isActive before resuming.
+inmobiAdapter = "11.5.1.0"
+mintegralAdapter = "17.2.21.0"
 picasso = "2.71828"
 recyclerview = "1.4.0"
-vungleAdapter = "7.7.9.0"
+vungleAdapter = "7.7.9.1"
 facebookAdapter = "6.22.0.1"
-unityadsAdapter = "4.21.0.0"
+unityadsAdapter = "4.21.0.1"
 # Google bidding in MAX (the AdMob app ID is admobAppId in app/build.gradle.kts), and Google's
 # consent form, which the app shows before starting MAX (GestureApplication.requestConsentAndStartAds)
 googleAdapter = "25.5.0.0"
