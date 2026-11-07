@@ -9,19 +9,32 @@ import android.os.Build
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import androidx.core.content.ContextCompat
+import com.newagedevs.gesturevolume.data.local.SharedPref
+import com.newagedevs.gesturevolume.utils.BarHost
 
 /**
- * How to reach the bar and the accessibility service from anywhere in the app.
+ * What is drawing the bar, and how to reach it and the accessibility service from anywhere in the
+ * app.
  *
- * The bar has one host: the foreground service [OverlayService], which needs the overlay
- * permission and, because Android will not run one without a notification, a notification. The
- * accessibility service performs the system actions and passes the volume keys and the app in front
- * to the controller the foreground service runs, found through [activeController]. The one thing
- * it draws is a copy of the bar on the lock screen, where Android hides the foreground service's,
- * and only while the phone is locked: see [GestureAccessibilityService.refreshLockScreenBar].
+ * The bar has two possible hosts, and the user picks one on the Visibility screen ([BarHost]):
+ *
+ *  - **Display over other apps**, the default: the foreground service [OverlayService], which needs
+ *    the overlay permission and, because Android will not run one without it, a notification.
+ *    Android hides its windows on the lock screen, in Settings and over some system screens, so
+ *    there the accessibility service, when it is on, draws a copy of the bar on the lock screen
+ *    only: see [GestureAccessibilityService.refreshLockScreenBar].
+ *  - **The accessibility service**, [GestureAccessibilityService], which draws the bar itself as
+ *    `TYPE_ACCESSIBILITY_OVERLAY`. Android shows those over every screen, Settings and the lock
+ *    screen included, and no permission but the service's and no notification is involved. While
+ *    the phone is locked it puts its bar away and shows the lock screen's restricted copy instead,
+ *    if that is switched on.
+ *
+ * Only one draws at a time. Starting the bar on one host takes it down on the other, and the
+ * accessibility choice falls back to the overlay while the service is off.
  *
  * Everything that talks to the bar — the Activity's show/hide on resume/pause, the notification
- * buttons, the boot receiver, the ViewModel's toggle — goes through here.
+ * buttons, the boot receiver, the ViewModel's toggle, the Quick Settings tile — goes through here,
+ * so none of them has to know which host is up.
  */
 object OverlayRuntime {
 
@@ -36,14 +49,18 @@ object OverlayRuntime {
     var accessibilityService: GestureAccessibilityService? = null
 
     /**
-     * The controller drawing the bar, the one [OverlayService] runs.
+     * The controller drawing the bar, whichever host it belongs to.
      *
-     * For the callers that have to reach it from outside that service: the accessibility service's
-     * key filter, which hears the volume keys, and its window watcher, which hears which app came
-     * to the front. Written only by the controller itself, as it starts and as it is torn down.
+     * For the callers that have to reach it from outside the host: the accessibility service's key
+     * filter, which hears the volume keys, and its window watcher, which hears which app came to the
+     * front. Written only by the controller itself, as it starts and as it is torn down. The lock
+     * screen's copy never becomes it.
      */
     @Volatile
     var activeController: OverlayController? = null
+
+    /** True while the accessibility service is the one drawing the bar. */
+    val isAccessibilityHosting: Boolean get() = accessibilityService?.isHostingBar == true
 
     /**
      * Whether the user has switched the accessibility service on in system settings.
@@ -81,26 +98,55 @@ object OverlayRuntime {
     fun accessibilitySettingsIntent(): Intent =
         Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
 
-    /** Whether the bar could be started right now: the foreground service needs the overlay permission. */
-    fun canHostOverlay(context: Context): Boolean = Settings.canDrawOverlays(context)
+    /** The host that would draw the bar if it were started right now, or null if neither can. */
+    fun effectiveHost(context: Context, preference: SharedPref): BarHost? =
+        BarHost.effective(
+            choice = preference.getBarHost(),
+            accessibilityEnabled = isAccessibilityEnabled(context),
+            canDrawOverlays = Settings.canDrawOverlays(context),
+        )
 
-    /** True when the bar is on screen, or would be but for being hidden: the foreground service is up. */
+    /** Whether the bar could be started right now, on the host the user chose or its fallback. */
+    fun canHostOverlay(context: Context, preference: SharedPref): Boolean =
+        effectiveHost(context, preference) != null
+
+    /** True when the bar is on screen, or would be but for being hidden: either host is up. */
     fun isOverlayActive(context: Context): Boolean =
-        isServiceRunning(context, OverlayService::class.java)
+        isAccessibilityHosting || isServiceRunning(context, OverlayService::class.java)
 
-    /** Brings the bar up in the foreground service, when the overlay permission allows it. */
-    fun startOverlay(context: Context) {
-        if (!canHostOverlay(context)) return
-        val intent = Intent(context, OverlayService::class.java)
-        try {
-            ContextCompat.startForegroundService(context, intent)
-        } catch (e: Exception) {
-            android.util.Log.e("OverlayRuntime", "startForegroundService failed", e)
+    /**
+     * Brings the bar up on whichever host applies, and takes it down on the other.
+     *
+     * A running foreground service is told to hand over — hide and stop without touching any
+     * preference — rather than stopped with `stopService`, so its teardown does not read as the
+     * user switching the bar off. When the accessibility service is switched on but not bound yet
+     * (just after boot, or just after the user turned it on) this does nothing for it: it brings
+     * the bar up itself as it connects.
+     */
+    fun startOverlay(context: Context, preference: SharedPref) {
+        when (effectiveHost(context, preference)) {
+            BarHost.ACCESSIBILITY -> {
+                if (isServiceRunning(context, OverlayService::class.java)) {
+                    sendToForegroundService(context, OverlayService.ACTION_HANDOVER)
+                }
+                accessibilityService?.hostBar()
+            }
+            BarHost.OVERLAY -> {
+                // Not handing back brightness: the foreground service is about to carry on.
+                accessibilityService?.releaseBar(restoreBrightness = false)
+                try {
+                    ContextCompat.startForegroundService(context, Intent(context, OverlayService::class.java))
+                } catch (e: Exception) {
+                    android.util.Log.e("OverlayRuntime", "startForegroundService failed", e)
+                }
+            }
+            null -> Unit
         }
     }
 
-    /** Takes the bar down. The running preference is the caller's to write. */
+    /** Takes the bar down on both hosts. The running preference is the caller's to write. */
     fun stopOverlay(context: Context) {
+        accessibilityService?.releaseBar()
         try {
             context.stopService(Intent(context, OverlayService::class.java))
         } catch (_: Exception) {
@@ -109,13 +155,22 @@ object OverlayRuntime {
     }
 
     /**
-     * Delivers one of the overlay commands — show, hide, user_show, user_hide, update, stop,
-     * refresh_notification — to the foreground service. Silently does nothing when it is not
-     * running, which is what every caller wants: the preference is the durable record, and the
-     * next start reads it.
+     * Delivers one of the bar's commands — show, hide, user_show, user_hide, update, stop,
+     * refresh_notification — to whichever host is up. Silently does nothing when neither is, which
+     * is what every caller wants: the preference is the durable record, and the next start reads
+     * it.
      */
     fun sendCommand(context: Context, action: String) {
+        val a11y = accessibilityService
+        if (a11y != null && a11y.isHostingBar) {
+            a11y.handleCommand(action)
+            return
+        }
         if (!isServiceRunning(context, OverlayService::class.java)) return
+        sendToForegroundService(context, action)
+    }
+
+    private fun sendToForegroundService(context: Context, action: String) {
         val intent = Intent(context, OverlayService::class.java).setAction(action)
         try {
             context.startService(intent)

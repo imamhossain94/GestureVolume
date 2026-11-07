@@ -86,6 +86,8 @@ object PermissionNeeds {
         val appGestureActions: List<String> = emptyList(),
         val notificationControls: Boolean = false,
         val directCall: Boolean = false,
+        /** What draws the bar, which decides the one permission the bar itself cannot do without. */
+        val barHost: BarHost = BarHost.OVERLAY,
     )
 
     /** What Android has granted. Everything granted by default, so a test names only what is not. */
@@ -164,8 +166,14 @@ object PermissionNeeds {
             if (!grants.has(permission)) found += Need(permission, feature)
         }
 
-        // Required outright: the bar cannot be drawn without it.
-        need(Permission.OVERLAY, Feature.FLOATING_BAR)
+        // Required outright: the bar cannot be drawn without the permission of the host the user
+        // chose. The accessibility service's bar needs no overlay permission; until the service is
+        // on, the overlay draws it if it can, but the missing permission is still the one chosen.
+        if (config.barHost == BarHost.ACCESSIBILITY) {
+            need(Permission.ACCESSIBILITY, Feature.FLOATING_BAR)
+        } else {
+            need(Permission.OVERLAY, Feature.FLOATING_BAR)
+        }
 
         config.slotActions.forEach { (feature, action) ->
             permissionsFor(action, config.sliderTarget).forEach { need(it, feature) }
@@ -188,7 +196,10 @@ object PermissionNeeds {
         config.appGestureActions.forEach { action ->
             permissionsFor(action, config.sliderTarget).forEach { need(it, Feature.APP_GESTURES) }
         }
-        if (config.notificationControls) need(Permission.NOTIFICATIONS, Feature.NOTIFICATION_CONTROLS)
+        // Only the foreground service posts a notification to put controls in.
+        if (config.notificationControls && config.barHost == BarHost.OVERLAY) {
+            need(Permission.NOTIFICATIONS, Feature.NOTIFICATION_CONTROLS)
+        }
 
         // Stable, so within a permission the features keep the order they were found in.
         return Needs(found.sortedBy { it.permission.ordinal })
@@ -220,6 +231,7 @@ object PermissionNeeds {
         appGestureActions = preference.appGestures.getProfiles().values.flatMap { it.values },
         notificationControls = preference.getShowNotification(),
         directCall = preference.search.getDirectCall(),
+        barHost = preference.getBarHost(),
     )
 
     /** What Android currently allows. */

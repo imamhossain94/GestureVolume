@@ -1,10 +1,12 @@
 // The upload text for YouTube: the promo's, and for each rendered tutorial (its .json beside the
-// .mp4) the title, a description with its chapters, tags and the files to upload, plus a voice-over
-// script. Writes store/tutorials/youtube.md; gallery.mjs uses entries() for the same text.
+// .mp4) the title, a description with its chapters, tags and the files to upload. Run it after a
+// render: the chapters and lengths come from the renders. Writes store/tutorials/youtube.md;
+// gallery.mjs uses entries() for the same text.
 //
 //   node youtube.mjs
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -75,17 +77,23 @@ function block(label, text, note = '') {
   return `**${label}**${note ? ` (${note})` : ''}\n\n\`\`\`\n${text}\n\`\`\`\n\n`;
 }
 
+// A video's length as m:ss, read from the file.
+function lengthOf(file) {
+  const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], { encoding: 'utf8' });
+  return r.status === 0 ? clock(parseFloat(r.stdout)) : '?';
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const list = entries();
   let md = `# YouTube uploads\n\nOne entry per video: paste the title, description and tags, upload the captions file under\nSubtitles (English), and set the thumbnail. Chapters are already in each description: YouTube\nreads them from the timestamps (the first at 0:00, each 10 seconds or longer).\n\nAll videos: 1920 × 1080 (the vertical promo 1080 × 1920), 30 fps, H.264 and AAC, loudness about\n−14 LUFS. Put the tutorials in one playlist, in order, so each video's "Up next" card matches.\n\n`;
-  md += `## The promo\n\n- Video: \`../video/promo-1080p.mp4\` (0:30), and \`../video/promo-vertical.mp4\` for Shorts\n- Thumbnail: \`../video/promo-thumbnail.png\`\n- Google Play: paste the video's YouTube link into Main store listing › Video (YouTube URL).\n\n`;
+  md += `Every video is narrated: a narrator reads what is on screen over the music and the app's sounds,\nand each tutorial's captions follow the voice word for word. The narrator is a synthetic voice\n(Kokoro-82M's af_bella, the same as the channel's Sonary tutorials), so if YouTube asks about\naltered or synthetic content on upload, answer as for those.\n\n`;
+  md += `## The promo\n\n- Video: \`../video/promo-1080p.mp4\` (${lengthOf(path.join(STORE, 'video/promo-1080p.mp4'))}), and \`../video/promo-vertical.mp4\` for Shorts\n- Thumbnail: \`../video/promo-thumbnail.png\`\n- Google Play: paste the video's YouTube link into Main store listing › Video (YouTube URL).\n\n`;
   md += block('Title', PROMO.title, `${PROMO.title.length} characters`) + block('Description', PROMO.description) + block('Tags', PROMO.tags.join(', '));
   for (const e of list) {
     md += `## ${e.series.n}. ${e.series.title}\n\n- Video: \`${e.base}.mp4\` (${clock(e.duration)})\n- Captions: \`${e.base}.srt\`\n- Thumbnail: \`thumbnails/${e.base}.png\`\n\n`;
     md += block('Title', e.title, `${e.title.length} characters`) + block('Description', e.description) + block('Tags', e.tags.join(', '), `${e.tags.join(',').length} characters`);
   }
-  md += `---\n\n# Voice-over scripts\n\nThe videos carry music and sound effects but no voice. To add narration, read each step as its\ncaption appears; the times below are when each step starts.\n\n`;
-  md += list.map((e) => `## ${e.series.n}. ${e.series.title}\n\n` + e.steps.map((x) => `[${clock(x.at)}] **${x.title}.** ${x.text}`).join('\n\n')).join('\n\n') + '\n';
+  md += `---\n\n# The narration\n\nThe narrator is made by \`tool/store/vo.py\`: Kokoro-82M (Apache-2.0, run on this machine), voice\naf_bella at speed 1.0. In each tutorial it reads the title card (its title and subtitle), every\nstep's title and text exactly as they stand beside the phone, and the "Up next" card. A step whose\nline runs longer than its scripted time holds its last moment until the line ends, and the\ncaptions are cut on the voice's word timings. The promo has one short line per section, from\n\`VOICE\` in \`tool/store/kit/promo.js\`, each inside its section of the music.\n\nTo change what is said, edit the step's text in \`tool/store/kit/tutorials/\` (or the promo's\n\`VOICE\`) and render that video again: \`render.mjs\` has \`vo.py\` speak only the lines that changed.\nThen run \`node youtube.mjs\` for the new chapter times and lengths. The commands are in\n\`store/README.md\`.\n`;
   fs.writeFileSync(path.join(DIR, 'youtube.md'), md);
   console.log(`youtube.md: the promo and ${list.length} tutorials`);
 }

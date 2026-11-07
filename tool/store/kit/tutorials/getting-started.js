@@ -58,7 +58,9 @@ export async function script(T) {
   press(s2.at + 0.6, { page: 'intro' }, 'next'); moves.push({ at: s2.at + 0.66, from: 'intro', to: 'style' });
   press(s2.at + 3.0, { page: 'style' }, 'style-advanced'); picks.push({ at: s2.at + 3.06, to: 'advanced' });
   press(s2.at + 5.6, { page: 'style', highlighted: 'advanced' }, 'style-regular'); picks.push({ at: s2.at + 5.66, to: 'regular' });
-  press(s2.at + 8.4, { page: 'style' }, 'next'); moves.push({ at: s2.at + 8.46, from: 'style', to: 'simple' });
+  // On to the next page once the narrator is done with styles (T.said: no narrator, no wait).
+  const next2 = Math.max(s2.at + 8.4, T.said(s2) - 0.35);
+  press(next2, { page: 'style' }, 'next'); moves.push({ at: next2 + 0.06, from: 'style', to: 'simple' });
 
   const s3 = T.step('Learn the moves', 'The next pages play each gesture out: swipe for volume, tap for the volume panel, hold to move it.', 8.6);
   press(s3.at + 3.6, { page: 'simple' }, 'next'); moves.push({ at: s3.at + 3.66, from: 'simple', to: 'move' });
@@ -77,8 +79,9 @@ export async function script(T) {
   T.show(backAt + 0.06, walk, 'pop');
   grantOverlay = backAt + 0.45;
   const cont = target({ page: 'permission', granted: 1 }, 'next');
-  T.hand({ at: s4.at + 7.9, enter: [cont.cx + 40, cont.cy + 40] });
-  press(s4.at + 8.6, { page: 'permission', granted: 1 }, 'next'); moves.push({ at: s4.at + 8.66, from: 'permission', to: 'notifications' });
+  const next4 = Math.max(s4.at + 8.6, T.said(s4) - 0.3);
+  T.hand({ at: next4 - 0.7, enter: [cont.cx + 40, cont.cy + 40] });
+  press(next4, { page: 'permission', granted: 1 }, 'next'); moves.push({ at: next4 + 0.06, from: 'permission', to: 'notifications' });
 
   const s5 = T.step('Notifications, if you like', 'Optional: allow notifications and the bar’s controls wait in your notification shade, even with the app closed.', 8.8);
   press(s5.at + 1.0, { page: 'notifications' }, 'grant');
@@ -87,7 +90,7 @@ export async function script(T) {
   dialogOk = s5.at + 3.0;
   T.hand({ at: dialogOk, tap: [okR.cx, okR.cy] });
   grantNotif = dialogOk + 0.3;
-  const startAt = s5.at + 6.2;
+  const startAt = Math.max(s5.at + 6.2, T.said(s5) - 0.3);
   press(startAt, { page: 'notifications', granted: 1 }, 'next');
 
   // --- Switch it on --------------------------------------------------------------------------------------------

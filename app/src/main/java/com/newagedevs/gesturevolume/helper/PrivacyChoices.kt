@@ -1,25 +1,23 @@
 package com.newagedevs.gesturevolume.helper
 
-import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.widget.Toast
-import com.applovin.sdk.AppLovinSdk
-import com.applovin.sdk.AppLovinSdkConfiguration
+import com.google.android.ump.ConsentInformation
+import com.google.android.ump.UserMessagingPlatform
+import com.newagedevs.gesturevolume.GestureApplication
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.SharedPref
+import com.newagedevs.gesturevolume.helper.extensions.findActivity
 
 /**
- * The "Privacy choices" entry: lets a user in a GDPR region reopen the consent form they answered
- * at first launch and change their answer, which the GDPR (and Google's UMP requirements) say must
- * be possible at any time, not only once.
+ * The "Privacy choices" entry: lets a user in a consent region reopen Google's consent form and
+ * change their answer, which the GDPR (and Google's UMP requirements) say must be possible at any
+ * time, not only once.
  *
- * The form is AppLovin's own Terms & Privacy Policy flow backed by Google UMP (configured in
- * GestureApplication.initializeAppLovinSdk), reopened through
- * `AppLovinSdk.cmpService.showCmpForExistingUser`.
+ * The form is Google's User Messaging Platform form, the same one shown at launch
+ * (GestureApplication.requestConsentAndStartAds), reopened through
+ * `UserMessagingPlatform.showPrivacyOptionsForm`. It is styled in AdMob › Privacy & messaging.
  */
 object PrivacyChoices {
 
@@ -28,20 +26,19 @@ object PrivacyChoices {
     /**
      * Whether the entry should be shown at all.
      *
-     * Only when there is a consent answer to change: the ad SDK is initialised (it never is for
-     * Pro, see GestureApplication.initializeAdsIfNeeded) and the user is in the GDPR geography.
-     * Debug builds force that geography, so the entry is always visible there. Pro is checked
-     * before touching the SDK so a Pro install never even creates an SDK instance.
+     * Only where Google says the user needs a way back to the form: the EEA, the UK and
+     * Switzerland, once this install's consent has been checked. Debug builds count as in the EEA
+     * (see GestureApplication.consentRequestParameters), so the entry is always there in them.
+     * Never for Pro, which shows no ads and so never asks.
      */
     fun isAvailable(context: Context, isPro: Boolean): Boolean {
         if (isPro) return false
         return try {
-            val sdk = AppLovinSdk.getInstance(context.applicationContext)
-            sdk.isInitialized &&
-                sdk.configuration.consentFlowUserGeography ==
-                AppLovinSdkConfiguration.ConsentFlowUserGeography.GDPR
+            UserMessagingPlatform.getConsentInformation(context.applicationContext)
+                .privacyOptionsRequirementStatus ==
+                ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
         } catch (e: Exception) {
-            Log.e(TAG, "Could not read consent geography", e)
+            Log.e(TAG, "Could not read the consent status", e)
             false
         }
     }
@@ -51,8 +48,9 @@ object PrivacyChoices {
      *
      * App-open ads (and, through the same flag, interstitials — see AdPacing) are paused while the
      * form is up, so closing it can never be followed by a full-screen ad. Any failure — no
-     * Activity, SDK not ready, or an error from the CMP — ends in a short toast rather than a tap
-     * that silently does nothing.
+     * Activity, or an error from the form — ends in a short toast rather than a tap that silently
+     * does nothing. A first answer given here (when the launch form could not load, say) lets the
+     * ads start.
      */
     fun show(context: Context, preference: SharedPref) {
         val activity = context.findActivity()
@@ -65,16 +63,14 @@ object PrivacyChoices {
 
         preference.setAppOpenAdPaused(true)
         try {
-            AppLovinSdk.getInstance(activity.applicationContext).cmpService
-                .showCmpForExistingUser(activity) { error ->
-                    Handler(Looper.getMainLooper()).post {
-                        preference.setAppOpenAdPaused(false)
-                        if (error != null) {
-                            Log.w(TAG, "CMP error: ${error.code} ${error.message}")
-                            showError(activity.applicationContext)
-                        }
-                    }
+            UserMessagingPlatform.showPrivacyOptionsForm(activity) { error ->
+                preference.setAppOpenAdPaused(false)
+                if (error != null) {
+                    Log.w(TAG, "Privacy options form: ${error.errorCode} ${error.message}")
+                    showError(activity.applicationContext)
                 }
+                (activity.application as? GestureApplication)?.startAdsIfAllowed()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Could not open the consent form", e)
             preference.setAppOpenAdPaused(false)
@@ -88,11 +84,5 @@ object PrivacyChoices {
             R.string.privacy_choices_error,
             Toast.LENGTH_SHORT
         ).show()
-    }
-
-    private tailrec fun Context.findActivity(): Activity? = when (this) {
-        is Activity -> this
-        is ContextWrapper -> baseContext.findActivity()
-        else -> null
     }
 }

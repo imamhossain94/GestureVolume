@@ -35,6 +35,16 @@ object ReleaseNotes {
 
     val HISTORY: List<Entry> = listOf(
         Release(
+            version = "1.5.5",
+            date = null,
+            notes = listOf(
+                "♿ The accessibility service can draw the bar, so it shows over Settings, system screens and the lock screen, with no notification. Choose it in Visibility",
+                "🛡 No more terms pop-up. In the EEA, the UK and Switzerland, Google's consent form asks instead, and Privacy choices changes your answer",
+                "🎙 The video tutorials now have a narrator",
+                "🛠 Fixes and updated ad libraries",
+            ),
+        ),
+        Release(
             version = "1.5.4",
             date = null,
             notes = listOf(

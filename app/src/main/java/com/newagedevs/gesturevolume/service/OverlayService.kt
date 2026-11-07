@@ -28,15 +28,17 @@ interface OverlayServiceInterface {
 }
 
 /**
- * The host for the bar, and the only one.
+ * The "Display over other apps" host for the bar, the default one.
  *
  * Since 1.4.0 everything about the overlay itself — the handler window, its gestures, the
  * long-press menu, the Deck, the indicator — lives in [OverlayController], which this service
  * runs. [GestureAccessibilityService] reaches that controller through
- * [OverlayRuntime.activeController] for the volume keys and the app in front, and draws only a
- * copy of the bar on the lock screen, where Android hides this one's. What is left here is what only a foreground service
- * has: the notification Android requires of one, its channels and buttons, and the service
- * lifecycle that keeps the bar alive across task removal and system restarts.
+ * [OverlayRuntime.activeController] for the volume keys and the app in front, and draws a copy of
+ * the bar on the lock screen, where Android hides this one's. When the user chooses the
+ * accessibility service to draw the bar instead, this service hands over and stops
+ * ([ACTION_HANDOVER]). What is left here is what only a foreground service has: the notification
+ * Android requires of one, its channels and buttons, and the service lifecycle that keeps the bar
+ * alive across task removal and system restarts.
  */
 @AndroidEntryPoint
 class OverlayService : Service(), OverlayServiceInterface {
@@ -64,7 +66,33 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     override fun onBind(intent: Intent?): IBinder = binder
 
-    private lateinit var controller: OverlayController
+    /**
+     * The bar, while this service draws it. Null before it is built, and again after a handover:
+     * a binding from the app can keep this instance alive past its stopSelf, and the next start
+     * then builds a fresh one rather than talking to the destroyed one.
+     */
+    private var controller: OverlayController? = null
+
+    /**
+     * The bar, built if there is none. Never while the accessibility service draws it: a second
+     * controller would take over OverlayRuntime.activeController from the bar that is really up,
+     * and clear it again as it went.
+     */
+    private fun ensureController(): OverlayController? {
+        controller?.let { return it }
+        if (OverlayRuntime.isAccessibilityHosting) return null
+        return OverlayController(
+            context = this,
+            windowType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            preference = preference,
+            host = controllerHost
+        ).also {
+            controller = it
+            // Started while the phone is locked — after an update, say — the bar belongs on the
+            // lock screen as well, where this one cannot be seen.
+            OverlayRuntime.accessibilityService?.onBarChanged()
+        }
+    }
 
     companion object {
         // v2 channel: low importance (silent, no heads-up). Bumped from the old id so existing
@@ -84,6 +112,12 @@ class OverlayService : Service(), OverlayServiceInterface {
         private const val CHANNEL_MINIMAL_ID = "gesture_volume_service_min"
         private const val LEGACY_CHANNEL_ID = "Gesture Volume Channel ID"
         private const val NOTIFICATION_ID = 1
+
+        /**
+         * The accessibility service is taking the bar over: hide it and stop, leaving every
+         * preference as it is. Not "stop", which is the user switching the bar off.
+         */
+        const val ACTION_HANDOVER = "handover"
     }
 
     private val controllerHost = object : OverlayController.Host {
@@ -96,20 +130,15 @@ class OverlayService : Service(), OverlayServiceInterface {
         super.onCreate()
         createNotificationChannel()
         startForegroundService()
-        controller = OverlayController(
-            context = this,
-            windowType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            preference = preference,
-            host = controllerHost
-        )
-        // Started while the phone is locked — after an update, say — the bar belongs on the lock
-        // screen as well, where this one cannot be seen.
-        OverlayRuntime.accessibilityService?.onBarChanged()
+        // Started while the accessibility service draws the bar — a stale START_STICKY relaunch, or
+        // a start that raced the handover — this one builds no bar at all, and onStartCommand
+        // stops the service.
+        ensureController()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        controller.onConfigurationChanged()
+        controller?.onConfigurationChanged()
     }
 
     private fun createNotificationChannel() {
@@ -273,8 +302,10 @@ class OverlayService : Service(), OverlayServiceInterface {
         super.onDestroy()
         // After a stop this instance owns the brightness hand-back. After a system kill restoring
         // is still the safe choice, and the restarted instance takes brightness back over on the
-        // next swipe.
-        if (::controller.isInitialized) controller.destroy(restoreBrightness = true)
+        // next swipe. A handover has already destroyed it without, and a second destroy does
+        // nothing.
+        controller?.destroy(restoreBrightness = true)
+        controller = null
         // Stopped, so off the lock screen too.
         OverlayRuntime.accessibilityService?.onBarChanged()
         stopForeground(STOP_FOREGROUND_REMOVE)
@@ -308,6 +339,13 @@ class OverlayService : Service(), OverlayServiceInterface {
         // the notification, so the app froze ten seconds after being opened. Re-posting the same
         // notification id replaces it in place, so this costs nothing visible.
         startForegroundService()
+        // The accessibility service draws the bar now: a second one from here would sit on top of
+        // it. A START_STICKY relaunch or a restart after the task was swiped away lands here too.
+        val controller = if (intent?.action == ACTION_HANDOVER) null else ensureController()
+        if (controller == null) {
+            handOver()
+            return START_NOT_STICKY
+        }
         intent?.action?.let { action ->
             LiveDataManager.sendCommand(action)
             when (action) {
@@ -342,13 +380,28 @@ class OverlayService : Service(), OverlayServiceInterface {
         stopSelf()
     }
 
+    /**
+     * Steps aside for the accessibility service: the bar goes, the service stops, and nothing the
+     * user set changes — they still want the bar, just drawn by the other host. shouldFinish keeps
+     * [onTaskRemoved] from bringing this one back, and brightness is not handed back, since the
+     * other host carries on with it.
+     */
+    private fun handOver() {
+        shouldFinish = true
+        controller?.destroy(restoreBrightness = false)
+        controller = null
+        // The app lets go of its binding, which would otherwise keep this instance alive.
+        LiveDataManager.sendCommand(ACTION_HANDOVER)
+        stopForegroundAndSelf()
+    }
+
     private fun stopServiceEntirely() {
         shouldFinish = true
         preference.setRunning(false)
         // Stopping is not hiding: the bar should be there again the next time the service is
         // started, or the user would turn it on and get nothing.
         preference.setHandlerHidden(false)
-        controller.hide()
+        controller?.hide()
         stopForegroundAndSelf()
     }
 
@@ -365,7 +418,7 @@ class OverlayService : Service(), OverlayServiceInterface {
      */
     private fun stopForMissingOverlayPermission() {
         android.util.Log.w("OverlayService", "No overlay permission; stopping until it is granted")
-        if (::controller.isInitialized) controller.hide()
+        controller?.hide()
         stopForegroundAndSelf()
     }
 
@@ -375,13 +428,15 @@ class OverlayService : Service(), OverlayServiceInterface {
 
     override fun show() {
         shouldFinish = false
-        controller.show()
+        controller?.show()
     }
 
-    override fun hide() = controller.hide()
+    override fun hide() {
+        controller?.hide()
+    }
 
     override fun update() {
-        controller.update()
+        controller?.update()
         startForegroundService()
     }
 }

@@ -2,9 +2,9 @@
 
 package com.newagedevs.gesturevolume
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
@@ -18,17 +18,21 @@ import com.applovin.mediation.MaxError
 import com.applovin.mediation.ads.MaxAppOpenAd
 import com.applovin.sdk.AppLovinMediationProvider
 import com.applovin.sdk.AppLovinSdk
-import com.applovin.sdk.AppLovinSdkConfiguration
 import com.applovin.sdk.AppLovinSdkInitializationConfiguration
+import com.google.android.ump.ConsentDebugSettings
+import com.google.android.ump.ConsentRequestParameters
+import com.google.android.ump.UserMessagingPlatform
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.helper.AdRevenueTracker
 import com.newagedevs.gesturevolume.utils.AdPacing
-import com.newagedevs.gesturevolume.utils.Constants
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -42,6 +46,20 @@ class GestureApplication : Application() {
 
     @Volatile
     private var hasInitializedAds = false
+
+    /** True while a consent check is in flight, so a second Activity does not start another. */
+    @Volatile
+    private var consentCheckRunning = false
+
+    private val _adsReady = MutableStateFlow(false)
+
+    /**
+     * True once the AppLovin SDK has initialised, which waits for Google's consent form wherever
+     * there is one. Nothing may load an ad before: MAX cannot load one yet, and in the EEA, the UK
+     * and Switzerland no ad may be requested before the form has been answered. See
+     * ApplovinAdsManager.whenSdkReady.
+     */
+    val adsReady: StateFlow<Boolean> = _adsReady.asStateFlow()
 
     // Use application scope for background tasks
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -76,27 +94,89 @@ class GestureApplication : Application() {
             Log.d("GestureApp", "Ad grace period active: $minutes minutes remaining")
         }
 
-        // Defer the ad SDK init — and therefore its consent/CMP prompt — until onboarding is
-        // complete, so the consent sheet never covers the first-launch walkthrough. New users
-        // trigger init from WalkthroughScreen.onComplete via initializeAdsIfNeeded(); returning
-        // users initialize here.
-        if (!preferences.isFirstLaunch()) {
-            initializeAdsIfNeeded()
+        // The ad SDK is not started here. Google's consent form needs an Activity to show over,
+        // and a process the system starts only for the bar — at boot, after an update, after a
+        // kill — has none and shows no ads. See requestConsentAndStartAds.
+    }
+
+    /**
+     * Checks the user's ad consent with Google's User Messaging Platform, shows Google's form where
+     * the AdMob message asks for consent (the EEA, the UK and Switzerland), then starts the
+     * AppLovin SDK once ads may be requested. Everywhere else there is no form and the SDK starts
+     * straight away.
+     *
+     * Google's form directly, not through MAX's Terms & Privacy Policy flow: that one also showed
+     * everyone outside the EEA an AppLovin "accept the terms" alert that no ad network reads.
+     * AppLovin asks that a form used directly is answered before its SDK starts, so this waits.
+     *
+     * Called by MainActivity for returning users, and when the walkthrough finishes for new ones,
+     * so the form never covers the walkthrough. Google asks for the consent check at every launch,
+     * and the bar's foreground service can keep this process alive for days, so the check runs
+     * every time an Activity asks; the SDK starts only once.
+     */
+    fun requestConsentAndStartAds(activity: Activity) {
+        // A build made with -PnoAds, for recording videos: no SDK, so no ad of any kind.
+        if (BuildConfig.ADS_DISABLED) return
+        if (preferences.isProFeatureActivated()) return
+        if (consentCheckRunning) return
+        consentCheckRunning = true
+        val consent = UserMessagingPlatform.getConsentInformation(this)
+        val done = {
+            consentCheckRunning = false
+            // Not allowed means no answer yet, now or before (offline on the first launch, say):
+            // the next launch asks again.
+            startAdsIfAllowed()
+        }
+        try {
+            consent.requestConsentInfoUpdate(activity, consentRequestParameters(), {
+                if (activity.isFinishing || activity.isDestroyed) {
+                    done()
+                } else {
+                    UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) { error ->
+                        if (error != null) Log.w("GestureApp", "Consent form: ${error.message}")
+                        done()
+                    }
+                }
+            }, { error ->
+                Log.w("GestureApp", "Consent info: ${error.message}")
+                done()
+            })
+        } catch (e: Exception) {
+            Log.e("GestureApp", "Consent check failed", e)
+            done()
         }
     }
 
     /**
-     * Initializes the AppLovin SDK once, if the user isn't Pro. Idempotent and safe to call
-     * from multiple entry points (app start for returning users, walkthrough completion for
-     * new users).
+     * Starts the AppLovin SDK, once per process, if the user is not Pro and Google's consent
+     * answer allows ads to be requested. Also called after "Privacy choices", where a first answer
+     * can arrive when the launch form could not load.
      */
-    fun initializeAdsIfNeeded() {
+    fun startAdsIfAllowed() {
         if (hasInitializedAds) return
-        // A build made with -PnoAds, for recording videos: no SDK, so no ad of any kind.
         if (BuildConfig.ADS_DISABLED) return
         if (preferences.isProFeatureActivated()) return
+        val allowed = runCatching {
+            UserMessagingPlatform.getConsentInformation(this).canRequestAds()
+        }.getOrDefault(false)
+        if (!allowed) return
         hasInitializedAds = true
         initializeAppLovinSdk()
+    }
+
+    /** Debug builds count as in the EEA on any device, so the form can be checked from anywhere. */
+    private fun consentRequestParameters(): ConsentRequestParameters {
+        val builder = ConsentRequestParameters.Builder()
+        if (BuildConfig.DEBUG) {
+            builder.setConsentDebugSettings(
+                ConsentDebugSettings.Builder(this)
+                    .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
+                    // The debug geography only applies to test devices; this makes every device one.
+                    .setForceTesting(true)
+                    .build()
+            )
+        }
+        return builder.build()
     }
 
     private fun configureWebView() {
@@ -114,21 +194,9 @@ class GestureApplication : Application() {
         try {
             val appLovinSdk = AppLovinSdk.getInstance(this)
 
-            // Enable AppLovin's built-in Terms & Privacy Policy flow (Google UMP CMP).
-            // Without a consent string, premium demand (e.g. Meta) bids nearly blind — the
-            // primary cause of the very low banner eCPM and the exchange winning blind
-            // inventory at $0.03. Must be configured BEFORE initialize(). The matching CMP
-            // must also be enabled in the AppLovin MAX dashboard (Privacy → CMP → Google UMP).
-            appLovinSdk.settings.termsAndPrivacyPolicyFlowSettings.apply {
-                isEnabled = true
-                privacyPolicyUri = Uri.parse(Constants.PRIVACY_POLICY_URL)
-                termsOfServiceUri = Uri.parse(Constants.TERMS_OF_SERVICE_URL)
-                // Force the GDPR flow in debug so we can verify the prompt outside the EEA.
-                if (BuildConfig.DEBUG) {
-                    debugUserGeography = AppLovinSdkConfiguration.ConsentFlowUserGeography.GDPR
-                }
-            }
-
+            // No Terms & Privacy Policy flow: Google's consent form has been answered already,
+            // where there is one (requestConsentAndStartAds), and its consent string is what
+            // Google, Meta and the other networks read. Without it their bids go nearly blind.
             val initConfig = AppLovinSdkInitializationConfiguration.builder(BuildConfig.APPLOVIN_SDK_KEY)
                 .setMediationProvider(AppLovinMediationProvider.MAX)
                 .apply {
@@ -142,6 +210,8 @@ class GestureApplication : Application() {
             appLovinSdk.initialize(initConfig) {
                 // Initialize app open manager after SDK is ready
                 appOpenManager = AppOpenManager(this)
+                // And the screens' ads, which wait for this.
+                _adsReady.value = true
             }
 
         } catch (e: Exception) {
