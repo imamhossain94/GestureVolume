@@ -39,15 +39,15 @@ enum class Tutorial(
     @param:StringRes val summary: Int,
     val seconds: Int,
 ) {
-    GETTING_STARTED("MCngnSxqNfw", R.string.tutorial_getting_started, R.string.tutorial_getting_started_summary, 63),
-    SWIPE_VOLUME("HPR_ST3QPxY", R.string.tutorial_swipe_volume, R.string.tutorial_swipe_volume_summary, 51),
-    QUICK_SLIDER("3-oY53UA52w", R.string.tutorial_quick_slider, R.string.tutorial_quick_slider_summary, 83),
-    DECK("pktzn8tADfI", R.string.tutorial_deck, R.string.tutorial_deck_summary, 78),
-    SEARCH("NPowBefDy60", R.string.tutorial_search, R.string.tutorial_search_summary, 56),
-    MENU("79FDpMGhSXI", R.string.tutorial_menu, R.string.tutorial_menu_summary, 71),
-    ACTIONS("vGW84qq_vnc", R.string.tutorial_actions, R.string.tutorial_actions_summary, 57),
-    APPEARANCE("1eNCN03wCP8", R.string.tutorial_appearance, R.string.tutorial_appearance_summary, 60),
-    VISIBILITY("ck_fszm4Jyw", R.string.tutorial_visibility, R.string.tutorial_visibility_summary, 66);
+    GETTING_STARTED("hhnmDjMchnw", R.string.tutorial_getting_started, R.string.tutorial_getting_started_summary, 69),
+    SWIPE_VOLUME("gXA0KPfFzP4", R.string.tutorial_swipe_volume, R.string.tutorial_swipe_volume_summary, 61),
+    QUICK_SLIDER("iL-AladQ3B4", R.string.tutorial_quick_slider, R.string.tutorial_quick_slider_summary, 94),
+    DECK("fImtgUqBtH0", R.string.tutorial_deck, R.string.tutorial_deck_summary, 84),
+    SEARCH("meHMyUiXOe8", R.string.tutorial_search, R.string.tutorial_search_summary, 60),
+    MENU("oO_s17Gd83k", R.string.tutorial_menu, R.string.tutorial_menu_summary, 79),
+    ACTIONS("NENTzFCEbi8", R.string.tutorial_actions, R.string.tutorial_actions_summary, 66),
+    APPEARANCE("kQZFzztZQdg", R.string.tutorial_appearance, R.string.tutorial_appearance_summary, 63),
+    VISIBILITY("UOHPfXJXeus", R.string.tutorial_visibility, R.string.tutorial_visibility_summary, 72);
 
     val url: String get() = "https://www.youtube.com/watch?v=$videoId"
 
