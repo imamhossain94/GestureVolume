@@ -34,6 +34,7 @@
     <string name="bump_style_spectrum">스펙트럼</string>
     <string name="bump_style_heartbeat">심장 박동</string>
     <string name="bump_style_elastic">탄성</string>
+    <string name="bump_style_water">물결</string>
     <string name="bump_place_title">버튼 위치</string>
     <string name="bump_place_desc">버튼을 고른 뒤, 화면의 눌림이 버튼 바로 옆에 올 때까지 밀어 주세요. 이 화면이 열려 있는 동안에는 실제 버튼을 눌러도 위치가 보입니다.</string>
     <string name="bump_side">측면</string>

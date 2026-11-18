@@ -34,6 +34,7 @@
     <string name="bump_style_spectrum">光谱</string>
     <string name="bump_style_heartbeat">心跳</string>
     <string name="bump_style_elastic">弹性</string>
+    <string name="bump_style_water">水波</string>
     <string name="bump_place_title">按键的位置</string>
     <string name="bump_place_desc">选择一个按键，然后滑动，直到屏幕上的按压效果正好在它旁边。打开此界面时，按下真实按键也会显示它出现的位置。</string>
     <string name="bump_side">侧边</string>

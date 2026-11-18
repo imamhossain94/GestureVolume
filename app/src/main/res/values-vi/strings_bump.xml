@@ -34,6 +34,7 @@
     <string name="bump_style_spectrum">Quang phổ</string>
     <string name="bump_style_heartbeat">Nhịp tim</string>
     <string name="bump_style_elastic">Đàn hồi</string>
+    <string name="bump_style_water">Nước</string>
     <string name="bump_place_title">Vị trí các nút của bạn</string>
     <string name="bump_place_desc">Chọn một nút, rồi trượt cho đến khi vết nhấn trên màn hình nằm ngay cạnh nút. Khi màn hình này mở, nhấn nút thật cũng cho thấy nó hiện ở đâu.</string>
     <string name="bump_side">Cạnh</string>

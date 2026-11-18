@@ -64,14 +64,20 @@ object ButtonBump {
     /** Stretched towards the button that was pressed, and springing back. */
     const val STYLE_ELASTIC = "elastic"
 
+    /**
+     * Water: a glossy drop rises out of the glass at the button, and every press drops a ripple into
+     * the screen that runs out, crosses the last one and bounces back off the edge. See [WaterSurface].
+     */
+    const val STYLE_WATER = "water"
+
     /** In the order they are offered. */
     val STYLES: List<String> = listOf(
-        STYLE_LIQUID, STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY,
+        STYLE_WATER, STYLE_LIQUID, STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY,
         STYLE_NEON, STYLE_AURORA, STYLE_RIPPLE, STYLE_SPARKLE,
         STYLE_LAVA, STYLE_GLASS, STYLE_SPECTRUM, STYLE_HEARTBEAT, STYLE_ELASTIC,
     )
 
-    const val DEFAULT_STYLE = STYLE_LIQUID
+    const val DEFAULT_STYLE = STYLE_WATER
 
     /** Every style is everyone's: Pro takes the ads away and nothing else. */
     fun sanitizeStyle(id: String?): String = if (id in STYLES) id!! else DEFAULT_STYLE
@@ -110,6 +116,9 @@ object ButtonBump {
         STYLE_SPECTRUM -> Spec(stiffness = 400f, damping = 0.6f, shoulder = 0.36f, reach = 2.2f)
         STYLE_HEARTBEAT -> Spec(stiffness = 420f, damping = 0.55f, shoulder = 0.38f, reach = 2.6f)
         STYLE_ELASTIC -> Spec(stiffness = 320f, damping = 0.4f, shoulder = 0.4f, reach = 1.9f)
+        // A rounder drop on a softer spring, whose wobble sends out ripples of its own, and the room
+        // for them to run well into the screen.
+        STYLE_WATER -> Spec(stiffness = 300f, damping = 0.42f, shoulder = 0.9f, reach = WATER_REACH)
         else -> Spec(stiffness = 400f, damping = 0.62f, shoulder = 0.34f, reach = 1.7f)
     }
 
@@ -208,14 +217,20 @@ object ButtonBump {
      * How long the window is along the edge for a bump [lengthPx] long: room for the bump to grow,
      * lean and overshoot, and for ripples to spread, in pixels.
      */
-    fun windowSpan(style: String, lengthPx: Float, density: Float): Int {
-        val factor = when (sanitizeStyle(style)) {
+    fun windowSpan(style: String, lengthPx: Float, density: Float, depthPx: Float = 0f): Int {
+        val id = sanitizeStyle(style)
+        // Water spreads as far along the edge as it does into the screen, both ways from the button.
+        if (id == STYLE_WATER) return (lengthPx + 2f * depthPx * WATER_REACH * 0.9f + 24f * density).roundToInt()
+        val factor = when (id) {
             STYLE_RIPPLE, STYLE_SPARKLE -> 2.1f
             STYLE_ELASTIC, STYLE_JELLY -> 1.8f
             else -> 1.55f
         }
         return (lengthPx * factor + 24f * density).roundToInt()
     }
+
+    /** How far into the screen the water style's ripples run, as a multiple of the drop's depth. */
+    const val WATER_REACH = 8f
 
     /**
      * How far into the screen the window reaches for a bump [depthPx] deep: the style's own reach,

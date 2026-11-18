@@ -734,7 +734,7 @@ private fun PhoneWithBump(
                     turns = 0,
                     screenWidth = screenW,
                     screenHeight = screenH,
-                    span = ButtonBump.windowSpan(settings.style, settings.lengthDp * density.density, density.density),
+                    span = ButtonBump.windowSpan(settings.style, settings.lengthDp * density.density, density.density, settings.depthDp * density.density),
                     reach = ButtonBump.windowReach(settings.style, settings.depthDp * density.density, density.density, false),
                 )
 
@@ -956,7 +956,8 @@ private fun StyleTile(
                     style = style,
                     left = true,
                     position = 0.5f,
-                    lengthDp = maxHeight.value * 0.72f,
+                    // Water's drop shorter, so the ring it sends out has room to be round.
+                    lengthDp = maxHeight.value * if (style == ButtonBump.STYLE_WATER) 0.4f else 0.72f,
                     depthDp = 13f,
                     color = color,
                     accent = accent,
@@ -1171,6 +1172,7 @@ private fun styleLabel(style: String): Int = when (style) {
     ButtonBump.STYLE_SPECTRUM -> R.string.bump_style_spectrum
     ButtonBump.STYLE_HEARTBEAT -> R.string.bump_style_heartbeat
     ButtonBump.STYLE_ELASTIC -> R.string.bump_style_elastic
+    ButtonBump.STYLE_WATER -> R.string.bump_style_water
     else -> R.string.bump_style_liquid
 }
 

@@ -34,6 +34,7 @@
     <string name="bump_style_spectrum">Spectre</string>
     <string name="bump_style_heartbeat">Battement</string>
     <string name="bump_style_elastic">Élastique</string>
+    <string name="bump_style_water">Eau</string>
     <string name="bump_place_title">Où sont vos boutons</string>
     <string name="bump_place_desc">Choisissez un bouton, puis faites glisser jusqu’à ce que l’appui à l’écran soit juste à côté. Avec cet écran ouvert, presser le vrai bouton montre aussi où il tombe.</string>
     <string name="bump_side">Côté</string>

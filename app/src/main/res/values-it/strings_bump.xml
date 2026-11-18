@@ -34,6 +34,7 @@
     <string name="bump_style_spectrum">Spettro</string>
     <string name="bump_style_heartbeat">Battito</string>
     <string name="bump_style_elastic">Elastico</string>
+    <string name="bump_style_water">Acqua</string>
     <string name="bump_place_title">Dove sono i tuoi tasti</string>
     <string name="bump_place_desc">Scegli un tasto, poi scorri finché la pressione sullo schermo non è proprio accanto. Con questa schermata aperta, anche premere il tasto vero mostra dove cade.</string>
     <string name="bump_side">Lato</string>

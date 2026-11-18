@@ -34,6 +34,7 @@
     <string name="bump_style_spectrum">Espectro</string>
     <string name="bump_style_heartbeat">Latido</string>
     <string name="bump_style_elastic">Elástico</string>
+    <string name="bump_style_water">Agua</string>
     <string name="bump_place_title">Dónde están tus botones</string>
     <string name="bump_place_desc">Elige un botón y desliza hasta que la pulsación en tu pantalla quede justo a su lado. Con esta pantalla abierta, pulsar el botón real también muestra dónde cae.</string>
     <string name="bump_side">Lado</string>

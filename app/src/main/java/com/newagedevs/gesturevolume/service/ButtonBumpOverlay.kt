@@ -87,7 +87,7 @@ class ButtonBumpOverlay(
             turns = HandlerGeometry.quarterTurns(frame),
             screenWidth = frame.displayWidth,
             screenHeight = frame.displayHeight,
-            span = ButtonBump.windowSpan(settings.style, lengthPx, density),
+            span = ButtonBump.windowSpan(settings.style, lengthPx, density, depthPx),
             reach = ButtonBump.windowReach(settings.style, depthPx, density, settings.showPercent),
         )
         // Laid out in the screen, not in the frame under the status bar (FLAG_LAYOUT_IN_SCREEN), so
@@ -132,6 +132,17 @@ class ButtonBumpOverlay(
             x = placement.x - originX
             y = placement.y - originY
             title = "GestureVolume button animation"
+            // Not touchable, so a tap on the glass under it goes through to the app — unless the
+            // window is too opaque: from Android 12 a tap through another app's opaque overlay is
+            // dropped. The accessibility service's windows are trusted and exempt; an ordinary
+            // overlay is kept just within the limit, which on the Water style's larger window is
+            // the difference between the ripples and a strip of the screen that ignores taps.
+            if (windowType == WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+            ) {
+                val input = context.getSystemService(android.hardware.input.InputManager::class.java)
+                alpha = (input?.maximumObscuringOpacityForTouch ?: 0.8f).coerceIn(0.5f, 1f)
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 // Over the whole glass, into the camera cutout and over the system bars: the
                 // buttons are where they are, whatever the screen has put beside them.

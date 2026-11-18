@@ -34,6 +34,7 @@
     <string name="bump_style_spectrum">বর্ণালি</string>
     <string name="bump_style_heartbeat">হৃদস্পন্দন</string>
     <string name="bump_style_elastic">স্থিতিস্থাপক</string>
+    <string name="bump_style_water">জল</string>
     <string name="bump_place_title">আপনার বোতাম কোথায়</string>
     <string name="bump_place_desc">একটি বোতাম বেছে নিন, তারপর স্লাইড করুন যতক্ষণ না স্ক্রিনের চাপটি ঠিক তার পাশে বসে। এই স্ক্রিন খোলা থাকলে আসল বোতাম চাপলেও দেখা যাবে এটি কোথায় আসে।</string>
     <string name="bump_side">পাশ</string>

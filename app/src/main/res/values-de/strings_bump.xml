@@ -34,6 +34,7 @@
     <string name="bump_style_spectrum">Spektrum</string>
     <string name="bump_style_heartbeat">Herzschlag</string>
     <string name="bump_style_elastic">Elastisch</string>
+    <string name="bump_style_water">Wasser</string>
     <string name="bump_place_title">Wo deine Tasten sind</string>
     <string name="bump_place_desc">Wähle eine Taste und schiebe, bis der Druck auf dem Bildschirm genau neben ihr sitzt. Solange dieser Bildschirm offen ist, zeigt auch ein Druck auf die echte Taste, wo er landet.</string>
     <string name="bump_side">Seite</string>

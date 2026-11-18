@@ -34,6 +34,7 @@
     <string name="bump_style_spectrum">スペクトル</string>
     <string name="bump_style_heartbeat">鼓動</string>
     <string name="bump_style_elastic">伸縮</string>
+    <string name="bump_style_water">水面</string>
     <string name="bump_place_title">ボタンの位置</string>
     <string name="bump_place_desc">ボタンを選び、画面上の押し込みがそのすぐ横に来るまでスライドしてください。この画面を開いている間は、実際のボタンを押しても位置を確認できます。</string>
     <string name="bump_side">側面</string>

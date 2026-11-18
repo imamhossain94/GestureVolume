@@ -34,6 +34,7 @@
     <string name="bump_style_spectrum">Espectro</string>
     <string name="bump_style_heartbeat">Batimento</string>
     <string name="bump_style_elastic">Elástico</string>
+    <string name="bump_style_water">Água</string>
     <string name="bump_place_title">Onde ficam os seus botões</string>
     <string name="bump_place_desc">Escolha um botão e deslize até o toque na tela ficar bem ao lado dele. Com esta tela aberta, apertar o botão de verdade também mostra onde ele cai.</string>
     <string name="bump_side">Lado</string>

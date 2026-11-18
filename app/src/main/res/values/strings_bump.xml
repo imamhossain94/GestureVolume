@@ -43,6 +43,7 @@
     <string name="bump_style_spectrum">Spectrum</string>
     <string name="bump_style_heartbeat">Heartbeat</string>
     <string name="bump_style_elastic">Elastic</string>
+    <string name="bump_style_water">Water</string>
     <string name="bump_place_title">Where your buttons are</string>
     <string name="bump_place_desc">Pick a button, then slide until the press on your screen sits right beside it. With this screen open, pressing the real button shows where it lands too.</string>
     <string name="bump_side">Side</string>

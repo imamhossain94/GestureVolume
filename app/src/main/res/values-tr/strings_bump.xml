@@ -34,6 +34,7 @@
     <string name="bump_style_spectrum">Tayf</string>
     <string name="bump_style_heartbeat">Kalp atışı</string>
     <string name="bump_style_elastic">Esnek</string>
+    <string name="bump_style_water">Su</string>
     <string name="bump_place_title">Tuşlarınız nerede</string>
     <string name="bump_place_desc">Bir tuş seçin, ardından ekrandaki basış tam yanına gelene kadar kaydırın. Bu ekran açıkken gerçek tuşa basmak da nereye geldiğini gösterir.</string>
     <string name="bump_side">Taraf</string>

@@ -34,6 +34,7 @@
     <string name="bump_style_spectrum">स्पेक्ट्रम</string>
     <string name="bump_style_heartbeat">धड़कन</string>
     <string name="bump_style_elastic">लचीला</string>
+    <string name="bump_style_water">पानी</string>
     <string name="bump_place_title">आपके बटन कहाँ हैं</string>
     <string name="bump_place_desc">एक बटन चुनें, फिर तब तक स्लाइड करें जब तक स्क्रीन पर दबाव ठीक उसके बगल में न आ जाए। यह स्क्रीन खुली रहने पर असली बटन दबाने से भी दिखता है कि वह कहाँ आता है।</string>
     <string name="bump_side">किनारा</string>

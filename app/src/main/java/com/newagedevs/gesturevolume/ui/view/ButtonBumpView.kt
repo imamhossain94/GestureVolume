@@ -1,6 +1,7 @@
 package com.newagedevs.gesturevolume.ui.view
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -8,6 +9,7 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PathMeasure
+import android.graphics.RadialGradient
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
@@ -15,7 +17,9 @@ import android.os.SystemClock
 import android.view.View
 import com.newagedevs.gesturevolume.data.local.ButtonBumpStore
 import com.newagedevs.gesturevolume.utils.ButtonBump
+import com.newagedevs.gesturevolume.utils.WaterSurface
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
@@ -92,6 +96,36 @@ class ButtonBumpView(context: Context) : View(context) {
     private val sparks = ArrayList<Spark>()
     private val random = java.util.Random()
 
+    // ---- the water style's pool ------------------------------------------------------------------
+
+    /** The water beside the buttons, while the style is Water. See [WaterSurface]. */
+    private var water: WaterSurface? = null
+    private var waterBitmap: Bitmap? = null
+    private var waterPixels = IntArray(0)
+
+    /** A cell's size in the window's pixels, inward and along the edge. */
+    private var waterCellX = 1f
+    private var waterCellY = 1f
+
+    /** How many steps of the water make a second, for the ripples to run at [WATER_SPEED_DP] a second. */
+    private var waterStepsPerS = 120f
+
+    /** Time the water is owed, carried from frame to frame so it runs at its own pace whatever the frame rate. */
+    private var waterClock = 0f
+
+    /** Presses since the last step, each dropping a ripple at the next. */
+    private var waterKick = 0f
+
+    /** Whether anything is still moving on the water: it is drawn, and the frames go on, until not. */
+    private var waterAlive = false
+
+    /** Whether the surface has moved since it was last lit. */
+    private var waterDirty = true
+
+    private val waterPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG or Paint.DITHER_FLAG)
+    private val waterRect = RectF()
+    private val glintPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+
     // ---- drawing tools ---------------------------------------------------------------------------
 
     private val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
@@ -139,6 +173,7 @@ class ButtonBumpView(context: Context) : View(context) {
             rings.clear()
             sparks.clear()
         }
+        if (settings.style == ButtonBump.STYLE_WATER) ensureWater(placement) else releaseWater()
         // The shaders are sized to the bump, so a new length or colour makes new ones.
         auroraShader = null
         spectrumShader = null
@@ -146,6 +181,45 @@ class ButtonBumpView(context: Context) : View(context) {
         glassShader = null
         updateMatrix()
         invalidate()
+    }
+
+    /**
+     * A pool the size of the window, in cells a few pixels across: fine enough that the light on it
+     * is smooth once the bitmap is stretched over the window, coarse enough to step and light every
+     * frame without being felt. Kept as it is when the window has not changed size, so a press while
+     * the water is moving carries on with the same water.
+     */
+    private fun ensureWater(p: ButtonBump.Placement) {
+        var cell = max(WATER_CELL_DP * density, WATER_MIN_CELL_PX)
+        var cols = ceil(p.reach / cell).toInt().coerceAtLeast(3)
+        var rows = ceil(p.span / cell).toInt().coerceAtLeast(3)
+        while (cols * rows > WATER_MAX_CELLS) {
+            cell *= 1.15f
+            cols = ceil(p.reach / cell).toInt().coerceAtLeast(3)
+            rows = ceil(p.span / cell).toInt().coerceAtLeast(3)
+        }
+        waterCellX = p.reach / cols.toFloat()
+        waterCellY = p.span / rows.toFloat()
+        // The ripples' speed on the glass, whatever the cells' size: the grid moves a wave at most
+        // the square root of its speed squared, in cells, each step.
+        val cellDp = (waterCellX + waterCellY) / 2f / density
+        waterStepsPerS = (WATER_SPEED_DP / (kotlin.math.sqrt(WaterSurface.DEFAULT_SPEED2) * cellDp))
+            .coerceIn(30f, 360f)
+        val current = water
+        if (current != null && current.cols == cols && current.rows == rows) return
+        water = WaterSurface(cols, rows)
+        waterBitmap = Bitmap.createBitmap(cols, rows, Bitmap.Config.ARGB_8888)
+        waterPixels = IntArray(cols * rows)
+        waterClock = 0f
+        waterDirty = true
+    }
+
+    private fun releaseWater() {
+        water = null
+        waterBitmap = null
+        waterPixels = IntArray(0)
+        waterAlive = false
+        waterKick = 0f
     }
 
     private fun updateMatrix() {
@@ -170,6 +244,18 @@ class ButtonBumpView(context: Context) : View(context) {
         presenceTarget = 1f
         this.level.snapTo(level)
         levelTarget = level
+        // The water a moment after a press, the ring half way out, frozen.
+        water?.let { pool ->
+            pool.clear()
+            val (row, half, deep) = waterSource()
+            repeat(WATER_STILL_STEPS) { i ->
+                pool.hold(row, half, deep, WATER_DROP, WATER_HOLD)
+                if (i == 0) pool.impulse(row, half * WATER_KICK_SPREAD, deep * WATER_KICK_DEPTH, -WATER_KICK)
+                pool.step()
+            }
+            waterAlive = true
+            waterDirty = true
+        }
         invalidate()
     }
 
@@ -203,6 +289,8 @@ class ButtonBumpView(context: Context) : View(context) {
                 rings += Ring(now)
                 while (rings.size > 6) rings.removeAt(0)
             }
+            // A drop into the pool: a held key keeps dropping them, and their rings cross.
+            ButtonBump.STYLE_WATER -> waterKick = min(waterKick + if (atLimit) 0.55f else 1f, 2f)
             ButtonBump.STYLE_SPARKLE -> spawnSparks(now, if (atLimit) 8 else 16)
         }
         // A push to the spring at every press, so a held key keeps the bump alive and lively.
@@ -238,6 +326,9 @@ class ButtonBumpView(context: Context) : View(context) {
         super.onDetachedFromWindow()
         running = false
         removeCallbacks(wake)
+        water?.clear()
+        waterAlive = false
+        waterKick = 0f
     }
 
     // ---- the frame ---------------------------------------------------------------------------------
@@ -248,7 +339,7 @@ class ButtonBumpView(context: Context) : View(context) {
         if (!still) advance(now)
 
         val p = presence.value
-        if (p > 0.001f || rings.isNotEmpty() || sparks.isNotEmpty()) {
+        if (p > 0.001f || rings.isNotEmpty() || sparks.isNotEmpty() || waterAlive) {
             canvas.save()
             canvas.concat(toWindow)
             drawStyle(canvas, now, p.coerceAtLeast(0f))
@@ -281,16 +372,62 @@ class ButtonBumpView(context: Context) : View(context) {
 
         val sparksAlive = updateSparks(now, dt)
         rings.removeAll { now - it.bornMs > RING_LIFE_MS }
+        stepWater(dt)
 
         val settled = presence.isSettled(presenceTarget) && level.isSettled(levelTarget) &&
             lean.isSettled(0f, 0.01f)
         val pulsing = now - pressAtMs < (ButtonBump.PRESS_S * 1000f / settings.speed.coerceAtLeast(0.1f)).toLong() + 600L
         // The loops — aurora drifting, spectrum turning — keep going for as long as the bump is out.
         val looping = presenceTarget > 0f && settings.style in LOOPING_STYLES
-        running = !settled || pulsing || looping || rings.isNotEmpty() || sparksAlive
+        running = !settled || pulsing || looping || rings.isNotEmpty() || sparksAlive || waterAlive
         // Out and still: no frames until it is time to go back into the glass.
         removeCallbacks(wake)
         if (!running && presenceTarget > 0f && hideAtMs > now) postDelayed(wake, hideAtMs - now)
+    }
+
+    /**
+     * Runs the water on by [dt]: the drop held at the height the bump has reached — so its rising,
+     * its wobble and its sinking all push the water about — a ripple dropped for each press since
+     * the last step, and the steps the time calls for, at the water's own pace.
+     */
+    private fun stepWater(dt: Float) {
+        val pool = water ?: run {
+            waterAlive = false
+            return
+        }
+        waterClock += dt
+        val stepS = 1f / waterStepsPerS
+        val (row, half, deep) = waterSource()
+        var steps = 0
+        while (waterClock >= stepS && steps < WATER_MAX_STEPS) {
+            // Let go as the drop sinks: water held flat where a drop has been would stand in the
+            // ripples' way like a post.
+            val drop = presence.value.coerceAtLeast(0f)
+            pool.hold(row, half, deep, WATER_DROP * drop, WATER_HOLD * ButtonBump.smootherstep(drop * 3f))
+            if (waterKick > 0f) {
+                pool.impulse(row, half * WATER_KICK_SPREAD, deep * WATER_KICK_DEPTH, -WATER_KICK * waterKick)
+                waterKick = 0f
+            }
+            pool.step()
+            waterClock -= stepS
+            steps++
+        }
+        // Behind by more than a frame's worth, after a stall: let it go rather than race to catch up.
+        if (steps == WATER_MAX_STEPS) waterClock = 0f
+        if (steps > 0) waterDirty = true
+        waterAlive = presence.value > 0.01f || waterKick > 0f || pool.energy() > WATER_REST
+        if (!waterAlive) {
+            pool.clear()
+            waterClock = 0f
+        }
+    }
+
+    /** Where the drop sits on the pool, in cells: its middle along the edge, its half-length, its depth. */
+    private fun waterSource(): Triple<Float, Float, Float> {
+        val row = placement.centre / waterCellY
+        val half = settings.lengthDp * density / 2f / waterCellY
+        val deep = settings.depthDp * density / waterCellX
+        return Triple(row, half, deep)
     }
 
     /** Wakes a bump that has been sitting still, when its time on the glass is up. */
@@ -332,8 +469,68 @@ class ButtonBumpView(context: Context) : View(context) {
             ButtonBump.STYLE_SPECTRUM -> drawSpectrum(canvas, t, p, press, centre, half, depth)
             ButtonBump.STYLE_HEARTBEAT -> drawHeartbeat(canvas, now, p, centre, half, depth)
             ButtonBump.STYLE_ELASTIC -> drawElastic(canvas, p, press, centre, half, depth)
+            ButtonBump.STYLE_WATER -> {
+                drawWater(canvas)
+                drawDrop(canvas, p, press, centre, half, depth)
+            }
             else -> drawLiquid(canvas, p, press, centre, half, depth)
         }
+    }
+
+    /**
+     * The water, lit: light on one side of every ripple and dark on the other, as a wallpaper seen
+     * through rippling water looks, drawn from the pool's own small bitmap stretched over the window.
+     */
+    private fun drawWater(canvas: Canvas) {
+        val pool = water ?: return
+        val bitmap = waterBitmap ?: return
+        if (!waterAlive) return
+        if (waterDirty) {
+            pool.render(
+                waterPixels,
+                slope = WATER_SLOPE,
+                highlight = settings.accent,
+                shadow = settings.color,
+                tint = settings.accent,
+            )
+            bitmap.setPixels(waterPixels, 0, pool.cols, 0, 0, pool.cols, pool.rows)
+            waterDirty = false
+        }
+        waterRect.set(0f, 0f, placement.reach.toFloat(), placement.span.toFloat())
+        canvas.drawBitmap(bitmap, null, waterRect, waterPaint)
+    }
+
+    /**
+     * The drop at the button: the glass's black risen out of the edge like a bead of liquid, with a
+     * wet shine along its rim and a glint where the light catches it, and the level in it.
+     */
+    private fun drawDrop(canvas: Canvas, p: Float, press: Float, centre: Float, half: Float, depth: Float) {
+        // Fatter for a moment at each press, as a drop is when something lands in it.
+        val d = depth * p * (1f + 0.16f * press)
+        val h = half * (0.88f + 0.12f * min(p, 1f)) * (1f - 0.05f * press)
+        if (d <= 0.5f) return
+        drawSolidBump(canvas, centre, h, d, settings.color)
+        val shine = min(p, 1f)
+        // The wet rim: a thin light line just inside the edge of the drop.
+        buildBump(rimPath, centre, h * 0.92f, d - 1.6f * density, spec.shoulder, closed = false)
+        strokePaint.shader = null
+        strokePaint.strokeWidth = 1.4f * density
+        strokePaint.color = withAlpha(settings.accent, 0.32f * shine)
+        canvas.drawPath(rimPath, strokePaint)
+        // The glint: where the light from above catches the drop, near its upper end.
+        val gx = d * 0.55f
+        val gy = centre - h * 0.42f
+        val radius = max(d * 0.42f, 3f * density)
+        glintPaint.shader = RadialGradient(
+            gx, gy, radius,
+            withAlpha(settings.accent, 0.55f * shine), withAlpha(settings.accent, 0f),
+            Shader.TileMode.CLAMP,
+        )
+        canvas.save()
+        canvas.clipPath(bodyPath)
+        canvas.drawCircle(gx, gy, radius, glintPaint)
+        canvas.restore()
+        drawLevelTrack(canvas, centre, h, d, p)
     }
 
     /** The bump itself, the glass's black growing out of the edge, and the level in it. */
@@ -830,6 +1027,30 @@ class ButtonBumpView(context: Context) : View(context) {
 
         /** How long a ripple takes to go out and fade. */
         const val RING_LIFE_MS = 1100L
+
+        // ---- the water style ----
+        /** A cell of the pool, at least: a couple of dp, so the light on it is smooth. */
+        const val WATER_CELL_DP = 2f
+        const val WATER_MIN_CELL_PX = 4f
+        /** The most cells a pool is made of, to keep a frame of it cheap on any phone. */
+        const val WATER_MAX_CELLS = 16_000
+        /** How fast the ripples run across the glass, in dp a second. */
+        const val WATER_SPEED_DP = 230f
+        /** The most steps one frame takes, so a stall does not turn into a burst of work. */
+        const val WATER_MAX_STEPS = 8
+        /** How high the drop stands in the water, how firmly it is held there, and how hard a press lands. */
+        const val WATER_DROP = 1f
+        const val WATER_HOLD = 0.3f
+        const val WATER_KICK = 0.9f
+        /** How much wider and deeper than the drop a press disturbs the water. */
+        const val WATER_KICK_SPREAD = 1.25f
+        const val WATER_KICK_DEPTH = 1.8f
+        /** How steep the ripples look: how strongly they catch the light. */
+        const val WATER_SLOPE = 2.8f
+        /** Below this nothing on the water can be seen, and it is left still. */
+        const val WATER_REST = 0.004f
+        /** The steps run for a gallery tile's frozen frame: the first ring half way out. */
+        const val WATER_STILL_STEPS = 20
 
         /** Width multiples and alphas of a glow's passes, faintest and widest first. */
         val GLOW = listOf(5.5f to 0.08f, 3.4f to 0.14f, 2f to 0.3f, 1f to 1f)
