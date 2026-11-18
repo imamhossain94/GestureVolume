@@ -14,3 +14,6 @@
 .cxx
 local.properties
 /app/release/app-release.aab
+
+# Kotlin compiler daemon state: session locks and crash logs, per machine
+.kotlin/
