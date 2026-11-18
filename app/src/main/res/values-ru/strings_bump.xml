@@ -35,6 +35,14 @@
     <string name="bump_style_heartbeat">Пульс</string>
     <string name="bump_style_elastic">Упругость</string>
     <string name="bump_style_water">Вода</string>
+    <string name="bump_style_blossom">Сакура</string>
+    <string name="bump_style_fireworks">Фейерверк</string>
+    <string name="bump_style_sparks">Искры</string>
+    <string name="bump_style_sonar">Сонар</string>
+    <string name="bump_style_solar">Солнечная система</string>
+    <string name="bump_style_bubbles">Пузыри</string>
+    <string name="bump_style_lightning">Молния</string>
+    <string name="bump_style_confetti">Конфетти</string>
     <string name="bump_place_title">Где ваши кнопки</string>
     <string name="bump_place_desc">Выберите кнопку и двигайте, пока отклик на экране не окажется прямо рядом с ней. Пока открыт этот экран, нажатие настоящей кнопки тоже покажет, где он появляется.</string>
     <string name="bump_side">Сторона</string>

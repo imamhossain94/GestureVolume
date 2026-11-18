@@ -35,6 +35,14 @@
     <string name="bump_style_heartbeat">Nhịp tim</string>
     <string name="bump_style_elastic">Đàn hồi</string>
     <string name="bump_style_water">Nước</string>
+    <string name="bump_style_blossom">Hoa anh đào</string>
+    <string name="bump_style_fireworks">Pháo hoa</string>
+    <string name="bump_style_sparks">Tia lửa</string>
+    <string name="bump_style_sonar">Sonar</string>
+    <string name="bump_style_solar">Hệ Mặt Trời</string>
+    <string name="bump_style_bubbles">Bong bóng</string>
+    <string name="bump_style_lightning">Tia sét</string>
+    <string name="bump_style_confetti">Hoa giấy</string>
     <string name="bump_place_title">Vị trí các nút của bạn</string>
     <string name="bump_place_desc">Chọn một nút, rồi trượt cho đến khi vết nhấn trên màn hình nằm ngay cạnh nút. Khi màn hình này mở, nhấn nút thật cũng cho thấy nó hiện ở đâu.</string>
     <string name="bump_side">Cạnh</string>

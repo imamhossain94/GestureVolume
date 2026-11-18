@@ -126,6 +126,16 @@ class ButtonBumpView(context: Context) : View(context) {
     private val waterRect = RectF()
     private val glintPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
 
+    // ---- the showpiece styles: petals, sparks, fireworks and the rest ---------------------------
+
+    /** The effect the style is drawn with, for the styles in [BumpEffects]; null for the rest. */
+    private var effect: BumpEffect? = null
+    private var effectStyle: String? = null
+    private val scene = BumpScene()
+
+    /** Whether anything the effect threw out is still in flight: drawn, and the frames go on, until not. */
+    private var effectAlive = false
+
     // ---- drawing tools ---------------------------------------------------------------------------
 
     private val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
@@ -174,6 +184,11 @@ class ButtonBumpView(context: Context) : View(context) {
             sparks.clear()
         }
         if (settings.style == ButtonBump.STYLE_WATER) ensureWater(placement) else releaseWater()
+        if (effectStyle != settings.style) {
+            effect = BumpEffects.create(settings.style, random)
+            effectStyle = settings.style
+            effectAlive = false
+        }
         // The shaders are sized to the bump, so a new length or colour makes new ones.
         auroraShader = null
         spectrumShader = null
@@ -234,6 +249,15 @@ class ButtonBumpView(context: Context) : View(context) {
             ButtonBump.Edge.BOTTOM -> if (p.flipped) floatArrayOf(0f, -1f, span, -1f, 0f, h) else floatArrayOf(0f, 1f, 0f, -1f, 0f, h)
         }
         toWindow.setValues(floatArrayOf(values[0], values[1], values[2], values[3], values[4], values[5], 0f, 0f, 1f))
+        // Which way is down on the screen, in upright terms: what the effects fall and rise by.
+        val inverse = Matrix()
+        if (toWindow.invert(inverse)) {
+            val down = floatArrayOf(0f, 1f)
+            inverse.mapVectors(down)
+            val length = kotlin.math.hypot(down[0], down[1]).takeIf { it > 0f } ?: 1f
+            scene.gravityX = down[0] / length
+            scene.gravityY = down[1] / length
+        }
     }
 
     /** Freezes the view on one frame of the bump, out and part full: for a tile in the style gallery. */
@@ -255,6 +279,11 @@ class ButtonBumpView(context: Context) : View(context) {
             }
             waterAlive = true
             waterDirty = true
+        }
+        effect?.let { fx ->
+            syncScene()
+            fx.prime(scene)
+            effectAlive = true
         }
         invalidate()
     }
@@ -293,6 +322,10 @@ class ButtonBumpView(context: Context) : View(context) {
             ButtonBump.STYLE_WATER -> waterKick = min(waterKick + if (atLimit) 0.55f else 1f, 2f)
             ButtonBump.STYLE_SPARKLE -> spawnSparks(now, if (atLimit) 8 else 16)
         }
+        effect?.let { fx ->
+            syncScene()
+            fx.press(scene, atLimit)
+        }
         // A push to the spring at every press, so a held key keeps the bump alive and lively.
         presence.velocity += if (atLimit) 1.2f else 2.4f
         hiddenReported = false
@@ -329,6 +362,8 @@ class ButtonBumpView(context: Context) : View(context) {
         water?.clear()
         waterAlive = false
         waterKick = 0f
+        effect?.clear()
+        effectAlive = false
     }
 
     // ---- the frame ---------------------------------------------------------------------------------
@@ -339,7 +374,7 @@ class ButtonBumpView(context: Context) : View(context) {
         if (!still) advance(now)
 
         val p = presence.value
-        if (p > 0.001f || rings.isNotEmpty() || sparks.isNotEmpty() || waterAlive) {
+        if (p > 0.001f || rings.isNotEmpty() || sparks.isNotEmpty() || waterAlive || effectAlive) {
             canvas.save()
             canvas.concat(toWindow)
             drawStyle(canvas, now, p.coerceAtLeast(0f))
@@ -373,13 +408,17 @@ class ButtonBumpView(context: Context) : View(context) {
         val sparksAlive = updateSparks(now, dt)
         rings.removeAll { now - it.bornMs > RING_LIFE_MS }
         stepWater(dt)
+        effectAlive = effect?.let { fx ->
+            syncScene()
+            fx.step(scene, dt)
+        } ?: false
 
         val settled = presence.isSettled(presenceTarget) && level.isSettled(levelTarget) &&
             lean.isSettled(0f, 0.01f)
         val pulsing = now - pressAtMs < (ButtonBump.PRESS_S * 1000f / settings.speed.coerceAtLeast(0.1f)).toLong() + 600L
         // The loops — aurora drifting, spectrum turning — keep going for as long as the bump is out.
-        val looping = presenceTarget > 0f && settings.style in LOOPING_STYLES
-        running = !settled || pulsing || looping || rings.isNotEmpty() || sparksAlive || waterAlive
+        val looping = presenceTarget > 0f && (settings.style in LOOPING_STYLES || effect?.loops == true)
+        running = !settled || pulsing || looping || rings.isNotEmpty() || sparksAlive || waterAlive || effectAlive
         // Out and still: no frames until it is time to go back into the glass.
         removeCallbacks(wake)
         if (!running && presenceTarget > 0f && hideAtMs > now) postDelayed(wake, hideAtMs - now)
@@ -473,8 +512,53 @@ class ButtonBumpView(context: Context) : View(context) {
                 drawWater(canvas)
                 drawDrop(canvas, p, press, centre, half, depth)
             }
-            else -> drawLiquid(canvas, p, press, centre, half, depth)
+            else -> if (effect != null) {
+                drawEffect(canvas, p, press, centre, half, depth)
+            } else {
+                drawLiquid(canvas, p, press, centre, half, depth)
+            }
         }
+    }
+
+    /** The scene as it stands, for the effect: the bump at rest and as it is, the window, the colours. */
+    private fun syncScene() {
+        scene.density = density
+        scene.reach = placement.reach.toFloat()
+        scene.span = placement.span.toFloat()
+        scene.restHalf = settings.lengthDp * density / 2f
+        scene.restDepth = settings.depthDp * density
+        val out = presence.value.coerceAtLeast(0f)
+        scene.presence = out
+        scene.centre = placement.centre
+        scene.depth = scene.restDepth * out
+        scene.half = scene.restHalf * (0.9f + 0.1f * min(out, 1f))
+        scene.level = level.value
+        scene.color = settings.color
+        scene.accent = settings.accent
+        scene.showLevel = settings.showLevel
+        scene.towards = -pressDirection
+    }
+
+    /**
+     * One of the showpiece styles: the effect behind, then the bump with its level in it — unless the
+     * effect is the bump, as the sun is — then the effect in front.
+     */
+    private fun drawEffect(canvas: Canvas, p: Float, press: Float, centre: Float, half: Float, depth: Float) {
+        val fx = effect ?: return
+        syncScene()
+        val d = depth * p * (1f + 0.1f * press)
+        val h = half * (0.9f + 0.1f * min(p, 1f))
+        val shifted = centre - pressDirection * half * 0.05f * press
+        scene.depth = d
+        scene.half = h
+        scene.centre = shifted
+        if (d > 0.5f) buildBump(scene.rim, shifted, h, d, spec.shoulder, closed = false) else scene.rim.reset()
+        fx.drawBehind(canvas, scene)
+        if (fx.drawsBump && d > 0.5f) {
+            drawSolidBump(canvas, shifted, h, d, settings.color)
+            drawLevelTrack(canvas, shifted, h, d, p)
+        }
+        fx.drawFront(canvas, scene)
     }
 
     /**

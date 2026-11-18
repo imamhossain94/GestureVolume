@@ -26,6 +26,27 @@ class ButtonBumpTest {
     }
 
     @Test
+    fun `the styles that throw things across the screen get the room to`() {
+        val density = 3f
+        val length = 52f * density
+        val depth = 18f * density
+        val throwers = ButtonBump.STYLES.filter { ButtonBump.spec(it).spread > 0f }
+        // Water, and every one of the showpieces: petals, sparks, fireworks and the rest.
+        assertTrue(throwers.containsAll(listOf(
+            ButtonBump.STYLE_WATER, ButtonBump.STYLE_BLOSSOM, ButtonBump.STYLE_SPARKS, ButtonBump.STYLE_FIREWORKS,
+            ButtonBump.STYLE_SONAR, ButtonBump.STYLE_SOLAR, ButtonBump.STYLE_BUBBLES, ButtonBump.STYLE_LIGHTNING,
+            ButtonBump.STYLE_CONFETTI,
+        )))
+        for (style in throwers) {
+            val span = ButtonBump.windowSpan(style, length, density, depth)
+            val reach = ButtonBump.windowReach(style, depth, density, false)
+            // Out into the screen several times the bump's depth, and along the edge both ways from it.
+            assertTrue("$style reach $reach", reach > depth * 5f)
+            assertTrue("$style span $span", span > length + 2f * depth * 5f)
+        }
+    }
+
+    @Test
     fun `an unknown style is the default`() {
         assertEquals(ButtonBump.DEFAULT_STYLE, ButtonBump.sanitizeStyle("comet"))
         assertEquals(ButtonBump.DEFAULT_STYLE, ButtonBump.sanitizeStyle(null))

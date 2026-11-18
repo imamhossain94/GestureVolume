@@ -70,10 +70,35 @@ object ButtonBump {
      */
     const val STYLE_WATER = "water"
 
+    /** A cherry blossom opens on the bump, and each press shakes petals loose to flutter down. */
+    const val STYLE_BLOSSOM = "blossom"
+
+    /** A grinder's sparks: the rim glows hot and a shower streaks out, cooling as it falls. */
+    const val STYLE_SPARKS = "sparks"
+
+    /** A rocket from the bump at each press, bursting into a shell: ring, willow, peony, heart. */
+    const val STYLE_FIREWORKS = "fireworks"
+
+    /** A sonar scope round the button: a sweeping beam, a ping at each press, echoes lighting up. */
+    const val STYLE_SONAR = "sonar"
+
+    /** The bump is the sun, the planets orbiting it; a press flares it and spins them faster. */
+    const val STYLE_SOLAR = "solar"
+
+    /** Soap bubbles blown out at each press, rising, shimmering, and popping. */
+    const val STYLE_BUBBLES = "bubbles"
+
+    /** A forked bolt thrown into the screen at each press, arcs crawling along the rim. */
+    const val STYLE_LIGHTNING = "lightning"
+
+    /** A party popper at each press: confetti and streamers fluttering down. */
+    const val STYLE_CONFETTI = "confetti"
+
     /** In the order they are offered. */
     val STYLES: List<String> = listOf(
-        STYLE_WATER, STYLE_LIQUID, STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY,
-        STYLE_NEON, STYLE_AURORA, STYLE_RIPPLE, STYLE_SPARKLE,
+        STYLE_WATER, STYLE_LIQUID, STYLE_BLOSSOM, STYLE_FIREWORKS, STYLE_SPARKS, STYLE_SONAR,
+        STYLE_SOLAR, STYLE_BUBBLES, STYLE_LIGHTNING, STYLE_CONFETTI,
+        STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY, STYLE_NEON, STYLE_AURORA, STYLE_RIPPLE, STYLE_SPARKLE,
         STYLE_LAVA, STYLE_GLASS, STYLE_SPECTRUM, STYLE_HEARTBEAT, STYLE_ELASTIC,
     )
 
@@ -94,6 +119,8 @@ object ButtonBump {
      * @param reach how far into the screen the style draws, as a multiple of the bump's depth:
      *   ripples and sparks travel well past the bump itself.
      * @param detached whether the shape stands clear of the glass rather than growing out of it.
+     * @param spread for the styles that throw things out across the screen, how far along the edge
+     *   they go each way from the button, as a multiple of the bump's depth; 0 for the rest.
      */
     data class Spec(
         val stiffness: Float,
@@ -101,6 +128,7 @@ object ButtonBump {
         val shoulder: Float,
         val reach: Float,
         val detached: Boolean = false,
+        val spread: Float = 0f,
     )
 
     fun spec(style: String): Spec = when (sanitizeStyle(style)) {
@@ -118,7 +146,15 @@ object ButtonBump {
         STYLE_ELASTIC -> Spec(stiffness = 320f, damping = 0.4f, shoulder = 0.4f, reach = 1.9f)
         // A rounder drop on a softer spring, whose wobble sends out ripples of its own, and the room
         // for them to run well into the screen.
-        STYLE_WATER -> Spec(stiffness = 300f, damping = 0.42f, shoulder = 0.9f, reach = WATER_REACH)
+        STYLE_WATER -> Spec(stiffness = 300f, damping = 0.42f, shoulder = 0.9f, reach = WATER_REACH, spread = WATER_REACH * 0.9f)
+        STYLE_BLOSSOM -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.5f, reach = 8f, spread = 6.5f)
+        STYLE_SPARKS -> Spec(stiffness = 400f, damping = 0.62f, shoulder = 0.38f, reach = 8f, spread = 6.5f)
+        STYLE_FIREWORKS -> Spec(stiffness = 380f, damping = 0.65f, shoulder = 0.4f, reach = 10f, spread = 7.5f)
+        STYLE_SONAR -> Spec(stiffness = 320f, damping = 0.8f, shoulder = 0.45f, reach = 8.5f, spread = 7.8f)
+        STYLE_SOLAR -> Spec(stiffness = 300f, damping = 0.72f, shoulder = 0.5f, reach = 9f, spread = 8.4f)
+        STYLE_BUBBLES -> Spec(stiffness = 320f, damping = 0.55f, shoulder = 0.45f, reach = 7f, spread = 6f)
+        STYLE_LIGHTNING -> Spec(stiffness = 420f, damping = 0.6f, shoulder = 0.38f, reach = 7.5f, spread = 5.5f)
+        STYLE_CONFETTI -> Spec(stiffness = 380f, damping = 0.6f, shoulder = 0.4f, reach = 8f, spread = 6.5f)
         else -> Spec(stiffness = 400f, damping = 0.62f, shoulder = 0.34f, reach = 1.7f)
     }
 
@@ -219,8 +255,10 @@ object ButtonBump {
      */
     fun windowSpan(style: String, lengthPx: Float, density: Float, depthPx: Float = 0f): Int {
         val id = sanitizeStyle(style)
-        // Water spreads as far along the edge as it does into the screen, both ways from the button.
-        if (id == STYLE_WATER) return (lengthPx + 2f * depthPx * WATER_REACH * 0.9f + 24f * density).roundToInt()
+        // The styles that throw things across the screen spread along the edge as well as into it,
+        // both ways from the button.
+        val spread = spec(id).spread
+        if (spread > 0f) return (lengthPx + 2f * depthPx * spread + 24f * density).roundToInt()
         val factor = when (id) {
             STYLE_RIPPLE, STYLE_SPARKLE -> 2.1f
             STYLE_ELASTIC, STYLE_JELLY -> 1.8f

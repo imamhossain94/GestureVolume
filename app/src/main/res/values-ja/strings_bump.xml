@@ -35,6 +35,14 @@
     <string name="bump_style_heartbeat">鼓動</string>
     <string name="bump_style_elastic">伸縮</string>
     <string name="bump_style_water">水面</string>
+    <string name="bump_style_blossom">桜</string>
+    <string name="bump_style_fireworks">花火</string>
+    <string name="bump_style_sparks">火花</string>
+    <string name="bump_style_sonar">ソナー</string>
+    <string name="bump_style_solar">太陽系</string>
+    <string name="bump_style_bubbles">シャボン玉</string>
+    <string name="bump_style_lightning">稲妻</string>
+    <string name="bump_style_confetti">紙吹雪</string>
     <string name="bump_place_title">ボタンの位置</string>
     <string name="bump_place_desc">ボタンを選び、画面上の押し込みがそのすぐ横に来るまでスライドしてください。この画面を開いている間は、実際のボタンを押しても位置を確認できます。</string>
     <string name="bump_side">側面</string>

@@ -35,6 +35,14 @@
     <string name="bump_style_heartbeat">心跳</string>
     <string name="bump_style_elastic">弹性</string>
     <string name="bump_style_water">水波</string>
+    <string name="bump_style_blossom">樱花</string>
+    <string name="bump_style_fireworks">烟花</string>
+    <string name="bump_style_sparks">火花</string>
+    <string name="bump_style_sonar">声呐</string>
+    <string name="bump_style_solar">太阳系</string>
+    <string name="bump_style_bubbles">泡泡</string>
+    <string name="bump_style_lightning">闪电</string>
+    <string name="bump_style_confetti">彩纸屑</string>
     <string name="bump_place_title">按键的位置</string>
     <string name="bump_place_desc">选择一个按键，然后滑动，直到屏幕上的按压效果正好在它旁边。打开此界面时，按下真实按键也会显示它出现的位置。</string>
     <string name="bump_side">侧边</string>

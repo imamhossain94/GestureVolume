@@ -35,6 +35,14 @@
     <string name="bump_style_heartbeat">심장 박동</string>
     <string name="bump_style_elastic">탄성</string>
     <string name="bump_style_water">물결</string>
+    <string name="bump_style_blossom">벚꽃</string>
+    <string name="bump_style_fireworks">불꽃놀이</string>
+    <string name="bump_style_sparks">불티</string>
+    <string name="bump_style_sonar">소나</string>
+    <string name="bump_style_solar">태양계</string>
+    <string name="bump_style_bubbles">비눗방울</string>
+    <string name="bump_style_lightning">번개</string>
+    <string name="bump_style_confetti">색종이</string>
     <string name="bump_place_title">버튼 위치</string>
     <string name="bump_place_desc">버튼을 고른 뒤, 화면의 눌림이 버튼 바로 옆에 올 때까지 밀어 주세요. 이 화면이 열려 있는 동안에는 실제 버튼을 눌러도 위치가 보입니다.</string>
     <string name="bump_side">측면</string>

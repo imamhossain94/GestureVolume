@@ -35,6 +35,14 @@
     <string name="bump_style_heartbeat">Herzschlag</string>
     <string name="bump_style_elastic">Elastisch</string>
     <string name="bump_style_water">Wasser</string>
+    <string name="bump_style_blossom">Kirschblüte</string>
+    <string name="bump_style_fireworks">Feuerwerk</string>
+    <string name="bump_style_sparks">Funken</string>
+    <string name="bump_style_sonar">Sonar</string>
+    <string name="bump_style_solar">Sonnensystem</string>
+    <string name="bump_style_bubbles">Seifenblasen</string>
+    <string name="bump_style_lightning">Blitz</string>
+    <string name="bump_style_confetti">Konfetti</string>
     <string name="bump_place_title">Wo deine Tasten sind</string>
     <string name="bump_place_desc">Wähle eine Taste und schiebe, bis der Druck auf dem Bildschirm genau neben ihr sitzt. Solange dieser Bildschirm offen ist, zeigt auch ein Druck auf die echte Taste, wo er landet.</string>
     <string name="bump_side">Seite</string>

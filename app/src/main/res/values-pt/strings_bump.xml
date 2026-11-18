@@ -35,6 +35,14 @@
     <string name="bump_style_heartbeat">Batimento</string>
     <string name="bump_style_elastic">Elástico</string>
     <string name="bump_style_water">Água</string>
+    <string name="bump_style_blossom">Flor de cerejeira</string>
+    <string name="bump_style_fireworks">Fogos de artifício</string>
+    <string name="bump_style_sparks">Faíscas</string>
+    <string name="bump_style_sonar">Sonar</string>
+    <string name="bump_style_solar">Sistema solar</string>
+    <string name="bump_style_bubbles">Bolhas</string>
+    <string name="bump_style_lightning">Raio</string>
+    <string name="bump_style_confetti">Confete</string>
     <string name="bump_place_title">Onde ficam os seus botões</string>
     <string name="bump_place_desc">Escolha um botão e deslize até o toque na tela ficar bem ao lado dele. Com esta tela aberta, apertar o botão de verdade também mostra onde ele cai.</string>
     <string name="bump_side">Lado</string>

@@ -1173,6 +1173,14 @@ private fun styleLabel(style: String): Int = when (style) {
     ButtonBump.STYLE_HEARTBEAT -> R.string.bump_style_heartbeat
     ButtonBump.STYLE_ELASTIC -> R.string.bump_style_elastic
     ButtonBump.STYLE_WATER -> R.string.bump_style_water
+    ButtonBump.STYLE_BLOSSOM -> R.string.bump_style_blossom
+    ButtonBump.STYLE_FIREWORKS -> R.string.bump_style_fireworks
+    ButtonBump.STYLE_SPARKS -> R.string.bump_style_sparks
+    ButtonBump.STYLE_SONAR -> R.string.bump_style_sonar
+    ButtonBump.STYLE_SOLAR -> R.string.bump_style_solar
+    ButtonBump.STYLE_BUBBLES -> R.string.bump_style_bubbles
+    ButtonBump.STYLE_LIGHTNING -> R.string.bump_style_lightning
+    ButtonBump.STYLE_CONFETTI -> R.string.bump_style_confetti
     else -> R.string.bump_style_liquid
 }
 

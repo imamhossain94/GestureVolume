@@ -35,6 +35,14 @@
     <string name="bump_style_heartbeat">Battito</string>
     <string name="bump_style_elastic">Elastico</string>
     <string name="bump_style_water">Acqua</string>
+    <string name="bump_style_blossom">Fiore di ciliegio</string>
+    <string name="bump_style_fireworks">Fuochi d’artificio</string>
+    <string name="bump_style_sparks">Scintille</string>
+    <string name="bump_style_sonar">Sonar</string>
+    <string name="bump_style_solar">Sistema solare</string>
+    <string name="bump_style_bubbles">Bolle</string>
+    <string name="bump_style_lightning">Fulmine</string>
+    <string name="bump_style_confetti">Coriandoli</string>
     <string name="bump_place_title">Dove sono i tuoi tasti</string>
     <string name="bump_place_desc">Scegli un tasto, poi scorri finché la pressione sullo schermo non è proprio accanto. Con questa schermata aperta, anche premere il tasto vero mostra dove cade.</string>
     <string name="bump_side">Lato</string>

@@ -35,6 +35,14 @@
     <string name="bump_style_heartbeat">نبض</string>
     <string name="bump_style_elastic">مرن</string>
     <string name="bump_style_water">ماء</string>
+    <string name="bump_style_blossom">زهر الكرز</string>
+    <string name="bump_style_fireworks">ألعاب نارية</string>
+    <string name="bump_style_sparks">شرر</string>
+    <string name="bump_style_sonar">سونار</string>
+    <string name="bump_style_solar">المجموعة الشمسية</string>
+    <string name="bump_style_bubbles">فقاعات</string>
+    <string name="bump_style_lightning">برق</string>
+    <string name="bump_style_confetti">قصاصات ملونة</string>
     <string name="bump_place_title">مكان أزرارك</string>
     <string name="bump_place_desc">اختر زرًا، ثم اسحب حتى تستقر الضغطة على شاشتك بجواره تمامًا. وأثناء فتح هذه الشاشة، يُظهر الضغط على الزر الحقيقي موضعها أيضًا.</string>
     <string name="bump_side">الجانب</string>

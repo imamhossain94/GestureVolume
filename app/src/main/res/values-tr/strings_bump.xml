@@ -35,6 +35,14 @@
     <string name="bump_style_heartbeat">Kalp atışı</string>
     <string name="bump_style_elastic">Esnek</string>
     <string name="bump_style_water">Su</string>
+    <string name="bump_style_blossom">Kiraz çiçeği</string>
+    <string name="bump_style_fireworks">Havai fişek</string>
+    <string name="bump_style_sparks">Kıvılcım</string>
+    <string name="bump_style_sonar">Sonar</string>
+    <string name="bump_style_solar">Güneş sistemi</string>
+    <string name="bump_style_bubbles">Baloncuklar</string>
+    <string name="bump_style_lightning">Şimşek</string>
+    <string name="bump_style_confetti">Konfeti</string>
     <string name="bump_place_title">Tuşlarınız nerede</string>
     <string name="bump_place_desc">Bir tuş seçin, ardından ekrandaki basış tam yanına gelene kadar kaydırın. Bu ekran açıkken gerçek tuşa basmak da nereye geldiğini gösterir.</string>
     <string name="bump_side">Taraf</string>

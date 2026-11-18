@@ -44,6 +44,14 @@
     <string name="bump_style_heartbeat">Heartbeat</string>
     <string name="bump_style_elastic">Elastic</string>
     <string name="bump_style_water">Water</string>
+    <string name="bump_style_blossom">Cherry blossom</string>
+    <string name="bump_style_fireworks">Fireworks</string>
+    <string name="bump_style_sparks">Sparks</string>
+    <string name="bump_style_sonar">Sonar</string>
+    <string name="bump_style_solar">Solar system</string>
+    <string name="bump_style_bubbles">Bubbles</string>
+    <string name="bump_style_lightning">Lightning</string>
+    <string name="bump_style_confetti">Confetti</string>
     <string name="bump_place_title">Where your buttons are</string>
     <string name="bump_place_desc">Pick a button, then slide until the press on your screen sits right beside it. With this screen open, pressing the real button shows where it lands too.</string>
     <string name="bump_side">Side</string>
