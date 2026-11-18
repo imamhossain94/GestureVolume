@@ -22,9 +22,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 /**
- * The accessibility service, back after its 1.3.4 retirement and doing four things. The bar is
- * always [OverlayService]'s, with the overlay permission and its notification; this draws only a
- * copy of it on the lock screen, where that one cannot be seen.
+ * The accessibility service, back after its 1.3.4 retirement. The bar is always [OverlayService]'s,
+ * with the overlay permission and its notification; this draws a copy of it on the lock screen,
+ * where that one cannot be seen, lends it its windows when the user asks for the bar to be drawn
+ * over the status bar, and draws the button animation beside the volume buttons.
  *
  * **It performs the system actions** — lock the screen, take a screenshot, Back, Home, Recents,
  * the notification shade, quick settings, the power menu. Every one of these is a
@@ -65,6 +66,8 @@ class GestureAccessibilityService : AccessibilityService() {
         super.onServiceConnected()
         OverlayRuntime.accessibilityService = this
         applyEventSubscription()
+        // The bar moves onto this service's windows if the user asked for that. See OverlayService.
+        if (preference.getDrawWithAccessibility()) OverlayRuntime.rehost(this)
         // Screen on and off, and the unlock: what the bar on the lock screen comes and goes with.
         // Only ever sent by the system, to receivers registered at run time. Exported for the
         // reason the controller's volume receiver is: only the system can send these, and some
@@ -119,6 +122,8 @@ class GestureAccessibilityService : AccessibilityService() {
      * and as the foreground service's bar starts, stops, or is changed: see [onBarChanged].
      */
     fun refreshLockScreenBar() {
+        // A bar drawn through this service would show over the lock screen: it steps aside first.
+        OverlayRuntime.activeController?.onKeyguardChanged()
         if (!wantsLockScreenBar()) {
             // Not handing back brightness: the foreground service's bar carries on.
             lockScreenBar?.destroy(restoreBrightness = false)
@@ -195,11 +200,12 @@ class GestureAccessibilityService : AccessibilityService() {
         // sends its window change moments before its first dialog or pane sends another. With
         // one, the app itself would be lost, so there is none while watching for the app in front.
         info.notificationTimeout = if (watchWindows) 0L else 100L
-        // Keys only while the volume keys are set to Instant. With the flag on, every key press on
-        // the device is offered here before anything else sees it; this takes the two volume keys
-        // and hands every other straight back, but the honest version of not looking is not to
-        // ask, the same as for the events above.
-        val filterKeys = preference.slider.getVolumeKeyMode() == QuickSliderStore.VOLUME_KEYS_INSTANT
+        // Keys only while the volume keys are set to Instant, or the button animation is on. With
+        // the flag on, every key press on the device is offered here before anything else sees it;
+        // this takes the two volume keys and hands every other straight back, but the honest
+        // version of not looking is not to ask, the same as for the events above.
+        val filterKeys = preference.slider.getVolumeKeyMode() == QuickSliderStore.VOLUME_KEYS_INSTANT ||
+            preference.bump.isEnabled()
         info.flags = if (filterKeys) {
             info.flags or AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS
         } else {
@@ -318,12 +324,16 @@ class GestureAccessibilityService : AccessibilityService() {
         OverlayRuntime.activeController?.clearForegroundApp()
         releaseLockScreen()
         if (OverlayRuntime.accessibilityService === this) OverlayRuntime.accessibilityService = null
+        // A bar drawn on this service's windows loses them now: back onto the foreground service's.
+        if (preference.getDrawWithAccessibility()) OverlayRuntime.rehost(this)
         return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
         releaseLockScreen()
-        if (OverlayRuntime.accessibilityService === this) OverlayRuntime.accessibilityService = null
+        val wasBound = OverlayRuntime.accessibilityService === this
+        if (wasBound) OverlayRuntime.accessibilityService = null
+        if (wasBound && preference.getDrawWithAccessibility()) OverlayRuntime.rehost(this)
         super.onDestroy()
     }
 }

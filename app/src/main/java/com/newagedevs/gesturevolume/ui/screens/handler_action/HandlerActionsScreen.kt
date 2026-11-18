@@ -99,6 +99,7 @@ import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import com.newagedevs.gesturevolume.utils.VolumeStreamMode
+import com.newagedevs.gesturevolume.utils.VolumeWrite
 
 /** Starts a system settings screen, pausing the app-open ad for the round trip. */
 private fun openSystemScreen(context: android.content.Context, viewModel: MainViewModel, intent: Intent) {
@@ -146,6 +147,7 @@ fun HandlerActionsScreen(
     // Read once into local state: plain SharedPref values with no observable wrapper, so the
     // controls' own state drives the UI and the preference is written behind it.
     var volumeStreamMode by remember { mutableStateOf(preference.getVolumeStreamMode()) }
+    var volumeWriteMethod by remember { mutableStateOf(preference.getVolumeWriteMethod()) }
     var swipeStepPercent by remember { mutableIntStateOf(preference.getSwipeStepPercent()) }
     var doubleTapMs by remember { mutableIntStateOf(preference.getDoubleTapMs()) }
     var longPressMs by remember { mutableIntStateOf(preference.getLongPressMs()) }
@@ -374,10 +376,19 @@ fun HandlerActionsScreen(
             Segments {
                 VolumeStream(
                     mode = volumeStreamMode,
-                    shape = segmentShape(0, 2),
+                    shape = segmentShape(0, 3),
                     onChange = {
                         volumeStreamMode = it
                         preference.setVolumeStreamMode(it)
+                    },
+                )
+                // Read by the bar as each swipe begins, so a change here is felt on the next one.
+                VolumeMethod(
+                    method = volumeWriteMethod,
+                    shape = segmentShape(1, 3),
+                    onChange = {
+                        volumeWriteMethod = it
+                        preference.setVolumeWriteMethod(it)
                     },
                 )
                 // Read by the bar when it is next put up, which is the moment this screen is left;
@@ -385,7 +396,7 @@ fun HandlerActionsScreen(
                 TapTimingCard(
                     doubleTapMs = doubleTapMs,
                     longPressMs = longPressMs,
-                    shape = segmentShape(1, 2),
+                    shape = segmentShape(2, 3),
                     onDoubleTapChange = { doubleTapMs = it },
                     onLongPressChange = { longPressMs = it },
                     onDoubleTapChangeFinished = { preference.setDoubleTapMs(doubleTapMs) },
@@ -622,6 +633,66 @@ private fun VolumeStream(mode: String, shape: Shape, onChange: (String) -> Unit)
             }
         }
     }
+}
+
+/**
+ * How the bar changes the volume, for the phones and headphones where the exact level it sets does
+ * not stay: the volume stopping short of the top, or snapping back to a level only the system's own
+ * panel can move. Three choices with what each means under it, like [VolumeStream]. See VolumeWrite.
+ */
+@Composable
+private fun VolumeMethod(method: String, shape: Shape, onChange: (String) -> Unit) {
+    val chosen = VolumeWrite.sanitizeMethod(method)
+    SettingCard(
+        title = stringResource(R.string.volume_method_title),
+        description = stringResource(R.string.volume_method_desc),
+        shape = shape,
+    ) {
+        Column(modifier = Modifier.selectableGroup()) {
+            VolumeWrite.METHODS.forEach { option ->
+                val selected = option == chosen
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(
+                            if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f) else Color.Transparent
+                        )
+                        .selectable(selected = selected, role = Role.RadioButton, onClick = { onChange(option) })
+                        .padding(horizontal = 4.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    RadioButton(selected = selected, onClick = null, modifier = Modifier.padding(horizontal = 8.dp))
+                    Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                        Text(
+                            text = stringResource(volumeMethodLabel(option)),
+                            fontSize = 15.sp,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = stringResource(volumeMethodDescription(option)),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 2.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun volumeMethodLabel(method: String): Int = when (method) {
+    VolumeWrite.METHOD_KEYS -> R.string.volume_method_keys
+    VolumeWrite.METHOD_PRECISE -> R.string.volume_method_precise
+    else -> R.string.volume_method_auto
+}
+
+private fun volumeMethodDescription(method: String): Int = when (method) {
+    VolumeWrite.METHOD_KEYS -> R.string.volume_method_keys_desc
+    VolumeWrite.METHOD_PRECISE -> R.string.volume_method_precise_desc
+    else -> R.string.volume_method_auto_desc
 }
 
 /**

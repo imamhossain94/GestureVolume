@@ -96,14 +96,50 @@ class OverlayService : Service(), OverlayServiceInterface {
         super.onCreate()
         createNotificationChannel()
         startForegroundService()
-        controller = OverlayController(
-            context = this,
-            windowType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+        controller = buildController()
+        // Started while the phone is locked — after an update, say — the bar belongs on the lock
+        // screen as well, where this one cannot be seen.
+        OverlayRuntime.accessibilityService?.onBarChanged()
+    }
+
+    /**
+     * Whether the bar's windows are the accessibility service's rather than this service's own.
+     *
+     * The user's choice (Visibility › Draw with the accessibility service), honoured only while the
+     * service is bound. Its windows are `TYPE_ACCESSIBILITY_OVERLAY`, which the system stacks over
+     * the status bar and never hides for an app that asks to hide other apps' overlays — the bar
+     * that vanished in some apps and videos. This service still runs the bar and keeps its
+     * notification either way; only the window token is borrowed.
+     */
+    private var accessibilityHost: GestureAccessibilityService? = null
+
+    private fun buildController(): OverlayController {
+        val a11y = OverlayRuntime.accessibilityService?.takeIf { preference.getDrawWithAccessibility() }
+        accessibilityHost = a11y
+        return OverlayController(
+            context = a11y ?: this,
+            windowType = if (a11y != null) {
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            } else {
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            },
             preference = preference,
             host = controllerHost
         )
-        // Started while the phone is locked — after an update, say — the bar belongs on the lock
-        // screen as well, where this one cannot be seen.
+    }
+
+    /**
+     * Puts the bar on whichever windows it should be on now: the accessibility service's, when it is
+     * bound and the user asked for it, else this service's own. Sent as the setting changes and as
+     * the accessibility service comes and goes. Does nothing when nothing would change.
+     */
+    private fun rehost() {
+        val wanted = OverlayRuntime.accessibilityService?.takeIf { preference.getDrawWithAccessibility() }
+        if (::controller.isInitialized && wanted === accessibilityHost) return
+        // Not handing brightness back: the new controller carries on with the bar.
+        if (::controller.isInitialized) controller.destroy(restoreBrightness = false)
+        controller = buildController()
+        if (!shouldFinish) controller.show()
         OverlayRuntime.accessibilityService?.onBarChanged()
     }
 
@@ -317,6 +353,7 @@ class OverlayService : Service(), OverlayServiceInterface {
                 // setting was changed on. Toggling the notification has nothing to do with the
                 // bar, so it gets its own command.
                 "refresh_notification" -> startForegroundService()
+                OverlayRuntime.ACTION_REHOST -> rehost()
                 "update" -> {
                     controller.update()
                     // The notification's action buttons are a setting too, and startForeground on

@@ -16,9 +16,11 @@ import androidx.core.content.ContextCompat
  * The bar has one host: the foreground service [OverlayService], which needs the overlay
  * permission and, because Android will not run one without a notification, a notification. The
  * accessibility service performs the system actions and passes the volume keys and the app in front
- * to the controller the foreground service runs, found through [activeController]. The one thing
- * it draws is a copy of the bar on the lock screen, where Android hides the foreground service's,
- * and only while the phone is locked: see [GestureAccessibilityService.refreshLockScreenBar].
+ * to the controller the foreground service runs, found through [activeController]. It draws a copy
+ * of the bar on the lock screen, where Android hides the foreground service's, and only while the
+ * phone is locked: see [GestureAccessibilityService.refreshLockScreenBar]. When the user asks for it,
+ * it also lends the foreground service's bar its windows, which the system draws over the status
+ * bar and never hides for an app: see [ACTION_REHOST].
  *
  * Everything that talks to the bar — the Activity's show/hide on resume/pause, the notification
  * buttons, the boot receiver, the ViewModel's toggle — goes through here.
@@ -98,6 +100,15 @@ object OverlayRuntime {
             android.util.Log.e("OverlayRuntime", "startForegroundService failed", e)
         }
     }
+
+    /**
+     * Tells the foreground service to look again at which windows the bar belongs on: the
+     * accessibility service's, when that is bound and chosen, else its own. See `OverlayService.rehost`.
+     */
+    const val ACTION_REHOST = "rehost"
+
+    /** [ACTION_REHOST], for the accessibility service coming and going and the setting changing. */
+    fun rehost(context: Context) = sendCommand(context, ACTION_REHOST)
 
     /** Takes the bar down. The running preference is the caller's to write. */
     fun stopOverlay(context: Context) {

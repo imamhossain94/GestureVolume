@@ -2,12 +2,15 @@ package com.newagedevs.gesturevolume.utils
 
 import android.app.NotificationManager
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.media.AudioPlaybackConfiguration
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
@@ -26,8 +29,60 @@ import kotlin.math.roundToInt
  * Every framework call is inside `runCatching`. Audio is one of the most heavily OEM-modified parts
  * of Android and several of these methods are documented to throw on some paths and known to throw
  * on others; a volume bar must degrade rather than crash the overlay it lives in.
+ *
+ * Every write is read back (see [VolumeWrite]): a step the system refused is reported as refused
+ * rather than as the level that was asked for, and is handed once to the system's own relative
+ * step, which is what shows the hearing-safety warning that holds the top of the range. A route
+ * that puts absolute levels back is remembered through [routes] and driven by relative steps.
+ *
+ * @param routes where the routes that put levels back are remembered, across restarts. Null keeps
+ *   them for the life of this object only.
  */
-class VolumeController(private val context: Context) {
+class VolumeController(
+    private val context: Context,
+    private val routes: RouteMemory? = null,
+) {
+
+    /** Somewhere durable to keep the routes that only take relative steps. See [VolumeWrite.routeKey]. */
+    interface RouteMemory {
+        fun relativeRoutes(): List<String>
+        fun setRelativeRoutes(routes: List<String>)
+    }
+
+    /**
+     * How writes are made. See [VolumeWrite.METHOD_AUTO] and its siblings. Read by every write, so
+     * a change on the settings screen applies from the next step.
+     */
+    @Volatile
+    var method: String = VolumeWrite.METHOD_AUTO
+        set(value) {
+            field = VolumeWrite.sanitizeMethod(value)
+        }
+
+    /**
+     * The routes found putting levels back, for when there is no [routes] to keep them in. A
+     * concurrent set: the Quick panel writes from its own audio thread.
+     */
+    private val sessionRoutes: MutableSet<String> = java.util.concurrent.ConcurrentHashMap.newKeySet()
+
+    /**
+     * Whether this gesture has already handed a refused step to the system. Once is enough: the
+     * system's answer — its warning, its own panel — is on screen, and asking again on every notch
+     * of a finger still pushing against the limit would only flash it.
+     */
+    @Volatile
+    private var escalatedThisGesture = false
+
+    /** Set when the last step was refused at the top of the range, for the bar to say why. */
+    @Volatile
+    var lastRaiseRefused: Boolean = false
+        private set
+
+    /** A new swipe, a new panel, a new press: the escalation above may be offered again. */
+    fun beginGesture() {
+        escalatedThisGesture = false
+        lastRaiseRefused = false
+    }
 
     private companion object {
         /**
@@ -46,6 +101,23 @@ class VolumeController(private val context: Context) {
 
         /** [AudioManager.MODE_CALL_SCREENING], which only exists from Android 11. */
         const val MODE_CALL_SCREENING = 4
+
+        /**
+         * Outputs in the order the system prefers them for media, most specific first, for naming
+         * the route below Android 13. The LE Audio types are plain numbers (26 and 27, Android 12)
+         * so this list compiles against every SDK the app supports.
+         */
+        val ROUTE_PRIORITY: List<Int> = listOf(
+            26, // AudioDeviceInfo.TYPE_BLE_HEADSET
+            27, // AudioDeviceInfo.TYPE_BLE_SPEAKER
+            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
+            AudioDeviceInfo.TYPE_HEARING_AID,
+            AudioDeviceInfo.TYPE_USB_HEADSET,
+            AudioDeviceInfo.TYPE_USB_DEVICE,
+            AudioDeviceInfo.TYPE_WIRED_HEADSET,
+            AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+            AudioDeviceInfo.TYPE_BUILTIN_SPEAKER,
+        )
     }
 
     /**
@@ -214,11 +286,18 @@ class VolumeController(private val context: Context) {
     }
 
     private fun gatherSignals(mode: String): AudioStreamResolver.Signals {
-        val audioMode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            cachedMode
-        } else {
-            runCatching { audio?.mode ?: AudioStreamResolver.MODE_NORMAL }
-                .getOrDefault(AudioStreamResolver.MODE_NORMAL)
+        // Both asked for afresh, once per gesture, rather than trusted to the listeners that keep
+        // them warm. A mode-change or playback callback that never arrives — a VoIP app that left
+        // its call mode set and cleared it while the callback was being re-registered, an OEM build
+        // that drops one — left the bar driving the call volume, or an alarm's, over every video
+        // until the service was restarted: "not working on some apps, I have to stop and start it".
+        // One binder call each, once when a swipe begins, never per step.
+        val audioMode = runCatching { audio?.mode }.getOrNull()
+            ?.also { cachedMode = it }
+            ?: cachedMode
+        audio?.let { manager ->
+            runCatching { manager.activePlaybackConfigurations?.toList() }.getOrNull()
+                ?.let { configs = it }
         }
 
         val musicActive = runCatching { audio?.isMusicActive == true }.getOrDefault(false)
@@ -336,57 +415,91 @@ class VolumeController(private val context: Context) {
      *   value is already pinned at an end, or because the write was refused. This mirrors
      *   [BrightnessController.step]'s contract exactly: a `null` tells the gesture detector to stop
      *   banking travel, so the user does not have to un-swipe before the control responds again.
+     *   `-1` means the level moved but cannot honestly be read: a call on a Bluetooth headset.
      */
-    fun step(res: Resolution, direction: Int, showUi: Boolean): Int? {
+    fun step(res: Resolution, direction: Int, showUi: Boolean): Int? =
+        stepBy(res, direction, 1, showUi)
+
+    /**
+     * Moves the resolved stream [indices] steps at once: one, for a swipe that steps by its length,
+     * or several, for a swipe set to move the volume by a fixed amount. The same contract as [step].
+     *
+     * The level reported is the level read back after the write, never the one that was asked for.
+     * A write the system refused — the hearing-safety limit holding the top of the range is the
+     * usual one — is handed once to the system's own relative step, which is what brings up the
+     * warning the user has to accept before going louder; if that is refused too, the step is
+     * reported as refused, so the bar stops claiming a level the audio never reached.
+     */
+    fun stepBy(res: Resolution, direction: Int, indices: Int, showUi: Boolean): Int? {
         val manager = audio ?: return null
         val flags = if (showUi) AudioManager.FLAG_SHOW_UI else 0
+        val dir = if (direction > 0) 1 else -1
 
         if (res.opaque) {
             // No readable index, so no percentage can be told truthfully. Hand the step to the
-            // platform and report a sentinel that never pins.
-            val dir = if (direction > 0) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER
-            val ok = runCatching {
-                manager.adjustStreamVolume(res.stream, dir, flags); true
-            }.getOrDefault(false)
-            return if (ok) -1 else null
+            // platform and report a sentinel that never pins. One relative step whatever the
+            // amount: there is no honest way to count out more on a level that cannot be read.
+            return if (adjust(manager, res.stream, dir, flags)) -1 else null
         }
 
         val current = runCatching { manager.getStreamVolume(res.stream) }.getOrNull() ?: return null
-        val target = (current + direction).coerceIn(res.minIndex, res.maxIndex)
+        val target = (current + dir * indices.coerceAtLeast(1)).coerceIn(res.minIndex, res.maxIndex)
         if (target == current) return null
 
-        // An absolute write rather than adjustStreamVolume, deliberately: it is the only way to
-        // produce a truthful percentage and an honest null. (The relative form is what the system
-        // forwards to an absolute-volume Bluetooth headset, which is why the opaque branch above
-        // uses it instead.)
+        // As the volume keys do it: the system applies these in its own time, so the level is the
+        // one predicted, and the watchers and the check after the swipe put the readout right.
+        if (method == VolumeWrite.METHOD_KEYS) {
+            val presses = abs(target - current)
+            val sent = (0 until presses).all { pressKey(manager, res.stream, dir, flags) }
+            if (!sent) return null
+            return VolumeWrite.percentOf(target, res.minIndex, res.maxIndex)
+        }
+
+        // A route already found to put absolute levels back takes relative steps, read back.
+        if (method == VolumeWrite.METHOD_AUTO && isRelativeRoute(res)) {
+            val after = relativeTowards(manager, res, current, target, flags)
+            return if (after != null && after != current) percentOf(res, after) else null
+        }
+
+        // An absolute write, deliberately: it is the only way to produce a truthful percentage and
+        // an honest null. (The relative form is what the system forwards to an absolute-volume
+        // Bluetooth headset, which is why the opaque branch above uses it instead.)
         val written = runCatching {
             manager.setStreamVolume(res.stream, target, flags); true
         }.getOrDefault(false)
-        if (!written) return null
+        val after = if (written) level(res) else current
 
-        val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
-        return ((target - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
+        return when (VolumeWrite.outcome(current, target, after)) {
+            VolumeWrite.Outcome.LANDED, VolumeWrite.Outcome.PARTIAL -> percentOf(res, after ?: target)
+            // Unreadable straight after a write that did not throw: trust the write, as the bar
+            // always has, rather than pinning a control that may well have moved.
+            VolumeWrite.Outcome.UNKNOWN -> if (written) percentOf(res, target) else null
+            VolumeWrite.Outcome.REFUSED -> refused(manager, res, current, dir, flags)
+        }
     }
 
     /**
-     * Moves the resolved stream [indices] steps at once: a swipe set to move the volume by a fixed
-     * amount rather than by its length. The same contract as [step], which it is for one index —
-     * and for a route whose index cannot be read, where the platform is handed one relative step
-     * because there is no honest way to count out more.
+     * What a refused step comes to: once per gesture, the system's own relative step — with its UI
+     * for a raise, so the hearing-safety warning that holds the top of the range can be seen and
+     * accepted — and otherwise nothing.
      */
-    fun stepBy(res: Resolution, direction: Int, indices: Int, showUi: Boolean): Int? {
-        if (indices <= 1 || res.opaque) return step(res, direction, showUi)
-        val manager = audio ?: return null
-        val flags = if (showUi) AudioManager.FLAG_SHOW_UI else 0
-        val current = runCatching { manager.getStreamVolume(res.stream) }.getOrNull() ?: return null
-        val target = (current + direction * indices).coerceIn(res.minIndex, res.maxIndex)
-        if (target == current) return null
-        val written = runCatching {
-            manager.setStreamVolume(res.stream, target, flags); true
-        }.getOrDefault(false)
-        if (!written) return null
-        val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
-        return ((target - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
+    private fun refused(manager: AudioManager, res: Resolution, current: Int, dir: Int, flags: Int): Int? {
+        if (method == VolumeWrite.METHOD_PRECISE || escalatedThisGesture) {
+            if (dir > 0) lastRaiseRefused = true
+            return null
+        }
+        escalatedThisGesture = true
+        val uiFlags = if (dir > 0) flags or AudioManager.FLAG_SHOW_UI else flags
+        adjust(manager, res.stream, dir, uiFlags)
+        val after = level(res)
+        if (after != null && after != current && (after > current) == (dir > 0)) {
+            // The relative step went where the absolute one could not: this route only takes
+            // those. Remembered, so the rest of the swipe and the next ones do not keep asking.
+            rememberRelativeRoute(res)
+            return percentOf(res, after)
+        }
+        if (dir > 0) lastRaiseRefused = true
+        return null
     }
 
     /** The current index of a resolved stream, or null when it cannot be read. */
@@ -396,15 +509,12 @@ class VolumeController(private val context: Context) {
     /** The current level of a resolved stream as 0..100, or null when it cannot be read. */
     fun percent(res: Resolution): Int? {
         val current = level(res) ?: return null
-        val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
-        return ((current - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
+        return percentOf(res, current)
     }
 
-    /**
-     * Sets a resolved stream to a 0..100 percentage, for the Deck's slider.
-     *
-     * @return the percentage actually applied, or null when the write was refused.
-     */
+    private fun percentOf(res: Resolution, index: Int): Int =
+        VolumeWrite.percentOf(index, res.minIndex, res.maxIndex)
+
     /**
      * Writes an absolute index, and returns the index that landed.
      *
@@ -418,29 +528,204 @@ class VolumeController(private val context: Context) {
      * moves 14 points per index, so consecutive percentages map to the same index and consecutive
      * indices are unreachable from some percentages. A slider driven through it appears to stick
      * and then jump. [setPercent] stays for the callers that genuinely start from a percentage.
+     *
+     * Read back like [stepBy]: a refused write is walked there in relative steps instead, which is
+     * how the keys reach a level the system would not take in one go, and reports where it got to.
+     *
+     * @return the index the level is at afterwards, or null when nothing could be written.
      */
     fun setIndex(res: Resolution, index: Int, showUi: Boolean): Int? {
         val manager = audio ?: return null
         val target = index.coerceIn(res.minIndex, res.maxIndex)
         val flags = if (showUi) AudioManager.FLAG_SHOW_UI else 0
+        val current = level(res)
+
+        if (current != null && current != target) {
+            val dir = if (target > current) 1 else -1
+            if (method == VolumeWrite.METHOD_KEYS) {
+                val presses = abs(target - current)
+                val sent = (0 until presses).all { pressKey(manager, res.stream, dir, flags) }
+                return if (sent) target else null
+            }
+            if (method == VolumeWrite.METHOD_AUTO && isRelativeRoute(res)) {
+                return relativeTowards(manager, res, current, target, flags)
+            }
+        }
+
         val written = runCatching {
             manager.setStreamVolume(res.stream, target, flags); true
         }.getOrDefault(false)
-        return if (written) target else null
+        if (current == null || current == target) return if (written) target else null
+        val after = if (written) level(res) else current
+
+        return when (VolumeWrite.outcome(current, target, after)) {
+            VolumeWrite.Outcome.LANDED, VolumeWrite.Outcome.PARTIAL -> after
+            VolumeWrite.Outcome.UNKNOWN -> if (written) target else null
+            VolumeWrite.Outcome.REFUSED -> {
+                if (method == VolumeWrite.METHOD_PRECISE) {
+                    if (target > current) lastRaiseRefused = true
+                    current
+                } else {
+                    val dir = if (target > current) 1 else -1
+                    val walked = relativeTowards(manager, res, current, target, flags)
+                    if (walked != null && walked != current && (walked > current) == (dir > 0)) {
+                        rememberRelativeRoute(res)
+                    } else if (dir > 0) {
+                        lastRaiseRefused = true
+                    }
+                    walked ?: current
+                }
+            }
+        }
     }
 
+    /**
+     * Sets a resolved stream to a 0..100 percentage, for the Deck's slider.
+     *
+     * @return the percentage actually applied, or null when the write was refused.
+     */
     fun setPercent(res: Resolution, percent: Int, showUi: Boolean): Int? {
-        val manager = audio ?: return null
         val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
         val target = (res.minIndex + percent.coerceIn(0, 100) * span / 100f).roundToInt()
             .coerceIn(res.minIndex, res.maxIndex)
-        val flags = if (showUi) AudioManager.FLAG_SHOW_UI else 0
-        val written = runCatching {
-            manager.setStreamVolume(res.stream, target, flags); true
-        }.getOrDefault(false)
-        if (!written) return null
-        return ((target - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
+        val landed = setIndex(res, target, showUi) ?: return null
+        return percentOf(res, landed)
     }
+
+    // ---- relative steps, and the routes that need them ------------------------------------------
+
+    /** One relative step on [stream], straight to the audio service, so it can be read back at once. */
+    private fun adjust(manager: AudioManager, stream: Int, dir: Int, flags: Int): Boolean = runCatching {
+        manager.adjustStreamVolume(
+            stream,
+            if (dir > 0) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER,
+            flags,
+        )
+        true
+    }.getOrDefault(false)
+
+    /**
+     * One press of a volume key, as near as an app can make one: through the media session service,
+     * which hands it to a casting session or a remote speaker when one owns the volume, exactly as
+     * the keys are handed. Applied in the system's own time, so it cannot be read back at once.
+     */
+    private fun pressKey(manager: AudioManager, stream: Int, dir: Int, flags: Int): Boolean = runCatching {
+        manager.adjustSuggestedStreamVolume(
+            if (dir > 0) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER,
+            stream,
+            flags,
+        )
+        true
+    }.getOrDefault(false)
+
+    /**
+     * Walks the level from [current] towards [target] one relative step at a time, reading each
+     * back, and stops at the first that does not move it.
+     *
+     * @return where the level got to, or null when it could not be read.
+     */
+    private fun relativeTowards(
+        manager: AudioManager,
+        res: Resolution,
+        current: Int,
+        target: Int,
+        flags: Int,
+    ): Int? {
+        val dir = if (target > current) 1 else -1
+        var at = current
+        repeat(abs(target - current).coerceAtMost(res.stepCount)) {
+            if (!adjust(manager, res.stream, dir, flags)) return at
+            val now = level(res) ?: return null
+            if (now == at) return at
+            at = now
+            if ((dir > 0 && at >= target) || (dir < 0 && at <= target)) return at
+        }
+        return at
+    }
+
+    /**
+     * After a swipe has finished: whether the level stayed where the swipe left it, and if the
+     * route put it back, takes it there again in relative steps and remembers the route.
+     *
+     * This is the "falls back to a fixed level" report. Some routes answer an absolute write a few
+     * hundred milliseconds later with the level they had — a headset that keeps its own volume, an
+     * app that pins the level it last saw — while a relative step, which is all the volume keys
+     * ever send, is kept.
+     *
+     * @return the level as 0..100 once put right, or null when nothing needed doing.
+     */
+    fun confirmLanded(res: Resolution, start: Int, end: Int): Int? {
+        if (res.opaque || method != VolumeWrite.METHOD_AUTO) return null
+        val manager = audio ?: return null
+        val now = level(res)
+        if (!VolumeWrite.isRevert(start, end, now)) return null
+        rememberRelativeRoute(res)
+        val after = relativeTowards(manager, res, now ?: return null, end, 0) ?: return null
+        return percentOf(res, after)
+    }
+
+    /**
+     * Whether the volume keys should be left to the system for [res]: the user chose the keys' own
+     * way, or this route has been found to keep only their relative steps.
+     */
+    fun prefersSystemKeys(res: Resolution): Boolean =
+        method == VolumeWrite.METHOD_KEYS || (method == VolumeWrite.METHOD_AUTO && isRelativeRoute(res))
+
+    /** Forgets every route found putting levels back, for a fresh start after the setting changes. */
+    fun forgetRelativeRoutes() {
+        sessionRoutes.clear()
+        runCatching { routes?.setRelativeRoutes(emptyList()) }
+    }
+
+    private fun isRelativeRoute(res: Resolution): Boolean {
+        val key = routeKey(res) ?: return false
+        if (key in sessionRoutes) return true
+        return runCatching { routes?.relativeRoutes()?.contains(key) == true }.getOrDefault(false)
+    }
+
+    private fun rememberRelativeRoute(res: Resolution) {
+        val key = routeKey(res) ?: return
+        sessionRoutes += key
+        runCatching {
+            val memory = routes ?: return@runCatching
+            val known = memory.relativeRoutes()
+            if (key !in known) memory.setRelativeRoutes(VolumeWrite.remember(known, key))
+        }
+    }
+
+    /**
+     * Which device [res]'s stream is going to, as [VolumeWrite.routeKey] spells it.
+     *
+     * From Android 13 the platform answers this directly. Before it, the most specific output that
+     * is connected stands in: a headset when there is one, the speaker when there is not, which is
+     * how the system routes media too.
+     */
+    private fun routeKey(res: Resolution): String? {
+        val manager = audio ?: return null
+        val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            runCatching {
+                manager.getAudioDevicesForAttributes(attributesFor(res.stream)).firstOrNull()
+            }.getOrNull()
+        } else {
+            null
+        } ?: runCatching {
+            manager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+                ?.filter { it.type in ROUTE_PRIORITY }
+                ?.minByOrNull { ROUTE_PRIORITY.indexOf(it.type) }
+        }.getOrNull()
+        return VolumeWrite.routeKey(res.stream, device?.type ?: AudioDeviceInfo.TYPE_UNKNOWN, device?.productName)
+    }
+
+    private fun attributesFor(stream: Int): AudioAttributes = AudioAttributes.Builder()
+        .setUsage(
+            when (stream) {
+                AudioStreamResolver.STREAM_VOICE_CALL -> AudioAttributes.USAGE_VOICE_COMMUNICATION
+                AudioStreamResolver.STREAM_RING -> AudioAttributes.USAGE_NOTIFICATION_RINGTONE
+                AudioStreamResolver.STREAM_ALARM -> AudioAttributes.USAGE_ALARM
+                else -> AudioAttributes.USAGE_MEDIA
+            }
+        )
+        .build()
 
     /**
      * Shows the system volume panel for the resolved stream without changing anything.

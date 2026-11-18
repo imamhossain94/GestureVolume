@@ -73,6 +73,7 @@ import com.newagedevs.gesturevolume.utils.AudioStreamCatalog
 import com.newagedevs.gesturevolume.utils.BarBehaviour
 import com.newagedevs.gesturevolume.utils.AudioStreamResolver
 import com.newagedevs.gesturevolume.utils.BrightnessController
+import com.newagedevs.gesturevolume.utils.ButtonBump
 import com.newagedevs.gesturevolume.utils.DeviceToggles
 import com.newagedevs.gesturevolume.utils.ContextMenuLayout
 import com.newagedevs.gesturevolume.utils.HandlerActionCatalog
@@ -81,6 +82,7 @@ import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.VolumeController
 import com.newagedevs.gesturevolume.utils.VolumeStreamMode
+import com.newagedevs.gesturevolume.utils.VolumeWrite
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -257,6 +259,9 @@ class OverlayController(
         /** The gap left between a bar lifted clear of the keyboard and the top of its keys. */
         private const val KEYBOARD_GAP_DP = 12f
 
+        /** The gap left between a bar stepped round the camera and the camera's cutout. */
+        private const val CUTOUT_GAP_DP = 4f
+
         /** Where a taken Volume down stands. See [onVolumeKey]. */
         private const val WAIT_NONE = 0
         private const val WAIT_HELD = 1
@@ -269,7 +274,10 @@ class OverlayController(
         context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
     private val vibratorService: Vibrator? = context.getSystemService(Vibrator::class.java)
     private val brightness = BrightnessController(context)
-    private val volume = VolumeController(context).also { it.start() }
+    private val volume = VolumeController(context, preference.volumeRoutes).also {
+        it.method = preference.getVolumeWriteMethod()
+        it.start()
+    }
 
     /** The torch, Do Not Disturb, auto-rotate and the media keys. Shared with the Deck. */
     val toggles = DeviceToggles(context).also { it.start() }
@@ -299,6 +307,19 @@ class OverlayController(
      * otherwise move the user's finger onto a different stream halfway through.
      */
     private var adjustResolution: VolumeController.Resolution? = null
+
+    /**
+     * The level the swipe's stream stood at when the swipe began to drive it, and which stream, so
+     * the result can be looked at again after the finger lifts. See [scheduleRevertCheck].
+     */
+    private var adjustStartIndex: Int? = null
+    private var adjustStartStream: Int = -1
+
+    /** Whether this swipe has already said the system is holding the volume. Once a swipe is enough. */
+    private var adjustLimitShown = false
+
+    /** The look again after a swipe or a panel touch, while one is waiting. See [scheduleRevertCheck]. */
+    private var revertCheck: Runnable? = null
 
     /** Direction the latched swipe settings belong to: `+1` up, `-1` down, `0` nothing resolved. */
     /**
@@ -460,6 +481,9 @@ class OverlayController(
 
     /** The value the control had when the slider opened. Every update is measured from it. */
     private var sliderOpenValue = 0f
+
+    /** The volume's index as the panel opened, for the look again after it is used. Null for brightness. */
+    private var sliderOpenIndex: Int? = null
 
     /** How many discrete steps the range has, so the haptics and the readout agree. */
     private var sliderSteps = 1
@@ -655,6 +679,12 @@ class OverlayController(
             followVolumeOnPanel(stream)
             return
         }
+        // The button animation, without the accessibility service to hand it the keys: it follows
+        // what the system did with them, from the same news, over everything else this would do.
+        if (bumpFollowsSystem()) {
+            followVolumeWithBump(stream)
+            return
+        }
         // The Deck has volume controls of its own, and the bar is out of sight beneath it.
         if (deckHost != null) return
 
@@ -684,6 +714,23 @@ class OverlayController(
             return
         }
         showVolumePercentOnHandler(percent, res)
+    }
+
+    /**
+     * Plays the bump for a change the system made — the keys went to it, with no accessibility
+     * service to hand them here — by the same rules the readout uses: only for a stream whose level
+     * has actually moved, and never for a change of this app's own.
+     */
+    private fun followVolumeWithBump(stream: Int?) {
+        val res = adaptiveVolume()
+        if (stream != null && stream != res.stream) return
+        val index = volume.level(res) ?: return
+        val percent = ButtonBump.levelOf(index, res.minIndex, res.maxIndex).let { (it * 100f).roundToInt() }
+        val seen = lastSeenVolume[res.stream]
+        lastSeenVolume[res.stream] = percent
+        if (seen == percent) return
+        if (seen == null && stream == null) return
+        showBump(res, if (seen == null || percent >= seen) 1 else -1, index, atLimit = false)
     }
 
     /**
@@ -889,7 +936,7 @@ class OverlayController(
             if (direction < 0) finishVolumeDownWait()
             return false
         }
-        if (direction < 0 && sliderView == null) {
+        if (direction < 0 && sliderView == null && !bumpIsOut()) {
             volumeKeysTaken += event.keyCode
             stopVolumeKeyRepeat()
             beginVolumeDownWait()
@@ -968,15 +1015,86 @@ class OverlayController(
      */
     private fun takesVolumeKeys(): Boolean {
         if (destroyed) return false
-        if (preference.slider.getVolumeKeyMode() != QuickSliderStore.VOLUME_KEYS_INSTANT) return false
-        if (handlerView == null || deckHost != null) return false
+        // The button animation answers the keys whenever it is on: with the bar hidden, over the
+        // app's own screens — where it is lined up with the buttons — over the Deck, and on the lock
+        // screen, which its windows are drawn over. The panel answers them only where it can open.
+        val bump = bumpTakesKeys()
+        if (!bump && preference.slider.getVolumeKeyMode() != QuickSliderStore.VOLUME_KEYS_INSTANT) return false
+        if (!bump && (handlerView == null || deckHost != null)) return false
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return false
         if (audio.mode != AudioManager.MODE_NORMAL) return false
         val power = context.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return false
         if (!power.isInteractive) return false
         val keyguard = context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
-        if (keyguard?.isKeyguardLocked == true) return false
-        return quickSliderIsWritable(QuickSliderStore.TARGET_ADAPTIVE)
+        if (!bump && keyguard?.isKeyguardLocked == true) return false
+        // A route that keeps only the keys' own relative steps, or the keys' way chosen outright:
+        // the key goes to the system, which does exactly what the panel could only imitate. Asked
+        // here, before a key is taken, so a Volume down held back for the screenshot is never taken
+        // and then dropped.
+        syncVolumeMethod()
+        if (volume.prefersSystemKeys(adaptiveVolume())) return false
+        return if (bump) !volume.isVolumeFixed() else quickSliderIsWritable(QuickSliderStore.TARGET_ADAPTIVE)
+    }
+
+    // ---- the button animation -------------------------------------------------------------------
+
+    /**
+     * The bump beside the volume buttons, while there is one to draw: through the accessibility
+     * service whenever it is bound, so it is drawn over the status bar and the lock screen, and as an
+     * ordinary overlay otherwise. Made again when the service comes or goes.
+     */
+    private var bumpOverlay: ButtonBumpOverlay? = null
+
+    private fun bumpOverlay(): ButtonBumpOverlay? {
+        if (destroyed) return null
+        val a11y = OverlayRuntime.accessibilityService
+        val (host, type) = when {
+            a11y != null -> a11y to WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            Settings.canDrawOverlays(context) -> context to WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            else -> return null
+        }
+        bumpOverlay?.let { if (it.isFor(host, type)) return it }
+        bumpOverlay?.destroy()
+        return ButtonBumpOverlay(host, type).also { bumpOverlay = it }
+    }
+
+    /**
+     * Whether the volume keys play the button animation, handed here by the accessibility service's
+     * key filter: the animation is on, and the service is there to filter them.
+     */
+    private fun bumpTakesKeys(): Boolean =
+        !lockScreen && preference.bump.isEnabled() && OverlayRuntime.accessibilityService != null
+
+    /**
+     * Without the accessibility service the keys go to the system, which moves the volume and shows
+     * its own panel; the bump follows the change it is told about, a moment later.
+     */
+    private fun bumpFollowsSystem(): Boolean =
+        !lockScreen && preference.bump.isEnabled() && OverlayRuntime.accessibilityService == null
+
+    /** Whether the bump is out beside the buttons now. */
+    private fun bumpIsOut(): Boolean = bumpOverlay?.isOut() == true
+
+    /** Plays the bump for a press that left [res] at [index]. */
+    private fun showBump(res: VolumeController.Resolution, direction: Int, index: Int, atLimit: Boolean) {
+        val overlay = bumpOverlay() ?: return
+        overlay.press(
+            settings = preference.bump.settings(preference.isProFeatureActivated()),
+            direction = direction,
+            level = ButtonBump.levelOf(index, res.minIndex, res.maxIndex),
+            atLimit = atLimit,
+        )
+    }
+
+    /**
+     * Plays the bump on the glass, as the settings screen asks: a preview of the style just picked
+     * and a check that it sits beside the buttons. The level is the real one.
+     */
+    fun previewBump(direction: Int) {
+        if (destroyed) return
+        val res = adaptiveVolume()
+        val index = volume.level(res) ?: return
+        showBump(res, direction, index, atLimit = false)
     }
 
     /**
@@ -991,15 +1109,28 @@ class OverlayController(
         val res = adaptiveVolume()
         val current = volume.level(res) ?: return false
         val target = (current + direction).coerceIn(res.minIndex, res.maxIndex)
+        val bump = bumpTakesKeys()
+        var landed = target
         if (target != current) {
-            volume.setIndex(res, target, showUi = false)
-            if (volume.level(res) == current) return false
+            landed = volume.setIndex(res, target, showUi = false) ?: current
+            if (volume.level(res) == current) {
+                // Refused: the key goes on to the system, whose warning is what lets the user go
+                // louder. The bump still answers the press, held at the level that stayed.
+                if (bump) showBump(res, direction, current, atLimit = true)
+                return false
+            }
         }
         // Seen, so the same change arriving later through the watchers is known for this one.
         val span = (res.maxIndex - res.minIndex).coerceAtLeast(1)
         lastSeenVolume[res.stream] =
-            ((target - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
-        showPanelForVolumeKey(res)
+            ((landed - res.minIndex) * 100f / span).roundToInt().coerceIn(0, 100)
+        if (bump) {
+            // Pressed at an end of the range: still taken, so the system's slider stays away, and
+            // answered with a nudge rather than a step.
+            showBump(res, direction, landed, atLimit = landed == current)
+        } else {
+            showPanelForVolumeKey(res)
+        }
         return true
     }
 
@@ -1053,6 +1184,8 @@ class OverlayController(
             ?.unregisterDisplayListener(displayListener)
         runCatching { context.contentResolver.unregisterContentObserver(volumeWatcher) }
         runCatching { context.unregisterReceiver(volumeReceiver) }
+        bumpOverlay?.destroy()
+        bumpOverlay = null
         // Lets a write already queued land, then ends the thread.
         stepSound.release()
         audioThread?.quitSafely()
@@ -1128,6 +1261,45 @@ class OverlayController(
         if (stepAside == hiddenForApp) return
         hiddenForApp = stepAside
         if (stepAside) {
+            dismissQuickSliderNow()
+            hide()
+        } else {
+            show()
+        }
+    }
+
+    // ---- the lock screen, for a bar drawn through the accessibility service ----------------------
+
+    /**
+     * Whether this bar's windows would be seen over the lock screen: the foreground service's bar
+     * drawn through the accessibility service, whose windows the system stacks over the keyguard.
+     * The lock screen's own bar is the one that may be there, restricted to what a locked phone
+     * allows (see [lockScreen]), so this one steps aside while the phone is locked.
+     */
+    private val drawsOverLockScreen: Boolean =
+        !lockScreen && windowType == WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+
+    /** Out of sight while the phone is locked, or the screen is off. See [drawsOverLockScreen]. */
+    private var hiddenForKeyguard = false
+
+    /** Whether the phone is locked, or about to be: the screen off counts, so nothing flashes on waking. */
+    private fun keyguardLockedOrDark(): Boolean {
+        val power = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+        if (power?.isInteractive == false) return true
+        val keyguard = context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
+        return keyguard?.isKeyguardLocked == true
+    }
+
+    /**
+     * The screen went on or off, or the phone was unlocked: from the accessibility service, which
+     * hears all three. Only a bar drawn through that service has anything to do about it.
+     */
+    fun onKeyguardChanged() {
+        if (!drawsOverLockScreen || destroyed) return
+        val locked = keyguardLockedOrDark()
+        if (locked == hiddenForKeyguard) return
+        hiddenForKeyguard = locked
+        if (locked) {
             dismissQuickSliderNow()
             hide()
         } else {
@@ -1491,6 +1663,8 @@ class OverlayController(
         // Nor while nothing it was asked to show for is happening, nor while it is keeping out of
         // the keyboard's way. See [applyContextVisibility] and [applyKeyboardAvoidance].
         if (hiddenForContext || hiddenForKeyboard) return
+        // Nor, drawn through the accessibility service, over the lock screen. See [onKeyguardChanged].
+        if (hiddenForKeyguard) return
         if (handlerView != null) return
         // Last, so it only answers when the bar really is about to be drawn. Without the
         // permission addView throws BadTokenException ("permission denied for window type 2038"),
@@ -1619,17 +1793,37 @@ class OverlayController(
             this.gravity = Gravity.TOP or Gravity.LEFT
             x = 0
             y = 0
-            fitUsableFrame(this)
+            fitBarFrame(this)
         }
 
     /**
-     * Shrinks a window's containing frame by the camera cutout, and by nothing else, so x = 0 means
-     * "flush with the glass" in every rotation without a bar ever sliding under the camera.
+     * Lays the bar's window — and the Quick panel's, which grows out of it — over the whole glass:
+     * into the camera cutout and over the system bars, so x = 0 is the edge of the glass in every
+     * rotation and the bar can rest over the status bar's strip.
      *
-     * The system bars are deliberately not fitted: see [readFrame]. The bar, its panels and its
-     * menus are drawn over the status bar and the navigation bar, as an edge handle is.
+     * This used to fit the camera cutout, which kept a bar on the camera's side a cutout's width off
+     * the glass along the whole edge: the gap beside a bar on the left with the phone turned to the
+     * left, where the camera is then. And it kept the bar out of the status bar's strip altogether,
+     * through the accessibility service as well. The camera itself is now stepped around where the
+     * bar would actually be under it: see [HandlerGeometry.clearOfCutouts].
      */
-    private fun fitUsableFrame(params: WindowManager.LayoutParams) {
+    private fun fitBarFrame(params: WindowManager.LayoutParams) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            params.setFitInsetsTypes(0)
+            params.isFitInsetsIgnoringVisibility = true
+            params.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+        }
+    }
+
+    /**
+     * Shrinks a panel window's containing frame by the camera cutout, and by nothing else: the Deck
+     * and the long-press menu lay their cards out inside it, so none of them lands under the camera.
+     *
+     * The system bars are deliberately not fitted: see [readFrame]. The panels and menus are drawn
+     * over the status bar and the navigation bar, as an edge handle is.
+     */
+    private fun fitPanelFrame(params: WindowManager.LayoutParams) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             params.setFitInsetsTypes(WindowInsets.Type.displayCutout())
             params.setFitInsetsSides(
@@ -1657,8 +1851,9 @@ class OverlayController(
         height: Int,
         cornerRadiusPx: Float,
         strength: Float = 1f,
+        /** Where the frame the rectangle was measured in starts: the bar's, unless a panel says. */
+        origin: IntArray = usableFrameOrigin(),
     ) {
-        val origin = usableFrameOrigin()
         setBounds(
             left + origin[0],
             top + origin[1],
@@ -1682,6 +1877,26 @@ class OverlayController(
     private fun usableFrameOrigin(): IntArray {
         val f = frame
         return intArrayOf(f?.insetLeft ?: 0, f?.insetTop ?: 0)
+    }
+
+    /** The frame the Deck and the menu are laid out in: the bar's, less the camera cutout. */
+    private fun readPanelFrame(): HandlerGeometry.Frame? =
+        HandlerGeometry.read(context, windowManager, fitCutout = true)
+
+    /** [usableFrameOrigin] for a rectangle measured in [panel]. */
+    private fun panelFrameOrigin(panel: HandlerGeometry.Frame?): IntArray =
+        intArrayOf(panel?.insetLeft ?: 0, panel?.insetTop ?: 0)
+
+    /**
+     * The bar's rectangle in [panel]'s coordinates: the bar's frame and the panels' start in
+     * different places wherever there is a cutout, so a menu or Deck anchored to the bar's own
+     * numbers would sit a camera's width away from it.
+     */
+    private fun anchorIn(panel: HandlerGeometry.Frame, x: Int, y: Int, width: Int, height: Int): IntRect {
+        val bar = frame
+        val dx = (bar?.insetLeft ?: 0) - panel.insetLeft
+        val dy = (bar?.insetTop ?: 0) - panel.insetTop
+        return IntRect(x + dx, y + dy, x + dx + width, y + dy + height)
     }
 
     /**
@@ -1736,7 +1951,7 @@ class OverlayController(
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            fitUsableFrame(this)
+            fitPanelFrame(this)
             if (focusable) {
                 softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
                     WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED
@@ -1945,6 +2160,25 @@ class OverlayController(
         handlerView?.setInwardPaddingDp(maxOf(visualWidthDp, MIN_TOUCH_WIDTH_DP) - visualWidthDp)
         val isPortrait = currentFrame.isPortrait
 
+        // The stored place, measured in the frame less the camera cutout until 1.5.5, carried over
+        // to the whole glass once per orientation, so the bar stays where the user put it rather
+        // than rising by the height of the camera's strip. See [HandlerGeometry.toGlassFraction].
+        // Below Android 11 the two frames are one and the same, so there is nothing to carry over.
+        if (!preference.isHandlerPlaceOnGlass(isPortrait)) {
+            val cutoutFrame = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) readPanelFrame() else null
+            preference.moveHandlerPlaceToGlass(isPortrait) { fraction, vertical ->
+                when {
+                    cutoutFrame == null -> fraction
+                    vertical -> HandlerGeometry.toGlassFraction(
+                        fraction, cutoutFrame.insetTop, cutoutFrame.usableHeight, currentFrame.usableHeight
+                    )
+                    else -> HandlerGeometry.toGlassFraction(
+                        fraction, cutoutFrame.insetLeft, cutoutFrame.usableWidth, currentFrame.usableWidth
+                    )
+                }
+            }
+        }
+
         // Legacy vertical migration first: the free-position seed below reads the fraction it
         // writes, so the order here is what lets an upgrading user keep the height they had.
         preference.migrateHandlerPositionFraction(
@@ -2031,6 +2265,22 @@ class OverlayController(
             // Which way the bar dresses follows where it ended up, not a stored side.
             dressHandlerFor(HandlerGeometry.xToIsLeft(params.x, currentFrame.usableWidth, barWidthPx))
         }
+
+        // Flush on the glass now, so the one thing in the way is the camera: stepped along the edge
+        // just clear of it, where the bar would otherwise sit under it. The stored place is left as
+        // the user put it, so the bar goes back there in a rotation without a camera on that side.
+        val lyingNow = handlerIsLying()
+        val cleared = HandlerGeometry.clearOfCutouts(
+            x = params.x,
+            y = params.y,
+            width = params.width,
+            height = params.height,
+            cutouts = currentFrame.cutouts,
+            lying = lyingNow,
+            frameLength = if (lyingNow) currentFrame.usableWidth else currentFrame.usableHeight,
+            gapPx = dpToPx(CUTOUT_GAP_DP),
+        )
+        if (lyingNow) params.x = cleared else params.y = cleared
 
         // Where the bar rests, and where it goes while the keyboard is up — the same place unless
         // the keys would cover it. Decided here, before the window is placed, so a bar rebuilt or
@@ -2132,6 +2382,11 @@ class OverlayController(
             adjustDrivesPanel = false
             swipeStepPercent = preference.getSwipeStepPercent()
             swipeStepTaken = false
+            adjustStartIndex = null
+            adjustStartStream = -1
+            adjustLimitShown = false
+            syncVolumeMethod()
+            volume.beginGesture()
             resolveAdjustAction(initialDirection)
 
             if (adjustOneShot == HandlerActions.OPEN_QUICK_SLIDER) {
@@ -2186,6 +2441,15 @@ class OverlayController(
                 // corrected with a second touch rather than repeated from the bar.
                 mainHandler.removeCallbacks(sliderCloseRunnable)
                 mainHandler.postDelayed(sliderCloseRunnable, PANEL_LINGER_MS)
+                schedulePanelRevertCheck()
+            } else {
+                // Where the swipe left the level, looked at again in a moment: a route that puts
+                // levels back does it after the write has already read as landed.
+                val res = adjustResolution
+                val start = adjustStartIndex
+                if (res != null && start != null && res.stream == adjustStartStream) {
+                    volume.level(res)?.let { end -> scheduleRevertCheck(res, start, end) }
+                }
             }
             adjustEnabled = false
             adjustDirection = 0
@@ -2403,7 +2667,54 @@ class OverlayController(
             val resolution = volume.resolve(preference.getVolumeStreamMode())
             adjustResolution = resolution
             gestureDetector?.setStepCount(resolution.stepCount)
+            // The level before this swipe touched it, for the look again once it ends. Only the
+            // first time the swipe drives this stream: a reversal re-resolves, and its start is
+            // still the swipe's start.
+            if (adjustStartIndex == null || adjustStartStream != resolution.stream) {
+                adjustStartIndex = volume.level(resolution)
+                adjustStartStream = resolution.stream
+            }
         }
+    }
+
+    /** The volume method as the settings screen last left it. Read as each gesture or press begins. */
+    private fun syncVolumeMethod() {
+        volume.method = preference.getVolumeWriteMethod()
+    }
+
+    /**
+     * Looks again, after [VolumeWrite.REVERT_CHECK_MS], at a level a swipe or a panel moved from
+     * [start] to [end], and puts it back where it was left if the route has put it back — which is
+     * the "falls back to a fixed level" report. See [VolumeController.confirmLanded]. A newer swipe
+     * or panel touch replaces a check still waiting.
+     */
+    private fun scheduleRevertCheck(res: VolumeController.Resolution, start: Int, end: Int) {
+        revertCheck?.let { mainHandler.removeCallbacks(it) }
+        revertCheck = null
+        if (end == start || res.opaque) return
+        val check = Runnable {
+            revertCheck = null
+            // A swipe or a touch on the panel under way owns the level; its own check follows it.
+            if (destroyed || adjustingBySwipe || panelTouchActive) return@Runnable
+            if (volumeWritesInFlight.get() > 0) return@Runnable
+            val percent = volume.confirmLanded(res, start, end) ?: return@Runnable
+            lastSeenVolume[res.stream] = percent
+            if (sliderView != null && sliderResolution?.stream == res.stream) {
+                followVolumeOnPanel(res.stream)
+            } else {
+                showVolumePercentOnHandler(percent, res)
+            }
+        }
+        revertCheck = check
+        mainHandler.postDelayed(check, VolumeWrite.REVERT_CHECK_MS)
+    }
+
+    /** [scheduleRevertCheck] for the open volume panel, from where it opened to where it was left. */
+    private fun schedulePanelRevertCheck() {
+        val res = sliderResolution ?: return
+        val start = sliderOpenIndex ?: return
+        if (sliderLastStep < 0) return
+        scheduleRevertCheck(res, start, res.minIndex + sliderLastStep)
     }
 
     /**
@@ -2418,7 +2729,19 @@ class OverlayController(
             (byPercent * resolution.stepCount / 100f).roundToInt().coerceAtLeast(1)
         }
 
-        val percent = volume.stepBy(resolution, direction, indices, adjustShowsUi) ?: return false
+        val percent = volume.stepBy(resolution, direction, indices, adjustShowsUi)
+        if (percent == null) {
+            // Refused at the top, by the system rather than by the end of the range: the
+            // hearing-safety limit, or a media volume limit. Said once a swipe, so the bar is not
+            // simply stuck at 78% with nothing to explain it. The system's own warning, which the
+            // refused step asked for, is what lets the user go on.
+            if (direction > 0 && volume.lastRaiseRefused && !adjustLimitShown) {
+                adjustLimitShown = true
+                volume.percent(resolution)?.let { showVolumePercentOnHandler(it, resolution) }
+                showIndicatorMessage(context.getString(R.string.volume_limited_by_system), durationMs = 2_600L)
+            }
+            return false
+        }
         // Seen, so this step coming back through the watchers after the swipe has ended is known
         // for the swipe's and not taken for a press of the rocker.
         if (percent >= 0) lastSeenVolume[resolution.stream] = percent
@@ -2799,6 +3122,8 @@ class OverlayController(
         val openValue = quickSliderCurrentValue() ?: 0f
         sliderOpenValue = openValue
         sliderLastStep = (openValue * sliderSteps).roundToInt()
+        syncVolumeMethod()
+        sliderOpenIndex = sliderResolution?.let { volume.level(it) }
 
         val haptic = settings.getHaptic()
         sliderHapticMs = when (haptic) {
@@ -3098,7 +3423,7 @@ class OverlayController(
                 height = lengthPx + top + bottom
                 view.setPanelRoom(top = top, bottom = bottom, inward = inward)
             }
-            fitUsableFrame(this)
+            fitBarFrame(this)
         }
 
         // Window coordinates, from the two absolutes, so the rect lands on the bar even where the
@@ -3259,6 +3584,7 @@ class OverlayController(
 
         override fun onAdjustFinished() {
             panelTouchActive = false
+            schedulePanelRevertCheck()
             // "Adjust it and it closes itself." Not instant: the number the user just set is the
             // point of the whole interaction, and a panel that vanishes on the up-stroke never
             // lets them read it. One beat is enough to see the result and short enough that the
@@ -3579,9 +3905,13 @@ class OverlayController(
         val style = preference.getContextMenuStyle()
         if (entries.isEmpty()) return
 
-        val anchor = IntRect(params.x, params.y, params.x + params.width, params.y + params.height)
+        // Laid out in the panels' frame, which keeps out of the camera cutout; the bar's own
+        // rectangle is carried across into it.
+        val panelFrame = readPanelFrame() ?: currentFrame
+        val anchor = anchorIn(panelFrame, params.x, params.y, params.width, params.height)
         val menuBarLying = handlerIsLying()
-        val frameSize = IntSize(currentFrame.usableWidth, currentFrame.usableHeight)
+        val frameSize = IntSize(panelFrame.usableWidth, panelFrame.usableHeight)
+        val menuOrigin = panelFrameOrigin(panelFrame)
 
         val menuHost = OverlayComposeHost(context)
         val panelTheme = preference.getPanelTheme()
@@ -3622,7 +3952,8 @@ class OverlayController(
                     onDismiss = { hideContextMenu() },
                     onCardBounds = { rect, cornerPx, strength ->
                         menuBackdrop?.setFrameBounds(
-                            rect.left, rect.top, rect.width, rect.height, cornerPx, strength
+                            rect.left, rect.top, rect.width, rect.height, cornerPx, strength,
+                            origin = menuOrigin,
                         )
                     },
                 )
@@ -3732,9 +4063,13 @@ class OverlayController(
             currentFrame.usableHeight,
             barHeight
         )
+        // Laid out in the panels' frame, which keeps out of the camera cutout, with the bar's
+        // rectangle carried across into it. See [anchorIn].
+        val panelFrame = readPanelFrame() ?: currentFrame
+        deckFrameOrigin = panelFrameOrigin(panelFrame)
         val model = buildDeckModel(
-            anchor = IntRect(barX, barY, barX + barWidth, barY + barHeight),
-            frameSize = IntSize(currentFrame.usableWidth, currentFrame.usableHeight),
+            anchor = anchorIn(panelFrame, barX, barY, barWidth, barHeight),
+            frameSize = IntSize(panelFrame.usableWidth, panelFrame.usableHeight),
             isLeft = HandlerGeometry.xToIsLeft(barX, currentFrame.usableWidth, barWidth),
             initialTile = tile,
             // A bar lying along the top or bottom edge lays the strip along that edge too.
@@ -3880,6 +4215,9 @@ class OverlayController(
         deckCardBackdrop = newPanelBackdrop()
     }
 
+    /** Where the frame the open Deck was laid out in starts. See [anchorIn]. */
+    private var deckFrameOrigin: IntArray = intArrayOf(0, 0)
+
     /** Lines each backdrop up with the surface it belongs behind. */
     private fun updateDeckBlurBounds(surfaces: DeckSurfaces) {
         deckStripBackdrop?.setFrameBounds(
@@ -3887,6 +4225,7 @@ class OverlayController(
             surfaces.strip.width, surfaces.strip.height,
             surfaces.stripCornerPx,
             surfaces.strength,
+            origin = deckFrameOrigin,
         )
         val card = surfaces.card
         deckCardBackdrop?.setFrameBounds(
@@ -3894,6 +4233,7 @@ class OverlayController(
             card?.width ?: 0, card?.height ?: 0,
             surfaces.cardCornerPx,
             surfaces.strength,
+            origin = deckFrameOrigin,
         )
     }
 
@@ -4576,6 +4916,7 @@ class OverlayController(
      */
     init {
         volume.onActivityChanged = { applyContextVisibility() }
+        hiddenForKeyguard = drawsOverLockScreen && keyguardLockedOrDark()
         hiddenForContext = contextWantsBarHidden()
         nextContextCheckMs()?.let { mainHandler.postDelayed(contextCheck, it) }
         refreshImeProbe()

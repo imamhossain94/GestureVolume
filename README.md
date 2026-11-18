@@ -38,6 +38,25 @@ branch.
   across the top of the screen.
 - Size, colour, opacity, corner radii, icon and edge distance are all adjustable, with a live
   preview you can drag and test before applying.
+- Flush with the glass in every rotation, the camera's strip and the status bar included; a bar
+  that would sit under the camera hole steps along the edge just past it.
+- Every volume write is read back. A step the system refuses — the hearing-safety limit at the top
+  of the range — is handed to the system's own step, which shows the warning to accept; a route that
+  puts levels back (some headsets, adjust-only devices, apps that pin the volume) is driven the way
+  the volume buttons drive it from then on. *Actions › How the volume is changed* offers Automatic,
+  Like the volume buttons, and Exact level only.
+
+### The button animation
+- Press a hardware volume button and the screen's edge beside it bulges out — a smooth black bump
+  with the volume inside — instead of the system's slider. It follows the buttons round in every
+  rotation, over the status bar too.
+- Thirteen styles: Liquid, Capsule, Line and Jelly come with the app; Neon, Aurora, Ripple,
+  Sparkle, Lava, Glass, Spectrum, Heartbeat and Elastic are Pro, and every one plays in the preview
+  before it is bought.
+- Side, position and length to line it up with your own buttons (press one with the screen open to
+  check), depth, colours, the level and its number, vibration, how long it stays and its speed.
+- Instant with the accessibility service, which hands it the two volume keys; without it, it
+  follows the system's own slider a moment later.
 
 ### Gestures
 Six independent slots — single tap, double tap, triple tap, long press, swipe in, swipe out —
@@ -76,6 +95,7 @@ The overlay can be drawn by either service:
 | Needs "display over other apps" | yes | no |
 | Ongoing notification | required by Android | none |
 | System actions (lock, screenshot, …) | no | yes |
+| Over the status bar, and in apps that hide overlays | no | yes, with *Draw with the accessibility service* |
 | Default | ✔ | opt-in |
 
 `OverlayRuntime` routes every command to whichever host is up, and hands the bar over between
@@ -125,6 +145,9 @@ Three things, each of which the user opts into:
 
 1. **System actions** — `GLOBAL_ACTION_LOCK_SCREEN`, `TAKE_SCREENSHOT`, `BACK`, `HOME`,
    `RECENTS`, `NOTIFICATIONS`, `QUICK_SETTINGS`, `POWER_DIALOG`. No other API reaches these.
+   Each of the uses below is off until the user turns it on: the two volume keys (Instant panel,
+   button animation), the app in front, and drawing — the bar on the lock screen, the bar over the
+   status bar (*Draw with the accessibility service*), and the button animation.
 2. **Hosting the overlay** without a notification.
 3. **Clipboard capture**, off by default: it watches text selection and Copy presses so copied
    text lands in the app's own history, and pastes a chosen item back on request.

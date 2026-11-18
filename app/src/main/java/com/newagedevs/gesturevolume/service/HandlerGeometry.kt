@@ -24,9 +24,14 @@ import kotlin.math.roundToInt
  *     display — which is exactly where the navigation bar lives. That is the reported
  *     "overlay jumps to the navigation bar after rotating" bug.
  *
- *  2. **Insets are read, never assumed.** The usable frame excludes the display cutout — and only
- *     the cutout, since the bar is drawn over the system bars (see `OverlayController.readFrame`) —
- *     so "the left edge" means the edge of the glass beside the camera, in every rotation.
+ *  2. **The bar's frame is the whole glass.** From Android 11 the bar's windows are laid out into
+ *     the camera cutout and over the system bars (see `OverlayController.fitBarFrame`), so "the
+ *     left edge" is the edge of the glass in every rotation. It used to exclude the cutout, which
+ *     on a phone turned to the left — the camera then on the left — held a bar on that side a
+ *     camera's width off the glass along its whole length, and kept a bar out of the status bar's
+ *     strip in portrait. The camera itself is kept clear of by [clearOfCutouts] instead, which
+ *     moves the bar only where it would actually be under it. The panels that open beside the bar
+ *     still keep out of the cutout: [read] with `fitCutout`.
  *
  *  3. **Horizontal is a fraction too, and it is stored per orientation.** Once the bar can sit
  *     anywhere rather than against one of two edges, x needs the same rotation-proof treatment as
@@ -49,41 +54,60 @@ object HandlerGeometry {
          * The display's [Surface] rotation. Part of the frame so a half turn — the same size and,
          * often, the same insets — still reads as a change and moves a bar that follows the phone.
          */
-        val rotation: Int = Surface.ROTATION_0
+        val rotation: Int = Surface.ROTATION_0,
+        /**
+         * Where the camera cutouts are, in this frame's coordinates: what a bar resting flush on
+         * the glass is moved along its edge to keep out from under. See [clearOfCutouts].
+         */
+        val cutouts: List<Box> = emptyList(),
     ) {
         val usableWidth: Int get() = (displayWidth - insetLeft - insetRight).coerceAtLeast(0)
         val usableHeight: Int get() = (displayHeight - insetTop - insetBottom).coerceAtLeast(0)
         val isPortrait: Boolean get() = displayHeight >= displayWidth
     }
 
+    /** A rectangle in pixels, without the framework's Rect, so the geometry stays host-testable. */
+    data class Box(val left: Int, val top: Int, val right: Int, val bottom: Int)
+
     /**
      * @param uiContext must be a context configured for the current display — the Service itself is
      *   fine, since a Service's Resources are reconfigured on a configuration change.
      *   Never [android.content.res.Resources.getSystem], which is documented as not being
      *   configured for the current screen and does not change with orientation.
+     * @param fitCutout the frame less the camera cutout: the one the Deck and the menu are laid out
+     *   in, so nothing of theirs ends up under the camera. Without it, from Android 11, the whole
+     *   display: the bar's own frame. Below Android 11 the two are the same.
      */
     @Suppress("DEPRECATION")
-    fun read(uiContext: Context, wm: WindowManager?): Frame? {
+    fun read(uiContext: Context, wm: WindowManager?, fitCutout: Boolean = false): Frame? {
         if (wm == null) return null
         val density = uiContext.resources.displayMetrics.density
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val metrics = wm.currentWindowMetrics
             val bounds = metrics.bounds
-            // The cutout alone, matching the only insets the overlay windows fit. Ignoring visibility
-            // for the same reason as ever: nothing about the frame should change with a transient bar.
+            // Ignoring visibility for the same reason as ever: nothing about the frame should
+            // change with a transient bar.
             val insets = metrics.windowInsets.getInsetsIgnoringVisibility(
                 WindowInsets.Type.displayCutout()
             )
+            val left = if (fitCutout) insets.left else 0
+            val top = if (fitCutout) insets.top else 0
+            val cutouts = runCatching {
+                metrics.windowInsets.displayCutout?.boundingRects.orEmpty().map { r ->
+                    Box(r.left - left, r.top - top, r.right - left, r.bottom - top)
+                }
+            }.getOrDefault(emptyList())
             return Frame(
                 displayWidth = bounds.width(),
                 displayHeight = bounds.height(),
-                insetLeft = insets.left,
-                insetTop = insets.top,
-                insetRight = insets.right,
-                insetBottom = insets.bottom,
+                insetLeft = left,
+                insetTop = top,
+                insetRight = if (fitCutout) insets.right else 0,
+                insetBottom = if (fitCutout) insets.bottom else 0,
                 density = density,
-                rotation = wm.defaultDisplay.rotation
+                rotation = wm.defaultDisplay.rotation,
+                cutouts = cutouts,
             )
         }
 
@@ -221,6 +245,62 @@ object HandlerGeometry {
     fun xToIsLeft(x: Int, usableWidth: Int, barWidth: Int): Boolean {
         if (usableWidth <= 0) return true
         return (x + barWidth / 2f) < usableWidth / 2f
+    }
+
+    /**
+     * Where along its edge a bar at ([x], [y]), [width] by [height], has to be so that it is not
+     * under a camera cutout: where it is, when it is clear, or else the nearer place either side
+     * of the cutout that still fits in [frameLength] — the frame's height for a bar standing on a
+     * side, its width for one lying along the top or bottom ([lying]).
+     *
+     * Only along the edge, never off it: the point of resting flush on the glass is that it is on
+     * the glass, and the camera is a few millimetres of a long edge. A bar too long to fit either
+     * side stays where it was, partly under the camera, rather than being pushed off the screen.
+     *
+     * @return the new y for an upright bar, the new x for a lying one.
+     */
+    fun clearOfCutouts(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        cutouts: List<Box>,
+        lying: Boolean,
+        frameLength: Int,
+        gapPx: Int = 0,
+    ): Int {
+        var along = if (lying) x else y
+        val length = if (lying) width else height
+        val maxAlong = (frameLength - length).coerceAtLeast(0)
+        // Each cutout the bar overlaps across its thickness, as a span along the edge.
+        val spans = cutouts.filter { c ->
+            if (lying) {
+                c.bottom > y && c.top < y + height
+            } else {
+                c.right > x && c.left < x + width
+            }
+        }.map { c -> if (lying) (c.left - gapPx) to (c.right + gapPx) else (c.top - gapPx) to (c.bottom + gapPx) }
+        if (spans.isEmpty()) return along
+        // A couple of passes settle a bar moved off one cutout onto another.
+        repeat(spans.size + 1) {
+            val hit = spans.firstOrNull { (start, end) -> along < end && along + length > start } ?: return along
+            val before = hit.first - length
+            val after = hit.second
+            val candidates = listOf(before, after).filter { it in 0..maxAlong }
+            val best = candidates.minByOrNull { kotlin.math.abs(it - along) } ?: return along
+            along = best
+        }
+        return along
+    }
+
+    /**
+     * A stored place along one axis, measured in a frame that started [inset] pixels in and was
+     * [oldLength] long, as the same place in a frame that starts at the edge of the glass and is
+     * [glassLength] long. Where the bar's centre was on the glass, it stays.
+     */
+    fun toGlassFraction(fraction: Float, inset: Int, oldLength: Int, glassLength: Int): Float {
+        if (glassLength <= 0 || oldLength <= 0) return fraction.coerceIn(0f, 1f)
+        return ((inset + fraction.coerceIn(0f, 1f) * oldLength) / glassLength).coerceIn(0f, 1f)
     }
 
     /** A screen edge the bar can rest against. */

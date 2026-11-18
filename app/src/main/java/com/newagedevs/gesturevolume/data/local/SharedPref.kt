@@ -17,7 +17,9 @@ import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.HandlerPresets
 import com.newagedevs.gesturevolume.utils.HandlerShape
+import com.newagedevs.gesturevolume.utils.VolumeController
 import com.newagedevs.gesturevolume.utils.VolumeStreamMode
+import com.newagedevs.gesturevolume.utils.VolumeWrite
 import com.newagedevs.gesturevolume.utils.safeDrawableIdOrDefault
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -45,6 +47,9 @@ class SharedPref @Inject constructor(
 
     /** Gestures that do something else in chosen apps. Same file, its own object. */
     val appGestures: AppGestureStore by lazy { AppGestureStore(sharedPreferences) }
+
+    /** The button animation's settings. Same file, its own object. */
+    val bump: ButtonBumpStore by lazy { ButtonBumpStore(sharedPreferences) }
 
     init {
         // Read before either pin writes its flag, which would make every install look lived-in.
@@ -474,6 +479,10 @@ class SharedPref @Inject constructor(
         const val SHOW_ONLY_WHILE_MEDIA = "handlerShowOnlyWhileMedia"
         const val SHOW_ONLY_WHILE_CALL = "handlerShowOnlyWhileCall"
         const val SHOW_ON_LOCK_SCREEN = "handlerShowOnLockScreen"
+        const val VOLUME_WRITE_METHOD = "volumeWriteMethod"
+        const val VOLUME_RELATIVE_ROUTES = "volumeRelativeRoutes"
+        const val DRAW_WITH_ACCESSIBILITY = "handlerDrawWithAccessibility"
+        const val PLACE_ON_GLASS_PREFIX = "placeOnGlass_"
         const val WHATS_NEW_SEEN = "whatsNewSeenVersion"
         const val TOUR_OFFERED = "tourOfferedVersion"
 
@@ -813,14 +822,22 @@ class SharedPref @Inject constructor(
         sharedPreferences.getFloat(posXKey(isPortrait), 1f).coerceIn(0f, 1f)
 
     fun setHandlerPosXFraction(isPortrait: Boolean, value: Float) {
-        sharedPreferences.edit { putFloat(posXKey(isPortrait), value.coerceIn(0f, 1f)) }
+        sharedPreferences.edit {
+            putFloat(posXKey(isPortrait), value.coerceIn(0f, 1f))
+            // Written by this build, so measured on the whole glass. See [isHandlerPlaceOnGlass].
+            putBoolean(placeOnGlassKey(isPortrait), true)
+        }
     }
 
     fun getHandlerPosYFraction(isPortrait: Boolean): Float =
         sharedPreferences.getFloat(posYKey(isPortrait), DEFAULT_POSITION_FRACTION).coerceIn(0f, 1f)
 
     fun setHandlerPosYFraction(isPortrait: Boolean, value: Float) {
-        sharedPreferences.edit { putFloat(posYKey(isPortrait), value.coerceIn(0f, 1f)) }
+        sharedPreferences.edit {
+            putFloat(posYKey(isPortrait), value.coerceIn(0f, 1f))
+            // Written by this build, so measured on the whole glass. See [isHandlerPlaceOnGlass].
+            putBoolean(placeOnGlassKey(isPortrait), true)
+        }
     }
 
     fun hasHandlerPosXFraction(isPortrait: Boolean): Boolean =
@@ -1043,6 +1060,86 @@ class SharedPref @Inject constructor(
 
     fun setVolumeStreamMode(value: String) {
         sharedPreferences.edit { putString(VOLUME_STREAM_MODE, VolumeStreamMode.sanitize(value)) }
+    }
+
+    /**
+     * How the bar moves the volume: exact writes read back with the system's own step as a fallback
+     * (the default), the volume buttons' way, or exact writes only. See [VolumeWrite.METHOD_AUTO].
+     */
+    fun getVolumeWriteMethod(): String = VolumeWrite.sanitizeMethod(
+        sharedPreferences.getString(VOLUME_WRITE_METHOD, VolumeWrite.METHOD_AUTO)
+    )
+
+    fun setVolumeWriteMethod(value: String) {
+        sharedPreferences.edit {
+            putString(VOLUME_WRITE_METHOD, VolumeWrite.sanitizeMethod(value))
+            // A deliberate choice is a fresh start: the routes Automatic learnt are its own, and
+            // coming back to it should look at every route again.
+            remove(VOLUME_RELATIVE_ROUTES)
+        }
+    }
+
+    /**
+     * The outputs found putting absolute levels back, oldest first, which Automatic drives in
+     * relative steps. See [VolumeWrite.routeKey]. A newline-separated string, because a string set
+     * read from SharedPreferences may not be modified and has no order.
+     */
+    fun getVolumeRelativeRoutes(): List<String> =
+        sharedPreferences.getString(VOLUME_RELATIVE_ROUTES, null)
+            ?.split('\n')
+            ?.filter { it.isNotBlank() }
+            ?: emptyList()
+
+    fun setVolumeRelativeRoutes(routes: List<String>) {
+        sharedPreferences.edit {
+            if (routes.isEmpty()) remove(VOLUME_RELATIVE_ROUTES)
+            else putString(VOLUME_RELATIVE_ROUTES, routes.joinToString("\n"))
+        }
+    }
+
+    /** The two above, in the shape [VolumeController] keeps them through. */
+    val volumeRoutes: VolumeController.RouteMemory = object : VolumeController.RouteMemory {
+        override fun relativeRoutes(): List<String> = getVolumeRelativeRoutes()
+        override fun setRelativeRoutes(routes: List<String>) = setVolumeRelativeRoutes(routes)
+    }
+
+    /**
+     * Whether the place this orientation reads is measured on the whole glass, as from 1.5.5, rather
+     * than in the frame less the camera cutout that every earlier build used. See
+     * [moveHandlerPlaceToGlass]. Kept per stored pair rather than per orientation: with one place
+     * for both orientations, or Dynamic position, both read the portrait pair, which must be carried
+     * over once and not twice.
+     */
+    fun isHandlerPlaceOnGlass(isPortrait: Boolean): Boolean =
+        sharedPreferences.getBoolean(placeOnGlassKey(isPortrait), false)
+
+    /**
+     * Carries the place this orientation reads over to the whole glass, once: [convert] is handed
+     * each stored fraction and whether it is the vertical one. Marked done even with nothing stored,
+     * so a place first stored on the glass is never converted.
+     */
+    fun moveHandlerPlaceToGlass(isPortrait: Boolean, convert: (fraction: Float, vertical: Boolean) -> Float) {
+        if (hasHandlerPosXFraction(isPortrait)) {
+            setHandlerPosXFraction(isPortrait, convert(getHandlerPosXFraction(isPortrait), false))
+        }
+        if (hasHandlerPosYFraction(isPortrait)) {
+            setHandlerPosYFraction(isPortrait, convert(getHandlerPosYFraction(isPortrait), true))
+        }
+        sharedPreferences.edit { putBoolean(placeOnGlassKey(isPortrait), true) }
+    }
+
+    private fun placeOnGlassKey(isPortrait: Boolean): String = PLACE_ON_GLASS_PREFIX + posYKey(isPortrait)
+
+    /**
+     * Whether the bar is drawn through the accessibility service while that service is on, rather
+     * than as an ordinary overlay: so it can sit over the status bar and the camera's strip, and stays
+     * on screen in apps that hide other apps' overlays. Off unless asked for, like every other use
+     * of that service; see `OverlayService.accessibilityHost`.
+     */
+    fun getDrawWithAccessibility(): Boolean = sharedPreferences.getBoolean(DRAW_WITH_ACCESSIBILITY, false)
+
+    fun setDrawWithAccessibility(value: Boolean) {
+        sharedPreferences.edit { putBoolean(DRAW_WITH_ACCESSIBILITY, value) }
     }
 
     /**

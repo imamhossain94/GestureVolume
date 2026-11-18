@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
 import com.newagedevs.gesturevolume.ui.screens.handler_action.segmentShape
+import androidx.compose.material.icons.filled.Animation
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import android.app.Activity
 import androidx.activity.compose.BackHandler
@@ -94,6 +95,7 @@ fun MainScreen(
     onNavigateToFaq: () -> Unit,
     onNavigateToUpgrade: () -> Unit,
     onNavigateToVisibility: () -> Unit,
+    onNavigateToButtonFeedback: () -> Unit = {},
     onNavigateToWhatsNew: () -> Unit = {},
     onNavigateToTour: () -> Unit = {},
 ) {
@@ -368,6 +370,17 @@ fun MainScreen(
                                         summary = stringResource(R.string.visibility_card_subtitle),
                                         shape = shape,
                                         onClick = onNavigateToVisibility,
+                                    )
+                                },
+                                // The volume buttons' own animation, beside the bar's settings: it
+                                // answers the buttons the bar's panel would otherwise answer.
+                                { shape ->
+                                    HomeLinkRow(
+                                        icon = { HomeIconTile(Icons.Filled.Animation, on = viewModel.preference.bump.isEnabled()) },
+                                        title = stringResource(R.string.bump_title),
+                                        summary = stringResource(R.string.bump_card_subtitle),
+                                        shape = shape,
+                                        onClick = onNavigateToButtonFeedback,
                                     )
                                 },
                             ),

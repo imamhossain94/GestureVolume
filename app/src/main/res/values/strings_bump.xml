@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The button animation, the way the volume is written, and drawing the bar through the
+  accessibility service. Kept out of strings.xml so the fifteen locales of these stay together.
+-->
+<resources>
+    <!-- How the volume is changed (Actions › Behaviour) -->
+    <string name="volume_limited_by_system">Android is holding the volume here. Accept its hearing warning to go louder.</string>
+    <string name="volume_method_title">How the volume is changed</string>
+    <string name="volume_method_desc">If the volume stops short of the top, or snaps back after a swipe, try another way.</string>
+    <string name="volume_method_auto">Automatic</string>
+    <string name="volume_method_auto_desc">Sets the exact level and checks it stayed. If Android or your headphones refuse it or put it back, the bar changes it the way the volume buttons do.</string>
+    <string name="volume_method_keys">Like the volume buttons</string>
+    <string name="volume_method_keys_desc">Every step is a press of the volume button, so it follows casting, Bluetooth and apps with their own volume. The level shown catches up a moment later.</string>
+    <string name="volume_method_precise">Exact level only</string>
+    <string name="volume_method_precise_desc">Always sets the exact level, as earlier versions did.</string>
+
+    <!-- Drawing the bar through the accessibility service (Visibility) -->
+    <string name="visibility_a11y_title">Above everything</string>
+    <string name="visibility_a11y_desc">The accessibility service can draw the bar over the status bar and the camera, and in apps that hide floating windows.</string>
+    <string name="visibility_a11y_draw_title">Draw with the accessibility service</string>
+    <string name="visibility_a11y_draw_desc">The bar can sit over the status bar, flush with the edge, and stays on screen in apps and videos that hide other apps’ floating windows. While the phone is locked it steps aside.</string>
+
+    <!-- The button animation -->
+    <string name="bump_title">Button animation</string>
+    <string name="bump_card_subtitle">The edge bulges at the volume buttons as you press them</string>
+    <string name="bump_enable_title">Animate the volume buttons</string>
+    <string name="bump_enable_desc">The edge of the screen bulges out beside the buttons as you press them, with the volume inside it, instead of the system’s slider.</string>
+    <string name="bump_needs_accessibility">Needs the accessibility service to answer the buttons at once and hide the system’s slider. Without it, the animation follows the system’s slider a moment later.</string>
+    <string name="bump_needs_service">Turn on Gesture Volume on the home screen for the buttons to play it.</string>
+    <string name="bump_style_title">Animation</string>
+    <string name="bump_style_desc">Four come with the app and the rest are Pro. Tap one to see it on the phone above.</string>
+    <string name="bump_style_liquid">Liquid</string>
+    <string name="bump_style_capsule">Capsule</string>
+    <string name="bump_style_line">Line</string>
+    <string name="bump_style_jelly">Jelly</string>
+    <string name="bump_style_neon">Neon</string>
+    <string name="bump_style_aurora">Aurora</string>
+    <string name="bump_style_ripple">Ripple</string>
+    <string name="bump_style_sparkle">Sparkle</string>
+    <string name="bump_style_lava">Lava</string>
+    <string name="bump_style_glass">Glass</string>
+    <string name="bump_style_spectrum">Spectrum</string>
+    <string name="bump_style_heartbeat">Heartbeat</string>
+    <string name="bump_style_elastic">Elastic</string>
+    <string name="bump_pro_badge">PRO</string>
+    <string name="bump_pro_title">A Pro animation</string>
+    <string name="bump_pro_message">%1$s is one of the Pro animations. Upgrade once to use every one of them, and the app is free of ads too.</string>
+    <string name="bump_pro_upgrade">Upgrade</string>
+    <string name="bump_pro_not_now">Not now</string>
+    <string name="bump_place_title">Where your buttons are</string>
+    <string name="bump_place_desc">Line the bump up with your phone’s volume buttons. Press one with this screen open to see where it lands.</string>
+    <string name="bump_side">Side</string>
+    <string name="bump_side_left">Left</string>
+    <string name="bump_side_right">Right</string>
+    <string name="bump_position">Position</string>
+    <string name="bump_length">Length</string>
+    <string name="bump_try">Show on my phone</string>
+    <string name="bump_look_title">Look</string>
+    <string name="bump_look_desc">Its size, its colours and what it shows.</string>
+    <string name="bump_depth">Depth</string>
+    <string name="bump_color">Colour</string>
+    <string name="bump_accent">Volume colour</string>
+    <string name="bump_show_level">Show the volume</string>
+    <string name="bump_show_level_desc">A bar inside the bump that fills as it gets louder.</string>
+    <string name="bump_show_percent">Show the number</string>
+    <string name="bump_show_percent_desc">The volume beside the bump, as a percentage.</string>
+    <string name="bump_feel_title">Feel</string>
+    <string name="bump_feel_desc">How it buzzes, how long it stays and how fast it moves.</string>
+    <string name="bump_haptic">Vibration</string>
+    <string name="bump_haptic_off">Off</string>
+    <string name="bump_haptic_light">Light</string>
+    <string name="bump_haptic_strong">Strong</string>
+    <string name="bump_hold">Stays for</string>
+    <string name="bump_hold_value">%1$s s</string>
+    <string name="bump_speed">Speed</string>
+    <string name="bump_speed_value">%1$s×</string>
+    <string name="bump_value_dp">%1$d dp</string>
+    <string name="bump_value_percent">%1$d%%</string>
+    <string name="bump_preview_up">Volume up</string>
+    <string name="bump_preview_down">Volume down</string>
+</resources>

@@ -34,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import com.newagedevs.gesturevolume.ui.screens.button_feedback.ButtonFeedbackScreen
 import com.newagedevs.gesturevolume.ui.screens.main.LanguageDialog
 import com.newagedevs.gesturevolume.ui.screens.main.ThemeDialog
 import androidx.compose.ui.platform.LocalContext
@@ -229,6 +230,7 @@ fun MainNavigation(
                         onNavigateToFaq = { navController.navigate("faq") },
                         onNavigateToUpgrade = { navController.navigate("upgrade") },
                         onNavigateToVisibility = { navController.navigate("visibility") },
+                        onNavigateToButtonFeedback = { navController.navigate("button_feedback") },
                         onNavigateToWhatsNew = { navController.navigate("whats_new") },
                         onNavigateToTour = { navController.navigate("tour") }
                     )
@@ -256,6 +258,15 @@ fun MainNavigation(
                     VisibilityScreen(
                         viewModel = viewModel,
                         onNavigateBack = { navController.navigateBackOnce() },
+                        onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
+                    )
+                }
+
+                composable("button_feedback") {
+                    ButtonFeedbackScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.navigateBackOnce() },
+                        onOpenUpgrade = { navController.navigate("upgrade") },
                         onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
                     )
                 }

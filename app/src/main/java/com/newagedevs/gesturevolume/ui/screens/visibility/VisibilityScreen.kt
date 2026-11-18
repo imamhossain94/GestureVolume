@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
@@ -311,8 +312,10 @@ private fun AutoHideSection(
     onTurnOnAccessibility: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     var onlyMedia by remember { mutableStateOf(preference.getShowOnlyWhileMedia()) }
     var onLockScreen by remember { mutableStateOf(preference.getShowOnLockScreen()) }
+    var drawWithAccessibility by remember { mutableStateOf(preference.getDrawWithAccessibility()) }
     var onlyCall by remember { mutableStateOf(preference.getShowOnlyWhileCall()) }
     var keyboard by remember { mutableStateOf(preference.getKeyboardBehaviour()) }
     var motion by remember { mutableStateOf(preference.getKeyboardMotion()) }
@@ -425,6 +428,36 @@ private fun AutoHideSection(
                     onLockScreen = it
                     preference.setShowOnLockScreen(it)
                     OverlayRuntime.accessibilityService?.refreshLockScreenBar()
+                },
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // ---- above everything ---------------------------------------------------------------
+        // The bar on the accessibility service's windows: over the status bar and the camera's
+        // strip, and still there in the apps and videos that hide other apps' floating windows.
+        // Same note as above until the service is on; the switch takes either way, and the bar
+        // moves across as soon as the service is there to lend its windows.
+        Heading(stringResource(R.string.visibility_a11y_title), stringResource(R.string.visibility_a11y_desc))
+        if (!accessibilityOn) {
+            PermissionNote(
+                missing = PermissionNeeds.Permission.ACCESSIBILITY,
+                onOpenPermissions = { onTurnOnAccessibility() },
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+        }
+        Segments {
+            ToggleRow(
+                icon = Icons.Filled.Layers,
+                title = stringResource(R.string.visibility_a11y_draw_title),
+                description = stringResource(R.string.visibility_a11y_draw_desc),
+                checked = drawWithAccessibility,
+                shape = segmentShape(0, 1),
+                onCheckedChange = {
+                    drawWithAccessibility = it
+                    preference.setDrawWithAccessibility(it)
+                    OverlayRuntime.rehost(context)
                 },
             )
         }

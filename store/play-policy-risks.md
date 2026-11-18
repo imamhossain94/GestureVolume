@@ -109,10 +109,15 @@ affirmative consent, an accurate declaration and a video.
 | Volume-key filtering | Medium — key interception | Only the two volume keys, others passed through, nothing recorded; filter requested only while Instant is on; for the quarter second a Volume down press is undecided, window-state events are checked for the System UI package only, so a button screenshot does not open the panel |
 | Bar on the lock screen (1.5.2) | Medium — the service draws a `TYPE_ACCESSIBILITY_OVERLAY` window | Off by default, behind Visibility › Show on the lock screen; only while the keyguard is locked and the screen is on, gone at the unlock; does only what the lock screen allows (volume, Quick slider, toggles, system actions), refusing the Deck, the menu and app launches; no accessibility events used. Named in the disclosure, the service description and the declaration |
 | Foreground app detection | Low | Package name only, only while apps are chosen to hide the bar in or have gestures of their own, no history, no window content. The Play Console declaration and its video must be updated for per-app gestures before the release that adds them |
+| Button animation (1.5.5) | Medium — key filtering plus a `TYPE_ACCESSIBILITY_OVERLAY` window | Off by default, behind *Button animation*; takes only the two volume keys, as Instant does, and draws one non-touchable window beside the buttons while the animation plays. Named in the disclosure and the service description |
+| Bar drawn over the status bar (1.5.5) | Medium — the service lends the foreground service's bar its windows | Off by default, behind *Visibility › Draw with the accessibility service*; the foreground service and its notification still run the bar; the bar steps aside while the phone is locked. Named in the disclosure and the service description |
 
-**If the review still objects:** drop the bar on the lock screen first (it is the one use that
-draws), then the *Instant* volume keys (this removes `canRequestFilterKeyEvents`), leaving only
-system actions and foreground-app detection.
+**If the review still objects:** drop the drawing uses first — the bar over the status bar, the
+button animation and the bar on the lock screen — then the *Instant* volume keys (this removes
+`canRequestFilterKeyEvents`), leaving only system actions and foreground-app detection.
+
+**Before the 1.5.5 release:** the Accessibility API declaration and its video must name the two new
+uses, the button animation and drawing the bar over the status bar, as the in-app disclosure does.
 
 ### 6. Special-use foreground service
 

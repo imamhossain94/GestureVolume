@@ -1,0 +1,341 @@
+package com.newagedevs.gesturevolume.utils
+
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.exp
+import kotlin.math.roundToInt
+import kotlin.math.sin
+import kotlin.math.sqrt
+
+/**
+ * The button animation: the edge of the screen beside the volume buttons bulging inward as one is
+ * pressed, with the level inside the bulge — the smooth black bump of a phone whose glass seems to
+ * give under the button — and a dozen other ways of answering the press.
+ *
+ * Plain maths, like [LevelFeedback], so the shapes, the timing and the placement can be checked on
+ * the host JVM: [com.newagedevs.gesturevolume.ui.view.ButtonBumpView] draws what this decides and
+ * [com.newagedevs.gesturevolume.service.ButtonBumpOverlay] puts it on the glass.
+ *
+ * **Everything is measured as if the bump were on the left edge of an upright phone**: `x` inward
+ * from the glass, `y` along the edge towards the bottom of the phone. The physical buttons do not
+ * move when the screen turns, so neither does the bump; [placement] turns that one picture onto
+ * whichever edge of the screen the buttons are on now.
+ */
+object ButtonBump {
+
+    // ---- the styles: identifiers are a persistence format, never renamed ------------------------
+
+    /** The smooth black bump, rising with a little give and settling. */
+    const val STYLE_LIQUID = "liquid"
+
+    /** A capsule that slides out of the edge beside the buttons, clear of it. */
+    const val STYLE_CAPSULE = "capsule"
+
+    /** A shallow rise traced by a lit line, the level running along the line itself. */
+    const val STYLE_LINE = "line"
+
+    /** The bump on a softer spring: it overshoots, wobbles, and jiggles at every press. */
+    const val STYLE_JELLY = "jelly"
+
+    /** An outline lit like a neon tube, flickering as it strikes. */
+    const val STYLE_NEON = "neon"
+
+    /** The bump filled with slow northern lights, the colours drifting as it stays. */
+    const val STYLE_AURORA = "aurora"
+
+    /** Rings going out from the button into the screen at every press. */
+    const val STYLE_RIPPLE = "ripple"
+
+    /** A burst of sparks thrown in from the button, and stars twinkling on the rim. */
+    const val STYLE_SPARKLE = "sparkle"
+
+    /** Molten: two warm blobs that drift and merge inside the bump. */
+    const val STYLE_LAVA = "lava"
+
+    /** Frosted glass with a bright rim, a highlight sweeping along it at each press. */
+    const val STYLE_GLASS = "glass"
+
+    /** A black bump with the spectrum turning round its rim, the level in rainbow. */
+    const val STYLE_SPECTRUM = "spectrum"
+
+    /** A beating heart: two quick throbs at every press, and a trace across it. */
+    const val STYLE_HEARTBEAT = "heartbeat"
+
+    /** Stretched towards the button that was pressed, and springing back. */
+    const val STYLE_ELASTIC = "elastic"
+
+    /** In the order they are offered. */
+    val STYLES: List<String> = listOf(
+        STYLE_LIQUID, STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY,
+        STYLE_NEON, STYLE_AURORA, STYLE_RIPPLE, STYLE_SPARKLE,
+        STYLE_LAVA, STYLE_GLASS, STYLE_SPECTRUM, STYLE_HEARTBEAT, STYLE_ELASTIC,
+    )
+
+    /** The ones that come with the app; the rest are Pro. */
+    val FREE_STYLES: Set<String> = setOf(STYLE_LIQUID, STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY)
+
+    const val DEFAULT_STYLE = STYLE_LIQUID
+
+    fun sanitizeStyle(id: String?): String = if (id in STYLES) id!! else DEFAULT_STYLE
+
+    fun isPremium(id: String): Boolean = id !in FREE_STYLES
+
+    /**
+     * The style that actually plays: the chosen one, unless it is a Pro style and Pro is not active
+     * — a refund, or a backup restored onto a phone without it — when it is the default.
+     */
+    fun effectiveStyle(chosen: String?, pro: Boolean): String {
+        val style = sanitizeStyle(chosen)
+        return if (isPremium(style) && !pro) DEFAULT_STYLE else style
+    }
+
+    // ---- how each style moves -----------------------------------------------------------------------
+
+    /**
+     * What a style is made of, apart from how it is painted.
+     *
+     * @param stiffness the spring the bump rises and falls on, per second squared.
+     * @param damping its damping ratio: 1 settles without overshoot, below it the bump overshoots.
+     * @param shoulder how much of each end of the bump is the curve down to the glass, 0..1 of its
+     *   half-length. Small is a flat-topped slab, large a soft hill.
+     * @param reach how far into the screen the style draws, as a multiple of the bump's depth:
+     *   ripples and sparks travel well past the bump itself.
+     * @param detached whether the shape stands clear of the glass rather than growing out of it.
+     */
+    data class Spec(
+        val stiffness: Float,
+        val damping: Float,
+        val shoulder: Float,
+        val reach: Float,
+        val detached: Boolean = false,
+    )
+
+    fun spec(style: String): Spec = when (sanitizeStyle(style)) {
+        STYLE_CAPSULE -> Spec(stiffness = 420f, damping = 0.82f, shoulder = 0.5f, reach = 2.2f, detached = true)
+        STYLE_LINE -> Spec(stiffness = 380f, damping = 0.9f, shoulder = 0.62f, reach = 1.6f)
+        STYLE_JELLY -> Spec(stiffness = 300f, damping = 0.24f, shoulder = 0.42f, reach = 1.9f)
+        STYLE_NEON -> Spec(stiffness = 420f, damping = 0.7f, shoulder = 0.36f, reach = 2.4f)
+        STYLE_AURORA -> Spec(stiffness = 340f, damping = 0.62f, shoulder = 0.4f, reach = 1.7f)
+        STYLE_RIPPLE -> Spec(stiffness = 380f, damping = 0.6f, shoulder = 0.36f, reach = 6f)
+        STYLE_SPARKLE -> Spec(stiffness = 380f, damping = 0.58f, shoulder = 0.36f, reach = 5f)
+        STYLE_LAVA -> Spec(stiffness = 260f, damping = 0.5f, shoulder = 0.46f, reach = 1.8f)
+        STYLE_GLASS -> Spec(stiffness = 400f, damping = 0.7f, shoulder = 0.36f, reach = 1.7f)
+        STYLE_SPECTRUM -> Spec(stiffness = 400f, damping = 0.6f, shoulder = 0.36f, reach = 2.2f)
+        STYLE_HEARTBEAT -> Spec(stiffness = 420f, damping = 0.55f, shoulder = 0.38f, reach = 2.6f)
+        STYLE_ELASTIC -> Spec(stiffness = 320f, damping = 0.4f, shoulder = 0.4f, reach = 1.9f)
+        else -> Spec(stiffness = 400f, damping = 0.62f, shoulder = 0.34f, reach = 1.7f)
+    }
+
+    // ---- the shape ------------------------------------------------------------------------------------
+
+    /**
+     * How far the bump stands out at [u], from -1 at one end to 1 at the other, as 0..1 of its
+     * depth: a flat top, and at each end a [shoulder] that eases down to the glass with no corner at
+     * either end of it — so the bump meets the edge as if it had grown out of it.
+     */
+    fun profile(u: Float, shoulder: Float): Float {
+        val a = abs(u)
+        if (a >= 1f) return 0f
+        val s = shoulder.coerceIn(0.05f, 1f)
+        val edge = 1f - a
+        if (edge >= s) return 1f
+        return smootherstep(edge / s)
+    }
+
+    /** Ken Perlin's smootherstep: 0 to 1 with no slope and no change of slope at either end. */
+    fun smootherstep(t: Float): Float {
+        val x = t.coerceIn(0f, 1f)
+        return x * x * x * (x * (x * 6f - 15f) + 10f)
+    }
+
+    // ---- the motion ---------------------------------------------------------------------------------------
+
+    /** A value on a spring, moved towards a target a frame at a time by [stepSpring]. */
+    class Spring(var value: Float = 0f, var velocity: Float = 0f) {
+        fun snapTo(v: Float) {
+            value = v
+            velocity = 0f
+        }
+
+        /** Whether it has come to rest at [target]. */
+        fun isSettled(target: Float, epsilon: Float = 0.0015f): Boolean =
+            abs(value - target) < epsilon && abs(velocity) < epsilon * 8f
+    }
+
+    /**
+     * Moves [spring] [dt] seconds towards [target], in small fixed steps so a dropped frame does not
+     * change the shape of the motion — only how much of it is skipped.
+     */
+    fun stepSpring(spring: Spring, target: Float, stiffness: Float, damping: Float, dt: Float) {
+        var left = dt.coerceIn(0f, MAX_FRAME_S)
+        val k = stiffness.coerceAtLeast(1f)
+        val c = 2f * damping.coerceAtLeast(0f) * sqrt(k)
+        while (left > 0f) {
+            val h = minOf(left, SUBSTEP_S)
+            val accel = -k * (spring.value - target) - c * spring.velocity
+            spring.velocity += accel * h
+            spring.value += spring.velocity * h
+            left -= h
+        }
+    }
+
+    private const val SUBSTEP_S = 1f / 240f
+
+    /** The longest step a frame is allowed to take: past it the animation slows rather than jumps. */
+    const val MAX_FRAME_S = 1f / 20f
+
+    /**
+     * A press, as a pulse over time: up fast, then down — 0 before it and after [lengthS].
+     * Used by the styles that squash, flicker or throb at each press.
+     */
+    fun pulse(sinceS: Float, lengthS: Float = PRESS_S): Float {
+        if (sinceS < 0f || sinceS >= lengthS) return 0f
+        val t = sinceS / lengthS
+        // A quick attack in the first fifth, then a release that eases out to exactly nothing.
+        if (t < 0.2f) return t / 0.2f
+        val r = (t - 0.2f) / 0.8f
+        val floor = exp(-4f)
+        return ((exp(-4f * r) - floor) / (1f - floor)).coerceIn(0f, 1f)
+    }
+
+    /** How long a press's pulse lasts, in seconds. */
+    const val PRESS_S = 0.42f
+
+    /** Two quick throbs and a rest: the heartbeat style's pulse at [sinceS] after a press. */
+    fun heartbeat(sinceS: Float): Float {
+        if (sinceS < 0f || sinceS > 0.9f) return 0f
+        val first = pulse(sinceS, 0.32f)
+        val second = pulse(sinceS - 0.26f, 0.4f) * 0.75f
+        return maxOf(first, second)
+    }
+
+    /** A wobble that dies away: the jelly style's jiggle, -1..1, [sinceS] after a press. */
+    fun wobble(sinceS: Float, hz: Float = 5.2f, decay: Float = 4.2f): Float {
+        if (sinceS < 0f) return 0f
+        return (sin(2.0 * PI * hz * sinceS).toFloat()) * exp(-decay * sinceS)
+    }
+
+    // ---- where it goes ------------------------------------------------------------------------------
+
+    /**
+     * How long the window is along the edge for a bump [lengthPx] long: room for the bump to grow,
+     * lean and overshoot, and for ripples to spread, in pixels.
+     */
+    fun windowSpan(style: String, lengthPx: Float, density: Float): Int {
+        val factor = when (sanitizeStyle(style)) {
+            STYLE_RIPPLE, STYLE_SPARKLE -> 2.1f
+            STYLE_ELASTIC, STYLE_JELLY -> 1.8f
+            else -> 1.55f
+        }
+        return (lengthPx * factor + 24f * density).roundToInt()
+    }
+
+    /**
+     * How far into the screen the window reaches for a bump [depthPx] deep: the style's own reach,
+     * and room for the number beside it when that is shown, in pixels.
+     */
+    fun windowReach(style: String, depthPx: Float, density: Float, showPercent: Boolean): Int {
+        val styleReach = depthPx * spec(style).reach + 8f * density
+        val numberReach = if (showPercent) depthPx * 1.3f + 64f * density else 0f
+        return maxOf(styleReach, numberReach).roundToInt()
+    }
+
+    /** The screen edge the buttons are on, after the screen has turned. */
+    enum class Edge { LEFT, TOP, RIGHT, BOTTOM }
+
+    /**
+     * Where the window for a bump goes on the screen, and where the bump is inside it.
+     *
+     * @param edge which screen edge the buttons are on now.
+     * @param x the window's left, in screen pixels.
+     * @param y the window's top, in screen pixels.
+     * @param width the window's width.
+     * @param height the window's height.
+     * @param centre where the bump's middle is along the edge, inside the window, in the bump's own
+     *   upright terms: from the end nearer the top of the phone.
+     * @param span how long the window is along the edge, in the same terms.
+     * @param flipped whether the bump's upright "towards the bottom of the phone" runs backwards
+     *   along the window — the phone upside down, or turned so its top is to the right.
+     */
+    data class Placement(
+        val edge: Edge,
+        val x: Int,
+        val y: Int,
+        val width: Int,
+        val height: Int,
+        val centre: Float,
+        val span: Int,
+        val reach: Int,
+        val flipped: Boolean,
+    )
+
+    /**
+     * Places a bump for buttons on the [left] or right of an upright phone, centred [along] that
+     * side (0 at the top, 1 at the bottom), on a screen [screenWidth] by [screenHeight] that has been
+     * turned [turns] quarter turns from upright — the same turning HandlerGeometry.dynamicEdge uses,
+     * measured on a phone, so the bump lands where a bar that follows the phone would.
+     *
+     * @param span the window's length along the edge, room for the bump and its overshoot.
+     * @param reach the window's depth into the screen.
+     */
+    fun placement(
+        left: Boolean,
+        along: Float,
+        turns: Int,
+        screenWidth: Int,
+        screenHeight: Int,
+        span: Int,
+        reach: Int,
+    ): Placement {
+        val t = Math.floorMod(turns, 4)
+        // The same mapping as HandlerGeometry.dynamicEdge, kept here so this file stays on its own.
+        val edge = when (t) {
+            1 -> if (left) Edge.BOTTOM else Edge.TOP
+            2 -> if (left) Edge.RIGHT else Edge.LEFT
+            3 -> if (left) Edge.TOP else Edge.BOTTOM
+            else -> if (left) Edge.LEFT else Edge.RIGHT
+        }
+        // Distance along the screen edge, from its top or left end.
+        val alongScreen = if (t >= 2) 1f - along.coerceIn(0f, 1f) else along.coerceIn(0f, 1f)
+        // "Towards the bottom of the phone" runs backwards along the screen edge from a half turn.
+        val flipped = t >= 2
+        val horizontal = edge == Edge.TOP || edge == Edge.BOTTOM
+        val edgeLength = if (horizontal) screenWidth else screenHeight
+        val crossLength = if (horizontal) screenHeight else screenWidth
+        val win = span.coerceIn(1, edgeLength.coerceAtLeast(1))
+        val depth = reach.coerceIn(1, crossLength.coerceAtLeast(1))
+        val centreScreen = alongScreen * edgeLength
+        val start = (centreScreen - win / 2f).roundToInt().coerceIn(0, (edgeLength - win).coerceAtLeast(0))
+        // Where the middle is inside the window, along the screen edge, then in upright terms.
+        val inWindow = centreScreen - start
+        val centre = if (flipped) win - inWindow else inWindow
+        return when (edge) {
+            Edge.LEFT -> Placement(edge, 0, start, depth, win, centre, win, depth, flipped)
+            Edge.RIGHT -> Placement(edge, screenWidth - depth, start, depth, win, centre, win, depth, flipped)
+            Edge.TOP -> Placement(edge, start, 0, win, depth, centre, win, depth, flipped)
+            Edge.BOTTOM -> Placement(edge, start, screenHeight - depth, win, depth, centre, win, depth, flipped)
+        }
+    }
+
+    /**
+     * Maps a point in the bump's upright terms — [inward] from the glass, [down] along the edge
+     * towards the bottom of the phone, inside a window placed by [p] — to the window's own pixels.
+     */
+    fun toWindow(p: Placement, inward: Float, down: Float): Pair<Float, Float> {
+        val along = if (p.flipped) p.span - down else down
+        return when (p.edge) {
+            Edge.LEFT -> inward to along
+            Edge.RIGHT -> (p.width - inward) to along
+            Edge.TOP -> along to inward
+            Edge.BOTTOM -> along to (p.height - inward)
+        }
+    }
+
+    // ---- the level -----------------------------------------------------------------------------------------
+
+    /** An index on a stream as the 0..1 the level bar fills to. */
+    fun levelOf(index: Int, minIndex: Int, maxIndex: Int): Float {
+        val span = (maxIndex - minIndex).coerceAtLeast(1)
+        return ((index - minIndex).toFloat() / span).coerceIn(0f, 1f)
+    }
+}
