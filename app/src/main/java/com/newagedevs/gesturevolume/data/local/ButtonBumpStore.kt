@@ -4,13 +4,28 @@ import android.content.SharedPreferences
 import com.newagedevs.gesturevolume.utils.ButtonBump
 
 /**
- * The button animation's settings: whether it plays, which style, where the buttons are, and how it
- * looks. Same preferences file as everything else, its own object, like [QuickSliderStore].
+ * The button animation's settings: whether it plays, which style, where each physical button is,
+ * whether the volume slider grows out of the press, and how it looks. Same preferences file as
+ * everything else, its own object, like [QuickSliderStore].
  *
  * Every getter clamps or sanitises on read, for the reason the rest of the file gives: `allowBackup`
  * means a value written by another build can arrive from a cloud restore.
  */
 class ButtonBumpStore(private val prefs: SharedPreferences) {
+
+    /**
+     * A physical button the glass answers. Each has a place of its own on the frame, because they
+     * are not where one another are: volume up above volume down, and the power button wherever the
+     * maker put it — often on the other side.
+     */
+    enum class Button(internal val key: String) {
+        VOLUME_UP("Up"),
+        VOLUME_DOWN("Down"),
+        POWER("Power"),
+    }
+
+    /** Where one button is on an upright phone: its side, its middle along that side, its length. */
+    data class Place(val left: Boolean, val position: Float, val lengthDp: Float)
 
     companion object {
         const val SIDE_LEFT = "left"
@@ -22,19 +37,22 @@ class ButtonBumpStore(private val prefs: SharedPreferences) {
         val HAPTICS: List<String> = listOf(HAPTIC_OFF, HAPTIC_LIGHT, HAPTIC_STRONG)
 
         /**
-         * Where most phones keep their volume buttons: on the right, about a third of the way down.
-         * The screen offers to line it up with the user's own.
+         * Where most phones keep their buttons, held upright: on the right, the volume rocker about
+         * a quarter to a third of the way down and the power button just under it. The screen
+         * offers to line each one up with the user's own.
          */
-        const val DEFAULT_SIDE = SIDE_RIGHT
-        const val DEFAULT_POSITION = 0.3f
+        fun defaultPlace(button: Button): Place = when (button) {
+            Button.VOLUME_UP -> Place(left = false, position = 0.27f, lengthDp = 52f)
+            Button.VOLUME_DOWN -> Place(left = false, position = 0.36f, lengthDp = 52f)
+            Button.POWER -> Place(left = false, position = 0.47f, lengthDp = 48f)
+        }
 
-        const val MIN_LENGTH = 80f
-        const val MAX_LENGTH = 300f
-        const val DEFAULT_LENGTH = 170f
+        const val MIN_LENGTH = 24f
+        const val MAX_LENGTH = 220f
 
-        const val MIN_DEPTH = 10f
+        const val MIN_DEPTH = 8f
         const val MAX_DEPTH = 44f
-        const val DEFAULT_DEPTH = 20f
+        const val DEFAULT_DEPTH = 18f
 
         const val MIN_HOLD_MS = 500
         const val MAX_HOLD_MS = 4000
@@ -46,13 +64,13 @@ class ButtonBumpStore(private val prefs: SharedPreferences) {
         const val DEFAULT_COLOR = 0xFF000000.toInt()
         const val DEFAULT_ACCENT = 0xFFFFFFFF.toInt()
 
-        /** The colours the bump's body is offered in: the glass's black first. */
+        /** The colours the press is offered in: the glass's black first. */
         val BODY_COLORS: List<Int> = listOf(
             0xFF000000.toInt(), 0xFF1C1C22.toInt(), 0xFF0B1A3A.toInt(), 0xFF2A0F3D.toInt(),
             0xFF06302A.toInt(), 0xFF3A0A12.toInt(), 0xFFF2F2F5.toInt(),
         )
 
-        /** The colours the level is offered in. */
+        /** The colours the level and the glows are offered in. */
         val ACCENT_COLORS: List<Int> = listOf(
             0xFFFFFFFF.toInt(), 0xFFFFD60A.toInt(), 0xFF30D158.toInt(), 0xFF64D2FF.toInt(),
             0xFFBF5AF2.toInt(), 0xFFFF375F.toInt(), 0xFFFF9F0A.toInt(),
@@ -60,25 +78,31 @@ class ButtonBumpStore(private val prefs: SharedPreferences) {
 
         private const val ENABLED = "bumpEnabled"
         private const val STYLE = "bumpStyle"
-        private const val SIDE = "bumpSide"
-        private const val POSITION = "bumpPosition"
-        private const val LENGTH = "bumpLengthDp"
+        private const val SIDE_PREFIX = "bumpSide"
+        private const val POSITION_PREFIX = "bumpPosition"
+        private const val LENGTH_PREFIX = "bumpLengthDp"
         private const val DEPTH = "bumpDepthDp"
         private const val COLOR = "bumpColor"
         private const val ACCENT = "bumpAccent"
+        private const val SHOW_SLIDER = "bumpShowSlider"
         private const val SHOW_LEVEL = "bumpShowLevel"
         private const val SHOW_PERCENT = "bumpShowPercent"
         private const val HAPTIC = "bumpHaptic"
         private const val HOLD_MS = "bumpHoldMs"
         private const val SPEED = "bumpSpeed"
+        private const val POWER_MENU = "bumpPowerMenu"
+        private const val POWER_WAKE = "bumpPowerWake"
     }
 
-    /** Everything the overlay and the previews draw from, read in one go. */
+    /**
+     * Everything the overlay and the previews draw from, read in one go: the look, and the place of
+     * the one button being pressed.
+     */
     data class Settings(
         val style: String = ButtonBump.DEFAULT_STYLE,
-        val left: Boolean = DEFAULT_SIDE == SIDE_LEFT,
-        val position: Float = DEFAULT_POSITION,
-        val lengthDp: Float = DEFAULT_LENGTH,
+        val left: Boolean = false,
+        val position: Float = 0.3f,
+        val lengthDp: Float = 52f,
         val depthDp: Float = DEFAULT_DEPTH,
         val color: Int = DEFAULT_COLOR,
         val accent: Int = DEFAULT_ACCENT,
@@ -90,48 +114,93 @@ class ButtonBumpStore(private val prefs: SharedPreferences) {
     )
 
     /**
-     * The settings as they stand, with the style the user may actually have: a Pro style without
-     * Pro plays as the default. See [ButtonBump.effectiveStyle].
+     * The settings as they stand, placed at [button].
+     *
+     * With the volume slider on, the press itself shows no level and no number: the slider that
+     * grows out of it shows both, and saying it twice side by side would be noise.
      */
-    fun settings(pro: Boolean): Settings = Settings(
-        style = ButtonBump.effectiveStyle(getStyle(), pro),
-        left = getSide() == SIDE_LEFT,
-        position = getPosition(),
-        lengthDp = getLengthDp(),
-        depthDp = getDepthDp(),
-        color = getColor(),
-        accent = getAccent(),
-        showLevel = getShowLevel(),
-        showPercent = getShowPercent(),
-        haptic = getHaptic(),
-        holdMs = getHoldMs(),
-        speed = getSpeed(),
-    )
+    fun settings(button: Button): Settings {
+        val place = getPlace(button)
+        val slider = getShowSlider() && button != Button.POWER
+        return Settings(
+            style = getStyle(),
+            left = place.left,
+            position = place.position,
+            lengthDp = place.lengthDp,
+            depthDp = getDepthDp(),
+            color = getColor(),
+            accent = getAccent(),
+            showLevel = getShowLevel() && !slider && button != Button.POWER,
+            showPercent = getShowPercent() && !slider && button != Button.POWER,
+            haptic = getHaptic(),
+            holdMs = getHoldMs(),
+            speed = getSpeed(),
+        )
+    }
 
-    /** Whether the volume buttons play the animation. Off until the user turns it on. */
+    /** Whether the buttons play the animation. Off until the user turns it on. */
     fun isEnabled(): Boolean = prefs.getBoolean(ENABLED, false)
     fun setEnabled(value: Boolean) = prefs.edit().putBoolean(ENABLED, value).apply()
 
-    /** The style chosen, which may be a Pro one: see [settings] for the one that plays. */
+    /** How the glass answers a press. Every style is free; Pro takes the ads away and nothing else. */
     fun getStyle(): String = ButtonBump.sanitizeStyle(prefs.getString(STYLE, ButtonBump.DEFAULT_STYLE))
     fun setStyle(value: String) = prefs.edit().putString(STYLE, ButtonBump.sanitizeStyle(value)).apply()
 
-    /** Which side of the phone, held upright, the volume buttons are on. */
-    fun getSide(): String = when (prefs.getString(SIDE, DEFAULT_SIDE)) {
-        SIDE_LEFT -> SIDE_LEFT
-        else -> SIDE_RIGHT
+    // ---- where each button is ------------------------------------------------------------------
+
+    fun getPlace(button: Button): Place {
+        val fallback = defaultPlace(button)
+        val side = prefs.getString(SIDE_PREFIX + button.key, null)
+        return Place(
+            left = if (side == null) fallback.left else side == SIDE_LEFT,
+            position = prefs.getFloat(POSITION_PREFIX + button.key, fallback.position).coerceIn(0f, 1f),
+            lengthDp = prefs.getFloat(LENGTH_PREFIX + button.key, fallback.lengthDp).coerceIn(MIN_LENGTH, MAX_LENGTH),
+        )
     }
-    fun setSide(value: String) = prefs.edit().putString(SIDE, if (value == SIDE_LEFT) SIDE_LEFT else SIDE_RIGHT).apply()
 
-    /** Where the middle of the buttons is along that side, 0 at the top of the phone and 1 at the bottom. */
-    fun getPosition(): Float = prefs.getFloat(POSITION, DEFAULT_POSITION).coerceIn(0f, 1f)
-    fun setPosition(value: Float) = prefs.edit().putFloat(POSITION, value.coerceIn(0f, 1f)).apply()
+    fun setSide(button: Button, left: Boolean) =
+        prefs.edit().putString(SIDE_PREFIX + button.key, if (left) SIDE_LEFT else SIDE_RIGHT).apply()
 
-    /** How long the bump is along the edge, in dp. */
-    fun getLengthDp(): Float = prefs.getFloat(LENGTH, DEFAULT_LENGTH).coerceIn(MIN_LENGTH, MAX_LENGTH)
-    fun setLengthDp(value: Float) = prefs.edit().putFloat(LENGTH, value.coerceIn(MIN_LENGTH, MAX_LENGTH)).apply()
+    fun setPosition(button: Button, value: Float) =
+        prefs.edit().putFloat(POSITION_PREFIX + button.key, value.coerceIn(0f, 1f)).apply()
 
-    /** How far it stands into the screen, in dp. */
+    fun setLengthDp(button: Button, value: Float) =
+        prefs.edit().putFloat(LENGTH_PREFIX + button.key, value.coerceIn(MIN_LENGTH, MAX_LENGTH)).apply()
+
+    /** Every button back where most phones have it. */
+    fun resetPlaces() {
+        val edit = prefs.edit()
+        Button.entries.forEach { b ->
+            edit.remove(SIDE_PREFIX + b.key)
+            edit.remove(POSITION_PREFIX + b.key)
+            edit.remove(LENGTH_PREFIX + b.key)
+        }
+        edit.apply()
+    }
+
+    // ---- what plays ------------------------------------------------------------------------------
+
+    /**
+     * Whether the volume slider grows out of a volume press — the Quick panel, with its own look
+     * and fill — as it does on a phone whose glass answers its buttons. On by default.
+     */
+    fun getShowSlider(): Boolean = prefs.getBoolean(SHOW_SLIDER, true)
+    fun setShowSlider(value: Boolean) = prefs.edit().putBoolean(SHOW_SLIDER, value).apply()
+
+    /** Whether holding the power button, when it brings up the power menu, plays the press. */
+    fun getPowerMenu(): Boolean = prefs.getBoolean(POWER_MENU, true)
+    fun setPowerMenu(value: Boolean) = prefs.edit().putBoolean(POWER_MENU, value).apply()
+
+    /**
+     * Whether waking the screen plays the press at the power button. Off by default: the screen
+     * also wakes for a notification or a lift, which nothing tells apart from a press.
+     */
+    fun getPowerWake(): Boolean = prefs.getBoolean(POWER_WAKE, false)
+    fun setPowerWake(value: Boolean) = prefs.edit().putBoolean(POWER_WAKE, value).apply()
+
+    // ---- the look ----------------------------------------------------------------------------------
+
+    /** How far the press stands into the screen, in dp. */
     fun getDepthDp(): Float = prefs.getFloat(DEPTH, DEFAULT_DEPTH).coerceIn(MIN_DEPTH, MAX_DEPTH)
     fun setDepthDp(value: Float) = prefs.edit().putFloat(DEPTH, value.coerceIn(MIN_DEPTH, MAX_DEPTH)).apply()
 
@@ -141,18 +210,18 @@ class ButtonBumpStore(private val prefs: SharedPreferences) {
     fun getAccent(): Int = prefs.getInt(ACCENT, DEFAULT_ACCENT)
     fun setAccent(value: Int) = prefs.edit().putInt(ACCENT, value).apply()
 
-    /** Whether the level is drawn inside the bump. */
+    /** Whether the level is drawn inside the press, when there is no slider to show it. */
     fun getShowLevel(): Boolean = prefs.getBoolean(SHOW_LEVEL, true)
     fun setShowLevel(value: Boolean) = prefs.edit().putBoolean(SHOW_LEVEL, value).apply()
 
-    /** Whether the level is written beside it as a number too. */
+    /** Whether the level is written beside it as a number too, when there is no slider. */
     fun getShowPercent(): Boolean = prefs.getBoolean(SHOW_PERCENT, false)
     fun setShowPercent(value: Boolean) = prefs.edit().putBoolean(SHOW_PERCENT, value).apply()
 
     fun getHaptic(): String = prefs.getString(HAPTIC, HAPTIC_LIGHT).takeIf { it in HAPTICS } ?: HAPTIC_LIGHT
     fun setHaptic(value: String) = prefs.edit().putString(HAPTIC, if (value in HAPTICS) value else HAPTIC_LIGHT).apply()
 
-    /** How long it stays after the last press, in ms. */
+    /** How long the press stays after the last one, in ms. */
     fun getHoldMs(): Int = prefs.getInt(HOLD_MS, DEFAULT_HOLD_MS).coerceIn(MIN_HOLD_MS, MAX_HOLD_MS)
     fun setHoldMs(value: Int) = prefs.edit().putInt(HOLD_MS, value.coerceIn(MIN_HOLD_MS, MAX_HOLD_MS)).apply()
 

@@ -71,23 +71,10 @@ object ButtonBump {
         STYLE_LAVA, STYLE_GLASS, STYLE_SPECTRUM, STYLE_HEARTBEAT, STYLE_ELASTIC,
     )
 
-    /** The ones that come with the app; the rest are Pro. */
-    val FREE_STYLES: Set<String> = setOf(STYLE_LIQUID, STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY)
-
     const val DEFAULT_STYLE = STYLE_LIQUID
 
+    /** Every style is everyone's: Pro takes the ads away and nothing else. */
     fun sanitizeStyle(id: String?): String = if (id in STYLES) id!! else DEFAULT_STYLE
-
-    fun isPremium(id: String): Boolean = id !in FREE_STYLES
-
-    /**
-     * The style that actually plays: the chosen one, unless it is a Pro style and Pro is not active
-     * — a refund, or a backup restored onto a phone without it — when it is the default.
-     */
-    fun effectiveStyle(chosen: String?, pro: Boolean): String {
-        val style = sanitizeStyle(chosen)
-        return if (isPremium(style) && !pro) DEFAULT_STYLE else style
-    }
 
     // ---- how each style moves -----------------------------------------------------------------------
 

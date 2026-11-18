@@ -776,6 +776,7 @@ fun QuickSliderScreen(
                     selected = { it == stepSound },
                     onClick = { stepSound = it; store.setStepSound(it) }
                 )
+                if (stepSound != QuickSliderStore.SOUND_OFF) StepSoundPicker(store, stepSound)
                 Sep()
                 Label(stringResource(R.string.slider_volume_key))
                 Hint(stringResource(R.string.slider_volume_key_desc))

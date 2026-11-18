@@ -9,32 +9,26 @@ import org.junit.Test
 /**
  * The button animation is drawn from these numbers, and every one of them is a promise about
  * something on the glass: that the bump meets the edge without a corner, that it lands beside the
- * physical buttons in every rotation, that a Pro style never plays without Pro, and that the spring
- * settles rather than ringing for ever.
+ * physical buttons in every rotation, that every style can be chosen, and that the spring settles
+ * rather than ringing for ever.
  */
 class ButtonBumpTest {
 
     // ---- styles ------------------------------------------------------------------------------------
 
     @Test
-    fun `every style has a spec and the free ones are the first four`() {
+    fun `every style has a spec, and every one of them is there to choose`() {
         ButtonBump.STYLES.forEach { ButtonBump.spec(it) }
-        assertEquals(ButtonBump.FREE_STYLES, ButtonBump.STYLES.take(4).toSet())
-        assertFalse(ButtonBump.isPremium(ButtonBump.STYLE_LIQUID))
-        assertTrue(ButtonBump.isPremium(ButtonBump.STYLE_NEON))
+        // Every animation is free: a stored style is used as it is, whichever it is.
+        ButtonBump.STYLES.forEach { assertEquals(it, ButtonBump.sanitizeStyle(it)) }
+        assertEquals(ButtonBump.STYLES.size, ButtonBump.STYLES.toSet().size)
+        assertTrue(ButtonBump.DEFAULT_STYLE in ButtonBump.STYLES)
     }
 
     @Test
     fun `an unknown style is the default`() {
         assertEquals(ButtonBump.DEFAULT_STYLE, ButtonBump.sanitizeStyle("comet"))
         assertEquals(ButtonBump.DEFAULT_STYLE, ButtonBump.sanitizeStyle(null))
-    }
-
-    @Test
-    fun `a Pro style plays only with Pro`() {
-        assertEquals(ButtonBump.STYLE_AURORA, ButtonBump.effectiveStyle(ButtonBump.STYLE_AURORA, pro = true))
-        assertEquals(ButtonBump.DEFAULT_STYLE, ButtonBump.effectiveStyle(ButtonBump.STYLE_AURORA, pro = false))
-        assertEquals(ButtonBump.STYLE_JELLY, ButtonBump.effectiveStyle(ButtonBump.STYLE_JELLY, pro = false))
     }
 
     // ---- the shape ----------------------------------------------------------------------------------

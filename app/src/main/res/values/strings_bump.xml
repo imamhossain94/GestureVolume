@@ -23,13 +23,13 @@
 
     <!-- The button animation -->
     <string name="bump_title">Button animation</string>
-    <string name="bump_card_subtitle">The edge bulges at the volume buttons as you press them</string>
+    <string name="bump_card_subtitle">The screen answers each button you press</string>
     <string name="bump_enable_title">Animate the volume buttons</string>
-    <string name="bump_enable_desc">The edge of the screen bulges out beside the buttons as you press them, with the volume inside it, instead of the system’s slider.</string>
+    <string name="bump_enable_desc">The edge of the screen dents beside the button you press, and the volume slider grows out of it, instead of the system’s slider.</string>
     <string name="bump_needs_accessibility">Needs the accessibility service to answer the buttons at once and hide the system’s slider. Without it, the animation follows the system’s slider a moment later.</string>
     <string name="bump_needs_service">Turn on Gesture Volume on the home screen for the buttons to play it.</string>
     <string name="bump_style_title">Animation</string>
-    <string name="bump_style_desc">Four come with the app and the rest are Pro. Tap one to see it on the phone above.</string>
+    <string name="bump_style_desc">Every animation is free. Tap one to see it on the phone above.</string>
     <string name="bump_style_liquid">Liquid</string>
     <string name="bump_style_capsule">Capsule</string>
     <string name="bump_style_line">Line</string>
@@ -43,13 +43,8 @@
     <string name="bump_style_spectrum">Spectrum</string>
     <string name="bump_style_heartbeat">Heartbeat</string>
     <string name="bump_style_elastic">Elastic</string>
-    <string name="bump_pro_badge">PRO</string>
-    <string name="bump_pro_title">A Pro animation</string>
-    <string name="bump_pro_message">%1$s is one of the Pro animations. Upgrade once to use every one of them, and the app is free of ads too.</string>
-    <string name="bump_pro_upgrade">Upgrade</string>
-    <string name="bump_pro_not_now">Not now</string>
     <string name="bump_place_title">Where your buttons are</string>
-    <string name="bump_place_desc">Line the bump up with your phone’s volume buttons. Press one with this screen open to see where it lands.</string>
+    <string name="bump_place_desc">Pick a button, then slide until the press on your screen sits right beside it. With this screen open, pressing the real button shows where it lands too.</string>
     <string name="bump_side">Side</string>
     <string name="bump_side_left">Left</string>
     <string name="bump_side_right">Right</string>
@@ -79,4 +74,41 @@
     <string name="bump_value_percent">%1$d%%</string>
     <string name="bump_preview_up">Volume up</string>
     <string name="bump_preview_down">Volume down</string>
+    <string name="bump_slider_title">Volume slider</string>
+    <string name="bump_slider_desc">The Quick slider, with its look, its fill animation and its step sound.</string>
+    <string name="bump_show_slider">Grow the volume slider out of the press</string>
+    <string name="bump_show_slider_desc">Press a volume button and the slider opens out of the edge beside it, then follows every press.</string>
+    <string name="bump_open_quick_slider">Quick slider settings</string>
+    <string name="bump_button_power">Power</string>
+    <string name="bump_reset_places">Reset</string>
+    <string name="bump_power_title">Power button</string>
+    <string name="bump_power_desc">Android doesn’t tell apps when the power button is pressed, so this plays when it opens the power menu or wakes the screen.</string>
+    <string name="bump_power_menu">When it opens the power menu</string>
+    <string name="bump_power_menu_desc">Hold the power button and the edge answers beside it as the menu comes up.</string>
+    <string name="bump_power_wake">When it wakes the screen</string>
+    <string name="bump_power_wake_desc">Also plays when something else wakes the screen, such as a notification.</string>
+    <string name="bump_power_needs_accessibility">The power button needs the accessibility service: it is how the app sees the power menu and the screen waking.</string>
+    <string name="bump_level_with_slider">While the volume slider is on, the slider shows the volume instead.</string>
+
+    <!-- The Quick slider's step sound -->
+    <string name="step_sound_choose">Sound</string>
+    <string name="step_sound_choose_desc">Tap one to hear it, or pick a sound from your phone. Short sounds work best.</string>
+    <string name="step_sound_unreadable">That sound can’t be used. Try another, or a short audio file.</string>
+    <string name="step_sound_phone_sounds">Phone sounds</string>
+    <string name="step_sound_audio_file">Audio file</string>
+    <string name="step_sound_from_phone">From your phone</string>
+    <string name="step_sound_tick">Tick</string>
+    <string name="step_sound_tap">Tap</string>
+    <string name="step_sound_dial">Dial</string>
+    <string name="step_sound_keys">Keyboard</string>
+    <string name="step_sound_wood">Wood block</string>
+    <string name="step_sound_pop">Pop</string>
+    <string name="step_sound_drop">Water drop</string>
+    <string name="step_sound_bubble">Bubble</string>
+    <string name="step_sound_snap">Snap</string>
+    <string name="step_sound_thud">Thud</string>
+    <string name="step_sound_blip">Blip</string>
+    <string name="step_sound_marimba">Marimba</string>
+    <string name="step_sound_glass">Glass</string>
+    <string name="step_sound_chime">Chime</string>
 </resources>

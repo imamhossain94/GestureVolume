@@ -106,7 +106,13 @@ class GestureAccessibilityService : AccessibilityService() {
     private var screenReceiverRegistered = false
 
     private val screenReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) = refreshLockScreenBar()
+        override fun onReceive(context: Context?, intent: Intent?) {
+            refreshLockScreenBar()
+            // The button animation at the power button, as it wakes the screen, if asked for.
+            if (intent?.action == Intent.ACTION_SCREEN_ON) {
+                OverlayRuntime.activeController?.onPowerButton(longPress = false)
+            }
+        }
     }
 
     /**
@@ -192,7 +198,9 @@ class GestureAccessibilityService : AccessibilityService() {
         val watchApps = watchingApps()
         // Also, for the moment a Volume down press is waiting, whether a window of the system's own
         // comes up: see [setWatchingSystemWindows].
-        val watchWindows = watchApps || watchingSystemWindows
+        // And, while the button animation answers the power button, whether the power menu has come
+        // up: nothing hands an app the power key itself. See [isPowerMenu].
+        val watchWindows = watchApps || watchingSystemWindows || watchingPowerMenu()
         if (watchWindows) types = types or AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
         info.eventTypes = types
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
@@ -238,9 +246,33 @@ class GestureAccessibilityService : AccessibilityService() {
         if (watchingSystemWindows && event.packageName?.toString() == SYSTEM_UI_PACKAGE) {
             OverlayRuntime.activeController?.onSystemWindowShown()
         }
+        if (watchingPowerMenu() && isPowerMenu(event)) {
+            val now = android.os.SystemClock.uptimeMillis()
+            // The menu raises a few window changes as it builds; it is one press of the button.
+            if (now - lastPowerMenuMs > POWER_MENU_GAP_MS) {
+                lastPowerMenuMs = now
+                OverlayRuntime.activeController?.onPowerButton(longPress = true)
+            }
+        }
         foregroundAppOf(event)?.let { app ->
             OverlayRuntime.activeController?.onForegroundApp(app)
         }
+    }
+
+    private var lastPowerMenuMs = 0L
+
+    /** Whether the button animation wants to know when the power menu comes up. */
+    private fun watchingPowerMenu(): Boolean =
+        preference.bump.isEnabled() && preference.bump.getPowerMenu()
+
+    /**
+     * Whether a window that came up is the power menu: the one a long press of the power button
+     * brings up. Known by its package and class alone — "global actions" is Android's own name for
+     * it, which the makers that move it keep — and nothing in the window is read.
+     */
+    private fun isPowerMenu(event: AccessibilityEvent): Boolean {
+        val name = "${event.packageName}/${event.className}".lowercase()
+        return POWER_MENU_HINTS.any { it in name }
     }
 
     /** Whether each window class seen is an activity, remembered so each is asked about once. */
@@ -275,6 +307,15 @@ class GestureAccessibilityService : AccessibilityService() {
     private companion object {
         /** Where the screenshot's own window comes from. */
         const val SYSTEM_UI_PACKAGE = "com.android.systemui"
+
+        /**
+         * What the power menu's window is called, lower-cased, on the phones that were looked at:
+         * `globalactions` in Android's own and in Samsung's and Xiaomi's, which keep the name.
+         */
+        val POWER_MENU_HINTS = listOf("globalaction", "powermenu", "shutdownmenu")
+
+        /** The least time between two power menus, so one menu building itself counts once. */
+        const val POWER_MENU_GAP_MS = 1500L
     }
 
     /**

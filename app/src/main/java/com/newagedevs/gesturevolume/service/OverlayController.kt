@@ -42,6 +42,7 @@ import androidx.core.content.ContextCompat
 import com.newagedevs.gesturevolume.BuildConfig
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.AppGestureStore
+import com.newagedevs.gesturevolume.data.local.ButtonBumpStore
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.overlay.ContextMenuOverlay
@@ -261,6 +262,9 @@ class OverlayController(
 
         /** The gap left between a bar stepped round the camera and the camera's cutout. */
         private const val CUTOUT_GAP_DP = 4f
+
+        /** How long the dent has the glass to itself before the slider grows out of it. */
+        private const val BUTTON_SLIDER_DELAY_MS = 90L
 
         /** Where a taken Volume down stands. See [onVolumeKey]. */
         private const val WAIT_NONE = 0
@@ -1075,26 +1079,115 @@ class OverlayController(
     /** Whether the bump is out beside the buttons now. */
     private fun bumpIsOut(): Boolean = bumpOverlay?.isOut() == true
 
-    /** Plays the bump for a press that left [res] at [index]. */
+    /** The button a volume step came from. */
+    private fun volumeButton(direction: Int): ButtonBumpStore.Button =
+        if (direction > 0) ButtonBumpStore.Button.VOLUME_UP else ButtonBumpStore.Button.VOLUME_DOWN
+
+    /**
+     * Answers a volume key that left [res] at [index]: the glass dents at the very button that was
+     * pressed — volume up where volume up is, volume down where it is — and, with the slider on, the
+     * Quick panel grows out of that dent, the way the glass of a phone that answers its buttons opens
+     * into its volume slider. Held, the key keeps it out and keeps it stepping.
+     */
     private fun showBump(res: VolumeController.Resolution, direction: Int, index: Int, atLimit: Boolean) {
-        val overlay = bumpOverlay() ?: return
-        overlay.press(
-            settings = preference.bump.settings(preference.isProFeatureActivated()),
-            direction = direction,
-            level = ButtonBump.levelOf(index, res.minIndex, res.maxIndex),
-            atLimit = atLimit,
-        )
+        val button = volumeButton(direction)
+        val level = ButtonBump.levelOf(index, res.minIndex, res.maxIndex)
+        pressButton(button, direction, level, atLimit)
+        if (preference.bump.getShowSlider() && panelCanShowNow()) showButtonSlider(res, button)
+        if (!atLimit) playKeyStepSound(res, level)
     }
 
     /**
-     * Plays the bump on the glass, as the settings screen asks: a preview of the style just picked
-     * and a check that it sits beside the buttons. The level is the real one.
+     * Whether a panel opened now would be seen. The keys play the press on the lock screen too, whose
+     * windows are drawn over it by the accessibility service; a panel in an ordinary overlay window
+     * would open beneath the lock screen, unseen, so there it is the press alone.
      */
-    fun previewBump(direction: Int) {
+    private fun panelCanShowNow(): Boolean {
+        if (windowType == WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY) return true
+        val keyguard = context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
+        return keyguard?.isKeyguardLocked != true
+    }
+
+    /** The dent alone, at [button]. */
+    private fun pressButton(button: ButtonBumpStore.Button, direction: Int, level: Float, atLimit: Boolean) {
+        val overlay = bumpOverlay() ?: return
+        overlay.press(preference.bump.settings(button), direction, level, atLimit)
+    }
+
+    /**
+     * The Quick panel out of the press at [button]: grown on the first press, kept up and followed
+     * on the ones after it, and put away a moment after the last.
+     *
+     * Opened a beat after the dent, so the press reads first and the panel visibly comes out of it:
+     * frame zero of the panel is the dent itself — see [buttonAnchor].
+     */
+    private fun showButtonSlider(res: VolumeController.Resolution, button: ButtonBumpStore.Button) {
+        val holdMs = preference.bump.getHoldMs().toLong()
+        if (sliderView != null && sliderResolution?.stream == res.stream) {
+            followVolumeOnPanel(null)
+            if (panelTouchActive) {
+                // A finger on it: it closes when the finger is done, not under it.
+            } else if (!sliderFromBar) {
+                mainHandler.removeCallbacks(sliderCloseRunnable)
+                mainHandler.postDelayed(sliderCloseRunnable, holdMs + PANEL_OPEN_MS)
+            } else if (sliderCommitted) {
+                mainHandler.removeCallbacks(sliderCloseRunnable)
+                restartQuickSliderIdleTimeout()
+            }
+            return
+        }
+        // A panel showing something else, brightness, makes way for the one the key is about.
+        if (sliderView != null) hideQuickSlider()
+        val anchor = buttonAnchor(button) ?: return
+        if (!openQuickSliderWindow(QuickSliderStore.TARGET_ADAPTIVE, anchor)) return
+        val view = sliderView
+        mainHandler.postDelayed({ if (sliderView === view) animateQuickSliderOpen() }, BUTTON_SLIDER_DELAY_MS)
+        mainHandler.removeCallbacks(sliderCloseRunnable)
+        mainHandler.postDelayed(sliderCloseRunnable, holdMs + PANEL_OPEN_MS + BUTTON_SLIDER_DELAY_MS)
+    }
+
+    /**
+     * The Quick panel's tick for a step the keys made, with the sound the Quick panel is set to: the
+     * slider that grows out of the press is that panel, and it sounds like it.
+     */
+    private fun playKeyStepSound(res: VolumeController.Resolution, level: Float) {
+        val settings = preference.slider
+        val mode = settings.getStepSound()
+        if (mode == QuickSliderStore.SOUND_OFF) return
+        stepSound.prepare(
+            if (mode == QuickSliderStore.SOUND_ADAPTIVE) {
+                com.newagedevs.gesturevolume.utils.StepSound.usageFor(QuickSliderStore.TARGET_ADAPTIVE, res.stream)
+            } else {
+                android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION
+            },
+            settings.getStepSoundSource(),
+        )
+        stepSound.play(level, adaptive = mode == QuickSliderStore.SOUND_ADAPTIVE)
+    }
+
+    /**
+     * Plays the press on the glass at [button], as the settings screen asks while its place is
+     * being set: so the dent can be lined up with the real button under the user's thumb. Only the
+     * dent — the slider is for real presses. The level is the real one.
+     */
+    fun previewBump(button: ButtonBumpStore.Button) {
         if (destroyed) return
         val res = adaptiveVolume()
-        val index = volume.level(res) ?: return
-        showBump(res, direction, index, atLimit = false)
+        val level = volume.level(res)?.let { ButtonBump.levelOf(it, res.minIndex, res.maxIndex) } ?: 0.5f
+        pressButton(button, if (button == ButtonBumpStore.Button.VOLUME_DOWN) -1 else 1, level, atLimit = false)
+    }
+
+    /**
+     * The power button, as the accessibility service sees it: held until the power menu came up
+     * ([longPress]), or pressed to wake the screen. Nothing hands an app the power key itself, so
+     * these two moments are what there is; each plays only when the user has asked for it.
+     */
+    fun onPowerButton(longPress: Boolean) {
+        if (destroyed || lockScreen) return
+        val store = preference.bump
+        if (!store.isEnabled()) return
+        if (if (longPress) !store.getPowerMenu() else !store.getPowerWake()) return
+        pressButton(ButtonBumpStore.Button.POWER, 1, 0.5f, atLimit = false)
     }
 
     /**
@@ -3075,16 +3168,135 @@ class OverlayController(
     }
 
     /**
-     * Creates the panel's window, collapsed onto the bar and not yet live.
+     * Where a Quick panel grows from, in the bar's frame: the bar itself, or the dent a physical
+     * button has just made in the glass. Everything [openQuickSliderWindow] used to read off the
+     * bar, so the same panel — its fill, its shape, its touch — can grow out of either.
      *
-     * @return false when there is nothing to open — no bar to grow out of, or a target this
+     * [x], [y], [width] and [height] are the anchor's window: for the bar, its widened touch
+     * window; for a button, the band of glass the dent stands in. The shape drawn in it is
+     * [drawnWidthPx] thick, pressed against the screen edge.
+     */
+    private class PanelAnchor(
+        val x: Int,
+        val y: Int,
+        val width: Int,
+        val height: Int,
+        /** Lying along the top or the bottom edge, and which. */
+        val lying: Boolean,
+        val onTop: Boolean,
+        /** Standing on the left edge, for an upright anchor. */
+        val isLeft: Boolean,
+        val drawnWidthPx: Int,
+        /** What the morph starts from: the shape's colour, corners and outline. */
+        val color: Int,
+        val cornerTL: Float,
+        val cornerTR: Float,
+        val cornerBL: Float,
+        val cornerBR: Float,
+        val shape: String,
+        val flare: Float,
+        /** The drawn shape's size in dp, which a panel that follows its shape scales from. */
+        val widthDp: Float,
+        val heightDp: Float,
+        /** Whether this is the bar, which the panel stands in for while it is out. */
+        val fromBar: Boolean,
+    )
+
+    /** The bar, as an anchor, or null when there is no bar on screen. */
+    private fun barAnchor(): PanelAnchor? {
+        val params = handlerParams ?: return null
+        val lying = handlerIsLying()
+        return PanelAnchor(
+            x = params.x,
+            y = params.y,
+            width = params.width,
+            height = params.height,
+            lying = lying,
+            onTop = lying && handlerDressedLying == Gravity.TOP,
+            isLeft = handlerIsLeft(),
+            drawnWidthPx = dpToPx(preference.getHandlerWidthDp()),
+            color = ColorUtils.setAlphaComponent(
+                preference.getHandlerColor(),
+                preference.getHandlerBackgroundAlpha().coerceIn(0, 255)
+            ),
+            cornerTL = preference.getHandlerCornerRadiusTL(),
+            cornerTR = preference.getHandlerCornerRadiusTR(),
+            cornerBL = preference.getHandlerCornerRadiusBL(),
+            cornerBR = preference.getHandlerCornerRadiusBR(),
+            shape = preference.getHandlerShape(),
+            flare = preference.getHandlerShapeFlare(),
+            widthDp = preference.getHandlerWidthDp(),
+            heightDp = preference.getHandlerHeightDp(),
+            fromBar = true,
+        )
+    }
+
+    /**
+     * The dent a press of [button] makes, as an anchor: a pill of the press's colour, as deep as
+     * the press and as long as the button, flush on the glass beside the button wherever the screen
+     * has turned it. The panel grows out of exactly that, the way the glass of a phone that answers
+     * its buttons opens into the volume slider.
+     */
+    private fun buttonAnchor(button: ButtonBumpStore.Button): PanelAnchor? {
+        val currentFrame = frame ?: readFrame()?.also { frame = it } ?: return null
+        val store = preference.bump
+        val place = store.getPlace(button)
+        val density = context.resources.displayMetrics.density
+        val depthDp = store.getDepthDp()
+        val lengthPx = (place.lengthDp * density).roundToInt().coerceAtLeast(1)
+        val depthPx = (depthDp * density).roundToInt().coerceAtLeast(1)
+        val placement = ButtonBump.placement(
+            left = place.left,
+            along = place.position,
+            turns = HandlerGeometry.quarterTurns(currentFrame),
+            screenWidth = currentFrame.displayWidth,
+            screenHeight = currentFrame.displayHeight,
+            span = lengthPx,
+            reach = depthPx,
+        )
+        val corner = depthDp / 2f
+        return PanelAnchor(
+            // The placement is in the screen's own pixels; the bar's frame starts at its insets,
+            // which are nothing from Android 11 and the status bar below it.
+            x = placement.x - currentFrame.insetLeft,
+            y = placement.y - currentFrame.insetTop,
+            width = placement.width,
+            height = placement.height,
+            lying = placement.edge == ButtonBump.Edge.TOP || placement.edge == ButtonBump.Edge.BOTTOM,
+            onTop = placement.edge == ButtonBump.Edge.TOP,
+            isLeft = placement.edge == ButtonBump.Edge.LEFT,
+            drawnWidthPx = depthPx,
+            color = store.getColor(),
+            cornerTL = corner,
+            cornerTR = corner,
+            cornerBL = corner,
+            cornerBR = corner,
+            shape = HandlerShape.ROUNDED,
+            flare = HandlerShape.DEFAULT_FLARE,
+            widthDp = depthDp,
+            heightDp = place.lengthDp,
+            fromBar = false,
+        )
+    }
+
+    /** Whether the open panel grew out of the bar, and so stands in for it. See [PanelAnchor.fromBar]. */
+    private var sliderFromBar = true
+
+    /** Which way the open panel's screen edge faces, in its own upright terms. */
+    private var sliderEdgeLeft = false
+
+    /**
+     * Creates the panel's window, collapsed onto its anchor — the bar, unless [anchorOverride]
+     * names a button's dent — and not yet live.
+     *
+     * @return false when there is nothing to open — nothing to grow out of, or a target this
      *   device will not let the app write.
      */
-    private fun openQuickSliderWindow(targetOverride: String? = null): Boolean {
+    private fun openQuickSliderWindow(targetOverride: String? = null, anchorOverride: PanelAnchor? = null): Boolean {
         if (destroyed) return false
         val wm = windowManager ?: return false
-        val barParams = handlerParams ?: return false
-        val currentFrame = frame ?: return false
+        val barParams = anchorOverride ?: barAnchor() ?: return false
+        val currentFrame = frame ?: readFrame()?.also { frame = it } ?: return false
         // A retraction still running is left alone rather than cancelled: cancelling it would
         // freeze a view part-way out with nothing left to finish or remove it. It owns its own
         // teardown, and it checks whether this new window has taken its place before restoring
@@ -3149,7 +3361,8 @@ class OverlayController(
                     com.newagedevs.gesturevolume.utils.StepSound.usageFor(sliderTarget, sliderResolution?.stream)
                 } else {
                     android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION
-                }
+                },
+                settings.getStepSoundSource(),
             )
         }
 
@@ -3161,12 +3374,12 @@ class OverlayController(
         //
         // A bar lying along the top or bottom edge opens the panel lying along that edge too: the
         // same upright panel, drawn through a quarter turn — see QuickSliderView.setTurned.
-        val barLying = handlerIsLying()
+        val barLying = barParams.lying
         val barThicknessPx = if (barLying) barParams.height else barParams.width
         val barLengthPx = if (barLying) barParams.width else barParams.height
-        val drawnWidthPx = dpToPx(preference.getHandlerWidthDp()).coerceIn(1, barThicknessPx)
+        val drawnWidthPx = barParams.drawnWidthPx.coerceIn(1, barThicknessPx)
         // Lying down: which edge, and where in its window the bar is drawn, pressed against it.
-        val panelOnTop = barLying && handlerDressedLying == Gravity.TOP
+        val panelOnTop = barLying && barParams.onTop
         val drawnTopPx = if (panelOnTop) barParams.y else barParams.y + barParams.height - drawnWidthPx
 
         // Floored at the bar's own size so the collapsed rect fits inside the window, and at
@@ -3195,7 +3408,7 @@ class OverlayController(
         val lengthPx = dpToPx(settings.getLengthDp())
             .coerceAtMost(edgeSpanPx)
             .coerceAtLeast(barLengthPx.coerceAtMost(edgeSpanPx))
-        val isLeft = handlerIsLeft()
+        val isLeft = barParams.isLeft
 
         // Absolute screen coordinates of the drawn bar, from the window and which way it faces.
         val drawnLeft = if (isLeft) barParams.x else barParams.x + barParams.width - drawnWidthPx
@@ -3215,17 +3428,14 @@ class OverlayController(
         //
         // Read live, every time, so a change on either screen reaches the panel without the
         // service being restarted.
-        val handlerColor = ColorUtils.setAlphaComponent(
-            preference.getHandlerColor(),
-            preference.getHandlerBackgroundAlpha().coerceIn(0, 255)
-        )
-        // Where the morph starts: the bar, exactly as it is drawn.
-        val barCornerTL = preference.getHandlerCornerRadiusTL()
-        val barCornerTR = preference.getHandlerCornerRadiusTR()
-        val barCornerBL = preference.getHandlerCornerRadiusBL()
-        val barCornerBR = preference.getHandlerCornerRadiusBR()
-        val barShape = preference.getHandlerShape()
-        val barFlare = preference.getHandlerShapeFlare()
+        val handlerColor = barParams.color
+        // Where the morph starts: the bar, exactly as it is drawn, or the press's dent.
+        val barCornerTL = barParams.cornerTL
+        val barCornerTR = barParams.cornerTR
+        val barCornerBL = barParams.cornerBL
+        val barCornerBR = barParams.cornerBR
+        val barShape = barParams.shape
+        val barFlare = barParams.flare
 
         /*
          * Where it arrives.
@@ -3238,7 +3448,7 @@ class OverlayController(
          */
         val followBar = settings.getFollowHandlerShape()
         val density = context.resources.displayMetrics.density
-        val barWidthForShape = preference.getHandlerWidthDp().coerceAtLeast(1f)
+        val barWidthForShape = barParams.widthDp.coerceAtLeast(1f)
         val widthRatio = if (drawnWidthPx > 0) {
             (panelThicknessPx.toFloat() / drawnWidthPx).coerceIn(0.25f, 4f)
         } else {
@@ -3267,7 +3477,7 @@ class OverlayController(
              * capped, because past a half the two sweeps meet and there is no straight section
              * left to be a panel.
              */
-            val barSweepDp = barFlare * preference.getHandlerHeightDp()
+            val barSweepDp = barFlare * barParams.heightDp
             val wanted = (barSweepDp / barWidthForShape) * (panelThicknessPx / density)
             val character = wanted / (lengthPx / density).coerceAtLeast(1f)
             // The smaller of the three, and the ceiling is the load-bearing one. A bar four times
@@ -3483,6 +3693,8 @@ class OverlayController(
         }
         sliderView = view
         sliderBackdrop = backdrop
+        sliderFromBar = barParams.fromBar
+        sliderEdgeLeft = panelEdgeLeft
         // A volume panel follows the rocker from the moment it exists. A brightness one has
         // nothing to follow: its resolution is null, and the follower stops on its first run.
         mainHandler.removeCallbacks(volumeFollower)
@@ -3520,7 +3732,8 @@ class OverlayController(
 
     /** Takes the bar out of sight under [view], if [view] is still the panel standing in for it. */
     private fun hideBarUnder(view: QuickSliderView) {
-        if (sliderView !== view) return
+        // A panel grown out of a button's press stands in for nothing: the bar stays where it is.
+        if (sliderView !== view || !sliderFromBar) return
         handlerView?.let { bar ->
             bar.animate().cancel()
             bar.alpha = 0f
@@ -3538,7 +3751,7 @@ class OverlayController(
         sliderCollapse?.cancel()
         view.playEntrance(
             preference.getPanelAnimation(),
-            quickPanelEdgeLeft(),
+            sliderEdgeLeft,
             preference.getPanelAnimationSpeed(),
         )
         val animator = ValueAnimator.ofFloat(0f, 1f).apply {
@@ -3725,6 +3938,9 @@ class OverlayController(
         mainHandler.removeCallbacks(sliderIdleRunnable)
         val view = sliderView ?: return
         panelTouchActive = false
+        // Whether there is a bar to hand back to when it has gone, captured now for the same
+        // reason as the glass below.
+        val fromBar = sliderFromBar
         // This panel's glass goes with it. Taken now rather than when the retraction ends,
         // because a second panel can open inside the retraction, and the field is that one's.
         val backdrop = sliderBackdrop
@@ -3767,7 +3983,7 @@ class OverlayController(
                     // would draw it alongside its own replacement until the new gesture ended.
                     // And not while the Deck is up: it keeps the bar out of sight until it closes.
                     val bar = handlerView
-                    if (sliderView == null && deckHost == null && bar != null) {
+                    if (fromBar && sliderView == null && deckHost == null && bar != null) {
                         bar.animate().cancel()
                         bar.alpha = 1f
                         // Left over the bar a moment rather than taken down on this same frame.

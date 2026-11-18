@@ -266,7 +266,7 @@ fun MainNavigation(
                     ButtonFeedbackScreen(
                         viewModel = viewModel,
                         onNavigateBack = { navController.navigateBackOnce() },
-                        onOpenUpgrade = { navController.navigate("upgrade") },
+                        onOpenQuickSlider = { navController.navigate("quick_slider") },
                         onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
                     )
                 }

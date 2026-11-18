@@ -99,6 +99,8 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val FILL_COLOR = "sliderFillColor"
         private const val HAPTIC = "sliderHaptic"
         private const val STEP_SOUND = "sliderStepSound"
+        private const val STEP_SOUND_SOURCE = "sliderStepSoundSource"
+        private const val STEP_SOUND_DEVICE_NAME = "sliderStepSoundDeviceName"
         private const val CONTENT_COLORS_ON = "sliderContentColorsOn"
         private const val VALUE_COLOR = "sliderValueColor"
         private const val ICON_COLOR = "sliderIconColor"
@@ -420,6 +422,31 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
     }
 
     fun setStepSound(value: String) = prefs.edit { putString(STEP_SOUND, value) }
+
+    /**
+     * Which sound each step makes: one of the app's own, by its id, or one the user picked from the
+     * phone. See [com.newagedevs.gesturevolume.utils.StepSoundLibrary] for the format; a value that
+     * names nothing this build has reads back as the app's original tick.
+     */
+    fun getStepSoundSource(): String =
+        com.newagedevs.gesturevolume.utils.StepSoundLibrary.sanitize(prefs.getString(STEP_SOUND_SOURCE, null))
+
+    /** One of the app's own sounds. Forgets any sound from the phone that was chosen before it. */
+    fun setStepSoundSource(id: String) = prefs.edit {
+        putString(STEP_SOUND_SOURCE, com.newagedevs.gesturevolume.utils.StepSoundLibrary.sanitize(id))
+    }
+
+    /**
+     * A sound from the phone, by its content [uri], and the [name] it is shown under. The name is
+     * kept beside it because asking for it again needs the very access that may since have gone.
+     */
+    fun setStepSoundDevice(uri: String, name: String?) = prefs.edit {
+        putString(STEP_SOUND_SOURCE, com.newagedevs.gesturevolume.utils.StepSoundLibrary.device(uri))
+        putString(STEP_SOUND_DEVICE_NAME, name)
+    }
+
+    /** The name of the sound from the phone, when one is chosen and it had one. */
+    fun getStepSoundDeviceName(): String? = prefs.getString(STEP_SOUND_DEVICE_NAME, null)
 
     /**
      * Whether the number and the icon wear colours of the user's own.
