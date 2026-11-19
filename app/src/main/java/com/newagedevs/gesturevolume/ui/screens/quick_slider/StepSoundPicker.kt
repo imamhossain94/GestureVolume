@@ -223,7 +223,6 @@ fun stepSoundLabel(id: String): Int = when (id) {
     "chime" -> R.string.step_sound_chime
     "twinkle" -> R.string.step_sound_twinkle
     "firework" -> R.string.step_sound_firework
-    "boom" -> R.string.step_sound_boom
     "rumble" -> R.string.step_sound_rumble
     "launch" -> R.string.step_sound_launch
     "swish" -> R.string.step_sound_swish

@@ -15,6 +15,14 @@ import kotlin.math.pow
  * character is drawn in so it stands the right way up on the screen.
  */
 
+/**
+ * [this] held between [low] and [high], or their middle when the range is inside out: for bounds
+ * worked out from the size of the view, which in a gallery's small tile can come out with the low
+ * one above the high one — where Kotlin's own coerceIn throws, and took the screen down with it.
+ */
+internal fun Float.clampIn(low: Float, high: Float): Float =
+    if (low <= high) coerceIn(low, high) else (low + high) / 2f
+
 /** 0 to 1, fast then slow. */
 internal fun easeOut(t: Float): Float = 1f - (1f - t.coerceIn(0f, 1f)).pow(3)
 

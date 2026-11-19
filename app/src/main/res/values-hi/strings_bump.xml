@@ -39,7 +39,6 @@
     <string name="bump_style_fireworks">आतिशबाज़ी</string>
     <string name="bump_style_solar">सौरमंडल</string>
     <string name="bump_style_bubbles">बुलबुले</string>
-    <string name="bump_style_atom">परमाणु बम</string>
     <string name="bump_style_volcano">ज्वालामुखी</string>
     <string name="bump_style_wind">हवा</string>
     <string name="bump_style_ninja">निंजा ब्लेड</string>
@@ -121,7 +120,6 @@
     <string name="step_sound_chime">घंटी</string>
     <string name="step_sound_twinkle">टिमटिमाहट</string>
     <string name="step_sound_firework">आतिशबाज़ी</string>
-    <string name="step_sound_boom">धमाका</string>
     <string name="step_sound_rumble">गड़गड़ाहट</string>
     <string name="step_sound_launch">लॉन्च</string>
     <string name="step_sound_swish">सरसराहट</string>

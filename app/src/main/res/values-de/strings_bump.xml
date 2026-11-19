@@ -39,7 +39,6 @@
     <string name="bump_style_fireworks">Feuerwerk</string>
     <string name="bump_style_solar">Sonnensystem</string>
     <string name="bump_style_bubbles">Seifenblasen</string>
-    <string name="bump_style_atom">Atombombe</string>
     <string name="bump_style_volcano">Vulkan</string>
     <string name="bump_style_wind">Wind</string>
     <string name="bump_style_ninja">Ninja-Klinge</string>
@@ -121,7 +120,6 @@
     <string name="step_sound_chime">Glockenspiel</string>
     <string name="step_sound_twinkle">Funkeln</string>
     <string name="step_sound_firework">Feuerwerk</string>
-    <string name="step_sound_boom">Bumm</string>
     <string name="step_sound_rumble">Grollen</string>
     <string name="step_sound_launch">Start</string>
     <string name="step_sound_swish">Zischen</string>

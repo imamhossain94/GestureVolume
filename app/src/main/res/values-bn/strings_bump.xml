@@ -39,7 +39,6 @@
     <string name="bump_style_fireworks">আতশবাজি</string>
     <string name="bump_style_solar">সৌরজগৎ</string>
     <string name="bump_style_bubbles">বুদবুদ</string>
-    <string name="bump_style_atom">পারমাণবিক বোমা</string>
     <string name="bump_style_volcano">আগ্নেয়গিরি</string>
     <string name="bump_style_wind">বাতাস</string>
     <string name="bump_style_ninja">নিনজার তলোয়ার</string>
@@ -121,7 +120,6 @@
     <string name="step_sound_chime">ঘণ্টাধ্বনি</string>
     <string name="step_sound_twinkle">ঝিকমিক</string>
     <string name="step_sound_firework">আতশবাজি</string>
-    <string name="step_sound_boom">বুম</string>
     <string name="step_sound_rumble">গুমগুম</string>
     <string name="step_sound_launch">উৎক্ষেপণ</string>
     <string name="step_sound_swish">সাঁই</string>

@@ -231,7 +231,7 @@ class ButtonBumpView(context: Context) : View(context) {
      * screen has not changed size, so a press while the water is moving carries on with the same water.
      */
     private fun ensureWater(p: ButtonBump.Placement) {
-        if (width > 0 && height > 0) {
+        if (width > 0 && height > 0 || screenW > 0 && screenH > 0) {
             uprightScreen(waterBounds)
         } else {
             waterBounds.set(0f, 0f, p.reach.toFloat(), p.span.toFloat())
@@ -400,6 +400,34 @@ class ButtonBumpView(context: Context) : View(context) {
     }
 
     /** Draws the placement's window at [x], [y] in this view. See [originX]. */
+    /**
+     * The size of the window this view fills, from whoever made it: known before the window has been
+     * laid out, which the first press of all comes before. Without it that press sized everything
+     * to the bump's own small strip instead of the screen.
+     */
+    fun setScreenSize(w: Int, h: Int) {
+        if (w == screenW && h == screenH) return
+        screenW = w
+        screenH = h
+        if (settings.style == ButtonBump.STYLE_WATER) ensureWater(placement)
+    }
+
+    private var screenW = 0
+    private var screenH = 0
+
+    /** How big this view is: laid out, or as its window will be, or as its bump's own window. */
+    private fun viewWidth(): Float = when {
+        width > 0 -> width.toFloat()
+        screenW > 0 -> screenW.toFloat()
+        else -> placement.width.toFloat()
+    }
+
+    private fun viewHeight(): Float = when {
+        height > 0 -> height.toFloat()
+        screenH > 0 -> screenH.toFloat()
+        else -> placement.height.toFloat()
+    }
+
     fun setOrigin(x: Int, y: Int) {
         originX = x.toFloat()
         originY = y.toFloat()
@@ -434,6 +462,8 @@ class ButtonBumpView(context: Context) : View(context) {
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        // Where the camera hole is, now there is a window to ask.
+        readCutout()
         // Taken off the glass and put back — raised above a panel — it carries on where it was.
         if (!still && (isOut() || waterAlive || effectAlive)) start()
     }
@@ -645,8 +675,8 @@ class ButtonBumpView(context: Context) : View(context) {
         // screen as the user sees it — its top, or the camera hole.
         scene.fromWindow.set(toUpright)
         scene.fromWindow.preTranslate(-originX, -originY)
-        scene.windowWidth = if (width > 0) width.toFloat() else placement.width.toFloat()
-        scene.windowHeight = if (height > 0) height.toFloat() else placement.height.toFloat()
+        scene.windowWidth = viewWidth()
+        scene.windowHeight = viewHeight()
         if (cutoutWindowX.isNaN()) {
             scene.cutoutX = Float.NaN
             scene.cutoutY = Float.NaN
@@ -664,8 +694,8 @@ class ButtonBumpView(context: Context) : View(context) {
 
     /** The whole of this view in upright terms, into [out]: the screen, when the view is the screen. */
     private fun uprightScreen(out: RectF) {
-        val w = if (width > 0) width.toFloat() else placement.width.toFloat()
-        val h = if (height > 0) height.toFloat() else placement.height.toFloat()
+        val w = viewWidth()
+        val h = viewHeight()
         corners[0] = -originX; corners[1] = -originY
         corners[2] = w - originX; corners[3] = -originY
         corners[4] = -originX; corners[5] = h - originY
@@ -1221,8 +1251,8 @@ class ButtonBumpView(context: Context) : View(context) {
         val text = "$percent%"
         val w = textPaint.measureText(text) + 14f * density
         val h = 22f * density
-        val x = point[0].coerceIn(w / 2f, width - w / 2f)
-        val y = point[1].coerceIn(h / 2f, height - h / 2f)
+        val x = point[0].clampIn(w / 2f, width - w / 2f)
+        val y = point[1].clampIn(h / 2f, height - h / 2f)
         val alpha = ((p - 0.25f) / 0.5f).coerceIn(0f, 1f)
         rect.set(x - w / 2f, y - h / 2f, x + w / 2f, y + h / 2f)
         pillPaint.color = withAlpha(0xFF101012.toInt(), 0.82f * alpha)

@@ -39,7 +39,6 @@
     <string name="bump_style_fireworks">ألعاب نارية</string>
     <string name="bump_style_solar">المجموعة الشمسية</string>
     <string name="bump_style_bubbles">فقاعات</string>
-    <string name="bump_style_atom">قنبلة ذرية</string>
     <string name="bump_style_volcano">بركان</string>
     <string name="bump_style_wind">رياح</string>
     <string name="bump_style_ninja">نصل النينجا</string>
@@ -121,7 +120,6 @@
     <string name="step_sound_chime">جرس</string>
     <string name="step_sound_twinkle">وميض</string>
     <string name="step_sound_firework">ألعاب نارية</string>
-    <string name="step_sound_boom">بوم</string>
     <string name="step_sound_rumble">هدير</string>
     <string name="step_sound_launch">انطلاق</string>
     <string name="step_sound_swish">صفير السيف</string>

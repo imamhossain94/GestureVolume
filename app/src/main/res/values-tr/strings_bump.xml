@@ -39,7 +39,6 @@
     <string name="bump_style_fireworks">Havai fişek</string>
     <string name="bump_style_solar">Güneş sistemi</string>
     <string name="bump_style_bubbles">Baloncuklar</string>
-    <string name="bump_style_atom">Atom bombası</string>
     <string name="bump_style_volcano">Yanardağ</string>
     <string name="bump_style_wind">Rüzgâr</string>
     <string name="bump_style_ninja">Ninja kılıcı</string>
@@ -121,7 +120,6 @@
     <string name="step_sound_chime">Çan</string>
     <string name="step_sound_twinkle">Parıltı</string>
     <string name="step_sound_firework">Havai fişek</string>
-    <string name="step_sound_boom">Bum</string>
     <string name="step_sound_rumble">Gürleme</string>
     <string name="step_sound_launch">Fırlatma</string>
     <string name="step_sound_swish">Vınlama</string>

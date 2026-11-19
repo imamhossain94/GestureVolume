@@ -99,6 +99,7 @@ class ButtonBumpOverlay(
         val existing = view
         val existingParams = params
         if (existing != null && existingParams != null) {
+            existing.setScreenSize(width, height)
             existing.configure(settings, placement)
             existing.setOrigin(placement.x, placement.y)
             if (existingParams.width != width || existingParams.height != height) {
@@ -110,6 +111,7 @@ class ButtonBumpOverlay(
         }
 
         val bump = ButtonBumpView(context).apply {
+            setScreenSize(width, height)
             configure(settings, placement)
             setOrigin(placement.x, placement.y)
             listener = ButtonBumpView.Listener { removeNow() }

@@ -173,7 +173,6 @@ class StepSound(private val context: Context) {
             "chime" -> R.raw.step_chime
             "twinkle" -> R.raw.step_twinkle
             "firework" -> R.raw.step_firework
-            "boom" -> R.raw.step_boom
             "rumble" -> R.raw.step_rumble
             "launch" -> R.raw.step_launch
             "swish" -> R.raw.step_swish

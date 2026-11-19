@@ -39,7 +39,6 @@
     <string name="bump_style_fireworks">Pháo hoa</string>
     <string name="bump_style_solar">Hệ Mặt Trời</string>
     <string name="bump_style_bubbles">Bong bóng</string>
-    <string name="bump_style_atom">Bom nguyên tử</string>
     <string name="bump_style_volcano">Núi lửa</string>
     <string name="bump_style_wind">Gió</string>
     <string name="bump_style_ninja">Lưỡi kiếm ninja</string>
@@ -121,7 +120,6 @@
     <string name="step_sound_chime">Chuông gió</string>
     <string name="step_sound_twinkle">Lấp lánh</string>
     <string name="step_sound_firework">Pháo hoa</string>
-    <string name="step_sound_boom">Bùm</string>
     <string name="step_sound_rumble">Ầm ầm</string>
     <string name="step_sound_launch">Phóng</string>
     <string name="step_sound_swish">Vút</string>

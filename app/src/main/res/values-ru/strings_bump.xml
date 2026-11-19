@@ -39,7 +39,6 @@
     <string name="bump_style_fireworks">Фейерверк</string>
     <string name="bump_style_solar">Солнечная система</string>
     <string name="bump_style_bubbles">Пузыри</string>
-    <string name="bump_style_atom">Атомный взрыв</string>
     <string name="bump_style_volcano">Вулкан</string>
     <string name="bump_style_wind">Ветер</string>
     <string name="bump_style_ninja">Клинок ниндзя</string>
@@ -121,7 +120,6 @@
     <string name="step_sound_chime">Колокольчик</string>
     <string name="step_sound_twinkle">Мерцание</string>
     <string name="step_sound_firework">Салют</string>
-    <string name="step_sound_boom">Бум</string>
     <string name="step_sound_rumble">Грохот</string>
     <string name="step_sound_launch">Старт</string>
     <string name="step_sound_swish">Свист</string>

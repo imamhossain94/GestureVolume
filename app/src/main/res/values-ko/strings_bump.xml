@@ -39,7 +39,6 @@
     <string name="bump_style_fireworks">불꽃놀이</string>
     <string name="bump_style_solar">태양계</string>
     <string name="bump_style_bubbles">비눗방울</string>
-    <string name="bump_style_atom">원자폭탄</string>
     <string name="bump_style_volcano">화산</string>
     <string name="bump_style_wind">바람</string>
     <string name="bump_style_ninja">닌자의 칼날</string>
@@ -121,7 +120,6 @@
     <string name="step_sound_chime">차임</string>
     <string name="step_sound_twinkle">반짝</string>
     <string name="step_sound_firework">불꽃놀이</string>
-    <string name="step_sound_boom">쾅</string>
     <string name="step_sound_rumble">우르릉</string>
     <string name="step_sound_launch">발사</string>
     <string name="step_sound_swish">휙</string>

@@ -39,7 +39,6 @@
     <string name="bump_style_fireworks">烟花</string>
     <string name="bump_style_solar">太阳系</string>
     <string name="bump_style_bubbles">泡泡</string>
-    <string name="bump_style_atom">原子弹</string>
     <string name="bump_style_volcano">火山</string>
     <string name="bump_style_wind">风</string>
     <string name="bump_style_ninja">忍者之刃</string>
@@ -121,7 +120,6 @@
     <string name="step_sound_chime">风铃</string>
     <string name="step_sound_twinkle">闪烁</string>
     <string name="step_sound_firework">烟花</string>
-    <string name="step_sound_boom">轰</string>
     <string name="step_sound_rumble">隆隆</string>
     <string name="step_sound_launch">发射</string>
     <string name="step_sound_swish">嗖</string>

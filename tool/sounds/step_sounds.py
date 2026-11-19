@@ -281,15 +281,6 @@ def firework():
     return mix(pop, *crackles)
 
 
-def boom():
-    """A deep boom and its rumble, saturated so a phone's speaker can play some of it."""
-    d = 0.85
-    low = np.sin(glide(130, 42, 0.12, d)) * env(d, 0.004, 0.28)
-    rumble = biquad(biquad(noise(d, 23), "lp", 380), "lp", 380) * env(d, 0.01, 0.35) * 3.0
-    crack = biquad(noise(0.03, 24), "hp", 1500) * env(0.03, 0.0005, 0.008) * 0.6
-    return np.tanh(mix(low, rumble, crack) * 2.2) / np.tanh(2.2)
-
-
 def rumble():
     """A volcano's rumble, with a fizz of steam at its end."""
     d = 0.75
@@ -542,7 +533,6 @@ SOUNDS = {
     # The button animations' own sounds.
     "twinkle": (twinkle, -3.0),
     "firework": (firework, 0.0),
-    "boom": (boom, -2.0),
     "rumble": (rumble, -3.0),
     "launch": (launch, -3.0),
     "swish": (swish, -2.0),

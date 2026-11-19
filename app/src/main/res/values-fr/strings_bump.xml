@@ -39,7 +39,6 @@
     <string name="bump_style_fireworks">Feu d’artifice</string>
     <string name="bump_style_solar">Système solaire</string>
     <string name="bump_style_bubbles">Bulles</string>
-    <string name="bump_style_atom">Bombe atomique</string>
     <string name="bump_style_volcano">Volcan</string>
     <string name="bump_style_wind">Vent</string>
     <string name="bump_style_ninja">Lame de ninja</string>
@@ -121,7 +120,6 @@
     <string name="step_sound_chime">Carillon</string>
     <string name="step_sound_twinkle">Scintillement</string>
     <string name="step_sound_firework">Feu d’artifice</string>
-    <string name="step_sound_boom">Boum</string>
     <string name="step_sound_rumble">Grondement</string>
     <string name="step_sound_launch">Décollage</string>
     <string name="step_sound_swish">Fouet</string>

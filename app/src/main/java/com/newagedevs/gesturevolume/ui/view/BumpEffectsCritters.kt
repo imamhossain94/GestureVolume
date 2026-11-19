@@ -738,7 +738,7 @@ internal class SpiderEffect(random: Random) : BumpEffect(random) {
         // On whichever side of the window the buttons are.
         val left = point[0] < w / 2f
         fromX = if (left) -r * 2f else w + r * 2f
-        fromY = point[1].coerceIn(r * 6f, scene.windowHeight - r * 3f)
+        fromY = point[1].clampIn(r * 6f, scene.windowHeight - r * 3f)
         toX = if (left) r * 2.2f else w - r * 2.2f
         toY = fromY
         x = fromX
@@ -834,7 +834,7 @@ internal class SpiderEffect(random: Random) : BumpEffect(random) {
                 x += vx * dt
                 y += vy * dt
                 if (x < r * 1.6f || x > w - r * 1.6f) {
-                    x = x.coerceIn(r * 1.6f, w - r * 1.6f)
+                    x = x.clampIn(r * 1.6f, w - r * 1.6f)
                     state = State.CLING
                     age = 0f
                     swings++

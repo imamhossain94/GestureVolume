@@ -1013,7 +1013,6 @@ private fun styleLabel(style: String): Int = when (style) {
     ButtonBump.STYLE_FIREWORKS -> R.string.bump_style_fireworks
     ButtonBump.STYLE_SOLAR -> R.string.bump_style_solar
     ButtonBump.STYLE_BUBBLES -> R.string.bump_style_bubbles
-    ButtonBump.STYLE_ATOM -> R.string.bump_style_atom
     ButtonBump.STYLE_VOLCANO -> R.string.bump_style_volcano
     ButtonBump.STYLE_WIND -> R.string.bump_style_wind
     ButtonBump.STYLE_NINJA -> R.string.bump_style_ninja

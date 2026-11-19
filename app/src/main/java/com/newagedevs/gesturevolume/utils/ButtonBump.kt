@@ -90,12 +90,6 @@ object ButtonBump {
 
 
 
-    /**
-     * A mushroom cloud rising from the button: a flash over the whole screen, a shockwave that runs
-     * across all of it, and fire rolling up a stem into a wide cap that cools to smoke.
-     */
-    const val STYLE_ATOM = "atom"
-
     /** A volcano in place of the bump, erupting lava bombs and ash at each press. */
     const val STYLE_VOLCANO = "volcano"
 
@@ -152,7 +146,7 @@ object ButtonBump {
 
     /** In the order they are offered. */
     val STYLES: List<String> = listOf(
-        STYLE_WATER, STYLE_LIQUID, STYLE_BLOSSOM, STYLE_FIREWORKS, STYLE_ATOM, STYLE_VOLCANO,
+        STYLE_WATER, STYLE_LIQUID, STYLE_BLOSSOM, STYLE_FIREWORKS, STYLE_VOLCANO,
         STYLE_ROCKET, STYLE_FISH, STYLE_FROG, STYLE_SPIDER, STYLE_WOODPECKER, STYLE_CAT, STYLE_MONKEY,
         STYLE_BUBBLES, STYLE_SMOKE, STYLE_SPRAY, STYLE_WIND, STYLE_NINJA, STYLE_CRACK, STYLE_UFO, STYLE_BEES, STYLE_SOLAR,
         STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY, STYLE_NEON, STYLE_AURORA, STYLE_RIPPLE, STYLE_SPARKLE,
@@ -208,7 +202,6 @@ object ButtonBump {
         STYLE_FIREWORKS -> Spec(stiffness = 380f, damping = 0.65f, shoulder = 0.4f, reach = 10f, spread = 7.5f)
         STYLE_SOLAR -> Spec(stiffness = 300f, damping = 0.72f, shoulder = 0.5f, reach = 9f, spread = 8.4f)
         STYLE_BUBBLES -> Spec(stiffness = 320f, damping = 0.55f, shoulder = 0.45f, reach = 7f, spread = 6f)
-        STYLE_ATOM -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 7f)
         STYLE_VOLCANO -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
         STYLE_WIND -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6f)
         STYLE_NINJA -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6f)
@@ -355,7 +348,6 @@ object ButtonBump {
         STYLE_LIQUID -> "bubble"
         STYLE_BLOSSOM, STYLE_SPARKLE -> "twinkle"
         STYLE_FIREWORKS -> "firework"
-        STYLE_ATOM -> "boom"
         STYLE_VOLCANO -> "rumble"
         STYLE_ROCKET -> "launch"
         STYLE_CAT -> "meow"

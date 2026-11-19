@@ -90,13 +90,6 @@ internal class BumpScene {
     fun offScreen(x: Float, y: Float, margin: Float): Boolean =
         x < screenLeft - margin || x > screenRight + margin || y < screenTop - margin || y > screenBottom + margin
 
-    /** The screen's longest reach from the button, corner to corner: how far a wave must run to cross all of it. */
-    fun farthest(y: Float): Float {
-        val dx = maxOf(abs(screenLeft), abs(screenRight))
-        val dy = maxOf(abs(screenTop - y), abs(screenBottom - y))
-        return kotlin.math.hypot(dx, dy)
-    }
-
     /**
      * Where the camera hole is, in upright terms, or NaN when the screen has none known: what a
      * spider's line is shot at. See [ButtonBumpView].
@@ -240,7 +233,6 @@ internal object BumpEffects {
         ButtonBump.STYLE_FIREWORKS -> FireworksEffect(random)
         ButtonBump.STYLE_SOLAR -> SolarEffect(random)
         ButtonBump.STYLE_BUBBLES -> BubblesEffect(random)
-        ButtonBump.STYLE_ATOM -> AtomEffect(random)
         ButtonBump.STYLE_VOLCANO -> VolcanoEffect(random)
         ButtonBump.STYLE_WIND -> WindEffect(random)
         ButtonBump.STYLE_NINJA -> NinjaEffect(random)
@@ -279,8 +271,14 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
 
     private val nodes = ArrayList<Node>()
     private val blooms = ArrayList<Bloom>()
-    private var builtFor = 0L
+    private var builtUnit = 0f
+    private var builtAcross = 0f
+    private var builtUpX = 9f
+    private var builtUpY = 9f
     private var length = 1f
+
+    /** The branch's size against its size on a phone: everything on it is drawn to this, petals too. */
+    private var scale = 1f
 
     /** The shake: how far the branch is bent now, and how fast, a damped spring; and the idle sway's clock. */
     private var bend = 0f
@@ -335,18 +333,28 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
 
     override val stillAfterS: Float get() = 0.7f
 
-    /** The branch for this scene: grown again only when the screen's size or way up changes. */
+    /**
+     * The branch for this scene: grown again whenever the screen's size or its way up changes, so the
+     * branch a real press shows is the one the preview shows — the same tree, in proportion to the
+     * screen it is on, whether that is the phone, the preview's phone or a gallery tile.
+     */
     private fun build(scene: BumpScene) {
-        val key = (scene.unit.toBits().toLong() shl 32) xor
-            ((scene.upX * 100f).roundToInt().toLong() shl 16) xor (scene.upY * 100f).roundToInt().toLong()
-        if (key == builtFor && nodes.isNotEmpty()) return
-        builtFor = key
+        val across = (scene.screenRight - maxOf(scene.screenLeft, 0f)).coerceAtLeast(1f)
+        if (nodes.isNotEmpty() && builtUnit == scene.unit && abs(builtAcross - across) < 1f &&
+            abs(builtUpX - scene.upX) < 0.01f && abs(builtUpY - scene.upY) < 0.01f
+        ) return
+        builtUnit = scene.unit
+        builtAcross = across
+        builtUpX = scene.upX
+        builtUpY = scene.upY
         nodes.clear()
         blooms.clear()
         val seeded = Random(SEED)
         fun r(a: Float, b: Float) = a + (b - a) * seeded.nextFloat()
-        val d = scene.density
-        length = minOf(scene.unit * 13f, (scene.screenRight - maxOf(scene.screenLeft, 0f)) * 0.66f)
+        length = minOf(across * 0.64f, scene.unit * 16f)
+        scale = length / (scene.unit * 13f)
+        // Everything drawn to the branch's own size: a dp on a phone, less on a small preview.
+        val d = scene.density * scale
         // Into the screen and up it: a branch reaching in from the side, or up from below.
         var dx = 1f + 0.6f * scene.upX
         var dy = 0.6f * scene.upY
@@ -455,7 +463,8 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
         val b = blooms[random.nextInt(blooms.size)]
         if (b.kind != KIND_FLOWER && random.nextFloat() < 0.7f) return
         val p = petals.spawn() ?: return
-        val d = scene.density
+        // In proportion to the branch, so a petal is the same size against the tree on any screen.
+        val d = scene.density * scale
         p.x = placed[b.node * 2] + b.dx
         p.y = placed[b.node * 2 + 1] + b.dy
         // Flung the way the branch is swinging, then the air takes it.
@@ -491,7 +500,8 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
                 shed(scene, burst = false)
             }
         }
-        val d = scene.density
+        // Falling as far for the tree's size, so they drift down a small preview as they do the phone.
+        val d = scene.density * scale
         val drag = exp(-1.8f * dt)
         val acrossX = -scene.gravityY
         val acrossY = scene.gravityX
@@ -666,7 +676,7 @@ internal class FireworksEffect(random: Random) : BumpEffect(random) {
         r.sx = scene.restDepth * 0.9f
         r.sy = scene.centre + scene.restHalf * rnd(-0.3f, 0.3f)
         r.tx = scene.reach * rnd(0.46f, 0.64f) * (0.7f + 0.3f * scene.power)
-        r.ty = (scene.centre + scene.span * rnd(-0.28f, 0.28f)).coerceIn(scene.span * 0.2f, scene.span * 0.8f)
+        r.ty = (scene.centre + scene.span * rnd(-0.28f, 0.28f)).clampIn(scene.span * 0.2f, scene.span * 0.8f)
         r.x = r.sx
         r.y = r.sy
         r.life = rnd(0.36f, 0.48f)

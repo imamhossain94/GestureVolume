@@ -48,7 +48,6 @@
     <string name="bump_style_fireworks">Fireworks</string>
     <string name="bump_style_solar">Solar system</string>
     <string name="bump_style_bubbles">Bubbles</string>
-    <string name="bump_style_atom">Atom bomb</string>
     <string name="bump_style_volcano">Volcano</string>
     <string name="bump_style_wind">Wind</string>
     <string name="bump_style_ninja">Ninja blade</string>
@@ -132,7 +131,6 @@
     <string name="step_sound_chime">Chime</string>
     <string name="step_sound_twinkle">Twinkle</string>
     <string name="step_sound_firework">Firework</string>
-    <string name="step_sound_boom">Boom</string>
     <string name="step_sound_rumble">Rumble</string>
     <string name="step_sound_launch">Launch</string>
     <string name="step_sound_swish">Swish</string>
