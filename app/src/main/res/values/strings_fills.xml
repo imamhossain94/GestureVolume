@@ -155,4 +155,12 @@
     <string name="glimmer_look_handle">Handle</string>
     <string name="glimmer_look_stops">Stops</string>
     <string name="glimmer_look_plain">Dots only</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">Button looks</string>
+    <string name="button_look">Look</string>
+    <string name="button_look_settings_desc">The button animation’s looks, worn by the Quick slider: filled to the level, and answering every step. The two stay separate — this only changes how the slider looks. The preview above runs it.</string>
+    <string name="button_look_speed">Speed</string>
+    <string name="button_look_bounce">Bounce</string>
+    <string name="button_look_bounce_desc">How much each step makes it move: the wobble, the stretch, the throb, the ripples.</string>
 </resources>

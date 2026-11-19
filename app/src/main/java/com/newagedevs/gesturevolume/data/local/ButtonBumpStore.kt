@@ -5,21 +5,16 @@ import com.newagedevs.gesturevolume.utils.ButtonBump
 
 /**
  * The button animation's settings: whether it plays, which style, where each physical button is,
- * whether the volume slider grows out of the press, and how it looks. Same preferences file as
- * everything else, its own object, like [QuickSliderStore].
+ * and how it looks. Same preferences file as everything else, its own object, like [QuickSliderStore].
+ *
+ * The animation and the Quick slider are two separate things. A press of a button plays the
+ * animation alone, with its own level; the Quick slider is the panel the bar opens, and while the
+ * animation is on it does not answer the volume keys at all.
  *
  * Every getter clamps or sanitises on read, for the reason the rest of the file gives: `allowBackup`
  * means a value written by another build can arrive from a cloud restore.
  */
-class ButtonBumpStore(
-    private val prefs: SharedPreferences,
-    /**
-     * Whether the Quick slider opens on the volume keys: its own setting, on its own screen. When it
-     * does, it grows out of the press, and the press shows no level of its own — the slider shows it.
-     * One setting for one thing, so the two screens can never disagree.
-     */
-    private val sliderOnKeys: () -> Boolean = { false },
-) {
+class ButtonBumpStore(private val prefs: SharedPreferences) {
 
     /**
      * A physical button the glass answers. Each has a place of its own on the frame, because they
@@ -125,14 +120,11 @@ class ButtonBumpStore(
     )
 
     /**
-     * The settings as they stand, placed at [button].
-     *
-     * With the volume slider on, the press itself shows no level and no number: the slider that
-     * grows out of it shows both, and saying it twice side by side would be noise.
+     * The settings as they stand, placed at [button]. The power button has no level to show: it
+     * moves nothing.
      */
     fun settings(button: Button): Settings {
         val place = getPlace(button)
-        val slider = sliderOnKeys() && button != Button.POWER
         return Settings(
             style = getStyle(),
             left = place.left,
@@ -141,8 +133,8 @@ class ButtonBumpStore(
             depthDp = getDepthDp(),
             color = getColor(),
             accent = getAccent(),
-            showLevel = getShowLevel() && !slider && button != Button.POWER,
-            showPercent = getShowPercent() && !slider && button != Button.POWER,
+            showLevel = getShowLevel() && button != Button.POWER,
+            showPercent = getShowPercent() && button != Button.POWER,
             haptic = getHaptic(),
             holdMs = getHoldMs(),
             speed = getSpeed(),

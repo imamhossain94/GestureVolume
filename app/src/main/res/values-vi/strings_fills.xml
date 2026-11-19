@@ -141,4 +141,12 @@
     <string name="surge_trail">Vệt kéo</string>
     <string name="surge_trail_desc">Ánh sáng lan ngược từ đường sáng bao xa trước khi mờ vào bóng tối.</string>
     <string name="surge_rest">Phía trên mức</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">Kiểu nút</string>
+    <string name="button_look">Kiểu</string>
+    <string name="button_look_settings_desc">Các kiểu của hiệu ứng nút, khoác lên thanh trượt nhanh: lấp đầy tới mức âm lượng và phản hồi mỗi bước. Hai tính năng vẫn tách biệt — điều này chỉ đổi giao diện thanh trượt. Bản xem trước ở trên cho thấy.</string>
+    <string name="button_look_speed">Tốc độ</string>
+    <string name="button_look_bounce">Độ nảy</string>
+    <string name="button_look_bounce_desc">Mỗi bước làm nó chuyển động bao nhiêu: rung, giãn, nhịp đập, gợn sóng.</string>
 </resources>

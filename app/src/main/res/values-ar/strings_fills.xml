@@ -141,4 +141,12 @@
     <string name="surge_trail">الأثر</string>
     <string name="surge_trail_desc">إلى أي مدى يمتد الضوء خلف الجبهة قبل أن يتلاشى في الظلام.</string>
     <string name="surge_rest">فوق المستوى</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">مظاهر الأزرار</string>
+    <string name="button_look">المظهر</string>
+    <string name="button_look_settings_desc">مظاهر حركة الأزرار يرتديها المنزلق السريع: تمتلئ حتى المستوى وتستجيب لكل خطوة. يبقى الاثنان منفصلين — هذا يغيّر مظهر المنزلق فقط. المعاينة أعلاه تعرضه.</string>
+    <string name="button_look_speed">السرعة</string>
+    <string name="button_look_bounce">الارتداد</string>
+    <string name="button_look_bounce_desc">مقدار حركته مع كل خطوة: الاهتزاز والتمدد والنبض والتموجات.</string>
 </resources>

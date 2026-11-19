@@ -7,6 +7,7 @@ import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
 import com.newagedevs.gesturevolume.utils.SurgeFill
+import com.newagedevs.gesturevolume.utils.ButtonLookFill
 import com.newagedevs.gesturevolume.utils.LevelFeedback
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.HandlerShape
@@ -128,6 +129,9 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val GLIMMER_SPEED = "sliderGlimmerSpeed"
         private const val GLIMMER_HANDLE = "sliderGlimmerHandle"
         private const val GLIMMER_STOPS = "sliderGlimmerStops"
+        private const val BUTTON_LOOK = "sliderButtonLook"
+        private const val BUTTON_LOOK_SPEED = "sliderButtonLookSpeed"
+        private const val BUTTON_LOOK_BOUNCE = "sliderButtonLookBounce"
         private const val SURGE_LOOK = "sliderSurgeLook"
         private const val SURGE_SPEED = "sliderSurgeSpeed"
         private const val SURGE_SIZE = "sliderSurgeSize"
@@ -597,6 +601,28 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
             putFloat(GLIMMER_SPEED, s.speed)
             putBoolean(GLIMMER_HANDLE, s.handle)
             putBoolean(GLIMMER_STOPS, s.stops)
+        }
+    }
+
+    /**
+     * The Button looks fill's own settings: which look, how fast it moves and how hard it answers a
+     * step. Kept while another fill is chosen, like the glimmer's.
+     */
+    fun getButtonLookStyle(): ButtonLookFill.Style {
+        val d = ButtonLookFill.Style()
+        return ButtonLookFill.Style(
+            look = prefs.getString(BUTTON_LOOK, d.look) ?: d.look,
+            speed = prefs.getFloat(BUTTON_LOOK_SPEED, d.speed),
+            bounce = prefs.getFloat(BUTTON_LOOK_BOUNCE, d.bounce),
+        ).sanitized()
+    }
+
+    fun setButtonLookStyle(value: ButtonLookFill.Style) {
+        val s = value.sanitized()
+        prefs.edit {
+            putString(BUTTON_LOOK, s.look)
+            putFloat(BUTTON_LOOK_SPEED, s.speed)
+            putFloat(BUTTON_LOOK_BOUNCE, s.bounce)
         }
     }
 

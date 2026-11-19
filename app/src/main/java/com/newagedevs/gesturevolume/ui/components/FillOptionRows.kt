@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.ui.screens.handler_action.SettingSwitchItem
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SliderControl
+import com.newagedevs.gesturevolume.utils.ButtonLookFill
 import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
 import com.newagedevs.gesturevolume.utils.LevelFeedback
@@ -86,6 +87,20 @@ fun SurgeLookRow(style: SurgeFill.Style, look: FillTileLook, onChange: (SurgeFil
             label = { stringResource(surgeLookLabel(it)) },
             tileWidth = FILL_TILE_WIDTH,
         ) { id, _ -> FillTile(SliderFill.SURGE, look.copy(surgeStyle = style.copy(look = id))) }
+    }
+}
+
+/** Which of the button animation's looks the Button looks fill wears. */
+@Composable
+fun ButtonLookRow(style: ButtonLookFill.Style, look: FillTileLook, onChange: (ButtonLookFill.Style) -> Unit) {
+    OptionRow(R.string.button_look) {
+        PictureRow(
+            items = ButtonLookFill.LOOKS,
+            selected = ButtonLookFill.sanitize(style.look),
+            onSelect = { onChange(style.copy(look = it)) },
+            label = { stringResource(buttonLookLabel(it)) },
+            tileWidth = FILL_TILE_WIDTH,
+        ) { id, _ -> FillTile(SliderFill.BUTTON_LOOKS, look.copy(buttonLookStyle = style.copy(look = id))) }
     }
 }
 

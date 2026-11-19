@@ -141,4 +141,12 @@
     <string name="surge_trail">Rastro</string>
     <string name="surge_trail_desc">Até onde a luz alcança atrás da frente antes de sumir no escuro.</string>
     <string name="surge_rest">Acima do nível</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">Estilos dos botões</string>
+    <string name="button_look">Aspecto</string>
+    <string name="button_look_settings_desc">Os estilos da animação dos botões, vestidos pelo controle rápido: preenchidos até o nível e reagindo a cada passo. Os dois continuam separados — isto só muda a aparência do controle. A prévia acima mostra.</string>
+    <string name="button_look_speed">Velocidade</string>
+    <string name="button_look_bounce">Quique</string>
+    <string name="button_look_bounce_desc">Quanto cada passo o faz se mover: o tremor, o esticar, a pulsação, as ondas.</string>
 </resources>

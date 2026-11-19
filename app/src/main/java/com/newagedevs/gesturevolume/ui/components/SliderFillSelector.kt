@@ -26,6 +26,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.ui.view.QuickSliderView
+import com.newagedevs.gesturevolume.utils.ButtonLookFill
 import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
 import com.newagedevs.gesturevolume.utils.LevelFeedback
@@ -95,6 +96,7 @@ data class FillTileLook(
     val surgeStyle: SurgeFill.Style = SurgeFill.Style(),
     val effortStyle: EffortFill.Style = EffortFill.Style(),
     val glimmerStyle: GlimmerFill.Style = GlimmerFill.Style(),
+    val buttonLookStyle: ButtonLookFill.Style = ButtonLookFill.Style(),
     val feedback: LevelFeedback.Style = LevelFeedback.Style(),
 )
 
@@ -147,8 +149,11 @@ internal fun MiniFill(
             view.setSurgeStyle(look.surgeStyle)
             view.setEffortStyle(look.effortStyle)
             view.setGlimmerStyle(look.glimmerStyle)
+            view.setButtonLookStyle(look.buttonLookStyle)
             view.setLevelFeedback(look.feedback)
             view.setFillStyle(id)
+            // A tile holds one level, so a look that answers a step is shown one now and then.
+            view.setDemoBeats(true)
             view.setFillColors(look.fillColors)
             view.setExpansion(1f)
             view.setCommitted()
@@ -206,5 +211,6 @@ fun sliderFillLabel(id: String): Int = when (id) {
     SliderFill.SURGE -> R.string.fill_surge
     SliderFill.EFFORT -> R.string.fill_effort
     SliderFill.GLIMMER -> R.string.fill_glimmer
+    SliderFill.BUTTON_LOOKS -> R.string.fill_button_looks
     else -> R.string.fill_solid
 }

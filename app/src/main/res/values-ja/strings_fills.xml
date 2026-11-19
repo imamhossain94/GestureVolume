@@ -141,4 +141,12 @@
     <string name="surge_trail">残光</string>
     <string name="surge_trail_desc">光が前線から後ろへ届き、暗闇に消えるまでの距離です。</string>
     <string name="surge_rest">レベルより上</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">ボタンの見た目</string>
+    <string name="button_look">見た目</string>
+    <string name="button_look_settings_desc">ボタンアニメーションの見た目をクイックスライダーに。レベルまで満たされ、ステップごとに反応します。2つは別のままで、変わるのはスライダーの見た目だけです。上のプレビューで確認できます。</string>
+    <string name="button_look_speed">速さ</string>
+    <string name="button_look_bounce">弾み</string>
+    <string name="button_look_bounce_desc">ステップごとの動きの大きさ：揺れ、伸び、鼓動、波紋。</string>
 </resources>

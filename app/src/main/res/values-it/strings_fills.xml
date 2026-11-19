@@ -141,4 +141,12 @@
     <string name="surge_trail">Scia</string>
     <string name="surge_trail_desc">Quanto indietro arriva la luce dal fronte prima di svanire nel buio.</string>
     <string name="surge_rest">Sopra il livello</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">Stili dei tasti</string>
+    <string name="button_look">Aspetto</string>
+    <string name="button_look_settings_desc">Gli stili dell’animazione dei tasti, indossati dal cursore rapido: pieni fino al livello e reattivi a ogni passo. I due restano separati: questo cambia solo l’aspetto del cursore. L’anteprima qui sopra lo mostra.</string>
+    <string name="button_look_speed">Velocità</string>
+    <string name="button_look_bounce">Rimbalzo</string>
+    <string name="button_look_bounce_desc">Quanto si muove a ogni passo: il tremolio, l’allungamento, il battito, le onde.</string>
 </resources>

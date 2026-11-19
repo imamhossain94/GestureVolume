@@ -141,4 +141,12 @@
     <string name="surge_trail">Estela</string>
     <string name="surge_trail_desc">Hasta dónde llega la luz desde el frente antes de fundirse con la oscuridad.</string>
     <string name="surge_rest">Por encima del nivel</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">Estilos de botón</string>
+    <string name="button_look">Aspecto</string>
+    <string name="button_look_settings_desc">Los estilos de la animación de los botones, en el control rápido: llenos hasta el nivel y respondiendo a cada paso. Ambos siguen separados: esto solo cambia el aspecto del control. La vista previa de arriba lo muestra.</string>
+    <string name="button_look_speed">Velocidad</string>
+    <string name="button_look_bounce">Rebote</string>
+    <string name="button_look_bounce_desc">Cuánto se mueve con cada paso: el temblor, el estiramiento, el latido, las ondas.</string>
 </resources>

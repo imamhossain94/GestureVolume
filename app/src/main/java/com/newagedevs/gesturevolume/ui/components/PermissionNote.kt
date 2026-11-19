@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -19,6 +20,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,12 +70,51 @@ fun PermissionNote(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    NoteRow(
+        text = text,
+        icon = Icons.Default.Warning,
+        container = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f),
+        content = MaterialTheme.colorScheme.onErrorContainer,
+        onClick = onClick,
+        modifier = modifier,
+    )
+}
+
+/**
+ * A note under a setting that is working as asked but is held back by another one, and the way to
+ * that other one: nothing is wrong, so it is not coloured as a warning.
+ */
+@Composable
+fun InfoNote(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    NoteRow(
+        text = text,
+        icon = Icons.Default.Info,
+        container = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
+        content = MaterialTheme.colorScheme.onSecondaryContainer,
+        onClick = onClick,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun NoteRow(
+    text: String,
+    icon: ImageVector,
+    container: Color,
+    content: Color,
+    onClick: () -> Unit,
+    modifier: Modifier,
+) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .padding(top = 8.dp),
         shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f),
+        color = container,
     ) {
         Row(
             modifier = Modifier
@@ -81,24 +123,24 @@ fun PermissionNote(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                imageVector = Icons.Default.Warning,
+                imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onErrorContainer,
+                tint = content,
             )
             Spacer(modifier = Modifier.width(10.dp))
             Text(
                 text = text,
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
-                color = MaterialTheme.colorScheme.onErrorContainer,
+                color = content,
                 modifier = Modifier.weight(1f),
             )
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onErrorContainer,
+                tint = content,
             )
         }
     }

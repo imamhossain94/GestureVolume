@@ -22,6 +22,7 @@ import androidx.core.graphics.drawable.DrawableCompat
 import com.newagedevs.gesturevolume.utils.PixelFill
 import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.R
+import com.newagedevs.gesturevolume.utils.ButtonLookFill
 import com.newagedevs.gesturevolume.utils.EffortFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
 import com.newagedevs.gesturevolume.utils.SurgeFill
@@ -409,8 +410,33 @@ class QuickSliderView(context: Context) : View(context) {
     /**
      * Where the glimmer's stops keep clear of, as (top, bottom) pairs: the number, then the icon.
      * NaN for one that is not shown, which no stop is ever inside. Filled in each frame, never made.
+     * The button looks' lines up the middle keep clear of the same.
      */
     private val glimmerKeepOut = FloatArray(4)
+
+    /** The Button looks fill's look and settings, used while [fillStyle] is [SliderFill.BUTTON_LOOKS]. */
+    private var buttonLookStyle = ButtonLookFill.Style()
+    private var buttonLookArtOrNull: ButtonLookArt? = null
+    private val buttonLookArt: ButtonLookArt
+        get() = buttonLookArtOrNull ?: ButtonLookArt(density).also { buttonLookArtOrNull = it }
+
+    /** The look's colours, the user's when they have set some. See [ButtonLookFill.paletteWith]. */
+    private var buttonLookPalette: IntArray = ButtonLookFill.paletteWith(ButtonLookFill.LINE, null)
+
+    /** The looks' own clock, in seconds, run at their speed like [glimmerTime]. */
+    private var buttonLookTime = (SystemClock.uptimeMillis() % 3_600_000L) / 1000f
+    private var buttonLookTickAt = 0L
+
+    /** Which twentieth the level was last in, for the beats; -1 before it has been in one. */
+    private var buttonLookBucket = -1
+
+    /**
+     * Whether a beat is played every so often whatever the level does: for a picker's tile, a
+     * panel held at one level that has to show how its look answers a step. See [setDemoBeats].
+     */
+    private var demoBeats = false
+    private var demoBeatAt = -1f
+    private var demoBeatDir = 1
 
     /**
      * How the fill answers the level — see [LevelFeedback] — and how fast it moves, for the fills
@@ -456,7 +482,8 @@ class QuickSliderView(context: Context) : View(context) {
     /** The fills with a speed slider of their own, which [LevelFeedback.Style.speed] leaves alone. */
     private val ownSpeed: Boolean
         get() = fillStyle == SliderFill.PIXELS || fillStyle == SliderFill.SHADER ||
-            fillStyle == SliderFill.SURGE || fillStyle == SliderFill.GLIMMER || fillStyle == SliderFill.EFFORT
+            fillStyle == SliderFill.SURGE || fillStyle == SliderFill.GLIMMER || fillStyle == SliderFill.EFFORT ||
+            fillStyle == SliderFill.BUTTON_LOOKS
 
     /** How much faster than its own pace the fill runs at this level. */
     private fun levelPace(): Float = LevelFeedback.pace(value, feedbackOn && feedback.follow)
@@ -957,12 +984,28 @@ class QuickSliderView(context: Context) : View(context) {
         setValueNow(fraction)
     }
 
-    private fun setValueNow(fraction: Float) {
+    private fun setValueNow(fraction: Float, gliding: Boolean = false) {
         val clamped = fraction.coerceIn(0f, 1f)
         if (clamped == value) return
+        val was = value
         value = clamped
         noteLevel()
+        noteButtonLookBeat(was, gliding)
         invalidate()
+    }
+
+    /**
+     * A beat for the Button looks fill — its press — each time the level moves into another
+     * twentieth: see [ButtonLookFill.beatBucket]. Not during a glide, which beat once as it began,
+     * and not for the first level the panel is given, which is where it opened.
+     */
+    private fun noteButtonLookBeat(was: Float, gliding: Boolean) {
+        if (fillStyle != SliderFill.BUTTON_LOOKS) return
+        val bucket = ButtonLookFill.beatBucket(value)
+        val last = buttonLookBucket
+        buttonLookBucket = bucket
+        if (gliding || last < 0 || bucket == last) return
+        buttonLookArt.beat(buttonLookTime, if (value > was) 1 else -1)
     }
 
     /**
@@ -992,10 +1035,12 @@ class QuickSliderView(context: Context) : View(context) {
         val clamped = fraction.coerceIn(0f, 1f)
         if (clamped == value) return
         valueAnimator?.cancel()
+        // One step of the keys or a nudge button: one beat, as it starts.
+        if (fillStyle == SliderFill.BUTTON_LOOKS) buttonLookArt.beat(buttonLookTime, if (clamped > value) 1 else -1)
         valueAnimator = ValueAnimator.ofFloat(value, clamped).apply {
             duration = VALUE_GLIDE_MS
             interpolator = DecelerateInterpolator(1.6f)
-            addUpdateListener { setValueNow(it.animatedValue as Float) }
+            addUpdateListener { setValueNow(it.animatedValue as Float, gliding = true) }
             start()
         }
     }
@@ -1039,6 +1084,7 @@ class QuickSliderView(context: Context) : View(context) {
         fillPalette = SliderFill.paletteWith(next, fillColors)
         fillPhase = 0f
         fillPathDirty = true
+        buttonLookBucket = -1
         restartFillClock()
         invalidate()
     }
@@ -1060,6 +1106,7 @@ class QuickSliderView(context: Context) : View(context) {
         surgePalette = SurgeFill.paletteWith(surgeStyle.look, next)
         effortPalette = EffortFill.paletteWith(next)
         glimmerPalette = GlimmerFill.paletteWith(next)
+        buttonLookPalette = ButtonLookFill.paletteWith(buttonLookStyle.look, next)
         fillArtOrNull = null
         invalidate()
     }
@@ -1122,6 +1169,26 @@ class QuickSliderView(context: Context) : View(context) {
         val next = style.sanitized()
         if (next == glimmerStyle) return
         glimmerStyle = next
+        invalidate()
+    }
+
+    /** The Button looks fill's settings. Like the glimmer's, they take over from the next frame. */
+    fun setButtonLookStyle(style: ButtonLookFill.Style) {
+        val next = style.sanitized()
+        if (next == buttonLookStyle) return
+        if (next.look != buttonLookStyle.look) buttonLookPalette = ButtonLookFill.paletteWith(next.look, fillColors)
+        buttonLookStyle = next
+        invalidate()
+    }
+
+    /**
+     * A beat every so often, up and down in turn, whatever the level does: for a picker's tile,
+     * which holds one level and would otherwise never show how its look answers a step.
+     */
+    fun setDemoBeats(on: Boolean) {
+        if (demoBeats == on) return
+        demoBeats = on
+        demoBeatAt = -1f
         invalidate()
     }
 
@@ -1218,6 +1285,7 @@ class QuickSliderView(context: Context) : View(context) {
         val surge = fillStyle == SliderFill.SURGE
         val effort = fillStyle == SliderFill.EFFORT
         val glimmer = fillStyle == SliderFill.GLIMMER
+        val buttonLooks = fillStyle == SliderFill.BUTTON_LOOKS
         val animated = when {
             pixels -> PixelFill.isAnimated(pixelStyle.pattern)
             shader -> shadersSupported && shaderStyle.isAnimated
@@ -1230,6 +1298,7 @@ class QuickSliderView(context: Context) : View(context) {
         surgeTickAt = 0L
         effortTickAt = 0L
         glimmerTickAt = 0L
+        buttonLookTickAt = 0L
         phaseTickAt = 0L
         val cycleMs = (if (pixels) PixelFill.cycleMs(pixelStyle) else SliderFill.cycleMs(fillStyle).toLong())
             .coerceAtLeast(1L)
@@ -1246,6 +1315,7 @@ class QuickSliderView(context: Context) : View(context) {
                 if (surge) tickSurgeClock()
                 if (effort) tickEffortClock()
                 if (glimmer) tickGlimmerClock()
+                if (buttonLooks) tickButtonLookClock()
                 invalidate()
             }
             start()
@@ -1312,8 +1382,20 @@ class QuickSliderView(context: Context) : View(context) {
         glimmerTime = (glimmerTime + step) % GlimmerFill.TIME_WRAP_S
     }
 
+    /** Moves [buttonLookTime] on by the time since the last frame, at the look's speed, capped like [tickShaderClock]. */
+    private fun tickButtonLookClock() {
+        val now = SystemClock.uptimeMillis()
+        val last = buttonLookTickAt
+        buttonLookTickAt = now
+        if (last == 0L) return
+        val step = (now - last).coerceIn(0L, 100L) / 1000f * buttonLookStyle.speed * levelPace()
+        buttonLookTime = (buttonLookTime + step) % ButtonLookFill.TIME_WRAP_S
+    }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        // A panel opening afresh: Neon strikes again, and no step from before is still ringing.
+        buttonLookArtOrNull?.reset()
         restartFillClock()
     }
 
@@ -1717,12 +1799,14 @@ class QuickSliderView(context: Context) : View(context) {
         counterLightPaint?.let { canvas.drawRect(drawRect, it) }
 
         if (fillStyle == SliderFill.PIXELS || fillStyle == SliderFill.EFFORT || fillStyle == SliderFill.GLIMMER ||
+            fillStyle == SliderFill.BUTTON_LOOKS ||
             (fillStyle == SliderFill.SHADER && drawShaderFill(canvas)) ||
             (fillStyle == SliderFill.SURGE && drawSurgeFill(canvas))
         ) {
             if (fillStyle == SliderFill.PIXELS) drawPixelFill(canvas)
             if (fillStyle == SliderFill.EFFORT) drawEffortFill(canvas)
             if (fillStyle == SliderFill.GLIMMER) drawGlimmerFill(canvas)
+            if (fillStyle == SliderFill.BUTTON_LOOKS) drawButtonLookFill(canvas)
             canvas.restore()
             drawFeedbackPanel(canvas)
             // The glimmer's handle is its own grab cue: it glows while held, where a lip would be
@@ -1968,6 +2052,42 @@ class QuickSliderView(context: Context) : View(context) {
     }
 
     /**
+     * The Button looks fill, inside the panel's clip: the look over the whole track, filled to the
+     * level, and the number and the icon over it, in the track's ink above the level and the look's
+     * below it, as over the shader. The lines a look draws up the fill keep clear of both.
+     */
+    private fun drawButtonLookFill(canvas: Canvas) {
+        if (!fillVisible || contentAlpha <= 0.01f) {
+            drawContent(canvas, overFill = false)
+            return
+        }
+        if (demoBeats) {
+            val since = buttonLookTime - demoBeatAt
+            if (demoBeatAt < 0f || since < 0f || since > DEMO_BEAT_S) {
+                demoBeatAt = buttonLookTime
+                demoBeatDir = -demoBeatDir
+                buttonLookArt.beat(buttonLookTime, demoBeatDir)
+            }
+        }
+        glimmerKeepOut.fill(Float.NaN)
+        if (showValue) {
+            glimmerKeepOut[0] = drawRect.top + valueMarginPx
+            glimmerKeepOut[1] = glimmerKeepOut[0] + if (turned) textPaint.measureText("100") else textPaint.textSize
+        }
+        if (icon != null) {
+            val size = iconSize()
+            glimmerKeepOut[2] = iconCenterY(size) - size / 2f
+            glimmerKeepOut[3] = glimmerKeepOut[2] + size
+        }
+        buttonLookArt.draw(
+            canvas, drawRect, drawPath, value, buttonLookTime, buttonLookStyle, buttonLookPalette,
+            keepOut = glimmerKeepOut,
+            alpha = contentAlpha,
+        )
+        drawOverProgramFill(canvas, drawRect.bottom - drawRect.height() * value)
+    }
+
+    /**
      * The feedback over the lit part, under the number and the icon: see [LevelFeedbackArt.drawLit].
      * [clip] for the fills drawn over the whole track, whose lit part the canvas is not cut to.
      */
@@ -2040,6 +2160,8 @@ class QuickSliderView(context: Context) : View(context) {
      */
     private fun fillBackdrop(which: Int): Int = when {
         fillStyle == SliderFill.GLIMMER -> fillColor
+        fillStyle == SliderFill.BUTTON_LOOKS ->
+            ButtonLookFill.backdrop(buttonLookStyle.look, buttonLookPalette, blendedTrackColor)
         fillStyle == SliderFill.SHADER -> averageOf(shaderPalette)
         fillStyle == SliderFill.SURGE -> surgeBody()
         fillStyle == SliderFill.PIXELS || SliderFill.isPictorial(fillStyle) -> {
@@ -2279,6 +2401,9 @@ private const val FEEDBACK_TIME_WRAP_S = 3600f
 
 /** How often a showcase reaches the top again, in seconds of the feedback's clock: see [QuickSliderView.setFeedbackShowcase]. */
 private const val SHOWCASE_S = 3.6f
+
+/** How often a tile's button look beats, in seconds of its clock: see [QuickSliderView.setDemoBeats]. */
+private const val DEMO_BEAT_S = 1.5f
 
 private val FEEDBACK_DARK_INK = 0xFF14161B.toInt()
 

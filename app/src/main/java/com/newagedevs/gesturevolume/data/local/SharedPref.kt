@@ -49,9 +49,7 @@ class SharedPref @Inject constructor(
     val appGestures: AppGestureStore by lazy { AppGestureStore(sharedPreferences) }
 
     /** The button animation's settings. Same file, its own object. */
-    val bump: ButtonBumpStore by lazy {
-        ButtonBumpStore(sharedPreferences) { slider.getVolumeKeyMode() != QuickSliderStore.VOLUME_KEYS_OFF }
-    }
+    val bump: ButtonBumpStore by lazy { ButtonBumpStore(sharedPreferences) }
 
     init {
         // Read before either pin writes its flag, which would make every install look lived-in.

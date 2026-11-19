@@ -141,4 +141,12 @@
     <string name="surge_trail">पूँछ</string>
     <string name="surge_trail_desc">रोशनी अग्रिम रेखा से कितनी पीछे तक पहुँचे, इससे पहले कि अंधेरे में खो जाए।</string>
     <string name="surge_rest">लेवल के ऊपर</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">बटन रूप</string>
+    <string name="button_look">रूप</string>
+    <string name="button_look_settings_desc">बटन एनिमेशन के रूप, त्वरित स्लाइडर पर: स्तर तक भरे, और हर कदम पर प्रतिक्रिया देते। दोनों अलग ही रहते हैं — यह सिर्फ़ स्लाइडर का रूप बदलता है। ऊपर का प्रीव्यू इसे चलाता है।</string>
+    <string name="button_look_speed">गति</string>
+    <string name="button_look_bounce">उछाल</string>
+    <string name="button_look_bounce_desc">हर कदम पर यह कितना हिलता है: डगमगाना, खिंचाव, धड़कन, लहरें।</string>
 </resources>

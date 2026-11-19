@@ -16,7 +16,7 @@
     <string name="bump_title">버튼 애니메이션</string>
     <string name="bump_card_subtitle">누르는 버튼마다 화면이 반응합니다</string>
     <string name="bump_enable_title">볼륨 버튼 애니메이션</string>
-    <string name="bump_enable_desc">누른 버튼 옆에서 화면 가장자리가 움푹 들어가고, 거기서 볼륨 슬라이더가 자라 나옵니다. 시스템 슬라이더 대신입니다.</string>
+    <string name="bump_enable_desc">누른 버튼 옆에서 볼륨 레벨과 함께 애니메이션이 재생되며, 시스템 슬라이더를 대신합니다. 켜져 있는 동안에는 버튼으로 빠른 슬라이더가 열리지 않습니다.</string>
     <string name="bump_needs_accessibility">버튼에 바로 반응하고 시스템 슬라이더를 숨기려면 접근성 서비스가 필요합니다. 없으면 애니메이션이 시스템 슬라이더보다 조금 늦게 나타납니다.</string>
     <string name="bump_needs_service">버튼으로 재생하려면 홈 화면에서 Gesture Volume을 켜세요.</string>
     <string name="bump_style_title">애니메이션</string>
@@ -97,7 +97,7 @@
     <string name="bump_sound_title">소리</string>
     <string name="bump_sound_desc">애니메이션마다 고유한 소리가 있습니다.</string>
     <string name="bump_sound">애니메이션 소리 재생</string>
-    <string name="bump_sound_detail">누를 때마다 조절 중인 볼륨으로, 빠른 슬라이더의 단계 소리 대신 재생됩니다.</string>
+    <string name="bump_sound_detail">누를 때마다 조절 중인 볼륨으로 재생됩니다.</string>
     <string name="step_sound_choose">소리</string>
     <string name="step_sound_choose_desc">탭해서 들어 보거나 휴대폰의 소리를 고르세요. 짧은 소리가 가장 좋습니다.</string>
     <string name="step_sound_unreadable">이 소리는 사용할 수 없습니다. 다른 소리나 짧은 오디오 파일을 사용해 보세요.</string>
@@ -138,4 +138,7 @@
     <string name="step_sound_splash">첨벙</string>
     <string name="step_sound_cosmic">우주</string>
     <string name="step_sound_boing">보잉</string>
+
+    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
+    <string name="slider_volume_keys_paused_for_bump">버튼 애니메이션이 켜져 있는 동안 일시 중지됩니다. 볼륨 버튼을 누르면 애니메이션만 재생됩니다. 탭하여 버튼 애니메이션을 엽니다.</string>
 </resources>

@@ -266,7 +266,6 @@ fun MainNavigation(
                     ButtonFeedbackScreen(
                         viewModel = viewModel,
                         onNavigateBack = { navController.navigateBackOnce() },
-                        onOpenQuickSlider = { navController.navigate("quick_slider") },
                         onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
                     )
                 }
@@ -384,7 +383,15 @@ fun MainNavigation(
                         onNavigateBack = {
                             navController.navigateBackOnce()
                         },
-                        onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
+                        onOpenPermissions = { navController.navigate(permissionsRoute(it)) },
+                        onOpenButtonFeedback = {
+                            // Come from there: back to it, rather than a second copy on the stack.
+                            if (navController.previousBackStackEntry?.destination?.route == "button_feedback") {
+                                navController.navigateBackOnce()
+                            } else {
+                                navController.navigate("button_feedback")
+                            }
+                        }
                     )
                 }
 

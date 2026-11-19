@@ -141,4 +141,12 @@
     <string name="surge_trail">Шлейф</string>
     <string name="surge_trail_desc">Как далеко свет тянется назад от фронта, прежде чем угаснуть в темноте.</string>
     <string name="surge_rest">Выше уровня</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">Стили кнопок</string>
+    <string name="button_look">Вид</string>
+    <string name="button_look_settings_desc">Стили анимации кнопок для быстрого ползунка: заполнены до уровня и откликаются на каждый шаг. Они остаются раздельными — меняется только вид ползунка. Предпросмотр выше показывает это.</string>
+    <string name="button_look_speed">Скорость</string>
+    <string name="button_look_bounce">Упругость</string>
+    <string name="button_look_bounce_desc">Насколько сильно он движется на каждом шаге: дрожь, растяжение, пульс, волны.</string>
 </resources>

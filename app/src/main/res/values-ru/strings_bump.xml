@@ -16,7 +16,7 @@
     <string name="bump_title">Анимация кнопок</string>
     <string name="bump_card_subtitle">Экран отвечает на каждую нажатую кнопку</string>
     <string name="bump_enable_title">Анимировать кнопки громкости</string>
-    <string name="bump_enable_desc">Край экрана прогибается рядом с нажатой кнопкой, и из него вырастает ползунок громкости — вместо системного.</string>
+    <string name="bump_enable_desc">Рядом с нажатой кнопкой проигрывается анимация с уровнем громкости — вместо ползунка системы. Пока она включена, кнопки не открывают быстрый ползунок.</string>
     <string name="bump_needs_accessibility">Нужна служба специальных возможностей, чтобы сразу отвечать на кнопки и скрывать системный ползунок. Без неё анимация появляется вслед за системным ползунком чуть позже.</string>
     <string name="bump_needs_service">Включите Gesture Volume на главном экране, чтобы кнопки её показывали.</string>
     <string name="bump_style_title">Анимация</string>
@@ -97,7 +97,7 @@
     <string name="bump_sound_title">Звук</string>
     <string name="bump_sound_desc">У каждой анимации свой звук.</string>
     <string name="bump_sound">Воспроизводить звук анимации</string>
-    <string name="bump_sound_detail">При каждом нажатии, на устанавливаемой громкости, вместо звука шага быстрого ползунка.</string>
+    <string name="bump_sound_detail">При каждом нажатии, на устанавливаемой громкости.</string>
     <string name="step_sound_choose">Звук</string>
     <string name="step_sound_choose_desc">Нажмите, чтобы послушать, или выберите звук с телефона. Лучше всего подходят короткие звуки.</string>
     <string name="step_sound_unreadable">Этот звук нельзя использовать. Попробуйте другой или короткий аудиофайл.</string>
@@ -138,4 +138,7 @@
     <string name="step_sound_splash">Всплеск</string>
     <string name="step_sound_cosmic">Космос</string>
     <string name="step_sound_boing">Боинг</string>
+
+    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
+    <string name="slider_volume_keys_paused_for_bump">Приостановлено, пока включена анимация кнопок: нажатие кнопки громкости показывает только анимацию. Нажмите, чтобы открыть «Анимация кнопок».</string>
 </resources>

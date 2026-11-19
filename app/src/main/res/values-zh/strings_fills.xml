@@ -141,4 +141,12 @@
     <string name="surge_trail">拖尾</string>
     <string name="surge_trail_desc">光从前沿向后延伸多远才没入黑暗。</string>
     <string name="surge_rest">电平以上</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">按键样式</string>
+    <string name="button_look">样式</string>
+    <string name="button_look_settings_desc">把按键动画的样式用在快捷滑块上：填充到当前级别，每一步都有反应。两者仍然各自独立——这只改变滑块的外观。上方的预览会展示效果。</string>
+    <string name="button_look_speed">速度</string>
+    <string name="button_look_bounce">弹性</string>
+    <string name="button_look_bounce_desc">每一步让它动多少：晃动、拉伸、跳动、涟漪。</string>
 </resources>

@@ -100,7 +100,6 @@ import com.newagedevs.gesturevolume.ui.components.ChoiceChip
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
-import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.utils.StepSound
 import android.media.AudioAttributes
 import com.newagedevs.gesturevolume.ui.motion.IconButton
@@ -121,14 +120,15 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * The button animation: the glass dents at the very button that was pressed — volume up where
- * volume up is, volume down where it is, the power button where that is — and the volume slider
- * grows out of the dent, the way a phone whose screen answers its buttons opens into its slider.
+ * The button animation: the glass answers at the very button that was pressed — volume up where
+ * volume up is, volume down where it is, the power button where that is.
  *
- * At the top, a phone with all three buttons on it to press, playing the press and the slider
- * exactly as the glass will; under it, the animations — every one of them free — then the slider,
- * where each button is (lined up on the real glass while it is being set), the power button, the
- * look and the feel. Every change is written as it is made: the overlay reads the settings at each
+ * It is its own thing, apart from the Quick slider: a press plays the animation alone, with its own
+ * level, and while it is on the Quick slider does not answer the volume keys.
+ *
+ * At the top, the phone the Quick slider's screen uses, playing the animation exactly as the glass
+ * will; under it, the animations — every one of them free — then where each button is (lined up on
+ * the real glass while it is being set), the power button, the look and the feel. Every change is written as it is made: the overlay reads the settings at each
  * press, so the next press of a real button already shows it.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -136,7 +136,6 @@ import kotlin.math.roundToInt
 fun ButtonFeedbackScreen(
     viewModel: MainViewModel,
     onNavigateBack: () -> Unit,
-    onOpenQuickSlider: () -> Unit,
     onOpenPermissions: (PermissionNeeds.Permission?) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -148,9 +147,6 @@ fun ButtonFeedbackScreen(
     var style by remember { mutableStateOf(store.getStyle()) }
     var sweep by remember { mutableFloatStateOf(store.getSweep()) }
     var sound by remember { mutableStateOf(store.getSound()) }
-    // Whether the Quick slider opens on the volume keys: set on its own screen, read here only to show
-    // a press as it will be — with no level of its own when the slider shows it.
-    val sliderOnKeys = remember { viewModel.preference.slider.getVolumeKeyMode() != QuickSliderStore.VOLUME_KEYS_OFF }
     var powerMenu by remember { mutableStateOf(store.getPowerMenu()) }
     var powerWake by remember { mutableStateOf(store.getPowerWake()) }
     var places by remember { mutableStateOf(Button.entries.associateWith { store.getPlace(it) }) }
@@ -181,7 +177,6 @@ fun ButtonFeedbackScreen(
     fun settingsFor(button: Button): ButtonBumpStore.Settings {
         val place = places.getValue(button)
         val power = button == Button.POWER
-        val slider = sliderOnKeys && !power
         return ButtonBumpStore.Settings(
             style = style,
             left = place.left,
@@ -190,8 +185,8 @@ fun ButtonFeedbackScreen(
             depthDp = depth,
             color = color,
             accent = accent,
-            showLevel = showLevel && !slider && !power,
-            showPercent = showPercent && !slider && !power,
+            showLevel = showLevel && !power,
+            showPercent = showPercent && !power,
             haptic = haptic,
             holdMs = holdMs,
             speed = speed,
@@ -241,11 +236,8 @@ fun ButtonFeedbackScreen(
     var pressCount by remember { mutableIntStateOf(0) }
     var pressed by remember { mutableStateOf(Button.VOLUME_UP) }
     var previewLevel by remember { mutableFloatStateOf(0.45f) }
-    /** Whether the press being played brings the slider out: not while a place is being dragged. */
-    var pressWithSlider by remember { mutableStateOf(true) }
-    fun pressPreview(button: Button, withSlider: Boolean = true) {
+    fun pressPreview(button: Button) {
         pressed = button
-        pressWithSlider = withSlider
         when (button) {
             Button.VOLUME_UP -> previewLevel = (previewLevel + PREVIEW_STEP).coerceAtMost(1f)
             Button.VOLUME_DOWN -> previewLevel = (previewLevel - PREVIEW_STEP).coerceAtLeast(0f)
@@ -359,7 +351,7 @@ fun ButtonFeedbackScreen(
                             selected = placing == button,
                             onClick = {
                                 placing = button
-                                pressPreview(button, withSlider = false)
+                                pressPreview(button)
                                 showOnPhone(button)
                             },
                         )
@@ -382,7 +374,7 @@ fun ButtonFeedbackScreen(
                             onClick = {
                                 setPlace(placing, place.copy(left = left))
                                 store.setSide(placing, left)
-                                pressPreview(placing, withSlider = false)
+                                pressPreview(placing)
                                 showOnPhone(placing)
                             },
                         )
@@ -400,7 +392,7 @@ fun ButtonFeedbackScreen(
                         setPlace(placing, place.copy(position = position))
                         // Written as it moves, so the press on the glass follows the slider.
                         store.setPosition(placing, position)
-                        pressPreview(placing, withSlider = false)
+                        pressPreview(placing)
                         showOnPhone(placing, throttled = true)
                     },
                     onValueChangeFinished = { showOnPhone(placing) },
@@ -416,7 +408,7 @@ fun ButtonFeedbackScreen(
                     onValueChange = {
                         setPlace(placing, place.copy(lengthDp = it))
                         store.setLengthDp(placing, it)
-                        pressPreview(placing, withSlider = false)
+                        pressPreview(placing)
                         showOnPhone(placing, throttled = true)
                     },
                     onValueChangeFinished = { showOnPhone(placing) },
@@ -437,7 +429,7 @@ fun ButtonFeedbackScreen(
                     TextButton(onClick = {
                         store.resetPlaces()
                         places = Button.entries.associateWith { store.getPlace(it) }
-                        pressPreview(placing, withSlider = false)
+                        pressPreview(placing)
                         showOnPhone(placing)
                     }) { Text(stringResource(R.string.bump_reset_places)) }
                 }
@@ -490,7 +482,7 @@ fun ButtonFeedbackScreen(
                         borderColor = MaterialTheme.colorScheme.primary,
                         onValueChange = {
                             depth = it
-                            pressPreview(pressed, withSlider = false)
+                            pressPreview(pressed)
                         },
                         onValueChangeFinished = { store.setDepthDp(depth) },
                     )
@@ -504,7 +496,7 @@ fun ButtonFeedbackScreen(
                         borderColor = MaterialTheme.colorScheme.primary,
                         onValueChange = {
                             sweep = it / 100f
-                            pressPreview(pressed, withSlider = false)
+                            pressPreview(pressed)
                         },
                         onValueChangeFinished = { store.setSweep(sweep) },
                     )

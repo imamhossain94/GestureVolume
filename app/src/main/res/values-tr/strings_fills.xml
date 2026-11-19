@@ -141,4 +141,12 @@
     <string name="surge_trail">İz</string>
     <string name="surge_trail_desc">Işığın, karanlığa karışmadan önce cepheden geriye ne kadar uzandığı.</string>
     <string name="surge_rest">Seviyenin üstü</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">Tuş görünümleri</string>
+    <string name="button_look">Görünüm</string>
+    <string name="button_look_settings_desc">Tuş animasyonunun görünümleri, hızlı kaydırıcıda: düzeye kadar dolu ve her adıma tepki veren. İkisi ayrı kalır; bu yalnızca kaydırıcının görünümünü değiştirir. Yukarıdaki önizleme gösterir.</string>
+    <string name="button_look_speed">Hız</string>
+    <string name="button_look_bounce">Zıplama</string>
+    <string name="button_look_bounce_desc">Her adımda ne kadar hareket ettiği: titreme, esneme, atış, dalgalar.</string>
 </resources>

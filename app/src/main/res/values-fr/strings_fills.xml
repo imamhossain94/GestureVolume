@@ -141,4 +141,12 @@
     <string name="surge_trail">Traînée</string>
     <string name="surge_trail_desc">Jusqu’où la lumière remonte derrière le front avant de s’éteindre dans l’obscurité.</string>
     <string name="surge_rest">Au-dessus du niveau</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">Styles des boutons</string>
+    <string name="button_look">Apparence</string>
+    <string name="button_look_settings_desc">Les styles de l’animation des boutons, portés par le curseur rapide : remplis jusqu’au niveau et réagissant à chaque pas. Les deux restent séparés — cela ne change que l’apparence du curseur. L’aperçu ci-dessus le montre.</string>
+    <string name="button_look_speed">Vitesse</string>
+    <string name="button_look_bounce">Rebond</string>
+    <string name="button_look_bounce_desc">À quel point chaque pas le fait bouger : le tremblement, l’étirement, le battement, les ondes.</string>
 </resources>

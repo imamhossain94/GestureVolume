@@ -16,7 +16,7 @@
     <string name="bump_title">बटन एनिमेशन</string>
     <string name="bump_card_subtitle">आप जो भी बटन दबाएँ, स्क्रीन जवाब देती है</string>
     <string name="bump_enable_title">वॉल्यूम बटन को एनिमेट करें</string>
-    <string name="bump_enable_desc">दबाए गए बटन के पास स्क्रीन का किनारा दबता है और वहीं से वॉल्यूम स्लाइडर निकलता है — सिस्टम के स्लाइडर की जगह।</string>
+    <string name="bump_enable_desc">दबाए गए बटन के पास वॉल्यूम स्तर के साथ एक एनिमेशन चलता है, सिस्टम के स्लाइडर की जगह। इसके चालू रहते बटन त्वरित स्लाइडर नहीं खोलते।</string>
     <string name="bump_needs_accessibility">बटन पर तुरंत प्रतिक्रिया देने और सिस्टम का स्लाइडर छिपाने के लिए सुलभता सेवा चाहिए। इसके बिना एनिमेशन सिस्टम के स्लाइडर के थोड़ी देर बाद आता है।</string>
     <string name="bump_needs_service">बटन से इसे चलाने के लिए होम स्क्रीन पर Gesture Volume चालू करें।</string>
     <string name="bump_style_title">एनिमेशन</string>
@@ -97,7 +97,7 @@
     <string name="bump_sound_title">ध्वनि</string>
     <string name="bump_sound_desc">हर एनिमेशन की अपनी ध्वनि है।</string>
     <string name="bump_sound">एनिमेशन की ध्वनि चलाएँ</string>
-    <string name="bump_sound_detail">हर दबाव पर, आप जो वॉल्यूम सेट कर रहे हैं उसी पर, त्वरित स्लाइडर की स्टेप ध्वनि की जगह।</string>
+    <string name="bump_sound_detail">हर दबाव पर, आप जो वॉल्यूम सेट कर रहे हैं उसी पर।</string>
     <string name="step_sound_choose">ध्वनि</string>
     <string name="step_sound_choose_desc">सुनने के लिए किसी पर टैप करें, या अपने फ़ोन से कोई ध्वनि चुनें। छोटी ध्वनियाँ सबसे अच्छी रहती हैं।</string>
     <string name="step_sound_unreadable">यह ध्वनि इस्तेमाल नहीं की जा सकती। कोई दूसरी या छोटी ऑडियो फ़ाइल आज़माएँ।</string>
@@ -138,4 +138,7 @@
     <string name="step_sound_splash">छपाक</string>
     <string name="step_sound_cosmic">ब्रह्मांडीय</string>
     <string name="step_sound_boing">बोइंग</string>
+
+    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
+    <string name="slider_volume_keys_paused_for_bump">बटन एनिमेशन चालू रहने तक रुका हुआ: वॉल्यूम बटन दबाने पर केवल एनिमेशन चलता है। बटन एनिमेशन खोलने के लिए टैप करें।</string>
 </resources>

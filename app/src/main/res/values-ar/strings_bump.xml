@@ -16,7 +16,7 @@
     <string name="bump_title">حركة الأزرار</string>
     <string name="bump_card_subtitle">تستجيب الشاشة لكل زر تضغطه</string>
     <string name="bump_enable_title">تحريك أزرار الصوت</string>
-    <string name="bump_enable_desc">تنخفض حافة الشاشة بجوار الزر الذي تضغطه، ويخرج منها منزلق الصوت بدلًا من منزلق النظام.</string>
+    <string name="bump_enable_desc">تظهر حركة بجوار الزر الذي تضغطه مع مستوى الصوت، بدلًا من منزلق النظام. ما دامت مفعّلة، لا يُفتح المنزلق السريع من الأزرار.</string>
     <string name="bump_needs_accessibility">تحتاج إلى خدمة إمكانية الوصول للاستجابة للأزرار فورًا وإخفاء شريط النظام. ومن دونها تظهر الحركة بعد شريط النظام بلحظة.</string>
     <string name="bump_needs_service">شغّل Gesture Volume من الشاشة الرئيسية لتعرض الأزرار هذه الحركة.</string>
     <string name="bump_style_title">الحركة</string>
@@ -97,7 +97,7 @@
     <string name="bump_sound_title">الصوت</string>
     <string name="bump_sound_desc">لكل حركة صوتها الخاص.</string>
     <string name="bump_sound">تشغيل صوت الحركة</string>
-    <string name="bump_sound_detail">عند كل ضغطة، بمستوى الصوت الذي تضبطه، بدلًا من صوت خطوات المنزلق السريع.</string>
+    <string name="bump_sound_detail">عند كل ضغطة، بمستوى الصوت الذي تضبطه.</string>
     <string name="step_sound_choose">الصوت</string>
     <string name="step_sound_choose_desc">اضغط على صوت لسماعه، أو اختر صوتًا من هاتفك. الأصوات القصيرة هي الأفضل.</string>
     <string name="step_sound_unreadable">لا يمكن استخدام هذا الصوت. جرّب صوتًا آخر أو ملفًا صوتيًا قصيرًا.</string>
@@ -138,4 +138,7 @@
     <string name="step_sound_splash">رشّة ماء</string>
     <string name="step_sound_cosmic">كوني</string>
     <string name="step_sound_boing">بوينغ</string>
+
+    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
+    <string name="slider_volume_keys_paused_for_bump">متوقف ما دامت حركة الأزرار مفعّلة: ضغطة زر الصوت تُظهر الحركة وحدها. انقر لفتح حركة الأزرار.</string>
 </resources>

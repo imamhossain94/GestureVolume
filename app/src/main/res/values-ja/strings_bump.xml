@@ -16,7 +16,7 @@
     <string name="bump_title">ボタンアニメーション</string>
     <string name="bump_card_subtitle">押したボタンごとに画面が応えます</string>
     <string name="bump_enable_title">音量ボタンをアニメーション</string>
-    <string name="bump_enable_desc">押したボタンの横で画面の縁がへこみ、そこから音量スライダーが現れます。システムのスライダーの代わりです。</string>
+    <string name="bump_enable_desc">押したボタンの横で、音量レベル付きのアニメーションが再生されます（システムのスライダーの代わり）。オンの間、ボタンではクイックスライダーは開きません。</string>
     <string name="bump_needs_accessibility">ボタンにすぐ反応してシステムのスライダーを隠すには、ユーザー補助サービスが必要です。オフの場合、アニメーションはシステムのスライダーより少し遅れて表示されます。</string>
     <string name="bump_needs_service">ボタンでアニメーションを再生するには、ホーム画面で Gesture Volume をオンにしてください。</string>
     <string name="bump_style_title">アニメーション</string>
@@ -97,7 +97,7 @@
     <string name="bump_sound_title">サウンド</string>
     <string name="bump_sound_desc">どのアニメーションにも専用のサウンドがあります。</string>
     <string name="bump_sound">アニメーションのサウンドを鳴らす</string>
-    <string name="bump_sound_detail">押すたびに、調整中の音量で、クイックスライダーのステップ音の代わりに鳴ります。</string>
+    <string name="bump_sound_detail">押すたびに、調整中の音量で鳴ります。</string>
     <string name="step_sound_choose">サウンド</string>
     <string name="step_sound_choose_desc">タップして試聴するか、スマホのサウンドを選んでください。短い音が最適です。</string>
     <string name="step_sound_unreadable">そのサウンドは使用できません。別の音か、短い音声ファイルをお試しください。</string>
@@ -138,4 +138,7 @@
     <string name="step_sound_splash">パシャ</string>
     <string name="step_sound_cosmic">コズミック</string>
     <string name="step_sound_boing">ボヨン</string>
+
+    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
+    <string name="slider_volume_keys_paused_for_bump">ボタンアニメーションがオンの間は一時停止中です。音量ボタンを押すとアニメーションだけが表示されます。タップしてボタンアニメーションを開きます。</string>
 </resources>

@@ -141,4 +141,12 @@
     <string name="surge_trail">Schweif</string>
     <string name="surge_trail_desc">Wie weit das Licht von der Front zurückreicht, bevor es im Dunkel verblasst.</string>
     <string name="surge_rest">Über dem Pegel</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">Tastenstile</string>
+    <string name="button_look">Aussehen</string>
+    <string name="button_look_settings_desc">Die Stile der Tastenanimation für den Schnellregler: bis zum Pegel gefüllt und bei jedem Schritt in Bewegung. Beides bleibt getrennt – das ändert nur das Aussehen des Reglers. Die Vorschau oben zeigt es.</string>
+    <string name="button_look_speed">Geschwindigkeit</string>
+    <string name="button_look_bounce">Federung</string>
+    <string name="button_look_bounce_desc">Wie stark jeder Schritt es bewegt: das Wackeln, das Dehnen, das Pochen, die Wellen.</string>
 </resources>

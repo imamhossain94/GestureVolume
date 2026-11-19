@@ -16,7 +16,7 @@
     <string name="bump_title">Hiệu ứng nút</string>
     <string name="bump_card_subtitle">Màn hình đáp lại từng nút bạn nhấn</string>
     <string name="bump_enable_title">Tạo hiệu ứng cho nút âm lượng</string>
-    <string name="bump_enable_desc">Mép màn hình lõm vào cạnh nút bạn nhấn và thanh âm lượng mọc ra từ đó, thay cho thanh của hệ thống.</string>
+    <string name="bump_enable_desc">Một hiệu ứng chạy cạnh nút bạn nhấn, kèm mức âm lượng, thay cho thanh của hệ thống. Khi đang bật, các nút không mở thanh trượt nhanh.</string>
     <string name="bump_needs_accessibility">Cần dịch vụ hỗ trợ tiếp cận để phản hồi nút ngay lập tức và ẩn thanh trượt của hệ thống. Nếu không có, hiệu ứng sẽ hiện theo thanh trượt của hệ thống sau một chút.</string>
     <string name="bump_needs_service">Bật Gesture Volume trên màn hình chính để các nút phát hiệu ứng này.</string>
     <string name="bump_style_title">Hiệu ứng</string>
@@ -97,7 +97,7 @@
     <string name="bump_sound_title">Âm thanh</string>
     <string name="bump_sound_desc">Mỗi hiệu ứng có âm thanh riêng.</string>
     <string name="bump_sound">Phát âm thanh của hiệu ứng</string>
-    <string name="bump_sound_detail">Mỗi lần nhấn, ở mức âm lượng bạn đang chỉnh, thay cho âm bước của thanh trượt nhanh.</string>
+    <string name="bump_sound_detail">Mỗi lần nhấn, ở mức âm lượng bạn đang chỉnh.</string>
     <string name="step_sound_choose">Âm thanh</string>
     <string name="step_sound_choose_desc">Chạm vào một âm để nghe, hoặc chọn âm thanh từ điện thoại. Âm ngắn là tốt nhất.</string>
     <string name="step_sound_unreadable">Không dùng được âm thanh đó. Hãy thử âm khác hoặc một tệp âm thanh ngắn.</string>
@@ -138,4 +138,7 @@
     <string name="step_sound_splash">Tõm</string>
     <string name="step_sound_cosmic">Vũ trụ</string>
     <string name="step_sound_boing">Boing</string>
+
+    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
+    <string name="slider_volume_keys_paused_for_bump">Tạm dừng khi hiệu ứng nút đang bật: nhấn nút âm lượng chỉ chạy hiệu ứng. Chạm để mở Hiệu ứng nút.</string>
 </resources>

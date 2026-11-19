@@ -16,7 +16,7 @@
     <string name="bump_title">按键动画</string>
     <string name="bump_card_subtitle">屏幕会回应你按下的每个按键</string>
     <string name="bump_enable_title">为音量键添加动画</string>
-    <string name="bump_enable_desc">屏幕边缘在你按下的按键旁凹陷，音量滑块从中长出，取代系统的滑块。</string>
+    <string name="bump_enable_desc">在你按下的按键旁播放带音量级别的动画，取代系统的滑块。开启期间，按键不会打开快捷滑块。</string>
     <string name="bump_needs_accessibility">需要无障碍服务才能立即响应按键并隐藏系统滑块。没有它时，动画会在系统滑块出现片刻后才显示。</string>
     <string name="bump_needs_service">请在主屏幕打开 Gesture Volume，按键才会播放此动画。</string>
     <string name="bump_style_title">动画</string>
@@ -97,7 +97,7 @@
     <string name="bump_sound_title">声音</string>
     <string name="bump_sound_desc">每个动画都有自己的声音。</string>
     <string name="bump_sound">播放动画的声音</string>
-    <string name="bump_sound_detail">每次按下时，以你正在调节的音量播放，代替快捷滑块的步进音效。</string>
+    <string name="bump_sound_detail">每次按下时，以你正在调节的音量播放。</string>
     <string name="step_sound_choose">声音</string>
     <string name="step_sound_choose_desc">点按即可试听，或从手机中选择声音。短促的声音效果最好。</string>
     <string name="step_sound_unreadable">无法使用该声音。请换一个，或选择一个简短的音频文件。</string>
@@ -138,4 +138,7 @@
     <string name="step_sound_splash">扑通</string>
     <string name="step_sound_cosmic">宇宙</string>
     <string name="step_sound_boing">啵嘤</string>
+
+    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
+    <string name="slider_volume_keys_paused_for_bump">按键动画开启期间已暂停：按下音量键只会播放动画。点按可打开按键动画。</string>
 </resources>

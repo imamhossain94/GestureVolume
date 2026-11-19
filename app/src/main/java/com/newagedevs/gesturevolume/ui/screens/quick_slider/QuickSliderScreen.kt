@@ -72,6 +72,8 @@ import com.newagedevs.gesturevolume.ui.components.GestureDemoState
 import com.newagedevs.gesturevolume.ui.components.rememberGestureDemoState
 import com.newagedevs.gesturevolume.ui.components.PanelAnimationSelector
 import com.newagedevs.gesturevolume.ui.components.PanelThemeSelector
+import com.newagedevs.gesturevolume.ui.components.ButtonLookFillControls
+import com.newagedevs.gesturevolume.ui.components.InfoNote
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
@@ -105,6 +107,7 @@ import com.newagedevs.gesturevolume.utils.ShaderFill
 import com.newagedevs.gesturevolume.utils.SurgeFill
 import com.newagedevs.gesturevolume.utils.SliderFill
 import com.newagedevs.gesturevolume.utils.EffortFill
+import com.newagedevs.gesturevolume.utils.ButtonLookFill
 import com.newagedevs.gesturevolume.utils.GlimmerFill
 
 /** The translated name of a slider target. */
@@ -173,6 +176,7 @@ fun QuickSliderScreen(
     viewModel: MainViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
     onOpenPermissions: (PermissionNeeds.Permission?) -> Unit = {},
+    onOpenButtonFeedback: () -> Unit = {},
 ) {
     val store = viewModel.preference.slider
 
@@ -231,6 +235,7 @@ fun QuickSliderScreen(
     var surgeStyle by remember { mutableStateOf(store.getSurgeStyle()) }
     var effortStyle by remember { mutableStateOf(store.getEffortStyle()) }
     var glimmerStyle by remember { mutableStateOf(store.getGlimmerStyle()) }
+    var buttonLookStyle by remember { mutableStateOf(store.getButtonLookStyle()) }
     var levelFeedback by remember { mutableStateOf(store.getLevelFeedback()) }
     var fillColorsOn by remember { mutableStateOf(store.getFillColorsEnabled()) }
     var fillColors by remember { mutableStateOf(store.getFillColors().toList()) }
@@ -251,6 +256,9 @@ fun QuickSliderScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var accessibilityOn by remember { mutableStateOf(OverlayRuntime.isAccessibilityEnabled(context)) }
+    // The button animation answers the volume keys while it is on, and this panel stands aside for
+    // it. Looked at again on the way back, in case it was switched on its own screen.
+    var buttonAnimationOn by remember { mutableStateOf(viewModel.preference.bump.isEnabled()) }
     var canWriteSettings by remember { mutableStateOf(Settings.System.canWrite(context)) }
     var showDisclosure by remember { mutableStateOf(false) }
     var iconName by remember { mutableStateOf(store.getIconName()) }
@@ -264,6 +272,7 @@ fun QuickSliderScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 accessibilityOn = OverlayRuntime.isAccessibilityEnabled(context)
+                buttonAnimationOn = viewModel.preference.bump.isEnabled()
                 canWriteSettings = Settings.System.canWrite(context)
                 viewModel.preference.setAppOpenAdPaused(false)
             }
@@ -359,6 +368,7 @@ fun QuickSliderScreen(
                     surgeStyle = surgeStyle,
                     effortStyle = effortStyle,
                     glimmerStyle = glimmerStyle,
+                    buttonLookStyle = buttonLookStyle,
                     levelFeedback = levelFeedback,
                     fillColors = if (fillColorsOn) fillColors.toIntArray() else null,
                     valueColor = if (contentColorsOn) valueColor else null,
@@ -633,6 +643,7 @@ fun QuickSliderScreen(
                     surgeStyle = surgeStyle,
                     effortStyle = effortStyle,
                     glimmerStyle = glimmerStyle,
+                    buttonLookStyle = buttonLookStyle,
                     feedback = levelFeedback,
                 )
                 SliderFillSelector(
@@ -691,6 +702,16 @@ fun QuickSliderScreen(
                         onChangeFinished = { store.setGlimmerStyle(glimmerStyle) },
                     )
                 }
+                if (fillStyle == SliderFill.BUTTON_LOOKS) {
+                    Sep()
+                    ButtonLookFillControls(
+                        style = buttonLookStyle,
+                        accent = accent,
+                        onChange = { buttonLookStyle = it },
+                        look = tileLook,
+                        onChangeFinished = { store.setButtonLookStyle(buttonLookStyle) },
+                    )
+                }
                 // How every fill but the Effort picker answers the level; the picker has its own.
                 if (fillStyle != SliderFill.EFFORT) {
                     Sep()
@@ -698,7 +719,8 @@ fun QuickSliderScreen(
                         style = levelFeedback,
                         accent = accent,
                         showSpeed = fillStyle != SliderFill.PIXELS && fillStyle != SliderFill.SHADER &&
-                            fillStyle != SliderFill.SURGE && fillStyle != SliderFill.GLIMMER,
+                            fillStyle != SliderFill.SURGE && fillStyle != SliderFill.GLIMMER &&
+                            fillStyle != SliderFill.BUTTON_LOOKS,
                         onChange = { levelFeedback = it },
                         fillStyle = fillStyle,
                         look = tileLook,
@@ -799,7 +821,13 @@ fun QuickSliderScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                if (volumeKeys == QuickSliderStore.VOLUME_KEYS_INSTANT && !accessibilityOn) {
+                if (buttonAnimationOn && volumeKeys != QuickSliderStore.VOLUME_KEYS_OFF) {
+                    // Kept as chosen, and back the moment the animation is turned off.
+                    InfoNote(
+                        text = stringResource(R.string.slider_volume_keys_paused_for_bump),
+                        onClick = onOpenButtonFeedback,
+                    )
+                } else if (volumeKeys == QuickSliderStore.VOLUME_KEYS_INSTANT && !accessibilityOn) {
                     PermissionNote(
                         text = stringResource(R.string.slider_volume_keys_needs_accessibility),
                         onClick = { onOpenPermissions(PermissionNeeds.Permission.ACCESSIBILITY) },
@@ -868,6 +896,8 @@ private fun SliderPreview(
     effortStyle: EffortFill.Style,
     /** The Glimmer fill's settings, used when that is the fill. */
     glimmerStyle: GlimmerFill.Style,
+    /** The Button looks fill's look and settings, used when that is the fill. */
+    buttonLookStyle: ButtonLookFill.Style,
     /** How the fill answers the level, which the preview's sweep through the levels shows. */
     levelFeedback: LevelFeedback.Style,
     /** The animation's own colours, or null for its palette. */
@@ -1035,6 +1065,7 @@ private fun SliderPreview(
                 view.setSurgeStyle(surgeStyle)
                 view.setEffortStyle(effortStyle)
                 view.setGlimmerStyle(glimmerStyle)
+                view.setButtonLookStyle(buttonLookStyle)
                 view.setLevelFeedback(levelFeedback)
                 view.setFillStyle(fillStyle)
                 view.setFillColors(fillColors)

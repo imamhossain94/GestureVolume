@@ -141,4 +141,12 @@
     <string name="surge_trail">রেশ</string>
     <string name="surge_trail_desc">অন্ধকারে মিলিয়ে যাওয়ার আগে আলো সীমারেখা থেকে পেছনে কতদূর পৌঁছায়।</string>
     <string name="surge_rest">লেভেলের ওপরে</string>
+
+    <!-- The Button looks fill: the button animation's looks, worn by the Quick slider -->
+    <string name="fill_button_looks">বোতামের চেহারা</string>
+    <string name="button_look">চেহারা</string>
+    <string name="button_look_settings_desc">বোতাম অ্যানিমেশনের চেহারা, দ্রুত স্লাইডারে: লেভেল পর্যন্ত ভরা, আর প্রতিটি ধাপে সাড়া দেয়। দুটো আলাদাই থাকে — এটি শুধু স্লাইডারের চেহারা বদলায়। ওপরের প্রিভিউতে এটি চলে।</string>
+    <string name="button_look_speed">গতি</string>
+    <string name="button_look_bounce">বাউন্স</string>
+    <string name="button_look_bounce_desc">প্রতিটি ধাপে এটি কতটা নড়ে: দোলা, টান, স্পন্দন, ঢেউ।</string>
 </resources>

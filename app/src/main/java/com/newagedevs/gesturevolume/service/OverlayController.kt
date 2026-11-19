@@ -263,9 +263,6 @@ class OverlayController(
         /** The gap left between a bar stepped round the camera and the camera's cutout. */
         private const val CUTOUT_GAP_DP = 4f
 
-        /** How long the dent has the glass to itself before the slider grows out of it. */
-        private const val BUTTON_SLIDER_DELAY_MS = 90L
-
         /** Where a taken Volume down stands. See [onVolumeKey]. */
         private const val WAIT_NONE = 0
         private const val WAIT_HELD = 1
@@ -689,6 +686,10 @@ class OverlayController(
             followVolumeWithBump(stream)
             return
         }
+        // The button animation is on: it is what answers the volume keys, and the Quick slider, a
+        // separate thing, is paused for them — neither it nor the readout on the bar comes up for a
+        // press. Its own setting is kept as chosen, and applies again once the animation is off.
+        if (preference.bump.isEnabled()) return
         // The Deck has volume controls of its own, and the bar is out of sight beneath it.
         if (deckHost != null) return
 
@@ -1023,6 +1024,8 @@ class OverlayController(
         // app's own screens — where it is lined up with the buttons — over the Deck, and on the lock
         // screen, which its windows are drawn over. The panel answers them only where it can open.
         val bump = bumpTakesKeys()
+        // With the animation on, the panel never takes them: it is paused for the keys.
+        if (!bump && preference.bump.isEnabled()) return false
         if (!bump && preference.slider.getVolumeKeyMode() != QuickSliderStore.VOLUME_KEYS_INSTANT) return false
         if (!bump && (handlerView == null || deckHost != null)) return false
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return false
@@ -1071,10 +1074,16 @@ class OverlayController(
 
     /**
      * Without the accessibility service the keys go to the system, which moves the volume and shows
-     * its own panel; the bump follows the change it is told about, a moment later.
+     * its own panel; the bump follows the change it is told about, a moment later. The same where the
+     * service is handed the keys but passes them on — a route that keeps only the keys' own steps, or
+     * the keys' way chosen outright — outside a call, whose keys are the call's.
      */
-    private fun bumpFollowsSystem(): Boolean =
-        !lockScreen && preference.bump.isEnabled() && OverlayRuntime.accessibilityService == null
+    private fun bumpFollowsSystem(): Boolean {
+        if (lockScreen || !preference.bump.isEnabled()) return false
+        if (OverlayRuntime.accessibilityService == null) return true
+        val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return false
+        return audio.mode == AudioManager.MODE_NORMAL && volume.prefersSystemKeys(adaptiveVolume())
+    }
 
     /** Whether the bump is out beside the buttons now. */
     private fun bumpIsOut(): Boolean = bumpOverlay?.isOut() == true
@@ -1084,111 +1093,48 @@ class OverlayController(
         if (direction > 0) ButtonBumpStore.Button.VOLUME_UP else ButtonBumpStore.Button.VOLUME_DOWN
 
     /**
-     * Answers a volume key that left [res] at [index]: the glass dents at the very button that was
-     * pressed — volume up where volume up is, volume down where it is — and, with the slider on, the
-     * Quick panel grows out of that dent, the way the glass of a phone that answers its buttons opens
-     * into its volume slider. Held, the key keeps it out and keeps it stepping.
+     * Answers a volume key that left [res] at [index]: the animation plays at the very button that
+     * was pressed — volume up where volume up is, volume down where it is — with the level it left.
+     * Held, the key keeps it out and keeps it stepping.
+     *
+     * The animation alone. The Quick slider is a separate thing, the panel the bar opens, and it
+     * has no part in a press: while the animation is on it does not answer the volume keys at all
+     * (see [onVolumeChangedElsewhere]). A panel the user already has open still follows the level.
      */
     private fun showBump(res: VolumeController.Resolution, direction: Int, index: Int, atLimit: Boolean) {
-        val button = volumeButton(direction)
         val level = ButtonBump.levelOf(index, res.minIndex, res.maxIndex)
-        // The Quick slider opens out of the press when it is set to open on the volume keys — its own
-        // setting, on its own screen — so the two never disagree about it.
-        val hadAnimation = bumpOverlay?.hasWindow() == true
-        val opened = preference.slider.getVolumeKeyMode() != QuickSliderStore.VOLUME_KEYS_OFF &&
-            panelCanShowNow() && showButtonSlider(res, button)
-        pressButton(button, direction, level, atLimit)
-        // A panel opened by this press over an animation already playing would hide it: the
-        // animation goes back on top, where it is drawn over the panel it grows out of.
-        if (opened && hadAnimation) bumpOverlay?.raise()
-        if (!atLimit) playKeySound(res, level)
+        pressButton(volumeButton(direction), direction, level, atLimit)
+        if (!atLimit) playBumpSound(res.stream)
+        // An open panel moves now rather than on its follower's next beat.
+        if (sliderView != null && sliderResolution?.stream == res.stream) followVolumeOnPanel(null)
     }
 
-    /** The animation's own sound for a press, at the volume being set; or, with it off, the Quick panel's tick. */
+    /** The animation's own sound. */
     private val fxSound = com.newagedevs.gesturevolume.utils.StepSound(context)
 
-    /** One sound for a key's step, never two. */
-    private fun playKeySound(res: VolumeController.Resolution, level: Float) {
-        val store = preference.bump
-        if (store.getSound()) {
-            fxSound.prepare(
-                com.newagedevs.gesturevolume.utils.StepSound.usageFor(QuickSliderStore.TARGET_ADAPTIVE, res.stream),
-                ButtonBump.sound(store.getStyle()),
-            )
-            fxSound.playOnce()
-        } else {
-            playKeyStepSound(res, level)
-        }
-    }
-
     /**
-     * Whether a panel opened now would be seen. The keys play the press on the lock screen too, whose
-     * windows are drawn over it by the accessibility service; a panel in an ordinary overlay window
-     * would open beneath the lock screen, unseen, so there it is the press alone.
+     * The animation's own sound for a press, when it is on: at the volume being set, for a volume
+     * key ([stream]), or as a system sound for the power button, which sets none. Never the Quick
+     * slider's step sound, which belongs to the slider.
      */
-    private fun panelCanShowNow(): Boolean {
-        if (windowType == WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY) return true
-        val keyguard = context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
-        return keyguard?.isKeyguardLocked != true
+    private fun playBumpSound(stream: Int?) {
+        val store = preference.bump
+        if (!store.getSound()) return
+        fxSound.prepare(
+            if (stream != null) {
+                com.newagedevs.gesturevolume.utils.StepSound.usageFor(QuickSliderStore.TARGET_ADAPTIVE, stream)
+            } else {
+                android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION
+            },
+            ButtonBump.sound(store.getStyle()),
+        )
+        fxSound.playOnce()
     }
 
     /** The dent alone, at [button]. */
     private fun pressButton(button: ButtonBumpStore.Button, direction: Int, level: Float, atLimit: Boolean) {
         val overlay = bumpOverlay() ?: return
         overlay.press(preference.bump.settings(button), direction, level, atLimit)
-    }
-
-    /**
-     * The Quick panel out of the press at [button]: grown on the first press, kept up and followed
-     * on the ones after it, and put away a moment after the last.
-     *
-     * Opened a beat after the dent, so the press reads first and the panel visibly comes out of it:
-     * frame zero of the panel is the dent itself — see [buttonAnchor].
-     */
-    /** @return whether this opened a panel, rather than keeping one up. */
-    private fun showButtonSlider(res: VolumeController.Resolution, button: ButtonBumpStore.Button): Boolean {
-        val holdMs = preference.bump.getHoldMs().toLong()
-        if (sliderView != null && sliderResolution?.stream == res.stream) {
-            followVolumeOnPanel(null)
-            if (panelTouchActive) {
-                // A finger on it: it closes when the finger is done, not under it.
-            } else if (!sliderFromBar) {
-                mainHandler.removeCallbacks(sliderCloseRunnable)
-                mainHandler.postDelayed(sliderCloseRunnable, holdMs + PANEL_OPEN_MS)
-            } else if (sliderCommitted) {
-                mainHandler.removeCallbacks(sliderCloseRunnable)
-                restartQuickSliderIdleTimeout()
-            }
-            return false
-        }
-        // A panel showing something else, brightness, makes way for the one the key is about.
-        if (sliderView != null) hideQuickSlider()
-        val anchor = buttonAnchor(button) ?: return false
-        if (!openQuickSliderWindow(QuickSliderStore.TARGET_ADAPTIVE, anchor)) return false
-        val view = sliderView
-        mainHandler.postDelayed({ if (sliderView === view) animateQuickSliderOpen() }, BUTTON_SLIDER_DELAY_MS)
-        mainHandler.removeCallbacks(sliderCloseRunnable)
-        mainHandler.postDelayed(sliderCloseRunnable, holdMs + PANEL_OPEN_MS + BUTTON_SLIDER_DELAY_MS)
-        return true
-    }
-
-    /**
-     * The Quick panel's tick for a step the keys made, with the sound the Quick panel is set to: the
-     * slider that grows out of the press is that panel, and it sounds like it.
-     */
-    private fun playKeyStepSound(res: VolumeController.Resolution, level: Float) {
-        val settings = preference.slider
-        val mode = settings.getStepSound()
-        if (mode == QuickSliderStore.SOUND_OFF) return
-        stepSound.prepare(
-            if (mode == QuickSliderStore.SOUND_ADAPTIVE) {
-                com.newagedevs.gesturevolume.utils.StepSound.usageFor(QuickSliderStore.TARGET_ADAPTIVE, res.stream)
-            } else {
-                android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION
-            },
-            settings.getStepSoundSource(),
-        )
-        stepSound.play(level, adaptive = mode == QuickSliderStore.SOUND_ADAPTIVE)
     }
 
     /**
@@ -1214,10 +1160,7 @@ class OverlayController(
         if (!store.isEnabled()) return
         if (if (longPress) !store.getPowerMenu() else !store.getPowerWake()) return
         pressButton(ButtonBumpStore.Button.POWER, 1, 0.5f, atLimit = false)
-        if (store.getSound()) {
-            fxSound.prepare(android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION, ButtonBump.sound(store.getStyle()))
-            fxSound.playOnce()
-        }
+        playBumpSound(null)
     }
 
     /**
@@ -3262,54 +3205,6 @@ class OverlayController(
         )
     }
 
-    /**
-     * The dent a press of [button] makes, as an anchor: a pill of the press's colour, as deep as
-     * the press and as long as the button, flush on the glass beside the button wherever the screen
-     * has turned it. The panel grows out of exactly that, the way the glass of a phone that answers
-     * its buttons opens into the volume slider.
-     */
-    private fun buttonAnchor(button: ButtonBumpStore.Button): PanelAnchor? {
-        val currentFrame = frame ?: readFrame()?.also { frame = it } ?: return null
-        val store = preference.bump
-        val place = store.getPlace(button)
-        val density = context.resources.displayMetrics.density
-        val depthDp = store.getDepthDp()
-        val lengthPx = (place.lengthDp * density).roundToInt().coerceAtLeast(1)
-        val depthPx = (depthDp * density).roundToInt().coerceAtLeast(1)
-        val placement = ButtonBump.placement(
-            left = place.left,
-            along = place.position,
-            turns = HandlerGeometry.quarterTurns(currentFrame),
-            screenWidth = currentFrame.displayWidth,
-            screenHeight = currentFrame.displayHeight,
-            span = lengthPx,
-            reach = depthPx,
-        )
-        val corner = depthDp / 2f
-        return PanelAnchor(
-            // The placement is in the screen's own pixels; the bar's frame starts at its insets,
-            // which are nothing from Android 11 and the status bar below it.
-            x = placement.x - currentFrame.insetLeft,
-            y = placement.y - currentFrame.insetTop,
-            width = placement.width,
-            height = placement.height,
-            lying = placement.edge == ButtonBump.Edge.TOP || placement.edge == ButtonBump.Edge.BOTTOM,
-            onTop = placement.edge == ButtonBump.Edge.TOP,
-            isLeft = placement.edge == ButtonBump.Edge.LEFT,
-            drawnWidthPx = depthPx,
-            color = store.getColor(),
-            cornerTL = corner,
-            cornerTR = corner,
-            cornerBL = corner,
-            cornerBR = corner,
-            shape = HandlerShape.ROUNDED,
-            flare = HandlerShape.DEFAULT_FLARE,
-            widthDp = depthDp,
-            heightDp = place.lengthDp,
-            fromBar = false,
-        )
-    }
-
     /** Whether the open panel grew out of the bar, and so stands in for it. See [PanelAnchor.fromBar]. */
     private var sliderFromBar = true
 
@@ -3582,6 +3477,7 @@ class OverlayController(
             setSurgeStyle(settings.getSurgeStyle())
             setEffortStyle(settings.getEffortStyle())
             setGlimmerStyle(settings.getGlimmerStyle())
+            setButtonLookStyle(settings.getButtonLookStyle())
             setLevelFeedback(settings.getLevelFeedback())
             setFillStyle(settings.getFillStyle())
             // The user's own colours for the animation, or null for the style's palette.
