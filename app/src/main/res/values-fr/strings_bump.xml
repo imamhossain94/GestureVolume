@@ -16,7 +16,7 @@
     <string name="bump_title">Animation des boutons</string>
     <string name="bump_card_subtitle">L’écran répond à chaque bouton que vous pressez</string>
     <string name="bump_enable_title">Animer les boutons de volume</string>
-    <string name="bump_enable_desc">Une animation se joue à côté du bouton pressé, avec le niveau du volume, à la place du curseur du système. Tant qu’elle est activée, les boutons n’ouvrent pas le curseur rapide.</string>
+    <string name="bump_enable_desc">Une animation se joue à côté du bouton pressé, avec le niveau du volume, à la place du curseur du système.</string>
     <string name="bump_needs_accessibility">Il faut le service d’accessibilité pour répondre aux boutons tout de suite et masquer le curseur du système. Sans lui, l’animation suit le curseur du système un instant après.</string>
     <string name="bump_needs_service">Activez Gesture Volume sur l’écran d’accueil pour que les boutons la jouent.</string>
     <string name="bump_style_title">Animation</string>
@@ -139,6 +139,13 @@
     <string name="step_sound_cosmic">Cosmique</string>
     <string name="step_sound_boing">Boing</string>
 
-    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
-    <string name="slider_volume_keys_paused_for_bump">En pause tant que l’animation des boutons est activée : un appui sur un bouton de volume ne joue que l’animation. Touchez pour ouvrir Animation des boutons.</string>
+    <!-- What the Quick slider does about a press while the button animation is on: both, or pause -->
+    <string name="slider_with_bump">Avec l’animation des boutons</string>
+    <string name="slider_with_bump_both">Afficher les deux</string>
+    <string name="slider_with_bump_pause">Mettre en pause</string>
+    <string name="slider_with_bump_both_hint">Un appui joue l’animation des boutons, et le curseur rapide apparaît aussi, selon Touches de volume.</string>
+    <string name="slider_with_bump_pause_hint">Un appui ne joue que l’animation des boutons. Le curseur rapide ne réagit pas aux touches de volume et s’ouvre toujours depuis la barre.</string>
+    <string name="slider_with_bump_open_animation">L’animation des boutons est activée. Touchez pour ouvrir ses réglages.</string>
+    <string name="bump_slider_desc">Si le curseur rapide apparaît aussi quand vous appuyez sur un bouton de volume.</string>
+    <string name="bump_slider_keys_off">Touches de volume du curseur rapide est sur Désactivé, il n’apparaîtra donc pas. Touchez pour le modifier.</string>
 </resources>

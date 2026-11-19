@@ -16,7 +16,7 @@
     <string name="bump_title">Hiệu ứng nút</string>
     <string name="bump_card_subtitle">Màn hình đáp lại từng nút bạn nhấn</string>
     <string name="bump_enable_title">Tạo hiệu ứng cho nút âm lượng</string>
-    <string name="bump_enable_desc">Một hiệu ứng chạy cạnh nút bạn nhấn, kèm mức âm lượng, thay cho thanh của hệ thống. Khi đang bật, các nút không mở thanh trượt nhanh.</string>
+    <string name="bump_enable_desc">Một hiệu ứng chạy cạnh nút bạn nhấn, kèm mức âm lượng, thay cho thanh của hệ thống.</string>
     <string name="bump_needs_accessibility">Cần dịch vụ hỗ trợ tiếp cận để phản hồi nút ngay lập tức và ẩn thanh trượt của hệ thống. Nếu không có, hiệu ứng sẽ hiện theo thanh trượt của hệ thống sau một chút.</string>
     <string name="bump_needs_service">Bật Gesture Volume trên màn hình chính để các nút phát hiệu ứng này.</string>
     <string name="bump_style_title">Hiệu ứng</string>
@@ -139,6 +139,13 @@
     <string name="step_sound_cosmic">Vũ trụ</string>
     <string name="step_sound_boing">Boing</string>
 
-    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
-    <string name="slider_volume_keys_paused_for_bump">Tạm dừng khi hiệu ứng nút đang bật: nhấn nút âm lượng chỉ chạy hiệu ứng. Chạm để mở Hiệu ứng nút.</string>
+    <!-- What the Quick slider does about a press while the button animation is on: both, or pause -->
+    <string name="slider_with_bump">Cùng hiệu ứng nút</string>
+    <string name="slider_with_bump_both">Hiện cả hai</string>
+    <string name="slider_with_bump_pause">Tạm dừng</string>
+    <string name="slider_with_bump_both_hint">Nhấn sẽ chạy hiệu ứng nút, và thanh trượt nhanh cũng hiện ra, theo cài đặt Phím âm lượng.</string>
+    <string name="slider_with_bump_pause_hint">Nhấn chỉ chạy hiệu ứng nút. Thanh trượt nhanh không phản hồi phím âm lượng và vẫn mở từ thanh như thường.</string>
+    <string name="slider_with_bump_open_animation">Hiệu ứng nút đang bật. Chạm để mở cài đặt.</string>
+    <string name="bump_slider_desc">Thanh trượt nhanh có hiện ra khi bạn nhấn nút âm lượng hay không.</string>
+    <string name="bump_slider_keys_off">Phím âm lượng của thanh trượt nhanh đang Tắt, nên nó sẽ không hiện. Chạm để thay đổi.</string>
 </resources>

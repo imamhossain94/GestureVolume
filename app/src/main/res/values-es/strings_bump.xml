@@ -16,7 +16,7 @@
     <string name="bump_title">Animación de los botones</string>
     <string name="bump_card_subtitle">La pantalla responde a cada botón que pulsas</string>
     <string name="bump_enable_title">Animar los botones de volumen</string>
-    <string name="bump_enable_desc">Junto al botón que pulsas aparece una animación con el nivel de volumen, en lugar del control del sistema. Mientras esté activada, los botones no abren el control rápido.</string>
+    <string name="bump_enable_desc">Junto al botón que pulsas aparece una animación con el nivel de volumen, en lugar del control del sistema.</string>
     <string name="bump_needs_accessibility">Necesita el servicio de accesibilidad para responder a los botones al instante y ocultar el control del sistema. Sin él, la animación sigue al control del sistema un momento después.</string>
     <string name="bump_needs_service">Activa Gesture Volume en la pantalla de inicio para que los botones la reproduzcan.</string>
     <string name="bump_style_title">Animación</string>
@@ -139,6 +139,13 @@
     <string name="step_sound_cosmic">Cósmico</string>
     <string name="step_sound_boing">Boing</string>
 
-    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
-    <string name="slider_volume_keys_paused_for_bump">En pausa mientras la animación de los botones esté activada: pulsar un botón de volumen muestra solo la animación. Toca para abrir Animación de los botones.</string>
+    <!-- What the Quick slider does about a press while the button animation is on: both, or pause -->
+    <string name="slider_with_bump">Con la animación de los botones</string>
+    <string name="slider_with_bump_both">Mostrar ambos</string>
+    <string name="slider_with_bump_pause">Pausar</string>
+    <string name="slider_with_bump_both_hint">Al pulsar se reproduce la animación de los botones y también aparece el control rápido, según Teclas de volumen.</string>
+    <string name="slider_with_bump_pause_hint">Al pulsar solo se reproduce la animación de los botones. El control rápido no responde a las teclas de volumen y sigue abriéndose desde la barra.</string>
+    <string name="slider_with_bump_open_animation">La animación de los botones está activada. Toca para abrir sus ajustes.</string>
+    <string name="bump_slider_desc">Si el control rápido también aparece al pulsar un botón de volumen.</string>
+    <string name="bump_slider_keys_off">Teclas de volumen del control rápido está en Desactivado, así que no aparecerá. Toca para cambiarlo.</string>
 </resources>

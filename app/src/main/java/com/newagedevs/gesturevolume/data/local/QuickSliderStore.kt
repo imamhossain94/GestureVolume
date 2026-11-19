@@ -88,6 +88,20 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         const val VOLUME_KEYS_INSTANT = "instant"
         val ALL_VOLUME_KEY_MODES = listOf(VOLUME_KEYS_OFF, VOLUME_KEYS_FOLLOW, VOLUME_KEYS_INSTANT)
 
+        /**
+         * What the panel does about the volume keys while the button animation is on.
+         *
+         * The two are separate things, and the user chooses how they share a press. Both: the
+         * animation plays at the button, and the panel answers the key exactly as it would with no
+         * animation — as [getVolumeKeyMode] says, from the bar. Pause: the animation alone; the
+         * panel does not answer the keys until the animation is turned off, and its Volume keys
+         * setting is kept for then. See `OverlayController.showBump`.
+         */
+        const val WITH_BUMP_BOTH = "both"
+        const val WITH_BUMP_PAUSE = "pause"
+        val ALL_WITH_BUMP = listOf(WITH_BUMP_BOTH, WITH_BUMP_PAUSE)
+        const val DEFAULT_WITH_BUMP = WITH_BUMP_PAUSE
+
         /** The icon that says what the panel controls. See [getIconName]. */
         const val ICON_AUTO = "auto"
 
@@ -147,6 +161,7 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
         private const val FOLLOW_HANDLER = "sliderFollowHandlerShape"
         private const val OPEN_ON_VOLUME_KEY = "sliderOpenOnVolumeKey"
         private const val VOLUME_KEYS = "sliderVolumeKeys"
+        private const val WITH_BUMP = "sliderWithButtonAnimation"
         private const val CORNER_TL = "sliderCornerTL"
         private const val CORNER_TR = "sliderCornerTR"
         private const val CORNER_BL = "sliderCornerBL"
@@ -494,6 +509,17 @@ class QuickSliderStore(private val prefs: SharedPreferences) {
 
     /** Whether the volume keys open the panel at all, by either route. */
     fun getOpenOnVolumeKey(): Boolean = getVolumeKeyMode() != VOLUME_KEYS_OFF
+
+    /** What the panel does about the volume keys while the button animation is on: one of [ALL_WITH_BUMP]. */
+    fun getWithButtonAnimation(): String =
+        prefs.getString(WITH_BUMP, null)?.takeIf { it in ALL_WITH_BUMP } ?: DEFAULT_WITH_BUMP
+
+    fun setWithButtonAnimation(value: String) = prefs.edit {
+        putString(WITH_BUMP, if (value in ALL_WITH_BUMP) value else DEFAULT_WITH_BUMP)
+    }
+
+    /** Whether the panel answers the volume keys alongside the button animation, rather than pausing for it. */
+    fun showsWithButtonAnimation(): Boolean = getWithButtonAnimation() == WITH_BUMP_BOTH
 
     /** What the filled portion does while the panel is open. See [SliderFill]. */
     fun getFillStyle(): String = SliderFill.sanitize(prefs.getString(FILL_STYLE, null))

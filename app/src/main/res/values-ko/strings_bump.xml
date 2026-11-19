@@ -16,7 +16,7 @@
     <string name="bump_title">버튼 애니메이션</string>
     <string name="bump_card_subtitle">누르는 버튼마다 화면이 반응합니다</string>
     <string name="bump_enable_title">볼륨 버튼 애니메이션</string>
-    <string name="bump_enable_desc">누른 버튼 옆에서 볼륨 레벨과 함께 애니메이션이 재생되며, 시스템 슬라이더를 대신합니다. 켜져 있는 동안에는 버튼으로 빠른 슬라이더가 열리지 않습니다.</string>
+    <string name="bump_enable_desc">누른 버튼 옆에서 볼륨 레벨과 함께 애니메이션이 재생되며, 시스템 슬라이더를 대신합니다.</string>
     <string name="bump_needs_accessibility">버튼에 바로 반응하고 시스템 슬라이더를 숨기려면 접근성 서비스가 필요합니다. 없으면 애니메이션이 시스템 슬라이더보다 조금 늦게 나타납니다.</string>
     <string name="bump_needs_service">버튼으로 재생하려면 홈 화면에서 Gesture Volume을 켜세요.</string>
     <string name="bump_style_title">애니메이션</string>
@@ -139,6 +139,13 @@
     <string name="step_sound_cosmic">우주</string>
     <string name="step_sound_boing">보잉</string>
 
-    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
-    <string name="slider_volume_keys_paused_for_bump">버튼 애니메이션이 켜져 있는 동안 일시 중지됩니다. 볼륨 버튼을 누르면 애니메이션만 재생됩니다. 탭하여 버튼 애니메이션을 엽니다.</string>
+    <!-- What the Quick slider does about a press while the button animation is on: both, or pause -->
+    <string name="slider_with_bump">버튼 애니메이션과 함께</string>
+    <string name="slider_with_bump_both">둘 다 표시</string>
+    <string name="slider_with_bump_pause">일시 중지</string>
+    <string name="slider_with_bump_both_hint">누르면 버튼 애니메이션이 재생되고, 볼륨 키 설정에 따라 빠른 슬라이더도 나타납니다.</string>
+    <string name="slider_with_bump_pause_hint">누르면 버튼 애니메이션만 재생됩니다. 빠른 슬라이더는 볼륨 키에 반응하지 않으며, 바에서는 그대로 열립니다.</string>
+    <string name="slider_with_bump_open_animation">버튼 애니메이션이 켜져 있습니다. 탭하여 설정을 엽니다.</string>
+    <string name="bump_slider_desc">볼륨 버튼을 누를 때 빠른 슬라이더도 나타날지 여부입니다.</string>
+    <string name="bump_slider_keys_off">빠른 슬라이더의 볼륨 키 설정이 끄기라서 나타나지 않습니다. 탭하여 변경하세요.</string>
 </resources>

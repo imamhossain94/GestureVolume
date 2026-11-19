@@ -266,6 +266,14 @@ fun MainNavigation(
                     ButtonFeedbackScreen(
                         viewModel = viewModel,
                         onNavigateBack = { navController.navigateBackOnce() },
+                        onOpenQuickSlider = {
+                            // Come from there: back to it, rather than a second copy on the stack.
+                            if (navController.previousBackStackEntry?.destination?.route == "quick_slider") {
+                                navController.navigateBackOnce()
+                            } else {
+                                navController.navigate("quick_slider")
+                            }
+                        },
                         onOpenPermissions = { navController.navigate(permissionsRoute(it)) }
                     )
                 }

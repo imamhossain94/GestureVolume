@@ -16,7 +16,7 @@
     <string name="bump_title">حركة الأزرار</string>
     <string name="bump_card_subtitle">تستجيب الشاشة لكل زر تضغطه</string>
     <string name="bump_enable_title">تحريك أزرار الصوت</string>
-    <string name="bump_enable_desc">تظهر حركة بجوار الزر الذي تضغطه مع مستوى الصوت، بدلًا من منزلق النظام. ما دامت مفعّلة، لا يُفتح المنزلق السريع من الأزرار.</string>
+    <string name="bump_enable_desc">تظهر حركة بجوار الزر الذي تضغطه مع مستوى الصوت، بدلًا من منزلق النظام.</string>
     <string name="bump_needs_accessibility">تحتاج إلى خدمة إمكانية الوصول للاستجابة للأزرار فورًا وإخفاء شريط النظام. ومن دونها تظهر الحركة بعد شريط النظام بلحظة.</string>
     <string name="bump_needs_service">شغّل Gesture Volume من الشاشة الرئيسية لتعرض الأزرار هذه الحركة.</string>
     <string name="bump_style_title">الحركة</string>
@@ -139,6 +139,13 @@
     <string name="step_sound_cosmic">كوني</string>
     <string name="step_sound_boing">بوينغ</string>
 
-    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
-    <string name="slider_volume_keys_paused_for_bump">متوقف ما دامت حركة الأزرار مفعّلة: ضغطة زر الصوت تُظهر الحركة وحدها. انقر لفتح حركة الأزرار.</string>
+    <!-- What the Quick slider does about a press while the button animation is on: both, or pause -->
+    <string name="slider_with_bump">مع حركة الأزرار</string>
+    <string name="slider_with_bump_both">إظهار الاثنين</string>
+    <string name="slider_with_bump_pause">إيقاف مؤقت</string>
+    <string name="slider_with_bump_both_hint">الضغطة تُظهر حركة الأزرار، ويظهر المنزلق السريع أيضًا كما يحدد إعداد أزرار الصوت.</string>
+    <string name="slider_with_bump_pause_hint">الضغطة تُظهر حركة الأزرار وحدها. يبقى المنزلق السريع بعيدًا عن أزرار الصوت ويظل يُفتح من الشريط.</string>
+    <string name="slider_with_bump_open_animation">حركة الأزرار مفعّلة. انقر لفتح إعداداتها.</string>
+    <string name="bump_slider_desc">هل يظهر المنزلق السريع أيضًا عند الضغط على زر الصوت.</string>
+    <string name="bump_slider_keys_off">إعداد أزرار الصوت في المنزلق السريع على إيقاف، لذا لن يظهر. انقر لتغييره.</string>
 </resources>

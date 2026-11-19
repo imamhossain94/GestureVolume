@@ -16,7 +16,7 @@
     <string name="bump_title">Tastenanimation</string>
     <string name="bump_card_subtitle">Der Bildschirm antwortet auf jede Taste, die du drückst</string>
     <string name="bump_enable_title">Lautstärketasten animieren</string>
-    <string name="bump_enable_desc">Neben der gedrückten Taste läuft eine Animation mit der Lautstärke – statt des Reglers des Systems. Solange sie an ist, öffnen die Tasten den Schnellregler nicht.</string>
+    <string name="bump_enable_desc">Neben der gedrückten Taste läuft eine Animation mit der Lautstärke – statt des Reglers des Systems.</string>
     <string name="bump_needs_accessibility">Braucht den Bedienungshilfedienst, um sofort auf die Tasten zu reagieren und den Regler des Systems auszublenden. Ohne ihn folgt die Animation dem Regler des Systems einen Moment später.</string>
     <string name="bump_needs_service">Schalte Gesture Volume auf dem Startbildschirm ein, damit die Tasten sie abspielen.</string>
     <string name="bump_style_title">Animation</string>
@@ -139,6 +139,13 @@
     <string name="step_sound_cosmic">Kosmisch</string>
     <string name="step_sound_boing">Boing</string>
 
-    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
-    <string name="slider_volume_keys_paused_for_bump">Pausiert, solange die Tastenanimation an ist: Ein Druck auf eine Lautstärketaste spielt nur die Animation. Tippen, um die Tastenanimation zu öffnen.</string>
+    <!-- What the Quick slider does about a press while the button animation is on: both, or pause -->
+    <string name="slider_with_bump">Mit der Tastenanimation</string>
+    <string name="slider_with_bump_both">Beides zeigen</string>
+    <string name="slider_with_bump_pause">Pausieren</string>
+    <string name="slider_with_bump_both_hint">Ein Druck spielt die Tastenanimation, und der Schnellregler erscheint auch, wie unter Lautstärketasten eingestellt.</string>
+    <string name="slider_with_bump_pause_hint">Ein Druck spielt nur die Tastenanimation. Der Schnellregler reagiert nicht auf die Lautstärketasten und öffnet sich weiter über die Leiste.</string>
+    <string name="slider_with_bump_open_animation">Die Tastenanimation ist an. Tippen, um ihre Einstellungen zu öffnen.</string>
+    <string name="bump_slider_desc">Ob der Schnellregler auch erscheint, wenn du eine Lautstärketaste drückst.</string>
+    <string name="bump_slider_keys_off">Beim Schnellregler steht Lautstärketasten auf Aus, daher erscheint er nicht. Tippen, um das zu ändern.</string>
 </resources>

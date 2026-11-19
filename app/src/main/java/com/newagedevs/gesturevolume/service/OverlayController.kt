@@ -681,17 +681,24 @@ class OverlayController(
             return
         }
         // The button animation, without the accessibility service to hand it the keys: it follows
-        // what the system did with them, from the same news, over everything else this would do.
-        if (bumpFollowsSystem()) {
+        // what the system did with them, from the same news.
+        val bumpFollows = bumpFollowsSystem()
+        // With the animation on, the user has chosen whether the panel pauses for the keys or
+        // answers them alongside it. See QuickSliderStore.WITH_BUMP_BOTH.
+        val both = preference.slider.showsWithButtonAnimation()
+        if (bumpFollows && !both) {
             followVolumeWithBump(stream)
             return
         }
-        // The button animation is on: it is what answers the volume keys, and the Quick slider, a
-        // separate thing, is paused for them — neither it nor the readout on the bar comes up for a
-        // press. Its own setting is kept as chosen, and applies again once the animation is off.
-        if (preference.bump.isEnabled()) return
+        // Paused: the animation is what answers the volume keys, and the Quick slider, a separate
+        // thing, stays out of it — neither it nor the readout on the bar comes up for a press. Its
+        // own setting is kept as chosen, and applies again once the animation is off.
+        if (preference.bump.isEnabled() && !both) return
         // The Deck has volume controls of its own, and the bar is out of sight beneath it.
-        if (deckHost != null) return
+        if (deckHost != null) {
+            if (bumpFollows) followVolumeWithBump(stream)
+            return
+        }
 
         /*
          * The panel, where the user has asked for it, and the readout on the bar otherwise.
@@ -703,6 +710,11 @@ class OverlayController(
          */
         val openPanel = preference.slider.getOpenOnVolumeKey()
         val res = if (openPanel) adaptiveVolume() else volume.resolve(preference.getVolumeStreamMode())
+        // Both, with the animation following the system: it follows the adaptive volume, as it
+        // does alone. On a stream of its own it keeps its own record; on the one read here it takes
+        // the news found below, read once, so the two can never disagree about what moved.
+        val bumpRes = if (bumpFollows) adaptiveVolume() else null
+        if (bumpRes != null && bumpRes.stream != res.stream) followVolumeWithBump(stream)
         if (stream != null && stream != res.stream) return
         val percent = volume.percent(res) ?: return
         val seen = lastSeenVolume[res.stream]
@@ -712,13 +724,15 @@ class OverlayController(
         // from it a stream seen for the first time is a baseline rather than news. The broadcast
         // fires only when a stream has actually moved, so from it that is news.
         if (seen == null && stream == null) return
-        if (handlerView == null) return
-
-        if (openPanel) {
-            showQuickSliderPanel(QuickSliderStore.TARGET_ADAPTIVE)
-            return
+        val hadAnimation = bumpOverlay?.hasWindow() == true
+        if (handlerView != null) {
+            if (openPanel) showQuickSliderPanel(QuickSliderStore.TARGET_ADAPTIVE) else showVolumePercentOnHandler(percent, res)
         }
-        showVolumePercentOnHandler(percent, res)
+        if (bumpRes == null || bumpRes.stream != res.stream) return
+        val index = volume.level(res) ?: return
+        showBump(res, if (seen == null || percent >= seen) 1 else -1, index, atLimit = false, withSlider = false)
+        // A panel opened over an animation already playing would be drawn over it.
+        if (hadAnimation && sliderView != null) bumpOverlay?.raise()
     }
 
     /**
@@ -735,7 +749,7 @@ class OverlayController(
         lastSeenVolume[res.stream] = percent
         if (seen == percent) return
         if (seen == null && stream == null) return
-        showBump(res, if (seen == null || percent >= seen) 1 else -1, index, atLimit = false)
+        showBump(res, if (seen == null || percent >= seen) 1 else -1, index, atLimit = false, withSlider = false)
     }
 
     /**
@@ -1024,8 +1038,8 @@ class OverlayController(
         // app's own screens — where it is lined up with the buttons — over the Deck, and on the lock
         // screen, which its windows are drawn over. The panel answers them only where it can open.
         val bump = bumpTakesKeys()
-        // With the animation on, the panel never takes them: it is paused for the keys.
-        if (!bump && preference.bump.isEnabled()) return false
+        // With the animation on and the panel paused for it, the panel never takes them.
+        if (!bump && preference.bump.isEnabled() && !preference.slider.showsWithButtonAnimation()) return false
         if (!bump && preference.slider.getVolumeKeyMode() != QuickSliderStore.VOLUME_KEYS_INSTANT) return false
         if (!bump && (handlerView == null || deckHost != null)) return false
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return false
@@ -1097,16 +1111,50 @@ class OverlayController(
      * was pressed — volume up where volume up is, volume down where it is — with the level it left.
      * Held, the key keeps it out and keeps it stepping.
      *
-     * The animation alone. The Quick slider is a separate thing, the panel the bar opens, and it
-     * has no part in a press: while the animation is on it does not answer the volume keys at all
-     * (see [onVolumeChangedElsewhere]). A panel the user already has open still follows the level.
+     * The Quick slider is a separate thing, the panel the bar opens, and the user chooses what it
+     * does meanwhile (QuickSliderStore.WITH_BUMP_BOTH). Paused, the animation plays alone. Both,
+     * the panel also answers the key exactly as it would with no animation — opened from the bar
+     * as its Volume keys setting says, or moved if it is up — when [withSlider]: not for a step
+     * the system refused, whose warning is the system's to show, nor for a change the system made,
+     * which [onVolumeChangedElsewhere] opens the panel for by its own rules. A panel the user
+     * already has open follows the level either way.
      */
-    private fun showBump(res: VolumeController.Resolution, direction: Int, index: Int, atLimit: Boolean) {
+    private fun showBump(
+        res: VolumeController.Resolution,
+        direction: Int,
+        index: Int,
+        atLimit: Boolean,
+        withSlider: Boolean = true,
+    ) {
         val level = ButtonBump.levelOf(index, res.minIndex, res.maxIndex)
+        val hadAnimation = bumpOverlay?.hasWindow() == true
+        val opened = if (withSlider && sliderOpensWithBump()) {
+            showPanelForVolumeKey(res)
+        } else {
+            // An open panel moves now rather than on its follower's next beat.
+            if (sliderView != null && sliderResolution?.stream == res.stream) followVolumeOnPanel(null)
+            false
+        }
         pressButton(volumeButton(direction), direction, level, atLimit)
+        // A panel opened by this press over an animation already playing would be drawn over it:
+        // the animation goes back on top, as it is everywhere else on the glass.
+        if (opened && hadAnimation) bumpOverlay?.raise()
         if (!atLimit) playBumpSound(res.stream)
-        // An open panel moves now rather than on its follower's next beat.
-        if (sliderView != null && sliderResolution?.stream == res.stream) followVolumeOnPanel(null)
+    }
+
+    /**
+     * Whether a volume key answered by the animation also brings up the Quick slider: both are
+     * chosen, the panel's own Volume keys setting opens it, and it could open now — there is a bar
+     * to grow from, the Deck is not up, and the phone is not locked, where the panel never opens
+     * for the keys on its own either.
+     */
+    private fun sliderOpensWithBump(): Boolean {
+        val settings = preference.slider
+        if (!settings.showsWithButtonAnimation()) return false
+        if (settings.getVolumeKeyMode() == QuickSliderStore.VOLUME_KEYS_OFF) return false
+        if (handlerView == null || deckHost != null) return false
+        val keyguard = context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
+        return keyguard?.isKeyguardLocked != true
     }
 
     /** The animation's own sound. */
@@ -1182,7 +1230,7 @@ class OverlayController(
             if (volume.level(res) == current) {
                 // Refused: the key goes on to the system, whose warning is what lets the user go
                 // louder. The bump still answers the press, held at the level that stayed.
-                if (bump) showBump(res, direction, current, atLimit = true)
+                if (bump) showBump(res, direction, current, atLimit = true, withSlider = false)
                 return false
             }
         }
@@ -1200,8 +1248,12 @@ class OverlayController(
         return true
     }
 
-    /** Puts the panel up on [res] for a key press, or moves it there if it is already up. */
-    private fun showPanelForVolumeKey(res: VolumeController.Resolution) {
+    /**
+     * Puts the panel up on [res] for a key press, or moves it there if it is already up.
+     *
+     * @return whether this opened a panel, rather than moving one that was up or opening none.
+     */
+    private fun showPanelForVolumeKey(res: VolumeController.Resolution): Boolean {
         if (sliderView != null && sliderResolution?.stream == res.stream) {
             // Moved now rather than on the follower's next beat, and kept up for as long as the
             // keys are being pressed, including at the ends, where the level no longer moves.
@@ -1210,11 +1262,13 @@ class OverlayController(
                 mainHandler.removeCallbacks(sliderCloseRunnable)
                 restartQuickSliderIdleTimeout()
             }
-            return
+            return false
         }
         // A panel showing something else, brightness, makes way for the one the key is about.
         if (sliderView != null) hideQuickSlider()
-        if (openQuickSliderWindow(QuickSliderStore.TARGET_ADAPTIVE)) animateQuickSliderOpen()
+        if (!openQuickSliderWindow(QuickSliderStore.TARGET_ADAPTIVE)) return false
+        animateQuickSliderOpen()
+        return true
     }
 
     // =============================================================================================

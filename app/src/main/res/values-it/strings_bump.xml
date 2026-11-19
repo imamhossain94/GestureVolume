@@ -16,7 +16,7 @@
     <string name="bump_title">Animazione dei tasti</string>
     <string name="bump_card_subtitle">Lo schermo risponde a ogni tasto che premi</string>
     <string name="bump_enable_title">Anima i tasti del volume</string>
-    <string name="bump_enable_desc">Accanto al tasto che premi parte un’animazione con il livello del volume, al posto del cursore di sistema. Finché è attiva, i tasti non aprono il cursore rapido.</string>
+    <string name="bump_enable_desc">Accanto al tasto che premi parte un’animazione con il livello del volume, al posto del cursore di sistema.</string>
     <string name="bump_needs_accessibility">Serve il servizio di accessibilità per rispondere subito ai tasti e nascondere il cursore di sistema. Senza, l’animazione segue il cursore di sistema un attimo dopo.</string>
     <string name="bump_needs_service">Attiva Gesture Volume nella schermata principale perché i tasti la riproducano.</string>
     <string name="bump_style_title">Animazione</string>
@@ -139,6 +139,13 @@
     <string name="step_sound_cosmic">Cosmico</string>
     <string name="step_sound_boing">Boing</string>
 
-    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
-    <string name="slider_volume_keys_paused_for_bump">In pausa finché l’animazione dei tasti è attiva: premere un tasto del volume mostra solo l’animazione. Tocca per aprire Animazione dei tasti.</string>
+    <!-- What the Quick slider does about a press while the button animation is on: both, or pause -->
+    <string name="slider_with_bump">Con l’animazione dei tasti</string>
+    <string name="slider_with_bump_both">Mostra entrambi</string>
+    <string name="slider_with_bump_pause">Metti in pausa</string>
+    <string name="slider_with_bump_both_hint">Una pressione avvia l’animazione dei tasti e appare anche il cursore rapido, come indicato in Tasti del volume.</string>
+    <string name="slider_with_bump_pause_hint">Una pressione avvia solo l’animazione dei tasti. Il cursore rapido non risponde ai tasti del volume e si apre comunque dalla barra.</string>
+    <string name="slider_with_bump_open_animation">L’animazione dei tasti è attiva. Tocca per aprirne le impostazioni.</string>
+    <string name="bump_slider_desc">Se il cursore rapido appare anche quando premi un tasto del volume.</string>
+    <string name="bump_slider_keys_off">Tasti del volume del cursore rapido è su Disattivati, quindi non apparirà. Tocca per cambiarlo.</string>
 </resources>

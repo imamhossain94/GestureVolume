@@ -16,7 +16,7 @@
     <string name="bump_title">बटन एनिमेशन</string>
     <string name="bump_card_subtitle">आप जो भी बटन दबाएँ, स्क्रीन जवाब देती है</string>
     <string name="bump_enable_title">वॉल्यूम बटन को एनिमेट करें</string>
-    <string name="bump_enable_desc">दबाए गए बटन के पास वॉल्यूम स्तर के साथ एक एनिमेशन चलता है, सिस्टम के स्लाइडर की जगह। इसके चालू रहते बटन त्वरित स्लाइडर नहीं खोलते।</string>
+    <string name="bump_enable_desc">दबाए गए बटन के पास वॉल्यूम स्तर के साथ एक एनिमेशन चलता है, सिस्टम के स्लाइडर की जगह।</string>
     <string name="bump_needs_accessibility">बटन पर तुरंत प्रतिक्रिया देने और सिस्टम का स्लाइडर छिपाने के लिए सुलभता सेवा चाहिए। इसके बिना एनिमेशन सिस्टम के स्लाइडर के थोड़ी देर बाद आता है।</string>
     <string name="bump_needs_service">बटन से इसे चलाने के लिए होम स्क्रीन पर Gesture Volume चालू करें।</string>
     <string name="bump_style_title">एनिमेशन</string>
@@ -139,6 +139,13 @@
     <string name="step_sound_cosmic">ब्रह्मांडीय</string>
     <string name="step_sound_boing">बोइंग</string>
 
-    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
-    <string name="slider_volume_keys_paused_for_bump">बटन एनिमेशन चालू रहने तक रुका हुआ: वॉल्यूम बटन दबाने पर केवल एनिमेशन चलता है। बटन एनिमेशन खोलने के लिए टैप करें।</string>
+    <!-- What the Quick slider does about a press while the button animation is on: both, or pause -->
+    <string name="slider_with_bump">बटन एनिमेशन के साथ</string>
+    <string name="slider_with_bump_both">दोनों दिखाएँ</string>
+    <string name="slider_with_bump_pause">रोकें</string>
+    <string name="slider_with_bump_both_hint">दबाने पर बटन एनिमेशन चलता है, और वॉल्यूम कुंजियाँ सेटिंग के अनुसार त्वरित स्लाइडर भी आता है।</string>
+    <string name="slider_with_bump_pause_hint">दबाने पर केवल बटन एनिमेशन चलता है। त्वरित स्लाइडर वॉल्यूम कुंजियों से दूर रहता है और बार से पहले की तरह खुलता है।</string>
+    <string name="slider_with_bump_open_animation">बटन एनिमेशन चालू है। इसकी सेटिंग खोलने के लिए टैप करें।</string>
+    <string name="bump_slider_desc">वॉल्यूम बटन दबाने पर त्वरित स्लाइडर भी आए या नहीं।</string>
+    <string name="bump_slider_keys_off">त्वरित स्लाइडर की वॉल्यूम कुंजियाँ सेटिंग बंद है, इसलिए यह नहीं आएगा। बदलने के लिए टैप करें।</string>
 </resources>

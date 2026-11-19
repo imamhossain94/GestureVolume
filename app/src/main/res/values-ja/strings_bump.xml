@@ -16,7 +16,7 @@
     <string name="bump_title">ボタンアニメーション</string>
     <string name="bump_card_subtitle">押したボタンごとに画面が応えます</string>
     <string name="bump_enable_title">音量ボタンをアニメーション</string>
-    <string name="bump_enable_desc">押したボタンの横で、音量レベル付きのアニメーションが再生されます（システムのスライダーの代わり）。オンの間、ボタンではクイックスライダーは開きません。</string>
+    <string name="bump_enable_desc">押したボタンの横で、音量レベル付きのアニメーションが再生されます（システムのスライダーの代わり）。</string>
     <string name="bump_needs_accessibility">ボタンにすぐ反応してシステムのスライダーを隠すには、ユーザー補助サービスが必要です。オフの場合、アニメーションはシステムのスライダーより少し遅れて表示されます。</string>
     <string name="bump_needs_service">ボタンでアニメーションを再生するには、ホーム画面で Gesture Volume をオンにしてください。</string>
     <string name="bump_style_title">アニメーション</string>
@@ -139,6 +139,13 @@
     <string name="step_sound_cosmic">コズミック</string>
     <string name="step_sound_boing">ボヨン</string>
 
-    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
-    <string name="slider_volume_keys_paused_for_bump">ボタンアニメーションがオンの間は一時停止中です。音量ボタンを押すとアニメーションだけが表示されます。タップしてボタンアニメーションを開きます。</string>
+    <!-- What the Quick slider does about a press while the button animation is on: both, or pause -->
+    <string name="slider_with_bump">ボタンアニメーションと一緒に</string>
+    <string name="slider_with_bump_both">両方表示</string>
+    <string name="slider_with_bump_pause">一時停止</string>
+    <string name="slider_with_bump_both_hint">押すとボタンアニメーションが再生され、「音量ボタン」の設定どおりにクイックスライダーも表示されます。</string>
+    <string name="slider_with_bump_pause_hint">押すとボタンアニメーションだけが再生されます。クイックスライダーは音量ボタンに反応せず、バーからは今までどおり開きます。</string>
+    <string name="slider_with_bump_open_animation">ボタンアニメーションはオンです。タップして設定を開きます。</string>
+    <string name="bump_slider_desc">音量ボタンを押したときに、クイックスライダーも表示するかどうか。</string>
+    <string name="bump_slider_keys_off">クイックスライダーの「音量ボタン」がオフのため表示されません。タップして変更します。</string>
 </resources>

@@ -16,7 +16,7 @@
     <string name="bump_title">Tuş animasyonu</string>
     <string name="bump_card_subtitle">Ekran, bastığınız her tuşa yanıt verir</string>
     <string name="bump_enable_title">Ses tuşlarını canlandır</string>
-    <string name="bump_enable_desc">Bastığınız tuşun yanında ses düzeyiyle birlikte bir animasyon oynar; sistemin kaydırıcısı yerine. Açıkken tuşlar hızlı kaydırıcıyı açmaz.</string>
+    <string name="bump_enable_desc">Bastığınız tuşun yanında ses düzeyiyle birlikte bir animasyon oynar; sistemin kaydırıcısı yerine.</string>
     <string name="bump_needs_accessibility">Tuşlara anında yanıt vermek ve sistemin kaydırıcısını gizlemek için erişilebilirlik hizmeti gerekir. Hizmet olmadan animasyon, sistemin kaydırıcısını bir an sonra izler.</string>
     <string name="bump_needs_service">Tuşların bunu oynatması için ana ekranda Gesture Volume’ü açın.</string>
     <string name="bump_style_title">Animasyon</string>
@@ -139,6 +139,13 @@
     <string name="step_sound_cosmic">Kozmik</string>
     <string name="step_sound_boing">Boing</string>
 
-    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
-    <string name="slider_volume_keys_paused_for_bump">Tuş animasyonu açıkken duraklatıldı: bir ses tuşuna basmak yalnızca animasyonu oynatır. Tuş animasyonunu açmak için dokunun.</string>
+    <!-- What the Quick slider does about a press while the button animation is on: both, or pause -->
+    <string name="slider_with_bump">Tuş animasyonuyla birlikte</string>
+    <string name="slider_with_bump_both">İkisini de göster</string>
+    <string name="slider_with_bump_pause">Duraklat</string>
+    <string name="slider_with_bump_both_hint">Basınca tuş animasyonu oynar ve Ses tuşları ayarına göre hızlı kaydırıcı da açılır.</string>
+    <string name="slider_with_bump_pause_hint">Basınca yalnızca tuş animasyonu oynar. Hızlı kaydırıcı ses tuşlarına yanıt vermez ve çubuktan yine açılır.</string>
+    <string name="slider_with_bump_open_animation">Tuş animasyonu açık. Ayarlarını açmak için dokunun.</string>
+    <string name="bump_slider_desc">Bir ses tuşuna bastığınızda hızlı kaydırıcının da açılıp açılmayacağı.</string>
+    <string name="bump_slider_keys_off">Hızlı kaydırıcının Ses tuşları ayarı Kapalı, bu yüzden açılmayacak. Değiştirmek için dokunun.</string>
 </resources>

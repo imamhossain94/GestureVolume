@@ -161,6 +161,23 @@ class ButtonBumpOverlay(
         }
     }
 
+    /** Whether the window is on the glass now. */
+    fun hasWindow(): Boolean = view != null
+
+    /**
+     * Puts the window back on top of this app's others, the animation carrying on as it was: a
+     * Quick panel opened after it, with both chosen, would otherwise be drawn over it.
+     */
+    fun raise() {
+        val wm = windowManager ?: return
+        val bump = view ?: return
+        val lp = params ?: return
+        runCatching {
+            wm.removeViewImmediate(bump)
+            wm.addView(bump, lp)
+        }
+    }
+
     private fun removeNow() {
         val bump = view ?: return
         bump.listener = null

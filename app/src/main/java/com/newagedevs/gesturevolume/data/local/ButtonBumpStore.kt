@@ -8,8 +8,9 @@ import com.newagedevs.gesturevolume.utils.ButtonBump
  * and how it looks. Same preferences file as everything else, its own object, like [QuickSliderStore].
  *
  * The animation and the Quick slider are two separate things. A press of a button plays the
- * animation alone, with its own level; the Quick slider is the panel the bar opens, and while the
- * animation is on it does not answer the volume keys at all.
+ * animation, with its own level; the Quick slider is the panel the bar opens, and whether it also
+ * answers the press or pauses for the animation is the user's choice, kept with the slider's own
+ * settings: see QuickSliderStore.WITH_BUMP_BOTH.
  *
  * Every getter clamps or sanitises on read, for the reason the rest of the file gives: `allowBackup`
  * means a value written by another build can arrive from a cloud restore.

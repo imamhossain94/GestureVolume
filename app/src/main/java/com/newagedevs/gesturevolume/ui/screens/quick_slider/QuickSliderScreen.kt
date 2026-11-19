@@ -132,6 +132,18 @@ fun sliderVolumeKeysLabel(id: String): Int = when (id) {
     else -> R.string.slider_volume_keys_follow
 }
 
+/** The name of a choice of what the panel does about the keys while the button animation is on. */
+fun sliderWithBumpLabel(id: String): Int = when (id) {
+    QuickSliderStore.WITH_BUMP_BOTH -> R.string.slider_with_bump_both
+    else -> R.string.slider_with_bump_pause
+}
+
+/** What that choice means, in a line. */
+fun sliderWithBumpHint(id: String): Int = when (id) {
+    QuickSliderStore.WITH_BUMP_BOTH -> R.string.slider_with_bump_both_hint
+    else -> R.string.slider_with_bump_pause_hint
+}
+
 private fun sliderVolumeKeysHint(id: String): Int = when (id) {
     QuickSliderStore.VOLUME_KEYS_OFF -> R.string.slider_volume_keys_off_hint
     QuickSliderStore.VOLUME_KEYS_INSTANT -> R.string.slider_volume_keys_instant_hint
@@ -256,9 +268,11 @@ fun QuickSliderScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var accessibilityOn by remember { mutableStateOf(OverlayRuntime.isAccessibilityEnabled(context)) }
-    // The button animation answers the volume keys while it is on, and this panel stands aside for
-    // it. Looked at again on the way back, in case it was switched on its own screen.
+    // With the button animation on, the user chooses whether this panel answers the volume keys
+    // alongside it or pauses for it. Looked at again on the way back, in case either was changed
+    // on the animation's own screen.
     var buttonAnimationOn by remember { mutableStateOf(viewModel.preference.bump.isEnabled()) }
+    var withBump by remember { mutableStateOf(store.getWithButtonAnimation()) }
     var canWriteSettings by remember { mutableStateOf(Settings.System.canWrite(context)) }
     var showDisclosure by remember { mutableStateOf(false) }
     var iconName by remember { mutableStateOf(store.getIconName()) }
@@ -273,6 +287,7 @@ fun QuickSliderScreen(
             if (event == Lifecycle.Event.ON_RESUME) {
                 accessibilityOn = OverlayRuntime.isAccessibilityEnabled(context)
                 buttonAnimationOn = viewModel.preference.bump.isEnabled()
+                withBump = store.getWithButtonAnimation()
                 canWriteSettings = Settings.System.canWrite(context)
                 viewModel.preference.setAppOpenAdPaused(false)
             }
@@ -821,16 +836,31 @@ fun QuickSliderScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                if (buttonAnimationOn && volumeKeys != QuickSliderStore.VOLUME_KEYS_OFF) {
-                    // Kept as chosen, and back the moment the animation is turned off.
-                    InfoNote(
-                        text = stringResource(R.string.slider_volume_keys_paused_for_bump),
-                        onClick = onOpenButtonFeedback,
-                    )
-                } else if (volumeKeys == QuickSliderStore.VOLUME_KEYS_INSTANT && !accessibilityOn) {
+                if (volumeKeys == QuickSliderStore.VOLUME_KEYS_INSTANT && !accessibilityOn) {
                     PermissionNote(
                         text = stringResource(R.string.slider_volume_keys_needs_accessibility),
                         onClick = { onOpenPermissions(PermissionNeeds.Permission.ACCESSIBILITY) },
+                    )
+                }
+                // Only while the animation is on, which is the only time it means anything; the
+                // same choice is on the animation's screen.
+                if (buttonAnimationOn) {
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Label(stringResource(R.string.slider_with_bump))
+                    ChipRow(
+                        ids = QuickSliderStore.ALL_WITH_BUMP,
+                        label = { stringResource(sliderWithBumpLabel(it)) },
+                        selected = { it == withBump },
+                        onClick = { withBump = it; store.setWithButtonAnimation(it) }
+                    )
+                    Text(
+                        text = stringResource(sliderWithBumpHint(withBump)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    InfoNote(
+                        text = stringResource(R.string.slider_with_bump_open_animation),
+                        onClick = onOpenButtonFeedback,
                     )
                 }
                 Sep()

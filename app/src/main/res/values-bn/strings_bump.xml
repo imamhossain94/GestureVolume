@@ -16,7 +16,7 @@
     <string name="bump_title">বোতাম অ্যানিমেশন</string>
     <string name="bump_card_subtitle">আপনি যে বোতামই চাপুন, স্ক্রিন সাড়া দেয়</string>
     <string name="bump_enable_title">ভলিউম বোতাম অ্যানিমেট করুন</string>
-    <string name="bump_enable_desc">আপনি যে বোতাম চাপেন তার পাশে ভলিউম লেভেলসহ একটি অ্যানিমেশন চলে, সিস্টেমের স্লাইডারের বদলে। এটি চালু থাকলে বোতাম থেকে দ্রুত স্লাইডার খোলে না।</string>
+    <string name="bump_enable_desc">আপনি যে বোতাম চাপেন তার পাশে ভলিউম লেভেলসহ একটি অ্যানিমেশন চলে, সিস্টেমের স্লাইডারের বদলে।</string>
     <string name="bump_needs_accessibility">বোতামে সঙ্গে সঙ্গে সাড়া দিতে ও সিস্টেমের স্লাইডার লুকাতে অ্যাক্সেসিবিলিটি সার্ভিস লাগে। এটি ছাড়া অ্যানিমেশন সিস্টেমের স্লাইডারের একটু পরে আসে।</string>
     <string name="bump_needs_service">বোতামে এটি চালাতে হোম স্ক্রিনে Gesture Volume চালু করুন।</string>
     <string name="bump_style_title">অ্যানিমেশন</string>
@@ -139,6 +139,13 @@
     <string name="step_sound_cosmic">মহাজাগতিক</string>
     <string name="step_sound_boing">বোয়িং</string>
 
-    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
-    <string name="slider_volume_keys_paused_for_bump">বোতাম অ্যানিমেশন চালু থাকা অবস্থায় বিরতিতে: ভলিউম বোতাম চাপলে শুধু অ্যানিমেশনটি চলে। বোতাম অ্যানিমেশন খুলতে ট্যাপ করুন।</string>
+    <!-- What the Quick slider does about a press while the button animation is on: both, or pause -->
+    <string name="slider_with_bump">বোতাম অ্যানিমেশনের সাথে</string>
+    <string name="slider_with_bump_both">দুটোই দেখান</string>
+    <string name="slider_with_bump_pause">বিরতি</string>
+    <string name="slider_with_bump_both_hint">চাপলে বোতাম অ্যানিমেশন চলে, আর ভলিউম কী সেটিং অনুযায়ী দ্রুত স্লাইডারও আসে।</string>
+    <string name="slider_with_bump_pause_hint">চাপলে শুধু বোতাম অ্যানিমেশন চলে। দ্রুত স্লাইডার ভলিউম কী থেকে দূরে থাকে, তবে বার থেকে আগের মতোই খোলে।</string>
+    <string name="slider_with_bump_open_animation">বোতাম অ্যানিমেশন চালু আছে। এর সেটিংস খুলতে ট্যাপ করুন।</string>
+    <string name="bump_slider_desc">ভলিউম বোতাম চাপলে দ্রুত স্লাইডারও আসবে কি না।</string>
+    <string name="bump_slider_keys_off">দ্রুত স্লাইডারের ভলিউম কী সেটিং বন্ধ, তাই এটি আসবে না। বদলাতে ট্যাপ করুন।</string>
 </resources>

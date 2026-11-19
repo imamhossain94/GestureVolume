@@ -92,11 +92,15 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.ButtonBumpStore
+import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.data.local.ButtonBumpStore.Button
 import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.service.ButtonBumpOverlay
 import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.components.ChoiceChip
+import com.newagedevs.gesturevolume.ui.components.InfoNote
+import com.newagedevs.gesturevolume.ui.screens.quick_slider.sliderWithBumpLabel
+import com.newagedevs.gesturevolume.ui.screens.quick_slider.sliderWithBumpHint
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
@@ -123,19 +127,22 @@ import kotlin.math.roundToInt
  * The button animation: the glass answers at the very button that was pressed — volume up where
  * volume up is, volume down where it is, the power button where that is.
  *
- * It is its own thing, apart from the Quick slider: a press plays the animation alone, with its own
- * level, and while it is on the Quick slider does not answer the volume keys.
+ * It is its own thing, apart from the Quick slider, with its own level. Whether the Quick slider
+ * also comes up for a press, or pauses while the animation is on, is the user's choice, offered
+ * here as well as on the slider's own screen.
  *
  * At the top, the phone the Quick slider's screen uses, playing the animation exactly as the glass
- * will; under it, the animations — every one of them free — then where each button is (lined up on
- * the real glass while it is being set), the power button, the look and the feel. Every change is written as it is made: the overlay reads the settings at each
- * press, so the next press of a real button already shows it.
+ * will; under it, what the Quick slider does, the animations — every one of them free — then where
+ * each button is (lined up on the real glass while it is being set), the power button, the look and
+ * the feel. Every change is written as it is made: the overlay reads the settings at each press, so
+ * the next press of a real button already shows it.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ButtonFeedbackScreen(
     viewModel: MainViewModel,
     onNavigateBack: () -> Unit,
+    onOpenQuickSlider: () -> Unit = {},
     onOpenPermissions: (PermissionNeeds.Permission?) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -147,6 +154,10 @@ fun ButtonFeedbackScreen(
     var style by remember { mutableStateOf(store.getStyle()) }
     var sweep by remember { mutableFloatStateOf(store.getSweep()) }
     var sound by remember { mutableStateOf(store.getSound()) }
+    // What the Quick slider does about a press meanwhile: the slider's own setting, chosen here too.
+    val sliderStore = viewModel.preference.slider
+    var withBump by remember { mutableStateOf(sliderStore.getWithButtonAnimation()) }
+    var sliderKeysOff by remember { mutableStateOf(sliderStore.getVolumeKeyMode() == QuickSliderStore.VOLUME_KEYS_OFF) }
     var powerMenu by remember { mutableStateOf(store.getPowerMenu()) }
     var powerWake by remember { mutableStateOf(store.getPowerWake()) }
     var places by remember { mutableStateOf(Button.entries.associateWith { store.getPlace(it) }) }
@@ -166,6 +177,8 @@ fun ButtonFeedbackScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 accessibilityOn = OverlayRuntime.isAccessibilityEnabled(context)
+                withBump = sliderStore.getWithButtonAnimation()
+                sliderKeysOff = sliderStore.getVolumeKeyMode() == QuickSliderStore.VOLUME_KEYS_OFF
                 viewModel.preference.setAppOpenAdPaused(false)
             }
         }
@@ -304,6 +317,42 @@ fun ButtonFeedbackScreen(
             }
             if (enabled && !state.isRunning) {
                 Note(stringResource(R.string.bump_needs_service))
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ---- the Quick slider ---------------------------------------------------------------------
+            // A separate thing, so the user says how the two share a press: both, or the animation alone.
+            Heading(stringResource(R.string.quick_slider_title), stringResource(R.string.bump_slider_desc))
+            Card(shape = segmentShape(0, 1)) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.selectableGroup(),
+                ) {
+                    QuickSliderStore.ALL_WITH_BUMP.forEach { option ->
+                        ChoiceChip(
+                            label = stringResource(sliderWithBumpLabel(option)),
+                            selected = withBump == option,
+                            onClick = {
+                                withBump = option
+                                sliderStore.setWithButtonAnimation(option)
+                            },
+                        )
+                    }
+                }
+                Text(
+                    text = stringResource(sliderWithBumpHint(withBump)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+            // Both, but the slider's own setting keeps it closed: say so, and where to change it.
+            if (withBump == QuickSliderStore.WITH_BUMP_BOTH && sliderKeysOff) {
+                InfoNote(
+                    text = stringResource(R.string.bump_slider_keys_off),
+                    onClick = onOpenQuickSlider,
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))

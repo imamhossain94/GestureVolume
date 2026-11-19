@@ -16,7 +16,7 @@
     <string name="bump_title">按键动画</string>
     <string name="bump_card_subtitle">屏幕会回应你按下的每个按键</string>
     <string name="bump_enable_title">为音量键添加动画</string>
-    <string name="bump_enable_desc">在你按下的按键旁播放带音量级别的动画，取代系统的滑块。开启期间，按键不会打开快捷滑块。</string>
+    <string name="bump_enable_desc">在你按下的按键旁播放带音量级别的动画，取代系统的滑块。</string>
     <string name="bump_needs_accessibility">需要无障碍服务才能立即响应按键并隐藏系统滑块。没有它时，动画会在系统滑块出现片刻后才显示。</string>
     <string name="bump_needs_service">请在主屏幕打开 Gesture Volume，按键才会播放此动画。</string>
     <string name="bump_style_title">动画</string>
@@ -139,6 +139,13 @@
     <string name="step_sound_cosmic">宇宙</string>
     <string name="step_sound_boing">啵嘤</string>
 
-    <!-- The Quick slider's Volume keys setting, while the button animation is on -->
-    <string name="slider_volume_keys_paused_for_bump">按键动画开启期间已暂停：按下音量键只会播放动画。点按可打开按键动画。</string>
+    <!-- What the Quick slider does about a press while the button animation is on: both, or pause -->
+    <string name="slider_with_bump">与按键动画一起</string>
+    <string name="slider_with_bump_both">同时显示</string>
+    <string name="slider_with_bump_pause">暂停</string>
+    <string name="slider_with_bump_both_hint">按下时播放按键动画，并按“音量键”设置同时显示快捷滑块。</string>
+    <string name="slider_with_bump_pause_hint">按下时只播放按键动画。快捷滑块不响应音量键，仍可从横条打开。</string>
+    <string name="slider_with_bump_open_animation">按键动画已开启。点按可打开其设置。</string>
+    <string name="bump_slider_desc">按下音量键时，是否也显示快捷滑块。</string>
+    <string name="bump_slider_keys_off">快捷滑块的“音量键”设置为关闭，所以它不会显示。点按可更改。</string>
 </resources>
