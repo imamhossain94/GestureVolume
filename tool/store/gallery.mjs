@@ -161,7 +161,7 @@ pre.cmd { margin: 0; padding: 16px 18px; background: var(--surface); border: 1px
   <header class="top">
     <div class="mark"><img src="${iconUri}" alt=""></div>
     <div class="text">
-      <p class="eyebrow">Store kit · version 1.5.4</p>
+      <p class="eyebrow">Store kit · version 1.5.5</p>
       <h1>Gesture Volume Store Art</h1>
       <p class="lede">Google Play graphics, a 30-second promo in two cuts, and ${tuts.length} YouTube tutorials. Every frame is drawn from the app's own Compose code, shaders and drawables, and rendered in a browser. All of it is in the repository under <code>store/</code>.</p>
       <p><a href="${REPO}/store" target="_blank" rel="noopener">Open store/ on GitHub</a></p>

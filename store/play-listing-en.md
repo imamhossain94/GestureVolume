@@ -1,9 +1,10 @@
 # Gesture Volume — Play Store listing
 
 Ready to paste into Play Console. Character counts are checked against Google's limits. Updated
-13 September 2026 for the release that adds the Quick slider, Dynamic position, Visibility and the
-new panel styles, and removes clipboard, weather, song identification and running without a
-notification. `versionName` in `app/build.gradle.kts` is still `1.4.0` — bump it before upload.
+19 November 2026 for 1.5.5 (build 43, already set in `app/build.gradle.kts`): the button animation,
+the Button looks fill, step sounds, and the volume and edge fixes. The description, What's new, the
+accessibility declaration and the reply to reviewers all name the button animation and the bar
+over the status bar, as the in-app disclosure does.
 
 Companion documents in this folder:
 - `privacy-policy.html` — the privacy policy's former Blogger source; the live copy is now on newagedevs.com at the privacy URL the app links to (see "Links" below)
@@ -61,37 +62,38 @@ It began as a way to save a worn-out volume rocker, and it still is one.
 • Swipe up and down for volume or brightness
 • Follows what is playing — a call, an alarm, a ringtone or your music
 • Drag it anywhere; it snaps to the edge if you like
-• Dynamic position: it stays on the same edge of your phone when you rotate, and lies along the top or bottom in landscape
+• Dynamic position: it keeps to the same edge of your phone when you rotate
 • Presets to start from, then size, shape, colour, opacity, icon and edge distance are yours
+
+▸ BUTTON ANIMATION
+Press a volume button and the screen's edge answers beside it, with the level. 33 animations with their own sounds — water, fireworks, a dragon, a cute cat and more. The power button can play them too.
 
 ▸ QUICK SLIDER
 A full-height track that grows out of the bar. Set the level in one move, then it tucks itself away.
 • Adaptive volume — the call's volume in a call, otherwise whatever is playing — or media, ring or alarm volume, or brightness
-• Animated fills — waves, aurora, plasma, galaxy and more — in your own colours
-• Choose the icon and number colours, entrance animation and haptics
-• Optional step sound: a click, or an adaptive tick that rises with the level
+• Animated fills — waves, aurora, plasma, galaxy, button looks and more — in your own colours
+• Your own icon, colours, entrance animation and haptics
+• Optional step sounds — 34 to choose from, or one from your phone
 • Opens straight from the volume keys if you want
 
 ▸ GESTURES
-Single, double and triple tap, long press, swipe up, down, in and out — over forty actions to put on any of them, plus a long-press menu you fill yourself. Give an app gestures of its own: in YouTube, swipe up could set the brightness instead. Swipes move by their length, or a fixed 5, 10 or 20%.
+Single, double and triple tap, long press, swipe up, down, in and out — over forty actions to put on any of them, plus a long-press menu you fill yourself. Give an app gestures of its own: in YouTube, swipe up could set the brightness instead.
 
-Actions include the Deck, Quick slider, volume panel, mute, brightness, flashlight, Do Not Disturb, auto-rotate, ring or vibrate, Wi-Fi, Bluetooth and Internet panels, camera, voice assistant, media keys, screenshot, lock screen, Back, Home, recent apps, notification shade, quick settings, power menu and hiding the bar.
+Actions include the Deck, Quick slider, volume panel, mute, brightness, flashlight, Do Not Disturb, auto-rotate, Wi-Fi and Bluetooth panels, camera, media keys, screenshot, lock screen, Back, Home, recent apps, quick settings and the power menu.
 
 ▸ THE DECK
 • Pinned apps, and quick-dial contacts that call, text or open a WhatsApp or Telegram chat
-• Search: apps, quick-dial people, sums, numbers to call or text, and the web — with voice search
+• Search: apps, people, sums, numbers and the web — with voice search
 • Volume, brightness and media controls
-• Timer, calculator, coin toss, notes and checklist
-• QR scanner, screenshot, lock, flashlight, Wi-Fi and Bluetooth
+• Timer, calculator, coin toss, notes, checklist, QR scanner and quick toggles
 
 ▸ LOOKS
-Glass, frosted, paper, midnight, AMOLED and more panel styles, with over a dozen entrance animations, for the Deck, the Quick slider and the menu.
+Glass, frosted, paper, AMOLED and more panel styles, with over a dozen entrance animations.
 
 ▸ VISIBILITY
 • Hide the bar in apps you choose
 • Show it only while media plays or during calls
 • Lift it above the keyboard, or hide it while you type
-• Quick Settings tile to hide or show it
 
 ▸ ACCESSIBILITY SERVICE
 Gesture Volume includes an optional AccessibilityService. It is off until you turn it on in Settings › Accessibility, and the app first shows you what it is for. It is used only for what you switch on:
@@ -99,6 +101,7 @@ Gesture Volume includes an optional AccessibilityService. It is off until you tu
 2. Watching the two volume keys, to open the Quick slider instantly.
 3. Noticing which app is open, to hide the bar in apps you chose or use the gestures you gave them.
 4. Showing the bar on the lock screen, if you turn that on. While the phone is locked it does only what the lock screen allows: volume, the Quick slider and quick toggles.
+5. Drawing the button animation beside your buttons — watching the two volume keys, and noticing the power menu by its window's name only — and the bar over the status bar, each if you turn it on.
 It cannot read your screen, does not capture what you copy or type, and nothing it sees leaves your phone. Turn it off any time.
 
 ▸ PERMISSIONS
@@ -109,6 +112,7 @@ No account, no analytics and no location. Settings, notes and checklist stay on 
 
 15 languages, including English, Bangla, Arabic, Hindi and Chinese.
 ```
+3993 characters.
 
 Keep the ACCESSIBILITY SERVICE block whole whatever else you trim — it is what the reviewer reads,
 and it must match the in-app disclosure and the declaration below.
@@ -117,17 +121,18 @@ and it must match the in-app disclosure and the declaration below.
 
 ## What's new (500 max)
 
-For 1.5.4 (build 42):
+For 1.5.5 (build 43):
 
 ```
-🛠 Crash fixes, including one when an app update was offered
-🧊 No more freezes when opening or closing the app on some phones
-🎚 Settings sliders save when you let go, so dragging stays smooth
-🔁 The bar stays on or off the way you left it, and comes back after the app restarts
-🛡 If you turn off Display over other apps, the bar stops cleanly and returns once you allow it
-📱 Troubleshoot opens auto-start settings on Infinix, TECNO and itel phones
+🫧 New: Button animation — press a volume button and the screen's edge answers beside it, with the level. 33 animations, each with its own sound
+🎯 Line them up with your phone's buttons; the power button too
+🤝 Show the Quick slider with it, or pause it
+💎 Button looks: 10 new Quick slider fills
+🎵 34 step sounds, or one from your phone
+🔈 Volume no longer stops short or snaps back
+📐 The bar sits flush on the screen's edge, even over the status bar
 ```
-451 characters.
+454 characters.
 
 ---
 
@@ -170,26 +175,30 @@ They are processed only on the device and never transmitted.
 
 Also record a short video showing: the disclosure dialog, turning the service on in Settings, a bar
 action performing Lock screen, choosing an app to hide the bar in, giving an app a gesture of its
-own, turning on Show on the lock screen (Visibility) and swiping the bar on the lock screen, and the
-service being switched off again. The video below predates per-app gestures and the lock screen:
-record a new one that shows both before submitting the updated declaration.
+own, turning on Show on the lock screen (Visibility) and swiping the bar on the lock screen, turning
+on the Button animation and pressing the volume keys (and holding the power button with that option
+on), turning on Draw with the accessibility service (Visibility), and the service being switched
+off again. The video below predates per-app gestures, the lock screen and the 1.5.5 uses in 5:
+record a new one that shows them before submitting the updated declaration.
 
 Video (recorded 14 September 2026, ads-off release build): https://drive.google.com/file/d/1FIes_6bU4usJcwVVLh0mfX5py25D84Ks/view?usp=sharing
 
 ```
-Gesture Volume is an on-screen edge bar for volume, brightness and shortcuts. Its AccessibilityService is optional and off by default. The user turns it on in Settings › Accessibility only after an in-app disclosure dialog listing every use below, which they must accept. isAccessibilityTool is false: this is a convenience feature, not an assistive technology. The bar itself is drawn by a foreground service with the overlay permission; the accessibility service draws only the lock-screen copy described in 4.
+Gesture Volume is an on-screen edge bar for volume, brightness and shortcuts. Its AccessibilityService is optional and off by default. The user turns it on in Settings › Accessibility only after an in-app disclosure dialog listing every use below, which they must accept. isAccessibilityTool is false: this is a convenience feature, not an assistive technology. The bar itself is drawn by a foreground service with the overlay permission; the accessibility service draws only what is described in 4 and 5.
 
-The service is used for four purposes, each tied to a feature the user chooses:
+The service is used for five purposes, each tied to a feature the user chooses:
 
 1. System actions the user assigns to the bar: GLOBAL_ACTION_LOCK_SCREEN, GLOBAL_ACTION_TAKE_SCREENSHOT, GLOBAL_ACTION_BACK, GLOBAL_ACTION_HOME, GLOBAL_ACTION_RECENTS, GLOBAL_ACTION_NOTIFICATIONS, GLOBAL_ACTION_QUICK_SETTINGS and GLOBAL_ACTION_POWER_DIALOG. No other API allows an app to perform these.
 
-2. Volume keys, only when the user sets the Quick slider's volume keys to Instant: key-event filtering is requested at runtime, only KEYCODE_VOLUME_UP and KEYCODE_VOLUME_DOWN are acted on, every other key is returned unconsumed, and no key is recorded. Used to open the app's volume slider immediately. For the quarter second a Volume-down press is undecided, the service also subscribes to TYPE_WINDOW_STATE_CHANGED and checks only whether the event's package is com.android.systemui, so a Volume-down + Power screenshot does not open the slider.
+2. Volume keys, only when the user sets the Quick slider's volume keys to Instant or turns on the button animation (5): key-event filtering is requested at runtime, only KEYCODE_VOLUME_UP and KEYCODE_VOLUME_DOWN are acted on, every other key is returned unconsumed, and no key is recorded. Used to open the app's volume slider immediately, or to play the button animation. For the quarter second a Volume-down press is undecided, the service also subscribes to TYPE_WINDOW_STATE_CHANGED and checks only whether the event's package is com.android.systemui, so a Volume-down + Power screenshot does not open the slider.
 
 3. Hiding the bar in apps the user selects, and giving apps gestures of their own, only when the user has set either up: the service subscribes to TYPE_WINDOW_STATE_CHANGED and reads the event's package name to know when one of those apps is in front, so the bar can step aside or use that app's gestures. No history is kept.
 
 4. Showing the bar on the lock screen, only when the user turns on "Show on the lock screen" (off by default): Android draws TYPE_APPLICATION_OVERLAY windows beneath the keyguard, so while the keyguard is locked and the screen is on, the service adds the same bar as a TYPE_ACCESSIBILITY_OVERLAY window, and removes it at ACTION_USER_PRESENT. On the lock screen the bar performs only what the lock screen already allows anyone to do — volume, the app's volume slider, brightness, flashlight, Do Not Disturb, ringer, media keys and the system actions in 1. The app's shortcut panel, its menu, launching apps and moving or hiding the bar are refused until the device is unlocked. No accessibility events are used for this; it follows the screen-on, screen-off and user-present broadcasts.
 
-canRetrieveWindowContent is false: the service cannot read window content, and it does not capture copied or typed text. It subscribes to no accessibility events other than TYPE_WINDOW_STATE_CHANGED, and only while the user has chosen apps to hide the bar in or given an app gestures of its own, or, with Instant volume keys, for the quarter second a Volume-down press is undecided. No data obtained through the API is transmitted off the device, sold, or used for advertising. The app remains fully usable with the service disabled.
+5. Drawing, each only when the user turns it on (off by default): (a) the button animation — on a volume key press, a transparent, non-touchable TYPE_ACCESSIBILITY_OVERLAY window animates beside the physical buttons with the volume level, using the key filtering in 2; with its power-button option, the service checks TYPE_WINDOW_STATE_CHANGED events only for the system power menu's package and class name, and follows the screen-on broadcast; (b) "Draw with the accessibility service" — the foreground service's edge bar is drawn in TYPE_ACCESSIBILITY_OVERLAY windows so it can sit over the status bar, and steps aside while the device is locked.
+
+canRetrieveWindowContent is false: the service cannot read window content, and it does not capture copied or typed text. It subscribes to no accessibility events other than TYPE_WINDOW_STATE_CHANGED, and only while the user has chosen apps to hide the bar in or given an app gestures of its own, while the button animation answers the power button, or, with Instant volume keys or the button animation, for the quarter second a Volume-down press is undecided. No data obtained through the API is transmitted off the device, sold, or used for advertising. The app remains fully usable with the service disabled.
 ```
 
 ---
@@ -238,9 +247,9 @@ simplest with mediated ads).
 ## Reply to reviewers, if the accessibility use is questioned
 
 ```
-The AccessibilityService is optional and disabled by default; the bar is drawn by a foreground service, and the accessibility service draws only a copy of it on the lock screen, where Android hides overlays, when the user turns that on. Its primary use is letting users assign system actions — lock screen, screenshot, Back, Home, recents, notification shade, quick settings and power menu — to the app's edge bar; these are only reachable through performGlobalAction.
+The AccessibilityService is optional and disabled by default; the bar is drawn by a foreground service, and the accessibility service draws only a copy of it on the lock screen, where Android hides overlays, the button animation, and the bar over the status bar, each when the user turns it on. Its primary use is letting users assign system actions — lock screen, screenshot, Back, Home, recents, notification shade, quick settings and power menu — to the app's edge bar; these are only reachable through performGlobalAction.
 
-Three further uses each sit behind their own in-app setting, all off by default: acting on the two volume keys to open the app's slider; noticing the foreground app's package name to hide the bar in apps the user picked or to use the gestures the user gave those apps; and showing the bar on the lock screen while the device is locked, where it does only what the lock screen already allows and refuses the app's shortcut panel, menu and app launches until the device is unlocked.
+Four further uses each sit behind their own in-app setting, all off by default: acting on the two volume keys to open the app's slider or play the button animation; noticing the foreground app's package name to hide the bar in apps the user picked or to use the gestures the user gave those apps; showing the bar on the lock screen while the device is locked, where it does only what the lock screen already allows and refuses the app's shortcut panel, menu and app launches until the device is unlocked; and drawing the button animation beside the physical buttons, in a non-touchable window, noticing the power menu by its window's package and class name only, and the bar over the status bar.
 
-Before the user is sent to Settings › Accessibility, a disclosure dialog names all four uses, states that nothing else is read and nothing leaves the device, and explains how to turn the service off; the user must accept it. canRetrieveWindowContent is false, the service does not capture copied or typed text, subscribes only to window-state changes, and only while apps are chosen or a Volume-down press is undecided, transmits nothing, and the app works fully with the service off.
+Before the user is sent to Settings › Accessibility, a disclosure dialog names all five uses, states that nothing else is read and nothing leaves the device, and explains how to turn the service off; the user must accept it. canRetrieveWindowContent is false, the service does not capture copied or typed text, subscribes only to window-state changes, and only while apps are chosen, the button animation answers the power button, or a Volume-down press is undecided, transmits nothing, and the app works fully with the service off.
 ```
