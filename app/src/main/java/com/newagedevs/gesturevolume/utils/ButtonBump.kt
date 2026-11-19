@@ -94,10 +94,73 @@ object ButtonBump {
     /** A party popper at each press: confetti and streamers fluttering down. */
     const val STYLE_CONFETTI = "confetti"
 
+    /** A mushroom cloud: a flash, a shockwave along the ground, and fire rolling up into a cap. */
+    const val STYLE_ATOM = "atom"
+
+    /** A volcano in place of the bump, erupting lava bombs and ash at each press. */
+    const val STYLE_VOLCANO = "volcano"
+
+    /** A gust: streaks of wind whooshing out and curling, leaves tumbling in them. */
+    const val STYLE_WIND = "wind"
+
+    /** A blade's slash, the other way each time, and throwing stars spinning out. */
+    const val STYLE_NINJA = "ninja"
+
+    /** A dragon's head in place of the bump, breathing a stream of fire at each press. */
+    const val STYLE_DRAGON = "dragon"
+
+    /** Bees buzzing out, looping about on dotted trails, and heading home. */
+    const val STYLE_BEES = "bees"
+
+    /** A rocket nosing out and climbing away on its flame and a trail of smoke. */
+    const val STYLE_ROCKET = "rocket"
+
+    /** A spray of lined paper and scraps, turning over and see-sawing down. */
+    const val STYLE_PAPER = "paper"
+
+    /** A boxing glove on a spring punching out, left and right, with a POW. */
+    const val STYLE_BOXING = "boxing"
+
+    /** A war hammer swinging out and striking, throwing lightning and a shockwave. */
+    const val STYLE_HAMMER = "hammer"
+
+    /** The glass cracking from the button: branching cracks, rings and shards. */
+    const val STYLE_CRACK = "crack"
+
+    /** The bump smouldering, and a billow of smoke rolling out at each press. */
+    const val STYLE_SMOKE = "smoke"
+
+    /** A cat peeking round the edge, paws on the frame, blinking, ears twitching. */
+    const val STYLE_CAT = "cat"
+
+    /** Water along the edge, and a clownfish leaping out of it and diving back. */
+    const val STYLE_FISH = "fish"
+
+    /** A snake's hole in place of the bump, the snake striking out at each press. */
+    const val STYLE_SNAKE = "snake"
+
+    /** A monkey peeking round the edge, grinning, shrieking at each press. */
+    const val STYLE_MONKEY = "monkey"
+
+    /** A little green alien peeking round the edge, its eyes glowing at each press. */
+    const val STYLE_ALIEN = "alien"
+
+    /** A flying saucer swooping out, shining its beam down, and zipping away. */
+    const val STYLE_UFO = "ufo"
+
+    /** Lips puckering by the bump and blowing a kiss: hearts floating away. */
+    const val STYLE_KISS = "kiss"
+
+    /** Water along the edge, and a mermaid's tail rising out of it to flick its fin. */
+    const val STYLE_MERMAID = "mermaid"
+
     /** In the order they are offered. */
     val STYLES: List<String> = listOf(
-        STYLE_WATER, STYLE_LIQUID, STYLE_BLOSSOM, STYLE_FIREWORKS, STYLE_SPARKS, STYLE_SONAR,
-        STYLE_SOLAR, STYLE_BUBBLES, STYLE_LIGHTNING, STYLE_CONFETTI,
+        STYLE_WATER, STYLE_LIQUID, STYLE_BLOSSOM, STYLE_FIREWORKS, STYLE_ATOM, STYLE_VOLCANO,
+        STYLE_DRAGON, STYLE_ROCKET, STYLE_HAMMER, STYLE_NINJA, STYLE_BOXING, STYLE_CRACK,
+        STYLE_LIGHTNING, STYLE_SPARKS, STYLE_SMOKE, STYLE_WIND, STYLE_PAPER, STYLE_CONFETTI,
+        STYLE_BUBBLES, STYLE_KISS, STYLE_CAT, STYLE_MONKEY, STYLE_ALIEN, STYLE_UFO, STYLE_BEES,
+        STYLE_FISH, STYLE_MERMAID, STYLE_SNAKE, STYLE_SONAR, STYLE_SOLAR,
         STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY, STYLE_NEON, STYLE_AURORA, STYLE_RIPPLE, STYLE_SPARKLE,
         STYLE_LAVA, STYLE_GLASS, STYLE_SPECTRUM, STYLE_HEARTBEAT, STYLE_ELASTIC,
     )
@@ -155,6 +218,26 @@ object ButtonBump {
         STYLE_BUBBLES -> Spec(stiffness = 320f, damping = 0.55f, shoulder = 0.45f, reach = 7f, spread = 6f)
         STYLE_LIGHTNING -> Spec(stiffness = 420f, damping = 0.6f, shoulder = 0.38f, reach = 7.5f, spread = 5.5f)
         STYLE_CONFETTI -> Spec(stiffness = 380f, damping = 0.6f, shoulder = 0.4f, reach = 8f, spread = 6.5f)
+        STYLE_ATOM -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 7f)
+        STYLE_VOLCANO -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
+        STYLE_WIND -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6f)
+        STYLE_NINJA -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6f)
+        STYLE_DRAGON -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 6f)
+        STYLE_BEES -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 7f)
+        STYLE_ROCKET -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 7.5f)
+        STYLE_PAPER -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6.5f)
+        STYLE_BOXING -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 3.5f)
+        STYLE_HAMMER -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
+        STYLE_CRACK -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 8f)
+        STYLE_SMOKE -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
+        STYLE_CAT -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 4f, spread = 2.5f)
+        STYLE_FISH -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
+        STYLE_SNAKE -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 3f)
+        STYLE_MONKEY -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 4f, spread = 2.5f)
+        STYLE_ALIEN -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 4.6f, spread = 2.5f)
+        STYLE_UFO -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6.5f)
+        STYLE_KISS -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
+        STYLE_MERMAID -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 7f, spread = 4f)
         else -> Spec(stiffness = 400f, damping = 0.62f, shoulder = 0.34f, reach = 1.7f)
     }
 

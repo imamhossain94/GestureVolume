@@ -31,8 +31,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
@@ -305,10 +306,13 @@ fun ButtonFeedbackScreen(
 
             // ---- the animations -------------------------------------------------------------------
             Heading(stringResource(R.string.bump_style_title), stringResource(R.string.bump_style_desc))
-            LazyRow(
+            // Two rows, so more of the animations are in sight at once.
+            LazyHorizontalGrid(
+                rows = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(horizontal = 2.dp),
-                modifier = Modifier.selectableGroup(),
+                modifier = Modifier.height(GALLERY_HEIGHT).selectableGroup(),
             ) {
                 items(ButtonBump.STYLES, key = { it }) { id ->
                     StyleTile(
@@ -1181,6 +1185,26 @@ private fun styleLabel(style: String): Int = when (style) {
     ButtonBump.STYLE_BUBBLES -> R.string.bump_style_bubbles
     ButtonBump.STYLE_LIGHTNING -> R.string.bump_style_lightning
     ButtonBump.STYLE_CONFETTI -> R.string.bump_style_confetti
+    ButtonBump.STYLE_ATOM -> R.string.bump_style_atom
+    ButtonBump.STYLE_VOLCANO -> R.string.bump_style_volcano
+    ButtonBump.STYLE_WIND -> R.string.bump_style_wind
+    ButtonBump.STYLE_NINJA -> R.string.bump_style_ninja
+    ButtonBump.STYLE_DRAGON -> R.string.bump_style_dragon
+    ButtonBump.STYLE_BEES -> R.string.bump_style_bees
+    ButtonBump.STYLE_ROCKET -> R.string.bump_style_rocket
+    ButtonBump.STYLE_PAPER -> R.string.bump_style_paper
+    ButtonBump.STYLE_BOXING -> R.string.bump_style_boxing
+    ButtonBump.STYLE_HAMMER -> R.string.bump_style_hammer
+    ButtonBump.STYLE_CRACK -> R.string.bump_style_crack
+    ButtonBump.STYLE_SMOKE -> R.string.bump_style_smoke
+    ButtonBump.STYLE_CAT -> R.string.bump_style_cat
+    ButtonBump.STYLE_FISH -> R.string.bump_style_fish
+    ButtonBump.STYLE_SNAKE -> R.string.bump_style_snake
+    ButtonBump.STYLE_MONKEY -> R.string.bump_style_monkey
+    ButtonBump.STYLE_ALIEN -> R.string.bump_style_alien
+    ButtonBump.STYLE_UFO -> R.string.bump_style_ufo
+    ButtonBump.STYLE_KISS -> R.string.bump_style_kiss
+    ButtonBump.STYLE_MERMAID -> R.string.bump_style_mermaid
     else -> R.string.bump_style_liquid
 }
 
@@ -1218,3 +1242,6 @@ private const val PREVIEW_LIGHT_INK = 0xFF15161A.toInt()
 
 private val TILE_WIDTH = 92.dp
 private val TILE_STAGE_HEIGHT = 92.dp
+
+/** Two rows of tiles: each a stage, its name and its padding, and the gap between the rows. */
+private val GALLERY_HEIGHT = 274.dp

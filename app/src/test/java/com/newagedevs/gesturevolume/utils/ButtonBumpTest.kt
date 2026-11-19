@@ -37,12 +37,17 @@ class ButtonBumpTest {
             ButtonBump.STYLE_SONAR, ButtonBump.STYLE_SOLAR, ButtonBump.STYLE_BUBBLES, ButtonBump.STYLE_LIGHTNING,
             ButtonBump.STYLE_CONFETTI,
         )))
+        // Thirty of them, the twenty newest among them.
+        assertTrue(throwers.size >= 29)
         for (style in throwers) {
+            val spec = ButtonBump.spec(style)
             val span = ButtonBump.windowSpan(style, length, density, depth)
             val reach = ButtonBump.windowReach(style, depth, density, false)
-            // Out into the screen several times the bump's depth, and along the edge both ways from it.
-            assertTrue("$style reach $reach", reach > depth * 5f)
-            assertTrue("$style span $span", span > length + 2f * depth * 5f)
+            // As far into the screen as the style says, and as far along the edge both ways from the bump.
+            assertTrue("$style reach $reach", reach >= depth * spec.reach)
+            assertTrue("$style span $span", span >= length + 2f * depth * spec.spread)
+            // Even the characters that only peek round the edge have room to show their heads.
+            assertTrue("$style reach $reach", reach > depth * 3.5f)
         }
     }
 
