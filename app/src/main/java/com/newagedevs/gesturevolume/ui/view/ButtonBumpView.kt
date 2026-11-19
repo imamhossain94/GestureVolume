@@ -626,8 +626,10 @@ class ButtonBumpView(context: Context) : View(context) {
             ButtonBump.STYLE_SPECTRUM -> drawSpectrum(canvas, t, p, press, centre, half, depth)
             ButtonBump.STYLE_HEARTBEAT -> drawHeartbeat(canvas, now, p, centre, half, depth)
             ButtonBump.STYLE_ELASTIC -> drawElastic(canvas, p, press, centre, half, depth)
-            ButtonBump.STYLE_WATER -> {
-                if (still) drawWaterStill(canvas, centre, depth) else drawWater(canvas)
+            ButtonBump.STYLE_WATER -> if (still) {
+                drawWaterStill(canvas, centre, depth)
+            } else {
+                drawWater(canvas)
                 drawDrop(canvas, p, press, centre, half, depth)
             }
             else -> if (effect != null) {
@@ -748,11 +750,13 @@ class ButtonBumpView(context: Context) : View(context) {
     /**
      * The water for a gallery tile: the rings a drop sends out, drawn clean rather than simulated —
      * at a tile's size the simulation's cells show, and its troughs read as a dark smudge. Each ring
-     * a bright crest with a soft glow, a faint shadow just outside it, fainter the further out.
+     * a bright crest with a soft glow, a faint shadow just outside it, fainter the further out; and
+     * where they start, a plain round half dot on the edge rather than the drop, which at a tile's
+     * size reads as a pimple.
      */
     private fun drawWaterStill(canvas: Canvas, centre: Float, depth: Float) {
         val across = max(waterWidth, 1f)
-        val cx = depth * 0.35f
+        val cx = 0f
         strokePaint.shader = null
         for ((i, k) in WATER_STILL_RINGS.withIndex()) {
             val r = across * k
@@ -767,6 +771,10 @@ class ButtonBumpView(context: Context) : View(context) {
             strokePaint.color = withAlpha(settings.accent, 0.85f * strength)
             canvas.drawCircle(cx, centre, r, strokePaint)
         }
+        val dot = max(depth * 0.66f, 6f * density)
+        bodyPaint.shader = null
+        bodyPaint.color = settings.color
+        canvas.drawArc(cx - dot, centre - dot, cx + dot, centre + dot, -90f, 180f, true, bodyPaint)
     }
 
     /**
