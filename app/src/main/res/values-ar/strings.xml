@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">GestureVolume</string>
+    <string name="app_name">Gesture Volume</string>
 
     <string name="landscape_appearance_settings">إعدادات المظهر الأفقي</string>
     <string name="click_">تحقق من المفتاح لتنشيط وتكوين مؤشر الشاشة</string>
@@ -269,7 +269,7 @@
     <string name="notification_channel_controls_desc">الإشعار الدائم الذي يحتوي على إظهار/إخفاء والإعدادات والإيقاف.</string>
     <string name="notification_channel_minimal">يعمل بهدوء</string>
     <string name="notification_channel_minimal_desc">عنصر نائب صامت يطلبه أندرويد أثناء تشغيل الخدمة. بلا أيقونة وبلا أزرار.</string>
-    <string name="notification_minimal_title">‏GestureVolume قيد التشغيل</string>
+    <string name="notification_minimal_title">‏Gesture Volume قيد التشغيل</string>
     <string name="show_notification_title">أزرار الإشعار</string>
     <string name="show_notification_desc">أبقِ أزرار «إظهار» و«الإعدادات» و«إيقاف» في لوحة الإشعارات. هذه هي الطريقة الوحيدة لإعادة الشريط بعد إخفائه دون فتح التطبيق.</string>
     <string name="show_notification_off_hint">معطّل: يظل أندرويد يتطلب عنصرًا نائبًا صامتًا أثناء تشغيل الخدمة. اضغط لإخفائه تمامًا من إعدادات النظام.</string>
@@ -291,7 +291,7 @@
     <string name="notification_service_active">إيماءات الصوت نشطة</string>
     <string name="show_volume_percent_title">إظهار نسبة الصوت</string>
     <string name="show_volume_percent_desc">اعرض المستوى على الشريط أثناء التمرير.</string>
-    <string name="handler_hidden_toast">تم إخفاء الشريط. افتح GestureVolume لإعادته.</string>
+    <string name="handler_hidden_toast">تم إخفاء الشريط. افتح Gesture Volume لإعادته.</string>
     <string name="action_stop_service">إيقاف الخدمة</string>
     <string name="notification_handler_hidden">الشريط مخفي — اضغط «إظهار» لإعادته</string>
     <string name="notification_action_show">إظهار</string>
@@ -305,7 +305,7 @@
     <string name="context_menu_section">عناصر قائمة الضغط المطوّل</string>
     <string name="behaviour_section">السلوك</string>
     <string name="notification_permission_needed_title">الإشعارات معطّلة</string>
-    <string name="notification_permission_needed_message">أدوات التحكم مفعّلة، لكن أندرويد لا يسمح لـ GestureVolume بعرض الإشعارات — لذا لن تظهر أزرار «إظهار» و«الإعدادات» و«إيقاف» في لوحة الإشعارات.</string>
+    <string name="notification_permission_needed_message">أدوات التحكم مفعّلة، لكن أندرويد لا يسمح لـ Gesture Volume بعرض الإشعارات — لذا لن تظهر أزرار «إظهار» و«الإعدادات» و«إيقاف» في لوحة الإشعارات.</string>
     <string name="notification_permission_warning_inline">الإشعارات محظورة لهذا التطبيق. اضغط للسماح بها.</string>
     <string name="grant_permission_action">سماح</string>
     <string name="not_now">ليس الآن</string>
@@ -611,12 +611,12 @@
     <string name="flashlight_unavailable">لا يحتوي هذا الجهاز على كشاف</string>
     <string name="dnd_on">عدم الإزعاج مفعّل</string>
     <string name="dnd_off">عدم الإزعاج معطّل</string>
-    <string name="dnd_needs_access">اسمح بالوصول إلى «عدم الإزعاج» في أذونات GestureVolume</string>
+    <string name="dnd_needs_access">اسمح بالوصول إلى «عدم الإزعاج» في أذونات Gesture Volume</string>
     <string name="auto_rotate_on">التدوير التلقائي مفعّل</string>
     <string name="auto_rotate_off">التدوير التلقائي معطّل</string>
     <string name="auto_rotate_needs_permission">اسمح بـ «تعديل إعدادات النظام» لتبديل التدوير التلقائي</string>
     <string name="lock_screen_unlock_first">افتح قفل هاتفك لاستخدام هذا</string>
-    <string name="accessibility_needed_short">فعّل خدمة إمكانية الوصول في GestureVolume لاستخدام هذا</string>
+    <string name="accessibility_needed_short">فعّل خدمة إمكانية الوصول في Gesture Volume لاستخدام هذا</string>
     <string name="action_unavailable_on_device">هذا الإجراء غير متوفر على هذا الجهاز</string>
     <string name="triple_tap_action">إجراء النقر الثلاثي</string>
     <string name="triple_tap_desc">ماذا يحدث عند النقر الثلاثي</string>
@@ -634,22 +634,22 @@
     <string name="swipe_amount_by_length_desc">خطوة لكل عرض إصبع تقريبًا تمرّره، كما كان الشريط يعمل دائمًا. التمرير الطويل يغطي النطاق كله.</string>
     <string name="swipe_amount_percent">%1$d%% لكل تمرير</string>
     <string name="swipe_amount_percent_desc">كل تمرير يغيّره بمقدار %1$d%%، مهما كان طوله أو قصره. مستوى الصوت ذو الخطوات القليلة ينتقل إلى أقرب خطوة.</string>
-    <string name="accessibility_service_label">GestureVolume</string>
+    <string name="accessibility_service_label">Gesture Volume</string>
     <string name="accessibility_service_summary">اختصارات النظام من شريط الصوت، وأزرار الصوت الفورية، والشريط على شاشة القفل، وإخفاء الشريط أو تغيير إيماءاته في تطبيقات مختارة</string>
-    <string name="accessibility_service_description">يستخدم GestureVolume خدمة إمكانية الوصول لتنفيذ إجراءات النظام التي تعيّنها للشريط العائم — قفل الشاشة، والتقاط لقطة شاشة، والرجوع أو الانتقال إلى الشاشة الرئيسية، وفتح التطبيقات الحديثة، ولوحة الإشعارات، والإعدادات السريعة، وقائمة التشغيل. وإذا اخترت ذلك، فإنه يفتح أيضًا اللوحة السريعة لحظة الضغط على زر الصوت، مراقبًا زرَّي الصوت فقط. وإذا اخترت ذلك، فإنه يعرض أيضًا الشريط على شاشة القفل، حيث يُخفي Android الشريط العائم لأي تطبيق، وأثناء قفل الهاتف لا يفعل الشريط إلا ما تسمح به شاشة القفل أصلًا: الصوت، واللوحة السريعة، ومفاتيح التبديل السريعة. وإذا اخترت تطبيقات لإخفاء الشريط فيها، أو منحت تطبيقات إيماءات خاصة بها، فإنه يلاحظ أي تطبيق على الشاشة، ولا شيء آخر عنه. لا يقرأ أي شيء آخر، ولا يجمع أي شيء، ويبقى كل شيء على هذا الجهاز. وأثناء انتظار ضغطة خفض الصوت، يلاحظ أيضًا ما إذا ظهرت لقطة شاشة النظام، حتى لا تفتح اللوحة عند التقاط لقطة شاشة بالأزرار. وإذا اخترت ذلك، تعرض أيضًا حركة بجوار الأزرار عند الضغط عليها (وفي زر التشغيل تلاحظ فقط ظهور قائمة التشغيل)، وترسم الشريط فوق شريط الحالة والكاميرا.</string>
+    <string name="accessibility_service_description">يستخدم Gesture Volume خدمة إمكانية الوصول لتنفيذ إجراءات النظام التي تعيّنها للشريط العائم — قفل الشاشة، والتقاط لقطة شاشة، والرجوع أو الانتقال إلى الشاشة الرئيسية، وفتح التطبيقات الحديثة، ولوحة الإشعارات، والإعدادات السريعة، وقائمة التشغيل. وإذا اخترت ذلك، فإنه يفتح أيضًا اللوحة السريعة لحظة الضغط على زر الصوت، مراقبًا زرَّي الصوت فقط. وإذا اخترت ذلك، فإنه يعرض أيضًا الشريط على شاشة القفل، حيث يُخفي Android الشريط العائم لأي تطبيق، وأثناء قفل الهاتف لا يفعل الشريط إلا ما تسمح به شاشة القفل أصلًا: الصوت، واللوحة السريعة، ومفاتيح التبديل السريعة. وإذا اخترت تطبيقات لإخفاء الشريط فيها، أو منحت تطبيقات إيماءات خاصة بها، فإنه يلاحظ أي تطبيق على الشاشة، ولا شيء آخر عنه. لا يقرأ أي شيء آخر، ولا يجمع أي شيء، ويبقى كل شيء على هذا الجهاز. وأثناء انتظار ضغطة خفض الصوت، يلاحظ أيضًا ما إذا ظهرت لقطة شاشة النظام، حتى لا تفتح اللوحة عند التقاط لقطة شاشة بالأزرار. وإذا اخترت ذلك، تعرض أيضًا حركة بجوار الأزرار عند الضغط عليها (وفي زر التشغيل تلاحظ فقط ظهور قائمة التشغيل)، وترسم الشريط فوق شريط الحالة والكاميرا.</string>
     <string name="accessibility_permission">خدمة إمكانية الوصول</string>
     <string name="accessibility_permission_desc">اختياري: ينفّذ قفل الشاشة، ولقطة الشاشة، والرجوع، والشاشة الرئيسية، والتطبيقات الحديثة، والإشعارات، والإعدادات السريعة، وقائمة التشغيل.</string>
     <string name="accessibility_disclosure_title">تفعيل خدمة إمكانية الوصول؟</string>
-    <string name="accessibility_disclosure_message">يستخدم GestureVolume خدمة إمكانية الوصول في Android لخمسة أمور، كلها اختيارية:\n\n• لتنفيذ إجراءات النظام التي تعيّنها للشريط: قفل الشاشة، ولقطة الشاشة، والرجوع، والشاشة الرئيسية، والتطبيقات الحديثة، والإشعارات، والإعدادات السريعة، وقائمة التشغيل.\n\n• لمراقبة زرَّي الصوت، فقط إذا ضبطت أزرار الصوت على «فوري»: لفتح اللوحة السريعة لحظة الضغط على أحدهما. أي زر آخر يمر مباشرة، ولا يُسجَّل أي زر. وأثناء انتظار ضغطة خفض الصوت، يلاحظ أيضًا ما إذا ظهرت لقطة شاشة النظام، حتى لا تفتح اللوحة عند التقاط لقطة شاشة بالأزرار.\n\n• لمعرفة التطبيق الظاهر على الشاشة، فقط إذا اخترت تطبيقات لإخفاء الشريط فيها أو منحت تطبيقات إيماءات خاصة بها. ينظر إلى اسم التطبيق ولا شيء آخر.\n\n• لعرض الشريط على شاشة القفل، فقط إذا فعّلت «الإظهار على شاشة القفل»: يُخفي Android هناك الشريط العائم لأي تطبيق. وأثناء قفل الهاتف، لا يفعل الشريط إلا ما تسمح به شاشة القفل أصلًا: الصوت، واللوحة السريعة، ومفاتيح التبديل السريعة.\n\n• للرسم، فقط إذا شغّلت كلًّا منهما: حركة الأزرار بجوار الأزرار عند الضغط عليها، ولأجلها تنظر الخدمة أيضًا إلى مفتاحي الصوت، وإذا شغّلتها لزر التشغيل تلاحظ ظهور قائمة التشغيل من اسم نافذتها وحده؛ والشريط فوق شريط الحالة والكاميرا، عبر «الرسم بخدمة إمكانية الوصول». وعندما يكون الهاتف مقفلًا يتنحى هذا الشريط جانبًا.\n\nلا يقرأ أو يجمع أي شيء آخر. لا يغادر شيء جهازك. يمكنك إيقافها في أي وقت من الإعدادات › إمكانية الوصول.</string>
+    <string name="accessibility_disclosure_message">يستخدم Gesture Volume خدمة إمكانية الوصول في Android لخمسة أمور، كلها اختيارية:\n\n• لتنفيذ إجراءات النظام التي تعيّنها للشريط: قفل الشاشة، ولقطة الشاشة، والرجوع، والشاشة الرئيسية، والتطبيقات الحديثة، والإشعارات، والإعدادات السريعة، وقائمة التشغيل.\n\n• لمراقبة زرَّي الصوت، فقط إذا ضبطت أزرار الصوت على «فوري»: لفتح اللوحة السريعة لحظة الضغط على أحدهما. أي زر آخر يمر مباشرة، ولا يُسجَّل أي زر. وأثناء انتظار ضغطة خفض الصوت، يلاحظ أيضًا ما إذا ظهرت لقطة شاشة النظام، حتى لا تفتح اللوحة عند التقاط لقطة شاشة بالأزرار.\n\n• لمعرفة التطبيق الظاهر على الشاشة، فقط إذا اخترت تطبيقات لإخفاء الشريط فيها أو منحت تطبيقات إيماءات خاصة بها. ينظر إلى اسم التطبيق ولا شيء آخر.\n\n• لعرض الشريط على شاشة القفل، فقط إذا فعّلت «الإظهار على شاشة القفل»: يُخفي Android هناك الشريط العائم لأي تطبيق. وأثناء قفل الهاتف، لا يفعل الشريط إلا ما تسمح به شاشة القفل أصلًا: الصوت، واللوحة السريعة، ومفاتيح التبديل السريعة.\n\n• للرسم، فقط إذا شغّلت كلًّا منهما: حركة الأزرار بجوار الأزرار عند الضغط عليها، ولأجلها تنظر الخدمة أيضًا إلى مفتاحي الصوت، وإذا شغّلتها لزر التشغيل تلاحظ ظهور قائمة التشغيل من اسم نافذتها وحده؛ والشريط فوق شريط الحالة والكاميرا، عبر «الرسم بخدمة إمكانية الوصول». وعندما يكون الهاتف مقفلًا يتنحى هذا الشريط جانبًا.\n\nلا يقرأ أو يجمع أي شيء آخر. لا يغادر شيء جهازك. يمكنك إيقافها في أي وقت من الإعدادات › إمكانية الوصول.</string>
     <string name="accessibility_disclosure_accept">فتح إعدادات إمكانية الوصول</string>
     <string name="accessibility_disclosure_decline">ليس الآن</string>
-    <string name="accessibility_how_to">في القائمة، افتح GestureVolume وفعّله.</string>
+    <string name="accessibility_how_to">في القائمة، افتح Gesture Volume وفعّله.</string>
     <string name="accessibility_on">مفعّلة</string>
     <string name="accessibility_off">معطّلة</string>
     <string name="dnd_permission">الوصول إلى «عدم الإزعاج»</string>
     <string name="dnd_permission_desc">اختياري: يتيح للشريط وDeck تشغيل «عدم الإزعاج» وإيقافه.</string>
     <string name="dnd_permission_title">السماح بالوصول إلى «عدم الإزعاج»؟</string>
-    <string name="dnd_permission_message">لتبديل «عدم الإزعاج»، يحتاج GestureVolume إلى الوصول إلى «عدم الإزعاج». ستنتقل إلى قائمة النظام حيث يمكنك السماح بذلك.</string>
+    <string name="dnd_permission_message">لتبديل «عدم الإزعاج»، يحتاج Gesture Volume إلى الوصول إلى «عدم الإزعاج». ستنتقل إلى قائمة النظام حيث يمكنك السماح بذلك.</string>
     <string name="tile_search">بحث</string>
     <string name="tile_search_desc">التطبيقات وجهات الاتصال والحسابات والويب</string>
     <string name="tile_flashlight">الكشاف</string>
@@ -913,7 +913,7 @@
     <string name="slider_volume_keys_off_hint">تعمل الأزرار كالمعتاد وتبقى اللوحة مغلقة.</string>
     <string name="slider_volume_keys_follow_hint">تُفتح اللوحة بجانب منزلق الصوت الخاص بالنظام، بعد نحو نصف ثانية من الضغط. وتتبع أيضًا لوحة النظام والتطبيقات الأخرى عندما تغيّر الصوت.</string>
     <string name="slider_volume_keys_instant_hint">تُفتح اللوحة لحظة الضغط على الزر وتتحرك خطوة واحدة مع كل ضغطة، بدلًا من منزلق الصوت الخاص بالنظام. أثناء المكالمة، أو على شاشة القفل، أو والشاشة مطفأة، تعمل الأزرار كالمعتاد.</string>
-    <string name="slider_volume_keys_needs_accessibility">يحتاج الوضع الفوري إلى خدمة إمكانية الوصول في GestureVolume، التي تتلقى الضغطة قبل أن يتصرف النظام بها. إلى أن تُفعَّل، تُفتح اللوحة مع النظام. انقر لتفعيلها.</string>
+    <string name="slider_volume_keys_needs_accessibility">يحتاج الوضع الفوري إلى خدمة إمكانية الوصول في Gesture Volume، التي تتلقى الضغطة قبل أن يتصرف النظام بها. إلى أن تُفعَّل، تُفتح اللوحة مع النظام. انقر لتفعيلها.</string>
     <string name="fill_plasma">بلازما</string>
     <string name="fill_aurora">شفق</string>
     <string name="fill_hologram">هولوغرام</string>

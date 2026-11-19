@@ -4617,7 +4617,7 @@ class OverlayController(
 
         override fun copy(text: String) {
             val manager = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-            runCatching { manager?.setPrimaryClip(ClipData.newPlainText("GestureVolume", text)) }
+            runCatching { manager?.setPrimaryClip(ClipData.newPlainText("Gesture Volume", text)) }
             showIndicatorMessage(context.getString(R.string.deck_copied))
         }
 

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">GestureVolume</string>
+    <string name="app_name">Gesture Volume</string>
 
     <string name="landscape_appearance_settings">MANZARA GÖRÜNÜM AYARLARI</string>
     <string name="click_">Anahtarı aktif hale getirin ve işleyicinin yer çekimini, boyutunu, kalınlığını ve konumunu yatay ekranda yapılandırın.</string>
@@ -250,7 +250,7 @@
     <string name="write_settings_permission">Sistem ayarlarını değiştirme</string>
     <string name="write_settings_permission_desc">Çubuğun ekran parlaklığını denetlemesini sağlar. Yalnızca parlaklık eylemleri için gereklidir.</string>
     <string name="brightness_permission_title">Parlaklık denetimine izin verilsin mi?</string>
-    <string name="brightness_permission_message">Ekran parlaklığını değiştirmek için GestureVolume, Sistem ayarlarını değiştirme iznine ihtiyaç duyar. Kullanım sırasında uyarlanabilir parlaklık kapatılır ve hizmeti durdurduğunuzda geri açılır.</string>
+    <string name="brightness_permission_message">Ekran parlaklığını değiştirmek için Gesture Volume, Sistem ayarlarını değiştirme iznine ihtiyaç duyar. Kullanım sırasında uyarlanabilir parlaklık kapatılır ve hizmeti durdurduğunuzda geri açılır.</string>
     <string name="edge_offset">Kenar mesafesi</string>
     <string name="edge_offset_desc">Çubuğun sol ve sağ kenarlardan koruduğu en küçük boşluk: hem sürüklerken hem de yapıştığında durduğu yerde. Kavisli ekranlarda ve hareketle gezinmede işe yarar.</string>
     <string name="reset_position">Konumu sıfırla</string>
@@ -259,7 +259,7 @@
     <string name="fix_battery_desc">Android hizmeti durdurmasın diye sınırsız pil kullanımına izin verin.</string>
     <string name="fix_battery_allowed">Sınırsız</string>
     <string name="fix_autostart_title">Otomatik başlatma</string>
-    <string name="fix_autostart_desc">Cihazınızın otomatik başlatma ayarlarını açın ve GestureVolume uygulamasına izin verin.</string>
+    <string name="fix_autostart_desc">Cihazınızın otomatik başlatma ayarlarını açın ve Gesture Volume uygulamasına izin verin.</string>
     <string name="autostart_unavailable">Bu cihazda kullanılamıyor</string>
     <string name="open_settings">Ayarları aç</string>
     <string name="snap_to_edge">Kenara yapış</string>
@@ -268,7 +268,7 @@
     <string name="notification_channel_controls_desc">Göster/Gizle, Ayarlar ve Durdur düğmelerini taşıyan kalıcı satır.</string>
     <string name="notification_channel_minimal">Sessizce çalışıyor</string>
     <string name="notification_channel_minimal_desc">Servis çalışırken Android\'in zorunlu kıldığı sessiz bir yer tutucu. Simge yok, düğme yok.</string>
-    <string name="notification_minimal_title">GestureVolume çalışıyor</string>
+    <string name="notification_minimal_title">Gesture Volume çalışıyor</string>
     <string name="show_notification_title">Bildirim denetimleri</string>
     <string name="show_notification_desc">Bildirim panelinde Göster, Ayarlar ve Durdur düğmelerini tutun. Uygulamayı açmadan gizlenmiş çubuğu geri getirmenin tek yolu budur.</string>
     <string name="show_notification_off_hint">Kapalı: servis çalışırken Android yine de sessiz bir yer tutucu ister. Sistem ayarlarında tamamen gizlemek için dokunun.</string>
@@ -290,7 +290,7 @@
     <string name="notification_service_active">Ses hareketleri etkin</string>
     <string name="show_volume_percent_title">Ses yüzdesini göster</string>
     <string name="show_volume_percent_desc">Kaydırırken seviyeyi çubuğun üzerinde gösterir.</string>
-    <string name="handler_hidden_toast">Çubuk gizlendi. Geri getirmek için GestureVolume\'ü açın.</string>
+    <string name="handler_hidden_toast">Çubuk gizlendi. Geri getirmek için Gesture Volume\'ü açın.</string>
     <string name="action_stop_service">Servisi durdur</string>
     <string name="notification_handler_hidden">Çubuk gizli — geri getirmek için Göster\'e dokunun</string>
     <string name="notification_action_show">Göster</string>
@@ -304,7 +304,7 @@
     <string name="context_menu_section">Uzun basma menüsü öğeleri</string>
     <string name="behaviour_section">Davranış</string>
     <string name="notification_permission_needed_title">Bildirimler kapalı</string>
-    <string name="notification_permission_needed_message">Denetimler açık, ancak Android GestureVolume\'ün bildirim göndermesine izin vermiyor — bu yüzden Göster, Ayarlar ve Durdur panelde görünmeyecek.</string>
+    <string name="notification_permission_needed_message">Denetimler açık, ancak Android Gesture Volume\'ün bildirim göndermesine izin vermiyor — bu yüzden Göster, Ayarlar ve Durdur panelde görünmeyecek.</string>
     <string name="notification_permission_warning_inline">Bu uygulama için bildirimler engellendi. İzin vermek için dokunun.</string>
     <string name="grant_permission_action">İzin ver</string>
     <string name="not_now">Şimdi değil</string>
@@ -386,12 +386,12 @@
     <string name="flashlight_unavailable">Bu cihazda fener yok</string>
     <string name="dnd_on">Rahatsız etmeyin açık</string>
     <string name="dnd_off">Rahatsız etmeyin kapalı</string>
-    <string name="dnd_needs_access">GestureVolume izinlerinden Rahatsız etmeyin erişimine izin ver</string>
+    <string name="dnd_needs_access">Gesture Volume izinlerinden Rahatsız etmeyin erişimine izin ver</string>
     <string name="auto_rotate_on">Otomatik döndürme açık</string>
     <string name="auto_rotate_off">Otomatik döndürme kapalı</string>
     <string name="auto_rotate_needs_permission">Döndürmeyi değiştirmek için «Sistem ayarlarını değiştir» iznini ver</string>
     <string name="lock_screen_unlock_first">Bunu kullanmak için telefonunun kilidini aç</string>
-    <string name="accessibility_needed_short">Bunu kullanmak için GestureVolume erişilebilirlik hizmetini aç</string>
+    <string name="accessibility_needed_short">Bunu kullanmak için Gesture Volume erişilebilirlik hizmetini aç</string>
     <string name="action_unavailable_on_device">Bu eylem bu cihazda kullanılamıyor</string>
     <string name="triple_tap_action">Üç kez dokunma eylemi</string>
     <string name="triple_tap_desc">Üç kez dokununca ne olur</string>
@@ -399,19 +399,19 @@
     <string name="swipe_in_desc">Çubuktan ekranın ortasına doğru kaydır</string>
     <string name="swipe_out_action">Dışa kaydırma eylemi</string>
     <string name="swipe_out_desc">Çubuktan ekranın kenarına doğru kaydır</string>
-    <string name="accessibility_service_label">GestureVolume</string>
+    <string name="accessibility_service_label">Gesture Volume</string>
     <string name="accessibility_permission">Erişilebilirlik hizmeti</string>
     <string name="accessibility_permission_desc">İsteğe bağlı: Ekranı kilitle, Ekran görüntüsü, Geri, Ana ekran, Son uygulamalar, Bildirimler, Hızlı ayarlar ve Güç menüsünü gerçekleştirir.</string>
     <string name="accessibility_disclosure_title">Erişilebilirlik hizmeti açılsın mı?</string>
     <string name="accessibility_disclosure_accept">Erişilebilirlik’i aç</string>
     <string name="accessibility_disclosure_decline">Şimdi değil</string>
-    <string name="accessibility_how_to">Listeden GestureVolume’u aç ve etkinleştir.</string>
+    <string name="accessibility_how_to">Listeden Gesture Volume’u aç ve etkinleştir.</string>
     <string name="accessibility_on">Açık</string>
     <string name="accessibility_off">Kapalı</string>
     <string name="dnd_permission">Rahatsız etmeyin erişimi</string>
     <string name="dnd_permission_desc">İsteğe bağlı: çubuğun ve Deck’in Rahatsız etmeyin’i açıp kapatmasını sağlar.</string>
     <string name="dnd_permission_title">Rahatsız etmeyin erişimine izin verilsin mi?</string>
-    <string name="dnd_permission_message">Rahatsız etmeyin’i değiştirmek için GestureVolume’un bu erişime ihtiyacı var. İzin verebileceğin sistem listesine yönlendirileceksin.</string>
+    <string name="dnd_permission_message">Rahatsız etmeyin’i değiştirmek için Gesture Volume’un bu erişime ihtiyacı var. İzin verebileceğin sistem listesine yönlendirileceksin.</string>
     <string name="tile_search">Ara</string>
     <string name="tile_search_desc">Uygulamalar, kişiler, işlemler ve web</string>
     <string name="tile_flashlight">Fener</string>
@@ -868,8 +868,8 @@
     <string name="swipe_amount_percent">Kaydırma başına %1$d%%</string>
     <string name="swipe_amount_percent_desc">Kaydırma ne kadar uzun ya da kısa olursa olsun, her kaydırma %1$d%% değiştirir. Yalnızca birkaç adımı olan bir ses en yakın adıma geçer.</string>
     <string name="accessibility_service_summary">Ses çubuğundan sistem kısayolları, anında ses tuşları, kilit ekranında çubuk ve seçilen uygulamalarda çubuğu gizleme veya hareketlerini değiştirme</string>
-    <string name="accessibility_service_description">GestureVolume, kayan çubuğa atadığın sistem eylemlerini gerçekleştirmek için erişilebilirlik hizmetini kullanır: ekranı kilitlemek, ekran görüntüsü almak, Geri veya Ana ekrana gitmek, son uygulamaları, bildirim panelini, hızlı ayarları ve güç menüsünü açmak. İstersen, bir ses tuşuna bastığın anda Hızlı paneli de açar; bunun için yalnızca iki ses tuşuna bakar. İstersen, Android’in her uygulamanın kayan çubuğunu gizlediği kilit ekranında da çubuğu gösterir; telefon kilitliyken çubuk yalnızca kilit ekranının zaten izin verdiklerini yapar: ses, Hızlı panel ve hızlı geçiş düğmeleri. Çubuğu gizleyeceğin uygulamalar seçersen veya uygulamalara kendi hareketlerini verirsen, ekranda hangi uygulamanın olduğunu not eder, onunla ilgili başka hiçbir şeyi değil. Başka hiçbir şey okumaz, hiçbir şey toplamaz ve her şey bu cihazda kalır. Bir Ses kısma basışı beklerken, sistemin ekran görüntüsünün açılıp açılmadığını da not eder; böylece tuşlarla alınan bir ekran görüntüsü paneli açmaz. İsterseniz tuşlara bastığınızda yanlarında bir animasyon da gösterir (güç tuşunda yalnızca güç menüsünün açıldığını fark eder) ve çubuğu durum çubuğunun ve kameranın üstüne çizer.</string>
-    <string name="accessibility_disclosure_message">GestureVolume, Android’in erişilebilirlik hizmetini beş şey için kullanır, hepsi isteğe bağlıdır:\n\n• Çubuğa atadığın sistem eylemlerini gerçekleştirmek için: Ekranı kilitle, Ekran görüntüsü, Geri, Ana ekran, Son uygulamalar, Bildirimler, Hızlı ayarlar ve Güç menüsü.\n\n• Yalnızca ses tuşlarını Anında olarak ayarlarsan iki ses tuşuna bakmak için: birine bastığın anda Hızlı paneli açmak için. Diğer her tuş doğrudan geçer ve hiçbir tuş kaydedilmez. Bir Ses kısma basışı beklerken, sistemin ekran görüntüsünün açılıp açılmadığını da not eder; böylece tuşlarla alınan bir ekran görüntüsü paneli açmaz.\n\n• Yalnızca çubuğu gizleyeceğin uygulamalar seçersen veya uygulamalara kendi hareketlerini verirsen, ekranda hangi uygulamanın olduğunu görmek için. Yalnızca uygulamanın adına bakar, başka hiçbir şeye değil.\n\n• Yalnızca “Kilit ekranında göster” seçeneğini açarsan, çubuğu kilit ekranında göstermek için: Android orada her uygulamanın kayan çubuğunu gizler. Telefon kilitliyken çubuk yalnızca kilit ekranının zaten izin verdiklerini yapar: ses, Hızlı panel ve hızlı geçiş düğmeleri.\n\n• Çizim için, yalnızca her birini açarsanız: bastığınızda tuşların yanındaki tuş animasyonu (bunun için iki ses tuşuna da bakar ve güç tuşu için açarsanız güç menüsünün ne zaman açıldığını yalnızca penceresinin adından anlar) ve “Erişilebilirlik hizmetiyle çiz” ile durum çubuğunun ve kameranın üstündeki çubuk. Telefon kilitliyken bu çubuk kenara çekilir.\n\nBaşka hiçbir şey okumaz veya toplamaz. Hiçbir şey cihazından çıkmaz. İstediğin zaman Ayarlar › Erişilebilirlik bölümünden kapatabilirsin.</string>
+    <string name="accessibility_service_description">Gesture Volume, kayan çubuğa atadığın sistem eylemlerini gerçekleştirmek için erişilebilirlik hizmetini kullanır: ekranı kilitlemek, ekran görüntüsü almak, Geri veya Ana ekrana gitmek, son uygulamaları, bildirim panelini, hızlı ayarları ve güç menüsünü açmak. İstersen, bir ses tuşuna bastığın anda Hızlı paneli de açar; bunun için yalnızca iki ses tuşuna bakar. İstersen, Android’in her uygulamanın kayan çubuğunu gizlediği kilit ekranında da çubuğu gösterir; telefon kilitliyken çubuk yalnızca kilit ekranının zaten izin verdiklerini yapar: ses, Hızlı panel ve hızlı geçiş düğmeleri. Çubuğu gizleyeceğin uygulamalar seçersen veya uygulamalara kendi hareketlerini verirsen, ekranda hangi uygulamanın olduğunu not eder, onunla ilgili başka hiçbir şeyi değil. Başka hiçbir şey okumaz, hiçbir şey toplamaz ve her şey bu cihazda kalır. Bir Ses kısma basışı beklerken, sistemin ekran görüntüsünün açılıp açılmadığını da not eder; böylece tuşlarla alınan bir ekran görüntüsü paneli açmaz. İsterseniz tuşlara bastığınızda yanlarında bir animasyon da gösterir (güç tuşunda yalnızca güç menüsünün açıldığını fark eder) ve çubuğu durum çubuğunun ve kameranın üstüne çizer.</string>
+    <string name="accessibility_disclosure_message">Gesture Volume, Android’in erişilebilirlik hizmetini beş şey için kullanır, hepsi isteğe bağlıdır:\n\n• Çubuğa atadığın sistem eylemlerini gerçekleştirmek için: Ekranı kilitle, Ekran görüntüsü, Geri, Ana ekran, Son uygulamalar, Bildirimler, Hızlı ayarlar ve Güç menüsü.\n\n• Yalnızca ses tuşlarını Anında olarak ayarlarsan iki ses tuşuna bakmak için: birine bastığın anda Hızlı paneli açmak için. Diğer her tuş doğrudan geçer ve hiçbir tuş kaydedilmez. Bir Ses kısma basışı beklerken, sistemin ekran görüntüsünün açılıp açılmadığını da not eder; böylece tuşlarla alınan bir ekran görüntüsü paneli açmaz.\n\n• Yalnızca çubuğu gizleyeceğin uygulamalar seçersen veya uygulamalara kendi hareketlerini verirsen, ekranda hangi uygulamanın olduğunu görmek için. Yalnızca uygulamanın adına bakar, başka hiçbir şeye değil.\n\n• Yalnızca “Kilit ekranında göster” seçeneğini açarsan, çubuğu kilit ekranında göstermek için: Android orada her uygulamanın kayan çubuğunu gizler. Telefon kilitliyken çubuk yalnızca kilit ekranının zaten izin verdiklerini yapar: ses, Hızlı panel ve hızlı geçiş düğmeleri.\n\n• Çizim için, yalnızca her birini açarsanız: bastığınızda tuşların yanındaki tuş animasyonu (bunun için iki ses tuşuna da bakar ve güç tuşu için açarsanız güç menüsünün ne zaman açıldığını yalnızca penceresinin adından anlar) ve “Erişilebilirlik hizmetiyle çiz” ile durum çubuğunun ve kameranın üstündeki çubuk. Telefon kilitliyken bu çubuk kenara çekilir.\n\nBaşka hiçbir şey okumaz veya toplamaz. Hiçbir şey cihazından çıkmaz. İstediğin zaman Ayarlar › Erişilebilirlik bölümünden kapatabilirsin.</string>
     <string name="deck_animation_title">ANİMASYON</string>
     <string name="deck_animation">Açılış ve kapanış animasyonu</string>
     <string name="deck_animation_desc">Deck’in nasıl geldiği. Aynı şekilde, tersine oynatılarak gider. Yukarıdaki önizlemede açılıp kapandığını izlemek için birine dokun. Uzun basma menüsü ve Hızlı panel de aynı seçimle açılır.</string>
@@ -935,7 +935,7 @@
     <string name="slider_volume_keys_off_hint">Tuşlar her zamanki gibi çalışır ve panel kapalı kalır.</string>
     <string name="slider_volume_keys_follow_hint">Panel, basıştan yaklaşık yarım saniye sonra sistemin kendi ses kaydırıcısının yanında açılır. Sistem paneli ve diğer uygulamalar sesi değiştirdiğinde de onları izler.</string>
     <string name="slider_volume_keys_instant_hint">Panel, tuşa basıldığı anda açılır ve sistemin ses kaydırıcısı yerine her basışta bir adım ilerler. Arama sırasında, kilit ekranında veya ekran kapalıyken tuşlar her zamanki gibi çalışır.</string>
-    <string name="slider_volume_keys_needs_accessibility">Anında, GestureVolume’un erişilebilirlik hizmetini gerektirir; tuş, sistem ona tepki vermeden önce bu hizmete iletilir. Hizmet açılana kadar panel sistemle birlikte açılır. Açmak için dokun.</string>
+    <string name="slider_volume_keys_needs_accessibility">Anında, Gesture Volume’un erişilebilirlik hizmetini gerektirir; tuş, sistem ona tepki vermeden önce bu hizmete iletilir. Hizmet açılana kadar panel sistemle birlikte açılır. Açmak için dokun.</string>
     <string name="fill_plasma">Plazma</string>
     <string name="fill_aurora">Kutup ışıkları</string>
     <string name="fill_hologram">Hologram</string>

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">GestureVolume</string>
+    <string name="app_name">Gesture Volume</string>
 
     <string name="landscape_appearance_settings">CÀI ĐẶT XUẤT HIỆN CẢNH QUAN</string>
     <string name="click_">Kiểm tra công tắc để hoạt động và định cấu hình trọng lực, kích thước, độ dày và vị trí của bộ xử lý trên màn hình ngang.</string>
@@ -251,7 +251,7 @@
     <string name="write_settings_permission">Sửa đổi cài đặt hệ thống</string>
     <string name="write_settings_permission_desc">Cho phép thanh điều chỉnh độ sáng màn hình. Chỉ cần cho các thao tác độ sáng.</string>
     <string name="brightness_permission_title">Cho phép điều chỉnh độ sáng?</string>
-    <string name="brightness_permission_message">Để thay đổi độ sáng màn hình, GestureVolume cần quyền Sửa đổi cài đặt hệ thống. Độ sáng thích ứng sẽ tắt trong khi bạn dùng và được bật lại khi bạn dừng dịch vụ.</string>
+    <string name="brightness_permission_message">Để thay đổi độ sáng màn hình, Gesture Volume cần quyền Sửa đổi cài đặt hệ thống. Độ sáng thích ứng sẽ tắt trong khi bạn dùng và được bật lại khi bạn dừng dịch vụ.</string>
     <string name="edge_offset">Khoảng cách cạnh</string>
     <string name="edge_offset_desc">Khoảng hở nhỏ nhất mà thanh giữ với cạnh trái và phải — khi bạn kéo, và cả nơi nó dừng khi bám vào cạnh. Hữu ích với màn hình cong và điều hướng bằng cử chỉ.</string>
     <string name="reset_position">Đặt lại vị trí</string>
@@ -260,7 +260,7 @@
     <string name="fix_battery_desc">Cho phép dùng pin không giới hạn để Android không dừng dịch vụ.</string>
     <string name="fix_battery_allowed">Không giới hạn</string>
     <string name="fix_autostart_title">Tự khởi động</string>
-    <string name="fix_autostart_desc">Mở cài đặt tự khởi động của thiết bị và cho phép GestureVolume.</string>
+    <string name="fix_autostart_desc">Mở cài đặt tự khởi động của thiết bị và cho phép Gesture Volume.</string>
     <string name="autostart_unavailable">Không khả dụng trên thiết bị này</string>
     <string name="open_settings">Mở cài đặt</string>
     <string name="snap_to_edge">Bám vào cạnh</string>
@@ -269,7 +269,7 @@
     <string name="notification_channel_controls_desc">Dòng thông báo thường trực với Hiện/Ẩn, Cài đặt và Dừng.</string>
     <string name="notification_channel_minimal">Đang chạy im lặng</string>
     <string name="notification_channel_minimal_desc">Một chỗ giữ chỗ im lặng mà Android yêu cầu khi dịch vụ đang chạy. Không biểu tượng, không nút.</string>
-    <string name="notification_minimal_title">GestureVolume đang chạy</string>
+    <string name="notification_minimal_title">Gesture Volume đang chạy</string>
     <string name="show_notification_title">Điều khiển trên thông báo</string>
     <string name="show_notification_desc">Giữ Hiện, Cài đặt và Dừng trong bảng thông báo. Đây là cách duy nhất để lấy lại thanh đã ẩn mà không cần mở ứng dụng.</string>
     <string name="show_notification_off_hint">Tắt: Android vẫn yêu cầu một chỗ giữ chỗ im lặng khi dịch vụ đang chạy. Chạm để ẩn hoàn toàn trong cài đặt hệ thống.</string>
@@ -291,7 +291,7 @@
     <string name="notification_service_active">Cử chỉ âm lượng đang hoạt động</string>
     <string name="show_volume_percent_title">Hiện phần trăm âm lượng</string>
     <string name="show_volume_percent_desc">Hiển thị mức trên thanh khi bạn vuốt.</string>
-    <string name="handler_hidden_toast">Đã ẩn thanh. Mở GestureVolume để lấy lại.</string>
+    <string name="handler_hidden_toast">Đã ẩn thanh. Mở Gesture Volume để lấy lại.</string>
     <string name="action_stop_service">Dừng dịch vụ</string>
     <string name="notification_handler_hidden">Thanh đang ẩn — chạm Hiện để lấy lại</string>
     <string name="notification_action_show">Hiện</string>
@@ -305,7 +305,7 @@
     <string name="context_menu_section">Mục trong menu nhấn giữ</string>
     <string name="behaviour_section">Hành vi</string>
     <string name="notification_permission_needed_title">Thông báo đang tắt</string>
-    <string name="notification_permission_needed_message">Các điều khiển đã bật, nhưng Android không cho phép GestureVolume gửi thông báo — nên Hiện, Cài đặt và Dừng sẽ không xuất hiện trong bảng thông báo.</string>
+    <string name="notification_permission_needed_message">Các điều khiển đã bật, nhưng Android không cho phép Gesture Volume gửi thông báo — nên Hiện, Cài đặt và Dừng sẽ không xuất hiện trong bảng thông báo.</string>
     <string name="notification_permission_warning_inline">Thông báo đang bị chặn với ứng dụng này. Chạm để cho phép.</string>
     <string name="grant_permission_action">Cho phép</string>
     <string name="not_now">Để sau</string>
@@ -611,12 +611,12 @@
     <string name="flashlight_unavailable">Thiết bị này không có đèn pin</string>
     <string name="dnd_on">Đã bật Không làm phiền</string>
     <string name="dnd_off">Đã tắt Không làm phiền</string>
-    <string name="dnd_needs_access">Cho phép truy cập Không làm phiền trong phần quyền của GestureVolume</string>
+    <string name="dnd_needs_access">Cho phép truy cập Không làm phiền trong phần quyền của Gesture Volume</string>
     <string name="auto_rotate_on">Đã bật tự động xoay</string>
     <string name="auto_rotate_off">Đã tắt tự động xoay</string>
     <string name="auto_rotate_needs_permission">Cho phép Sửa đổi cài đặt hệ thống để bật/tắt tự động xoay</string>
     <string name="lock_screen_unlock_first">Mở khóa điện thoại để dùng tính năng này</string>
-    <string name="accessibility_needed_short">Bật dịch vụ hỗ trợ tiếp cận GestureVolume để dùng tính năng này</string>
+    <string name="accessibility_needed_short">Bật dịch vụ hỗ trợ tiếp cận Gesture Volume để dùng tính năng này</string>
     <string name="action_unavailable_on_device">Hành động này không khả dụng trên thiết bị này</string>
     <string name="triple_tap_action">Hành động nhấn ba lần</string>
     <string name="triple_tap_desc">Điều gì xảy ra khi nhấn ba lần</string>
@@ -634,22 +634,22 @@
     <string name="swipe_amount_by_length_desc">Một bước cho khoảng mỗi bề rộng ngón tay bạn vuốt, như thanh vẫn luôn hoạt động. Một cú vuốt dài quét hết toàn bộ phạm vi.</string>
     <string name="swipe_amount_percent">%1$d%% mỗi lần vuốt</string>
     <string name="swipe_amount_percent_desc">Mỗi lần vuốt thay đổi %1$d%%, dù cú vuốt dài hay ngắn. Âm lượng chỉ có ít bước sẽ chuyển đến bước gần nhất.</string>
-    <string name="accessibility_service_label">GestureVolume</string>
+    <string name="accessibility_service_label">Gesture Volume</string>
     <string name="accessibility_service_summary">Lối tắt hệ thống từ thanh âm lượng, phím âm lượng tức thì, thanh trên màn hình khóa, và ẩn thanh hoặc đổi cử chỉ của nó trong ứng dụng đã chọn</string>
-    <string name="accessibility_service_description">GestureVolume dùng dịch vụ hỗ trợ tiếp cận để thực hiện các thao tác hệ thống bạn gán cho thanh nổi — khóa màn hình, chụp màn hình, Quay lại hoặc về Màn hình chính, mở ứng dụng gần đây, bảng thông báo, cài đặt nhanh và menu nguồn. Nếu bạn chọn, nó cũng mở Bảng nhanh ngay khi bạn nhấn phím âm lượng, chỉ theo dõi hai phím âm lượng. Nếu bạn chọn, nó cũng hiện thanh trên màn hình khóa, nơi Android ẩn thanh nổi của mọi ứng dụng, và khi điện thoại đang khóa, thanh chỉ làm những gì màn hình khóa vốn cho phép: âm lượng, Bảng nhanh và các nút bật/tắt nhanh. Nếu bạn chọn ứng dụng để ẩn thanh, hoặc đặt cử chỉ riêng cho ứng dụng, nó ghi nhận ứng dụng nào đang trên màn hình và không gì khác về ứng dụng đó. Nó không đọc gì khác, không thu thập gì, và mọi thứ ở lại trên thiết bị này. Trong khi một lần nhấn Giảm âm lượng đang chờ, nó cũng ghi nhận ảnh chụp màn hình của hệ thống đã xuất hiện hay chưa, để ảnh chụp bằng nút bấm không mở bảng. Nếu bạn chọn, nó cũng hiện hiệu ứng cạnh các nút khi bạn nhấn (với nút nguồn, chỉ nhận biết khi menu nguồn hiện lên) và vẽ thanh lên trên thanh trạng thái và camera.</string>
+    <string name="accessibility_service_description">Gesture Volume dùng dịch vụ hỗ trợ tiếp cận để thực hiện các thao tác hệ thống bạn gán cho thanh nổi — khóa màn hình, chụp màn hình, Quay lại hoặc về Màn hình chính, mở ứng dụng gần đây, bảng thông báo, cài đặt nhanh và menu nguồn. Nếu bạn chọn, nó cũng mở Bảng nhanh ngay khi bạn nhấn phím âm lượng, chỉ theo dõi hai phím âm lượng. Nếu bạn chọn, nó cũng hiện thanh trên màn hình khóa, nơi Android ẩn thanh nổi của mọi ứng dụng, và khi điện thoại đang khóa, thanh chỉ làm những gì màn hình khóa vốn cho phép: âm lượng, Bảng nhanh và các nút bật/tắt nhanh. Nếu bạn chọn ứng dụng để ẩn thanh, hoặc đặt cử chỉ riêng cho ứng dụng, nó ghi nhận ứng dụng nào đang trên màn hình và không gì khác về ứng dụng đó. Nó không đọc gì khác, không thu thập gì, và mọi thứ ở lại trên thiết bị này. Trong khi một lần nhấn Giảm âm lượng đang chờ, nó cũng ghi nhận ảnh chụp màn hình của hệ thống đã xuất hiện hay chưa, để ảnh chụp bằng nút bấm không mở bảng. Nếu bạn chọn, nó cũng hiện hiệu ứng cạnh các nút khi bạn nhấn (với nút nguồn, chỉ nhận biết khi menu nguồn hiện lên) và vẽ thanh lên trên thanh trạng thái và camera.</string>
     <string name="accessibility_permission">Dịch vụ hỗ trợ tiếp cận</string>
     <string name="accessibility_permission_desc">Tùy chọn: thực hiện Khóa màn hình, Chụp màn hình, Quay lại, Màn hình chính, Ứng dụng gần đây, Thông báo, Cài đặt nhanh và Menu nguồn.</string>
     <string name="accessibility_disclosure_title">Bật dịch vụ hỗ trợ tiếp cận?</string>
-    <string name="accessibility_disclosure_message">GestureVolume dùng dịch vụ hỗ trợ tiếp cận của Android cho năm việc, tất cả đều tùy chọn:\n\n• Để thực hiện các thao tác hệ thống bạn gán cho thanh: Khóa màn hình, Chụp màn hình, Quay lại, Màn hình chính, Ứng dụng gần đây, Thông báo, Cài đặt nhanh và Menu nguồn.\n\n• Để theo dõi hai phím âm lượng, chỉ khi bạn đặt phím âm lượng ở chế độ Tức thì: để mở Bảng nhanh ngay khi bạn nhấn một phím. Mọi phím khác được chuyển tiếp ngay, và không phím nào được ghi lại. Trong khi một lần nhấn Giảm âm lượng đang chờ, nó cũng ghi nhận ảnh chụp màn hình của hệ thống đã xuất hiện hay chưa, để ảnh chụp bằng nút bấm không mở bảng.\n\n• Để biết ứng dụng nào đang trên màn hình, chỉ khi bạn chọn ứng dụng để ẩn thanh hoặc đặt cử chỉ riêng cho ứng dụng. Nó chỉ xem tên ứng dụng và không gì khác.\n\n• Để hiện thanh trên màn hình khóa, chỉ khi bạn bật “Hiện trên màn hình khóa”: Android ẩn thanh nổi của mọi ứng dụng ở đó. Khi điện thoại đang khóa, thanh chỉ làm những gì màn hình khóa vốn cho phép: âm lượng, Bảng nhanh và các nút bật/tắt nhanh.\n\n• Để vẽ, chỉ khi bạn bật từng mục: hiệu ứng nút cạnh các nút khi bạn nhấn, để làm vậy nó cũng xem hai phím âm lượng và, nếu bạn bật cho nút nguồn, nhận biết khi menu nguồn hiện lên chỉ qua tên cửa sổ của nó; và thanh trên thanh trạng thái và camera, với “Vẽ bằng dịch vụ hỗ trợ tiếp cận”. Khi điện thoại khóa, thanh đó sẽ tránh sang bên.\n\nNó không đọc hay thu thập bất cứ thứ gì khác. Không có gì rời khỏi thiết bị của bạn. Bạn có thể tắt nó bất cứ lúc nào trong Cài đặt › Hỗ trợ tiếp cận.</string>
+    <string name="accessibility_disclosure_message">Gesture Volume dùng dịch vụ hỗ trợ tiếp cận của Android cho năm việc, tất cả đều tùy chọn:\n\n• Để thực hiện các thao tác hệ thống bạn gán cho thanh: Khóa màn hình, Chụp màn hình, Quay lại, Màn hình chính, Ứng dụng gần đây, Thông báo, Cài đặt nhanh và Menu nguồn.\n\n• Để theo dõi hai phím âm lượng, chỉ khi bạn đặt phím âm lượng ở chế độ Tức thì: để mở Bảng nhanh ngay khi bạn nhấn một phím. Mọi phím khác được chuyển tiếp ngay, và không phím nào được ghi lại. Trong khi một lần nhấn Giảm âm lượng đang chờ, nó cũng ghi nhận ảnh chụp màn hình của hệ thống đã xuất hiện hay chưa, để ảnh chụp bằng nút bấm không mở bảng.\n\n• Để biết ứng dụng nào đang trên màn hình, chỉ khi bạn chọn ứng dụng để ẩn thanh hoặc đặt cử chỉ riêng cho ứng dụng. Nó chỉ xem tên ứng dụng và không gì khác.\n\n• Để hiện thanh trên màn hình khóa, chỉ khi bạn bật “Hiện trên màn hình khóa”: Android ẩn thanh nổi của mọi ứng dụng ở đó. Khi điện thoại đang khóa, thanh chỉ làm những gì màn hình khóa vốn cho phép: âm lượng, Bảng nhanh và các nút bật/tắt nhanh.\n\n• Để vẽ, chỉ khi bạn bật từng mục: hiệu ứng nút cạnh các nút khi bạn nhấn, để làm vậy nó cũng xem hai phím âm lượng và, nếu bạn bật cho nút nguồn, nhận biết khi menu nguồn hiện lên chỉ qua tên cửa sổ của nó; và thanh trên thanh trạng thái và camera, với “Vẽ bằng dịch vụ hỗ trợ tiếp cận”. Khi điện thoại khóa, thanh đó sẽ tránh sang bên.\n\nNó không đọc hay thu thập bất cứ thứ gì khác. Không có gì rời khỏi thiết bị của bạn. Bạn có thể tắt nó bất cứ lúc nào trong Cài đặt › Hỗ trợ tiếp cận.</string>
     <string name="accessibility_disclosure_accept">Mở cài đặt Hỗ trợ tiếp cận</string>
     <string name="accessibility_disclosure_decline">Để sau</string>
-    <string name="accessibility_how_to">Trong danh sách, mở GestureVolume và bật nó lên.</string>
+    <string name="accessibility_how_to">Trong danh sách, mở Gesture Volume và bật nó lên.</string>
     <string name="accessibility_on">Bật</string>
     <string name="accessibility_off">Tắt</string>
     <string name="dnd_permission">Quyền truy cập Không làm phiền</string>
     <string name="dnd_permission_desc">Tùy chọn: cho phép thanh và Deck bật hoặc tắt Không làm phiền.</string>
     <string name="dnd_permission_title">Cho phép truy cập Không làm phiền?</string>
-    <string name="dnd_permission_message">Để bật/tắt Không làm phiền, GestureVolume cần quyền truy cập Không làm phiền. Bạn sẽ được đưa đến danh sách hệ thống để cho phép.</string>
+    <string name="dnd_permission_message">Để bật/tắt Không làm phiền, Gesture Volume cần quyền truy cập Không làm phiền. Bạn sẽ được đưa đến danh sách hệ thống để cho phép.</string>
     <string name="tile_search">Tìm kiếm</string>
     <string name="tile_search_desc">Ứng dụng, danh bạ, phép tính và web</string>
     <string name="tile_flashlight">Đèn pin</string>
@@ -913,7 +913,7 @@
     <string name="slider_volume_keys_off_hint">Các phím hoạt động như bình thường và bảng vẫn đóng.</string>
     <string name="slider_volume_keys_follow_hint">Bảng mở cạnh thanh trượt âm lượng của hệ thống, khoảng nửa giây sau khi nhấn. Nó cũng theo bảng hệ thống và các ứng dụng khác khi chúng đổi âm lượng.</string>
     <string name="slider_volume_keys_instant_hint">Bảng mở ngay khi nhấn phím và di chuyển một bước mỗi lần nhấn, thay cho thanh trượt âm lượng của hệ thống. Khi đang gọi, ở màn hình khóa hoặc khi tắt màn hình, các phím hoạt động như bình thường.</string>
-    <string name="slider_volume_keys_needs_accessibility">Tức thì cần dịch vụ hỗ trợ tiếp cận của GestureVolume, dịch vụ này nhận phím trước khi hệ thống xử lý. Cho đến khi bật, bảng sẽ mở cùng hệ thống. Chạm để bật.</string>
+    <string name="slider_volume_keys_needs_accessibility">Tức thì cần dịch vụ hỗ trợ tiếp cận của Gesture Volume, dịch vụ này nhận phím trước khi hệ thống xử lý. Cho đến khi bật, bảng sẽ mở cùng hệ thống. Chạm để bật.</string>
     <string name="fill_plasma">Plasma</string>
     <string name="fill_aurora">Cực quang</string>
     <string name="fill_hologram">Ảnh ba chiều</string>

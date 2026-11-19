@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">GestureVolume</string>
+    <string name="app_name">Gesture Volume</string>
 
     <string name="landscape_appearance_settings">横屏外观设置</string>
     <string name="click_">选中开关以激活。配置横屏上的触发器重力、尺寸、粗细和位置。</string>
@@ -251,7 +251,7 @@
     <string name="write_settings_permission">修改系统设置</string>
     <string name="write_settings_permission_desc">允许侧边条控制屏幕亮度。仅亮度操作需要此权限。</string>
     <string name="brightness_permission_title">允许控制亮度吗？</string>
-    <string name="brightness_permission_message">要更改屏幕亮度，GestureVolume 需要“修改系统设置”权限。使用期间会关闭自动亮度，停止服务后会自动恢复。</string>
+    <string name="brightness_permission_message">要更改屏幕亮度，Gesture Volume 需要“修改系统设置”权限。使用期间会关闭自动亮度，停止服务后会自动恢复。</string>
     <string name="edge_offset">边缘距离</string>
     <string name="edge_offset_desc">滑条与左右边缘保持的最小间距 — 拖动时如此，吸附停靠的位置也是如此。在曲面屏和手势导航下很有用。</string>
     <string name="reset_position">重置位置</string>
@@ -260,7 +260,7 @@
     <string name="fix_battery_desc">允许无限制使用电池，以免系统停止该服务。</string>
     <string name="fix_battery_allowed">无限制</string>
     <string name="fix_autostart_title">自启动</string>
-    <string name="fix_autostart_desc">打开设备的自启动设置并允许 GestureVolume。</string>
+    <string name="fix_autostart_desc">打开设备的自启动设置并允许 Gesture Volume。</string>
     <string name="autostart_unavailable">此设备不支持</string>
     <string name="open_settings">打开设置</string>
     <string name="snap_to_edge">吸附到边缘</string>
@@ -269,7 +269,7 @@
     <string name="notification_channel_controls_desc">带有显示/隐藏、设置和停止按钮的常驻通知。</string>
     <string name="notification_channel_minimal">静默运行中</string>
     <string name="notification_channel_minimal_desc">服务运行期间 Android 要求的静默占位通知。无图标、无按钮。</string>
-    <string name="notification_minimal_title">GestureVolume 正在运行</string>
+    <string name="notification_minimal_title">Gesture Volume 正在运行</string>
     <string name="show_notification_title">通知栏控制</string>
     <string name="show_notification_desc">在通知面板中保留显示、设置和停止按钮。这是不打开应用就能找回已隐藏滑条的唯一方式。</string>
     <string name="show_notification_off_hint">已关闭：服务运行期间 Android 仍要求一个静默占位通知。点按可在系统设置中将其彻底隐藏。</string>
@@ -291,7 +291,7 @@
     <string name="notification_service_active">音量手势已启用</string>
     <string name="show_volume_percent_title">显示音量百分比</string>
     <string name="show_volume_percent_desc">滑动时在滑条上显示当前音量。</string>
-    <string name="handler_hidden_toast">滑条已隐藏。打开 GestureVolume 即可找回。</string>
+    <string name="handler_hidden_toast">滑条已隐藏。打开 Gesture Volume 即可找回。</string>
     <string name="action_stop_service">停止服务</string>
     <string name="notification_handler_hidden">滑条已隐藏 — 点按“显示”即可找回</string>
     <string name="notification_action_show">显示</string>
@@ -305,7 +305,7 @@
     <string name="context_menu_section">长按菜单项</string>
     <string name="behaviour_section">行为</string>
     <string name="notification_permission_needed_title">通知已关闭</string>
-    <string name="notification_permission_needed_message">控制已开启，但 Android 不允许 GestureVolume 发送通知 — 因此显示、设置和停止不会出现在通知面板中。</string>
+    <string name="notification_permission_needed_message">控制已开启，但 Android 不允许 Gesture Volume 发送通知 — 因此显示、设置和停止不会出现在通知面板中。</string>
     <string name="notification_permission_warning_inline">此应用的通知已被阻止。点按以允许。</string>
     <string name="grant_permission_action">允许</string>
     <string name="not_now">暂不</string>
@@ -611,12 +611,12 @@
     <string name="flashlight_unavailable">此设备没有手电筒</string>
     <string name="dnd_on">勿扰模式已开启</string>
     <string name="dnd_off">勿扰模式已关闭</string>
-    <string name="dnd_needs_access">请在 GestureVolume 的权限中允许勿扰模式访问权限</string>
+    <string name="dnd_needs_access">请在 Gesture Volume 的权限中允许勿扰模式访问权限</string>
     <string name="auto_rotate_on">自动旋转已开启</string>
     <string name="auto_rotate_off">自动旋转已关闭</string>
     <string name="auto_rotate_needs_permission">请允许“修改系统设置”以切换自动旋转</string>
     <string name="lock_screen_unlock_first">请解锁手机以使用此功能</string>
-    <string name="accessibility_needed_short">请开启 GestureVolume 无障碍服务以使用此功能</string>
+    <string name="accessibility_needed_short">请开启 Gesture Volume 无障碍服务以使用此功能</string>
     <string name="action_unavailable_on_device">此设备不支持该操作</string>
     <string name="triple_tap_action">三击操作</string>
     <string name="triple_tap_desc">三击时会发生什么</string>
@@ -634,22 +634,22 @@
     <string name="swipe_amount_by_length_desc">每滑过约一指宽调节一级，与滑条一直以来的方式相同。长距离滑动可覆盖整个范围。</string>
     <string name="swipe_amount_percent">每次滑动 %1$d%%</string>
     <string name="swipe_amount_percent_desc">无论滑动长短，每次滑动都调节 %1$d%%。级数很少的音量会调到最接近的一级。</string>
-    <string name="accessibility_service_label">GestureVolume</string>
+    <string name="accessibility_service_label">Gesture Volume</string>
     <string name="accessibility_service_summary">从音量滑条执行系统快捷操作、音量键即时响应、锁屏界面上的滑条，以及在所选应用中隐藏滑条或更改其手势</string>
-    <string name="accessibility_service_description">GestureVolume 使用无障碍服务来执行你分配给悬浮滑条的系统操作——锁屏、截屏、返回或回到主屏幕、打开最近应用、通知栏、快捷设置和电源菜单。如果你选择开启，它还会在你按下音量键的瞬间打开快捷面板，且只关注两个音量键。如果你选择开启，它还会在锁屏界面上显示滑条（Android 会在锁屏界面隐藏所有应用的悬浮滑条），手机锁定期间，滑条只执行锁屏界面本就允许的操作：音量、快捷面板和快捷开关。如果你选择了要隐藏滑条的应用，或为某些应用设置了专属手势，它会记下屏幕上是哪个应用，除此之外不记录该应用的任何信息。它不读取其他任何内容，不收集任何数据，所有内容都保留在本设备上。在等待音量减小键的按压期间，它还会留意系统截屏是否已出现，这样用按键截屏时就不会打开面板。如果你选择，它还会在你按下按键时在按键旁显示动画（对电源键只留意电源菜单何时出现），并把滑条绘制在状态栏和摄像头上方。</string>
+    <string name="accessibility_service_description">Gesture Volume 使用无障碍服务来执行你分配给悬浮滑条的系统操作——锁屏、截屏、返回或回到主屏幕、打开最近应用、通知栏、快捷设置和电源菜单。如果你选择开启，它还会在你按下音量键的瞬间打开快捷面板，且只关注两个音量键。如果你选择开启，它还会在锁屏界面上显示滑条（Android 会在锁屏界面隐藏所有应用的悬浮滑条），手机锁定期间，滑条只执行锁屏界面本就允许的操作：音量、快捷面板和快捷开关。如果你选择了要隐藏滑条的应用，或为某些应用设置了专属手势，它会记下屏幕上是哪个应用，除此之外不记录该应用的任何信息。它不读取其他任何内容，不收集任何数据，所有内容都保留在本设备上。在等待音量减小键的按压期间，它还会留意系统截屏是否已出现，这样用按键截屏时就不会打开面板。如果你选择，它还会在你按下按键时在按键旁显示动画（对电源键只留意电源菜单何时出现），并把滑条绘制在状态栏和摄像头上方。</string>
     <string name="accessibility_permission">无障碍服务</string>
     <string name="accessibility_permission_desc">可选：执行锁屏、截屏、返回、主屏幕、最近应用、通知栏、快捷设置和电源菜单。</string>
     <string name="accessibility_disclosure_title">开启无障碍服务？</string>
-    <string name="accessibility_disclosure_message">GestureVolume 将 Android 的无障碍服务用于五件事，全部可选：\n\n• 执行你分配给滑条的系统操作：锁屏、截屏、返回、主屏幕、最近应用、通知栏、快捷设置和电源菜单。\n\n• 关注两个音量键（仅当你将音量键设为“即时”时）：在你按下其中一个时立即打开快捷面板。其他所有按键都会直接放行，也不会记录任何按键。在等待音量减小键的按压期间，它还会留意系统截屏是否已出现，这样用按键截屏时就不会打开面板。\n\n• 查看屏幕上是哪个应用（仅当你选择了要隐藏滑条的应用或为应用设置了专属手势时）。它只看应用名称，不看其他内容。\n\n• 在锁屏界面上显示滑条（仅当你开启“在锁屏界面上显示”时）：Android 会在锁屏界面隐藏所有应用的悬浮滑条。手机锁定期间，滑条只执行锁屏界面本就允许的操作：音量、快捷面板和快捷开关。\n\n• 用于绘制，仅在你分别开启时：按下按键时在按键旁显示的按键动画（为此它也会查看两个音量键；若你为电源键开启，它还仅凭窗口名称得知电源菜单何时出现）；以及通过“通过无障碍服务绘制”显示在状态栏和摄像头上方的滑条。手机锁定时，该滑条会让开。\n\n它不会读取或收集任何其他内容。任何数据都不会离开你的设备。你可以随时在“设置 › 无障碍”中将其关闭。</string>
+    <string name="accessibility_disclosure_message">Gesture Volume 将 Android 的无障碍服务用于五件事，全部可选：\n\n• 执行你分配给滑条的系统操作：锁屏、截屏、返回、主屏幕、最近应用、通知栏、快捷设置和电源菜单。\n\n• 关注两个音量键（仅当你将音量键设为“即时”时）：在你按下其中一个时立即打开快捷面板。其他所有按键都会直接放行，也不会记录任何按键。在等待音量减小键的按压期间，它还会留意系统截屏是否已出现，这样用按键截屏时就不会打开面板。\n\n• 查看屏幕上是哪个应用（仅当你选择了要隐藏滑条的应用或为应用设置了专属手势时）。它只看应用名称，不看其他内容。\n\n• 在锁屏界面上显示滑条（仅当你开启“在锁屏界面上显示”时）：Android 会在锁屏界面隐藏所有应用的悬浮滑条。手机锁定期间，滑条只执行锁屏界面本就允许的操作：音量、快捷面板和快捷开关。\n\n• 用于绘制，仅在你分别开启时：按下按键时在按键旁显示的按键动画（为此它也会查看两个音量键；若你为电源键开启，它还仅凭窗口名称得知电源菜单何时出现）；以及通过“通过无障碍服务绘制”显示在状态栏和摄像头上方的滑条。手机锁定时，该滑条会让开。\n\n它不会读取或收集任何其他内容。任何数据都不会离开你的设备。你可以随时在“设置 › 无障碍”中将其关闭。</string>
     <string name="accessibility_disclosure_accept">打开无障碍设置</string>
     <string name="accessibility_disclosure_decline">暂不</string>
-    <string name="accessibility_how_to">在列表中打开 GestureVolume 并将其开启。</string>
+    <string name="accessibility_how_to">在列表中打开 Gesture Volume 并将其开启。</string>
     <string name="accessibility_on">开</string>
     <string name="accessibility_off">关</string>
     <string name="dnd_permission">勿扰模式访问权限</string>
     <string name="dnd_permission_desc">可选：让滑条和 Deck 开启或关闭勿扰模式。</string>
     <string name="dnd_permission_title">允许勿扰模式访问权限？</string>
-    <string name="dnd_permission_message">要切换勿扰模式，GestureVolume 需要勿扰模式访问权限。你将被带到系统列表中进行允许。</string>
+    <string name="dnd_permission_message">要切换勿扰模式，Gesture Volume 需要勿扰模式访问权限。你将被带到系统列表中进行允许。</string>
     <string name="tile_search">搜索</string>
     <string name="tile_search_desc">应用、联系人、计算和网页</string>
     <string name="tile_flashlight">手电筒</string>
@@ -913,7 +913,7 @@
     <string name="slider_volume_keys_off_hint">按键照常工作，面板保持关闭。</string>
     <string name="slider_volume_keys_follow_hint">按下按键约半秒后，面板会在系统自带的音量滑块旁打开。当系统面板或其他应用更改音量时，它也会随之变化。</string>
     <string name="slider_volume_keys_instant_hint">按下按键的瞬间面板就会打开，每按一次调节一级，取代系统的音量滑块。通话中、锁屏界面或屏幕关闭时，按键照常工作。</string>
-    <string name="slider_volume_keys_needs_accessibility">“即时”需要 GestureVolume 的无障碍服务，它会在系统处理按键之前接收按键。开启之前，面板会跟随系统打开。点按即可开启。</string>
+    <string name="slider_volume_keys_needs_accessibility">“即时”需要 Gesture Volume 的无障碍服务，它会在系统处理按键之前接收按键。开启之前，面板会跟随系统打开。点按即可开启。</string>
     <string name="fill_plasma">等离子</string>
     <string name="fill_aurora">极光</string>
     <string name="fill_hologram">全息</string>

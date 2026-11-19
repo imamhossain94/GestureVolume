@@ -81,7 +81,7 @@ class QrScanActivity : AppCompatActivity() {
 
     private fun copy(text: String) {
         val manager = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-        runCatching { manager?.setPrimaryClip(ClipData.newPlainText("GestureVolume", text)) }
+        runCatching { manager?.setPrimaryClip(ClipData.newPlainText("Gesture Volume", text)) }
     }
 
     private fun open(intent: Intent): Boolean = try {

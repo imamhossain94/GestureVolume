@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">GestureVolume</string>
+    <string name="app_name">Gesture Volume</string>
 
     <string name="landscape_appearance_settings">ERSCHEINUNGSBILD (QUERFORMAT)</string>
     <string name="click_">Aktivieren Sie den Schalter und konfigurieren Sie Position und Aussehen des Handlers im Querformat.</string>
@@ -250,7 +250,7 @@
     <string name="write_settings_permission">Systemeinstellungen ändern</string>
     <string name="write_settings_permission_desc">Erlaubt der Leiste, die Bildschirmhelligkeit zu steuern. Nur für Helligkeitsaktionen nötig.</string>
     <string name="brightness_permission_title">Helligkeitssteuerung erlauben?</string>
-    <string name="brightness_permission_message">Um die Bildschirmhelligkeit zu ändern, benötigt GestureVolume die Berechtigung Systemeinstellungen ändern. Die adaptive Helligkeit wird währenddessen deaktiviert und beim Beenden des Dienstes wiederhergestellt.</string>
+    <string name="brightness_permission_message">Um die Bildschirmhelligkeit zu ändern, benötigt Gesture Volume die Berechtigung Systemeinstellungen ändern. Die adaptive Helligkeit wird währenddessen deaktiviert und beim Beenden des Dienstes wiederhergestellt.</string>
     <string name="edge_offset">Randabstand</string>
     <string name="edge_offset_desc">Der kleinste Abstand, den die Leiste zum linken und rechten Rand hält – beim Ziehen und dort, wo sie beim Einrasten stehen bleibt. Hilft bei gebogenen Displays und aktivierter Gestensteuerung.</string>
     <string name="reset_position">Position zurücksetzen</string>
@@ -259,7 +259,7 @@
     <string name="fix_battery_desc">Uneingeschränkte Akkunutzung erlauben, damit Android den Dienst nicht beendet.</string>
     <string name="fix_battery_allowed">Uneingeschränkt</string>
     <string name="fix_autostart_title">Autostart</string>
-    <string name="fix_autostart_desc">Öffne die Autostart-Einstellungen deines Geräts und erlaube GestureVolume.</string>
+    <string name="fix_autostart_desc">Öffne die Autostart-Einstellungen deines Geräts und erlaube Gesture Volume.</string>
     <string name="autostart_unavailable">Auf diesem Gerät nicht verfügbar</string>
     <string name="open_settings">Einstellungen öffnen</string>
     <string name="snap_to_edge">Am Rand einrasten</string>
@@ -268,7 +268,7 @@
     <string name="notification_channel_controls_desc">Die dauerhafte Zeile mit Anzeigen/Ausblenden, Einstellungen und Stopp.</string>
     <string name="notification_channel_minimal">Läuft im Hintergrund</string>
     <string name="notification_channel_minimal_desc">Ein stiller Platzhalter, den Android verlangt, solange der Dienst läuft. Kein Symbol, keine Schaltflächen.</string>
-    <string name="notification_minimal_title">GestureVolume läuft</string>
+    <string name="notification_minimal_title">Gesture Volume läuft</string>
     <string name="show_notification_title">Benachrichtigungs-Steuerung</string>
     <string name="show_notification_desc">Behalte Anzeigen, Einstellungen und Stopp in der Benachrichtigungsleiste. Nur so lässt sich eine ausgeblendete Leiste zurückholen, ohne die App zu öffnen.</string>
     <string name="show_notification_off_hint">Aus: Android verlangt weiterhin einen stillen Platzhalter, solange der Dienst läuft. Tippe, um ihn in den Systemeinstellungen ganz auszublenden.</string>
@@ -290,7 +290,7 @@
     <string name="notification_service_active">Lautstärke-Gesten sind aktiv</string>
     <string name="show_volume_percent_title">Lautstärke in Prozent anzeigen</string>
     <string name="show_volume_percent_desc">Zeigt den Pegel während des Wischens auf der Leiste an.</string>
-    <string name="handler_hidden_toast">Leiste ausgeblendet. Öffne GestureVolume, um sie zurückzuholen.</string>
+    <string name="handler_hidden_toast">Leiste ausgeblendet. Öffne Gesture Volume, um sie zurückzuholen.</string>
     <string name="action_stop_service">Dienst beenden</string>
     <string name="notification_handler_hidden">Leiste ausgeblendet – auf Anzeigen tippen, um sie zurückzuholen</string>
     <string name="notification_action_show">Anzeigen</string>
@@ -304,7 +304,7 @@
     <string name="context_menu_section">Einträge im Menü bei langem Drücken</string>
     <string name="behaviour_section">Verhalten</string>
     <string name="notification_permission_needed_title">Benachrichtigungen sind deaktiviert</string>
-    <string name="notification_permission_needed_message">Die Steuerung ist an, aber Android lässt GestureVolume keine Benachrichtigungen posten – Anzeigen, Einstellungen und Stopp erscheinen also nicht in der Leiste.</string>
+    <string name="notification_permission_needed_message">Die Steuerung ist an, aber Android lässt Gesture Volume keine Benachrichtigungen posten – Anzeigen, Einstellungen und Stopp erscheinen also nicht in der Leiste.</string>
     <string name="notification_permission_warning_inline">Benachrichtigungen sind für diese App blockiert. Zum Erlauben tippen.</string>
     <string name="grant_permission_action">Erlauben</string>
     <string name="not_now">Jetzt nicht</string>
@@ -386,12 +386,12 @@
     <string name="flashlight_unavailable">Dieses Gerät hat keine Taschenlampe</string>
     <string name="dnd_on">Bitte nicht stören an</string>
     <string name="dnd_off">Bitte nicht stören aus</string>
-    <string name="dnd_needs_access">Erlaube den Zugriff auf „Bitte nicht stören“ in den Berechtigungen von GestureVolume</string>
+    <string name="dnd_needs_access">Erlaube den Zugriff auf „Bitte nicht stören“ in den Berechtigungen von Gesture Volume</string>
     <string name="auto_rotate_on">Auto-Drehung an</string>
     <string name="auto_rotate_off">Auto-Drehung aus</string>
     <string name="auto_rotate_needs_permission">Erlaube „Systemeinstellungen ändern“, um die Auto-Drehung zu schalten</string>
     <string name="lock_screen_unlock_first">Entsperre dein Telefon, um dies zu nutzen</string>
-    <string name="accessibility_needed_short">Aktiviere den GestureVolume-Bedienungshilfedienst, um dies zu nutzen</string>
+    <string name="accessibility_needed_short">Aktiviere den Gesture Volume-Bedienungshilfedienst, um dies zu nutzen</string>
     <string name="action_unavailable_on_device">Diese Aktion ist auf diesem Gerät nicht verfügbar</string>
     <string name="triple_tap_action">Aktion bei Dreifachtippen</string>
     <string name="triple_tap_desc">Was beim Dreifachtippen passiert</string>
@@ -399,19 +399,19 @@
     <string name="swipe_in_desc">Von der Leiste zur Bildschirmmitte wischen</string>
     <string name="swipe_out_action">Aktion beim Wischen nach außen</string>
     <string name="swipe_out_desc">Von der Leiste zum Bildschirmrand wischen</string>
-    <string name="accessibility_service_label">GestureVolume</string>
+    <string name="accessibility_service_label">Gesture Volume</string>
     <string name="accessibility_permission">Bedienungshilfedienst</string>
     <string name="accessibility_permission_desc">Optional: führt Bildschirm sperren, Screenshot, Zurück, Startbildschirm, Zuletzt verwendet, Benachrichtigungen, Schnelleinstellungen und Ausschaltmenü aus.</string>
     <string name="accessibility_disclosure_title">Bedienungshilfedienst aktivieren?</string>
     <string name="accessibility_disclosure_accept">Bedienungshilfen öffnen</string>
     <string name="accessibility_disclosure_decline">Jetzt nicht</string>
-    <string name="accessibility_how_to">Öffne in der Liste GestureVolume und aktiviere es.</string>
+    <string name="accessibility_how_to">Öffne in der Liste Gesture Volume und aktiviere es.</string>
     <string name="accessibility_on">An</string>
     <string name="accessibility_off">Aus</string>
     <string name="dnd_permission">Zugriff auf „Bitte nicht stören“</string>
     <string name="dnd_permission_desc">Optional: lässt die Leiste und das Deck „Bitte nicht stören“ ein- und ausschalten.</string>
     <string name="dnd_permission_title">Zugriff auf „Bitte nicht stören“ erlauben?</string>
-    <string name="dnd_permission_message">Um „Bitte nicht stören“ zu schalten, benötigt GestureVolume den entsprechenden Zugriff. Du wirst zur Systemliste geführt, wo du ihn erlauben kannst.</string>
+    <string name="dnd_permission_message">Um „Bitte nicht stören“ zu schalten, benötigt Gesture Volume den entsprechenden Zugriff. Du wirst zur Systemliste geführt, wo du ihn erlauben kannst.</string>
     <string name="tile_search">Suche</string>
     <string name="tile_search_desc">Apps, Kontakte, Rechnungen und das Web</string>
     <string name="tile_flashlight">Taschenlampe</string>
@@ -868,8 +868,8 @@
     <string name="swipe_amount_percent">%1$d %% pro Wisch</string>
     <string name="swipe_amount_percent_desc">Jeder Wisch ändert den Wert um %1$d %%, egal wie lang oder kurz er ist. Eine Lautstärke mit nur wenigen Stufen springt auf die nächstgelegene.</string>
     <string name="accessibility_service_summary">Systemverknüpfungen über die Lautstärkeleiste, sofortige Lautstärketasten, die Leiste auf dem Sperrbildschirm sowie die Leiste in ausgewählten Apps ausblenden oder ihre Gesten ändern</string>
-    <string name="accessibility_service_description">GestureVolume nutzt den Bedienungshilfedienst, um die Systemaktionen auszuführen, die du der schwebenden Leiste zuweist – Bildschirm sperren, Screenshot aufnehmen, Zurück oder Startbildschirm, zuletzt verwendete Apps öffnen, die Benachrichtigungsleiste, die Schnelleinstellungen und das Ausschaltmenü. Wenn du willst, öffnet er außerdem das Schnellpanel, sobald du eine Lautstärketaste drückst, und achtet dabei nur auf die beiden Lautstärketasten. Wenn du willst, zeigt er die Leiste außerdem auf dem Sperrbildschirm an, wo Android die schwebende Leiste jeder App ausblendet, und solange das Telefon gesperrt ist, tut die Leiste nur, was der Sperrbildschirm ohnehin erlaubt: die Lautstärke, das Schnellpanel und Schnellschalter. Wenn du Apps auswählst, in denen die Leiste ausgeblendet wird, oder Apps eigene Gesten gibst, merkt er sich, welche App auf dem Bildschirm ist, und sonst nichts über sie. Er liest nichts anderes, sammelt nichts, und alles bleibt auf diesem Gerät. Während ein Druck auf die Leiser-Taste aussteht, prüft er außerdem, ob der System-Screenshot erschienen ist, damit ein mit den Tasten aufgenommener Screenshot das Panel nicht öffnet. Wenn du möchtest, zeigt er außerdem eine Animation neben den Tasten, wenn du sie drückst – bei der Ein/Aus-Taste bemerkt er nur, wann das Ein/Aus-Menü erscheint –, und zeichnet die Leiste über der Statusleiste und der Kamera.</string>
-    <string name="accessibility_disclosure_message">GestureVolume nutzt den Bedienungshilfedienst von Android für fünf Dinge, alle optional:\n\n• Um die Systemaktionen auszuführen, die du der Leiste zuweist: Bildschirm sperren, Screenshot, Zurück, Startbildschirm, Zuletzt verwendet, Benachrichtigungen, Schnelleinstellungen und das Ausschaltmenü.\n\n• Um die beiden Lautstärketasten zu beobachten, nur wenn du die Lautstärketasten auf „Sofort“ stellst: damit sich das Schnellpanel öffnet, sobald du eine davon drückst. Jede andere Taste wird direkt weitergegeben, und keine Taste wird aufgezeichnet. Während ein Druck auf die Leiser-Taste aussteht, prüft er außerdem, ob der System-Screenshot erschienen ist, damit ein mit den Tasten aufgenommener Screenshot das Panel nicht öffnet.\n\n• Um zu sehen, welche App auf dem Bildschirm ist, nur wenn du Apps auswählst, in denen die Leiste ausgeblendet wird, oder Apps eigene Gesten gibst. Er sieht nur den Namen der App und sonst nichts.\n\n• Um die Leiste auf dem Sperrbildschirm anzuzeigen, nur wenn du „Auf dem Sperrbildschirm anzeigen“ einschaltest: Android blendet dort die schwebende Leiste jeder App aus. Solange das Telefon gesperrt ist, tut die Leiste nur, was der Sperrbildschirm ohnehin erlaubt: die Lautstärke, das Schnellpanel und Schnellschalter.\n\n• Zum Zeichnen, jeweils nur wenn du es einschaltest: die Tastenanimation neben den Tasten, wenn du sie drückst, wofür er auch die beiden Lautstärketasten ansieht und, wenn du sie für die Ein/Aus-Taste einschaltest, allein am Namen des Fensters bemerkt, wann das Ein/Aus-Menü erscheint; und die Leiste über der Statusleiste und der Kamera, mit „Mit dem Bedienungshilfedienst zeichnen“. Bei gesperrtem Telefon tritt diese Leiste zur Seite.\n\nEr liest oder sammelt nichts anderes. Nichts verlässt dein Gerät. Du kannst ihn jederzeit unter Einstellungen › Bedienungshilfen ausschalten.</string>
+    <string name="accessibility_service_description">Gesture Volume nutzt den Bedienungshilfedienst, um die Systemaktionen auszuführen, die du der schwebenden Leiste zuweist – Bildschirm sperren, Screenshot aufnehmen, Zurück oder Startbildschirm, zuletzt verwendete Apps öffnen, die Benachrichtigungsleiste, die Schnelleinstellungen und das Ausschaltmenü. Wenn du willst, öffnet er außerdem das Schnellpanel, sobald du eine Lautstärketaste drückst, und achtet dabei nur auf die beiden Lautstärketasten. Wenn du willst, zeigt er die Leiste außerdem auf dem Sperrbildschirm an, wo Android die schwebende Leiste jeder App ausblendet, und solange das Telefon gesperrt ist, tut die Leiste nur, was der Sperrbildschirm ohnehin erlaubt: die Lautstärke, das Schnellpanel und Schnellschalter. Wenn du Apps auswählst, in denen die Leiste ausgeblendet wird, oder Apps eigene Gesten gibst, merkt er sich, welche App auf dem Bildschirm ist, und sonst nichts über sie. Er liest nichts anderes, sammelt nichts, und alles bleibt auf diesem Gerät. Während ein Druck auf die Leiser-Taste aussteht, prüft er außerdem, ob der System-Screenshot erschienen ist, damit ein mit den Tasten aufgenommener Screenshot das Panel nicht öffnet. Wenn du möchtest, zeigt er außerdem eine Animation neben den Tasten, wenn du sie drückst – bei der Ein/Aus-Taste bemerkt er nur, wann das Ein/Aus-Menü erscheint –, und zeichnet die Leiste über der Statusleiste und der Kamera.</string>
+    <string name="accessibility_disclosure_message">Gesture Volume nutzt den Bedienungshilfedienst von Android für fünf Dinge, alle optional:\n\n• Um die Systemaktionen auszuführen, die du der Leiste zuweist: Bildschirm sperren, Screenshot, Zurück, Startbildschirm, Zuletzt verwendet, Benachrichtigungen, Schnelleinstellungen und das Ausschaltmenü.\n\n• Um die beiden Lautstärketasten zu beobachten, nur wenn du die Lautstärketasten auf „Sofort“ stellst: damit sich das Schnellpanel öffnet, sobald du eine davon drückst. Jede andere Taste wird direkt weitergegeben, und keine Taste wird aufgezeichnet. Während ein Druck auf die Leiser-Taste aussteht, prüft er außerdem, ob der System-Screenshot erschienen ist, damit ein mit den Tasten aufgenommener Screenshot das Panel nicht öffnet.\n\n• Um zu sehen, welche App auf dem Bildschirm ist, nur wenn du Apps auswählst, in denen die Leiste ausgeblendet wird, oder Apps eigene Gesten gibst. Er sieht nur den Namen der App und sonst nichts.\n\n• Um die Leiste auf dem Sperrbildschirm anzuzeigen, nur wenn du „Auf dem Sperrbildschirm anzeigen“ einschaltest: Android blendet dort die schwebende Leiste jeder App aus. Solange das Telefon gesperrt ist, tut die Leiste nur, was der Sperrbildschirm ohnehin erlaubt: die Lautstärke, das Schnellpanel und Schnellschalter.\n\n• Zum Zeichnen, jeweils nur wenn du es einschaltest: die Tastenanimation neben den Tasten, wenn du sie drückst, wofür er auch die beiden Lautstärketasten ansieht und, wenn du sie für die Ein/Aus-Taste einschaltest, allein am Namen des Fensters bemerkt, wann das Ein/Aus-Menü erscheint; und die Leiste über der Statusleiste und der Kamera, mit „Mit dem Bedienungshilfedienst zeichnen“. Bei gesperrtem Telefon tritt diese Leiste zur Seite.\n\nEr liest oder sammelt nichts anderes. Nichts verlässt dein Gerät. Du kannst ihn jederzeit unter Einstellungen › Bedienungshilfen ausschalten.</string>
     <string name="deck_animation_title">ANIMATION</string>
     <string name="deck_animation">Animation beim Öffnen und Schließen</string>
     <string name="deck_animation_desc">Wie das Deck erscheint. Es verschwindet auf dieselbe Weise, nur rückwärts. Tippe eine an, um sie in der Vorschau oben öffnen und schließen zu sehen. Das Menü bei langem Drücken und das Schnellpanel öffnen sich mit derselben Auswahl.</string>
@@ -935,7 +935,7 @@
     <string name="slider_volume_keys_off_hint">Die Tasten funktionieren wie gewohnt, und das Panel bleibt geschlossen.</string>
     <string name="slider_volume_keys_follow_hint">Das Panel öffnet sich neben dem Lautstärkeregler des Systems, etwa eine halbe Sekunde nach dem Drücken. Es folgt auch dem Systempanel und anderen Apps, wenn sie die Lautstärke ändern.</string>
     <string name="slider_volume_keys_instant_hint">Das Panel öffnet sich, sobald eine Taste gedrückt wird, und bewegt sich pro Druck um eine Stufe – anstelle des Lautstärkereglers des Systems. Während eines Anrufs, auf dem Sperrbildschirm oder bei ausgeschaltetem Bildschirm funktionieren die Tasten wie gewohnt.</string>
-    <string name="slider_volume_keys_needs_accessibility">„Sofort“ braucht den Bedienungshilfedienst von GestureVolume, der die Taste erhält, bevor das System darauf reagiert. Solange er aus ist, öffnet sich das Panel mit dem System. Tippe, um ihn einzuschalten.</string>
+    <string name="slider_volume_keys_needs_accessibility">„Sofort“ braucht den Bedienungshilfedienst von Gesture Volume, der die Taste erhält, bevor das System darauf reagiert. Solange er aus ist, öffnet sich das Panel mit dem System. Tippe, um ihn einzuschalten.</string>
     <string name="fill_plasma">Plasma</string>
     <string name="fill_aurora">Aurora</string>
     <string name="fill_hologram">Hologramm</string>

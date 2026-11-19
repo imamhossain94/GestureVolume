@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">GestureVolume</string>
+    <string name="app_name">Gesture Volume</string>
 
     <string name="landscape_appearance_settings">ランドスケープ外観設定</string>
     <string name="click_">スイッチをオンにして、横画面でのハンドラーの位置やサイズを設定します。</string>
@@ -259,7 +259,7 @@
     <string name="fix_battery_desc">Android がサービスを停止しないよう、バッテリー使用を制限なしにします。</string>
     <string name="fix_battery_allowed">制限なし</string>
     <string name="fix_autostart_title">自動起動</string>
-    <string name="fix_autostart_desc">端末の自動起動設定を開き、GestureVolume を許可してください。</string>
+    <string name="fix_autostart_desc">端末の自動起動設定を開き、Gesture Volume を許可してください。</string>
     <string name="autostart_unavailable">この端末では利用できません</string>
     <string name="open_settings">設定を開く</string>
     <string name="snap_to_edge">端にスナップ</string>
@@ -268,7 +268,7 @@
     <string name="notification_channel_controls_desc">表示/非表示、設定、停止を備えた常時表示の通知です。</string>
     <string name="notification_channel_minimal">待機中</string>
     <string name="notification_channel_minimal_desc">サービス実行中に Android が要求する無音のプレースホルダーです。アイコンもボタンもありません。</string>
-    <string name="notification_minimal_title">GestureVolume は実行中です</string>
+    <string name="notification_minimal_title">Gesture Volume は実行中です</string>
     <string name="show_notification_title">通知の操作ボタン</string>
     <string name="show_notification_desc">通知パネルに「表示」「設定」「停止」を残します。アプリを開かずに隠したバーを戻せる唯一の方法です。</string>
     <string name="show_notification_off_hint">オフ: サービス実行中も Android は無音のプレースホルダーを要求します。タップするとシステム設定で完全に非表示にできます。</string>
@@ -290,7 +290,7 @@
     <string name="notification_service_active">音量ジェスチャーは有効です</string>
     <string name="show_volume_percent_title">音量をパーセントで表示</string>
     <string name="show_volume_percent_desc">スワイプ中にバー上へレベルを表示します。</string>
-    <string name="handler_hidden_toast">バーを非表示にしました。戻すには GestureVolume を開いてください。</string>
+    <string name="handler_hidden_toast">バーを非表示にしました。戻すには Gesture Volume を開いてください。</string>
     <string name="action_stop_service">サービスを停止</string>
     <string name="notification_handler_hidden">バーは非表示です — 「表示」をタップすると戻ります</string>
     <string name="notification_action_show">表示</string>
@@ -304,7 +304,7 @@
     <string name="context_menu_section">長押しメニューの項目</string>
     <string name="behaviour_section">動作</string>
     <string name="notification_permission_needed_title">通知がオフになっています</string>
-    <string name="notification_permission_needed_message">操作ボタンはオンですが、Android が GestureVolume の通知を許可していません。そのため「表示」「設定」「停止」は通知パネルに出ません。</string>
+    <string name="notification_permission_needed_message">操作ボタンはオンですが、Android が Gesture Volume の通知を許可していません。そのため「表示」「設定」「停止」は通知パネルに出ません。</string>
     <string name="notification_permission_warning_inline">このアプリの通知はブロックされています。タップして許可してください。</string>
     <string name="grant_permission_action">許可</string>
     <string name="not_now">後で</string>
@@ -386,12 +386,12 @@
     <string name="flashlight_unavailable">この端末にはライトがありません</string>
     <string name="dnd_on">サイレントモード オン</string>
     <string name="dnd_off">サイレントモード オフ</string>
-    <string name="dnd_needs_access">GestureVolume の権限でサイレントモードへのアクセスを許可してください</string>
+    <string name="dnd_needs_access">Gesture Volume の権限でサイレントモードへのアクセスを許可してください</string>
     <string name="auto_rotate_on">自動回転 オン</string>
     <string name="auto_rotate_off">自動回転 オフ</string>
     <string name="auto_rotate_needs_permission">自動回転を切り替えるには「システム設定の変更」を許可してください</string>
     <string name="lock_screen_unlock_first">これを使うには端末のロックを解除してください</string>
-    <string name="accessibility_needed_short">これを使うには GestureVolume のユーザー補助サービスをオンにしてください</string>
+    <string name="accessibility_needed_short">これを使うには Gesture Volume のユーザー補助サービスをオンにしてください</string>
     <string name="action_unavailable_on_device">この操作はこの端末では利用できません</string>
     <string name="triple_tap_action">トリプルタップの動作</string>
     <string name="triple_tap_desc">3回タップしたときの動作</string>
@@ -399,19 +399,19 @@
     <string name="swipe_in_desc">バーから画面の中央へスワイプ</string>
     <string name="swipe_out_action">外側スワイプの動作</string>
     <string name="swipe_out_desc">バーから画面の端へスワイプ</string>
-    <string name="accessibility_service_label">GestureVolume</string>
+    <string name="accessibility_service_label">Gesture Volume</string>
     <string name="accessibility_permission">ユーザー補助サービス</string>
     <string name="accessibility_permission_desc">任意: 画面ロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知、クイック設定、電源メニューを実行します。</string>
     <string name="accessibility_disclosure_title">ユーザー補助サービスをオンにしますか？</string>
     <string name="accessibility_disclosure_accept">ユーザー補助設定を開く</string>
     <string name="accessibility_disclosure_decline">今はしない</string>
-    <string name="accessibility_how_to">一覧から GestureVolume を開いてオンにしてください。</string>
+    <string name="accessibility_how_to">一覧から Gesture Volume を開いてオンにしてください。</string>
     <string name="accessibility_on">オン</string>
     <string name="accessibility_off">オフ</string>
     <string name="dnd_permission">サイレントモードへのアクセス</string>
     <string name="dnd_permission_desc">任意: バーとデッキからサイレントモードをオン・オフできるようにします。</string>
     <string name="dnd_permission_title">サイレントモードへのアクセスを許可しますか？</string>
-    <string name="dnd_permission_message">サイレントモードを切り替えるには、GestureVolume にこのアクセスが必要です。許可できるシステムの一覧に移動します。</string>
+    <string name="dnd_permission_message">サイレントモードを切り替えるには、Gesture Volume にこのアクセスが必要です。許可できるシステムの一覧に移動します。</string>
     <string name="tile_search">検索</string>
     <string name="tile_search_desc">アプリ、連絡先、計算、ウェブ</string>
     <string name="tile_flashlight">ライト</string>
@@ -868,8 +868,8 @@
     <string name="swipe_amount_percent">1回のスワイプで %1$d%%</string>
     <string name="swipe_amount_percent_desc">スワイプの長さに関係なく、1回で %1$d%% 変わります。段階の少ない音量では、最も近い段階に移動します。</string>
     <string name="accessibility_service_summary">音量バーからのシステムショートカット、音量ボタンの即時表示、ロック画面でのバー表示、選んだアプリでバーを隠したりジェスチャーを変えたりする機能</string>
-    <string name="accessibility_service_description">GestureVolume はユーザー補助サービスを使って、フローティングバーに割り当てたシステム操作を実行します。画面のロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知パネル、クイック設定、電源メニューです。選択した場合は、音量ボタンを押した瞬間にクイックパネルを開きます。見るのは2つの音量ボタンだけです。選択した場合は、Android がすべてのアプリのフローティングバーを隠すロック画面にもバーを表示します。端末のロック中にバーが行うのは、音量、クイックパネル、クイック切り替えという、ロック画面がもともと許可している操作だけです。バーを隠すアプリを選んだ場合や、アプリごとのジェスチャーを設定した場合は、画面に表示されているアプリを確認しますが、そのアプリについてそれ以外は何も見ません。それ以外の情報は読み取らず、何も収集せず、すべてこの端末内にとどまります。音量を下げるボタンの押下を待っている間は、システムのスクリーンショットが表示されたかも確認し、ボタンで撮ったスクリーンショットでパネルが開かないようにします。選択した場合は、ボタンを押したときにボタンの横にアニメーションを表示し（電源ボタンについては電源メニューが開いたことだけを確認します）、バーをステータスバーやカメラの上にも表示します。</string>
-    <string name="accessibility_disclosure_message">GestureVolume は Android のユーザー補助サービスを5つの目的に使います。いずれも任意です。\n\n• バーに割り当てたシステム操作を実行するため：画面をロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知、クイック設定、電源メニュー。\n\n• 音量ボタンを「即時」に設定した場合に限り、2つの音量ボタンを見るため：押した瞬間にクイックパネルを開きます。その他のキーはすべてそのまま渡され、どのキーも記録されません。音量を下げるボタンの押下を待っている間は、システムのスクリーンショットが表示されたかも確認し、ボタンで撮ったスクリーンショットでパネルが開かないようにします。\n\n• バーを隠すアプリを選んだ場合や、アプリごとのジェスチャーを設定した場合に限り、画面に表示されているアプリを知るため。見るのはアプリ名だけです。\n\n• 「ロック画面に表示する」をオンにした場合に限り、ロック画面にバーを表示するため：ロック画面では Android がすべてのアプリのフローティングバーを隠します。端末のロック中にバーが行うのは、音量、クイックパネル、クイック切り替えという、ロック画面がもともと許可している操作だけです。\n\n• 表示のため。それぞれオンにした場合のみ：ボタンを押したときにボタンの横に表示するボタンアニメーション（このために 2 つの音量キーも確認し、電源ボタンでオンにした場合はウィンドウ名だけから電源メニューが開いたことを知ります）と、「ユーザー補助サービスで表示」によるステータスバーやカメラの上のバー。スマートフォンがロック中は、このバーは表示されません。\n\nそれ以外は何も読み取らず、収集しません。データが端末の外に出ることはありません。設定 › ユーザー補助 でいつでもオフにできます。</string>
+    <string name="accessibility_service_description">Gesture Volume はユーザー補助サービスを使って、フローティングバーに割り当てたシステム操作を実行します。画面のロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知パネル、クイック設定、電源メニューです。選択した場合は、音量ボタンを押した瞬間にクイックパネルを開きます。見るのは2つの音量ボタンだけです。選択した場合は、Android がすべてのアプリのフローティングバーを隠すロック画面にもバーを表示します。端末のロック中にバーが行うのは、音量、クイックパネル、クイック切り替えという、ロック画面がもともと許可している操作だけです。バーを隠すアプリを選んだ場合や、アプリごとのジェスチャーを設定した場合は、画面に表示されているアプリを確認しますが、そのアプリについてそれ以外は何も見ません。それ以外の情報は読み取らず、何も収集せず、すべてこの端末内にとどまります。音量を下げるボタンの押下を待っている間は、システムのスクリーンショットが表示されたかも確認し、ボタンで撮ったスクリーンショットでパネルが開かないようにします。選択した場合は、ボタンを押したときにボタンの横にアニメーションを表示し（電源ボタンについては電源メニューが開いたことだけを確認します）、バーをステータスバーやカメラの上にも表示します。</string>
+    <string name="accessibility_disclosure_message">Gesture Volume は Android のユーザー補助サービスを5つの目的に使います。いずれも任意です。\n\n• バーに割り当てたシステム操作を実行するため：画面をロック、スクリーンショット、戻る、ホーム、最近のアプリ、通知、クイック設定、電源メニュー。\n\n• 音量ボタンを「即時」に設定した場合に限り、2つの音量ボタンを見るため：押した瞬間にクイックパネルを開きます。その他のキーはすべてそのまま渡され、どのキーも記録されません。音量を下げるボタンの押下を待っている間は、システムのスクリーンショットが表示されたかも確認し、ボタンで撮ったスクリーンショットでパネルが開かないようにします。\n\n• バーを隠すアプリを選んだ場合や、アプリごとのジェスチャーを設定した場合に限り、画面に表示されているアプリを知るため。見るのはアプリ名だけです。\n\n• 「ロック画面に表示する」をオンにした場合に限り、ロック画面にバーを表示するため：ロック画面では Android がすべてのアプリのフローティングバーを隠します。端末のロック中にバーが行うのは、音量、クイックパネル、クイック切り替えという、ロック画面がもともと許可している操作だけです。\n\n• 表示のため。それぞれオンにした場合のみ：ボタンを押したときにボタンの横に表示するボタンアニメーション（このために 2 つの音量キーも確認し、電源ボタンでオンにした場合はウィンドウ名だけから電源メニューが開いたことを知ります）と、「ユーザー補助サービスで表示」によるステータスバーやカメラの上のバー。スマートフォンがロック中は、このバーは表示されません。\n\nそれ以外は何も読み取らず、収集しません。データが端末の外に出ることはありません。設定 › ユーザー補助 でいつでもオフにできます。</string>
     <string name="deck_animation_title">アニメーション</string>
     <string name="deck_animation">開閉アニメーション</string>
     <string name="deck_animation_desc">デッキの現れ方です。閉じるときは同じ動きを逆再生します。タップすると、上のプレビューで開閉を確認できます。長押しメニューとクイックパネルも同じ設定で開きます。</string>
@@ -935,7 +935,7 @@
     <string name="slider_volume_keys_off_hint">ボタンは通常どおり動作し、パネルは開きません。</string>
     <string name="slider_volume_keys_follow_hint">ボタンを押してから約0.5秒後に、システムの音量スライダーの横にパネルが開きます。システムのパネルや他のアプリが音量を変えたときにも追従します。</string>
     <string name="slider_volume_keys_instant_hint">ボタンを押した瞬間にパネルが開き、システムの音量スライダーの代わりに、1回押すごとに1段階動きます。通話中、ロック画面、画面オフのときは、ボタンは通常どおり動作します。</string>
-    <string name="slider_volume_keys_needs_accessibility">「即時」には GestureVolume のユーザー補助サービスが必要です。システムより先にキー操作を受け取るためです。オンになるまでは、パネルはシステムと連動して開きます。タップしてオンにしてください。</string>
+    <string name="slider_volume_keys_needs_accessibility">「即時」には Gesture Volume のユーザー補助サービスが必要です。システムより先にキー操作を受け取るためです。オンになるまでは、パネルはシステムと連動して開きます。タップしてオンにしてください。</string>
     <string name="fill_plasma">プラズマ</string>
     <string name="fill_aurora">オーロラ</string>
     <string name="fill_hologram">ホログラム</string>

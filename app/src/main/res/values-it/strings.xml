@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">GestureVolume</string>
+    <string name="app_name">Gesture Volume</string>
 
     <string name="landscape_appearance_settings">IMPOSTAZIONI DELL\'ASPETTO DEL PAESAGGIO</string>
     <string name="click_">Seleziona l\'interruttore su attivo e configura la gravità, le dimensioni, lo spessore e la posizione del gestore sullo schermo orizzontale.</string>
@@ -250,7 +250,7 @@
     <string name="write_settings_permission">Modifica impostazioni di sistema</string>
     <string name="write_settings_permission_desc">Permette alla barra di regolare la luminosità dello schermo. Serve solo per le azioni di luminosità.</string>
     <string name="brightness_permission_title">Consentire il controllo della luminosità?</string>
-    <string name="brightness_permission_message">Per modificare la luminosità, GestureVolume richiede l\'autorizzazione Modifica impostazioni di sistema. La luminosità adattiva viene disattivata durante l\'uso e ripristinata quando arresti il servizio.</string>
+    <string name="brightness_permission_message">Per modificare la luminosità, Gesture Volume richiede l\'autorizzazione Modifica impostazioni di sistema. La luminosità adattiva viene disattivata durante l\'uso e ripristinata quando arresti il servizio.</string>
     <string name="edge_offset">Distanza dal bordo</string>
     <string name="edge_offset_desc">La distanza minima che la barra mantiene dai bordi sinistro e destro: mentre la trascini e dove si ferma quando si aggancia. Utile su schermi curvi e con la navigazione a gesti.</string>
     <string name="reset_position">Reimposta posizione</string>
@@ -259,7 +259,7 @@
     <string name="fix_battery_desc">Consenti un uso illimitato della batteria affinché Android non arresti il servizio.</string>
     <string name="fix_battery_allowed">Senza restrizioni</string>
     <string name="fix_autostart_title">Avvio automatico</string>
-    <string name="fix_autostart_desc">Apri le impostazioni di avvio automatico del dispositivo e consenti GestureVolume.</string>
+    <string name="fix_autostart_desc">Apri le impostazioni di avvio automatico del dispositivo e consenti Gesture Volume.</string>
     <string name="autostart_unavailable">Non disponibile su questo dispositivo</string>
     <string name="open_settings">Apri impostazioni</string>
     <string name="snap_to_edge">Aggancia al bordo</string>
@@ -268,7 +268,7 @@
     <string name="notification_channel_controls_desc">La riga permanente con Mostra/Nascondi, Impostazioni e Arresta.</string>
     <string name="notification_channel_minimal">In esecuzione silenziosa</string>
     <string name="notification_channel_minimal_desc">Un segnaposto silenzioso richiesto da Android mentre il servizio è attivo. Senza icona né pulsanti.</string>
-    <string name="notification_minimal_title">GestureVolume è in esecuzione</string>
+    <string name="notification_minimal_title">Gesture Volume è in esecuzione</string>
     <string name="show_notification_title">Controlli nella notifica</string>
     <string name="show_notification_desc">Mantieni Mostra, Impostazioni e Arresta nel pannello delle notifiche. È l\'unico modo per far tornare una barra nascosta senza aprire l\'app.</string>
     <string name="show_notification_off_hint">Disattivo: Android richiede comunque un segnaposto silenzioso mentre il servizio è attivo. Tocca per nasconderlo del tutto nelle impostazioni di sistema.</string>
@@ -290,7 +290,7 @@
     <string name="notification_service_active">I gesti del volume sono attivi</string>
     <string name="show_volume_percent_title">Mostra la percentuale del volume</string>
     <string name="show_volume_percent_desc">Mostra il livello sulla barra mentre scorri.</string>
-    <string name="handler_hidden_toast">Barra nascosta. Apri GestureVolume per farla tornare.</string>
+    <string name="handler_hidden_toast">Barra nascosta. Apri Gesture Volume per farla tornare.</string>
     <string name="action_stop_service">Arresta servizio</string>
     <string name="notification_handler_hidden">Barra nascosta: tocca Mostra per farla tornare</string>
     <string name="notification_action_show">Mostra</string>
@@ -304,7 +304,7 @@
     <string name="context_menu_section">Voci del menu a pressione prolungata</string>
     <string name="behaviour_section">Comportamento</string>
     <string name="notification_permission_needed_title">Le notifiche sono disattivate</string>
-    <string name="notification_permission_needed_message">I controlli sono attivi, ma Android non consente a GestureVolume di pubblicare notifiche: Mostra, Impostazioni e Arresta non compariranno nel pannello.</string>
+    <string name="notification_permission_needed_message">I controlli sono attivi, ma Android non consente a Gesture Volume di pubblicare notifiche: Mostra, Impostazioni e Arresta non compariranno nel pannello.</string>
     <string name="notification_permission_warning_inline">Le notifiche sono bloccate per questa app. Tocca per consentirle.</string>
     <string name="grant_permission_action">Consenti</string>
     <string name="not_now">Non ora</string>
@@ -386,12 +386,12 @@
     <string name="flashlight_unavailable">Questo dispositivo non ha una torcia</string>
     <string name="dnd_on">Non disturbare attivo</string>
     <string name="dnd_off">Non disturbare disattivato</string>
-    <string name="dnd_needs_access">Concedi l’accesso a Non disturbare nelle autorizzazioni di GestureVolume</string>
+    <string name="dnd_needs_access">Concedi l’accesso a Non disturbare nelle autorizzazioni di Gesture Volume</string>
     <string name="auto_rotate_on">Rotazione automatica attiva</string>
     <string name="auto_rotate_off">Rotazione automatica disattivata</string>
     <string name="auto_rotate_needs_permission">Concedi «Modifica impostazioni di sistema» per cambiare la rotazione</string>
     <string name="lock_screen_unlock_first">Sblocca il telefono per usare questa funzione</string>
-    <string name="accessibility_needed_short">Attiva il servizio di accessibilità di GestureVolume per usare questa funzione</string>
+    <string name="accessibility_needed_short">Attiva il servizio di accessibilità di Gesture Volume per usare questa funzione</string>
     <string name="action_unavailable_on_device">Questa azione non è disponibile su questo dispositivo</string>
     <string name="triple_tap_action">Azione al triplo tocco</string>
     <string name="triple_tap_desc">Cosa succede al triplo tocco</string>
@@ -399,19 +399,19 @@
     <string name="swipe_in_desc">Scorri dalla barra verso il centro dello schermo</string>
     <string name="swipe_out_action">Azione allo scorrimento verso l’esterno</string>
     <string name="swipe_out_desc">Scorri dalla barra verso il bordo dello schermo</string>
-    <string name="accessibility_service_label">GestureVolume</string>
+    <string name="accessibility_service_label">Gesture Volume</string>
     <string name="accessibility_permission">Servizio di accessibilità</string>
     <string name="accessibility_permission_desc">Facoltativo: esegue Blocca schermo, Screenshot, Indietro, Home, App recenti, Notifiche, Impostazioni rapide e Menu di spegnimento.</string>
     <string name="accessibility_disclosure_title">Attivare il servizio di accessibilità?</string>
     <string name="accessibility_disclosure_accept">Apri Accessibilità</string>
     <string name="accessibility_disclosure_decline">Non ora</string>
-    <string name="accessibility_how_to">Nell’elenco, apri GestureVolume e attivalo.</string>
+    <string name="accessibility_how_to">Nell’elenco, apri Gesture Volume e attivalo.</string>
     <string name="accessibility_on">Attivo</string>
     <string name="accessibility_off">Disattivato</string>
     <string name="dnd_permission">Accesso a Non disturbare</string>
     <string name="dnd_permission_desc">Facoltativo: consente alla barra e al Deck di attivare e disattivare Non disturbare.</string>
     <string name="dnd_permission_title">Consentire l’accesso a Non disturbare?</string>
-    <string name="dnd_permission_message">Per cambiare Non disturbare, GestureVolume ha bisogno di questo accesso. Verrai portato all’elenco di sistema dove puoi concederlo.</string>
+    <string name="dnd_permission_message">Per cambiare Non disturbare, Gesture Volume ha bisogno di questo accesso. Verrai portato all’elenco di sistema dove puoi concederlo.</string>
     <string name="tile_search">Cerca</string>
     <string name="tile_search_desc">App, contatti, calcoli e il web</string>
     <string name="tile_flashlight">Torcia</string>
@@ -868,8 +868,8 @@
     <string name="swipe_amount_percent">%1$d%% per scorrimento</string>
     <string name="swipe_amount_percent_desc">Ogni scorrimento lo sposta del %1$d%%, per quanto lungo o breve sia. Un volume con pochi passi va al passo più vicino.</string>
     <string name="accessibility_service_summary">Scorciatoie di sistema dalla barra del volume, tasti del volume immediati, la barra sulla schermata di blocco, e nascondere la barra o cambiarne i gesti nelle app scelte</string>
-    <string name="accessibility_service_description">GestureVolume usa il servizio di accessibilità per eseguire le azioni di sistema che assegni alla barra fluttuante: bloccare lo schermo, fare uno screenshot, andare Indietro o alla Home, aprire le app recenti, il pannello delle notifiche, le impostazioni rapide e il menu di spegnimento. Se lo scegli, apre anche il Pannello rapido nel momento in cui premi un tasto del volume, osservando solo i due tasti del volume. Se lo scegli, mostra anche la barra sulla schermata di blocco, dove Android nasconde la barra fluttuante di ogni app, e mentre il telefono è bloccato la barra fa solo ciò che la schermata di blocco già consente: il volume, il Pannello rapido e gli interruttori rapidi. Se scegli app in cui nascondere la barra, o dai ad alcune app gesti propri, rileva quale app è sullo schermo, e nient’altro di essa. Non legge nient’altro, non raccoglie nulla e tutto resta su questo dispositivo. Mentre una pressione di Volume giù è in attesa, rileva anche se è comparso lo screenshot di sistema, così uno screenshot fatto con i tasti non apre il pannello. Se lo scegli, mostra anche un’animazione accanto ai tasti quando li premi (del tasto di accensione nota solo quando compare il menu di spegnimento) e disegna la barra sopra la barra di stato e la fotocamera.</string>
-    <string name="accessibility_disclosure_message">GestureVolume usa il servizio di accessibilità di Android per cinque cose, tutte facoltative:\n\n• Per eseguire le azioni di sistema che assegni alla barra: Blocca lo schermo, Screenshot, Indietro, Home, App recenti, Notifiche, Impostazioni rapide e Menu di spegnimento.\n\n• Per osservare i due tasti del volume, solo se imposti i tasti del volume su Immediati: per aprire il Pannello rapido nel momento in cui ne premi uno. Ogni altro tasto passa oltre direttamente e nessun tasto viene registrato. Mentre una pressione di Volume giù è in attesa, rileva anche se è comparso lo screenshot di sistema, così uno screenshot fatto con i tasti non apre il pannello.\n\n• Per vedere quale app è sullo schermo, solo se scegli app in cui nascondere la barra o dai ad alcune app gesti propri. Guarda il nome dell’app e nient’altro.\n\n• Per mostrare la barra sulla schermata di blocco, solo se attivi «Mostra sulla schermata di blocco»: Android lì nasconde la barra fluttuante di ogni app. Mentre il telefono è bloccato, la barra fa solo ciò che la schermata di blocco già consente: il volume, il Pannello rapido e gli interruttori rapidi.\n\n• Per disegnare, solo se attivi ciascuna cosa: l’animazione dei tasti accanto ai tasti quando li premi, per cui guarda anche i due tasti del volume e, se la attivi per il tasto di accensione, nota quando compare il menu di spegnimento, solo dal nome della sua finestra; e la barra sopra la barra di stato e la fotocamera, con Disegna con il servizio di accessibilità. Con il telefono bloccato, quella barra si fa da parte.\n\nNon legge né raccoglie nient’altro. Nulla lascia il tuo dispositivo. Puoi disattivarlo in qualsiasi momento in Impostazioni › Accessibilità.</string>
+    <string name="accessibility_service_description">Gesture Volume usa il servizio di accessibilità per eseguire le azioni di sistema che assegni alla barra fluttuante: bloccare lo schermo, fare uno screenshot, andare Indietro o alla Home, aprire le app recenti, il pannello delle notifiche, le impostazioni rapide e il menu di spegnimento. Se lo scegli, apre anche il Pannello rapido nel momento in cui premi un tasto del volume, osservando solo i due tasti del volume. Se lo scegli, mostra anche la barra sulla schermata di blocco, dove Android nasconde la barra fluttuante di ogni app, e mentre il telefono è bloccato la barra fa solo ciò che la schermata di blocco già consente: il volume, il Pannello rapido e gli interruttori rapidi. Se scegli app in cui nascondere la barra, o dai ad alcune app gesti propri, rileva quale app è sullo schermo, e nient’altro di essa. Non legge nient’altro, non raccoglie nulla e tutto resta su questo dispositivo. Mentre una pressione di Volume giù è in attesa, rileva anche se è comparso lo screenshot di sistema, così uno screenshot fatto con i tasti non apre il pannello. Se lo scegli, mostra anche un’animazione accanto ai tasti quando li premi (del tasto di accensione nota solo quando compare il menu di spegnimento) e disegna la barra sopra la barra di stato e la fotocamera.</string>
+    <string name="accessibility_disclosure_message">Gesture Volume usa il servizio di accessibilità di Android per cinque cose, tutte facoltative:\n\n• Per eseguire le azioni di sistema che assegni alla barra: Blocca lo schermo, Screenshot, Indietro, Home, App recenti, Notifiche, Impostazioni rapide e Menu di spegnimento.\n\n• Per osservare i due tasti del volume, solo se imposti i tasti del volume su Immediati: per aprire il Pannello rapido nel momento in cui ne premi uno. Ogni altro tasto passa oltre direttamente e nessun tasto viene registrato. Mentre una pressione di Volume giù è in attesa, rileva anche se è comparso lo screenshot di sistema, così uno screenshot fatto con i tasti non apre il pannello.\n\n• Per vedere quale app è sullo schermo, solo se scegli app in cui nascondere la barra o dai ad alcune app gesti propri. Guarda il nome dell’app e nient’altro.\n\n• Per mostrare la barra sulla schermata di blocco, solo se attivi «Mostra sulla schermata di blocco»: Android lì nasconde la barra fluttuante di ogni app. Mentre il telefono è bloccato, la barra fa solo ciò che la schermata di blocco già consente: il volume, il Pannello rapido e gli interruttori rapidi.\n\n• Per disegnare, solo se attivi ciascuna cosa: l’animazione dei tasti accanto ai tasti quando li premi, per cui guarda anche i due tasti del volume e, se la attivi per il tasto di accensione, nota quando compare il menu di spegnimento, solo dal nome della sua finestra; e la barra sopra la barra di stato e la fotocamera, con Disegna con il servizio di accessibilità. Con il telefono bloccato, quella barra si fa da parte.\n\nNon legge né raccoglie nient’altro. Nulla lascia il tuo dispositivo. Puoi disattivarlo in qualsiasi momento in Impostazioni › Accessibilità.</string>
     <string name="deck_animation_title">ANIMAZIONE</string>
     <string name="deck_animation">Animazione di apertura e chiusura</string>
     <string name="deck_animation_desc">Come arriva il Deck. Se ne va allo stesso modo, al contrario. Toccane una per vederlo aprirsi e chiudersi nell’anteprima qui sopra. Il menu a pressione prolungata e il Pannello rapido si aprono con la stessa scelta.</string>
@@ -935,7 +935,7 @@
     <string name="slider_volume_keys_off_hint">I tasti funzionano come sempre e il pannello resta chiuso.</string>
     <string name="slider_volume_keys_follow_hint">Il pannello si apre accanto al cursore del volume del sistema, circa mezzo secondo dopo la pressione. Segue anche il pannello di sistema e le altre app quando cambiano il volume.</string>
     <string name="slider_volume_keys_instant_hint">Il pannello si apre nel momento in cui premi un tasto e si sposta di un passo a ogni pressione, al posto del cursore del volume del sistema. Durante una chiamata, sulla schermata di blocco o a schermo spento, i tasti funzionano come sempre.</string>
-    <string name="slider_volume_keys_needs_accessibility">Immediati richiede il servizio di accessibilità di GestureVolume, che riceve il tasto prima che il sistema agisca. Finché non è attivo, il pannello si apre con il sistema. Tocca per attivarlo.</string>
+    <string name="slider_volume_keys_needs_accessibility">Immediati richiede il servizio di accessibilità di Gesture Volume, che riceve il tasto prima che il sistema agisca. Finché non è attivo, il pannello si apre con il sistema. Tocca per attivarlo.</string>
     <string name="fill_plasma">Plasma</string>
     <string name="fill_aurora">Aurora</string>
     <string name="fill_hologram">Ologramma</string>

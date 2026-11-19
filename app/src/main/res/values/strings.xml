@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">GestureVolume</string>
+    <string name="app_name">Gesture Volume</string>
 
     <string name="landscape_appearance_settings">LANDSCAPE APPEARANCE SETTINGS</string>
     <string name="click_">Check the switch to active and configure the gravity, size, thickness, and position of the handler on the landscape screen.</string>
@@ -269,7 +269,7 @@
     <string name="write_settings_permission">Modify system settings</string>
     <string name="write_settings_permission_desc">Lets the bar control screen brightness. Only needed for brightness actions.</string>
     <string name="brightness_permission_title">Allow brightness control?</string>
-    <string name="brightness_permission_message">To change screen brightness, GestureVolume needs the Modify system settings permission. Adaptive brightness is turned off while you use it, and restored when you stop the service.</string>
+    <string name="brightness_permission_message">To change screen brightness, Gesture Volume needs the Modify system settings permission. Adaptive brightness is turned off while you use it, and restored when you stop the service.</string>
     <string name="edge_offset">Edge distance</string>
     <string name="edge_offset_desc">The smallest gap the bar keeps from the left and right edges — while you drag it, and where it parks when it snaps. Helps on curved screens and when gesture navigation is on.</string>
     <string name="reset_position">Reset position</string>
@@ -278,7 +278,7 @@
     <string name="fix_battery_desc">Allow unrestricted battery use so Android does not stop the service.</string>
     <string name="fix_battery_allowed">Unrestricted</string>
     <string name="fix_autostart_title">Auto-start</string>
-    <string name="fix_autostart_desc">Open your device auto-start settings and allow GestureVolume.</string>
+    <string name="fix_autostart_desc">Open your device auto-start settings and allow Gesture Volume.</string>
     <string name="autostart_unavailable">Not available on this device</string>
     <string name="open_settings">Open settings</string>
 
@@ -295,7 +295,7 @@
     <string name="show_volume_percent_desc">Display the level on the handler while you swipe.</string>
 
     <!-- Drag to hide -->
-    <string name="handler_hidden_toast">Handler hidden. Open GestureVolume to bring it back.</string>
+    <string name="handler_hidden_toast">Handler hidden. Open Gesture Volume to bring it back.</string>
 
     <!-- Stop-service action, offered in the long-press menu alongside Hide handler. -->
     <string name="action_stop_service">Stop service</string>
@@ -322,7 +322,7 @@
     <string name="notification_channel_controls_desc">The ongoing row with Show/Hide, Settings and Stop.</string>
     <string name="notification_channel_minimal">Running quietly</string>
     <string name="notification_channel_minimal_desc">A silent placeholder Android requires while the service runs. No icon, no buttons.</string>
-    <string name="notification_minimal_title">GestureVolume is running</string>
+    <string name="notification_minimal_title">Gesture Volume is running</string>
 
     <string name="show_notification_title">Notification controls</string>
     <string name="show_notification_desc">Keep Show, Settings and Stop in the notification shade. It is the only way to bring the handler back once you hide it without opening the app.</string>
@@ -345,7 +345,7 @@
     <string name="permission_turn_off">Turn off</string>
     <!-- Warnings raised at the moment an action is chosen -->
     <string name="notification_permission_needed_title">Notifications are turned off</string>
-    <string name="notification_permission_needed_message">The controls are on, but Android is not allowing GestureVolume to post notifications — so Show, Settings and Stop will not appear in the shade.</string>
+    <string name="notification_permission_needed_message">The controls are on, but Android is not allowing Gesture Volume to post notifications — so Show, Settings and Stop will not appear in the shade.</string>
     <string name="notification_permission_warning_inline">Notifications are blocked for this app. Tap to allow them.</string>
     <string name="grant_permission_action">Allow</string>
     <string name="not_now">Not now</string>
@@ -506,13 +506,13 @@
     <string name="flashlight_unavailable">This device has no flashlight</string>
     <string name="dnd_on">Do Not Disturb on</string>
     <string name="dnd_off">Do Not Disturb off</string>
-    <string name="dnd_needs_access">Allow Do Not Disturb access in GestureVolume’s permissions</string>
+    <string name="dnd_needs_access">Allow Do Not Disturb access in Gesture Volume’s permissions</string>
     <string name="auto_rotate_on">Auto-rotate on</string>
     <string name="auto_rotate_off">Auto-rotate off</string>
     <string name="auto_rotate_needs_permission">Allow Modify system settings to toggle auto-rotate</string>
     <!-- Said on the bar on the lock screen, for a gesture that waits for the unlock: the Deck, the menu, an app. -->
     <string name="lock_screen_unlock_first">Unlock your phone to use this</string>
-    <string name="accessibility_needed_short">Turn on the GestureVolume accessibility service to use this</string>
+    <string name="accessibility_needed_short">Turn on the Gesture Volume accessibility service to use this</string>
     <string name="action_unavailable_on_device">This action is not available on this device</string>
 
     <!-- 1.4.0: the two extra tap and swipe slots -->
@@ -564,16 +564,16 @@
     <string name="swipe_amount_percent_desc">Each swipe moves it %1$d%%, however long or short the swipe. A volume with only a few steps moves to the nearest one.</string>
 
     <!-- 1.4.0: the accessibility service -->
-    <string name="accessibility_service_label">GestureVolume</string>
+    <string name="accessibility_service_label">Gesture Volume</string>
     <string name="accessibility_service_summary">System shortcuts from the volume bar, instant volume keys, the bar on the lock screen, and hiding the bar or changing its gestures in chosen apps</string>
-    <string name="accessibility_service_description">GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also opens the Quick panel the moment you press a volume key, looking at the two volume keys only. If you choose, it also draws the bar on the lock screen, where Android hides every app’s floating bar, and while the phone is locked the bar does only what the lock screen already allows: the volume, the Quick panel and quick toggles. If you choose apps to hide the bar in, or give apps gestures of their own, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel. If you choose, it also plays an animation beside the buttons as you press them, for the power button noting only when the power menu comes up, and draws the bar over the status bar and the camera.</string>
+    <string name="accessibility_service_description">Gesture Volume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also opens the Quick panel the moment you press a volume key, looking at the two volume keys only. If you choose, it also draws the bar on the lock screen, where Android hides every app’s floating bar, and while the phone is locked the bar does only what the lock screen already allows: the volume, the Quick panel and quick toggles. If you choose apps to hide the bar in, or give apps gestures of their own, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel. If you choose, it also plays an animation beside the buttons as you press them, for the power button noting only when the power menu comes up, and draws the bar over the status bar and the camera.</string>
     <string name="accessibility_permission">Accessibility service</string>
     <string name="accessibility_permission_desc">Optional: performs Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and Power menu.</string>
     <string name="accessibility_disclosure_title">Turn on the accessibility service?</string>
-    <string name="accessibility_disclosure_message">GestureVolume uses Android’s accessibility service for five things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To look at the two volume keys, only if you set the volume keys to Instant: to open the Quick panel the moment you press one. Every other key passes straight on, and no key is recorded. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.\n\n• To see which app is on screen, only if you choose apps to hide the bar in or give apps gestures of their own. It looks at the app’s name and nothing else.\n\n• To draw the bar on the lock screen, only if you turn on Show on the lock screen: Android hides every app’s floating bar there. While the phone is locked, the bar does only what the lock screen already allows: the volume, the Quick panel and quick toggles.\n\n• To draw, only if you turn each on: the button animation beside the buttons as you press them, for which it also looks at the two volume keys and, if you turn it on for the power button, notes when the power menu comes up, by its window’s name alone; and the bar over the status bar and the camera, with Draw with the accessibility service. While the phone is locked, that bar steps aside.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
+    <string name="accessibility_disclosure_message">Gesture Volume uses Android’s accessibility service for five things, all optional:\n\n• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n• To look at the two volume keys, only if you set the volume keys to Instant: to open the Quick panel the moment you press one. Every other key passes straight on, and no key is recorded. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.\n\n• To see which app is on screen, only if you choose apps to hide the bar in or give apps gestures of their own. It looks at the app’s name and nothing else.\n\n• To draw the bar on the lock screen, only if you turn on Show on the lock screen: Android hides every app’s floating bar there. While the phone is locked, the bar does only what the lock screen already allows: the volume, the Quick panel and quick toggles.\n\n• To draw, only if you turn each on: the button animation beside the buttons as you press them, for which it also looks at the two volume keys and, if you turn it on for the power button, notes when the power menu comes up, by its window’s name alone; and the bar over the status bar and the camera, with Draw with the accessibility service. While the phone is locked, that bar steps aside.\n\nIt does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.</string>
     <string name="accessibility_disclosure_accept">Open Accessibility settings</string>
     <string name="accessibility_disclosure_decline">Not now</string>
-    <string name="accessibility_how_to">In the list, open GestureVolume and switch it on.</string>
+    <string name="accessibility_how_to">In the list, open Gesture Volume and switch it on.</string>
     <string name="accessibility_on">On</string>
     <string name="accessibility_off">Off</string>
 
@@ -581,7 +581,7 @@
     <string name="dnd_permission">Do Not Disturb access</string>
     <string name="dnd_permission_desc">Optional: lets the bar and the Deck switch Do Not Disturb on and off.</string>
     <string name="dnd_permission_title">Allow Do Not Disturb access?</string>
-    <string name="dnd_permission_message">To toggle Do Not Disturb, GestureVolume needs Do Not Disturb access. You will be taken to the system list where you can allow it.</string>
+    <string name="dnd_permission_message">To toggle Do Not Disturb, Gesture Volume needs Do Not Disturb access. You will be taken to the system list where you can allow it.</string>
     <!-- 1.4.0: the Deck's tiles -->
     <string name="tile_search">Search</string>
     <string name="tile_search_desc">Apps, contacts, sums and the web</string>
@@ -857,7 +857,7 @@
     <string name="slider_volume_keys_off_hint">The keys work as usual and the panel stays closed.</string>
     <string name="slider_volume_keys_follow_hint">The panel opens beside the system\'s own volume slider, about half a second after the press. It also follows the system panel and other apps when they change the volume.</string>
     <string name="slider_volume_keys_instant_hint">The panel opens the moment a key is pressed and moves one step per press, in place of the system\'s volume slider. During a call, on the lock screen or with the screen off, the keys work as usual.</string>
-    <string name="slider_volume_keys_needs_accessibility">Instant needs GestureVolume\'s accessibility service, which is handed the key before the system acts on it. Until it is on, the panel opens with the system. Tap to turn it on.</string>
+    <string name="slider_volume_keys_needs_accessibility">Instant needs Gesture Volume\'s accessibility service, which is handed the key before the system acts on it. Until it is on, the panel opens with the system. Tap to turn it on.</string>
     <string name="fill_plasma">Plasma</string>
     <string name="fill_aurora">Aurora</string>
     <string name="fill_hologram">Hologram</string>
