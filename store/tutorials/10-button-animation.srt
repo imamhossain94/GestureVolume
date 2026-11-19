@@ -1,0 +1,111 @@
+1
+00:00:00,395 --> 00:00:01,905
+Button animation.
+
+2
+00:00:01,945 --> 00:00:06,687
+Water, a fish, a frog and more,
+beside the volume key you press.
+
+3
+00:00:07,953 --> 00:00:09,838
+Open Button animation.
+
+4
+00:00:09,878 --> 00:00:14,787
+In Gesture Volume, under Advanced
+features, tap Button animation.
+
+5
+00:00:15,121 --> 00:00:18,981
+Turn it on. Switch on Animate
+the volume buttons.
+
+6
+00:00:19,021 --> 00:00:22,264
+The preview at the top plays
+it, with nothing to press.
+
+7
+00:00:22,551 --> 00:00:26,086
+Press a volume key.
+Go home and press volume up:
+
+8
+00:00:26,126 --> 00:00:29,193
+water ripples out from
+the very key you pressed.
+
+9
+00:00:31,173 --> 00:00:36,383
+Pick one. Back in Button animation,
+scroll down to Animation and tap one.
+
+10
+00:00:36,423 --> 00:00:38,567
+Every animation is free.
+
+11
+00:00:39,030 --> 00:00:40,890
+Each with a sound of its own.
+
+12
+00:00:40,930 --> 00:00:44,145
+Frog jump, Swing women, Cat, Balloons:
+
+13
+00:00:44,185 --> 00:00:47,285
+tap one, and the preview
+plays it with its sound.
+
+14
+00:00:48,001 --> 00:00:52,561
+Hold for a big one. On the glass,
+a press lets a balloon float away.
+
+15
+00:00:52,601 --> 00:00:55,518
+Hold the key, and it
+fills until it bursts.
+
+16
+00:00:57,605 --> 00:00:59,190
+Line it up with your keys.
+
+17
+00:00:59,230 --> 00:01:02,895
+Under Where your buttons are,
+pick a key and slide Position.
+
+18
+00:01:02,935 --> 00:01:06,935
+As you slide, the press shows
+on the glass, right beside it.
+
+19
+00:01:07,319 --> 00:01:12,154
+Sound and feel. Each animation
+plays its own sound at every press.
+
+20
+00:01:12,194 --> 00:01:16,602
+Then pick how it buzzes, how long
+it stays and how fast it moves.
+
+21
+00:01:16,914 --> 00:01:19,094
+With the Quick slider, or alone.
+
+22
+00:01:19,134 --> 00:01:21,369
+Pause plays the animation alone.
+
+23
+00:01:21,409 --> 00:01:24,062
+Show both brings up
+the Quick slider with it.
+
+24
+00:01:25,168 --> 00:01:28,233
+That is the whole series.
+Thanks for watching.

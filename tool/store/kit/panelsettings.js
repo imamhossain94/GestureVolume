@@ -799,7 +799,7 @@ export function quickSliderSettings({ status = 32, scroll = 0, open = 'content',
     chips('sound', SOUNDS, sound), sep(),
     label15('Volume keys'), hint('What pressing a volume key does to the panel. It opens on the media volume, wherever you are.'), chips('keys', KEYS, keys),
     bodySmall(KEYS_HINT[keys] || KEYS_HINT.instant),
-    keys === 'instant' && !accessibility ? permissionNote('Instant needs GestureVolume\'s accessibility service, which is handed the key before the system acts on it. Until it is on, the panel opens with the system. Tap to turn it on.', 'permission-keys') : '',
+    keys === 'instant' && !accessibility ? permissionNote('Instant needs Gesture Volume\'s accessibility service, which is handed the key before the system acts on it. Until it is on, the panel opens with the system. Tap to turn it on.', 'permission-keys') : '',
     sep(), switchItem('auto-brightness', 'Turn off adaptive brightness', 'While the brightness slider is open. Without this the light sensor undoes what you set within a second or two. It is handed back when the service stops.', autoBrightness),
     on(showIcon) && target !== 'brightness' ? `${sep()}${switchItem('icon-opens-panel', 'Icon opens the volume panel', 'Tap the icon for the system\'s full volume panel, with media, call, ring and alarm volumes on one sheet.', iconOpensPanel)}` : '',
   ].join('');

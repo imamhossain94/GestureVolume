@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { SHORTS, COPY, shortDescription, shortTags, tiktokCaption } from './kit/shorts-data.js';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 export const STORE = path.join(ROOT, '../../store');
@@ -24,6 +25,7 @@ const TAGS = {
   actions: ['gestures', 'double tap', 'per-app gestures', 'custom actions'],
   appearance: ['customise', 'presets', 'colours', 'position'],
   visibility: ['hide in apps', 'keyboard', 'lock screen', 'media'],
+  'button-animation': ['button animation', 'volume buttons', 'volume key', 'water', 'fish', 'frog', 'balloons'],
 };
 
 export const clock = (t) => { const s = Math.floor(t); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
@@ -93,7 +95,15 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     md += `## ${e.series.n}. ${e.series.title}\n\n- Video: \`${e.base}.mp4\` (${clock(e.duration)})\n- Captions: \`${e.base}.srt\`\n- Thumbnail: \`thumbnails/${e.base}.png\`\n\n`;
     md += block('Title', e.title, `${e.title.length} characters`) + block('Description', e.description) + block('Tags', e.tags.join(', '), `${e.tags.join(',').length} characters`);
   }
+  md += `---\n\n# Shorts and TikTok\n\nOne short per button animation, \`../shorts/NN-id.mp4\`: 1080 × 1920, 60 fps, about 15 s, with a\nnarrator of their own (Kokoro-82M's af_heart, happier and more laid back than the tutorials'), the\napp's sounds and a chill music bed. The same file goes to YouTube (as a Short: under 60 s and\nvertical, so the #Shorts tag is all it needs) and to TikTok.\n\n`;
+  SHORTS.forEach((S, i) => {
+    const base = `${String(i + 1).padStart(2, '0')}-${S.id}`;
+    const file = path.join(STORE, 'shorts', `${base}.mp4`);
+    md += `## Short ${i + 1}. ${S.name}\n\n- Video: \`../shorts/${base}.mp4\` (${fs.existsSync(file) ? lengthOf(file) : 'not rendered'})\n\n`;
+    md += block('YouTube title', COPY[S.id].title, `${[...COPY[S.id].title].length} characters`) + block('YouTube description', shortDescription(S)) + block('YouTube tags', shortTags(S).join(', '));
+    md += block('TikTok caption', tiktokCaption(S), `${[...tiktokCaption(S)].length} characters`);
+  });
   md += `---\n\n# The narration\n\nThe narrator is made by \`tool/store/vo.py\`: Kokoro-82M (Apache-2.0, run on this machine), voice\naf_bella at speed 1.0. In each tutorial it reads the title card (its title and subtitle), every\nstep's title and text exactly as they stand beside the phone, and the "Up next" card. A step whose\nline runs longer than its scripted time holds its last moment until the line ends, and the\ncaptions are cut on the voice's word timings. The promo has one short line per section, from\n\`VOICE\` in \`tool/store/kit/promo.js\`, each inside its section of the music.\n\nTo change what is said, edit the step's text in \`tool/store/kit/tutorials/\` (or the promo's\n\`VOICE\`) and render that video again: \`render.mjs\` has \`vo.py\` speak only the lines that changed.\nThen run \`node youtube.mjs\` for the new chapter times and lengths. The commands are in\n\`store/README.md\`.\n`;
   fs.writeFileSync(path.join(DIR, 'youtube.md'), md);
-  console.log(`youtube.md: the promo and ${list.length} tutorials`);
+  console.log(`youtube.md: the promo, ${list.length} tutorials and ${SHORTS.length} shorts`);
 }

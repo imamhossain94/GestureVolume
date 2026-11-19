@@ -157,17 +157,19 @@ export function mountQuickSlider(el, { effect = 'aurora', value = 0.7 } = {}) {
 // Quick presets, ad-free (Pro or the -PnoAds build), all permissions granted.
 export const HOME_ICONS = ['filled/menu', 'outlined/new_releases', 'drawable/ic_crown_2', 'filled/power_settings_new', 'drawable/ic_color_palette',
   'drawable/ic_app_open', 'filled/shield', 'filled/check_circle', 'outlined/auto_awesome', 'drawable/ic_layer', 'drawable/ic_brightness_up',
-  'drawable/ic_move', 'drawable/ic_visibility_hide', 'filled/expand_more', 'filled/keyboard_arrow_right', 'filled/error', 'filled/privacy_tip'];
+  'drawable/ic_move', 'drawable/ic_visibility_hide', 'filled/expand_more', 'filled/keyboard_arrow_right', 'filled/error', 'filled/privacy_tip',
+  'filled/animation'];
 
 // data-targets: service, appearance, actions, permissions, advanced (the Advanced mode row), feature-deck,
-// feature-quick-slider, feature-long-press-menu, feature-visibility, show-advanced, preset-<id>.
-export function homeAppScreen({ status = 32, running = true, advanced = false, expanded = false, scroll = 0, k = null, advK = null } = {}) {
+// feature-quick-slider, feature-long-press-menu, feature-visibility, feature-button-animation, show-advanced,
+// preset-<id>. `bump`: the Button animation is on (its row's tile lit, as HomeIconTile's `on`).
+export function homeAppScreen({ status = 32, running = true, advanced = false, expanded = false, scroll = 0, k = null, advK = null, bump = false } = {}) {
   const tile = (glyph, on = false) => `<div style="width:46px;height:46px;border-radius:14px;flex:none;background:${on ? C.primary : 'rgba(224,231,255,.6)'};display:grid;place-items:center">
       ${glyph.startsWith('drawable/') ? drawableIcon(glyph, 24, on ? '#fff' : C.primary) : icon(glyph, 24, on ? '#fff' : C.primary)}</div>`;
   const chevron = icon('filled/keyboard_arrow_right', 22, C.outline);
   const row = (radius, inner, bg = C.row, extra = '') => `<div style="border-radius:${radius};background:${bg};padding:12px 14px;${extra}">${inner}</div>`;
-  const linkRow = (radius, glyph, title, summary, footer = '', summaryColor = C.onSurfaceVariant) => row(radius, `
-      <div style="display:flex;align-items:center">${tile(glyph)}<div style="width:14px"></div>
+  const linkRow = (radius, glyph, title, summary, footer = '', summaryColor = C.onSurfaceVariant, lit = false) => row(radius, `
+      <div style="display:flex;align-items:center">${tile(glyph, lit)}<div style="width:14px"></div>
         <div style="flex:1;min-width:0">${M.text(title, { size: 16, weight: 600 })}${M.bodySmall(summary, summaryColor, 'padding-top:2px')}</div>
         <div style="width:6px"></div>${chevron}</div>${footer}`);
   const toggleRow = (radius, glyph, title, summary, on, lit, sw = null) => row(radius, `
@@ -194,10 +196,12 @@ export function homeAppScreen({ status = 32, running = true, advanced = false, e
     ['drawable/ic_brightness_up', 'Quick slider', 'The brightness & volume track the bar opens into'],
     ['drawable/ic_move', 'Long-press menu', 'The actions offered when you hold the bar'],
     ['drawable/ic_visibility_hide', 'Visibility', 'When the handler shows: media, calls, the keyboard and apps'],
+    // The volume buttons' own animation, after Visibility; its tile lit while it is on.
+    ['filled/animation', 'Button animation', 'The screen answers each button you press', bump],
   ];
-  const advCount = 1 + (showRows ? 4 : 0) + (advanced ? 0 : 1);
+  const advCount = 1 + (showRows ? featureRows.length : 0) + (advanced ? 0 : 1);
   const advRows = [`<div data-target="advanced">${toggleRow(M.segRadius(0, advCount), 'outlined/auto_awesome', 'Advanced mode', adv, advK == null ? advanced : advK >= 0.5, false, advK == null ? null : M.m3switchAt(advK))}</div>`];
-  if (showRows) featureRows.forEach(([g, t, s], i) => advRows.push(`<div class="feature" data-name="${t}" data-target="feature-${t.toLowerCase().replace(/ /g, '-')}">${linkRow(M.segRadius(i + 1, advCount), g, t, s)}</div>`));
+  if (showRows) featureRows.forEach(([g, t, s, lit = false], i) => advRows.push(`<div class="feature" data-name="${t}" data-target="feature-${t.toLowerCase().replace(/ /g, '-')}">${linkRow(M.segRadius(i + 1, advCount), g, t, s, '', C.onSurfaceVariant, lit)}</div>`));
   if (!advanced) advRows.push(`<div data-target="show-advanced" style="border-radius:${M.segRadius(advCount - 1, advCount)};background:${C.row};padding:14px;display:flex;align-items:center">
       ${M.text(expanded ? 'Hide advanced features' : 'Show advanced features', { size: 15, weight: 500, color: C.primary, extra: 'flex:1;padding-left:4px' })}
       <div style="transform:rotate(${expanded ? 180 : 0}deg)">${icon('filled/expand_more', 24, C.primary)}</div></div>`);
@@ -215,7 +219,7 @@ export function homeAppScreen({ status = 32, running = true, advanced = false, e
   return M.screen(`
       <div style="height:${status + 64}px;padding-top:${status}px;display:flex;align-items:center">
         <div style="width:56px;padding-left:16px">${icon('filled/menu', 24, C.onSurface)}</div>
-        <div style="flex:1;font:600 22px/28px Roboto;color:${C.onSurface}">GestureVolume</div>
+        <div style="flex:1;font:600 22px/28px Roboto;color:${C.onSurface}">Gesture Volume</div>
         <div style="width:48px;display:grid;place-items:center">${icon('outlined/new_releases', 24, C.onSurfaceVariant)}</div>
         <div style="width:48px;display:grid;place-items:center">${drawableIcon('ic_crown_2', 24, C.primary)}</div><div style="width:4px"></div></div>
       <div class="scroll" style="position:relative;overflow:hidden;height:${915 - status - 64}px"><div class="col" style="padding:0 16px;transform:translateY(${-scroll}px)">

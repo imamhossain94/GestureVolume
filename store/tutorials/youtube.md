@@ -441,6 +441,263 @@ Gesture Volume on Google Play: https://play.google.com/store/apps/details?id=com
 Gesture Volume, Android, volume control, edge bar, volume slider, brightness slider, Android tips, tutorial, hide in apps, keyboard, lock screen, media
 ```
 
+## 10. Button animation
+
+- Video: `10-button-animation.mp4` (1:29)
+- Captions: `10-button-animation.srt`
+- Thumbnail: `thumbnails/10-button-animation.png`
+
+**Title** (45 characters)
+
+```
+Button animation | Gesture Volume tutorial 10
+```
+
+**Description**
+
+```
+Water, a fish, a frog and more, beside the volume key you press. Tutorial 10 of 10 in the Gesture Volume series.
+
+In this video
+1. Open Button animation: In Gesture Volume, under Advanced features, tap Button animation.
+2. Turn it on: Switch on Animate the volume buttons. The preview at the top plays it, with nothing to press.
+3. Press a volume key: Go home and press volume up: water ripples out from the very key you pressed.
+4. Pick one: Back in Button animation, scroll down to Animation and tap one. Every animation is free.
+5. Each with a sound of its own: Frog jump, Swing women, Cat, Balloons: tap one, and the preview plays it with its sound.
+6. Hold for a big one: On the glass, a press lets a balloon float away. Hold the key, and it fills until it bursts.
+7. Line it up with your keys: Under Where your buttons are, pick a key and slide Position. As you slide, the press shows on the glass, right beside it.
+8. Sound and feel: Each animation plays its own sound at every press. Then pick how it buzzes, how long it stays and how fast it moves.
+9. With the Quick slider, or alone: Pause plays the animation alone. Show both brings up the Quick slider with it.
+
+Chapters
+0:00 Turn it on
+0:30 Pick an animation
+0:57 Make it fit
+
+Gesture Volume on Google Play: https://play.google.com/store/apps/details?id=com.newagedevs.gesturevolume
+
+#GestureVolume #Android
+```
+
+**Tags** (168 characters)
+
+```
+Gesture Volume, Android, volume control, edge bar, volume slider, brightness slider, Android tips, tutorial, button animation, volume buttons, volume key, water, fish, frog, balloons
+```
+
+---
+
+# Shorts and TikTok
+
+One short per button animation, `../shorts/NN-id.mp4`: 1080 × 1920, 60 fps, about 15 s, with a
+narrator of their own (Kokoro-82M's af_heart, happier and more laid back than the tutorials'), the
+app's sounds and a chill music bed. The same file goes to YouTube (as a Short: under 60 s and
+vertical, so the #Shorts tag is all it needs) and to TikTok.
+
+## Short 1. Water
+
+- Video: `../shorts/01-water.mp4` (0:15)
+
+**YouTube title** (67 characters)
+
+```
+Press volume up and your screen turns into water 💧 | Gesture Volume
+```
+
+**YouTube description**
+
+```
+Press volume up and your whole screen turns into water 💧
+
+Water is one of 32 button animations in Gesture Volume: press a volume key and the animation plays right beside it, with a sound of its own. Water, Fish jump, Frog jump, Cat, Swing women, Balloons and more, all free.
+
+Gesture Volume on Google Play: https://play.google.com/store/apps/details?id=com.newagedevs.gesturevolume
+
+#Shorts #Android #GestureVolume
+```
+
+**YouTube tags**
+
+```
+Gesture Volume, button animation, volume button, Water, Android, Android tips, phone tricks, Shorts
+```
+
+**TikTok caption** (197 characters)
+
+```
+Press volume up and your whole screen turns into water 💧 Water is one of 32 free button animations in Gesture Volume, on Google Play. #android #androidtips #phonetricks #volumebutton #GestureVolume
+```
+
+## Short 2. Fish jump
+
+- Video: `../shorts/02-fish.mp4` (0:14)
+
+**YouTube title** (55 characters)
+
+```
+A fish jumps out of my volume button 🐟 | Gesture Volume
+```
+
+**YouTube description**
+
+```
+A little fish jumps out every time I press volume up 🐟
+
+Fish jump is one of 32 button animations in Gesture Volume: press a volume key and the animation plays right beside it, with a sound of its own. Water, Fish jump, Frog jump, Cat, Swing women, Balloons and more, all free.
+
+Gesture Volume on Google Play: https://play.google.com/store/apps/details?id=com.newagedevs.gesturevolume
+
+#Shorts #Android #GestureVolume
+```
+
+**YouTube tags**
+
+```
+Gesture Volume, button animation, volume button, Fish jump, Android, Android tips, phone tricks, Shorts
+```
+
+**TikTok caption** (199 characters)
+
+```
+A little fish jumps out every time I press volume up 🐟 Fish jump is one of 32 free button animations in Gesture Volume, on Google Play. #android #androidtips #phonetricks #volumebutton #GestureVolume
+```
+
+## Short 3. Frog jump
+
+- Video: `../shorts/03-frog.mp4` (0:14)
+
+**YouTube title** (58 characters)
+
+```
+The frog that lives in my volume button 🐸 | Gesture Volume
+```
+
+**YouTube description**
+
+```
+One press and the frog hops out to snap up a fly 🐸
+
+Frog jump is one of 32 button animations in Gesture Volume: press a volume key and the animation plays right beside it, with a sound of its own. Water, Fish jump, Frog jump, Cat, Swing women, Balloons and more, all free.
+
+Gesture Volume on Google Play: https://play.google.com/store/apps/details?id=com.newagedevs.gesturevolume
+
+#Shorts #Android #GestureVolume
+```
+
+**YouTube tags**
+
+```
+Gesture Volume, button animation, volume button, Frog jump, Android, Android tips, phone tricks, Shorts
+```
+
+**TikTok caption** (195 characters)
+
+```
+One press and the frog hops out to snap up a fly 🐸 Frog jump is one of 32 free button animations in Gesture Volume, on Google Play. #android #androidtips #phonetricks #volumebutton #GestureVolume
+```
+
+## Short 4. Cat
+
+- Video: `../shorts/04-cat.mp4` (0:13)
+
+**YouTube title** (65 characters)
+
+```
+A cat peeks in every time I turn the volume up 🐱 | Gesture Volume
+```
+
+**YouTube description**
+
+```
+Turn the volume up and a little cat peeks in to say hi 🐱
+
+Cat is one of 32 button animations in Gesture Volume: press a volume key and the animation plays right beside it, with a sound of its own. Water, Fish jump, Frog jump, Cat, Swing women, Balloons and more, all free.
+
+Gesture Volume on Google Play: https://play.google.com/store/apps/details?id=com.newagedevs.gesturevolume
+
+#Shorts #Android #GestureVolume
+```
+
+**YouTube tags**
+
+```
+Gesture Volume, button animation, volume button, Cat, Android, Android tips, phone tricks, Shorts
+```
+
+**TikTok caption** (195 characters)
+
+```
+Turn the volume up and a little cat peeks in to say hi 🐱 Cat is one of 32 free button animations in Gesture Volume, on Google Play. #android #androidtips #phonetricks #volumebutton #GestureVolume
+```
+
+## Short 5. Swing women
+
+- Video: `../shorts/05-swing.mp4` (0:15)
+
+**YouTube title** (58 characters)
+
+```
+My volume button has superheroes now 🦸‍♀️ | Gesture Volume
+```
+
+**YouTube description**
+
+```
+Every press sends a hero swinging across the screen on a line of silk 🦸‍♀️
+
+Swing women is one of 32 button animations in Gesture Volume: press a volume key and the animation plays right beside it, with a sound of its own. Water, Fish jump, Frog jump, Cat, Swing women, Balloons and more, all free.
+
+Gesture Volume on Google Play: https://play.google.com/store/apps/details?id=com.newagedevs.gesturevolume
+
+#Shorts #Android #GestureVolume
+```
+
+**YouTube tags**
+
+```
+Gesture Volume, button animation, volume button, Swing women, Android, Android tips, phone tricks, Shorts
+```
+
+**TikTok caption** (221 characters)
+
+```
+Every press sends a hero swinging across the screen on a line of silk 🦸‍♀️ Swing women is one of 32 free button animations in Gesture Volume, on Google Play. #android #androidtips #phonetricks #volumebutton #GestureVolume
+```
+
+## Short 6. Balloons
+
+- Video: `../shorts/06-balloon.mp4` (0:15)
+
+**YouTube title** (64 characters)
+
+```
+Hold the volume button until the balloon pops 🎈 | Gesture Volume
+```
+
+**YouTube description**
+
+```
+Tap for a balloon, hold the key and watch it grow until it pops 🎈
+
+Balloons is one of 32 button animations in Gesture Volume: press a volume key and the animation plays right beside it, with a sound of its own. Water, Fish jump, Frog jump, Cat, Swing women, Balloons and more, all free.
+
+Gesture Volume on Google Play: https://play.google.com/store/apps/details?id=com.newagedevs.gesturevolume
+
+#Shorts #Android #GestureVolume
+```
+
+**YouTube tags**
+
+```
+Gesture Volume, button animation, volume button, Balloons, Android, Android tips, phone tricks, Shorts
+```
+
+**TikTok caption** (209 characters)
+
+```
+Tap for a balloon, hold the key and watch it grow until it pops 🎈 Balloons is one of 32 free button animations in Gesture Volume, on Google Play. #android #androidtips #phonetricks #volumebutton #GestureVolume
+```
+
 ---
 
 # The narration

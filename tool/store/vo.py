@@ -92,8 +92,8 @@ def spoken(text: str) -> tuple[str, list[str]]:
     return " ".join(said), said
 
 
-def _key(text: str) -> str:
-    raw = json.dumps([text, VOICE, SPEED, SENTENCE_PAUSE, CLAUSE_PAUSE, SAY, PRONOUNCE, VERSION], ensure_ascii=False)
+def _key(text: str, voice: str = VOICE, speed: float = SPEED) -> str:
+    raw = json.dumps([text, voice, speed, SENTENCE_PAUSE, CLAUSE_PAUSE, SAY, PRONOUNCE, VERSION], ensure_ascii=False)
     return hashlib.sha1(raw.encode()).hexdigest()[:16]
 
 
@@ -109,18 +109,19 @@ def _write_atomic(path: Path, write) -> None:
             os.remove(tmp)
 
 
-def synth(text: str) -> dict:
+def synth(text: str, voice: str = VOICE, speed: float = SPEED) -> dict:
     """One line: {"text", "say", "wav", "dur", "words": [[word, start, end], ...]}, times in seconds
-    from the start of the clip, one entry per word of `text` as it appears on screen."""
+    from the start of the clip, one entry per word of `text` as it appears on screen. `voice` and
+    `speed` default to the tutorials' narrator; the shorts ask for a voice of their own."""
     VO_DIR.mkdir(parents=True, exist_ok=True)
-    key = _key(text)
+    key = _key(text, voice, speed)
     wav, meta = VO_DIR / f"{key}.wav", VO_DIR / f"{key}.json"
     if wav.exists() and meta.exists():
         return json.loads(meta.read_text())
 
     say, said = spoken(text)
     ph = phonemes(say)
-    audio, sr, timing = _kokoro().create_timed(ph, voice=VOICE, speed=SPEED, is_phonemes=True,
+    audio, sr, timing = _kokoro().create_timed(ph, voice=voice, speed=speed, is_phonemes=True,
                                                sentence_pause=SENTENCE_PAUSE, clause_pause=CLAUSE_PAUSE)
     audio = np.asarray(audio, np.float32)
     # Trim to the speech, keeping 60 ms of air on each side.
@@ -131,7 +132,7 @@ def synth(text: str) -> dict:
     dur = len(audio) / sr
     words = word_times(text.split(), said, timing, head / sr, dur)
     _write_atomic(wav, lambda p: sf.write(p, audio, sr, subtype="FLOAT", format="WAV"))
-    info = {"text": text, "say": say, "voice": VOICE, "speed": SPEED, "wav": str(wav.relative_to(HERE)),
+    info = {"text": text, "say": say, "voice": voice, "speed": speed, "wav": str(wav.relative_to(HERE)),
             "dur": round(dur, 3), "words": words}
     _write_atomic(meta, lambda p: Path(p).write_text(json.dumps(info, ensure_ascii=False, indent=1)))
     return info
@@ -193,14 +194,17 @@ def word_times(words: list[str], said: list[str], timing, shift: float, dur: flo
 
 
 def lines(src: str, dst: str) -> None:
-    """[{key, text}, ...] -> {"voice", "speed", "lines": [{key, text, say, wav, dur, words}, ...]}"""
+    """[{key, text, voice?, speed?}, ...] -> {"voice", "speed", "lines": [{key, text, say, wav, dur, words}, ...]}"""
     todo = json.loads(Path(src).read_text())
     out = []
     for ln in todo:
-        info = synth(ln["text"])
+        voice, speed = ln.get("voice", VOICE), float(ln.get("speed", SPEED))
+        info = synth(ln["text"], voice, speed)
         out.append({"key": ln["key"], **{k: info[k] for k in ("text", "say", "wav", "dur", "words")}})
         print(f"  {ln['key']:>8}  {info['dur']:5.2f} s  {ln['text'][:70]}", file=sys.stderr)
-    manifest = {"engine": "Kokoro-82M (kokoro-onnx)", "voice": VOICE, "speed": SPEED, "lines": out}
+    voices = sorted({ln.get("voice", VOICE) for ln in todo}) or [VOICE]
+    speeds = sorted({float(ln.get("speed", SPEED)) for ln in todo}) or [SPEED]
+    manifest = {"engine": "Kokoro-82M (kokoro-onnx)", "voice": ", ".join(voices), "speed": speeds[0] if len(speeds) == 1 else speeds, "lines": out}
     Path(dst).parent.mkdir(parents=True, exist_ok=True)
     _write_atomic(Path(dst), lambda p: Path(p).write_text(json.dumps(manifest, ensure_ascii=False, indent=1)))
 
@@ -208,7 +212,8 @@ def lines(src: str, dst: str) -> None:
 if __name__ == "__main__":
     cmd, rest = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else ("say", [])
     if cmd == "say":
-        info = synth(" ".join(rest) or "Meet Gesture Volume: volume and brightness on the edge of your screen.")
+        info = synth(" ".join(rest) or "Meet Gesture Volume: volume and brightness on the edge of your screen.",
+                     os.environ.get("VO_VOICE", VOICE), float(os.environ.get("VO_SPEED", SPEED)))
         print(json.dumps(info, ensure_ascii=False, indent=1))
     elif cmd == "phonemes":
         text = " ".join(rest)
