@@ -2,12 +2,13 @@
 <!--
   The accessibility service performs the system actions (lock, screenshot, Back, Home, Recents,
   notifications, quick settings, power menu), it can take the two volume keys, and it can see which
-  app is in front. Each only if the user asks, it draws: the bar on the lock screen, the bar over the
-  status bar (lending the foreground service its windows), and the button animation beside the
-  volume buttons. Drawing needs no flag here: an accessibility service may add its own
-  TYPE_ACCESSIBILITY_OVERLAY windows. The live event subscription is set
-  at runtime and is empty unless the user has picked apps to hide the bar in or given apps gestures
-  of their own; the types below are the most it will ever ask for.
+  app is in front. It draws only when the user asks: the bar everywhere, when they choose it to draw
+  the bar (Visibility › Draw the bar with); the bar on the lock screen, when they turn on Show on the
+  lock screen; and the button animation beside the volume buttons, when that is on. Drawing needs
+  no event or flag here: its windows are TYPE_ACCESSIBILITY_OVERLAY. The live event subscription is
+  set at runtime and is empty unless the user has picked apps to hide the bar in, given apps
+  gestures of their own, or asked the button animation to answer the power menu; the types below
+  are the most it will ever ask for.
 
   canRequestFilterKeyEvents is for the Quick panel's Instant volume keys and the button animation.
   The filter itself is requested at runtime and only while one of them is on; even then the service
@@ -16,8 +17,10 @@
   typeWindowStateChanged is for hiding the bar in apps the user picks and for gestures the user has
   changed for particular apps, and is subscribed only while there are any; and, with Instant volume
   keys, for the moment a Volume down press is undecided, when
-  only the event's package is checked, to tell a Volume down + Power screenshot from a press. The service reads which app's window came to the front, its package and class, and
-  nothing inside it.
+  only the event's package is checked, to tell a Volume down + Power screenshot from a press; and,
+  while the button animation answers the power button, to see the power menu come up, known by its
+  window's package and class. The service reads which app's window came to the front, its package
+  and class, and nothing inside it.
 
   canRetrieveWindowContent is false: the service never reads what is inside a window, this app's
   or any other's.

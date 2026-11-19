@@ -9,10 +9,6 @@
     <string name="volume_method_keys_desc">Her adım ses tuşuna bir basıştır; bu yüzden yayınlamayı, Bluetooth’u ve kendi sesi olan uygulamaları izler. Gösterilen seviye bir an sonra güncellenir.</string>
     <string name="volume_method_precise">Yalnızca tam seviye</string>
     <string name="volume_method_precise_desc">Önceki sürümler gibi her zaman tam seviyeyi ayarlar.</string>
-    <string name="visibility_a11y_title">Her şeyin üstünde</string>
-    <string name="visibility_a11y_desc">Erişilebilirlik hizmeti çubuğu durum çubuğunun ve kameranın üstüne, kayan pencereleri gizleyen uygulamalarda da çizebilir.</string>
-    <string name="visibility_a11y_draw_title">Erişilebilirlik hizmetiyle çiz</string>
-    <string name="visibility_a11y_draw_desc">Çubuk kenara yaslanarak durum çubuğunun üstünde durabilir ve diğer uygulamaların kayan pencerelerini gizleyen uygulama ve videolarda ekranda kalır. Telefon kilitliyken kenara çekilir.</string>
     <string name="bump_title">Tuş animasyonu</string>
     <string name="bump_card_subtitle">Ekran, bastığınız her tuşa yanıt verir</string>
     <string name="bump_enable_title">Ses tuşlarını canlandır</string>

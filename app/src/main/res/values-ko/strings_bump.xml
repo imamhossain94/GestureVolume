@@ -9,10 +9,6 @@
     <string name="volume_method_keys_desc">한 단계가 볼륨 버튼을 한 번 누르는 것과 같아서 캐스트, 블루투스, 자체 볼륨이 있는 앱도 따라갑니다. 표시되는 볼륨은 잠시 뒤에 맞춰집니다.</string>
     <string name="volume_method_precise">정확한 볼륨만</string>
     <string name="volume_method_precise_desc">이전 버전처럼 항상 정확한 볼륨을 설정합니다.</string>
-    <string name="visibility_a11y_title">모든 것 위에</string>
-    <string name="visibility_a11y_desc">접근성 서비스는 상태 표시줄과 카메라 위에도 바를 그릴 수 있고, 플로팅 창을 숨기는 앱에서도 표시합니다.</string>
-    <string name="visibility_a11y_draw_title">접근성 서비스로 그리기</string>
-    <string name="visibility_a11y_draw_desc">바가 가장자리에 딱 붙어 상태 표시줄 위에도 놓일 수 있고, 다른 앱의 플로팅 창을 숨기는 앱과 동영상에서도 화면에 남습니다. 휴대전화가 잠겨 있으면 비켜 둡니다.</string>
     <string name="bump_title">버튼 애니메이션</string>
     <string name="bump_card_subtitle">누르는 버튼마다 화면이 반응합니다</string>
     <string name="bump_enable_title">볼륨 버튼 애니메이션</string>

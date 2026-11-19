@@ -9,10 +9,6 @@
     <string name="volume_method_keys_desc">每一步都相当于按一次音量键，因此会跟随投屏、蓝牙以及自带音量的应用。显示的音量会稍后更新。</string>
     <string name="volume_method_precise">仅精确音量</string>
     <string name="volume_method_precise_desc">始终设置精确音量，与早期版本相同。</string>
-    <string name="visibility_a11y_title">置于最上层</string>
-    <string name="visibility_a11y_desc">无障碍服务可以把滑条绘制在状态栏和摄像头之上，在会隐藏悬浮窗的应用里也能显示。</string>
-    <string name="visibility_a11y_draw_title">通过无障碍服务绘制</string>
-    <string name="visibility_a11y_draw_desc">滑条可以紧贴屏幕边缘停在状态栏上，并在会隐藏其他应用悬浮窗的应用和视频中继续显示。手机锁定时它会让开。</string>
     <string name="bump_title">按键动画</string>
     <string name="bump_card_subtitle">屏幕会回应你按下的每个按键</string>
     <string name="bump_enable_title">为音量键添加动画</string>

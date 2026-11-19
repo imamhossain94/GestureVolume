@@ -7,160 +7,204 @@
   "sub": "Presets, size, shape, colour and where it sits",
   "next": "Keep it out of the way"
  },
- "duration": 59.45,
+ "duration": 62.43300000000001,
  "chapters": [
   {
    "t": 0,
    "title": "Presets"
   },
   {
-   "t": 19.35,
+   "t": 22.333000000000002,
    "title": "Size, shape and colour"
   },
   {
-   "t": 37.75,
+   "t": 40.733000000000004,
    "title": "Where it sits"
   }
  ],
  "steps": [
   {
-   "at": 4.15,
-   "end": 10.55,
+   "at": 6.319,
+   "end": 13.533000000000001,
    "title": "Open Appearance",
    "text": "In Gesture Volume, tap Appearance. The preview at the top shows the bar on a phone.",
-   "chapter": "Presets"
+   "chapter": "Presets",
+   "voice": {
+    "at": 6.569,
+    "end": 13.033
+   }
   },
   {
-   "at": 10.55,
-   "end": 19.35,
+   "at": 13.533000000000001,
+   "end": 22.333000000000002,
    "title": "Start from a preset",
    "text": "Quick presets set the whole look at once: Classic, Dock, Edge and Bold.",
-   "chapter": "Presets"
+   "chapter": "Presets",
+   "voice": {
+    "at": 13.783,
+    "end": 19.84
+   }
   },
   {
-   "at": 19.35,
-   "end": 28.35,
+   "at": 22.333000000000002,
+   "end": 31.333000000000002,
    "title": "Size and shape",
    "text": "Open Size & shape and drag Width and Height. Rounded or Tab sets how the ends look.",
-   "chapter": "Size, shape and colour"
+   "chapter": "Size, shape and colour",
+   "voice": {
+    "at": 22.583,
+    "end": 29.529
+   }
   },
   {
-   "at": 28.35,
-   "end": 37.75,
+   "at": 31.333000000000002,
+   "end": 40.733000000000004,
    "title": "Pick a colour",
    "text": "Under Colours, tap Fill and choose a colour. The preview takes it straight away.",
-   "chapter": "Size, shape and colour"
+   "chapter": "Size, shape and colour",
+   "voice": {
+    "at": 31.583,
+    "end": 36.904
+   }
   },
   {
-   "at": 37.75,
-   "end": 45.75,
+   "at": 40.733000000000004,
+   "end": 48.733000000000004,
    "title": "Choose a side",
    "text": "Under Position, put it on the left or the right, and set how far down the edge it sits.",
-   "chapter": "Where it sits"
+   "chapter": "Where it sits",
+   "voice": {
+    "at": 40.983,
+    "end": 47.105
+   }
   },
   {
-   "at": 45.75,
-   "end": 53.95,
+   "at": 48.733000000000004,
+   "end": 56.93300000000001,
    "title": "Save it",
    "text": "Tap Save. Go home, and your bar is on the edge just as you made it.",
-   "chapter": "Where it sits"
+   "chapter": "Where it sits",
+   "voice": {
+    "at": 48.983,
+    "end": 53.908
+   }
   }
  ],
  "subtitles": [
   {
-   "a": 0.4,
-   "b": 1.2812121212121212,
-   "text": "Make the bar yours."
+   "a": 0.416,
+   "b": 5.369,
+   "text": "Make the bar yours. Presets, size,\nshape, colour and where it sits."
   },
   {
-   "a": 1.3212121212121213,
-   "b": 3.56,
-   "text": "Presets, size, shape,\ncolour and where it sits."
+   "a": 6.635,
+   "b": 10.505,
+   "text": "Open Appearance.\nIn Gesture Volume, tap Appearance."
   },
   {
-   "a": 4.300000000000001,
-   "b": 5.255918367346939,
-   "text": "Open Appearance."
-  },
-  {
-   "a": 5.295918367346939,
-   "b": 7.372244897959184,
-   "text": "In Gesture Volume, tap Appearance."
-  },
-  {
-   "a": 7.412244897959184,
-   "b": 10.36,
+   "a": 10.545,
+   "b": 13.483,
    "text": "The preview at the top\nshows the bar on a phone."
   },
   {
-   "a": 10.700000000000001,
-   "b": 12.52813186813187,
-   "text": "Start from a preset."
+   "a": 13.817,
+   "b": 17.477,
+   "text": "Start from a preset.\nQuick presets set the whole look at once:"
   },
   {
-   "a": 12.56813186813187,
-   "b": 19.160000000000004,
-   "text": "Quick presets set the whole look at\nonce: Classic, Dock, Edge and Bold."
+   "a": 17.517,
+   "b": 20.44,
+   "text": "Classic, Dock, Edge and Bold."
   },
   {
-   "a": 19.5,
-   "b": 20.80536082474227,
-   "text": "Size and shape."
+   "a": 22.667,
+   "b": 27.227,
+   "text": "Size and shape. Open Size &\nshape and drag Width and Height."
   },
   {
-   "a": 20.84536082474227,
-   "b": 24.75175257731959,
-   "text": "Open Size & shape and\ndrag Width and Height."
-  },
-  {
-   "a": 24.79175257731959,
-   "b": 28.160000000000004,
+   "a": 27.267,
+   "b": 30.129,
    "text": "Rounded or Tab sets how the ends look."
   },
   {
-   "a": 28.5,
-   "b": 29.82989247311828,
-   "text": "Pick a colour."
+   "a": 31.592,
+   "b": 35.157,
+   "text": "Pick a colour. Under Colours,\ntap Fill and choose a colour."
   },
   {
-   "a": 29.86989247311828,
-   "b": 34.135268817204306,
-   "text": "Under Colours, tap Fill\nand choose a colour."
-  },
-  {
-   "a": 34.175268817204305,
-   "b": 37.56,
+   "a": 35.197,
+   "b": 37.504,
    "text": "The preview takes it straight away."
   },
   {
-   "a": 37.9,
-   "b": 38.938,
-   "text": "Choose a side."
+   "a": 41.017,
+   "b": 45.032,
+   "text": "Choose a side. Under Position,\nput it on the left or the right,"
   },
   {
-   "a": 38.978,
-   "b": 42.63400000000001,
-   "text": "Under Position, put it\non the left or the right,"
-  },
-  {
-   "a": 42.67400000000001,
-   "b": 45.56000000000001,
+   "a": 45.072,
+   "b": 47.705,
    "text": "and set how far down the edge it sits."
   },
   {
-   "a": 45.9,
-   "b": 47.756,
+   "a": 49.067,
+   "b": 50.912,
    "text": "Save it. Tap Save."
   },
   {
-   "a": 47.796,
-   "b": 53.760000000000005,
-   "text": "Go home, and your bar is on\nthe edge just as you made it."
+   "a": 50.952,
+   "b": 54.508,
+   "text": "Go home, and your bar is\non the edge just as you made it."
   },
   {
-   "a": 54.65,
-   "b": 59.11000000000001,
+   "a": 57.899,
+   "b": 60.368,
    "text": "Up next: Keep it out of the way."
   }
- ]
+ ],
+ "narration": {
+  "narrator": "Kokoro-82M (kokoro-onnx), af_bella, speed 1",
+  "lines": [
+   {
+    "key": "intro",
+    "at": 0.4,
+    "end": 4.769
+   },
+   {
+    "key": "step-1",
+    "at": 6.569,
+    "end": 13.033
+   },
+   {
+    "key": "step-2",
+    "at": 13.783,
+    "end": 19.84
+   },
+   {
+    "key": "step-3",
+    "at": 22.583,
+    "end": 29.529
+   },
+   {
+    "key": "step-4",
+    "at": 31.583,
+    "end": 36.904
+   },
+   {
+    "key": "step-5",
+    "at": 40.983,
+    "end": 47.105
+   },
+   {
+    "key": "step-6",
+    "at": 48.983,
+    "end": 53.908
+   },
+   {
+    "key": "outro",
+    "at": 57.833,
+    "end": 59.768
+   }
+  ]
+ }
 }

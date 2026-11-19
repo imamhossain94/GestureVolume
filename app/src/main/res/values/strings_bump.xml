@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The button animation, the way the volume is written, and drawing the bar through the
-  accessibility service. Kept out of strings.xml so the fifteen locales of these stay together.
+  The button animation and the way the volume is written. Kept out of strings.xml so the fifteen
+  locales of these stay together. Drawing the bar through the accessibility service is in
+  strings.xml, with the Visibility screen's "Draw the bar with" choice.
 -->
 <resources>
     <!-- How the volume is changed (Actions › Behaviour) -->
@@ -14,12 +15,6 @@
     <string name="volume_method_keys_desc">Every step is a press of the volume button, so it follows casting, Bluetooth and apps with their own volume. The level shown catches up a moment later.</string>
     <string name="volume_method_precise">Exact level only</string>
     <string name="volume_method_precise_desc">Always sets the exact level, as earlier versions did.</string>
-
-    <!-- Drawing the bar through the accessibility service (Visibility) -->
-    <string name="visibility_a11y_title">Above everything</string>
-    <string name="visibility_a11y_desc">The accessibility service can draw the bar over the status bar and the camera, and in apps that hide floating windows.</string>
-    <string name="visibility_a11y_draw_title">Draw with the accessibility service</string>
-    <string name="visibility_a11y_draw_desc">The bar can sit over the status bar, flush with the edge, and stays on screen in apps and videos that hide other apps’ floating windows. While the phone is locked it steps aside.</string>
 
     <!-- The button animation -->
     <string name="bump_title">Button animation</string>

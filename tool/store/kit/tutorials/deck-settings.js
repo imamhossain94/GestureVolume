@@ -54,7 +54,7 @@ export async function deckSteps(T) {
   const c0 = T.rect(dial, 'contact-0'), c1 = T.rect(dial, 'contact-1');
   T.ring(dialAt + 0.8, 2.4, { x: c0.x, y: c0.y, w: c0.w, h: c1.y + c1.h - c0.y }, { pad: 4, radius: 18 });
   T.ring(dialAt + 3.0, 1.8, T.rect(dial, 'add'), { pad: 4, radius: 20 });
-  const homeAt = T.goHome(sC.at + 6.6);
+  const homeAt = T.goHome(Math.max(sC.at + 6.6, T.said(sC) - 0.3));   // home once the narrator is done here
 
   T.on((t) => tiles.render(t));
   return { covers: (t) => t >= launched + 0.2 && t < homeAt + 0.2, tiles: TILES_AFTER };

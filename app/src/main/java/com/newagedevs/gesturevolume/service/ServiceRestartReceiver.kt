@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.newagedevs.gesturevolume.data.local.SharedPref
+import com.newagedevs.gesturevolume.utils.BarHost
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -36,11 +37,22 @@ class ServiceRestartReceiver : BroadcastReceiver() {
 
         if (!preference.isRunning()) return
 
-        // The bar is always drawn by the foreground service, which needs the overlay permission.
-        // Without it there is nothing to start; the app asks for it the next time it is opened.
-        // This also covers an update from a version that could draw the bar from the accessibility
-        // service without the permission.
-        if (!OverlayRuntime.canHostOverlay(context)) return
+        when (OverlayRuntime.effectiveHost(context, preference)) {
+            // Chosen to draw the bar and switched on: the system binds the accessibility service
+            // after a boot or an update, and it brings the bar up itself as it connects (see
+            // GestureAccessibilityService.onServiceConnected). Already bound, it is asked now.
+            BarHost.ACCESSIBILITY -> {
+                if (OverlayRuntime.accessibilityService != null) {
+                    OverlayRuntime.startOverlay(context, preference)
+                }
+                return
+            }
+            // The foreground service, which needs the overlay permission. That is also the fallback
+            // for a user who chose the accessibility service and has since switched it off.
+            BarHost.OVERLAY -> Unit
+            // Neither can draw: the app asks for what is missing the next time it is opened.
+            null -> return
+        }
 
         // "show" is the transient command, which respects a bar the user has put away with
         // "Hide handler" - a reboot is not them asking for it back. See OverlayService.

@@ -17,6 +17,7 @@ import com.newagedevs.gesturevolume.utils.PanelTheme
 import com.newagedevs.gesturevolume.utils.HandlerActions
 import com.newagedevs.gesturevolume.utils.HandlerPresets
 import com.newagedevs.gesturevolume.utils.HandlerShape
+import com.newagedevs.gesturevolume.utils.BarHost
 import com.newagedevs.gesturevolume.utils.VolumeController
 import com.newagedevs.gesturevolume.utils.VolumeStreamMode
 import com.newagedevs.gesturevolume.utils.VolumeWrite
@@ -481,8 +482,9 @@ class SharedPref @Inject constructor(
         const val SHOW_ON_LOCK_SCREEN = "handlerShowOnLockScreen"
         const val VOLUME_WRITE_METHOD = "volumeWriteMethod"
         const val VOLUME_RELATIVE_ROUTES = "volumeRelativeRoutes"
-        const val DRAW_WITH_ACCESSIBILITY = "handlerDrawWithAccessibility"
         const val PLACE_ON_GLASS_PREFIX = "placeOnGlass_"
+        /** 1.5.5: what draws the bar. See [com.newagedevs.gesturevolume.utils.BarHost]. */
+        const val BAR_HOST = "barHost"
         const val WHATS_NEW_SEEN = "whatsNewSeenVersion"
         const val TOUR_OFFERED = "tourOfferedVersion"
 
@@ -1044,6 +1046,18 @@ class SharedPref @Inject constructor(
     }
 
     /**
+     * What draws the bar: "Display over other apps", the default, or the accessibility service,
+     * which Android also shows on the lock screen and over Settings and other system screens. See
+     * [BarHost] and `OverlayRuntime.effectiveHost`, which falls back to the overlay while the
+     * accessibility service is off.
+     */
+    fun getBarHost(): BarHost = BarHost.fromStored(sharedPreferences.getString(BAR_HOST, null))
+
+    fun setBarHost(host: BarHost) {
+        sharedPreferences.edit { putString(BAR_HOST, host.stored) }
+    }
+
+    /**
      * How hard the bar should try to follow the audio the device is actually playing.
      *
      * Defaults to [VolumeStreamMode.FOLLOW_PLAYBACK] rather than the strictly-compatible
@@ -1129,18 +1143,6 @@ class SharedPref @Inject constructor(
     }
 
     private fun placeOnGlassKey(isPortrait: Boolean): String = PLACE_ON_GLASS_PREFIX + posYKey(isPortrait)
-
-    /**
-     * Whether the bar is drawn through the accessibility service while that service is on, rather
-     * than as an ordinary overlay: so it can sit over the status bar and the camera's strip, and stays
-     * on screen in apps that hide other apps' overlays. Off unless asked for, like every other use
-     * of that service; see `OverlayService.accessibilityHost`.
-     */
-    fun getDrawWithAccessibility(): Boolean = sharedPreferences.getBoolean(DRAW_WITH_ACCESSIBILITY, false)
-
-    fun setDrawWithAccessibility(value: Boolean) {
-        sharedPreferences.edit { putBoolean(DRAW_WITH_ACCESSIBILITY, value) }
-    }
 
     /**
      * What swiping from the bar toward the middle of the screen does.

@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.newagedevs.gesturevolume.BuildConfig
+import com.newagedevs.gesturevolume.GestureApplication
 import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.utils.ReviewPrompter
 import com.newagedevs.gesturevolume.ui.theme.GestureVolumeTheme
@@ -135,6 +136,12 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize IAP
         viewModel.initializeIAP(this)
+
+        // Google's consent form where the AdMob message asks for one, then the ad SDK. A new
+        // user's walkthrough asks when it finishes instead, so the form never covers it.
+        if (!viewModel.preference.isFirstLaunch()) {
+            (application as GestureApplication).requestConsentAndStartAds(this)
+        }
 
         // Observe pro user status and initialize ads if needed
         lifecycleScope.launch {

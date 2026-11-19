@@ -3,21 +3,28 @@
 
 Two beds of original music (an upbeat one for the promo, a calm one under the tutorials), the
 interface's sound effects, and the mix: a scene's cue sheet (JSON written beside its video)
-places each effect at the frame its touch lands on. The Quick slider's step sound is the app's
-own res/raw/slider_tick.wav.
+places each effect at the frame its touch lands on, and the narrator's clips (vo.py) where their
+lines start, with the music ducked under the voice. The Quick slider's step sound is the app's
+own res/raw/slider_tick.wav. The mix is mastered to -14 LUFS with true peaks at or under
+-1.5 dBTP, measured on the finished file.
 
     python3 audio.py bed promo 31.5 out.wav
     python3 audio.py bed calm 64 out.wav
-    python3 audio.py mix video.mp4 cues.json bed.wav out.mp4
+    python3 audio.py mix video.mp4 cues.json bed.wav out.mp4    # AUDIO_STEMS=dir also writes the stems
+    python3 audio.py measure out.mp4                            # its loudness and true peak
 """
 import json
 import os
+import re
 import subprocess
 import sys
+import warnings
 import wave
+from functools import lru_cache
 
 import numpy as np
 from scipy import signal
+from scipy.io import wavfile
 
 SR = 48000
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -490,13 +497,157 @@ def mix_track(bed, cues, total, music_gain=0.55):
     return out
 
 
-def mux(video, wav, out):
-    """Puts the mix under the video, at YouTube's -14 LUFS, as AAC."""
-    subprocess.run([
-        "ffmpeg", "-y", "-loglevel", "error", "-i", video, "-i", wav,
-        "-filter:a", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "48000",
-        "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", out,
-    ], check=True)
+# --- The narrator --------------------------------------------------------------------------------
+# Levels before the master sets the whole at -14 LUFS. Each of the narrator's clips is brought to
+# VOICE_LUFS. The music sits MUSIC_UNDER LU below that while no one talks, and DUCK_DB lower again
+# under the voice, so it is around 19 LU under the words; it dips on short ramps and stays down
+# across the short gaps between lines (BRIDGE) instead of bobbing up between them. The effects
+# keep the balance between them they were made with, SFX_DB over the music's level (a tap peaks
+# some 7 dB under the voice on a 100 ms window), and dip SFX_DUCK_DB more under a word; and none
+# is let past SFX_UNDER dB under the voice's usual level on that window (the promo's flourish at
+# 100 % and its chimes were made to ride over music, not under a narrator).
+VOICE_LUFS = -20.0
+# The promo ducks deeper than it first did (-9): its music swells into the end card, and there
+# "Gesture Volume" was heard as "just your volume" by speech recognisers at -9.
+BEDS = {"calm": (8.0, -11.0), "promo": (6.0, -12.0)}   # MUSIC_UNDER, DUCK_DB
+SFX_DB, SFX_DUCK_DB, SFX_UNDER = 6.0, -3.0, 3.0
+ATTACK, RELEASE, BRIDGE = 0.12, 0.25, 1.0
+
+
+def k_blocks(st, blk, hop):
+    """Mean square of the K-weighted signal (BS.1770) in blocks of `blk` s every `hop` s."""
+    st = st if st.ndim == 2 else np.stack([st, st], axis=1)
+    y = signal.lfilter([1.53512485958697, -2.69169618940638, 1.19839281085285], [1.0, -1.69065929318241, 0.73248077421585], st, axis=0)
+    y = signal.lfilter([1.0, -2.0, 1.0], [1.0, -1.99004745483398, 0.99007225036621], y, axis=0)
+    b, h = int(blk * SR), int(hop * SR)
+    if len(y) < b:
+        y = np.concatenate([y, np.zeros((b - len(y), 2))])
+    c = np.concatenate([[0.0], np.cumsum((y ** 2).sum(axis=1))])
+    starts = np.arange(0, len(y) - b + 1, h)
+    return (c[starts + b] - c[starts]) / b
+
+
+def short_loudness(st):
+    """Loudness on 100 ms windows, every 25 ms, in LUFS."""
+    return -0.691 + 10 * np.log10(k_blocks(st, 0.1, 0.025) + 1e-20)
+
+
+def lufs(st):
+    """Integrated loudness, ITU-R BS.1770-4: K-weighted, 400 ms blocks every 100 ms, gated."""
+    if len(st) < int(0.4 * SR):
+        return -70.0
+    ms = k_blocks(st, 0.4, 0.1)
+    loud = -0.691 + 10 * np.log10(ms + 1e-20)
+    gated = ms[loud > -70]
+    if not len(gated):
+        return -70.0
+    rel = -0.691 + 10 * np.log10(gated.mean()) - 10
+    gated = ms[(loud > -70) & (loud > rel)]
+    return float(-0.691 + 10 * np.log10(gated.mean()))
+
+
+def load_clip(path):
+    """A narrator's clip (vo.py writes 24 kHz float WAV) as mono at SR."""
+    with warnings.catch_warnings():                 # soundfile's PEAK chunk, which scipy skips
+        warnings.simplefilter("ignore", wavfile.WavFileWarning)
+        sr, raw = wavfile.read(path)
+    x = raw.astype(np.float64) / (32768.0 if raw.dtype == np.int16 else 1.0)
+    if x.ndim == 2:
+        x = x.mean(axis=1)
+    return signal.resample_poly(x, SR, sr) if sr != SR else x
+
+
+def talk_curve(n, spans):
+    """0 to 1: how far the music is ducked at each sample. Up over ATTACK before a line, down over
+    RELEASE after it, raised-cosine; a gap shorter than BRIDGE between two lines stays at 1."""
+    merged = []
+    for a, b in sorted(spans):
+        if merged and a - merged[-1][1] < BRIDGE:
+            merged[-1][1] = max(merged[-1][1], b)
+        else:
+            merged.append([a, b])
+    env = np.zeros(n)
+    na, nr = int(ATTACK * SR), int(RELEASE * SR)
+    up = 0.5 - 0.5 * np.cos(np.linspace(0, np.pi, na))
+    down = up[::-1].copy() if na == nr else 0.5 + 0.5 * np.cos(np.linspace(0, np.pi, nr))
+    for a, b in merged:
+        i0, i1 = int(a * SR), min(n, int(b * SR))
+        env[max(0, i0):i1] = 1
+        s = max(0, i0 - na)
+        env[s:i0] = np.maximum(env[s:i0], up[na - (i0 - s):])
+        e = min(n, i1 + nr)
+        env[i1:e] = np.maximum(env[i1:e], down[: e - i1])
+    return env
+
+
+def mix_narrated(bed, cues, voice, total, music_gain, kind):
+    """The narrated mix: (voice, music, effects) stems, already at their levels and ducked."""
+    n = int(total * SR)
+    under, duck_db = BEDS.get(kind.split(":")[0], BEDS["calm"])
+    music = np.zeros((n, 2))
+    b = bed[:n] * music_gain
+    music[: len(b)] = b
+    vo, spans = np.zeros((n, 2)), []
+    for v in voice:
+        x = load_clip(os.path.join(HERE, v["wav"]))
+        place(vo, x, v["t"], 10 ** ((VOICE_LUFS - lufs(x)) / 20))
+        spans.append((v["t"], v["t"] + len(x) / SR))
+    k = 10 ** ((VOICE_LUFS - under - lufs(music)) / 20)
+    said = short_loudness(vo)
+    cap = float(np.median(said[said > -45])) - SFX_UNDER
+    fx = np.zeros((n, 2))
+    for i, c in enumerate(cues):
+        x = pan(sfx(c["sfx"], seed=i + 1), c.get("pan", 0.0)) * (c.get("gain", 1.0) * k * 10 ** (SFX_DB / 20))
+        over = float(short_loudness(x).max()) - cap
+        place(fx, x, c["t"], 10 ** (-max(0.0, over) / 20))
+    env = talk_curve(n, spans)
+    return vo, music * (k * 10 ** (duck_db * env / 20))[:, None], fx * (10 ** (SFX_DUCK_DB * env / 20))[:, None]
+
+
+@lru_cache(maxsize=1)
+def aac_args():
+    """Apple's AAC encoder when ffmpeg has it (macOS builds do): FFmpeg's own can overshoot a
+    limited peak by a dB or more at these rates."""
+    enc = subprocess.run(["ffmpeg", "-hide_banner", "-encoders"], capture_output=True, text=True).stdout
+    return ["-c:a", "aac_at", "-b:a", "192k"] if " aac_at " in enc else ["-c:a", "aac", "-b:a", "256k"]
+
+
+def measure(path):
+    """(integrated LUFS, true peak dBTP) of a file's audio, by ffmpeg's ebur128."""
+    err = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", path, "-map", "0:a:0", "-af", "ebur128=peak=true",
+                          "-f", "null", "-"], capture_output=True, text=True).stderr
+    summary = err[err.rindex("Summary:"):]
+    return float(re.search(r"I:\s+(-?[\d.]+) LUFS", summary).group(1)), float(re.search(r"Peak:\s+(-?[\d.]+) dBFS", summary).group(1))
+
+
+def master(video, mix, out, target=-14.0, true_peak=-1.5):
+    """Puts the mix under the video at `target` LUFS, its true peaks at or under `true_peak` once
+    encoded: one gain for the whole (no riding), a limiter for the few peaks over the ceiling,
+    then measured on the finished file and done again a touch lower if it overshoots."""
+    tmp = out + ".mix.wav"
+    write_float(tmp, mix)
+    gain, ceiling = target - lufs(mix), true_peak - 0.7
+    try:
+        for _ in range(4):
+            # apad: the picture sets the length (the mix can end a frame early), so -shortest keeps every frame
+            af = f"volume={gain:.2f}dB,alimiter=limit={10 ** (ceiling / 20):.4f}:attack=1.5:release=60:level=false:latency=true,apad"
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", video, "-i", tmp, "-map", "0:v", "-map", "1:a",
+                            "-af", af, "-ar", str(SR), "-c:v", "copy", *aac_args(), "-shortest", "-movflags", "+faststart", out], check=True)
+            i, tp = measure(out)
+            print(f"  {os.path.basename(out)}: {i:.1f} LUFS, {tp:.1f} dBTP", file=sys.stderr)
+            if tp > true_peak:
+                ceiling -= tp - true_peak + 0.1
+            elif abs(i - target) > 0.2:
+                gain += target - i
+            else:
+                return i, tp
+        raise SystemExit(f"{out}: could not reach {target} LUFS under {true_peak} dBTP ({i:.1f}, {tp:.1f})")
+    finally:
+        os.remove(tmp)
+
+
+def write_float(path, st):
+    wavfile.write(path, SR, st.astype(np.float32))
 
 
 if __name__ == "__main__":
@@ -514,11 +665,19 @@ if __name__ == "__main__":
         video, cues_path, bed_path, out = sys.argv[2:6]
         meta = json.load(open(cues_path))
         bed = read_wav(bed_path)
-        track_ = mix_track(bed, meta["cues"], meta["duration"], meta.get("musicGain", 0.55))
-        tmp = out + ".wav"
-        write_wav(tmp, track_ / max(1e-9, np.max(np.abs(track_))) * 0.9)
-        mux(video, tmp, out)
-        os.remove(tmp)
+        if meta.get("voice"):
+            stems = mix_narrated(bed, meta["cues"], meta["voice"], meta["duration"], meta.get("musicGain", 0.55), meta.get("music", "calm"))
+            track_ = sum(stems)
+            if os.environ.get("AUDIO_STEMS"):
+                os.makedirs(os.environ["AUDIO_STEMS"], exist_ok=True)
+                for name, st in zip(("voice", "music", "sfx"), stems):
+                    write_float(os.path.join(os.environ["AUDIO_STEMS"], f"{os.path.basename(out)}.{name}.wav"), st)
+        else:
+            track_ = mix_track(bed, meta["cues"], meta["duration"], meta.get("musicGain", 0.55))
+        master(video, track_, out)
+    elif cmd == "measure":
+        i, tp = measure(sys.argv[2])
+        print(f"{sys.argv[2]}: {i:.1f} LUFS integrated, true peak {tp:.1f} dBTP")
     elif cmd == "sfx":
         name, out = sys.argv[2], sys.argv[3]
         x = sfx(name)

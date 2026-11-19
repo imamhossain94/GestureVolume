@@ -9,10 +9,6 @@
     <string name="volume_method_keys_desc">Каждый шаг — это нажатие кнопки громкости, поэтому он учитывает трансляцию, Bluetooth и приложения со своей громкостью. Показанный уровень обновляется чуть позже.</string>
     <string name="volume_method_precise">Только точный уровень</string>
     <string name="volume_method_precise_desc">Всегда устанавливает точный уровень, как прежние версии.</string>
-    <string name="visibility_a11y_title">Поверх всего</string>
-    <string name="visibility_a11y_desc">Служба специальных возможностей может рисовать полосу поверх строки состояния и камеры, а также в приложениях, которые скрывают плавающие окна.</string>
-    <string name="visibility_a11y_draw_title">Рисовать через службу специальных возможностей</string>
-    <string name="visibility_a11y_draw_desc">Полоса может располагаться поверх строки состояния вплотную к краю и остаётся на экране в приложениях и видео, которые скрывают плавающие окна других приложений. Пока телефон заблокирован, она уходит в сторону.</string>
     <string name="bump_title">Анимация кнопок</string>
     <string name="bump_card_subtitle">Экран отвечает на каждую нажатую кнопку</string>
     <string name="bump_enable_title">Анимировать кнопки громкости</string>

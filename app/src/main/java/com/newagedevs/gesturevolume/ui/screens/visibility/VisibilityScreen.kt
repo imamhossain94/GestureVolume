@@ -38,11 +38,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccessibilityNew
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
-import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
@@ -99,13 +100,16 @@ import com.newagedevs.gesturevolume.ui.screens.handler_action.segmentShape
 import com.newagedevs.gesturevolume.ui.screens.handler_appearance.SideSelectorHalf
 import com.newagedevs.gesturevolume.ui.viewmodels.MainViewModel
 import com.newagedevs.gesturevolume.utils.BarBehaviour
+import com.newagedevs.gesturevolume.utils.BarHost
 import com.newagedevs.gesturevolume.utils.PermissionNeeds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * When the bar shows: only while media plays or a call is on, what it does while the keyboard is
- * open, whether it shows on the lock screen, and the apps it steps aside in.
+ * Where the bar can show and when: what draws it — "Display over other apps" or the accessibility
+ * service, which Android also shows over Settings, system screens and the lock screen — then only
+ * while media plays or a call is on, what it does while the keyboard is open, whether it shows on
+ * the lock screen, and the apps it steps aside in.
  *
  * The first two take no permission at all — the overlay hears what is playing and the audio mode on
  * its own, and asks the window manager where the keyboard is. The lock screen and the apps take the
@@ -262,6 +266,7 @@ fun VisibilityScreen(
                             preference,
                             accessibilityOn = accessibilityOn,
                             onTurnOnAccessibility = { onOpenPermissions(PermissionNeeds.Permission.ACCESSIBILITY) },
+                            onBarHostChange = { viewModel.setBarHost(it, context) },
                         )
                     }
                     // A LazyColumn of its own, not a scrolling Column around one: a lazy list inside
@@ -289,6 +294,7 @@ fun VisibilityScreen(
                         preference,
                         accessibilityOn = accessibilityOn,
                         onTurnOnAccessibility = { onOpenPermissions(PermissionNeeds.Permission.ACCESSIBILITY) },
+                        onBarHostChange = { viewModel.setBarHost(it, context) },
                         modifier = Modifier.padding(start = SIDE_MARGIN, end = SIDE_MARGIN, top = 8.dp, bottom = 24.dp),
                     )
                 }
@@ -299,23 +305,24 @@ fun VisibilityScreen(
 }
 
 /**
- * The bar's two other reasons to step aside, above the apps: nothing it was asked to show for is
- * happening, and the keyboard is open. And the one place it is missing from unless asked: the lock
- * screen.
+ * What draws the bar, then the bar's two other reasons to step aside, above the apps: nothing it
+ * was asked to show for is happening, and the keyboard is open. And the one place it is missing
+ * from unless asked: the lock screen.
  *
- * All are read live by the overlay, so a change here only has to ask it to look again.
+ * All but the first are read live by the overlay, so a change only has to ask it to look again.
+ * The first moves the bar to the other host, through [onBarHostChange].
  */
 @Composable
 private fun AutoHideSection(
     preference: SharedPref,
     accessibilityOn: Boolean,
     onTurnOnAccessibility: () -> Unit,
+    onBarHostChange: (BarHost) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
+    var barHost by remember { mutableStateOf(preference.getBarHost()) }
     var onlyMedia by remember { mutableStateOf(preference.getShowOnlyWhileMedia()) }
     var onLockScreen by remember { mutableStateOf(preference.getShowOnLockScreen()) }
-    var drawWithAccessibility by remember { mutableStateOf(preference.getDrawWithAccessibility()) }
     var onlyCall by remember { mutableStateOf(preference.getShowOnlyWhileCall()) }
     var keyboard by remember { mutableStateOf(preference.getKeyboardBehaviour()) }
     var motion by remember { mutableStateOf(preference.getKeyboardMotion()) }
@@ -323,6 +330,51 @@ private fun AutoHideSection(
     val keyboardSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 
     Column(modifier = modifier) {
+        // ---- what draws it ------------------------------------------------------------------
+        // The same bar either way. Android hides the overlay's on the lock screen, in Settings and
+        // over some system screens, and keeps a notification up for it; the accessibility
+        // service's shows over all of them and needs none. Chosen before the service is on, the
+        // choice waits — the overlay carries on — and the note says so.
+        Heading(stringResource(R.string.visibility_host_title), stringResource(R.string.visibility_host_desc))
+        if (barHost == BarHost.ACCESSIBILITY && !accessibilityOn) {
+            PermissionNote(
+                text = stringResource(R.string.visibility_host_a11y_off),
+                onClick = onTurnOnAccessibility,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+        }
+        Segments(modifier = Modifier.selectableGroup()) {
+            ChoiceRow(
+                icon = Icons.Filled.Layers,
+                title = stringResource(R.string.visibility_host_overlay_title),
+                description = stringResource(R.string.visibility_host_overlay_desc),
+                selected = barHost == BarHost.OVERLAY,
+                shape = segmentShape(0, 2),
+                onClick = {
+                    barHost = BarHost.OVERLAY
+                    onBarHostChange(BarHost.OVERLAY)
+                },
+            )
+            ChoiceRow(
+                icon = Icons.Filled.AccessibilityNew,
+                title = stringResource(R.string.visibility_host_a11y_title),
+                description = stringResource(R.string.visibility_host_a11y_desc),
+                selected = barHost == BarHost.ACCESSIBILITY,
+                shape = segmentShape(1, 2),
+                onClick = {
+                    val wasChosen = barHost == BarHost.ACCESSIBILITY
+                    barHost = BarHost.ACCESSIBILITY
+                    onBarHostChange(BarHost.ACCESSIBILITY)
+                    // Off, the choice can only wait: straight to where it is turned on, behind the
+                    // usual disclosure. Not again on a second tap of a row already chosen; the
+                    // note above is the way back from there.
+                    if (!accessibilityOn && !wasChosen) onTurnOnAccessibility()
+                },
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         // ---- when it shows ------------------------------------------------------------------
         Heading(stringResource(R.string.visibility_auto_title), stringResource(R.string.visibility_auto_desc))
         Segments {
@@ -428,36 +480,6 @@ private fun AutoHideSection(
                     onLockScreen = it
                     preference.setShowOnLockScreen(it)
                     OverlayRuntime.accessibilityService?.refreshLockScreenBar()
-                },
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // ---- above everything ---------------------------------------------------------------
-        // The bar on the accessibility service's windows: over the status bar and the camera's
-        // strip, and still there in the apps and videos that hide other apps' floating windows.
-        // Same note as above until the service is on; the switch takes either way, and the bar
-        // moves across as soon as the service is there to lend its windows.
-        Heading(stringResource(R.string.visibility_a11y_title), stringResource(R.string.visibility_a11y_desc))
-        if (!accessibilityOn) {
-            PermissionNote(
-                missing = PermissionNeeds.Permission.ACCESSIBILITY,
-                onOpenPermissions = { onTurnOnAccessibility() },
-                modifier = Modifier.padding(bottom = 8.dp),
-            )
-        }
-        Segments {
-            ToggleRow(
-                icon = Icons.Filled.Layers,
-                title = stringResource(R.string.visibility_a11y_draw_title),
-                description = stringResource(R.string.visibility_a11y_draw_desc),
-                checked = drawWithAccessibility,
-                shape = segmentShape(0, 1),
-                onCheckedChange = {
-                    drawWithAccessibility = it
-                    preference.setDrawWithAccessibility(it)
-                    OverlayRuntime.rehost(context)
                 },
             )
         }

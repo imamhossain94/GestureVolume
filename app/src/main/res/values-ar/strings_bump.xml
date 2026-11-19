@@ -9,10 +9,6 @@
     <string name="volume_method_keys_desc">كل خطوة ضغطة على زر الصوت، لذا تتبع البث وBluetooth والتطبيقات التي لها صوتها الخاص. يتحدث المستوى المعروض بعد لحظة.</string>
     <string name="volume_method_precise">المستوى الدقيق فقط</string>
     <string name="volume_method_precise_desc">يضبط دائمًا المستوى الدقيق كما كانت تفعل الإصدارات السابقة.</string>
-    <string name="visibility_a11y_title">فوق كل شيء</string>
-    <string name="visibility_a11y_desc">يمكن لخدمة إمكانية الوصول رسم الشريط فوق شريط الحالة والكاميرا، وفي التطبيقات التي تخفي النوافذ العائمة.</string>
-    <string name="visibility_a11y_draw_title">الرسم بخدمة إمكانية الوصول</string>
-    <string name="visibility_a11y_draw_desc">يمكن للشريط أن يستقر فوق شريط الحالة ملاصقًا للحافة، ويبقى على الشاشة في التطبيقات والفيديوهات التي تخفي النوافذ العائمة للتطبيقات الأخرى. وعندما يكون الهاتف مقفلًا يتنحى جانبًا.</string>
     <string name="bump_title">حركة الأزرار</string>
     <string name="bump_card_subtitle">تستجيب الشاشة لكل زر تضغطه</string>
     <string name="bump_enable_title">تحريك أزرار الصوت</string>

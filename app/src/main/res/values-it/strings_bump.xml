@@ -9,10 +9,6 @@
     <string name="volume_method_keys_desc">Ogni passo è una pressione del tasto del volume, quindi segue la trasmissione, il Bluetooth e le app con un volume proprio. Il livello mostrato si aggiorna un attimo dopo.</string>
     <string name="volume_method_precise">Solo livello esatto</string>
     <string name="volume_method_precise_desc">Imposta sempre il livello esatto, come le versioni precedenti.</string>
-    <string name="visibility_a11y_title">Sopra a tutto</string>
-    <string name="visibility_a11y_desc">Il servizio di accessibilità può disegnare la barra sopra la barra di stato e la fotocamera, anche nelle app che nascondono le finestre fluttuanti.</string>
-    <string name="visibility_a11y_draw_title">Disegna con il servizio di accessibilità</string>
-    <string name="visibility_a11y_draw_desc">La barra può stare sopra la barra di stato, a filo del bordo, e resta sullo schermo nelle app e nei video che nascondono le finestre fluttuanti delle altre app. Con il telefono bloccato si fa da parte.</string>
     <string name="bump_title">Animazione dei tasti</string>
     <string name="bump_card_subtitle">Lo schermo risponde a ogni tasto che premi</string>
     <string name="bump_enable_title">Anima i tasti del volume</string>

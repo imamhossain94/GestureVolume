@@ -7,182 +7,220 @@
   "sub": "Apps, contacts, sums and the web, as you type",
   "next": "The long-press menu"
  },
- "duration": 55.85,
+ "duration": 59.496,
  "chapters": [
   {
    "t": 0,
    "title": "Open search"
   },
   {
-   "t": 11.15,
+   "t": 13.689,
    "title": "Sums, apps and people"
   },
   {
-   "t": 30.95,
+   "t": 33.489000000000004,
    "title": "Numbers and the web"
   }
  ],
  "steps": [
   {
-   "at": 4.15,
-   "end": 11.15,
+   "at": 6.13,
+   "end": 13.689,
    "title": "Open the Deck, tap Search",
    "text": "Swipe in from the tab, then tap Search. The keyboard comes up, ready for you to type.",
-   "chapter": "Open search"
+   "chapter": "Open search",
+   "voice": {
+    "at": 6.38,
+    "end": 13.189
+   }
   },
   {
-   "at": 11.15,
-   "end": 18.75,
+   "at": 13.689,
+   "end": 21.289,
    "title": "Work out a sum",
    "text": "Type a sum and the answer appears as you type. Tap Copy result to copy it.",
-   "chapter": "Sums, apps and people"
+   "chapter": "Sums, apps and people",
+   "voice": {
+    "at": 13.939,
+    "end": 19.854
+   }
   },
   {
-   "at": 18.75,
-   "end": 24.95,
+   "at": 21.289,
+   "end": 27.489,
    "title": "Find an app",
    "text": "Type part of an app’s name and it shows up. One tap opens it.",
-   "chapter": "Sums, apps and people"
+   "chapter": "Sums, apps and people",
+   "voice": {
+    "at": 21.539,
+    "end": 26.226
+   }
   },
   {
-   "at": 24.95,
-   "end": 30.95,
+   "at": 27.489,
+   "end": 33.489000000000004,
    "title": "Find a contact",
    "text": "Your quick-dial people show up too, ready to call or message.",
-   "chapter": "Sums, apps and people"
+   "chapter": "Sums, apps and people",
+   "voice": {
+    "at": 27.739,
+    "end": 32.545
+   }
   },
   {
-   "at": 30.95,
-   "end": 37.35,
+   "at": 33.489000000000004,
+   "end": 39.889,
    "title": "Call a number",
    "text": "Type a phone number and one tap opens the dialer with it.",
-   "chapter": "Numbers and the web"
+   "chapter": "Numbers and the web",
+   "voice": {
+    "at": 33.739,
+    "end": 37.98
+   }
   },
   {
-   "at": 37.35,
-   "end": 44.95,
+   "at": 39.889,
+   "end": 47.489000000000004,
    "title": "Search the web",
    "text": "Anything else goes to the web. Pick a provider, or press Search on the keyboard for your default.",
-   "chapter": "Numbers and the web"
+   "chapter": "Numbers and the web",
+   "voice": {
+    "at": 40.139,
+    "end": 46.715
+   }
   },
   {
-   "at": 44.95,
-   "end": 50.35,
+   "at": 47.489000000000004,
+   "end": 53.996,
    "title": "Close it",
    "text": "Tap anywhere outside, or press Back. The Deck slides away and the tab comes back.",
-   "chapter": "Numbers and the web"
+   "chapter": "Numbers and the web",
+   "voice": {
+    "at": 47.739,
+    "end": 53.496
+   }
   }
  ],
  "subtitles": [
   {
-   "a": 0.4,
-   "b": 1.2953846153846156,
-   "text": "Search in the Deck."
+   "a": 0.462,
+   "b": 5.18,
+   "text": "Search in the Deck. Apps, contacts,\nsums and the web, as you type."
   },
   {
-   "a": 1.3353846153846156,
-   "b": 3.5600000000000005,
-   "text": "Apps, contacts, sums and\nthe web, as you type."
-  },
-  {
-   "a": 4.300000000000001,
-   "b": 5.843636363636365,
+   "a": 6.446,
+   "b": 8.311,
    "text": "Open the Deck, tap Search."
   },
   {
-   "a": 5.883636363636365,
-   "b": 8.21909090909091,
+   "a": 8.351,
+   "b": 10.836,
    "text": "Swipe in from the tab, then tap Search."
   },
   {
-   "a": 8.25909090909091,
-   "b": 10.96,
+   "a": 10.876,
+   "b": 13.639,
    "text": "The keyboard comes up,\nready for you to type."
   },
   {
-   "a": 11.3,
-   "b": 12.504318181818183,
-   "text": "Work out a sum."
+   "a": 13.976,
+   "b": 18.011,
+   "text": "Work out a sum. Type a sum and\nthe answer appears as you type."
   },
   {
-   "a": 12.544318181818182,
-   "b": 16.320227272727273,
-   "text": "Type a sum and the answer\nappears as you type."
-  },
-  {
-   "a": 16.360227272727272,
-   "b": 18.560000000000002,
+   "a": 18.051,
+   "b": 20.454,
    "text": "Tap Copy result to copy it."
   },
   {
-   "a": 18.9,
-   "b": 19.843333333333334,
-   "text": "Find an app."
+   "a": 21.598,
+   "b": 26.826,
+   "text": "Find an app. Type part of an app’s\nname and it shows up. One tap opens it."
   },
   {
-   "a": 19.883333333333333,
-   "b": 23.366944444444446,
-   "text": "Type part of an app’s\nname and it shows up."
+   "a": 27.776,
+   "b": 33.145,
+   "text": "Find a contact. Your quick-dial people\nshow up too, ready to call or message."
   },
   {
-   "a": 23.406944444444445,
-   "b": 24.76,
-   "text": "One tap opens it."
+   "a": 33.751,
+   "b": 38.58,
+   "text": "Call a number. Type a phone number\nand one tap opens the dialer with it."
   },
   {
-   "a": 25.099999999999998,
-   "b": 26.185,
-   "text": "Find a contact."
+   "a": 40.198,
+   "b": 43.208,
+   "text": "Search the web.\nAnything else goes to the web."
   },
   {
-   "a": 26.224999999999998,
-   "b": 30.76,
-   "text": "Your quick-dial people show up\ntoo, ready to call or message."
-  },
-  {
-   "a": 31.099999999999998,
-   "b": 32.26281690140845,
-   "text": "Call a number."
-  },
-  {
-   "a": 32.30281690140845,
-   "b": 37.160000000000004,
-   "text": "Type a phone number and one\ntap opens the dialer with it."
-  },
-  {
-   "a": 37.5,
-   "b": 38.446486486486485,
-   "text": "Search the web."
-  },
-  {
-   "a": 38.486486486486484,
-   "b": 40.41945945945946,
-   "text": "Anything else goes to the web."
-  },
-  {
-   "a": 40.45945945945946,
-   "b": 44.760000000000005,
+   "a": 43.248,
+   "b": 47.315,
    "text": "Pick a provider, or press Search\non the keyboard for your default."
   },
   {
-   "a": 45.1,
-   "b": 45.57573033707865,
-   "text": "Close it."
+   "a": 47.751,
+   "b": 51.016,
+   "text": "Close it. Tap anywhere\noutside, or press Back."
   },
   {
-   "a": 45.61573033707865,
-   "b": 47.63865168539326,
-   "text": "Tap anywhere outside, or press Back."
-  },
-  {
-   "a": 47.67865168539326,
-   "b": 50.160000000000004,
+   "a": 51.056,
+   "b": 53.946,
    "text": "The Deck slides away\nand the tab comes back."
   },
   {
-   "a": 51.05,
-   "b": 55.510000000000005,
+   "a": 54.962,
+   "b": 57.462,
    "text": "Up next: The long-press menu."
   }
- ]
+ ],
+ "narration": {
+  "narrator": "Kokoro-82M (kokoro-onnx), af_bella, speed 1",
+  "lines": [
+   {
+    "key": "intro",
+    "at": 0.4,
+    "end": 4.58
+   },
+   {
+    "key": "step-1",
+    "at": 6.38,
+    "end": 13.189
+   },
+   {
+    "key": "step-2",
+    "at": 13.939,
+    "end": 19.854
+   },
+   {
+    "key": "step-3",
+    "at": 21.539,
+    "end": 26.226
+   },
+   {
+    "key": "step-4",
+    "at": 27.739,
+    "end": 32.545
+   },
+   {
+    "key": "step-5",
+    "at": 33.739,
+    "end": 37.98
+   },
+   {
+    "key": "step-6",
+    "at": 40.139,
+    "end": 46.715
+   },
+   {
+    "key": "step-7",
+    "at": 47.739,
+    "end": 53.496
+   },
+   {
+    "key": "outro",
+    "at": 54.896,
+    "end": 56.862
+   }
+  ]
+ }
 }

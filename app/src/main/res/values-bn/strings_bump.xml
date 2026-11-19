@@ -9,10 +9,6 @@
     <string name="volume_method_keys_desc">প্রতিটি ধাপ ভলিউম বোতামে একবার চাপের মতো, তাই এটি কাস্টিং, Bluetooth এবং নিজস্ব ভলিউমের অ্যাপ অনুসরণ করে। দেখানো মাত্রা একটু পরে মিলে যায়।</string>
     <string name="volume_method_precise">শুধু সঠিক মাত্রা</string>
     <string name="volume_method_precise_desc">আগের সংস্করণগুলোর মতো সবসময় সঠিক মাত্রা সেট করে।</string>
-    <string name="visibility_a11y_title">সবকিছুর উপরে</string>
-    <string name="visibility_a11y_desc">অ্যাক্সেসিবিলিটি সার্ভিস বারটি স্ট্যাটাস বার ও ক্যামেরার উপরে আঁকতে পারে, এবং যেসব অ্যাপ ভাসমান উইন্ডো লুকায় সেখানেও।</string>
-    <string name="visibility_a11y_draw_title">অ্যাক্সেসিবিলিটি সার্ভিস দিয়ে আঁকুন</string>
-    <string name="visibility_a11y_draw_desc">বারটি কিনারায় লেগে স্ট্যাটাস বারের উপরেও থাকতে পারে, এবং যেসব অ্যাপ ও ভিডিও অন্য অ্যাপের ভাসমান উইন্ডো লুকায় সেখানেও স্ক্রিনে থাকে। ফোন লক থাকলে এটি সরে যায়।</string>
     <string name="bump_title">বোতাম অ্যানিমেশন</string>
     <string name="bump_card_subtitle">আপনি যে বোতামই চাপুন, স্ক্রিন সাড়া দেয়</string>
     <string name="bump_enable_title">ভলিউম বোতাম অ্যানিমেট করুন</string>

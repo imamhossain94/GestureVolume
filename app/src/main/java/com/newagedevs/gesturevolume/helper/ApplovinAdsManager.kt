@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,9 +46,12 @@ import com.applovin.mediation.nativeAds.MaxNativeAdListener
 import com.applovin.mediation.nativeAds.MaxNativeAdLoader
 import com.applovin.mediation.nativeAds.MaxNativeAdView
 import com.applovin.mediation.nativeAds.MaxNativeAdViewBinder
-import com.applovin.sdk.AppLovinSdk
 import com.applovin.sdk.AppLovinSdkUtils
 import com.newagedevs.gesturevolume.BuildConfig
+import com.newagedevs.gesturevolume.GestureApplication
+import kotlinx.coroutines.flow.first
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.LifecycleOwner
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.utils.AdPacing
 import kotlinx.coroutines.delay
@@ -73,47 +77,49 @@ class ApplovinAdsManager(
     /** Whether this manager was built for [activity], rather than for one since destroyed. */
     fun isBoundTo(activity: Activity): Boolean = context === activity
 
-    private companion object {
-        const val SDK_READY_POLL_MS = 1000L
-        const val SDK_READY_MAX_ATTEMPTS = 30 // ~30s, then give up quietly
-    }
-
     /**
-     * Runs [action] once the AppLovin SDK has finished initializing, or drops it if the SDK never
-     * comes up.
+     * Runs [action] once the AppLovin SDK has started, for as long as this manager's Activity
+     * lives, and drops it with the Activity.
      *
-     * SDK init is deliberately deferred until onboarding completes (see
-     * GestureApplication.initializeAdsIfNeeded) so the consent sheet cannot cover the walkthrough.
-     * MainActivity, however, builds this manager from onCreate on *every* launch — including the
-     * very first, while the SDK is still cold. Calling loadAd() in that window is fatal: MAX's
-     * mediation service dereferences state it only populates during init and takes the process
+     * The SDK starts only after Google's consent form, where there is one, has been answered (see
+     * GestureApplication.requestConsentAndStartAds) — and a user can take as long as they like to
+     * read it. So this waits on [GestureApplication.adsReady] rather than polling for a fixed time:
+     * the old 30-second poll gave up on anyone who read the form slowly, and their first screen
+     * then had no ads until the next launch. Loading before the SDK is up is fatal besides: MAX's
+     * mediation service dereferences state it only fills in during init and takes the process
      * down with an NPE. Every load in this class therefore goes through here.
      */
-    private fun whenSdkReady(attempt: Int = 0, action: () -> Unit) {
+    private fun whenSdkReady(action: () -> Unit) {
         if (context.isFinishing || context.isDestroyed) return
-
-        if (AppLovinSdk.getInstance(context).isInitialized) {
+        val app = context.application as? GestureApplication ?: return
+        val owner = context as? LifecycleOwner ?: return
+        owner.lifecycleScope.launch {
+            app.adsReady.first { it }
+            if (context.isFinishing || context.isDestroyed) return@launch
             // An ad failing must never be able to take the app down with it.
             try {
                 action()
             } catch (e: Exception) {
                 Log.e("ApplovinAdsManager", "Ad load failed", e)
             }
-            return
         }
+    }
 
-        // Bounded poll. If the SDK never initializes — no network, a bad key, a user who is still
-        // mid-walkthrough — the app simply runs without ads instead of polling forever.
-        if (attempt >= SDK_READY_MAX_ATTEMPTS) return
-        Handler(Looper.getMainLooper()).postDelayed(
-            { whenSdkReady(attempt + 1, action) },
-            SDK_READY_POLL_MS
-        )
+    /** Whether the AppLovin SDK has started, as state: a composable that reads it redraws when it has. */
+    @Composable
+    private fun adsReady(): Boolean {
+        val app = context.application as? GestureApplication ?: return false
+        val ready by app.adsReady.collectAsState()
+        return ready
     }
 
     // Compose-compatible banner ad
     @Composable
     fun BannerAdView() {
+        // Nothing until the SDK has started (see GestureApplication.adsReady): even constructing a
+        // MaxAdView creates the AppLovin SDK, and in the EEA, the UK and Switzerland nothing of the
+        // ad SDK's may run before Google's consent form has been answered.
+        if (!adsReady()) return
         var isAdLoaded by remember { mutableStateOf(false) }
 
         AndroidView(
@@ -152,6 +158,8 @@ class ApplovinAdsManager(
         /** Told whether an ad is on show, so a caller can make room for it only then. */
         onShownChange: (Boolean) -> Unit = {},
     ) {
+        // As for the banner: no loader, so no SDK, until the SDK has started after consent.
+        if (!adsReady()) return
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
         // Read here, in composition, so a theme change restyles the ad on the next update.

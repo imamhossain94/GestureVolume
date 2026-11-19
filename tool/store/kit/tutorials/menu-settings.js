@@ -86,7 +86,7 @@ export async function menuSteps(T) {
   const spring = measure({ open: 'animation', items: ITEMS_AFTER, theme: 'glass' }, 'anim-swing');
   tm.spring = sD.at + 3.0;
   T.hand({ at: tm.spring - 0.06, tap: [spring.cx, spring.cy] });
-  const homeAt = T.goHome(sD.at + 5.8);
+  const homeAt = T.goHome(Math.max(sD.at + 5.8, T.said(sD) - 0.3));   // home once the narrator is done here
 
   T.on((t) => {
     screen.render(t);

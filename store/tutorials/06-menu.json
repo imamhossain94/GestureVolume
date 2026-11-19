@@ -7,209 +7,271 @@
   "sub": "Hold the bar for the actions you use most",
   "next": "Choose what each gesture does"
  },
- "duration": 71.25,
+ "duration": 78.386,
  "chapters": [
   {
    "t": 0,
    "title": "Open the menu"
   },
   {
-   "t": 25.750000000000004,
+   "t": 29.053,
    "title": "Choose its actions"
   },
   {
-   "t": 59.15,
+   "t": 66.286,
    "title": "Try it"
   }
  ],
  "steps": [
   {
-   "at": 4.15,
-   "end": 11.350000000000001,
+   "at": 5.8,
+   "end": 13.966000000000001,
    "title": "Hold the tab",
    "text": "Keep your finger on the Dock until the ring closes. The menu opens beside it, and stays when you let go.",
-   "chapter": "Open the menu"
+   "chapter": "Open the menu",
+   "voice": {
+    "at": 6.05,
+    "end": 13.466
+   }
   },
   {
-   "at": 11.350000000000001,
-   "end": 17.950000000000003,
+   "at": 13.966000000000001,
+   "end": 20.876,
    "title": "Tap an action",
    "text": "Each tile runs its action and the menu closes. Here, the flashlight comes on.",
-   "chapter": "Open the menu"
+   "chapter": "Open the menu",
+   "voice": {
+    "at": 14.216,
+    "end": 20.376
+   }
   },
   {
-   "at": 17.950000000000003,
-   "end": 25.750000000000004,
+   "at": 20.876,
+   "end": 29.053,
    "title": "Hold and drag to move it",
    "text": "Hold, then move instead of letting go: the menu steps aside and the bar follows your finger.",
-   "chapter": "Open the menu"
+   "chapter": "Open the menu",
+   "voice": {
+    "at": 21.126,
+    "end": 28.553
+   }
   },
   {
-   "at": 25.750000000000004,
-   "end": 32.35,
+   "at": 29.053,
+   "end": 38.182,
    "title": "Open its settings",
    "text": "In Gesture Volume, under Advanced features, tap Long-press menu. The preview shows the menu as it is.",
-   "chapter": "Choose its actions"
+   "chapter": "Choose its actions",
+   "voice": {
+    "at": 29.303,
+    "end": 37.682
+   }
   },
   {
-   "at": 32.35,
-   "end": 42.75,
+   "at": 38.182,
+   "end": 48.582,
    "title": "Choose the actions",
    "text": "Open Items: remove what you never use, and add what you want from Available. Here, Screenshot in place of Stop service.",
-   "chapter": "Choose its actions"
+   "chapter": "Choose its actions",
+   "voice": {
+    "at": 38.432,
+    "end": 47.434
+   }
   },
   {
-   "at": 42.75,
-   "end": 51.15,
+   "at": 48.582,
+   "end": 58.286,
    "title": "Pick a panel style",
    "text": "Under Colours, choose how it is drawn. Glass blurs what is behind it; the Deck and the Quick slider use the same style.",
-   "chapter": "Choose its actions"
+   "chapter": "Choose its actions",
+   "voice": {
+    "at": 48.832,
+    "end": 57.786
+   }
   },
   {
-   "at": 51.15,
-   "end": 59.15,
+   "at": 58.286,
+   "end": 66.286,
    "title": "Choose how it opens",
    "text": "Under Animation, pick an opening animation. The preview plays it each time you pick one.",
-   "chapter": "Choose its actions"
+   "chapter": "Choose its actions",
+   "voice": {
+    "at": 58.536,
+    "end": 65.738
+   }
   },
   {
-   "at": 59.15,
-   "end": 65.75,
+   "at": 66.286,
+   "end": 72.886,
    "title": "Hold the tab again",
    "text": "Your actions, in the style and animation you picked.",
-   "chapter": "Try it"
+   "chapter": "Try it",
+   "voice": {
+    "at": 66.536,
+    "end": 70.759
+   }
   }
  ],
  "subtitles": [
   {
-   "a": 0.4,
-   "b": 1.3922580645161289,
-   "text": "The long-press menu."
+   "a": 0.416,
+   "b": 4.85,
+   "text": "The long-press menu. Hold the bar\nfor the actions you use most."
   },
   {
-   "a": 1.432258064516129,
-   "b": 3.56,
-   "text": "Hold the bar for the actions you use most."
+   "a": 6.062,
+   "b": 10.272,
+   "text": "Hold the tab. Keep your finger\non the Dock until the ring closes."
   },
   {
-   "a": 4.300000000000001,
-   "b": 5.033275862068966,
-   "text": "Hold the tab."
-  },
-  {
-   "a": 5.073275862068966,
-   "b": 8.06689655172414,
-   "text": "Keep your finger on the\nDock until the ring closes."
-  },
-  {
-   "a": 8.10689655172414,
-   "b": 11.160000000000002,
+   "a": 10.312,
+   "b": 13.916,
    "text": "The menu opens beside it,\nand stays when you let go."
   },
   {
-   "a": 11.500000000000002,
-   "b": 12.440000000000003,
-   "text": "Tap an action."
+   "a": 14.228,
+   "b": 18.488,
+   "text": "Tap an action. Each tile runs\nits action and the menu closes."
   },
   {
-   "a": 12.480000000000002,
-   "b": 15.660000000000004,
-   "text": "Each tile runs its action\nand the menu closes."
-  },
-  {
-   "a": 15.700000000000003,
-   "b": 17.760000000000005,
+   "a": 18.528,
+   "b": 20.826,
    "text": "Here, the flashlight comes on."
   },
   {
-   "a": 18.1,
-   "b": 19.67637931034483,
+   "a": 21.163,
+   "b": 23.048,
    "text": "Hold and drag to move it."
   },
   {
-   "a": 19.71637931034483,
-   "b": 22.13327586206897,
+   "a": 23.088,
+   "b": 25.498,
    "text": "Hold, then move instead of letting go:"
   },
   {
-   "a": 22.17327586206897,
-   "b": 25.560000000000006,
+   "a": 25.538,
+   "b": 29.003,
    "text": "the menu steps aside and\nthe bar follows your finger."
   },
   {
-   "a": 25.900000000000002,
-   "b": 26.821016949152547,
+   "a": 29.369,
+   "b": 30.854,
    "text": "Open its settings."
   },
   {
-   "a": 26.861016949152546,
-   "b": 30.23796610169492,
+   "a": 30.894,
+   "b": 35.604,
    "text": "In Gesture Volume, under Advanced\nfeatures, tap Long-press menu."
   },
   {
-   "a": 30.27796610169492,
-   "b": 32.160000000000004,
+   "a": 35.644,
+   "b": 38.132,
    "text": "The preview shows the menu as it is."
   },
   {
-   "a": 32.5,
-   "b": 33.8607299270073,
+   "a": 38.466,
+   "b": 40.026,
    "text": "Choose the actions."
   },
   {
-   "a": 33.9007299270073,
-   "b": 39.4636496350365,
+   "a": 40.066,
+   "b": 44.811,
    "text": "Open Items: remove what you never use,\nand add what you want from Available."
   },
   {
-   "a": 39.503649635036496,
-   "b": 42.56,
+   "a": 44.851,
+   "b": 48.034,
    "text": "Here, Screenshot in place of Stop service."
   },
   {
-   "a": 42.9,
-   "b": 43.98335766423357,
-   "text": "Pick a panel style."
+   "a": 48.819,
+   "b": 53.049,
+   "text": "Pick a panel style.\nUnder Colours, choose how it is drawn."
   },
   {
-   "a": 44.02335766423357,
-   "b": 46.23007299270073,
-   "text": "Under Colours, choose how it is drawn."
+   "a": 53.089,
+   "b": 55.149,
+   "text": "Glass blurs what is behind it;"
   },
   {
-   "a": 46.270072992700726,
-   "b": 50.96,
-   "text": "Glass blurs what is behind it; the Deck\nand the Quick slider use the same style."
+   "a": 55.189,
+   "b": 58.236,
+   "text": "the Deck and the Quick\nslider use the same style."
   },
   {
-   "a": 51.3,
-   "b": 52.699252336448595,
-   "text": "Choose how it opens."
+   "a": 58.57,
+   "b": 63.38,
+   "text": "Choose how it opens. Under Animation,\npick an opening animation."
   },
   {
-   "a": 52.739252336448594,
-   "b": 55.793644859813085,
-   "text": "Under Animation, pick\nan opening animation."
-  },
-  {
-   "a": 55.833644859813084,
-   "b": 58.96,
+   "a": 63.42,
+   "b": 66.236,
    "text": "The preview plays it\neach time you pick one."
   },
   {
-   "a": 59.3,
-   "b": 60.945915492957745,
-   "text": "Hold the tab again."
+   "a": 66.552,
+   "b": 71.359,
+   "text": "Hold the tab again. Your actions,\nin the style and animation you picked."
   },
   {
-   "a": 60.985915492957744,
-   "b": 65.55999999999999,
-   "text": "Your actions, in the style\nand animation you picked."
-  },
-  {
-   "a": 66.45,
-   "b": 70.91,
+   "a": 73.852,
+   "b": 76.735,
    "text": "Up next: Choose what each gesture does."
   }
- ]
+ ],
+ "narration": {
+  "narrator": "Kokoro-82M (kokoro-onnx), af_bella, speed 1",
+  "lines": [
+   {
+    "key": "intro",
+    "at": 0.4,
+    "end": 4.25
+   },
+   {
+    "key": "step-1",
+    "at": 6.05,
+    "end": 13.466
+   },
+   {
+    "key": "step-2",
+    "at": 14.216,
+    "end": 20.376
+   },
+   {
+    "key": "step-3",
+    "at": 21.126,
+    "end": 28.553
+   },
+   {
+    "key": "step-4",
+    "at": 29.303,
+    "end": 37.682
+   },
+   {
+    "key": "step-5",
+    "at": 38.432,
+    "end": 47.434
+   },
+   {
+    "key": "step-6",
+    "at": 48.832,
+    "end": 57.786
+   },
+   {
+    "key": "step-7",
+    "at": 58.536,
+    "end": 65.738
+   },
+   {
+    "key": "step-8",
+    "at": 66.536,
+    "end": 70.759
+   },
+   {
+    "key": "outro",
+    "at": 73.786,
+    "end": 76.135
+   }
+  ]
+ }
 }

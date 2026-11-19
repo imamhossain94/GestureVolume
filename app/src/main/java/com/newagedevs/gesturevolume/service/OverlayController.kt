@@ -98,14 +98,17 @@ import com.newagedevs.gesturevolume.utils.QuickSliderIcons
  * overlay and the Deck. Everything that is drawn over other apps and everything that happens
  * when it is touched.
  *
- * Extracted from `OverlayService` in 1.4.0, which runs it: the service keeps the notification
- * and the service lifecycle, and this keeps the bar. The accessibility service reaches this
- * controller through [OverlayRuntime.activeController] to hand it the volume keys and the app in
- * front, and runs a second one of its own on the lock screen: see the lockScreen parameter.
+ * Extracted from `OverlayService` in 1.4.0. Either host runs it — the foreground service, or the
+ * accessibility service when the user chooses it to draw the bar (see [OverlayRuntime]) — and the
+ * host keeps only what is its own: the notification and the service lifecycle. The accessibility
+ * service reaches this controller through [OverlayRuntime.activeController] to hand it the volume
+ * keys and the app in front, and runs a second one on the lock screen: see the lockScreen
+ * parameter.
  *
  * Every window this creates uses [windowType]: `TYPE_APPLICATION_OVERLAY` from the foreground
- * service, which needs the overlay permission, or, for the lock screen, `TYPE_ACCESSIBILITY_OVERLAY`
- * from the accessibility service. See [lockScreen].
+ * service, which needs the overlay permission, or `TYPE_ACCESSIBILITY_OVERLAY` from the
+ * accessibility service, which Android draws over every screen, the lock screen included. That
+ * one's bar puts itself away while the phone is locked: see [setHiddenWhileLocked].
  *
  * @param lockScreen this is the second bar, the one the accessibility service puts on the lock
  *   screen while the phone is locked: Android draws every `TYPE_APPLICATION_OVERLAY` window under
@@ -1433,39 +1436,30 @@ class OverlayController(
         }
     }
 
-    // ---- the lock screen, for a bar drawn through the accessibility service ----------------------
+    /**
+     * True while the phone is locked and this bar's windows would be seen on the lock screen.
+     *
+     * Only ever set on the accessibility service's own bar, whose windows Android draws over the
+     * keyguard: left up, its Deck, menu and app launches would be in anyone's reach. Transient, like
+     * [hiddenForApp], and checked at the same one place ([createOverlayHandler]).
+     */
+    private var hiddenWhileLocked = false
 
     /**
-     * Whether this bar's windows would be seen over the lock screen: the foreground service's bar
-     * drawn through the accessibility service, whose windows the system stacks over the keyguard.
-     * The lock screen's own bar is the one that may be there, restricted to what a locked phone
-     * allows (see [lockScreen]), so this one steps aside while the phone is locked.
+     * Puts the whole bar away while the phone is locked, and brings it back at the unlock.
+     *
+     * The lock screen gets its own restricted copy instead, when the user has asked for one: see
+     * `GestureAccessibilityService.refreshLockScreenBar`. Nothing is kept open across the lock — the
+     * panel, the menu and the Deck all close — so nothing is left waiting behind the lock screen.
      */
-    private val drawsOverLockScreen: Boolean =
-        !lockScreen && windowType == WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
-
-    /** Out of sight while the phone is locked, or the screen is off. See [drawsOverLockScreen]. */
-    private var hiddenForKeyguard = false
-
-    /** Whether the phone is locked, or about to be: the screen off counts, so nothing flashes on waking. */
-    private fun keyguardLockedOrDark(): Boolean {
-        val power = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
-        if (power?.isInteractive == false) return true
-        val keyguard = context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
-        return keyguard?.isKeyguardLocked == true
-    }
-
-    /**
-     * The screen went on or off, or the phone was unlocked: from the accessibility service, which
-     * hears all three. Only a bar drawn through that service has anything to do about it.
-     */
-    fun onKeyguardChanged() {
-        if (!drawsOverLockScreen || destroyed) return
-        val locked = keyguardLockedOrDark()
-        if (locked == hiddenForKeyguard) return
-        hiddenForKeyguard = locked
+    fun setHiddenWhileLocked(locked: Boolean) {
+        if (destroyed || lockScreen || locked == hiddenWhileLocked) return
+        hiddenWhileLocked = locked
         if (locked) {
             dismissQuickSliderNow()
+            removeContextMenuNow()
+            removeDeckNow()
+            hideIndicator()
             hide()
         } else {
             show()
@@ -1825,11 +1819,11 @@ class OverlayController(
         if (preference.isAppInForeground()) return
         // Nor over an app the user asked it to stay out of. See [onForegroundApp].
         if (hiddenForApp) return
+        // Nor on the lock screen, from the accessibility service. See [setHiddenWhileLocked].
+        if (hiddenWhileLocked) return
         // Nor while nothing it was asked to show for is happening, nor while it is keeping out of
         // the keyboard's way. See [applyContextVisibility] and [applyKeyboardAvoidance].
         if (hiddenForContext || hiddenForKeyboard) return
-        // Nor, drawn through the accessibility service, over the lock screen. See [onKeyguardChanged].
-        if (hiddenForKeyguard) return
         if (handlerView != null) return
         // Last, so it only answers when the bar really is about to be drawn. Without the
         // permission addView throws BadTokenException ("permission denied for window type 2038"),
@@ -5157,7 +5151,6 @@ class OverlayController(
      */
     init {
         volume.onActivityChanged = { applyContextVisibility() }
-        hiddenForKeyguard = drawsOverLockScreen && keyguardLockedOrDark()
         hiddenForContext = contextWantsBarHidden()
         nextContextCheckMs()?.let { mainHandler.postDelayed(contextCheck, it) }
         refreshImeProbe()

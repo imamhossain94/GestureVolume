@@ -1,8 +1,14 @@
 // The tutorials: one short video per feature, 1920 x 1080 for YouTube. A tutorial is a script of
 // steps (a title and a sentence or two, shown beside the phone) and what happens on the phone
 // during each. This file does the rest: the title card, the captions and progress, screens that
-// come and go the way the app moves them, the hand, the camera, the sound, the chapters and the
-// subtitles.
+// come and go the way the app moves them, the hand, the camera, the sound, the narrator, the
+// chapters and the subtitles.
+//
+// The narrator reads the title card, every step ("<title>. <text>", the words on screen) and the
+// "Up next" card. vo.py speaks the lines before the render (render.mjs runs it and passes its
+// manifest as ?vo=), so a step whose line runs longer than its scripted time is lengthened: the
+// script's times count from the step's start, so the step simply holds its last moment until
+// the line ends. Without ?vo= the video keeps its scripted times and has no voice.
 import { h, icon, loadIcons, fontsReady, imagesReady, clamp, lerp, Ease, spring } from './core.js';
 import { Phone, homeScreen, gvIcon, PHONE_ICONS } from './phone.js';
 import { Backdrop, showBetween } from './stage.js';
@@ -24,8 +30,17 @@ export const SERIES = [
 ];
 
 export const W = 1920, H = 1080;
-export const INTRO = 3.9;            // steps start here
-const OUTRO = 5.2;                   // the "Up next" card
+// The title card lasts at least INTRO (the steps start just after it) and the "Up next" card at
+// least OUTRO; either stretches to fit what the narrator says over it.
+export const INTRO = 3.9;
+const OUTRO = 5.2;
+// The narrator: a step's line starts LEAD into the step and ends at least TAIL before the next
+// one. The title card's line starts at INTRO_AT, the "Up next" card's OUTRO_AT after it comes up.
+export const LEAD = 0.25, TAIL = 0.5;
+const INTRO_AT = 0.4, OUTRO_AT = 0.6;
+// The lines, keyed 'intro', 'step-1' ... 'outro' (kit/narration.js has how they are looked up).
+const introLine = (meta) => `${meta.title}. ${meta.sub}.`;
+const outroLine = (next) => (next ? `Up next: ${next.title}.` : 'That is the whole series. Thanks for watching.');
 const F = { x: 1392, y: 540 };       // where the camera's focus lands on the frame
 export const BASE = { cx: 206, cy: 457, s: 1.0 };
 const ACCENT = '#A5B4FC', SOFT = '#C9C2FF';
@@ -45,21 +60,32 @@ export function rectOf(el, phoneEl) {
 }
 
 class Timeline {
-  constructor(phone, frame, layer) {
-    this.phone = phone; this.frame = frame; this.layer = layer;
-    this.t = INTRO + 0.25;
+  // `intro`: when the title card has gone; `say(key, text)`: the narrator's clip for a line, or
+  // null when the video is not narrated.
+  constructor(phone, frame, layer, { intro = INTRO, say = () => null } = {}) {
+    this.phone = phone; this.frame = frame; this.layer = layer; this.say = say;
+    this.t = intro + 0.25;
     this.steps = []; this.handSteps = []; this.camKeys = [{ at: 0, ...BASE }]; this.cueList = [];
     this.updates = []; this.screens = []; this.marks = []; this.squeezes = []; this.chapterName = null;
   }
 
   // --- The script ---------------------------------------------------------------------------------
   chapter(title) { this.chapterName = title; return this; }
+  // A step lasts `dur`, or longer when the narrator needs it: LEAD + its line + TAIL. Everything
+  // the script does in a step counts from s.at, so the extra time holds the step's end; s.end is
+  // the step's real end either way.
   step(title, text, dur) {
-    const s = { i: this.steps.length, at: this.t, end: this.t + dur, title, text, chapter: this.chapterName };
+    const i = this.steps.length;
+    const v = this.say(`step-${i + 1}`, `${title}. ${text}`);
+    const len = Math.max(dur, v ? LEAD + v.dur + TAIL : 0);
+    const s = { i, at: this.t, end: this.t + len, title, text, chapter: this.chapterName, voice: v ? { ...v, at: this.t + LEAD } : null };
     this.steps.push(s);
-    this.t += dur;
+    this.t += len;
     return s;
   }
+  // When the narrator finishes a step's line (-Infinity without a narrator). A step that leaves
+  // its screen for the next step's waits for it: Math.max(s.at + 8.4, T.said(s) - 0.35).
+  said(s) { return s.voice ? s.voice.at + s.voice.dur : -Infinity; }
   wait(d) { this.t += d; return this; }
   hand(...steps) { this.handSteps.push(...steps); return this; }
   cam(key) { this.camKeys.push(key); return this; }
@@ -152,9 +178,16 @@ export function live(make, stateAt, init) {
   return box;
 }
 
-export async function buildTutorial(root, id, script, { icons = [], prepare = null, wallpaper = 'dusk', thumb = null } = {}) {
+export async function buildTutorial(root, id, script, { icons = [], prepare = null, wallpaper = 'dusk', thumb = null, narration = null } = {}) {
   const n = SERIES.findIndex((s) => s.id === id) + 1;
   const meta = SERIES[n - 1], next = SERIES[n] || null;
+  // The narrator's lines, in order, for vo.py; and their clips when there are some. A thumbnail
+  // keeps the scripted times, so its THUMB.t still lands where it did.
+  const voice = thumb ? null : narration;
+  const lines = [];
+  const say = (key, text) => { lines.push({ key, text }); return voice ? voice.line(key, text) : null; };
+  const introV = say('intro', introLine(meta));
+  const introEnd = Math.max(INTRO, introV ? INTRO_AT + introV.dur + 1.3 : 0);   // the card leaves 0.3 s after the line
   await loadIcons([...new Set([...PHONE_ICONS, ...M3_ICONS, ...icons])]);
   if (prepare) await prepare();
   await fontsReady();
@@ -185,13 +218,14 @@ export async function buildTutorial(root, id, script, { icons = [], prepare = nu
   const hand = handWrap.querySelector('svg');
 
   // --- The script ---------------------------------------------------------------------------------
-  const T = new Timeline(phone, frame, layer);
+  const T = new Timeline(phone, frame, layer, { intro: introEnd, say });
   T.keys = keys; T.launcher = launcher;
   T.iconRect = rectOf(launcher.querySelector('.gv-icon'), phone.el);
   await script(T);
   await imagesReady(root);
+  const outroV = say('outro', outroLine(next));
   const stepsEnd = T.t + 0.3;
-  const duration = stepsEnd + OUTRO;
+  const duration = stepsEnd + Math.max(OUTRO, outroV ? OUTRO_AT + outroV.dur + 2.0 : 0);
   const script_ = new HandScript(T.handSteps);
   const cam = new Camera([...T.camKeys].sort((a, b) => a.at - b.at));
   T.screens.sort((a, b) => a.at - b.at);
@@ -232,7 +266,14 @@ export async function buildTutorial(root, id, script, { icons = [], prepare = nu
   root.appendChild(outro);
 
   // --- Sound ----------------------------------------------------------------------------------------
-  const cues = [...script_.cues(), ...T.cueList, { t: INTRO - 0.75, sfx: 'whoosh', gain: 0.35 }, { t: stepsEnd + 0.1, sfx: 'whoosh', gain: 0.3 }];
+  const cues = [...script_.cues(), ...T.cueList, { t: introEnd - 0.75, sfx: 'whoosh', gain: 0.35 }, { t: stepsEnd + 0.1, sfx: 'whoosh', gain: 0.3 }];
+  // The narrator's clips, where they play (audio.py mixes them in and ducks the music under them).
+  const said = [
+    introV && { key: 'intro', ...introV, at: INTRO_AT, cap: introEnd },
+    ...T.steps.filter((s) => s.voice).map((s) => ({ key: `step-${s.i + 1}`, ...s.voice, cap: s.end - 0.05 })),
+    outroV && { key: 'outro', ...outroV, at: stepsEnd + OUTRO_AT, cap: duration - 0.3 },
+  ].filter(Boolean);
+  const voiceTrack = said.map((v) => ({ key: v.key, t: +v.at.toFixed(3), wav: v.wav, dur: v.dur }));
 
   // --- Chapters and subtitles -------------------------------------------------------------------------
   const chapters = [];
@@ -250,28 +291,33 @@ export async function buildTutorial(root, id, script, { icons = [], prepare = nu
     console.warn(`chapter "${chapters[i].title}" is ${len(i).toFixed(1)} s, folded into a neighbour`);
     chapters.splice(i === 0 ? 1 : i, 1);
   }
-  const subtitles = splitCue(0.4, INTRO - 0.3, `${meta.title}. ${meta.sub}.`);
-  for (const s of T.steps) subtitles.push(...splitCue(s.at + 0.15, s.end - 0.15, `${s.title}. ${s.text}`));
-  subtitles.push(...splitCue(stepsEnd + 0.4, duration - 0.3, next ? `Up next: ${next.title}.` : 'Thanks for watching.'));
+  // Subtitles: on the narrator's words when there is a narrator; else spread over each step.
+  let subtitles;
+  if (voice) subtitles = said.flatMap((v) => voiceCues(v, v.at, v.cap));
+  else {
+    subtitles = splitCue(0.4, introEnd - 0.3, introLine(meta));
+    for (const s of T.steps) subtitles.push(...splitCue(s.at + 0.15, s.end - 0.15, `${s.title}. ${s.text}`));
+    subtitles.push(...splitCue(stepsEnd + 0.4, duration - 0.3, outroLine(next)));
+  }
 
   // --- A frame ----------------------------------------------------------------------------------------
   function seek(t) {
     bd.draw(t);
     // Title card, then the phone rises in; at the end it sinks and the "Up next" card comes up.
     const pop = spring(t - 0.1, { dampingRatio: 0.55, stiffness: 260 });
-    const out = Ease.emphasizedAccel(prog(t, INTRO - 1.0, 0.55));
+    const out = Ease.emphasizedAccel(prog(t, introEnd - 1.0, 0.55));
     title.style.opacity = clamp(t / 0.2) * (1 - out);
     title.style.transform = `translateY(${-out * 60}px)`;
     title.querySelector('.i').style.transform = `scale(${Math.max(0, pop)})`;
     title.querySelector('.n').style.opacity = prog(t, 0.3, 0.4);
     title.querySelector('.n').style.transform = `translateY(${(1 - Ease.emphasizedDecel(prog(t, 0.3, 0.6))) * 40}px)`;
     title.querySelector('.g').style.opacity = prog(t, 0.7, 0.5);
-    const enter = 1 - Ease.emphasizedDecel(prog(t, INTRO - 0.75, 0.8));
+    const enter = 1 - Ease.emphasizedDecel(prog(t, introEnd - 0.75, 0.8));
     const leave = Ease.emphasizedAccel(prog(t, stepsEnd, 0.55));
     const c = cam.at(t);
     frame.style.transform = `translate(${F.x - c.cx * c.s - 7 * c.s}px,${F.y - c.cy * c.s - 7 * c.s + enter * 1150 + leave * 900}px) scale(${c.s})`;
     frame.style.opacity = 1 - leave;
-    header.style.opacity = prog(t, INTRO - 0.4, 0.4) * (1 - prog(t, stepsEnd, 0.4));
+    header.style.opacity = prog(t, introEnd - 0.4, 0.4) * (1 - prog(t, stepsEnd, 0.4));
     bar.style.opacity = header.style.opacity;
     caps.forEach((k) => showBetween(k.el, t, k.a, k.b, { rise: 26 }));
     T.steps.forEach((s, i) => { fills[i].style.width = `${prog(t, s.at, s.end - s.at) * 100}%`; });
@@ -373,11 +419,66 @@ export async function buildTutorial(root, id, script, { icons = [], prepare = nu
     const pending = [...root.querySelectorAll('img')].filter((i) => !i.complete || !i.naturalWidth);
     if (pending.length) await Promise.all(pending.map((i) => i.decode().catch(() => {})));
   };
-  return { width: W, height: H, duration, cues, music: 'calm', musicGain: 0.42, seek: seekReady, chapters, subtitles, series, steps: T.steps.map(({ at, end, title, text, chapter }) => ({ at, end, title, text, chapter })) };
+  const r3 = (x) => Math.round(x * 1000) / 1000;
+  return { width: W, height: H, duration, cues, music: 'calm', musicGain: 0.42, seek: seekReady, chapters, subtitles, series,
+    voiceLines: lines, voice: voiceTrack, narrator: voice ? voice.narrator : null,
+    steps: T.steps.map(({ at, end, title, text, chapter, voice: v }) => ({ at, end, title, text, chapter, ...(v ? { voice: { at: r3(v.at), end: r3(v.at + v.dur) } } : {}) })) };
 }
 
-// Subtitle cues: a sentence (or a clause of a long one) at a time, in one line or two balanced
-// lines of at most 42 characters, spread over [a, b] by length.
+// Subtitle cues on the narrator's words, in one line or two balanced lines of at most 42
+// characters: a sentence at a time, one too long for two lines cut where it splits best (after a
+// comma near its middle if there is one). Then a piece said in under SHORT seconds (a step's
+// title, the first clause of a long sentence) shares a cue with its neighbour when the two fit.
+// A cue comes up as its first word is said and stays until the next; the last stays 0.6 s past
+// the voice, or until `cap`.
+const SHORT = 1.6, LONGEST = 5.5;
+function voiceCues(v, at, cap) {
+  const words = v.words;                                     // [word, start, end], from the clip's start
+  const text = (idx) => idx.map((j) => words[j][0]).join(' ');
+  const fits = (idx) => !!balance(text(idx));
+  const said = (idx) => words[idx[idx.length - 1]][2] - words[idx[0]][1];
+  const groups = [];
+  let cur = [];
+  words.forEach(([w], i) => {
+    cur.push(i);
+    if (/[.?!;]$/.test(w) || (/:$/.test(w) && cur.length > 3)) { groups.push(cur); cur = []; }
+  });
+  if (cur.length) groups.push(cur);
+  const split = (idx) => {
+    if (fits(idx) || idx.length < 4) return [idx];
+    const total = text(idx).length;
+    let best = null, bestScore = Infinity;
+    for (let cut = 2; cut < idx.length - 1; cut++) {
+      const a = idx.slice(0, cut), b = idx.slice(cut);
+      if (!fits(a) || !fits(b)) continue;
+      let score = Math.abs(text(a).length - total / 2);
+      if (/[,;:—]$/.test(words[a[a.length - 1]][0])) score -= total * 0.18;   // a natural pause is worth some imbalance
+      if (score < bestScore) { best = cut; bestScore = score; }
+    }
+    if (best === null) best = idx.length >> 1;
+    return [...split(idx.slice(0, best)), ...split(idx.slice(best))];
+  };
+  const pieces = groups.flatMap(split);
+  const join = (a, b) => [...a, ...b];
+  const ok = (idx) => fits(idx) && said(idx) <= LONGEST;
+  const chunks = [];
+  for (let k = 0; k < pieces.length; k++) {
+    let g = pieces[k];
+    while (k + 1 < pieces.length && said(g) < SHORT && ok(join(g, pieces[k + 1]))) g = join(g, pieces[++k]);
+    const prev = chunks[chunks.length - 1];
+    if (prev && said(g) < SHORT && ok(join(prev, g))) chunks[chunks.length - 1] = join(prev, g);
+    else chunks.push(g);
+  }
+  return chunks.map((idx, k) => {
+    const a = at + words[idx[0]][1] - 0.05;
+    const b = k + 1 < chunks.length ? at + words[chunks[k + 1][0]][1] - 0.09 : Math.min(cap, at + v.dur + 0.6);
+    return { a: Math.round(a * 1000) / 1000, b: Math.round(b * 1000) / 1000, text: balance(text(idx)) || text(idx) };
+  });
+}
+
+// Two lines break where they read best: as evenly as they can, but after a full stop or a comma
+// sooner than mid-phrase, and never with "the" or "a" left hanging at the end of the first.
+const HANGING = new Set(['a', 'an', 'the', 'to', 'of', 'and', 'or', 'in', 'on', 'for', 'with', 'your', 'its']);
 function balance(str) {
   if (str.length <= 42) return str;
   const words = str.split(' ');
@@ -385,11 +486,14 @@ function balance(str) {
   for (let i = 1; i < words.length; i++) {
     const l1 = words.slice(0, i).join(' '), l2 = words.slice(i).join(' ');
     if (l1.length > 42 || l2.length > 42) continue;
-    const score = Math.abs(l1.length - l2.length);
+    const last = words[i - 1];
+    const score = Math.abs(l1.length - l2.length) - (/[.!?]$/.test(last) ? 14 : /[,;:]$/.test(last) ? 6 : 0) + (HANGING.has(last.toLowerCase()) ? 6 : 0);
     if (!best || score < best.score) best = { score, text: l1 + '\n' + l2 };
   }
   return best ? best.text : null;
 }
+// Without a narrator: a sentence (or a clause of a long one) at a time, in one line or two
+// balanced lines of at most 42 characters, spread over [a, b] by length.
 function clauses(sen) {
   if (balance(sen)) return [sen];
   const mid = sen.length / 2;

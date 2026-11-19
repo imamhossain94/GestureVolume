@@ -1,95 +1,92 @@
 1
-00:00:00,400 --> 00:00:01,206
+00:00:00,434 --> 00:00:01,869
 Keep it out of the way.
 
 2
-00:00:01,246 --> 00:00:03,560
+00:00:01,909 --> 00:00:06,362
 Hide the bar in some apps, while
 you type, or until media plays.
 
 3
-00:00:04,300 --> 00:00:05,561
-Open Visibility.
+00:00:07,628 --> 00:00:13,592
+Open Visibility. In Gesture Volume,
+under Advanced features, tap Visibility.
 
 4
-00:00:05,601 --> 00:00:10,360
-In Gesture Volume, under Advanced
-features, tap Visibility.
-
-5
-00:00:10,700 --> 00:00:11,888
+00:00:13,996 --> 00:00:15,531
 Choose when it shows.
 
-6
-00:00:11,928 --> 00:00:15,338
+5
+00:00:15,571 --> 00:00:19,766
 Two switches: only while media
 plays, or only during calls.
 
-7
-00:00:15,378 --> 00:00:17,560
+6
+00:00:19,806 --> 00:00:22,417
 Leave both off and it is always there.
 
-8
-00:00:17,900 --> 00:00:19,773
+7
+00:00:22,726 --> 00:00:24,661
 Pick what happens as you type.
 
-9
-00:00:19,813 --> 00:00:22,516
+8
+00:00:24,701 --> 00:00:27,786
 Move above the keyboard,
 hide, or stay put.
 
-10
-00:00:22,556 --> 00:00:25,960
+9
+00:00:27,826 --> 00:00:31,682
 Moving, it can glide, spring
 or bounce out of the way.
 
-11
-00:00:26,300 --> 00:00:27,786
+10
+00:00:32,016 --> 00:00:33,651
 Type in another app.
 
-12
-00:00:27,826 --> 00:00:32,518
+11
+00:00:33,691 --> 00:00:37,126
 In any app, as the keyboard comes
 up the bar springs above it,
 
-13
-00:00:32,558 --> 00:00:34,960
+12
+00:00:37,166 --> 00:00:39,260
 and goes back when you are done.
 
-14
-00:00:35,300 --> 00:00:37,244
+13
+00:00:40,991 --> 00:00:42,576
 Pick apps to hide it in.
 
-15
-00:00:37,284 --> 00:00:43,360
+14
+00:00:42,616 --> 00:00:47,438
 Back in Visibility, tick the apps where
 it should step aside. Here, Video.
 
-16
-00:00:43,700 --> 00:00:45,489
+15
+00:00:49,423 --> 00:00:51,293
 There, it steps aside.
 
-17
-00:00:45,529 --> 00:00:48,066
+16
+00:00:51,333 --> 00:00:53,483
 Open Video and the bar is gone.
 
-18
-00:00:48,106 --> 00:00:50,560
+17
+00:00:53,523 --> 00:00:55,808
 Leave it, and the bar is back.
 
-19
-00:00:50,900 --> 00:00:53,034
+18
+00:00:56,644 --> 00:00:58,404
 Show it on the lock screen.
 
-20
-00:00:53,074 --> 00:00:57,625
+19
+00:00:58,444 --> 00:01:01,679
 Turn on Show on the lock screen
 and the bar is there too,
 
-21
-00:00:57,665 --> 00:00:59,960
+20
+00:01:01,719 --> 00:01:04,020
 for volume and quick toggles.
 
-22
-00:01:00,850 --> 00:01:05,310
+21
+00:01:06,648 --> 00:01:09,713
+That is the whole series.
 Thanks for watching.

@@ -9,10 +9,6 @@
     <string name="volume_method_keys_desc">Mỗi bước là một lần nhấn nút âm lượng, nên nó theo truyền màn hình, Bluetooth và các ứng dụng có âm lượng riêng. Mức hiển thị cập nhật sau đó một chút.</string>
     <string name="volume_method_precise">Chỉ đúng mức</string>
     <string name="volume_method_precise_desc">Luôn đặt đúng mức, như các phiên bản trước.</string>
-    <string name="visibility_a11y_title">Trên mọi thứ</string>
-    <string name="visibility_a11y_desc">Dịch vụ hỗ trợ tiếp cận có thể vẽ thanh lên trên thanh trạng thái và camera, cả trong các ứng dụng ẩn cửa sổ nổi.</string>
-    <string name="visibility_a11y_draw_title">Vẽ bằng dịch vụ hỗ trợ tiếp cận</string>
-    <string name="visibility_a11y_draw_desc">Thanh có thể nằm trên thanh trạng thái, sát mép, và vẫn hiện trong các ứng dụng và video ẩn cửa sổ nổi của ứng dụng khác. Khi điện thoại khóa, thanh sẽ tránh sang bên.</string>
     <string name="bump_title">Hiệu ứng nút</string>
     <string name="bump_card_subtitle">Màn hình đáp lại từng nút bạn nhấn</string>
     <string name="bump_enable_title">Tạo hiệu ứng cho nút âm lượng</string>

@@ -9,10 +9,6 @@
     <string name="volume_method_keys_desc">1 段ごとに音量ボタンを 1 回押すのと同じなので、キャスト、Bluetooth、独自の音量を持つアプリにも従います。表示される音量は少し遅れて更新されます。</string>
     <string name="volume_method_precise">正確な音量のみ</string>
     <string name="volume_method_precise_desc">以前のバージョンと同じく、常に正確な音量を設定します。</string>
-    <string name="visibility_a11y_title">すべての上に</string>
-    <string name="visibility_a11y_desc">ユーザー補助サービスを使うと、バーをステータスバーやカメラの上に表示でき、フローティングウィンドウを隠すアプリでも表示されます。</string>
-    <string name="visibility_a11y_draw_title">ユーザー補助サービスで表示</string>
-    <string name="visibility_a11y_draw_desc">バーを画面の端にぴったり沿わせてステータスバーの上にも置けるようになり、他のアプリのフローティングウィンドウを隠すアプリや動画でも表示されたままになります。スマートフォンがロック中は表示されません。</string>
     <string name="bump_title">ボタンアニメーション</string>
     <string name="bump_card_subtitle">押したボタンごとに画面が応えます</string>
     <string name="bump_enable_title">音量ボタンをアニメーション</string>

@@ -35,7 +35,7 @@ object ReleaseNotes {
 
     val HISTORY: List<Entry> = listOf(
         Release(
-            version = "1.5.5",
+            version = "1.5.6",
             date = null,
             notes = listOf(
                 "🫧 Button animation — press a volume button and the screen's edge answers right beside it, with the volume level, instead of the system's slider",
@@ -52,8 +52,18 @@ object ReleaseNotes {
                 "🌊 At 100%, the Ripple flourish ripples like water, and Burst has a slimmer rim",
                 "🔈 The volume no longer stops short of full or jumps back to a \"fixed\" level — when Android holds it for your hearing, you get its warning to accept",
                 "🎧 Choose how the volume is changed: Automatic, Like the volume buttons, or Exact level only",
-                "📐 The bar sits right on the screen's edge, beside the camera too, and can be drawn over the status bar",
+                "📐 The bar sits right on the screen's edge, beside the camera too",
                 "🔁 The bar no longer gets stuck on the call or alarm volume until the app restarts",
+            ),
+        ),
+        Release(
+            version = "1.5.5",
+            date = null,
+            notes = listOf(
+                "♿ The accessibility service can draw the bar, so it shows over Settings, system screens and the lock screen, with no notification. Choose it in Visibility",
+                "🛡 No more terms pop-up. In the EEA, the UK and Switzerland, Google's consent form asks instead, and Privacy choices changes your answer",
+                "🎙 The video tutorials now have a narrator",
+                "🛠 Fixes and updated ad libraries",
             ),
         ),
         Release(

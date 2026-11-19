@@ -9,10 +9,6 @@
     <string name="volume_method_keys_desc">Jeder Schritt ist ein Druck auf die Lautstärketaste, daher folgt er Casting, Bluetooth und Apps mit eigener Lautstärke. Der angezeigte Wert zieht einen Moment später nach.</string>
     <string name="volume_method_precise">Nur genauer Wert</string>
     <string name="volume_method_precise_desc">Setzt immer den genauen Wert, wie frühere Versionen.</string>
-    <string name="visibility_a11y_title">Über allem</string>
-    <string name="visibility_a11y_desc">Der Bedienungshilfedienst kann die Leiste über der Statusleiste und der Kamera zeichnen, auch in Apps, die schwebende Fenster ausblenden.</string>
-    <string name="visibility_a11y_draw_title">Mit dem Bedienungshilfedienst zeichnen</string>
-    <string name="visibility_a11y_draw_desc">Die Leiste kann über der Statusleiste bündig am Rand sitzen und bleibt in Apps und Videos sichtbar, die schwebende Fenster anderer Apps ausblenden. Bei gesperrtem Telefon tritt sie zur Seite.</string>
     <string name="bump_title">Tastenanimation</string>
     <string name="bump_card_subtitle">Der Bildschirm antwortet auf jede Taste, die du drückst</string>
     <string name="bump_enable_title">Lautstärketasten animieren</string>

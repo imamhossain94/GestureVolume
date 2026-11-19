@@ -29,6 +29,10 @@ AD_UNIT_APP_OPEN=your-app-open-ad-unit-id
 # Google Play Billing product ID for the lifetime Pro unlock.
 PRODUCT_LIFETIME=your-lifetime-product-id
 
+# The AdMob app ID (Google bidding in MAX, and Google's consent form) is not here: it is not a
+# secret, it ships in the manifest, and it is set as admobAppId in app/build.gradle.kts. A release
+# build refuses Google's sample ID.
+
 
 ## ---------------------------------------------------------------------------------------
 ## Release signing — OPTIONAL, and read directly by app/build.gradle.kts rather than by the

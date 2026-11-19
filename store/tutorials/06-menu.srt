@@ -1,113 +1,95 @@
 1
-00:00:00,400 --> 00:00:01,392
-The long-press menu.
+00:00:00,416 --> 00:00:04,850
+The long-press menu. Hold the bar
+for the actions you use most.
 
 2
-00:00:01,432 --> 00:00:03,560
-Hold the bar for the actions you use most.
+00:00:06,062 --> 00:00:10,272
+Hold the tab. Keep your finger
+on the Dock until the ring closes.
 
 3
-00:00:04,300 --> 00:00:05,033
-Hold the tab.
-
-4
-00:00:05,073 --> 00:00:08,067
-Keep your finger on the
-Dock until the ring closes.
-
-5
-00:00:08,107 --> 00:00:11,160
+00:00:10,312 --> 00:00:13,916
 The menu opens beside it,
 and stays when you let go.
 
-6
-00:00:11,500 --> 00:00:12,440
-Tap an action.
+4
+00:00:14,228 --> 00:00:18,488
+Tap an action. Each tile runs
+its action and the menu closes.
 
-7
-00:00:12,480 --> 00:00:15,660
-Each tile runs its action
-and the menu closes.
-
-8
-00:00:15,700 --> 00:00:17,760
+5
+00:00:18,528 --> 00:00:20,826
 Here, the flashlight comes on.
 
-9
-00:00:18,100 --> 00:00:19,676
+6
+00:00:21,163 --> 00:00:23,048
 Hold and drag to move it.
 
-10
-00:00:19,716 --> 00:00:22,133
+7
+00:00:23,088 --> 00:00:25,498
 Hold, then move instead of letting go:
 
-11
-00:00:22,173 --> 00:00:25,560
+8
+00:00:25,538 --> 00:00:29,003
 the menu steps aside and
 the bar follows your finger.
 
-12
-00:00:25,900 --> 00:00:26,821
+9
+00:00:29,369 --> 00:00:30,854
 Open its settings.
 
-13
-00:00:26,861 --> 00:00:30,238
+10
+00:00:30,894 --> 00:00:35,604
 In Gesture Volume, under Advanced
 features, tap Long-press menu.
 
-14
-00:00:30,278 --> 00:00:32,160
+11
+00:00:35,644 --> 00:00:38,132
 The preview shows the menu as it is.
 
-15
-00:00:32,500 --> 00:00:33,861
+12
+00:00:38,466 --> 00:00:40,026
 Choose the actions.
 
-16
-00:00:33,901 --> 00:00:39,464
+13
+00:00:40,066 --> 00:00:44,811
 Open Items: remove what you never use,
 and add what you want from Available.
 
-17
-00:00:39,504 --> 00:00:42,560
+14
+00:00:44,851 --> 00:00:48,034
 Here, Screenshot in place of Stop service.
 
-18
-00:00:42,900 --> 00:00:43,983
+15
+00:00:48,819 --> 00:00:53,049
 Pick a panel style.
-
-19
-00:00:44,023 --> 00:00:46,230
 Under Colours, choose how it is drawn.
 
-20
-00:00:46,270 --> 00:00:50,960
-Glass blurs what is behind it; the Deck
-and the Quick slider use the same style.
+16
+00:00:53,089 --> 00:00:55,149
+Glass blurs what is behind it;
 
-21
-00:00:51,300 --> 00:00:52,699
-Choose how it opens.
+17
+00:00:55,189 --> 00:00:58,236
+the Deck and the Quick
+slider use the same style.
 
-22
-00:00:52,739 --> 00:00:55,794
-Under Animation, pick
-an opening animation.
+18
+00:00:58,570 --> 00:01:03,380
+Choose how it opens. Under Animation,
+pick an opening animation.
 
-23
-00:00:55,834 --> 00:00:58,960
+19
+00:01:03,420 --> 00:01:06,236
 The preview plays it
 each time you pick one.
 
-24
-00:00:59,300 --> 00:01:00,946
-Hold the tab again.
+20
+00:01:06,552 --> 00:01:11,359
+Hold the tab again. Your actions,
+in the style and animation you picked.
 
-25
-00:01:00,986 --> 00:01:05,560
-Your actions, in the style
-and animation you picked.
-
-26
-00:01:06,450 --> 00:01:10,910
+21
+00:01:13,852 --> 00:01:16,735
 Up next: Choose what each gesture does.

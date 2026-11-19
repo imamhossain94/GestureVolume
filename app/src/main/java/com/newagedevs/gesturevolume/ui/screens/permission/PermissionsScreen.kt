@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.ui.screens.permission
 
+import com.newagedevs.gesturevolume.utils.BarHost
 import com.newagedevs.gesturevolume.ui.components.rowColor
 import com.newagedevs.gesturevolume.ui.components.cardShape
 import com.newagedevs.gesturevolume.ui.components.IconTile
@@ -128,6 +129,8 @@ fun PermissionsScreen(
         mutableStateOf(PermissionNeeds.hasPermission(context, Manifest.permission.CALL_PHONE))
     }
     var showAccessibilityDisclosure by remember { mutableStateOf(false) }
+    // What draws the bar, chosen on the Visibility screen: it decides which permission is required.
+    var barHost by remember { mutableStateOf(viewModel.preference.getBarHost()) }
     var showNotification by remember { mutableStateOf(viewModel.preference.getShowNotification()) }
 
     // Which permissions this user's own configuration has made necessary, and what for. Read as
@@ -147,6 +150,7 @@ fun PermissionsScreen(
                 dndAccessGranted = PermissionNeeds.hasNotificationPolicyAccess(context)
                 phoneGranted = PermissionNeeds.hasPermission(context, Manifest.permission.CALL_PHONE)
                 needs = PermissionNeeds.read(context, viewModel.preference)
+                barHost = viewModel.preference.getBarHost()
                 viewModel.onEvent(MainEvent.UpdatePermissionsStatus(context))
             }
         }
@@ -252,6 +256,8 @@ fun PermissionsScreen(
         // what the notification carries, and the one for the Deck.
         val controlsAt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) 4 else 3
         val optionalShape = { index: Int -> cardShape(index, controlsAt + 2) }
+        val accessibilityHosts = barHost == BarHost.ACCESSIBILITY
+        val barPermissionGranted = if (accessibilityHosts) accessibilityEnabled else overlayPermissionGranted
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -262,13 +268,13 @@ fun PermissionsScreen(
             // At the top, as the action picker opens: where things stand. It used to be a line of
             // instructions up here and an "All set" card at the foot, below every card it was about.
             HeroCard(
-                title = stringResource(if (overlayPermissionGranted) R.string.all_set else R.string.permissions),
+                title = stringResource(if (barPermissionGranted) R.string.all_set else R.string.permissions),
                 text = stringResource(
-                    if (overlayPermissionGranted) R.string.all_required_permissions_granted else R.string.permissions_header_info
+                    if (barPermissionGranted) R.string.all_required_permissions_granted else R.string.permissions_header_info
                 ),
                 leading = {
                     IconTile(
-                        if (overlayPermissionGranted) Icons.Default.CheckCircle else Icons.Default.Shield,
+                        if (barPermissionGranted) Icons.Default.CheckCircle else Icons.Default.Shield,
                         lit = true,
                         size = 56.dp,
                     )
@@ -277,35 +283,72 @@ fun PermissionsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Display over other apps: required while the foreground service draws the bar, optional
+            // (the fallback) while the accessibility service does.
+            val overlayCard: @Composable (Shape) -> Unit = { shape ->
+                // Overlay Permission. The foreground service cannot draw the bar without it.
+                PermissionCard(
+                    title = stringResource(R.string.overlay_permission),
+                    description = stringResource(R.string.overlay_permission_desc),
+                    icon = Icons.Default.Settings,
+                    isGranted = overlayPermissionGranted,
+                    borderColor = if (overlayPermissionGranted) {
+                        Color(0xFF10B981)
+                    } else {
+                        Color(0xFFF97316)
+                    },
+                    warning = neededBy(needs, Permission.OVERLAY),
+                    modifier = cardModifier(Permission.OVERLAY),
+                    highlight = highlightOf(Permission.OVERLAY),
+                    shape = shape,
+                    onRequestPermission = {
+                        val intent = Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            "package:${context.packageName}".toUri()
+                        )
+                        // Pause ads while the user is in the overlay permission screen
+                        viewModel.preference.setAppOpenAdPaused(true)
+                        overlayPermissionLauncher.launch(intent)
+                    }
+                )
+            }
+
+            // The accessibility service: required while it draws the bar, optional otherwise.
+            val accessibilityCard: @Composable (Shape) -> Unit = { shape ->
+                // The accessibility service: the system actions, the opt-in volume keys, and the
+                // opt-in app watching. Granted on the system's own list, after the disclosure.
+                PermissionCard(
+                    title = stringResource(R.string.accessibility_permission),
+                    description = stringResource(R.string.accessibility_permission_desc),
+                    icon = Icons.Default.Accessibility,
+                    isGranted = accessibilityEnabled,
+                    isOptional = true,
+                    warning = neededBy(needs, Permission.ACCESSIBILITY),
+                    borderColor = if (accessibilityEnabled) {
+                        Color(0xFF10B981)
+                    } else {
+                        Color(0xFF8B5CF6)
+                    },
+                    modifier = cardModifier(Permission.ACCESSIBILITY),
+                    highlight = highlightOf(Permission.ACCESSIBILITY),
+                    shape = shape,
+                    onRequestPermission = { showAccessibilityDisclosure = true },
+                    onDisablePermission = {
+                        // Switched off on the same system list it was switched on.
+                        viewModel.preference.setAppOpenAdPaused(true)
+                        try {
+                            context.startActivity(OverlayRuntime.accessibilitySettingsIntent())
+                        } catch (_: Exception) {
+                            viewModel.preference.setAppOpenAdPaused(false)
+                        }
+                    }
+                )
+            }
+
             GroupHeading(stringResource(R.string.group_required))
 
-            // Overlay Permission. The bar is always drawn by the foreground service, which
-            // cannot draw it without this.
-            PermissionCard(
-                title = stringResource(R.string.overlay_permission),
-                description = stringResource(R.string.overlay_permission_desc),
-                icon = Icons.Default.Settings,
-                isGranted = overlayPermissionGranted,
-                borderColor = if (overlayPermissionGranted) {
-                    Color(0xFF10B981)
-                } else {
-                    Color(0xFFF97316)
-                },
-                warning = neededBy(needs, Permission.OVERLAY),
-                modifier = cardModifier(Permission.OVERLAY),
-                highlight = highlightOf(Permission.OVERLAY),
-                shape = cardShape(0, 1),
-                onRequestPermission = {
-                    val intent = Intent(
-                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        "package:${context.packageName}".toUri()
-                    )
-                    // Pause ads while the user is in the overlay permission screen
-                    viewModel.preference.setAppOpenAdPaused(true)
-                    overlayPermissionLauncher.launch(intent)
-                }
-            )
-
+            // The one permission the bar cannot do without is the chosen host's. See BarHost.
+            if (accessibilityHosts) accessibilityCard(cardShape(0, 1)) else overlayCard(cardShape(0, 1))
             Spacer(modifier = Modifier.height(24.dp))
 
             GroupHeading(stringResource(R.string.group_optional))
@@ -343,35 +386,7 @@ fun PermissionsScreen(
 
             Spacer(modifier = Modifier.height(3.dp))
 
-            // The accessibility service: the system actions, the opt-in volume keys, and the
-            // opt-in app watching. Granted on the system's own list, after the disclosure.
-            PermissionCard(
-                title = stringResource(R.string.accessibility_permission),
-                description = stringResource(R.string.accessibility_permission_desc),
-                icon = Icons.Default.Accessibility,
-                isGranted = accessibilityEnabled,
-                isOptional = true,
-                warning = neededBy(needs, Permission.ACCESSIBILITY),
-                borderColor = if (accessibilityEnabled) {
-                    Color(0xFF10B981)
-                } else {
-                    Color(0xFF8B5CF6)
-                },
-                modifier = cardModifier(Permission.ACCESSIBILITY),
-                highlight = highlightOf(Permission.ACCESSIBILITY),
-                shape = optionalShape(1),
-                onRequestPermission = { showAccessibilityDisclosure = true },
-                onDisablePermission = {
-                    // Switched off on the same system list it was switched on.
-                    viewModel.preference.setAppOpenAdPaused(true)
-                    try {
-                        context.startActivity(OverlayRuntime.accessibilitySettingsIntent())
-                    } catch (_: Exception) {
-                        viewModel.preference.setAppOpenAdPaused(false)
-                    }
-                }
-            )
-
+            if (accessibilityHosts) overlayCard(optionalShape(1)) else accessibilityCard(optionalShape(1))
             Spacer(modifier = Modifier.height(3.dp))
 
             // Do Not Disturb access — the Do Not Disturb action and tile.

@@ -2,8 +2,10 @@
 <body style="margin:0"><div id="root"></div>
 <script type="module">
 import { buildPromo } from '../kit/promo.js';
+import { loadNarration } from '../kit/narration.js';
 const q = new URLSearchParams(location.search);
 window.sceneReady = (async () => {
-  window.scene = await buildPromo(document.getElementById('root'), { vertical: q.get('v') === '1' });
+  // ?vo=/build/vo/promo.json: the narrator's clips (render.mjs makes them with vo.py first).
+  window.scene = await buildPromo(document.getElementById('root'), { vertical: q.get('v') === '1', narration: await loadNarration(q.get('vo')) });
 })();
 </script></body></html>

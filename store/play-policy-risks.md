@@ -18,11 +18,11 @@ help pages before each submission.
 | 1 | Data safety form says "no data collected", but the ad SDKs collect data | **High** | Correct answers written; **you must update Play Console** |
 | 2 | Privacy policy is from 2023 and does not match the app | **High** | New policy written; **you must publish it** |
 | 3 | Accessibility declaration and in-app disclosure were out of date | **High** | **Fixed** in code and declaration text |
-| 4 | Accessibility API used for non-accessibility features | Low–Medium (was High) | **Reduced**: only system actions, volume keys and foreground-app detection (hide-in-apps, per-app gestures) remain; no window content access |
+| 4 | Accessibility API used for non-accessibility features | Medium (raised again in 1.5.5) | System actions, volume keys, foreground-app detection, the lock-screen copy and, new in 1.5.5, drawing the bar itself when the user chooses it; no window content access. **Update the declaration and its video before submitting 1.5.5** |
 | 5 | App-open ad could appear over another app | **High** | **Fixed in code** |
 | 6 | Special-use foreground service needs a declaration | Medium | Declaration text written; video needed |
 | 7 | Interstitial ads at screen transitions | Medium | **Fixed in code** |
-| 8 | No way to change ad consent later (GDPR) | Medium | **Fixed in code** |
+| 8 | No way to change ad consent later (GDPR) | Medium | **Fixed in code** (Google UMP since 1.5.5) |
 | 9 | Location, contacts and phone permissions | Low (was Low–Medium) | **Location and contacts removed**; phone remains, on-device only |
 | 10 | "Open source" claim with no licence file | Low | Listing reworded |
 | 11 | Credits for assets no longer shipped | Low | Removed from listing |
@@ -95,9 +95,9 @@ affirmative consent, an accurate declaration and a video.
 **Removed:**
 - **Clipboard capture, clipboard history and Paste on tap** — the service no longer observes copies
   and can no longer read window content.
-- **Running without a notification** — the bar is always hosted by the foreground service with the
-  overlay permission. The accessibility service draws only the lock-screen copy below, and only
-  while the phone is locked.
+- **Running without a notification** (1.4.0 test builds) — removed on 13 September. **Back in 1.5.5
+  at the user's request**, as an explicit choice (Visibility › Draw the bar with), off by default,
+  and named in the disclosure, the service description and the declaration: see the table.
 - **Hide in screenshots** — the key filter no longer hides the bar on Volume down; the Deck's
   Screenshot tile takes a picture with the bar out of it.
 
@@ -109,17 +109,18 @@ affirmative consent, an accurate declaration and a video.
 | Volume-key filtering | Medium — key interception | Only the two volume keys, others passed through, nothing recorded; filter requested only while Instant is on; for the quarter second a Volume down press is undecided, window-state events are checked for the System UI package only, so a button screenshot does not open the panel |
 | Bar on the lock screen (1.5.2) | Medium — the service draws a `TYPE_ACCESSIBILITY_OVERLAY` window | Off by default, behind Visibility › Show on the lock screen; only while the keyguard is locked and the screen is on, gone at the unlock; does only what the lock screen allows (volume, Quick slider, toggles, system actions), refusing the Deck, the menu and app launches; no accessibility events used. Named in the disclosure, the service description and the declaration |
 | Foreground app detection | Low | Package name only, only while apps are chosen to hide the bar in or have gestures of their own, no history, no window content. The Play Console declaration and its video must be updated for per-app gestures before the release that adds them |
-| Button animation (1.5.5) | Medium — key filtering plus a `TYPE_ACCESSIBILITY_OVERLAY` window | Off by default, behind *Button animation*; takes only the two volume keys, as Instant does, and draws one transparent, non-touchable window while the animation plays. Its power-button option checks window-state events only for the power menu's package and class name. Named in the disclosure, the service description and the declaration |
-| Bar drawn over the status bar (1.5.5) | Medium — the service lends the foreground service's bar its windows | Off by default, behind *Visibility › Draw with the accessibility service*; the foreground service and its notification still run the bar; the bar steps aside while the phone is locked. Named in the disclosure and the service description |
+| Drawing the bar (1.5.5) | Medium–High — an accessibility overlay that also shows over Settings, whose overlay protection (`HIDE_NON_SYSTEM_OVERLAY_WINDOWS`) exists against tapjacking | Off by default, behind Visibility › Draw the bar with and the disclosure's fifth bullet; draws only the app's own bar, menu and panels, never anything imitating or covering another app's UI; taken down while locked (the lock screen gets only the restricted copy); switching the service off hands the bar back to the foreground service. Named in the disclosure, the service description, the listing and the declaration (purpose 5) |
+| Button animation (1.5.6) | Medium — key filtering plus a `TYPE_ACCESSIBILITY_OVERLAY` window | Off by default, behind *Button animation*; takes only the two volume keys, as Instant does, and draws one transparent, non-touchable window while the animation plays. Its power-button option checks window-state events only for the power menu's package and class name. Named in the disclosure, the service description and the declaration |
 
-**If the review still objects:** drop the drawing uses first — the bar over the status bar, the
-button animation and the bar on the lock screen — then the *Instant* volume keys (this removes
-`canRequestFilterKeyEvents`), leaving only system actions and foreground-app detection.
+**If the review still objects:** drop drawing the bar (1.5.5) first — it is the broadest use that
+draws — then the button animation (1.5.6), then the bar on the lock screen, then the *Instant*
+volume keys (this removes `canRequestFilterKeyEvents`), leaving only system actions and
+foreground-app detection.
 
-**Before the 1.5.5 release:** the Accessibility API declaration text in `play-listing-en.md` now
-names the two new uses, the button animation and drawing the bar over the status bar (item 5), as
-the in-app disclosure does. Paste it into Play Console, and record the new video it describes —
-the current one predates them.
+**Before the 1.5.6 release:** the Accessibility API declaration text in `play-listing-en.md` now
+names the button animation (purpose 6) beside drawing the bar (purpose 5), as the in-app disclosure
+does. Paste it into Play Console, and record the new video it describes — the current one predates
+both.
 
 ### 6. Special-use foreground service
 
@@ -138,11 +139,13 @@ per-session cap and post-install grace period.
 
 ### 8. Changing ad consent — fixed
 
-A **Privacy choices** row on the About screen and in the navigation drawer reopens the consent form
-(`AppLovinSdk.cmpService.showCmpForExistingUser`). It appears only when the SDK is initialised, the
-user is in a consent region (`consentFlowUserGeography == GDPR`) and the user is not Pro. App-open ads
-are paused while the form is open. It cannot be seen in local builds that use placeholder AppLovin
-keys — check it in a build with the real keys.
+Since 1.5.5 the consent form is Google's User Messaging Platform, shown before the AppLovin SDK
+starts (`GestureApplication.requestConsentAndStartAds`), in place of AppLovin's Terms & Privacy
+Policy flow, whose "accept the terms" alert went to every user. Only the EEA, the UK and Switzerland
+see a form. A **Privacy choices** row on the About screen and in the navigation drawer reopens it
+(`UserMessagingPlatform.showPrivacyOptionsForm`); it appears only where UMP reports
+`PrivacyOptionsRequirementStatus.REQUIRED` and the user is not Pro. App-open ads are paused while the
+form is open. Debug builds force the EEA, so the form and the row show on any device.
 
 ---
 
@@ -176,7 +179,9 @@ keys — check it in a build with the real keys.
 - [ ] Paste the new Accessibility API declaration (three uses) and upload its video — video recorded: https://drive.google.com/file/d/1FIes_6bU4usJcwVVLh0mfX5py25D84Ks/view?usp=sharing
 - [ ] Complete the Foreground service declaration and upload its video — video recorded: https://drive.google.com/file/d/1bO_3olqE8H6aPhh2rDlBRNyfrtitxQXT/view?usp=sharing
 - [ ] Remove any Play Console "Sensitive permissions" declaration for location if one was filed
-- [ ] Enable Google UMP as the CMP in the AppLovin MAX dashboard (Privacy › CMP)
+- [x] ~~Enable Google UMP as the CMP in the AppLovin MAX dashboard~~ — not needed since 1.5.5, which shows Google's form itself
+- [ ] 1.5.5: update the Accessibility API declaration (purpose 5, drawing the bar) and record its new video
+- [ ] 1.5.5: publish the Gesture Volume GDPR message in AdMob › Privacy & messaging, and set the real AdMob app ID in app/build.gradle.kts
 - [ ] Content rating: mark "contains ads"; target audience 13+
 - [ ] Ads declaration: *Yes, contains ads*
 - [ ] Paste the new short description, full description and What's new

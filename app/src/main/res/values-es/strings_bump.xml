@@ -9,10 +9,6 @@
     <string name="volume_method_keys_desc">Cada paso es una pulsación del botón de volumen, así que sigue al envío a pantalla, al Bluetooth y a las apps con su propio volumen. El nivel mostrado se pone al día un momento después.</string>
     <string name="volume_method_precise">Solo nivel exacto</string>
     <string name="volume_method_precise_desc">Siempre pone el nivel exacto, como las versiones anteriores.</string>
-    <string name="visibility_a11y_title">Por encima de todo</string>
-    <string name="visibility_a11y_desc">El servicio de accesibilidad puede dibujar la barra sobre la barra de estado y la cámara, y en apps que ocultan ventanas flotantes.</string>
-    <string name="visibility_a11y_draw_title">Dibujar con el servicio de accesibilidad</string>
-    <string name="visibility_a11y_draw_desc">La barra puede quedar sobre la barra de estado, pegada al borde, y sigue en pantalla en apps y vídeos que ocultan las ventanas flotantes de otras apps. Con el teléfono bloqueado se aparta.</string>
     <string name="bump_title">Animación de los botones</string>
     <string name="bump_card_subtitle">La pantalla responde a cada botón que pulsas</string>
     <string name="bump_enable_title">Animar los botones de volumen</string>

@@ -13,14 +13,42 @@ import { HandScript, stepped, typed, typingCues, Camera, prog } from './director
 const BAR = 60 / 112 * 4;
 export const PROMO = { s1: BAR, s2: 3 * BAR, s3: 5 * BAR, s4: 7 * BAR, s5: 9 * BAR, s6: 11 * BAR, end: 12 * BAR, total: 30 };
 
+// The narrator (vo.py): one short line over each section, said from VO_LEAD after its first beat,
+// and the app's name over the end card. The cut belongs to the music, so a line has to end
+// VO_TAIL before its section does; one that does not fit stops the render: shorten the line.
+// Only what the video shows, and nothing the app cannot back up.
+export const VOICE = [
+  ['edge', 's1', 's2', 'Swipe the bar, and the volume follows your finger.'],
+  ['fills', 's2', 's3', 'Live fills that move, and a flourish at the top.'],
+  ['deck', 's3', 's4', 'Swipe in for the Deck: your apps, people and tools.'],
+  ['search', 's4', 's5', 'Find apps and people, or work out a sum, as you type.'],
+  ['menu', 's5', 's6', 'Hold the bar for a menu of your own.'],
+  ['yours', 's6', 'end', 'Make it yours.'],
+  // "Gesture" opening the line cold, on the music's swell into the end card, was heard as "Just
+  // your volume" by two speech recognisers; led into by "Get", the name comes through.
+  ['name', 'end', 'total', 'Get Gesture Volume on Google Play.'],
+];
+const VO_LEAD = 0.3, VO_TAIL = 0.3, VO_END_CARD = 0.5;   // the end card's name is up by then
+
+function voiceTrack(narration) {
+  if (!narration) return [];
+  return VOICE.map(([key, from, to, text]) => {
+    const v = narration.line(key, text);
+    const t = PROMO[from] + (from === 'end' ? VO_END_CARD : VO_LEAD);
+    if (t + v.dur + VO_TAIL > PROMO[to]) throw new Error(`promo line "${text}" runs ${v.dur.toFixed(2)} s, past the end of its section; shorten it`);
+    return { key, t: Math.round(t * 1000) / 1000, wav: v.wav, dur: v.dur, text };
+  });
+}
+
 // Where an element sits on the phone, in dp (measure while the phone is at scale 1).
 function rectOf(el, phoneEl) {
   const a = el.getBoundingClientRect(), p = phoneEl.getBoundingClientRect();
   return { x: a.left - p.left, y: a.top - p.top, w: a.width, h: a.height, cx: a.left - p.left + a.width / 2, cy: a.top - p.top + a.height / 2 };
 }
 
-export async function buildPromo(root, { vertical = false } = {}) {
+export async function buildPromo(root, { vertical = false, narration = null } = {}) {
   const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const voice = voiceTrack(narration);
   await loadIcons([...new Set([...PHONE_ICONS, ...DECK_ICONS, ...MENU_ICONS, ...SYSTEM_ICONS, 'filled/flashlight_on'])]);
   await loadDrawables(['ic_vol_increase', 'ic_move', 'ic_brightness_up']);
   const FILLS = { plasma: { kind: 'shader', effect: 'plasma' }, flame: { kind: 'surge', look: 'flame' }, pixels: { kind: 'pixels' }, aurora: { kind: 'shader', effect: 'aurora' } };
@@ -327,5 +355,6 @@ export async function buildPromo(root, { vertical = false } = {}) {
   }
 
   const geom = { D, PR, card: { x: deck.cardX, y: deck.stripY, w: deck.cardW }, strip: { x: deck.stripX, y: deck.stripY, w: deck.stripW, h: deck.stripH }, menu: menu.box, flashTile, startBtn };
-  return { width: W, height: H, duration: P.total, cues, music: 'promo:1:12', musicGain: 0.6, seek, geom };
+  return { width: W, height: H, duration: P.total, cues, music: 'promo:1:12', musicGain: 0.6, seek, geom,
+    voiceLines: VOICE.map(([key, , , text]) => ({ key, text })), voice, narrator: narration ? narration.narrator : null };
 }

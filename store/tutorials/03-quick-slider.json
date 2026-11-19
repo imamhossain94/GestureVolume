@@ -7,231 +7,312 @@
   "sub": "A volume and brightness track that follows your finger",
   "next": "The Deck"
  },
- "duration": 83.44999999999999,
+ "duration": 93.374,
  "chapters": [
   {
    "t": 0,
    "title": "Turn on Advanced mode"
   },
   {
-   "t": 19.15,
+   "t": 22.141,
    "title": "Open it"
   },
   {
-   "t": 43.55,
+   "t": 50.22,
    "title": "Fills and what it adjusts"
   }
  ],
  "steps": [
   {
-   "at": 4.15,
-   "end": 13.55,
+   "at": 5.994,
+   "end": 15.394,
    "title": "Turn on Advanced mode",
    "text": "The Quick slider comes with the Dock bar. Open Gesture Volume, switch on Advanced mode and confirm.",
-   "chapter": "Turn on Advanced mode"
+   "chapter": "Turn on Advanced mode",
+   "voice": {
+    "at": 6.244,
+    "end": 14.489
+   }
   },
   {
-   "at": 13.55,
-   "end": 19.15,
+   "at": 15.394,
+   "end": 22.141,
    "title": "Meet the Dock",
    "text": "Back on your home screen, the round button is now the Dock: a slim tab on the edge.",
-   "chapter": "Turn on Advanced mode"
+   "chapter": "Turn on Advanced mode",
+   "voice": {
+    "at": 15.644,
+    "end": 21.641
+   }
   },
   {
-   "at": 19.15,
-   "end": 26.549999999999997,
+   "at": 22.141,
+   "end": 29.543,
    "title": "Swipe the tab up or down",
    "text": "It grows into the Quick slider, and every bit you swipe moves the level one step.",
-   "chapter": "Open it"
+   "chapter": "Open it",
+   "voice": {
+    "at": 22.391,
+    "end": 29.043
+   }
   },
   {
-   "at": 26.549999999999997,
-   "end": 35.15,
+   "at": 29.543,
+   "end": 38.442,
    "title": "Touch the track to set it",
    "text": "Touch anywhere on the open track: the level jumps to your finger and follows it. Let go and it tucks back in.",
-   "chapter": "Open it"
+   "chapter": "Open it",
+   "voice": {
+    "at": 29.793,
+    "end": 37.942
+   }
   },
   {
-   "at": 35.15,
-   "end": 43.55,
+   "at": 38.442,
+   "end": 50.22,
    "title": "Or press a volume key",
    "text": "With Volume keys on Instant, a key opens the slider on the spot and moves it one step per press. Instant needs the accessibility service.",
-   "chapter": "Open it"
+   "chapter": "Open it",
+   "voice": {
+    "at": 38.692,
+    "end": 49.72
+   }
   },
   {
-   "at": 43.55,
-   "end": 50.15,
+   "at": 50.22,
+   "end": 59.119,
    "title": "Open its settings",
    "text": "In Gesture Volume, under Advanced features, tap Quick slider. The preview runs your slider as it is.",
-   "chapter": "Fills and what it adjusts"
+   "chapter": "Fills and what it adjusts",
+   "voice": {
+    "at": 50.47,
+    "end": 58.619
+   }
   },
   {
-   "at": 50.15,
-   "end": 60.349999999999994,
+   "at": 59.119,
+   "end": 69.319,
    "title": "Pick a fill",
    "text": "Open Animation and choose a fill. Shaders and Surge are live effects; the preview at the top runs each one.",
-   "chapter": "Fills and what it adjusts"
+   "chapter": "Fills and what it adjusts",
+   "voice": {
+    "at": 59.369,
+    "end": 67.466
+   }
   },
   {
-   "at": 60.349999999999994,
-   "end": 69.14999999999999,
+   "at": 69.319,
+   "end": 78.119,
    "title": "Celebrate at the top",
    "text": "With Celebrate at the top on, a flourish plays when the level reaches 100%. Pick the one you like.",
-   "chapter": "Fills and what it adjusts"
+   "chapter": "Fills and what it adjusts",
+   "voice": {
+    "at": 69.569,
+    "end": 77.467
+   }
   },
   {
-   "at": 69.14999999999999,
-   "end": 77.94999999999999,
+   "at": 78.119,
+   "end": 87.874,
    "title": "Choose what it adjusts",
    "text": "Under Content, pick Brightness or one volume. Adaptive follows whatever is playing: a call, an alarm, or media.",
-   "chapter": "Fills and what it adjusts"
+   "chapter": "Fills and what it adjusts",
+   "voice": {
+    "at": 78.369,
+    "end": 87.374
+   }
   }
  ],
  "subtitles": [
   {
-   "a": 0.4,
-   "b": 1.1155555555555556,
-   "text": "The Quick slider."
+   "a": 0.412,
+   "b": 5.044,
+   "text": "The Quick slider. A volume and brightness\ntrack that follows your finger."
   },
   {
-   "a": 1.1555555555555557,
-   "b": 3.5600000000000005,
-   "text": "A volume and brightness track\nthat follows your finger."
-  },
-  {
-   "a": 4.300000000000001,
-   "b": 5.928333333333334,
+   "a": 6.278,
+   "b": 8.138,
    "text": "Turn on Advanced mode."
   },
   {
-   "a": 5.968333333333334,
-   "b": 9.037500000000001,
+   "a": 8.178,
+   "b": 10.638,
    "text": "The Quick slider comes with the Dock bar."
   },
   {
-   "a": 9.0775,
-   "b": 13.360000000000001,
+   "a": 10.678,
+   "b": 15.089,
    "text": "Open Gesture Volume, switch\non Advanced mode and confirm."
   },
   {
-   "a": 13.700000000000001,
-   "b": 14.424948453608248,
-   "text": "Meet the Dock."
+   "a": 15.685,
+   "b": 19.845,
+   "text": "Meet the Dock. Back on your home screen,\nthe round button is now the Dock:"
   },
   {
-   "a": 14.464948453608248,
-   "b": 18.96,
-   "text": "Back on your home screen, the round button\nis now the Dock: a slim tab on the edge."
+   "a": 19.885,
+   "b": 22.091,
+   "text": "a slim tab on the edge."
   },
   {
-   "a": 19.299999999999997,
-   "b": 20.93452830188679,
+   "a": 22.45,
+   "b": 24.56,
    "text": "Swipe the tab up or down."
   },
   {
-   "a": 20.97452830188679,
-   "b": 26.36,
+   "a": 24.6,
+   "b": 29.493,
    "text": "It grows into the Quick slider, and every\nbit you swipe moves the level one step."
   },
   {
-   "a": 26.699999999999996,
-   "b": 28.270447761194028,
-   "text": "Touch the track to set it."
+   "a": 29.805,
+   "b": 33.59,
+   "text": "Touch the track to set it.\nTouch anywhere on the open track:"
   },
   {
-   "a": 28.310447761194027,
-   "b": 33.225671641791045,
-   "text": "Touch anywhere on the open track: the\nlevel jumps to your finger and follows it."
+   "a": 33.63,
+   "b": 38.392,
+   "text": "the level jumps to your finger and follows\nit. Let go and it tucks back in."
   },
   {
-   "a": 33.265671641791045,
-   "b": 34.96,
-   "text": "Let go and it tucks back in."
+   "a": 38.708,
+   "b": 42.443,
+   "text": "Or press a volume key.\nWith Volume keys on Instant,"
   },
   {
-   "a": 35.3,
-   "b": 36.39503184713376,
-   "text": "Or press a volume key."
-  },
-  {
-   "a": 36.43503184713376,
-   "b": 37.83961783439491,
-   "text": "With Volume keys on Instant,"
-  },
-  {
-   "a": 37.87961783439491,
-   "b": 41.29630573248408,
+   "a": 42.483,
+   "b": 47.343,
    "text": "a key opens the slider on the spot\nand moves it one step per press."
   },
   {
-   "a": 41.33630573248408,
-   "b": 43.36000000000001,
+   "a": 47.383,
+   "b": 50.17,
    "text": "Instant needs the accessibility service."
   },
   {
-   "a": 43.699999999999996,
-   "b": 44.629230769230766,
+   "a": 50.536,
+   "b": 51.971,
    "text": "Open its settings."
   },
   {
-   "a": 44.669230769230765,
-   "b": 47.91384615384615,
+   "a": 52.011,
+   "b": 56.421,
    "text": "In Gesture Volume, under Advanced\nfeatures, tap Quick slider."
   },
   {
-   "a": 47.95384615384615,
-   "b": 49.96,
+   "a": 56.461,
+   "b": 59.069,
    "text": "The preview runs your slider as it is."
   },
   {
-   "a": 50.3,
-   "b": 51.26677966101695,
-   "text": "Pick a fill."
+   "a": 59.378,
+   "b": 63.038,
+   "text": "Pick a fill.\nOpen Animation and choose a fill."
   },
   {
-   "a": 51.30677966101695,
-   "b": 54.035423728813555,
-   "text": "Open Animation and choose a fill."
+   "a": 63.078,
+   "b": 65.488,
+   "text": "Shaders and Surge are live effects;"
   },
   {
-   "a": 54.075423728813554,
-   "b": 60.16,
-   "text": "Shaders and Surge are live effects;\nthe preview at the top runs each one."
+   "a": 65.528,
+   "b": 68.066,
+   "text": "the preview at the top runs each one."
   },
   {
-   "a": 60.49999999999999,
-   "b": 61.97271186440677,
+   "a": 69.628,
+   "b": 71.088,
    "text": "Celebrate at the top."
   },
   {
-   "a": 62.01271186440677,
-   "b": 67.37525423728812,
+   "a": 71.128,
+   "b": 76.338,
    "text": "With Celebrate at the top on, a flourish\nplays when the level reaches 100%."
   },
   {
-   "a": 67.41525423728812,
-   "b": 68.95999999999998,
+   "a": 76.378,
+   "b": 78.067,
    "text": "Pick the one you like."
   },
   {
-   "a": 69.3,
-   "b": 70.72992481203006,
-   "text": "Choose what it adjusts."
+   "a": 78.403,
+   "b": 83.183,
+   "text": "Choose what it adjusts. Under Content,\npick Brightness or one volume."
   },
   {
-   "a": 70.76992481203007,
-   "b": 73.60586466165412,
-   "text": "Under Content, pick\nBrightness or one volume."
+   "a": 83.223,
+   "b": 85.133,
+   "text": "Adaptive follows whatever is playing:"
   },
   {
-   "a": 73.64586466165413,
-   "b": 77.75999999999998,
-   "text": "Adaptive follows whatever is\nplaying: a call, an alarm, or media."
+   "a": 85.173,
+   "b": 87.824,
+   "text": "a call, an alarm, or media."
   },
   {
-   "a": 78.64999999999999,
-   "b": 83.10999999999999,
+   "a": 88.84,
+   "b": 90.705,
    "text": "Up next: The Deck."
   }
- ]
+ ],
+ "narration": {
+  "narrator": "Kokoro-82M (kokoro-onnx), af_bella, speed 1",
+  "lines": [
+   {
+    "key": "intro",
+    "at": 0.4,
+    "end": 4.444
+   },
+   {
+    "key": "step-1",
+    "at": 6.244,
+    "end": 14.489
+   },
+   {
+    "key": "step-2",
+    "at": 15.644,
+    "end": 21.641
+   },
+   {
+    "key": "step-3",
+    "at": 22.391,
+    "end": 29.043
+   },
+   {
+    "key": "step-4",
+    "at": 29.793,
+    "end": 37.942
+   },
+   {
+    "key": "step-5",
+    "at": 38.692,
+    "end": 49.72
+   },
+   {
+    "key": "step-6",
+    "at": 50.47,
+    "end": 58.619
+   },
+   {
+    "key": "step-7",
+    "at": 59.369,
+    "end": 67.466
+   },
+   {
+    "key": "step-8",
+    "at": 69.569,
+    "end": 77.467
+   },
+   {
+    "key": "step-9",
+    "at": 78.369,
+    "end": 87.374
+   },
+   {
+    "key": "outro",
+    "at": 88.774,
+    "end": 90.105
+   }
+  ]
+ }
 }

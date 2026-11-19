@@ -9,10 +9,6 @@
     <string name="volume_method_keys_desc">हर कदम वॉल्यूम बटन के एक दबाव जैसा है, इसलिए यह कास्टिंग, Bluetooth और अपने वॉल्यूम वाले ऐप्स के साथ चलता है। दिखाया गया स्तर थोड़ी देर बाद अपडेट होता है।</string>
     <string name="volume_method_precise">केवल सटीक स्तर</string>
     <string name="volume_method_precise_desc">पिछले संस्करणों की तरह हमेशा सटीक स्तर सेट करता है।</string>
-    <string name="visibility_a11y_title">सबसे ऊपर</string>
-    <string name="visibility_a11y_desc">सुलभता सेवा बार को स्टेटस बार और कैमरे के ऊपर दिखा सकती है, और उन ऐप्स में भी जो फ़्लोटिंग विंडो छिपाते हैं।</string>
-    <string name="visibility_a11y_draw_title">सुलभता सेवा से दिखाएँ</string>
-    <string name="visibility_a11y_draw_desc">बार किनारे से सटकर स्टेटस बार के ऊपर भी रह सकता है, और उन ऐप्स और वीडियो में भी स्क्रीन पर रहता है जो दूसरे ऐप्स की फ़्लोटिंग विंडो छिपाते हैं। फ़ोन लॉक होने पर यह हट जाता है।</string>
     <string name="bump_title">बटन एनिमेशन</string>
     <string name="bump_card_subtitle">आप जो भी बटन दबाएँ, स्क्रीन जवाब देती है</string>
     <string name="bump_enable_title">वॉल्यूम बटन को एनिमेट करें</string>
