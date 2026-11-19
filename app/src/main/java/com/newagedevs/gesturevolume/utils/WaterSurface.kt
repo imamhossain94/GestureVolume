@@ -20,7 +20,17 @@ import kotlin.math.sqrt
  * Nothing here touches Android. [render] lights the surface into ARGB pixels the view hands to a
  * bitmap; everything else is arithmetic on two arrays, and is tested on its own.
  */
-class WaterSurface(val cols: Int, val rows: Int) {
+class WaterSurface(
+    val cols: Int,
+    val rows: Int,
+    /**
+     * Whether all four sides are walls, as a pool's are: for water that fills the whole screen, whose
+     * own edges are the pool's sides, so a ripple that reaches one comes back off it. Without, only
+     * column 0 — the glass at the button — is a wall, and the other three sides soak the waves up so
+     * the edges of a patch of water never show.
+     */
+    val walls: Boolean = false,
+) {
 
     init {
         require(cols >= 3 && rows >= 3) { "a surface needs at least 3 x 3 cells, not $cols x $rows" }
@@ -41,7 +51,22 @@ class WaterSurface(val cols: Int, val rows: Int) {
     private val fade = FloatArray(size)
 
     init {
-        for (r in 0 until rows) {
+        if (walls) {
+            // Walls, but not hard ones: a thin band along the far sides takes some of each wave,
+            // so a ripple comes back off the screen's edge as a soft echo rather than a second
+            // ripple as strong as the first, crossing the next into a crumple.
+            fade.fill(1f)
+            val bandCols = (cols * WALL_BAND).coerceAtLeast(2f)
+            val bandRows = (rows * WALL_BAND).coerceAtLeast(2f)
+            for (r in 0 until rows) {
+                val fromEnd = min(r, rows - 1 - r) / bandRows
+                for (c in 0 until cols) {
+                    val fromFar = (cols - 1 - c) / bandCols
+                    val near = (1f - min(fromEnd, fromFar)).coerceIn(0f, 1f)
+                    sponge[r * cols + c] = 1f - WALL_SOAK * near * near
+                }
+            }
+        } else for (r in 0 until rows) {
             // Along the edge: open at both ends.
             val fromEnd = min(r, rows - 1 - r).toFloat() / (rows * END_BAND).coerceAtLeast(1f)
             for (c in 0 until cols) {
@@ -150,18 +175,19 @@ class WaterSurface(val cols: Int, val rows: Int) {
                 val i = row + c
                 val here = h[i]
                 // The glass is a wall: the water beyond it mirrors the water at it, so a wave comes
-                // back off it the right way up. The open sides see still water past them.
+                // back off it the right way up. The open sides see still water past them, unless
+                // they are walls too.
                 val left = if (c == 0) here else h[i - 1]
-                val right = if (c == cols - 1) 0f else h[i + 1]
-                val up = if (r == 0) 0f else h[i - cols]
-                val down = if (r == rows - 1) 0f else h[i + cols]
+                val right = if (c == cols - 1) (if (walls) here else 0f) else h[i + 1]
+                val up = if (r == 0) (if (walls) here else 0f) else h[i - cols]
+                val down = if (r == rows - 1) (if (walls) here else 0f) else h[i + cols]
                 val laplacian = left + right + up + down - 4f * here
                 // The same of the step before, for the viscosity: it acts on how the curvature moves.
                 val before = p[i]
                 val pl = if (c == 0) before else p[i - 1]
-                val pr = if (c == cols - 1) 0f else p[i + 1]
-                val pu = if (r == 0) 0f else p[i - cols]
-                val pd = if (r == rows - 1) 0f else p[i + cols]
+                val pr = if (c == cols - 1) (if (walls) before else 0f) else p[i + 1]
+                val pu = if (r == 0) (if (walls) before else 0f) else p[i - cols]
+                val pd = if (r == rows - 1) (if (walls) before else 0f) else p[i + cols]
                 val laplacianBefore = pl + pr + pu + pd - 4f * before
                 val velocity = (here - before) * damping
                 n[i] = (here + velocity + c2 * laplacian + VISCOSITY * (laplacian - laplacianBefore)) * sponge[i]
@@ -265,6 +291,10 @@ class WaterSurface(val cols: Int, val rows: Int) {
 
         /** How much a step takes away at the very edge of the open water. */
         private const val SPONGE = 0.24f
+
+        /** For walls: how much of each side is the band that softens the echo, and how much a step takes at the wall. */
+        private const val WALL_BAND = 0.07f
+        private const val WALL_SOAK = 0.07f
 
         // The light: from above, towards the top of the phone and out of the glass.
         private const val LX = -0.42f

@@ -54,6 +54,16 @@ internal class BumpScene {
     /** How far out the bump is: 0 in the glass, 1 out, a little past 1 as it overshoots. */
     var presence = 0f
     var level = 0.5f
+
+    /** The level the last press landed on, 0..1, before the bump's own level has caught up with it. */
+    var target = 0.5f
+
+    /**
+     * How big a press's effect is, from the level it landed on: a little under half size near
+     * silence, a third again at full volume, and its own size at about two thirds. Louder is bigger,
+     * so a press up grows what it throws and a press down shrinks it.
+     */
+    val power: Float get() = POWER_MIN + (POWER_MAX - POWER_MIN) * target.coerceIn(0f, 1f)
     var color = Color.BLACK
     var accent = Color.WHITE
     var showLevel = true
@@ -79,6 +89,37 @@ internal class BumpScene {
 
     fun offScreen(x: Float, y: Float, margin: Float): Boolean =
         x < screenLeft - margin || x > screenRight + margin || y < screenTop - margin || y > screenBottom + margin
+
+    /** The screen's longest reach from the button, corner to corner: how far a wave must run to cross all of it. */
+    fun farthest(y: Float): Float {
+        val dx = maxOf(abs(screenLeft), abs(screenRight))
+        val dy = maxOf(abs(screenTop - y), abs(screenBottom - y))
+        return kotlin.math.hypot(dx, dy)
+    }
+
+    /**
+     * Where the camera hole is, in upright terms, or NaN when the screen has none known: what a
+     * spider's line is shot at. See [ButtonBumpView].
+     */
+    var cutoutX = Float.NaN
+    var cutoutY = Float.NaN
+
+    /**
+     * From the window's own pixels — the screen as the user sees it, its top at the top — to upright
+     * terms, and the window's size: for an effect that aims at a place on the screen itself.
+     */
+    val fromWindow = Matrix()
+    var windowWidth = 0f
+    var windowHeight = 0f
+
+    /** The screen's own up, in upright terms: away from [gravityX], [gravityY]. */
+    val upX: Float get() = -gravityX
+    val upY: Float get() = -gravityY
+
+    companion object {
+        const val POWER_MIN = 0.45f
+        const val POWER_MAX = 1.3f
+    }
 }
 
 /** One of the showpiece styles. */
@@ -118,6 +159,9 @@ internal abstract class BumpEffect(protected val random: Random) {
     }
 
     protected fun rnd(from: Float, to: Float): Float = from + (to - from) * random.nextFloat()
+
+    /** [base] things for a press, more at a louder level and fewer at a quieter one: see [BumpScene.power]. */
+    protected fun count(scene: BumpScene, base: Int): Int = (base * scene.power).roundToInt().coerceAtLeast(1)
 
     companion object {
         const val FRAME_S = 1f / 60f
@@ -200,7 +244,6 @@ internal object BumpEffects {
         ButtonBump.STYLE_VOLCANO -> VolcanoEffect(random)
         ButtonBump.STYLE_WIND -> WindEffect(random)
         ButtonBump.STYLE_NINJA -> NinjaEffect(random)
-        ButtonBump.STYLE_DRAGON -> DragonEffect(random)
         ButtonBump.STYLE_BEES -> BeesEffect(random)
         ButtonBump.STYLE_ROCKET -> RocketEffect(random)
         ButtonBump.STYLE_SPRAY -> SprayEffect(random)
@@ -208,8 +251,10 @@ internal object BumpEffects {
         ButtonBump.STYLE_SMOKE -> SmokeEffect(random)
         ButtonBump.STYLE_CAT -> CatEffect(random)
         ButtonBump.STYLE_FISH -> FishEffect(random)
+        ButtonBump.STYLE_FROG -> FrogEffect(random)
+        ButtonBump.STYLE_SPIDER -> SpiderEffect(random)
+        ButtonBump.STYLE_WOODPECKER -> WoodpeckerEffect(random)
         ButtonBump.STYLE_MONKEY -> MonkeyEffect(random)
-        ButtonBump.STYLE_ALIEN -> AlienEffect(random)
         ButtonBump.STYLE_UFO -> UfoEffect(random)
         else -> null
     }
@@ -218,14 +263,44 @@ internal object BumpEffects {
 // ---- cherry blossom ---------------------------------------------------------------------------------
 
 /**
- * Every press shakes cherry petals loose from the bump: they flutter out into the screen, turning over
- * as they go, and drift down on the air.
+ * A cherry branch in full bloom reaches in from the edge beside the buttons, angled up the screen —
+ * a limb and its twigs, five-petalled flowers with their stamens, buds and young leaves — swaying a
+ * little in the air. Every press shakes it, the tip swinging furthest and the whole of it springing
+ * back and settling, and the shake knocks petals loose to flutter down across the screen. The
+ * louder the level, the harder the shake and the more petals fall.
  */
 internal class BlossomEffect(random: Random) : BumpEffect(random) {
-    private val petals = ParticlePool(120)
+    override val drawsBump: Boolean get() = false
+    override val loops: Boolean get() = true
+
+    /** The branch at rest, from its base at the glass: points, their thickness and how far along it they are. */
+    private class Node(var x: Float, var y: Float, val width: Float, val along: Float, val parent: Int)
+    private class Bloom(val node: Int, val dx: Float, val dy: Float, val size: Float, val angle: Float, val kind: Int)
+
+    private val nodes = ArrayList<Node>()
+    private val blooms = ArrayList<Bloom>()
+    private var builtFor = 0L
+    private var length = 1f
+
+    /** The shake: how far the branch is bent now, and how fast, a damped spring; and the idle sway's clock. */
+    private var bend = 0f
+    private var bendSpeed = 0f
+    private var time = 0f
+    private var drift = 0f
+
+    /** Each node's place this frame, after the bend. */
+    private var placed = FloatArray(0)
+
+    private val petals = ParticlePool(160)
     private val petal = Path()
+    private val flower = Path()
+    private val leaf = Path()
     private val petalPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+    private val flowerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+    private val bark = roundStroke()
+    private val dot = solidFill()
     private val shaders: Array<Shader>
+    private val flowerShaders: Array<Shader>
 
     init {
         // A cherry petal: its base at the origin, the notched tip at x = 1.
@@ -235,29 +310,162 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
         petal.lineTo(1f, 0.17f)
         petal.cubicTo(0.78f, 0.48f, 0.2f, 0.44f, 0f, 0f)
         petal.close()
+        // A flower: five of them round a point, in a unit circle.
+        val m = Matrix()
+        for (i in 0 until 5) {
+            val one = Path(petal)
+            m.setScale(0.98f, 0.98f)
+            m.postRotate(i * 72f - 90f)
+            one.transform(m)
+            flower.addPath(one)
+        }
+        leaf.moveTo(0f, 0f)
+        leaf.cubicTo(0.3f, -0.32f, 0.75f, -0.3f, 1f, 0f)
+        leaf.cubicTo(0.75f, 0.3f, 0.3f, 0.32f, 0f, 0f)
+        leaf.close()
         // Deeper at the base, paler at the tip, in the unit petal's own coordinates.
         shaders = Array(PETALS.size) { i ->
             LinearGradient(0f, 0f, 1f, 0f, PETALS[i][0], PETALS[i][1], Shader.TileMode.CLAMP)
         }
+        // A flower pale at its heart and pinker at its rim, as sakura are.
+        flowerShaders = Array(FLOWERS.size) { i ->
+            RadialGradient(0f, 0f, 1f, intArrayOf(FLOWERS[i][0], FLOWERS[i][1], FLOWERS[i][2]), floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP)
+        }
     }
 
-    override val stillAfterS: Float get() = 0.55f
+    override val stillAfterS: Float get() = 0.7f
+
+    /** The branch for this scene: grown again only when the screen's size or way up changes. */
+    private fun build(scene: BumpScene) {
+        val key = (scene.unit.toBits().toLong() shl 32) xor
+            ((scene.upX * 100f).roundToInt().toLong() shl 16) xor (scene.upY * 100f).roundToInt().toLong()
+        if (key == builtFor && nodes.isNotEmpty()) return
+        builtFor = key
+        nodes.clear()
+        blooms.clear()
+        val seeded = Random(SEED)
+        fun r(a: Float, b: Float) = a + (b - a) * seeded.nextFloat()
+        val d = scene.density
+        length = minOf(scene.unit * 13f, (scene.screenRight - maxOf(scene.screenLeft, 0f)) * 0.66f)
+        // Into the screen and up it: a branch reaching in from the side, or up from below.
+        var dx = 1f + 0.6f * scene.upX
+        var dy = 0.6f * scene.upY
+        val dl = hypot(dx, dy).coerceAtLeast(0.001f)
+        dx /= dl
+        dy /= dl
+        // Across the branch, the side that faces up the screen.
+        var nx = -dy
+        var ny = dx
+        if (nx * scene.upX + ny * scene.upY < 0f) {
+            nx = -nx
+            ny = -ny
+        }
+        // The limb: a gentle S, thick at the glass and fine at its tip.
+        val limb = 14
+        for (i in 0..limb) {
+            val k = i / limb.toFloat()
+            val sway = sin(k * 3.6f) * length * 0.07f
+            nodes += Node(
+                dx * length * k + nx * sway,
+                dy * length * k + ny * sway,
+                (8.5f - 6.6f * k) * d,
+                k,
+                i - 1,
+            )
+        }
+        // Twigs off it, alternately to each side, angled up and out.
+        val starts = intArrayOf(2, 4, 5, 7, 8, 10, 12)
+        for ((j, at) in starts.withIndex()) {
+            val side = if (j % 2 == 0) 1f else -1f
+            val base = nodes[at]
+            val twigLen = length * r(0.26f, 0.4f) * (1f - base.along * 0.4f)
+            val tx = dx * 0.55f + nx * side * 0.85f
+            val ty = dy * 0.55f + ny * side * 0.85f
+            val tl = hypot(tx, ty).coerceAtLeast(0.001f)
+            var prev = at
+            val count = 5
+            for (i in 1..count) {
+                val k = i / count.toFloat()
+                val bendK = sin(k * 2.2f) * twigLen * 0.08f * side
+                val n = Node(
+                    base.x + tx / tl * twigLen * k + nx * bendK,
+                    base.y + ty / tl * twigLen * k + ny * bendK,
+                    (base.width * 0.55f) * (1f - 0.7f * k),
+                    base.along + k * twigLen / length,
+                    prev,
+                )
+                nodes += n
+                prev = nodes.size - 1
+            }
+        }
+        // Flowers along the twigs and the outer limb, in clusters at their tips; buds and leaves among them.
+        for (i in nodes.indices) {
+            val n = nodes[i]
+            if (n.along < 0.18f) continue
+            val tip = i == nodes.size - 1 || nodes.getOrNull(i + 1)?.parent != i
+            val clusters = if (tip) 4 else if (seeded.nextFloat() < 0.55f) 2 else 1
+            repeat(clusters) {
+                val spread = (if (tip) 9f else 6f) * d
+                val kind = when {
+                    seeded.nextFloat() < 0.14f -> KIND_BUD
+                    seeded.nextFloat() < 0.12f -> KIND_LEAF
+                    else -> KIND_FLOWER
+                }
+                blooms += Bloom(
+                    i, r(-spread, spread), r(-spread, spread),
+                    (if (kind == KIND_FLOWER) r(6.4f, 9.6f) else r(3.6f, 5f)) * d,
+                    r(0f, 360f),
+                    if (kind == KIND_FLOWER) seeded.nextInt(FLOWERS.size) else kind,
+                )
+            }
+        }
+        // Drawn back to front: the leaves and buds behind the flowers.
+        blooms.sortBy { if (it.kind == KIND_LEAF) 0 else if (it.kind == KIND_BUD) 1 else 2 }
+        placed = FloatArray(nodes.size * 2)
+    }
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
-        repeat(if (atLimit) 5 else 12) { spawn(scene) }
+        build(scene)
+        // A shake, harder the louder: a kick to the spring, alternating which way.
+        val kick = (if (atLimit) 0.6f else 1f) * scene.power * SHAKE
+        bendSpeed += if (scene.towards < 0) kick else -kick
+        place(scene)
+        repeat(count(scene, if (atLimit) 8 else 16)) { shed(scene, burst = true) }
     }
 
-    private fun spawn(scene: BumpScene) {
+    /** Where every node is this frame: the branch bent about its base, more the further out. */
+    private fun place(scene: BumpScene) {
+        val grow = easeOut(scene.presence.coerceIn(0f, 1f))
+        val angle = bend + sin(time * 1.3f) * 0.012f + sin(time * 2.9f + 1f) * 0.006f
+        for (i in nodes.indices) {
+            val n = nodes[i]
+            val a = angle * n.along.coerceAtMost(1f).pow(1.25f)
+            val c = cos(a)
+            val sn = sin(a)
+            val x = n.x * grow
+            val y = n.y * grow
+            placed[i * 2] = x * c - y * sn
+            placed[i * 2 + 1] = scene.centre + x * sn + y * c
+        }
+    }
+
+    /** A petal knocked loose from one of the flowers, or drifting down on its own. */
+    private fun shed(scene: BumpScene, burst: Boolean) {
+        if (blooms.isEmpty()) return
+        val b = blooms[random.nextInt(blooms.size)]
+        if (b.kind != KIND_FLOWER && random.nextFloat() < 0.7f) return
         val p = petals.spawn() ?: return
         val d = scene.density
-        p.x = scene.restDepth * 0.9f + rnd(0f, 5f) * d
-        p.y = scene.centre + scene.restHalf * rnd(-0.6f, 0.6f)
-        val angle = rnd(-1.15f, 1.15f) + scene.towards * 0.25f
-        val speed = rnd(80f, 210f) * d
-        p.vx = cos(angle) * speed
-        p.vy = sin(angle) * speed
-        p.life = rnd(2.4f, 3.6f)
-        p.size = rnd(6.5f, 10.5f) * d
+        p.x = placed[b.node * 2] + b.dx
+        p.y = placed[b.node * 2 + 1] + b.dy
+        // Flung the way the branch is swinging, then the air takes it.
+        val swing = bendSpeed * length * 0.6f * nodes[b.node].along
+        val a = rnd(0f, 6.283f)
+        val speed = if (burst) rnd(30f, 110f) * d else rnd(5f, 25f) * d
+        p.vx = cos(a) * speed + (-sin(bend)) * swing
+        p.vy = sin(a) * speed + cos(bend) * swing
+        p.life = rnd(3.2f, 5f)
+        p.size = rnd(5.5f, 8.5f) * d
         p.angle = rnd(0f, 360f)
         p.spin = rnd(-200f, 200f)
         p.phase = rnd(0f, 6.28f)
@@ -267,6 +475,22 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
     }
 
     override fun step(scene: BumpScene, dt: Float): Boolean {
+        build(scene)
+        time += dt
+        // The spring that shakes it: quick, and settling in about a second and a half.
+        val accel = -STIFFNESS * bend - DAMPING * bendSpeed
+        bendSpeed += accel * dt
+        bend += bendSpeed * dt
+        bend = bend.coerceIn(-0.6f, 0.6f)
+        place(scene)
+        // A petal now and then even when nothing has shaken it, while the branch is out.
+        if (scene.presence > 0.6f) {
+            drift -= dt
+            if (drift <= 0f) {
+                drift = rnd(0.5f, 1.2f)
+                shed(scene, burst = false)
+            }
+        }
         val d = scene.density
         val drag = exp(-1.8f * dt)
         val acrossX = -scene.gravityY
@@ -289,14 +513,73 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
             p.phase += p.rate * 6.283f * dt
             alive = true
         }
-        return alive
+        return alive || scene.presence > 0.01f || abs(bendSpeed) > 0.01f
     }
 
     override fun drawFront(canvas: Canvas, scene: BumpScene) {
+        if (nodes.isEmpty() || scene.presence <= 0.01f && petals.items.none { it.alive }) return
+        val d = scene.density
+        if (scene.presence > 0.01f) {
+            // The wood: dark bark, a lighter line along its lit side.
+            for (pass in 0..1) {
+                for (i in 1 until nodes.size) {
+                    val n = nodes[i]
+                    val from = n.parent
+                    if (from < 0) continue
+                    val w = n.width * (if (pass == 0) 1f else 0.38f)
+                    bark.strokeWidth = w.coerceAtLeast(0.6f * d)
+                    bark.color = if (pass == 0) BARK else BARK_LIT
+                    val off = if (pass == 0) 0f else -n.width * 0.18f
+                    canvas.drawLine(
+                        placed[from * 2] + off * scene.upX, placed[from * 2 + 1] + off * scene.upY,
+                        placed[i * 2] + off * scene.upX, placed[i * 2 + 1] + off * scene.upY,
+                        bark,
+                    )
+                }
+            }
+            val grow = easeOut(scene.presence.coerceIn(0f, 1f))
+            for (b in blooms) {
+                val x = placed[b.node * 2] + b.dx * grow
+                val y = placed[b.node * 2 + 1] + b.dy * grow
+                val size = b.size * grow
+                if (size < 0.5f) continue
+                // A little jiggle of its own when the branch shakes.
+                val jiggle = bendSpeed * 9f * nodes[b.node].along
+                canvas.save()
+                canvas.translate(x, y)
+                canvas.rotate(b.angle + jiggle)
+                when (b.kind) {
+                    KIND_LEAF -> {
+                        canvas.scale(size * 2.1f, size * 2.1f)
+                        dot.color = LEAF
+                        canvas.drawPath(leaf, dot)
+                    }
+                    KIND_BUD -> {
+                        dot.color = BUD
+                        canvas.drawOval(-size * 0.75f, -size, size * 0.75f, size, dot)
+                        dot.color = BUD_TIP
+                        canvas.drawCircle(0f, -size * 0.7f, size * 0.35f, dot)
+                    }
+                    else -> {
+                        canvas.scale(size, size)
+                        flowerPaint.shader = flowerShaders[b.kind]
+                        canvas.drawPath(flower, flowerPaint)
+                        dot.color = HEART
+                        canvas.drawCircle(0f, 0f, 0.22f, dot)
+                        dot.color = STAMEN
+                        for (k in 0 until 6) {
+                            val a = k * 1.047f
+                            canvas.drawCircle(cos(a) * 0.36f, sin(a) * 0.36f, 0.07f, dot)
+                        }
+                    }
+                }
+                canvas.restore()
+            }
+        }
         for (p in petals.items) {
             if (!p.alive) continue
             val t = p.age / p.life
-            val a = if (t < 0.72f) min(1f, p.age / 0.12f) else (1f - t) / 0.28f
+            val a = if (t < 0.75f) min(1f, p.age / 0.12f) else (1f - t) / 0.25f
             val flip = cos(p.phase)
             canvas.save()
             canvas.translate(p.x, p.y)
@@ -313,11 +596,31 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
 
     override fun clear() {
         petals.clear()
+        bend = 0f
+        bendSpeed = 0f
     }
 
     private companion object {
         /** How fast a petal falls, in dp a second each second, before the air slows it. */
         const val FALL = 70f
+
+        /** The branch's spring: how stiff, how damped, and how hard a press at its own size kicks it. */
+        const val STIFFNESS = 70f
+        const val DAMPING = 3.2f
+        const val SHAKE = 1.6f
+
+        const val SEED = 2718L
+        const val KIND_FLOWER = 0
+        const val KIND_BUD = 100
+        const val KIND_LEAF = 101
+
+        val BARK = 0xFF4A2E22.toInt()
+        val BARK_LIT = 0xFF7A5341.toInt()
+        val LEAF = 0xFF9CCB6A.toInt()
+        val BUD = 0xFFF06292.toInt()
+        val BUD_TIP = 0xFFC2185B.toInt()
+        val HEART = 0xFFE5487A.toInt()
+        val STAMEN = 0xFFFFD54F.toInt()
 
         /** Sakura pinks: the base of each petal and its tip. */
         val PETALS = arrayOf(
@@ -325,6 +628,13 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
             intArrayOf(0xFFF59ABB.toInt(), 0xFFFFE6EE.toInt()),
             intArrayOf(0xFFE8668F.toInt(), 0xFFFFC2D4.toInt()),
             intArrayOf(0xFFF7A8C4.toInt(), 0xFFFFF0F5.toInt()),
+        )
+
+        /** A flower's heart, middle and rim: some nearly white, some deeper pink. */
+        val FLOWERS = arrayOf(
+            intArrayOf(0xFFFFF5F8.toInt(), 0xFFFFD3E2.toInt(), 0xFFF59ABB.toInt()),
+            intArrayOf(0xFFFFFFFF.toInt(), 0xFFFFE4EC.toInt(), 0xFFF8B4CB.toInt()),
+            intArrayOf(0xFFFFE8F0.toInt(), 0xFFFBB8CD.toInt(), 0xFFEC6F99.toInt()),
         )
     }
 }
@@ -355,14 +665,14 @@ internal class FireworksEffect(random: Random) : BumpEffect(random) {
         val r = rockets.spawn() ?: return
         r.sx = scene.restDepth * 0.9f
         r.sy = scene.centre + scene.restHalf * rnd(-0.3f, 0.3f)
-        r.tx = scene.reach * rnd(0.46f, 0.64f)
+        r.tx = scene.reach * rnd(0.46f, 0.64f) * (0.7f + 0.3f * scene.power)
         r.ty = (scene.centre + scene.span * rnd(-0.28f, 0.28f)).coerceIn(scene.span * 0.2f, scene.span * 0.8f)
         r.x = r.sx
         r.y = r.sy
         r.life = rnd(0.36f, 0.48f)
         r.kind = nextShell++ % SHELLS
         r.color = nextPalette++ % PALETTES.size
-        r.mark = if (atLimit) 0.6f else 1f
+        r.mark = (if (atLimit) 0.6f else 1f) * scene.power
     }
 
     override fun step(scene: BumpScene, dt: Float): Boolean {
@@ -656,8 +966,8 @@ internal class SolarEffect(random: Random) : BumpEffect(random) {
     override val stillAfterS: Float get() = 0f
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
-        boost = min(boost + if (atLimit) 0.5f else 1f, 2.5f)
-        flare = 1f
+        boost = min(boost + (if (atLimit) 0.5f else 1f) * scene.power, 2.5f)
+        flare = (0.55f + 0.45f * scene.power).coerceAtMost(1.2f)
     }
 
     override fun step(scene: BumpScene, dt: Float): Boolean {
@@ -798,7 +1108,7 @@ internal class BubblesEffect(random: Random) : BumpEffect(random) {
     override val stillAfterS: Float get() = 0.75f
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
-        stream = min(stream + if (atLimit) 0.2f else 0.55f, 1.2f)
+        stream = min(stream + (if (atLimit) 0.2f else 0.55f) * scene.power, 1.6f)
     }
 
     private fun spawn(scene: BumpScene) {
@@ -812,7 +1122,7 @@ internal class BubblesEffect(random: Random) : BumpEffect(random) {
         p.vy = sin(angle) * speed
         // Many small, a few large.
         val u = random.nextFloat()
-        p.size = (3f + 12f * u * u) * d
+        p.size = (3f + 12f * u * u) * d * (0.7f + 0.3f * scene.power)
         p.life = rnd(2.4f, 4.6f)
         p.phase = rnd(0f, 6.28f)
         p.spin = rnd(-50f, 50f)

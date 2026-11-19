@@ -175,7 +175,6 @@ class StepSound(private val context: Context) {
             "firework" -> R.raw.step_firework
             "boom" -> R.raw.step_boom
             "rumble" -> R.raw.step_rumble
-            "roar" -> R.raw.step_roar
             "launch" -> R.raw.step_launch
             "swish" -> R.raw.step_swish
             "crack" -> R.raw.step_crack
@@ -185,10 +184,12 @@ class StepSound(private val context: Context) {
             "bubbles" -> R.raw.step_bubbles
             "meow" -> R.raw.step_meow
             "monkey" -> R.raw.step_monkey
-            "alien" -> R.raw.step_alien
             "ufo" -> R.raw.step_ufo
             "buzz" -> R.raw.step_buzz
             "splash" -> R.raw.step_splash
+            "ribbit" -> R.raw.step_ribbit
+            "zip" -> R.raw.step_zip
+            "peck" -> R.raw.step_peck
             "cosmic" -> R.raw.step_cosmic
             "boing" -> R.raw.step_boing
             else -> R.raw.slider_tick

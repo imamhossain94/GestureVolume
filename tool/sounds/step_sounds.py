@@ -301,18 +301,6 @@ def rumble():
     return np.tanh(x * 1.8) / np.tanh(1.8)
 
 
-def roar():
-    """A dragon's roar: the whoosh of fire, opening and closing, and a growl under it."""
-    d = 0.65
-    t = t_axis(d)
-    whoosh = sweep_bp(noise(d, 27), 500 + 1500 * np.sin(np.pi * np.clip(t / d, 0, 1)), 0.9) * 2.2 * env(d, 0.06, 0.3)
-    f = 85 + 10 * np.sin(2 * np.pi * 7 * t)
-    ph = 2 * np.pi * np.cumsum(f) / SR
-    saw = sum(np.sin(k * ph) / k for k in range(1, 20))
-    growl = biquad(saw * (0.7 + 0.3 * np.sin(2 * np.pi * 26 * t)), "lp", 900) * env(d, 0.04, 0.3) * 0.5
-    return np.tanh((whoosh + growl) * 1.6) / np.tanh(1.6)
-
-
 def launch():
     """A rocket's launch: a thump, and a roar rising in pitch as it goes."""
     d = 0.8
@@ -382,17 +370,51 @@ def bubbles():
     return mix(*parts)
 
 
+def smooth(k, points, values):
+    """A curve through (points, values) with no corners: smoothstep between each pair."""
+    k = np.clip(k, points[0], points[-1])
+    out = np.zeros_like(k)
+    for i in range(len(points) - 1):
+        lo, hi = points[i], points[i + 1]
+        inside = (k >= lo) & (k <= hi)
+        u = (k[inside] - lo) / (hi - lo)
+        u = u * u * (3 - 2 * u)
+        out[inside] = values[i] + (values[i + 1] - values[i]) * u
+    return out
+
+
 def meow():
-    """A kitten's meow: its pitch rising and falling, its vowel opening from 'mi' to 'ow'."""
-    d = 0.46
+    """A kitten's meow, sweet and clear: "m-ee-ow".
+
+    A voice rather than a buzz: the pitch climbs smoothly to its top a third of the way in and sinks
+    back, a little vibrato arrives once the note has settled, and the mouth goes from a closed "m"
+    through "ee" to an open "a" and rounds to "ow". The harmonics roll off steeply and the formants
+    are narrow, which is what makes it ring clear rather than rasp, and a breath of air under it
+    keeps it from sounding like a whistle.
+    """
+    d = 0.56
     t = t_axis(d)
     k = t / d
-    f0 = np.interp(k, [0, 0.38, 1.0], [520, 780, 470]) * (1 + 0.015 * np.sin(2 * np.pi * 6 * t))
-    f1 = np.interp(k, [0, 0.15, 0.6, 1.0], [400, 850, 900, 480])
-    f2 = np.interp(k, [0, 0.15, 0.6, 1.0], [2200, 1500, 1300, 900])
-    x = voice(f0, [(f1, 180, 1.0), (f2, 260, 0.7), (3000, 400, 0.25)])
-    shape = np.clip(t / 0.03, 0, 1) * np.where(t < d - 0.13, 1.0, np.clip((d - t) / 0.13, 0, 1))
-    return x * shape
+    vibrato = 1 + 0.012 * np.sin(2 * np.pi * 5.6 * t) * np.clip((t - 0.16) / 0.1, 0, 1)
+    f0 = smooth(k, [0.0, 0.32, 0.78, 1.0], [640, 980, 700, 600]) * vibrato
+    f1 = smooth(k, [0.0, 0.12, 0.3, 0.62, 1.0], [320, 520, 950, 820, 430])
+    f2 = smooth(k, [0.0, 0.12, 0.3, 0.62, 1.0], [1700, 2350, 1750, 1250, 900])
+    n = len(t)
+    out = np.zeros(n)
+    for h in range(1, 14):
+        fk = h * f0
+        if fk.max() > SR / 2 - 3000:
+            break
+        ph = 2 * np.pi * np.cumsum(fk) / SR
+        amp = (np.exp(-((fk - f1) / 170) ** 2) + 0.55 * np.exp(-((fk - f2) / 240) ** 2)
+               + 0.12 * np.exp(-((fk - 3300) / 420) ** 2))
+        out += amp * np.sin(ph) / (h ** 0.9)
+    # The "m": the mouth closed, softer and duller for the first few hundredths of a second.
+    nasal = smooth(k, [0.0, 0.1, 0.16], [0.35, 0.8, 1.0])
+    breath = biquad(noise(d, 71), "bp", 2600, 1.2) * 0.035
+    shape = np.clip(t / 0.045, 0, 1) ** 1.5 * smooth(k, [0.0, 0.72, 1.0], [1.0, 0.85, 0.0])
+    x = (out * nasal + breath) * shape
+    return biquad(x, "lp", 6500)
 
 
 def monkey():
@@ -404,16 +426,6 @@ def monkey():
         f0 = f_from + (f_to - f_from) * np.sin(np.pi * 0.5 * k)
         x = voice(f0, [(c1, 160, 1.0), (c2, 240, 0.7)])
         parts.append(later(x * np.sin(np.pi * np.clip(k, 0, 1)) ** 0.7, at))
-    return mix(*parts)
-
-
-def alien():
-    """A little alien's chirp: three warbling, ring-modulated notes."""
-    parts = []
-    for i, (f, d) in enumerate([(1250, 0.07), (820, 0.07), (1560, 0.09)]):
-        t = t_axis(d)
-        carrier = np.sin(2 * np.pi * np.cumsum(f * (1 + 0.04 * np.sin(2 * np.pi * 30 * t))) / SR)
-        parts.append(later(carrier * (0.55 + 0.45 * np.sin(2 * np.pi * 37 * t)) * env(d, 0.004, 0.05), i * 0.075))
     return mix(*parts)
 
 
@@ -456,6 +468,52 @@ def cosmic():
     return mix(pad * shape, sparkles)
 
 
+def ribbit():
+    """A little frog's "rib-bit": two croaks, the second shorter and higher.
+
+    Each croak is a quick train of pulses, as a frog's call is, through a throat that rings at about
+    a kilohertz, swelling and closing; small and bright rather than a bullfrog's bellow.
+    """
+    parts = []
+    for (dur, f_lo, f_hi, ring, at) in [(0.12, 105, 125, 1050, 0.0), (0.085, 135, 150, 1350, 0.17)]:
+        t = t_axis(dur)
+        k = t / dur
+        f0 = f_lo + (f_hi - f_lo) * k
+        x = voice(f0, [(ring, 260, 1.0), (ring * 2.1, 420, 0.45)])
+        # The pulses: each opening of the throat a little burst.
+        pulse = (0.5 + 0.5 * np.sin(2 * np.pi * np.cumsum(f0) / SR)) ** 3
+        shape = np.sin(np.pi * np.clip(k, 0, 1)) ** 0.7
+        parts.append(later(x * (0.4 + 0.6 * pulse) * shape, at))
+    return mix(*parts)
+
+
+def zip_():
+    """A line of silk shot out: a quick, rising zip, and a soft twang as it catches."""
+    d = 0.2
+    t = t_axis(d)
+    k = t / d
+    hiss = sweep_bp(noise(d, 83), 900 + 5200 * k ** 1.4, 2.2) * env(d, 0.01, 0.06) * 2.4
+    twang = later(damped(880, 0.05, 0.12, 0.35) + damped(1760, 0.03, 0.12, 0.12, 0.7), 0.13)
+    return mix(hiss, twang)
+
+
+def peck():
+    """A woodpecker's drumming: a rattle of knocks on a hollow trunk, quickest in the middle."""
+    gaps = [0.0, 0.065, 0.118, 0.164, 0.207, 0.25, 0.296]
+    parts = []
+    for i, at in enumerate(gaps):
+        d = 0.06
+        knock = biquad(noise(0.003, 90 + i), "bp", 2300, 0.9) * env(0.003, 0.0001, 0.0008) * 0.5
+        body = mix(
+            knock,
+            damped(760, 0.018, d, 1.0),
+            damped(1530, 0.009, d, 0.45, 0.4),
+            damped(2900, 0.004, d, 0.2, 1.3),
+        )
+        parts.append(later(body * (1.0 - 0.07 * i), at))
+    return mix(*parts)
+
+
 def boing():
     """A spring: boing."""
     d = 0.5
@@ -486,7 +544,6 @@ SOUNDS = {
     "firework": (firework, 0.0),
     "boom": (boom, -2.0),
     "rumble": (rumble, -3.0),
-    "roar": (roar, -3.0),
     "launch": (launch, -3.0),
     "swish": (swish, -2.0),
     "crack": (crack, -1.0),
@@ -496,10 +553,12 @@ SOUNDS = {
     "bubbles": (bubbles, 0.0),
     "meow": (meow, -2.0),
     "monkey": (monkey, -2.0),
-    "alien": (alien, -3.0),
     "ufo": (ufo, -5.0),
     "buzz": (buzz, -4.0),
     "splash": (splash, -1.0),
+    "ribbit": (ribbit, -2.0),
+    "zip": (zip_, -3.0),
+    "peck": (peck, -1.0),
     "cosmic": (cosmic, -5.0),
     "boing": (boing, -3.0),
 }

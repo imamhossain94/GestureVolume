@@ -43,15 +43,16 @@
     <string name="bump_style_volcano">আগ্নেয়গিরি</string>
     <string name="bump_style_wind">বাতাস</string>
     <string name="bump_style_ninja">নিনজার তলোয়ার</string>
-    <string name="bump_style_dragon">ড্রাগনের আগুন</string>
     <string name="bump_style_bees">মৌমাছি</string>
     <string name="bump_style_rocket">রকেট উৎক্ষেপণ</string>
     <string name="bump_style_crack">ফাটা স্ক্রিন</string>
     <string name="bump_style_smoke">ধোঁয়া</string>
     <string name="bump_style_cat">বিড়াল</string>
     <string name="bump_style_fish">লাফানো মাছ</string>
+    <string name="bump_style_frog">লাফানো ব্যাঙ</string>
+    <string name="bump_style_spider">মাকড়সা</string>
+    <string name="bump_style_woodpecker">কাঠঠোকরা</string>
     <string name="bump_style_monkey">বানর</string>
-    <string name="bump_style_alien">এলিয়েন</string>
     <string name="bump_style_ufo">ইউএফও</string>
     <string name="bump_style_spray">অ্যারোসল স্প্রে</string>
     <string name="bump_place_title">আপনার বোতাম কোথায়</string>
@@ -122,7 +123,6 @@
     <string name="step_sound_firework">আতশবাজি</string>
     <string name="step_sound_boom">বুম</string>
     <string name="step_sound_rumble">গুমগুম</string>
-    <string name="step_sound_roar">গর্জন</string>
     <string name="step_sound_launch">উৎক্ষেপণ</string>
     <string name="step_sound_swish">সাঁই</string>
     <string name="step_sound_crack">ফাটল</string>
@@ -132,10 +132,12 @@
     <string name="step_sound_bubbles">বুদবুদ</string>
     <string name="step_sound_meow">মিউ</string>
     <string name="step_sound_monkey">বানর</string>
-    <string name="step_sound_alien">এলিয়েন</string>
     <string name="step_sound_ufo">ইউএফও</string>
     <string name="step_sound_buzz">গুনগুন</string>
     <string name="step_sound_splash">ছলাৎ</string>
+    <string name="step_sound_ribbit">ঘ্যাঙর ঘ্যাঙ</string>
+    <string name="step_sound_zip">জিপ</string>
+    <string name="step_sound_peck">ঠকঠক</string>
     <string name="step_sound_cosmic">মহাজাগতিক</string>
     <string name="step_sound_boing">বোয়িং</string>
 

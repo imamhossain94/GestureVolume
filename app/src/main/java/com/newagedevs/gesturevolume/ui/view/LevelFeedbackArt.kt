@@ -16,6 +16,7 @@ import com.newagedevs.gesturevolume.utils.SliderFill
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  * Draws [LevelFeedback] over a Quick panel fill: two passes, one over the lit part and one over the
@@ -223,9 +224,16 @@ internal class LevelFeedbackArt(private val density: Float) {
         matrix.postTranslate(cx, cy)
         rim.setLocalMatrix(matrix)
         line.shader = rim
-        // Centred on the outline and clipped to the panel, so half of it shows, inside.
-        line.strokeWidth = (5f + 7f * burst) * density
-        line.alpha = a255(((0.6f + 0.3f * breath) * (1f - burst) + burst) * alpha)
+        // Centred on the outline and clipped to the panel, so half of it shows, inside: a slim line
+        // of the spectrum, and as the top is reached a faint glow inside it rather than a thick band.
+        val strength = ((0.6f + 0.3f * breath) * (1f - burst) + burst) * alpha
+        if (burst > 0f) {
+            line.strokeWidth = (5f + 5f * burst) * density
+            line.alpha = a255(0.22f * burst * alpha)
+            canvas.drawPath(outline, line)
+        }
+        line.strokeWidth = (2.2f + 1.6f * burst) * density
+        line.alpha = a255(strength)
         canvas.drawPath(outline, line)
         line.shader = null
         if (burst > 0f) {
@@ -248,32 +256,59 @@ internal class LevelFeedbackArt(private val density: Float) {
     }
 
     /**
-     * Rings going out from the top, where the finger arrived: three bright ones in quick succession
-     * as it is reached, then one every [LevelFeedback.RIPPLE_EVERY_S], each widening and fading.
-     * Centred above a narrow panel, they cross it as arcs running down it.
+     * Water rippling out from the top, where the finger arrived, as from a drop into a still pool:
+     * a strong drop as it is reached, then a gentle one every [LevelFeedback.RIPPLE_EVERY_S]. Each
+     * drop sends out a train of rings — a bright crest with a dark trough just inside it, each ring
+     * fainter than the one before — that spread apart as they travel and fade. Centred above a
+     * narrow panel, they cross it as arcs running down it.
      */
     private fun drawRipple(canvas: Canvas, r: RectF, timeS: Float, fullS: Float, ink: Int, alpha: Float) {
         val cx = r.centerX()
         val cy = r.top + r.width() * 0.5f
         val reach = r.height() * 1.05f
         line.shader = null
-        line.color = ink
+        // The trough is the crest's opposite: dark under a light crest, light under a dark one.
+        val trough = if (Color.luminance(ink) > 0.5f) RIPPLE_DARK else Color.WHITE
         val life = LevelFeedback.RIPPLE_LIFE_S
         for (k in 0 until 3) {
             val p = (((timeS + k * LevelFeedback.RIPPLE_EVERY_S) % life) + life) % life / life
-            val grow = 1f - (1f - p) * (1f - p)
-            line.strokeWidth = (3f - 1.8f * p) * density
-            line.alpha = a255(0.5f * (1f - p) * alpha)
-            canvas.drawCircle(cx, cy, r.width() * 0.25f + reach * grow, line)
+            waterRings(canvas, cx, cy, r.width() * 0.1f + reach * p, p, ink, trough, 0.6f * alpha, rings = 3)
         }
         if (fullS < 0f) return
-        for (k in 0 until 3) {
-            val p = (fullS - k * 0.14f) / RIPPLE_ARRIVAL_S
-            if (p < 0f || p >= 1f) continue
-            val grow = 1f - (1f - p) * (1f - p)
-            line.strokeWidth = (4.5f - 2.5f * p) * density
-            line.alpha = a255(0.9f * (1f - p) * alpha)
-            canvas.drawCircle(cx, cy, r.width() * 0.2f + reach * grow, line)
+        val p = fullS / RIPPLE_ARRIVAL_S
+        if (p in 0f..1f) {
+            waterRings(canvas, cx, cy, r.width() * 0.1f + reach * 0.9f * p, p, ink, trough, alpha, rings = 4)
+            // The splash where the drop went in, closing over as the rings leave.
+            val splash = (1f - p / 0.35f).coerceIn(0f, 1f)
+            if (splash > 0f) {
+                paint.shader = null
+                paint.color = ink
+                paint.alpha = a255(0.5f * splash * alpha)
+                canvas.drawCircle(cx, cy, r.width() * 0.16f * (0.6f + 0.4f * splash), paint)
+            }
+        }
+    }
+
+    /**
+     * One drop's train of rings, its front at [radius] when it is [p] of the way through its life:
+     * the gap between the rings widening as it spreads, as water's does, and all of it fading.
+     */
+    private fun waterRings(canvas: Canvas, cx: Float, cy: Float, radius: Float, p: Float, crest: Int, trough: Int, alpha: Float, rings: Int) {
+        val fade = (1f - p).let { it * sqrt(it) }
+        if (fade <= 0.01f || alpha <= 0.01f) return
+        val gap = (3.5f + 5f * p) * density
+        for (j in 0 until rings) {
+            val at = radius - j * gap
+            if (at <= 0.5f) break
+            val a = fade * (1f - j / (rings + 0.5f)) * alpha
+            line.color = crest
+            line.strokeWidth = (1.7f - 0.7f * p) * density
+            line.alpha = a255(0.85f * a)
+            canvas.drawCircle(cx, cy, at, line)
+            line.color = trough
+            line.strokeWidth = 1.5f * density
+            line.alpha = a255(0.32f * a)
+            canvas.drawCircle(cx, cy, at - gap * 0.42f, line)
         }
     }
 
@@ -445,8 +480,11 @@ internal class LevelFeedbackArt(private val density: Float) {
 
         val GOLD = Color.rgb(0xFA, 0xC3, 0x5F)
 
-        /** How long each of the three rings takes to go out as the top is reached, in seconds. */
-        const val RIPPLE_ARRIVAL_S = 0.9f
+        /** How long the drop's rings take to go out as the top is reached, in seconds. */
+        const val RIPPLE_ARRIVAL_S = 1.1f
+
+        /** A water ripple's trough under a light crest: deep water's blue-black. */
+        val RIPPLE_DARK = Color.rgb(0x0A, 0x1A, 0x2A)
 
         /** The shine's slant, in degrees from across the panel. */
         const val SHINE_SLANT = -24f

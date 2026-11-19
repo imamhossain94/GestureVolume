@@ -43,15 +43,16 @@
     <string name="bump_style_volcano">Núi lửa</string>
     <string name="bump_style_wind">Gió</string>
     <string name="bump_style_ninja">Lưỡi kiếm ninja</string>
-    <string name="bump_style_dragon">Lửa rồng</string>
     <string name="bump_style_bees">Đàn ong</string>
     <string name="bump_style_rocket">Phóng tên lửa</string>
     <string name="bump_style_crack">Màn hình nứt</string>
     <string name="bump_style_smoke">Khói</string>
     <string name="bump_style_cat">Mèo</string>
     <string name="bump_style_fish">Cá nhảy</string>
+    <string name="bump_style_frog">Ếch nhảy</string>
+    <string name="bump_style_spider">Nhện</string>
+    <string name="bump_style_woodpecker">Chim gõ kiến</string>
     <string name="bump_style_monkey">Khỉ</string>
-    <string name="bump_style_alien">Người ngoài hành tinh</string>
     <string name="bump_style_ufo">UFO</string>
     <string name="bump_style_spray">Bình xịt</string>
     <string name="bump_place_title">Vị trí các nút của bạn</string>
@@ -122,7 +123,6 @@
     <string name="step_sound_firework">Pháo hoa</string>
     <string name="step_sound_boom">Bùm</string>
     <string name="step_sound_rumble">Ầm ầm</string>
-    <string name="step_sound_roar">Gầm</string>
     <string name="step_sound_launch">Phóng</string>
     <string name="step_sound_swish">Vút</string>
     <string name="step_sound_crack">Nứt</string>
@@ -132,10 +132,12 @@
     <string name="step_sound_bubbles">Bong bóng</string>
     <string name="step_sound_meow">Meo</string>
     <string name="step_sound_monkey">Khỉ</string>
-    <string name="step_sound_alien">Người ngoài hành tinh</string>
     <string name="step_sound_ufo">UFO</string>
     <string name="step_sound_buzz">Vo ve</string>
     <string name="step_sound_splash">Tõm</string>
+    <string name="step_sound_ribbit">Ộp ộp</string>
+    <string name="step_sound_zip">Vút</string>
+    <string name="step_sound_peck">Cộc cộc</string>
     <string name="step_sound_cosmic">Vũ trụ</string>
     <string name="step_sound_boing">Boing</string>
 

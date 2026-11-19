@@ -99,7 +99,8 @@ class ButtonBumpView(context: Context) : View(context) {
 
     // ---- effects that outlive a frame -----------------------------------------------------------
 
-    private class Ring(val bornMs: Long)
+    /** A ring going out from a press, as far as that press's level sends it: see [powerAt]. */
+    private class Ring(val bornMs: Long, val power: Float)
     private class Spark(
         var x: Float, var y: Float, var vx: Float, var vy: Float,
         val bornMs: Long, val lifeMs: Long, val size: Float, val white: Boolean,
@@ -119,6 +120,18 @@ class ButtonBumpView(context: Context) : View(context) {
     /** A cell's size in the window's pixels, inward and along the edge. */
     private var waterCellX = 1f
     private var waterCellY = 1f
+
+    /**
+     * Where the pool is, in upright terms: from the glass at x = 0 across [waterWidth], and from
+     * [waterTop] along the edge for [waterHeight]. The whole screen, once the view knows it is the
+     * whole screen; the bump's own window until then.
+     */
+    private var waterTop = 0f
+    private var waterWidth = 1f
+    private var waterHeight = 1f
+
+    /** What the water keeps of its movement each step, worked out from [WATER_KEEP_PER_S] for the steps it takes. */
+    private var waterDamping = WaterSurface.DEFAULT_DAMPING
 
     /** How many steps of the water make a second, for the ripples to run at [WATER_SPEED_DP] a second. */
     private var waterStepsPerS = 120f
@@ -212,35 +225,50 @@ class ButtonBumpView(context: Context) : View(context) {
     }
 
     /**
-     * A pool the size of the window, in cells a few pixels across: fine enough that the light on it
-     * is smooth once the bitmap is stretched over the window, coarse enough to step and light every
-     * frame without being felt. Kept as it is when the window has not changed size, so a press while
-     * the water is moving carries on with the same water.
+     * A pool the size of the whole screen, in cells a few pixels across: fine enough that the light
+     * on it is smooth once the bitmap is stretched over the screen, coarse enough to step and light
+     * every frame without being felt. The screen's edges are the pool's walls. Kept as it is when the
+     * screen has not changed size, so a press while the water is moving carries on with the same water.
      */
     private fun ensureWater(p: ButtonBump.Placement) {
-        var cell = max(WATER_CELL_DP * density, WATER_MIN_CELL_PX)
-        var cols = ceil(p.reach / cell).toInt().coerceAtLeast(3)
-        var rows = ceil(p.span / cell).toInt().coerceAtLeast(3)
-        while (cols * rows > WATER_MAX_CELLS) {
-            cell *= 1.15f
-            cols = ceil(p.reach / cell).toInt().coerceAtLeast(3)
-            rows = ceil(p.span / cell).toInt().coerceAtLeast(3)
+        if (width > 0 && height > 0) {
+            uprightScreen(waterBounds)
+        } else {
+            waterBounds.set(0f, 0f, p.reach.toFloat(), p.span.toFloat())
         }
-        waterCellX = p.reach / cols.toFloat()
-        waterCellY = p.span / rows.toFloat()
+        val across = max(waterBounds.right, 1f)
+        val along = max(waterBounds.height(), 1f)
+        waterTop = waterBounds.top
+        waterWidth = across
+        waterHeight = along
+        var cell = max(WATER_CELL_DP * density, WATER_MIN_CELL_PX)
+        var cols = ceil(across / cell).toInt().coerceAtLeast(3)
+        var rows = ceil(along / cell).toInt().coerceAtLeast(3)
+        while (cols * rows > WATER_MAX_CELLS) {
+            cell *= 1.1f
+            cols = ceil(across / cell).toInt().coerceAtLeast(3)
+            rows = ceil(along / cell).toInt().coerceAtLeast(3)
+        }
+        waterCellX = across / cols.toFloat()
+        waterCellY = along / rows.toFloat()
         // The ripples' speed on the glass, whatever the cells' size: the grid moves a wave at most
         // the square root of its speed squared, in cells, each step.
         val cellDp = (waterCellX + waterCellY) / 2f / density
         waterStepsPerS = (WATER_SPEED_DP / (kotlin.math.sqrt(WaterSurface.DEFAULT_SPEED2) * cellDp))
             .coerceIn(30f, 360f)
+        // How much the water keeps each step, for it to keep [WATER_KEEP_PER_S] of its movement a
+        // second however many steps a second it takes: so a ripple runs the whole screen.
+        waterDamping = Math.pow(WATER_KEEP_PER_S.toDouble(), 1.0 / waterStepsPerS).toFloat()
         val current = water
         if (current != null && current.cols == cols && current.rows == rows) return
-        water = WaterSurface(cols, rows)
+        water = WaterSurface(cols, rows, walls = true)
         waterBitmap = Bitmap.createBitmap(cols, rows, Bitmap.Config.ARGB_8888)
         waterPixels = IntArray(cols * rows)
         waterClock = 0f
         waterDirty = true
     }
+
+    private val waterBounds = RectF()
 
     private fun releaseWater() {
         water = null
@@ -295,6 +323,7 @@ class ButtonBumpView(context: Context) : View(context) {
         }
         effect?.let { fx ->
             syncScene()
+            scene.target = level
             fx.prime(scene)
             effectAlive = true
         }
@@ -328,15 +357,17 @@ class ButtonBumpView(context: Context) : View(context) {
         lean.velocity += -pressDirection * (if (atLimit) 6f else 9f)
         when (settings.style) {
             ButtonBump.STYLE_RIPPLE -> {
-                rings += Ring(now)
+                rings += Ring(now, powerAt(levelTarget))
                 while (rings.size > 6) rings.removeAt(0)
             }
             // A drop into the pool: a held key keeps dropping them, and their rings cross.
-            ButtonBump.STYLE_WATER -> waterKick = min(waterKick + if (atLimit) 0.55f else 1f, 2f)
-            ButtonBump.STYLE_SPARKLE -> spawnSparks(now, if (atLimit) 8 else 16)
+            ButtonBump.STYLE_WATER -> waterKick = min(waterKick + (if (atLimit) 0.55f else 1f) * powerAt(levelTarget), 2.6f)
+            ButtonBump.STYLE_SPARKLE -> spawnSparks(now, ((if (atLimit) 8 else 16) * powerAt(levelTarget)).roundToInt().coerceAtLeast(3))
         }
         effect?.let { fx ->
             syncScene()
+            // The level this press landed on, which the bump's own level is only now setting off for.
+            scene.target = levelTarget
             fx.press(scene, atLimit)
         }
         // A push to the spring at every press, so a held key keeps the bump alive and lively.
@@ -372,7 +403,33 @@ class ButtonBumpView(context: Context) : View(context) {
     fun setOrigin(x: Int, y: Int) {
         originX = x.toFloat()
         originY = y.toFloat()
+        // Where the screen is, from the button, has moved: the pool is laid over it again.
+        if (settings.style == ButtonBump.STYLE_WATER) ensureWater(placement)
+        readCutout()
         invalidate()
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        if (settings.style == ButtonBump.STYLE_WATER) ensureWater(placement)
+        readCutout()
+    }
+
+    /** The camera hole's middle in the window's own pixels, or NaN when there is none known. */
+    private var cutoutWindowX = Float.NaN
+    private var cutoutWindowY = Float.NaN
+
+    /** Reads where the camera hole is, for the effects that aim at it: see [BumpScene.cutoutX]. */
+    private fun readCutout() {
+        cutoutWindowX = Float.NaN
+        cutoutWindowY = Float.NaN
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.P) return
+        val rects = rootWindowInsets?.displayCutout?.boundingRects ?: return
+        // The one along the top of the screen as it stands, nearest its middle: the camera hole.
+        val hole = rects.filter { it.top <= 0 || it.centerY() < height * 0.2f }
+            .minByOrNull { kotlin.math.abs(it.exactCenterX() - width / 2f) } ?: return
+        cutoutWindowX = hole.exactCenterX()
+        cutoutWindowY = hole.exactCenterY()
     }
 
     override fun onAttachedToWindow() {
@@ -482,7 +539,7 @@ class ButtonBumpView(context: Context) : View(context) {
                 pool.impulse(row, half * WATER_KICK_SPREAD, deep * WATER_KICK_DEPTH, -WATER_KICK * waterKick)
                 waterKick = 0f
             }
-            pool.step()
+            pool.step(damping = waterDamping)
             waterClock -= stepS
             steps++
         }
@@ -498,7 +555,7 @@ class ButtonBumpView(context: Context) : View(context) {
 
     /** Where the drop sits on the pool, in cells: its middle along the edge, its half-length, its depth. */
     private fun waterSource(): Triple<Float, Float, Float> {
-        val row = placement.centre / waterCellY
+        val row = (placement.centre - waterTop) / waterCellY
         val half = settings.lengthDp * density / 2f / waterCellY
         val deep = max(settings.depthDp, ButtonBump.EFFECT_DEPTH_DP) * density / waterCellX
         return Triple(row, half, deep)
@@ -511,8 +568,13 @@ class ButtonBumpView(context: Context) : View(context) {
 
     // ---- the styles -----------------------------------------------------------------------------------
 
+    /** How big an effect is at [level]: the scene's own rule, see [BumpScene.power]. */
+    private fun powerAt(level: Float): Float =
+        BumpScene.POWER_MIN + (BumpScene.POWER_MAX - BumpScene.POWER_MIN) * level.coerceIn(0f, 1f)
+
     private fun drawStyle(canvas: Canvas, now: Long, p: Float) {
-        val depth = settings.depthDp * density
+        // The bump itself a little deeper the louder it is, as everything it throws is bigger.
+        val depth = settings.depthDp * density * (0.7f + 0.3f * powerAt(level.value))
         val half = settings.lengthDp * density / 2f
         val centre = placement.centre
         val press = ButtonBump.pulse(sinceS(now, pressAtMs))
@@ -574,6 +636,34 @@ class ButtonBumpView(context: Context) : View(context) {
         scene.towards = -pressDirection
         scene.unit = ButtonBump.EFFECT_DEPTH_DP * density
         // The whole of this view — the screen, on the glass — in upright terms: where things may fly.
+        uprightScreen(screenBounds)
+        scene.screenLeft = screenBounds.left
+        scene.screenRight = screenBounds.right
+        scene.screenTop = screenBounds.top
+        scene.screenBottom = screenBounds.bottom
+        // And the way there from the window's own pixels, for an effect that aims at a place on the
+        // screen as the user sees it — its top, or the camera hole.
+        scene.fromWindow.set(toUpright)
+        scene.fromWindow.preTranslate(-originX, -originY)
+        scene.windowWidth = if (width > 0) width.toFloat() else placement.width.toFloat()
+        scene.windowHeight = if (height > 0) height.toFloat() else placement.height.toFloat()
+        if (cutoutWindowX.isNaN()) {
+            scene.cutoutX = Float.NaN
+            scene.cutoutY = Float.NaN
+        } else {
+            point[0] = cutoutWindowX
+            point[1] = cutoutWindowY
+            scene.fromWindow.mapPoints(point)
+            scene.cutoutX = point[0]
+            scene.cutoutY = point[1]
+        }
+    }
+
+    private val corners = FloatArray(8)
+    private val screenBounds = RectF()
+
+    /** The whole of this view in upright terms, into [out]: the screen, when the view is the screen. */
+    private fun uprightScreen(out: RectF) {
         val w = if (width > 0) width.toFloat() else placement.width.toFloat()
         val h = if (height > 0) height.toFloat() else placement.height.toFloat()
         corners[0] = -originX; corners[1] = -originY
@@ -581,13 +671,13 @@ class ButtonBumpView(context: Context) : View(context) {
         corners[4] = -originX; corners[5] = h - originY
         corners[6] = w - originX; corners[7] = h - originY
         toUpright.mapPoints(corners)
-        scene.screenLeft = minOf(minOf(corners[0], corners[2]), minOf(corners[4], corners[6]))
-        scene.screenRight = maxOf(maxOf(corners[0], corners[2]), maxOf(corners[4], corners[6]))
-        scene.screenTop = minOf(minOf(corners[1], corners[3]), minOf(corners[5], corners[7]))
-        scene.screenBottom = maxOf(maxOf(corners[1], corners[3]), maxOf(corners[5], corners[7]))
+        out.set(
+            minOf(minOf(corners[0], corners[2]), minOf(corners[4], corners[6])),
+            minOf(minOf(corners[1], corners[3]), minOf(corners[5], corners[7])),
+            maxOf(maxOf(corners[0], corners[2]), maxOf(corners[4], corners[6])),
+            maxOf(maxOf(corners[1], corners[3]), maxOf(corners[5], corners[7])),
+        )
     }
-
-    private val corners = FloatArray(8)
 
     /**
      * One of the showpiece styles: the effect behind, then the bump with its level in it — unless the
@@ -630,7 +720,7 @@ class ButtonBumpView(context: Context) : View(context) {
             bitmap.setPixels(waterPixels, 0, pool.cols, 0, 0, pool.cols, pool.rows)
             waterDirty = false
         }
-        waterRect.set(0f, 0f, placement.reach.toFloat(), placement.span.toFloat())
+        waterRect.set(0f, waterTop, waterWidth, waterTop + waterHeight)
         canvas.drawBitmap(bitmap, null, waterRect, waterPaint)
     }
 
@@ -867,8 +957,9 @@ class ButtonBumpView(context: Context) : View(context) {
 
     /** Rings going out from the button into the screen, one for each press. */
     private fun drawRipples(canvas: Canvas, now: Long, centre: Float, half: Float, depth: Float) {
-        val reach = depth * spec.reach * 0.92f
+        val baseReach = depth * spec.reach * 0.92f
         for (ring in rings) {
+            val reach = baseReach * ring.power
             val age = ((now - ring.bornMs) / RING_LIFE_MS.toFloat()).coerceIn(0f, 1f)
             val eased = 1f - (1f - age) * (1f - age)
             val d = depth + (reach - depth) * eased
@@ -1167,9 +1258,12 @@ class ButtonBumpView(context: Context) : View(context) {
         const val WATER_CELL_DP = 2f
         const val WATER_MIN_CELL_PX = 4f
         /** The most cells a pool is made of, to keep a frame of it cheap on any phone. */
-        const val WATER_MAX_CELLS = 16_000
+        const val WATER_MAX_CELLS = 22_000
         /** How fast the ripples run across the glass, in dp a second. */
-        const val WATER_SPEED_DP = 230f
+        const val WATER_SPEED_DP = 420f
+
+        /** How much of its movement the water keeps each second: enough for a ripple to cross the screen. */
+        const val WATER_KEEP_PER_S = 0.42f
         /** The most steps one frame takes, so a stall does not turn into a burst of work. */
         const val WATER_MAX_STEPS = 8
         /** How high the drop stands in the water, how firmly it is held there, and how hard a press lands. */

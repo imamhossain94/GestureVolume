@@ -18,15 +18,16 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.exp
+import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 /*
- * The big ones: a mushroom cloud, a volcano, smoke, a dragon's fire, a rocket, a gust of wind and an
- * aerosol spray. For the cloud and the volcano the glass's edge is the ground, so they rise into the
+ * The big ones: a mushroom cloud, a volcano, smoke, a rocket, a gust of wind and an aerosol spray. For the cloud and the volcano the glass's edge is the ground, so they rise into the
  * screen from the button, whichever edge it is on.
  */
 
@@ -40,47 +41,114 @@ internal fun litPuff(colour: Shader): Shader = ComposeShader(
 // ---- atom bomb ------------------------------------------------------------------------------------
 
 /**
- * A mushroom cloud at every press: a flash and a fireball at the button, a shockwave running out along
- * the ground, and a column of fire and smoke rising into the screen that rolls up into a cap — soft,
- * lit from above, glowing orange inside as it cools to grey.
+ * A mushroom cloud at every press, as big as the level is loud.
+ *
+ * It rises the way one does — up the screen, whichever edge the buttons are on — from a point just
+ * inside the glass beside them, placed so the whole cloud stays in sight. A flash lights the whole
+ * screen for a moment and a shockwave runs out across all of it; a fireball climbs on a stem of fire
+ * and smoke that flares at its foot, and rolls over into a wide cap: lumpy on top, darker beneath,
+ * its two sides rolling as a real one's do. A ring of condensation hangs round the stem, dust surges
+ * out along the ground, and the fire inside cools to smoke and drifts away.
  */
 internal class AtomEffect(random: Random) : BumpEffect(random) {
     private class Blast {
         var alive = false
         var age = 0f
-        var y = 0f
-        var size = 1f
-        var seed = 0f
+        /** The ground point, in upright terms, and the cloud's size at its full height. */
+        var gx = 0f
+        var gy = 0f
+        var cap = 1f
+        var height = 1f
+        var power = 1f
+        /** How far the shockwave runs: the farthest corner of the screen from the ground point. */
+        var far = 1f
+
+        /** Whether this one flashes: not when the last flash was only a moment ago. */
+        var flash = true
+        val capPuffs = FloatArray(CAP_PUFFS * 3)
+        val domePuffs = FloatArray(DOME_PUFFS * 3)
+        val stemPuffs = FloatArray(STEM_PUFFS * 3)
+        val surgePuffs = FloatArray(SURGE_PUFFS * 3)
     }
 
     private val blasts = Array(2) { Blast() }
     private var next = 0
-    // Smoke lit from away from the ground, in a unit circle: pale on its lit side, shadowed on the other.
-    private val smoke = solidFill().apply {
-        shader = litPuff(RadialGradient(0.38f, -0.3f, 1.6f, intArrayOf(0xFFF6EDE4.toInt(), 0xFFC8B7A9.toInt(), 0xFF7A6B62.toInt()), floatArrayOf(0f, 0.45f, 1f), Shader.TileMode.CLAMP))
+    private var lastFlashAge = 99f
+
+    // Smoke lit from above, in a unit circle drawn the right way up: pale where the light falls, in
+    // shadow beneath; three of them, for the cap's top, its body and its underside.
+    private fun smoke(lit: Int, mid: Int, dark: Int) = solidFill().apply {
+        shader = litPuff(RadialGradient(0.3f, -0.42f, 1.55f, intArrayOf(lit, mid, dark), floatArrayOf(0f, 0.5f, 1f), Shader.TileMode.CLAMP))
     }
-    private val dust = solidFill().apply {
-        shader = litPuff(RadialGradient(0.3f, -0.3f, 1.8f, intArrayOf(0xFFD9C4A8.toInt(), 0xFFB39880.toInt(), 0xFF8E7560.toInt()), floatArrayOf(0f, 0.5f, 1f), Shader.TileMode.CLAMP))
-    }
+    private val smokeTop = smoke(0xFFF7EEE4.toInt(), 0xFFD9C8B8.toInt(), 0xFF8E7B6E.toInt())
+    private val smokeBody = smoke(0xFFE7D7C8.toInt(), 0xFFB6A291.toInt(), 0xFF6F5F55.toInt())
+    private val smokeUnder = smoke(0xFFB9A595.toInt(), 0xFF83705F.toInt(), 0xFF4E423B.toInt())
+    private val dust = smoke(0xFFE6D2B8.toInt(), 0xFFC1A88E.toInt(), 0xFF8C7360.toInt())
     private val fire = solidFill().apply {
-        shader = RadialGradient(0f, 0f, 1f, intArrayOf(0xFFFFF6CC.toInt(), 0xE6FFB347.toInt(), 0x99FF6A1A.toInt(), 0), floatArrayOf(0f, 0.3f, 0.62f, 1f), Shader.TileMode.CLAMP)
+        shader = RadialGradient(0f, 0f, 1f, intArrayOf(0xFFFFF8D6.toInt(), 0xF2FFC04D.toInt(), 0xA6FF6A1A.toInt(), 0), floatArrayOf(0f, 0.28f, 0.62f, 1f), Shader.TileMode.CLAMP)
     }
-    private val flash = solidFill().apply { shader = softPuff(0xFFFFF8E1.toInt()) }
+    private val ember = solidFill().apply {
+        shader = RadialGradient(0f, 0f, 1f, intArrayOf(0xCCFF8A2A.toInt(), 0x80D8461A.toInt(), 0), floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP)
+    }
+    private val glow = solidFill().apply { shader = softPuff(0xFFFFB45C.toInt()) }
+    private val flash = solidFill()
     private val ring = roundStroke()
 
-    override val stillAfterS: Float get() = 1.2f
+    override val stillAfterS: Float get() = 1.5f
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
         val b = blasts[next++ % blasts.size]
         b.alive = true
         b.age = 0f
-        b.y = scene.centre + scene.restHalf * rnd(-0.12f, 0.12f)
-        b.size = min(scene.reach, scene.span * 0.55f) * if (atLimit) 0.7f else 1f
-        b.seed = rnd(0f, 6.28f)
+        b.power = scene.power * if (atLimit) 0.75f else 1f
+        b.flash = lastFlashAge > FLASH_GAP_S
+        if (b.flash) lastFlashAge = 0f
+        val across = scene.screenRight - maxOf(scene.screenLeft, 0f)
+        val along = scene.screenBottom - scene.screenTop
+        val short = minOf(across, along).coerceAtLeast(scene.unit * 6f)
+        // Half again as big at full volume as near silence's half: see BumpScene.power.
+        val scale = (b.power / BumpScene.POWER_MAX).coerceIn(0.3f, 1f)
+        b.cap = short * 0.3f * scale.pow(0.85f)
+        b.height = b.cap * 1.75f
+        // The ground point: beside the button, moved in from the glass and along it as far as the
+        // cloud needs to be all on the screen, rising up the screen.
+        val ux = scene.upX
+        val uy = scene.upY
+        val ax = abs(uy)
+        val ay = abs(ux)
+        val tall = b.height + b.cap * 0.55f
+        val margin = scene.unit * 0.6f
+        b.gx = margin + maxOf(0f, -ux * tall) + ax * b.cap * 1.05f
+        val minY = minOf(0f, uy * tall) - ay * b.cap * 1.05f
+        val maxY = maxOf(0f, uy * tall) + ay * b.cap * 1.05f
+        b.gy = scene.centre.coerceIn(scene.screenTop - minY + margin, scene.screenBottom - maxY - margin)
+        b.far = scene.farthest(b.gy) + hypot(b.gx, 0f)
+        // Where each puff sits in the cloud, for this one blast: fixed, so the cloud keeps its shape.
+        for (i in 0 until CAP_PUFFS) {
+            b.capPuffs[i * 3] = rnd(0f, 6.283f)
+            b.capPuffs[i * 3 + 1] = rnd(0.55f, 1f)
+            b.capPuffs[i * 3 + 2] = rnd(0.24f, 0.36f)
+        }
+        for (i in 0 until DOME_PUFFS) {
+            b.domePuffs[i * 3] = -1f + 2f * (i + rnd(0.1f, 0.9f)) / DOME_PUFFS
+            b.domePuffs[i * 3 + 1] = rnd(0.72f, 1.05f)
+            b.domePuffs[i * 3 + 2] = rnd(0.2f, 0.3f)
+        }
+        for (i in 0 until STEM_PUFFS) {
+            b.stemPuffs[i * 3] = (i + rnd(0f, 1f)) / STEM_PUFFS
+            b.stemPuffs[i * 3 + 1] = rnd(-0.5f, 0.5f)
+            b.stemPuffs[i * 3 + 2] = rnd(0.9f, 1.15f)
+        }
+        for (i in 0 until SURGE_PUFFS) {
+            b.surgePuffs[i * 3] = -1f + 2f * (i + rnd(0.15f, 0.85f)) / SURGE_PUFFS
+            b.surgePuffs[i * 3 + 1] = rnd(0f, 1f)
+            b.surgePuffs[i * 3 + 2] = rnd(0.75f, 1.2f)
+        }
     }
 
     override fun step(scene: BumpScene, dt: Float): Boolean {
         var alive = false
+        lastFlashAge += dt
         for (b in blasts) {
             if (!b.alive) continue
             b.age += dt
@@ -90,7 +158,9 @@ internal class AtomEffect(random: Random) : BumpEffect(random) {
     }
 
     override fun drawFront(canvas: Canvas, scene: BumpScene) {
-        for (b in blasts) if (b.alive) drawBlast(canvas, scene, b)
+        // The oldest first, so a new cloud stands in front of the last.
+        val first = blasts.filter { it.alive }.sortedByDescending { it.age }
+        for (b in first) drawBlast(canvas, scene, b)
     }
 
     private fun puff(canvas: Canvas, paint: Paint, x: Float, y: Float, r: Float, alpha: Float) {
@@ -106,80 +176,131 @@ internal class AtomEffect(random: Random) : BumpEffect(random) {
     private fun drawBlast(canvas: Canvas, scene: BumpScene, b: Blast) {
         val d = scene.density
         val t = b.age
-        val s = b.size
-        val y = b.y
-        val scale = (s / (180f * d)).coerceIn(0.45f, 1.3f)
-        val heat = (1f - t / 1.9f).coerceIn(0f, 1f)
-        val alpha = if (t < 2.2f) 1f else (1f - (t - 2.2f) / (LIFE - 2.2f)).coerceIn(0f, 1f)
+        val strength = b.power.coerceAtMost(1.15f) / 1.15f
 
-        // The shockwave, a pale ring running out along the ground.
-        if (t < 0.85f) {
-            val k = t / 0.85f
-            val r = s * 1.05f * easeOut(k)
-            ring.strokeWidth = 7f * d
-            ring.color = fade(0xFFFFF3E0.toInt(), 0.14f * (1f - k))
-            canvas.drawCircle(0f, y, r, ring)
-            ring.strokeWidth = 1.6f * d
-            ring.color = fade(0xFFFFF3E0.toInt(), 0.6f * (1f - k))
-            canvas.drawCircle(0f, y, r, ring)
+        // The flash: the whole screen lit for a moment — not more often than every half second, and
+        // never so bright it blinds.
+        if (b.flash && t < FLASH_S) {
+            val k = t / FLASH_S
+            flash.color = fade(0xFFFFF4E2.toInt(), 0.42f * strength * (1f - k) * (1f - k))
+            canvas.drawRect(scene.screenLeft, scene.screenTop, scene.screenRight, scene.screenBottom, flash)
+        }
+        // The shockwave: a ring running out across the whole screen, a soft wall of air behind its edge.
+        if (t < SHOCK_S) {
+            val k = t / SHOCK_S
+            val r = b.far * (1f - (1f - k).pow(1.7f))
+            val fadeOut = (1f - k).pow(1.3f) * (0.45f + 0.55f * strength)
+            ring.strokeWidth = (26f - 16f * k) * d
+            ring.color = fade(0xFFFFF3E0.toInt(), 0.13f * fadeOut)
+            canvas.drawCircle(b.gx, b.gy, (r - 10f * d).coerceAtLeast(0f), ring)
+            ring.strokeWidth = (3.2f - 1.6f * k) * d
+            ring.color = fade(0xFFFFFFFF.toInt(), 0.75f * fadeOut)
+            canvas.drawCircle(b.gx, b.gy, r, ring)
         }
 
-        // The cloud, one layer, so it fades as a whole.
-        canvas.saveLayerAlpha(null, (alpha * 255f).roundToInt())
-        // The base surge: dust rolling out along the ground both ways.
-        val spread = s * 0.46f * easeOut(t / 1.4f)
-        for (i in -9..9) {
-            val u = i / 9f
-            val grow = easeOut(min(1f, t * 2.5f))
-            // Irregular, as dust rolling along the ground is: in and out, big and small.
-            val lump = sin(i * 1.7f + b.seed)
-            val x = (6f + 9f * (1f - abs(u)) + 4f * lump) * d
-            puff(canvas, dust, x, y + u * spread, (11f + 7f * (1f - abs(u)) + 3f * lump) * d * scale * grow, 0.85f)
+        val alpha = if (t < FADE_FROM) 1f else (1f - (t - FADE_FROM) / (LIFE - FADE_FROM)).coerceIn(0f, 1f)
+        if (alpha <= 0.01f) return
+        val rise = easeOut(t / 1.7f)
+        val grow = easeOut((t - 0.12f) / 1.9f)
+        val heat = (1f - t / 2.3f).coerceIn(0f, 1f)
+        val cap = b.cap * (0.32f + 0.68f * grow) * (1f + 0.06f * (t / LIFE))
+        val capH = cap * 0.46f
+        val h = b.height * rise + cap * 0.12f
+        val drift = t * 6f * d
+
+        canvas.save()
+        canvas.translate(b.gx, b.gy)
+        canvas.rotate(uprightDegrees(scene))
+        // One layer, so the cloud fades out as a whole rather than puff by puff.
+        val layered = alpha < 0.99f
+        if (layered) {
+            canvas.saveLayerAlpha(-cap * 2.2f, -h - capH * 2.5f, cap * 2.2f, cap * 0.6f, (alpha * 255f).roundToInt())
         }
-        // The stem: soft puffs from the ground to the cap, narrowest in the middle.
-        val top = s * 0.52f * easeOut(t / 1.25f)
-        val steps = (top / (3.2f * d)).toInt().coerceAtLeast(1)
-        for (i in 0..steps) {
-            val k = i / steps.toFloat()
-            val wobble = sin(k * 8f + t * 4f + b.seed) * 1.6f * d
-            val r = (13f - 5f * sin(PI.toFloat() * k) + 4f * k + 1.5f * sin(k * 13f + b.seed)) * d * scale
-            puff(canvas, smoke, top * k, y + wobble, r, 1f)
-            puff(canvas, fire, top * k, y + wobble, r * 0.85f, heat * (1f - 0.6f * k))
+
+        // The ground glowing where it went off, early on.
+        if (t < 1.4f) {
+            puff(canvas, glow, 0f, 0f, b.cap * (0.5f + 0.9f * easeOut(t / 0.5f)), 0.55f * (1f - t / 1.4f))
         }
-        // The cap: puffs rolling round a ring, round a full core, glowing inside while it is hot.
-        val cap = s * 0.22f * easeOut(t / 1.35f)
-        if (cap > 1f) {
-            val cx = top + cap * 0.25f
-            for (j in 0 until 8) {
-                val a = j * 0.785f + b.seed
-                puff(canvas, smoke, cx + cos(a) * cap * 0.3f, y + sin(a) * cap * 0.6f, cap * 0.6f, 1f)
-            }
-            for (i in 0 until 22) {
-                val a = i * (2f * PI.toFloat() / 22) + t * 1.4f + b.seed
-                val px = cx + cos(a) * cap * 0.62f
-                val py = y + sin(a) * cap * 1.18f
-                val r = cap * (0.4f + 0.06f * sin(a * 3f + t * 2.2f))
-                puff(canvas, smoke, px, py, r, 1f)
-            }
-            puff(canvas, fire, cx - cap * 0.15f, y, cap * 1.05f, heat * 0.95f)
-            puff(canvas, fire, cx - cap * 0.4f, y, cap * 0.6f, (heat * 1.3f).coerceAtMost(1f) * 0.8f)
+
+        // Dust surging out along the ground, both ways: a low bank of it, thickest at the stem's foot
+        // and thinning to wisps at its ends.
+        val surge = b.cap * 1.2f * easeOut(t / 1.7f)
+        val surgeIn = easeOut(t * 2.4f)
+        for (i in 0 until SURGE_PUFFS) {
+            val u = b.surgePuffs[i * 3]
+            val jitter = b.surgePuffs[i * 3 + 1]
+            val size = b.surgePuffs[i * 3 + 2]
+            val thick = (1f - abs(u)).pow(1.4f)
+            val r = b.cap * (0.1f + 0.2f * thick) * size * surgeIn
+            val y = -r * (0.25f + 0.55f * jitter) - b.cap * 0.05f * thick * jitter
+            puff(canvas, dust, u * surge, y, r, 0.95f - 0.4f * abs(u))
         }
-        // The fireball at the ground, early on.
-        if (t < 0.9f) {
-            val k = t / 0.9f
-            val r = s * 0.2f * easeOut(t / 0.3f)
-            for (j in 0 until 4) {
-                val a = j * 1.5708f + t * 3f
-                puff(canvas, fire, r * 0.4f + cos(a) * r * 0.25f, y + sin(a) * r * 0.3f, r * 0.8f, 1f - k)
-            }
+
+        // The stem: flared at its foot, its smoke climbing up it, fire inside it while it is hot.
+        val stemTop = h - capH * 0.35f
+        for (i in 0 until STEM_PUFFS) {
+            val k = ((b.stemPuffs[i * 3] + t * 0.14f) % 1f)
+            val off = b.stemPuffs[i * 3 + 1]
+            val size = b.stemPuffs[i * 3 + 2]
+            // A column as wide as a fifth of the cap, swelling at its foot where it draws the dust in.
+            val half = cap * 0.17f * (1f + 1.25f * (1f - k).pow(3f))
+            val y = -stemTop * k
+            val r = half * 1.2f * size
+            puff(canvas, smokeBody, off * half * 0.6f, y, r, 1f)
+            puff(canvas, ember, off * half * 0.4f, y, r * 0.75f, heat * (1f - 0.5f * k))
         }
+
+        // The ring of condensation round the stem, below the cap, for a while.
+        if (t > 0.45f && t < 2.3f) {
+            val k = (t - 0.45f) / 1.85f
+            val ringA = sin(PI.toFloat() * k) * 0.55f
+            val ry = -stemTop * 0.62f
+            ring.strokeWidth = cap * 0.07f
+            ring.color = fade(0xFFFFFFFF.toInt(), ringA * 0.5f)
+            canvas.drawOval(-cap * 0.62f, ry - cap * 0.08f, cap * 0.62f, ry + cap * 0.08f, ring)
+            ring.strokeWidth = cap * 0.025f
+            ring.color = fade(0xFFFFFFFF.toInt(), ringA)
+            canvas.drawOval(-cap * 0.58f, ry - cap * 0.065f, cap * 0.58f, ry + cap * 0.065f, ring)
+        }
+
+        // The cap's underside and body: its two sides rolling, up the inside, over and down the outside.
+        val coreY = -h + capH * 0.2f
+        val roll = t * 1.15f
+        for (i in 0 until CAP_PUFFS) {
+            val side = if (i % 2 == 0) -1f else 1f
+            val angle = b.capPuffs[i * 3] + side * roll
+            val reach = b.capPuffs[i * 3 + 1]
+            val size = b.capPuffs[i * 3 + 2]
+            val cx = side * cap * 0.5f
+            val x = cx + cos(angle) * cap * 0.42f * reach
+            val y = coreY + sin(angle) * capH * 0.62f * reach - drift
+            val under = sin(angle) > 0.2f
+            puff(canvas, if (under) smokeUnder else smokeBody, x, y, cap * size, 1f)
+        }
+        // The top of the cap: lumpy, catching the light.
+        for (i in 0 until DOME_PUFFS) {
+            val a = b.domePuffs[i * 3]
+            val up = b.domePuffs[i * 3 + 1]
+            val size = b.domePuffs[i * 3 + 2]
+            val x = a * cap * 0.92f
+            val y = coreY - capH * sqrt((1f - a * a).coerceAtLeast(0f)) * up - drift
+            puff(canvas, smokeTop, x, y, cap * size * (0.85f + 0.3f * (1f - abs(a))), 1f)
+        }
+        // The fire inside, glowing through it, cooling as it climbs.
+        if (heat > 0f) {
+            puff(canvas, fire, 0f, coreY - drift, cap * 0.85f, heat * heat)
+            puff(canvas, ember, -cap * 0.5f, coreY + capH * 0.2f - drift, cap * 0.5f, heat)
+            puff(canvas, ember, cap * 0.5f, coreY + capH * 0.2f - drift, cap * 0.5f, heat)
+        }
+        // The fireball, climbing out of the ground into the cap in the first moments.
+        if (t < 0.8f) {
+            val k = t / 0.8f
+            val y = -h * easeOut(t / 0.35f).coerceAtMost(1f)
+            puff(canvas, fire, 0f, y, b.cap * (0.25f + 0.45f * easeOut(t / 0.3f)), (1f - k).pow(1.5f))
+        }
+
+        if (layered) canvas.restore()
         canvas.restore()
-
-        // The flash.
-        if (t < 0.4f) {
-            val k = t / 0.4f
-            puff(canvas, flash, 0f, y, s * (0.3f + 0.5f * k), (1f - k).pow(2))
-        }
     }
 
     override fun clear() {
@@ -187,7 +308,15 @@ internal class AtomEffect(random: Random) : BumpEffect(random) {
     }
 
     private companion object {
-        const val LIFE = 3.2f
+        const val LIFE = 4.2f
+        const val FADE_FROM = 2.6f
+        const val FLASH_S = 0.35f
+        const val FLASH_GAP_S = 0.5f
+        const val SHOCK_S = 1.25f
+        const val CAP_PUFFS = 34
+        const val DOME_PUFFS = 16
+        const val STEM_PUFFS = 34
+        const val SURGE_PUFFS = 30
     }
 }
 
@@ -236,9 +365,13 @@ internal class VolcanoEffect(random: Random) : BumpEffect(random) {
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
         glow = 1f
-        rumble = 1f
-        erupting = if (atLimit) 0.25f else 0.6f
+        rumble = scene.power.coerceAtMost(1f)
+        erupting = (if (atLimit) 0.25f else 0.6f) * scene.power
+        force = scene.power
     }
+
+    /** How hard the last press erupted: see [BumpScene.power]. */
+    private var force = 1f
 
     override fun step(scene: BumpScene, dt: Float): Boolean {
         time += dt
@@ -256,7 +389,7 @@ internal class VolcanoEffect(random: Random) : BumpEffect(random) {
                 p.x = h * 0.97f
                 p.y = scene.centre + crater * rnd(-0.7f, 0.7f)
                 val angle = rnd(-0.6f, 0.6f)
-                val speed = rnd(220f, 470f) * d
+                val speed = rnd(220f, 470f) * d * (0.55f + 0.45f * force)
                 p.vx = cos(angle) * speed
                 p.vy = sin(angle) * speed
                 p.life = 1.8f
@@ -401,7 +534,7 @@ internal class SmokeEffect(random: Random) : BumpEffect(random) {
     override val stillAfterS: Float get() = 0.55f
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
-        exhale = if (atLimit) 0.18f else 0.5f
+        exhale = (if (atLimit) 0.18f else 0.5f) * scene.power
     }
 
     /** A slow swirl in the air, in pixels a second each second: what makes smoke curl. */
@@ -540,353 +673,6 @@ internal class SmokeEffect(random: Random) : BumpEffect(random) {
     }
 }
 
-// ---- dragon fire -------------------------------------------------------------------------------------------
-
-/**
- * A dragon's head comes out of the edge in place of the bump — scaled, horned, its eye smouldering,
- * smoke curling from its nostrils — and at every press it opens its jaws and breathes a roaring stream
- * of fire across the screen.
- */
-internal class DragonEffect(random: Random) : BumpEffect(random) {
-    override val drawsBump: Boolean get() = false
-    override val loops: Boolean get() = true
-
-    private val flames = ParticlePool(260)
-    private val smoke = Puffs(30, softPuff(0xFF4A4146.toInt()))
-    private val jaw = ButtonBump.Spring()
-    private var breath = 0f
-    private var emitClock = 0f
-    private var smokeClock = 0f
-    private var time = 0f
-
-    // The head and the jaw, drawn once at their size into pictures, scales and all.
-    private var art = 0f
-    private var headArt: Bitmap? = null
-    private var jawArt: Bitmap? = null
-    private val artPaint = Paint(Paint.FILTER_BITMAP_FLAG)
-    private val hot = solidFill().apply {
-        shader = RadialGradient(0f, 0f, 1f, intArrayOf(0xFFFFFBE6.toInt(), 0xF2FFD54F.toInt(), 0xB3FF8F00.toInt(), 0), floatArrayOf(0f, 0.25f, 0.6f, 1f), Shader.TileMode.CLAMP)
-    }
-    private val cool = solidFill().apply {
-        shader = RadialGradient(0f, 0f, 1f, intArrayOf(0xE6FF7043.toInt(), 0x99D84315.toInt(), 0x00BF360C), floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP)
-    }
-    private val soot = solidFill().apply { shader = softPuff(0xCC3E2723.toInt()) }
-    private val fill = solidFill()
-    private val ink = roundStroke()
-    private val eyeGlow = solidFill().apply { shader = softPuff(0xFFFFB300.toInt()) }
-    private val tooth = Path()
-    private val mouth = Path()
-
-    override val stillAfterS: Float get() = 0.35f
-
-    private fun size(scene: BumpScene) = max(scene.unit * 2.8f, scene.restHalf * 1.1f)
-    private fun out(scene: BumpScene) = ButtonBump.smootherstep(scene.presence.coerceIn(0f, 1f))
-
-    override fun press(scene: BumpScene, atLimit: Boolean) {
-        breath = if (atLimit) 0.3f else 0.75f
-    }
-
-    override fun step(scene: BumpScene, dt: Float): Boolean {
-        time += dt
-        val d = scene.density
-        val s = size(scene)
-        val headX = (out(scene) - 1f) * s * 1.35f
-        ButtonBump.stepSpring(jaw, if (breath > 0f) 1f else 0f, 260f, 0.6f, dt)
-        if (breath > 0f) {
-            breath -= dt
-            emitClock -= dt
-            while (emitClock <= 0f) {
-                emitClock += 1f / 170f
-                val p = flames.spawn() ?: break
-                val angle = rnd(-0.17f, 0.17f) + jaw.value * 0.1f
-                val speed = rnd(280f, 460f) * d
-                p.x = headX + s * 1.12f
-                p.y = scene.centre + s * 0.12f
-                p.vx = cos(angle) * speed
-                p.vy = sin(angle) * speed
-                p.life = rnd(0.45f, 0.85f)
-                p.size = rnd(2.5f, 3.5f) * d
-                p.tx = rnd(12f, 18f) * d
-                p.kind = if (random.nextFloat() < 0.1f) 1 else 0
-            }
-        }
-        if (out(scene) > 0.6f) {
-            smokeClock -= dt
-            if (smokeClock <= 0f) {
-                smokeClock = rnd(0.25f, 0.45f)
-                smoke.emit(headX + s * 1.13f, scene.centre - s * 0.13f, rnd(20f, 40f) * d, rnd(-12f, 12f) * d, 2f * d, rnd(7f, 10f) * d, 1.1f, 0.45f)
-            }
-        }
-        val drag = exp(-1.3f * dt)
-        var alive = false
-        for (p in flames.items) {
-            if (!p.alive) continue
-            p.age += dt
-            if (p.age >= p.life) {
-                p.alive = false
-                continue
-            }
-            // Fire rises, and flickers as it does.
-            p.vx = p.vx * drag + (-scene.gravityX * 170f + rnd(-60f, 60f)) * d * dt
-            p.vy = p.vy * drag + (-scene.gravityY * 170f + rnd(-60f, 60f)) * d * dt
-            p.x += p.vx * dt
-            p.y += p.vy * dt
-            alive = true
-        }
-        alive = smoke.step(dt, 1f, -scene.gravityX * 40f * d, -scene.gravityY * 40f * d) || alive
-        return alive || breath > 0f || jaw.value > 0.01f
-    }
-
-    /** The head and jaw drawn at [s] pixels a unit, once. Bounds of the picture, in units: x -0.65..1.35, y -1.2..0.6. */
-    private fun ensureArt(s: Float) {
-        if (abs(art - s) < 0.5f && headArt != null) return
-        art = s
-        val w = (2f * s).roundToInt().coerceAtLeast(2)
-        val h = (1.8f * s).roundToInt().coerceAtLeast(2)
-        headArt = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).also { paintHead(Canvas(it), s) }
-        jawArt = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).also { paintJaw(Canvas(it), s) }
-    }
-
-    private fun paintHead(c: Canvas, s: Float) {
-        c.translate(0.65f * s, 1.2f * s)
-        c.scale(s, s)
-        val p = Paint(Paint.ANTI_ALIAS_FLAG)
-        // A second horn behind, darker.
-        val horn = Path().apply {
-            moveTo(0.14f, -0.56f)
-            cubicTo(0f, -0.86f, -0.26f, -1.04f, -0.62f, -1.1f)
-            cubicTo(-0.3f, -0.92f, -0.05f, -0.75f, 0.34f, -0.57f)
-            close()
-        }
-        c.save()
-        c.translate(-0.12f, 0.04f)
-        c.scale(0.85f, 0.85f)
-        p.shader = LinearGradient(0.3f, -0.6f, -0.6f, -1.1f, 0xFF8C7B5E.toInt(), 0xFF4E4232.toInt(), Shader.TileMode.CLAMP)
-        c.drawPath(horn, p)
-        c.restore()
-        // Spines down the back of the neck.
-        p.shader = null
-        p.color = 0xFF4A0B0B.toInt()
-        for ((x, y, k) in listOf(Triple(-0.5f, -0.44f, 0.16f), Triple(-0.3f, -0.5f, 0.2f), Triple(-0.08f, -0.58f, 0.18f))) {
-            c.drawPath(Path().apply { moveTo(x - 0.08f, y + 0.04f); lineTo(x - 0.02f, y - k); lineTo(x + 0.09f, y + 0.02f); close() }, p)
-        }
-        // The skull and upper jaw.
-        val head = Path().apply {
-            moveTo(-0.65f, -0.4f)
-            cubicTo(-0.25f, -0.5f, 0.05f, -0.62f, 0.3f, -0.58f)
-            cubicTo(0.48f, -0.55f, 0.58f, -0.46f, 0.66f, -0.4f)
-            cubicTo(0.8f, -0.36f, 0.98f, -0.3f, 1.12f, -0.2f)
-            cubicTo(1.2f, -0.15f, 1.24f, -0.08f, 1.22f, -0.02f)
-            lineTo(1.1f, 0.02f)
-            cubicTo(0.9f, 0.03f, 0.65f, 0.05f, 0.4f, 0.08f)
-            cubicTo(0.25f, 0.1f, 0.1f, 0.2f, -0.05f, 0.28f)
-            lineTo(-0.65f, 0.36f)
-            close()
-        }
-        p.shader = LinearGradient(0f, -0.62f, 0f, 0.36f, intArrayOf(0xFF420B0B.toInt(), 0xFF8E1B1B.toInt(), 0xFFC0492B.toInt()), floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP)
-        c.drawPath(head, p)
-        // Scales, row on row, over the whole head.
-        c.save()
-        c.clipPath(head)
-        val scale = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.STROKE
-            strokeWidth = 0.012f
-            color = 0x55250404
-        }
-        var row = 0
-        var y = -0.62f
-        while (y < 0.4f) {
-            var x = -0.65f + if (row % 2 == 0) 0f else 0.035f
-            while (x < 1.25f) {
-                c.drawArc(RectF(x - 0.035f, y - 0.035f, x + 0.035f, y + 0.035f), 10f, 160f, false, scale)
-                x += 0.07f
-            }
-            y += 0.055f
-            row++
-        }
-        // Light along the top of the snout, shadow under the brow.
-        p.shader = LinearGradient(0f, -0.4f, 0f, -0.15f, 0x40FFFFFF, 0x00FFFFFF, Shader.TileMode.CLAMP)
-        c.drawPath(head, p)
-        c.restore()
-        // The main horn, ridged.
-        p.shader = LinearGradient(0.3f, -0.57f, -0.6f, -1.1f, 0xFFF4E8CC.toInt(), 0xFF9C8A68.toInt(), Shader.TileMode.CLAMP)
-        c.drawPath(horn, p)
-        val ridge = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.STROKE
-            strokeWidth = 0.018f
-            color = 0x806B5B40.toInt()
-        }
-        for (k in 1..4) {
-            val f = k / 5f
-            c.drawLine(0.24f - 0.78f * f, -0.57f - 0.5f * f + 0.05f, 0.14f - 0.7f * f, -0.56f - 0.55f * f - 0.06f, ridge)
-        }
-        // The heavy brow, the cheek plate, the nostril.
-        p.shader = null
-        p.color = 0xFF2E0606.toInt()
-        c.drawPath(Path().apply {
-            moveTo(0.36f, -0.47f)
-            quadTo(0.55f, -0.56f, 0.74f, -0.42f)
-            quadTo(0.55f, -0.47f, 0.4f, -0.42f)
-            close()
-        }, p)
-        p.color = 0x553A0606
-        c.drawPath(Path().apply {
-            moveTo(0.05f, -0.1f)
-            quadTo(0.3f, -0.18f, 0.45f, -0.05f)
-            quadTo(0.25f, 0.05f, 0.05f, 0.12f)
-            close()
-        }, p)
-        p.color = 0xFF1A0303.toInt()
-        c.save()
-        c.rotate(-20f, 1.12f, -0.11f)
-        c.drawOval(RectF(1.08f, -0.13f, 1.16f, -0.09f), p)
-        c.restore()
-        // Spikes on the cheek, sweeping back.
-        p.color = 0xFF5C0E0E.toInt()
-        for ((x, y) in listOf(0.0f to 0.24f, -0.18f to 0.3f)) {
-            c.drawPath(Path().apply { moveTo(x + 0.06f, y - 0.04f); lineTo(x - 0.2f, y + 0.12f); lineTo(x + 0.08f, y + 0.05f); close() }, p)
-        }
-    }
-
-    private fun paintJaw(c: Canvas, s: Float) {
-        c.translate(0.65f * s, 1.2f * s)
-        c.scale(s, s)
-        val p = Paint(Paint.ANTI_ALIAS_FLAG)
-        val jawPath = Path().apply {
-            moveTo(0.32f, 0.08f)
-            cubicTo(0.6f, 0.07f, 0.9f, 0.06f, 1.06f, 0.07f)
-            cubicTo(1.08f, 0.12f, 1f, 0.2f, 0.85f, 0.24f)
-            cubicTo(0.6f, 0.3f, 0.35f, 0.34f, 0.1f, 0.36f)
-            lineTo(-0.65f, 0.45f)
-            lineTo(-0.65f, 0.3f)
-            close()
-        }
-        p.shader = LinearGradient(0f, 0.06f, 0f, 0.42f, 0xFF9A2A1A.toInt(), 0xFFE08A52.toInt(), Shader.TileMode.CLAMP)
-        c.drawPath(jawPath, p)
-        // Belly scales under the jaw: broad bands.
-        c.save()
-        c.clipPath(jawPath)
-        val band = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.STROKE
-            strokeWidth = 0.014f
-            color = 0x66631A0E
-        }
-        var x = -0.6f
-        while (x < 1.05f) {
-            c.drawLine(x, 0.12f, x - 0.05f, 0.45f, band)
-            x += 0.09f
-        }
-        c.restore()
-        // Its teeth, pointing up.
-        p.shader = null
-        p.color = 0xFFFFF8E7.toInt()
-        for (tx in floatArrayOf(0.55f, 0.69f, 0.83f, 0.97f)) {
-            c.drawPath(Path().apply { moveTo(tx - 0.03f, 0.08f); lineTo(tx + 0.03f, 0.08f); lineTo(tx, 0f); close() }, p)
-        }
-    }
-
-    override fun drawFront(canvas: Canvas, scene: BumpScene) {
-        val d = scene.density
-        val s = size(scene)
-        val o = out(scene)
-        smoke.draw(canvas)
-        if (o > 0.01f) {
-            ensureArt(s)
-            val open = jaw.value.coerceIn(0f, 1.2f) * 26f
-            canvas.save()
-            canvas.translate((o - 1f) * s * 1.35f, scene.centre)
-            // The inside of the mouth, its tongue, and the glow of the fire in its throat.
-            if (open > 1f) {
-                canvas.save()
-                canvas.scale(s, s)
-                mouth.reset()
-                mouth.moveTo(0.32f, 0.08f)
-                mouth.lineTo(1.12f, 0.03f)
-                val a = Math.toRadians(open.toDouble())
-                mouth.lineTo(0.32f + (0.76f * cos(a)).toFloat(), 0.08f + (0.76f * sin(a)).toFloat())
-                mouth.close()
-                fill.color = 0xFF2A0505.toInt()
-                canvas.drawPath(mouth, fill)
-                eyeGlow.alpha = (255 * jaw.value.coerceIn(0f, 1f)).toInt()
-                canvas.save()
-                canvas.translate(0.7f, 0.14f)
-                canvas.scale(0.45f, 0.3f)
-                canvas.drawCircle(0f, 0f, 1f, eyeGlow)
-                canvas.restore()
-                canvas.restore()
-            }
-            canvas.save()
-            canvas.rotate(open, 0.32f * s, 0.08f * s)
-            canvas.drawBitmap(jawArt!!, -0.65f * s, -1.2f * s, artPaint)
-            canvas.restore()
-            canvas.drawBitmap(headArt!!, -0.65f * s, -1.2f * s, artPaint)
-            // Its upper teeth, over the lip.
-            canvas.save()
-            canvas.scale(s, s)
-            fill.color = 0xFFFFF8E7.toInt()
-            for ((i, tx) in floatArrayOf(0.5f, 0.62f, 0.74f, 0.86f, 0.98f, 1.08f).withIndex()) {
-                val len = if (i % 2 == 0) 0.085f else 0.06f
-                tooth.reset()
-                tooth.moveTo(tx - 0.028f, 0.03f)
-                tooth.lineTo(tx + 0.028f, 0.03f)
-                tooth.lineTo(tx, 0.03f + len)
-                tooth.close()
-                canvas.drawPath(tooth, fill)
-            }
-            // The eye, smouldering, brighter as it breathes.
-            eyeGlow.alpha = (150 + 105 * jaw.value.coerceIn(0f, 1f)).toInt()
-            canvas.save()
-            canvas.translate(0.57f, -0.36f)
-            canvas.scale(0.16f, 0.11f)
-            canvas.drawCircle(0f, 0f, 1f, eyeGlow)
-            canvas.restore()
-            canvas.save()
-            canvas.rotate(-12f, 0.57f, -0.36f)
-            fill.color = 0xFFFFC107.toInt()
-            canvas.drawOval(0.495f, -0.4f, 0.645f, -0.32f, fill)
-            fill.color = 0xFF120202.toInt()
-            canvas.drawOval(0.558f, -0.398f, 0.582f, -0.322f, fill)
-            fill.color = 0xCCFFFFFF.toInt()
-            canvas.drawCircle(0.6f, -0.375f, 0.012f, fill)
-            canvas.restore()
-            canvas.restore()
-            canvas.restore()
-        }
-        // The fire: soft flames, white hot at the mouth, reddening, and soot at the end of it.
-        for (p in flames.items) {
-            if (!p.alive) continue
-            val t = p.age / p.life
-            val r = p.size + (p.tx - p.size) * easeOut(t)
-            val paint = when {
-                p.kind == 1 -> hot
-                t < 0.45f -> hot
-                t < 0.8f -> cool
-                else -> soot
-            }
-            val a = when {
-                p.kind == 1 -> 1f - t
-                t < 0.45f -> 1f
-                t < 0.8f -> 0.9f
-                else -> 0.6f * (1f - t) / 0.2f
-            }
-            paint.alpha = (a.coerceIn(0f, 1f) * 255f).roundToInt()
-            canvas.save()
-            canvas.translate(p.x, p.y)
-            val rr = if (p.kind == 1) r * 0.25f else r
-            canvas.scale(rr, rr)
-            canvas.drawCircle(0f, 0f, 1f, paint)
-            canvas.restore()
-        }
-    }
-
-    override fun clear() {
-        flames.clear()
-        smoke.clear()
-        breath = 0f
-        jaw.snapTo(0f)
-    }
-}
-
 // ---- rocket launch ---------------------------------------------------------------------------------------
 
 /**
@@ -905,6 +691,9 @@ internal class RocketEffect(random: Random) : BumpEffect(random) {
         var turn = 0f
         var puffClock = 0f
         var launched = false
+
+        /** How hard it was launched: see [BumpScene.power]. */
+        var power = 1f
     }
 
     private val ships = Array(3) { Ship() }
@@ -964,6 +753,7 @@ internal class RocketEffect(random: Random) : BumpEffect(random) {
         s.y = scene.centre + scene.restHalf * rnd(-0.2f, 0.2f)
         s.heading = 0f
         s.speed = 30f * scene.density
+        s.power = scene.power
         val up = atan2(-scene.gravityY, -scene.gravityX)
         s.turn = if (abs(up) > 3f) 0.6f else up.coerceIn(-0.6f, 0.6f)
     }
@@ -994,7 +784,7 @@ internal class RocketEffect(random: Random) : BumpEffect(random) {
                 }
             }
             if (s.launched) {
-                s.speed += 1000f * d * dt
+                s.speed += 1000f * d * dt * (0.55f + 0.45f * s.power)
                 if (s.age > IGNITION + 0.1f) s.heading += (s.turn - s.heading) * min(1f, 1.6f * dt)
             }
             s.x += cos(s.heading) * s.speed * dt
@@ -1155,8 +945,8 @@ internal class WindEffect(random: Random) : BumpEffect(random) {
     override val stillAfterS: Float get() = 0.28f
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
-        repeat(if (atLimit) 3 else 6) { gust(scene) }
-        repeat(if (atLimit) 2 else 5) { leafOut(scene) }
+        repeat(count(scene, if (atLimit) 3 else 6)) { gust(scene) }
+        repeat(count(scene, if (atLimit) 2 else 5)) { leafOut(scene) }
     }
 
     private fun gust(scene: BumpScene) {
@@ -1168,7 +958,7 @@ internal class WindEffect(random: Random) : BumpEffect(random) {
         g.width = rnd(0.9f, 1.6f) * d
         val x0 = scene.restDepth * 0.8f
         val y0 = scene.centre + scene.restHalf * rnd(-1.5f, 1.5f)
-        val length = scene.reach * rnd(0.55f, 0.85f)
+        val length = scene.reach * rnd(0.55f, 0.85f) * (0.6f + 0.4f * scene.power)
         val amp = rnd(8f, 18f) * d
         val waves = rnd(1.2f, 2.2f)
         val phase = rnd(0f, 6.28f)
@@ -1300,7 +1090,7 @@ internal class SprayEffect(random: Random) : BumpEffect(random) {
     private fun nozzleX(scene: BumpScene) = scene.depth + 4f * scene.density
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
-        spraying = if (atLimit) 0.22f else 0.55f
+        spraying = (if (atLimit) 0.22f else 0.55f) * scene.power
         colour = next++ % PALETTE.size
     }
 

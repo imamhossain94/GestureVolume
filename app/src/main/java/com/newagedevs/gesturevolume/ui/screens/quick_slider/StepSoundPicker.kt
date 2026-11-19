@@ -12,27 +12,32 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -41,7 +46,6 @@ import androidx.core.content.IntentCompat
 import com.newagedevs.gesturevolume.R
 import com.newagedevs.gesturevolume.data.local.QuickSliderStore
 import com.newagedevs.gesturevolume.ui.components.ChoiceChip
-import com.newagedevs.gesturevolume.ui.motion.OutlinedButton
 import com.newagedevs.gesturevolume.utils.StepSound
 import com.newagedevs.gesturevolume.utils.StepSoundLibrary
 import kotlinx.coroutines.Job
@@ -56,7 +60,6 @@ import kotlinx.coroutines.launch
  * the step sound is Adaptive, and through the same kind of volume the panel uses — the media volume
  * for Adaptive, the system's sounds for Click — so silence here means silence there too.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun StepSoundPicker(store: QuickSliderStore, mode: String) {
     val context = LocalContext.current
@@ -127,12 +130,30 @@ fun StepSoundPicker(store: QuickSliderStore, mode: String) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 10.dp),
         )
-        FlowRow(
+        // One row that scrolls, rather than a wall of three dozen chips: the phone's own sounds and a
+        // file at its end, and the one chosen brought into view when the screen opens.
+        val fromPhone = StepSoundLibrary.isDevice(source)
+        val rowState = rememberLazyListState()
+        LaunchedEffect(Unit) {
+            val at = if (fromPhone) 0 else StepSoundLibrary.IDS.indexOf(source).coerceAtLeast(0)
+            if (at > 0) rowState.scrollToItem((at - 1).coerceAtLeast(0))
+        }
+        LazyRow(
+            state = rowState,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(bottom = 8.dp),
+            contentPadding = PaddingValues(end = 8.dp),
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            StepSoundLibrary.IDS.forEach { id ->
+            if (fromPhone) {
+                item(key = "device") {
+                    ChoiceChip(
+                        label = deviceName ?: stringResource(R.string.step_sound_from_phone),
+                        selected = true,
+                        onClick = { play(source) },
+                    )
+                }
+            }
+            items(StepSoundLibrary.IDS, key = { it }) { id ->
                 ChoiceChip(
                     label = stringResource(stepSoundLabel(id)),
                     selected = source == id,
@@ -143,20 +164,8 @@ fun StepSoundPicker(store: QuickSliderStore, mode: String) {
                     },
                 )
             }
-            if (StepSoundLibrary.isDevice(source)) {
-                ChoiceChip(
-                    label = deviceName ?: stringResource(R.string.step_sound_from_phone),
-                    selected = true,
-                    onClick = { play(source) },
-                )
-            }
-        }
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            OutlinedButton(
-                onClick = {
+            item(key = "phoneSounds") {
+                SourceChip(label = systemTitle, icon = Icons.Filled.MusicNote) {
                     val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
                         .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
                         .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
@@ -171,29 +180,30 @@ fun StepSoundPicker(store: QuickSliderStore, mode: String) {
                         // A phone without the system's sound picker: any audio file instead.
                         pickFile.launch(arrayOf("audio/*"))
                     }
-                },
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Icon(Icons.Filled.MusicNote, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(systemTitle)
+                }
             }
-            OutlinedButton(
-                onClick = {
+            item(key = "audioFile") {
+                SourceChip(label = stringResource(R.string.step_sound_audio_file), icon = Icons.Filled.Folder) {
                     try {
                         pickFile.launch(arrayOf("audio/*"))
                     } catch (_: ActivityNotFoundException) {
                         Toast.makeText(context, unreadable, Toast.LENGTH_LONG).show()
                     }
-                },
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Icon(Icons.Filled.Folder, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(R.string.step_sound_audio_file))
+                }
             }
         }
     }
+}
+
+/** A chip that goes somewhere to choose a sound — the phone's own, or a file — rather than being one. */
+@Composable
+private fun SourceChip(label: String, icon: ImageVector, onClick: () -> Unit) {
+    AssistChip(
+        onClick = onClick,
+        label = { Text(label) },
+        leadingIcon = { Icon(icon, contentDescription = null, modifier = Modifier.size(AssistChipDefaults.IconSize)) },
+        shape = RoundedCornerShape(12.dp),
+    )
 }
 
 /** The name of one of the app's own sounds. */
@@ -215,7 +225,6 @@ fun stepSoundLabel(id: String): Int = when (id) {
     "firework" -> R.string.step_sound_firework
     "boom" -> R.string.step_sound_boom
     "rumble" -> R.string.step_sound_rumble
-    "roar" -> R.string.step_sound_roar
     "launch" -> R.string.step_sound_launch
     "swish" -> R.string.step_sound_swish
     "crack" -> R.string.step_sound_crack
@@ -225,10 +234,12 @@ fun stepSoundLabel(id: String): Int = when (id) {
     "bubbles" -> R.string.step_sound_bubbles
     "meow" -> R.string.step_sound_meow
     "monkey" -> R.string.step_sound_monkey
-    "alien" -> R.string.step_sound_alien
     "ufo" -> R.string.step_sound_ufo
     "buzz" -> R.string.step_sound_buzz
     "splash" -> R.string.step_sound_splash
+    "ribbit" -> R.string.step_sound_ribbit
+    "zip" -> R.string.step_sound_zip
+    "peck" -> R.string.step_sound_peck
     "cosmic" -> R.string.step_sound_cosmic
     "boing" -> R.string.step_sound_boing
     else -> R.string.step_sound_tick

@@ -43,15 +43,16 @@
     <string name="bump_style_volcano">화산</string>
     <string name="bump_style_wind">바람</string>
     <string name="bump_style_ninja">닌자의 칼날</string>
-    <string name="bump_style_dragon">용의 불꽃</string>
     <string name="bump_style_bees">꿀벌</string>
     <string name="bump_style_rocket">로켓 발사</string>
     <string name="bump_style_crack">깨진 화면</string>
     <string name="bump_style_smoke">연기</string>
     <string name="bump_style_cat">고양이</string>
     <string name="bump_style_fish">점프하는 물고기</string>
+    <string name="bump_style_frog">점프하는 개구리</string>
+    <string name="bump_style_spider">거미</string>
+    <string name="bump_style_woodpecker">딱따구리</string>
     <string name="bump_style_monkey">원숭이</string>
-    <string name="bump_style_alien">외계인</string>
     <string name="bump_style_ufo">UFO</string>
     <string name="bump_style_spray">스프레이</string>
     <string name="bump_place_title">버튼 위치</string>
@@ -122,7 +123,6 @@
     <string name="step_sound_firework">불꽃놀이</string>
     <string name="step_sound_boom">쾅</string>
     <string name="step_sound_rumble">우르릉</string>
-    <string name="step_sound_roar">포효</string>
     <string name="step_sound_launch">발사</string>
     <string name="step_sound_swish">휙</string>
     <string name="step_sound_crack">쩍</string>
@@ -132,10 +132,12 @@
     <string name="step_sound_bubbles">거품</string>
     <string name="step_sound_meow">야옹</string>
     <string name="step_sound_monkey">원숭이</string>
-    <string name="step_sound_alien">외계인</string>
     <string name="step_sound_ufo">UFO</string>
     <string name="step_sound_buzz">윙윙</string>
     <string name="step_sound_splash">첨벙</string>
+    <string name="step_sound_ribbit">개굴</string>
+    <string name="step_sound_zip">슉</string>
+    <string name="step_sound_peck">딱딱</string>
     <string name="step_sound_cosmic">우주</string>
     <string name="step_sound_boing">보잉</string>
 

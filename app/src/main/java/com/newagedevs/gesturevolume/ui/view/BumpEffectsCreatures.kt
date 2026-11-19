@@ -19,7 +19,7 @@ import kotlin.math.min
 import kotlin.math.sin
 
 /*
- * The characters: a cat, a monkey and an alien peeking round the edge of the glass, a flying saucer,
+ * The characters: a cat and a monkey peeking round the edge of the glass, a flying saucer,
  * and a swarm of bees.
  */
 
@@ -76,7 +76,7 @@ internal abstract class PeekEffect(random: Random) : BumpEffect(random) {
     override val stillAfterS: Float get() = 0.6f
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
-        peek.velocity += if (atLimit) 2f else 4.5f
+        peek.velocity += (if (atLimit) 2f else 4.5f) * scene.power
         pop = 1f
         streak = if (sincePress < STREAK_S) streak + 1 else 1
         sincePress = 0f
@@ -88,7 +88,7 @@ internal abstract class PeekEffect(random: Random) : BumpEffect(random) {
             5 -> Mood.ANGRY
             else -> Mood.DIZZY
         }
-        if (mood == Mood.LOVE) repeat(4) { heartOut(scene) }
+        if (mood == Mood.LOVE) repeat(count(scene, 4)) { heartOut(scene) }
     }
 
     private fun heartOut(scene: BumpScene) {
@@ -542,63 +542,6 @@ internal class MonkeyEffect(random: Random) : PeekEffect(random) {
     }
 }
 
-/** A little green alien peeking round the edge: huge glossy eyes, antennae bobbing, rosy cheeks. */
-internal class AlienEffect(random: Random) : PeekEffect(random) {
-    private val head = Path()
-    private var shadeR = 0f
-    private val headShade = solidFill()
-    private val glow = solidFill().apply { shader = softPuff(0xFFFFF59D.toInt()) }
-
-    override fun drawHead(canvas: Canvas, r: Float, closed: Boolean, look: Float) {
-        if (shadeR != r) {
-            shadeR = r
-            headShade.shader = RadialGradient(-0.2f * r, -0.4f * r, 1.4f * r, intArrayOf(0xFFC8F7B4.toInt(), 0xFF8BE07A.toInt(), 0xFF5DBF5A.toInt()), floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP)
-        }
-        for (side in intArrayOf(-1, 1)) {
-            val sway = sin(time * 4f + side) * 0.12f * r
-            val tx = side * 0.62f * r + sway
-            val ty = -1.36f * r
-            ink.strokeWidth = 0.06f * r
-            ink.color = 0xFF58B653.toInt()
-            canvas.drawLine(side * 0.3f * r, -0.82f * r, tx, ty, ink)
-            glow.alpha = (140 + 115 * pop).toInt()
-            canvas.save()
-            canvas.translate(tx, ty)
-            canvas.scale(0.24f * r, 0.24f * r)
-            canvas.drawCircle(0f, 0f, 1f, glow)
-            canvas.restore()
-            fill.color = if (side < 0) 0xFFFF8FB4.toInt() else 0xFFFFE066.toInt()
-            canvas.drawCircle(tx, ty, 0.11f * r, fill)
-        }
-        head.reset()
-        head.moveTo(0f, -1f * r)
-        head.cubicTo(1f * r, -1f * r, 1.08f * r, 0f, 0.55f * r, 0.62f * r)
-        head.quadTo(0f, 1.02f * r, -0.55f * r, 0.62f * r)
-        head.cubicTo(-1.08f * r, 0f, -1f * r, -1f * r, 0f, -1f * r)
-        head.close()
-        canvas.drawPath(head, headShade)
-        ink.strokeWidth = 0.045f * r
-        ink.color = 0x6640963E
-        canvas.drawPath(head, ink)
-        cheeks(canvas, 0.6f * r, 0.32f * r, 0.12f * r)
-        for (side in intArrayOf(-1, 1)) {
-            eye(canvas, side * 0.38f * r, 0.02f * r, 0.27f * r, 0.23f * r, side, closed, look, 0xFF14161F.toInt(), 0xFF8BE07A.toInt())
-        }
-        mouth(canvas, 0f, 0.55f * r, 0.13f * r) { c ->
-            oval.set(-0.13f * r, 0.42f * r, 0.13f * r, 0.6f * r)
-            c.drawArc(oval, 20f, 140f, false, ink)
-        }
-    }
-
-    override fun drawHand(canvas: Canvas, x: Float, y: Float, r: Float) {
-        ink.strokeWidth = r * 0.32f
-        ink.color = 0xFF8BE07A.toInt()
-        for (k in -1..1) canvas.drawLine(x - r * 0.2f, y + k * r * 0.45f, x + r * 0.9f, y + k * r * 0.5f, ink)
-        fill.color = 0xFF8BE07A.toInt()
-        canvas.drawCircle(x - r * 0.2f, y, r * 0.55f, fill)
-    }
-}
-
 // ---- ufo ---------------------------------------------------------------------------------------------
 
 /**
@@ -642,7 +585,7 @@ internal class UfoEffect(random: Random) : BumpEffect(random) {
         s.age = 0f
         s.sx = scene.restDepth * 0.5f
         s.sy = scene.centre
-        s.hx = scene.reach * rnd(0.42f, 0.6f)
+        s.hx = scene.reach * rnd(0.42f, 0.6f) * (0.65f + 0.35f * scene.power)
         s.hy = scene.centre + scene.span * rnd(-0.18f, 0.18f)
         s.x = s.sx
         s.y = s.sy
@@ -766,7 +709,7 @@ internal class BeesEffect(random: Random) : BumpEffect(random) {
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
         val d = scene.density
-        repeat(if (atLimit) 1 else 3) {
+        repeat(count(scene, if (atLimit) 1 else 3)) {
             val b = bees.firstOrNull { !it.alive } ?: return@repeat
             b.alive = true
             b.age = 0f

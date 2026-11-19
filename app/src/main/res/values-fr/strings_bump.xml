@@ -43,15 +43,16 @@
     <string name="bump_style_volcano">Volcan</string>
     <string name="bump_style_wind">Vent</string>
     <string name="bump_style_ninja">Lame de ninja</string>
-    <string name="bump_style_dragon">Souffle du dragon</string>
     <string name="bump_style_bees">Abeilles</string>
     <string name="bump_style_rocket">Décollage de fusée</string>
     <string name="bump_style_crack">Écran fissuré</string>
     <string name="bump_style_smoke">Fumée</string>
     <string name="bump_style_cat">Chat</string>
     <string name="bump_style_fish">Poisson sauteur</string>
+    <string name="bump_style_frog">Grenouille sauteuse</string>
+    <string name="bump_style_spider">Araignée</string>
+    <string name="bump_style_woodpecker">Pic-vert</string>
     <string name="bump_style_monkey">Singe</string>
-    <string name="bump_style_alien">Extraterrestre</string>
     <string name="bump_style_ufo">OVNI</string>
     <string name="bump_style_spray">Bombe aérosol</string>
     <string name="bump_place_title">Où sont vos boutons</string>
@@ -122,7 +123,6 @@
     <string name="step_sound_firework">Feu d’artifice</string>
     <string name="step_sound_boom">Boum</string>
     <string name="step_sound_rumble">Grondement</string>
-    <string name="step_sound_roar">Rugissement</string>
     <string name="step_sound_launch">Décollage</string>
     <string name="step_sound_swish">Fouet</string>
     <string name="step_sound_crack">Craquement</string>
@@ -132,10 +132,12 @@
     <string name="step_sound_bubbles">Bulles</string>
     <string name="step_sound_meow">Miaou</string>
     <string name="step_sound_monkey">Singe</string>
-    <string name="step_sound_alien">Extraterrestre</string>
     <string name="step_sound_ufo">OVNI</string>
     <string name="step_sound_buzz">Bourdonnement</string>
     <string name="step_sound_splash">Plouf</string>
+    <string name="step_sound_ribbit">Croâ</string>
+    <string name="step_sound_zip">Zip</string>
+    <string name="step_sound_peck">Toc-toc</string>
     <string name="step_sound_cosmic">Cosmique</string>
     <string name="step_sound_boing">Boing</string>
 

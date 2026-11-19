@@ -43,15 +43,16 @@
     <string name="bump_style_volcano">Vulcão</string>
     <string name="bump_style_wind">Vento</string>
     <string name="bump_style_ninja">Lâmina ninja</string>
-    <string name="bump_style_dragon">Fogo de dragão</string>
     <string name="bump_style_bees">Abelhas</string>
     <string name="bump_style_rocket">Lançamento de foguete</string>
     <string name="bump_style_crack">Tela rachada</string>
     <string name="bump_style_smoke">Fumaça</string>
     <string name="bump_style_cat">Gato</string>
     <string name="bump_style_fish">Peixe saltando</string>
+    <string name="bump_style_frog">Sapo saltando</string>
+    <string name="bump_style_spider">Aranha</string>
+    <string name="bump_style_woodpecker">Pica-pau</string>
     <string name="bump_style_monkey">Macaco</string>
-    <string name="bump_style_alien">Alienígena</string>
     <string name="bump_style_ufo">OVNI</string>
     <string name="bump_style_spray">Spray aerossol</string>
     <string name="bump_place_title">Onde ficam os seus botões</string>
@@ -122,7 +123,6 @@
     <string name="step_sound_firework">Fogo de artifício</string>
     <string name="step_sound_boom">Bum</string>
     <string name="step_sound_rumble">Estrondo</string>
-    <string name="step_sound_roar">Rugido</string>
     <string name="step_sound_launch">Lançamento</string>
     <string name="step_sound_swish">Zunido</string>
     <string name="step_sound_crack">Rachadura</string>
@@ -132,10 +132,12 @@
     <string name="step_sound_bubbles">Bolhas</string>
     <string name="step_sound_meow">Miau</string>
     <string name="step_sound_monkey">Macaco</string>
-    <string name="step_sound_alien">Alienígena</string>
     <string name="step_sound_ufo">OVNI</string>
     <string name="step_sound_buzz">Zumbido</string>
     <string name="step_sound_splash">Respingo</string>
+    <string name="step_sound_ribbit">Croac</string>
+    <string name="step_sound_zip">Zip</string>
+    <string name="step_sound_peck">Toc-toc</string>
     <string name="step_sound_cosmic">Cósmico</string>
     <string name="step_sound_boing">Boing</string>
 

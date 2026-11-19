@@ -43,15 +43,16 @@
     <string name="bump_style_volcano">Vulcano</string>
     <string name="bump_style_wind">Vento</string>
     <string name="bump_style_ninja">Lama ninja</string>
-    <string name="bump_style_dragon">Fuoco di drago</string>
     <string name="bump_style_bees">Api</string>
     <string name="bump_style_rocket">Lancio del razzo</string>
     <string name="bump_style_crack">Schermo crepato</string>
     <string name="bump_style_smoke">Fumo</string>
     <string name="bump_style_cat">Gatto</string>
     <string name="bump_style_fish">Pesce che salta</string>
+    <string name="bump_style_frog">Rana che salta</string>
+    <string name="bump_style_spider">Ragno</string>
+    <string name="bump_style_woodpecker">Picchio</string>
     <string name="bump_style_monkey">Scimmia</string>
-    <string name="bump_style_alien">Alieno</string>
     <string name="bump_style_ufo">UFO</string>
     <string name="bump_style_spray">Bomboletta spray</string>
     <string name="bump_place_title">Dove sono i tuoi tasti</string>
@@ -122,7 +123,6 @@
     <string name="step_sound_firework">Fuoco d’artificio</string>
     <string name="step_sound_boom">Bum</string>
     <string name="step_sound_rumble">Rombo</string>
-    <string name="step_sound_roar">Ruggito</string>
     <string name="step_sound_launch">Lancio</string>
     <string name="step_sound_swish">Sibilo</string>
     <string name="step_sound_crack">Crepa</string>
@@ -132,10 +132,12 @@
     <string name="step_sound_bubbles">Bolle</string>
     <string name="step_sound_meow">Miao</string>
     <string name="step_sound_monkey">Scimmia</string>
-    <string name="step_sound_alien">Alieno</string>
     <string name="step_sound_ufo">UFO</string>
     <string name="step_sound_buzz">Ronzio</string>
     <string name="step_sound_splash">Splash</string>
+    <string name="step_sound_ribbit">Cra cra</string>
+    <string name="step_sound_zip">Zip</string>
+    <string name="step_sound_peck">Toc toc</string>
     <string name="step_sound_cosmic">Cosmico</string>
     <string name="step_sound_boing">Boing</string>
 

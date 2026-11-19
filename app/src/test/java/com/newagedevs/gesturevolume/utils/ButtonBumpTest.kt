@@ -35,12 +35,13 @@ class ButtonBumpTest {
         // Water, and every one of the showpieces: petals, fireworks, the characters and the rest.
         assertTrue(throwers.containsAll(listOf(
             ButtonBump.STYLE_WATER, ButtonBump.STYLE_BLOSSOM, ButtonBump.STYLE_FIREWORKS, ButtonBump.STYLE_ATOM,
-            ButtonBump.STYLE_VOLCANO, ButtonBump.STYLE_DRAGON, ButtonBump.STYLE_ROCKET, ButtonBump.STYLE_CAT,
-            ButtonBump.STYLE_MONKEY, ButtonBump.STYLE_ALIEN, ButtonBump.STYLE_FISH, ButtonBump.STYLE_BUBBLES,
-            ButtonBump.STYLE_SMOKE, ButtonBump.STYLE_SPRAY, ButtonBump.STYLE_WIND, ButtonBump.STYLE_NINJA,
-            ButtonBump.STYLE_CRACK, ButtonBump.STYLE_UFO, ButtonBump.STYLE_BEES, ButtonBump.STYLE_SOLAR,
+            ButtonBump.STYLE_VOLCANO, ButtonBump.STYLE_ROCKET, ButtonBump.STYLE_CAT, ButtonBump.STYLE_MONKEY,
+            ButtonBump.STYLE_FISH, ButtonBump.STYLE_FROG, ButtonBump.STYLE_SPIDER, ButtonBump.STYLE_WOODPECKER,
+            ButtonBump.STYLE_BUBBLES, ButtonBump.STYLE_SMOKE, ButtonBump.STYLE_SPRAY, ButtonBump.STYLE_WIND,
+            ButtonBump.STYLE_NINJA, ButtonBump.STYLE_CRACK, ButtonBump.STYLE_UFO, ButtonBump.STYLE_BEES,
+            ButtonBump.STYLE_SOLAR,
         )))
-        assertEquals(20, throwers.size)
+        assertEquals(21, throwers.size)
         for (style in throwers) {
             val spec = ButtonBump.spec(style)
             val span = ButtonBump.windowSpan(style, length, density, depth)
@@ -51,6 +52,18 @@ class ButtonBumpTest {
             // Even the characters that only peek round the edge have room to show their heads.
             assertTrue("$style reach $reach", reach > depth * 3.5f)
         }
+    }
+
+    @Test
+    fun `retired styles fall back to the default`() {
+        listOf("dragon", "alien").forEach {
+            assertTrue(it !in ButtonBump.STYLES)
+            assertEquals(ButtonBump.DEFAULT_STYLE, ButtonBump.sanitizeStyle(it))
+        }
+        // And the three that came after them are there, each with its own sound.
+        assertEquals("ribbit", ButtonBump.sound(ButtonBump.STYLE_FROG))
+        assertEquals("zip", ButtonBump.sound(ButtonBump.STYLE_SPIDER))
+        assertEquals("peck", ButtonBump.sound(ButtonBump.STYLE_WOODPECKER))
     }
 
     @Test

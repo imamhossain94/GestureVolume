@@ -52,15 +52,16 @@
     <string name="bump_style_volcano">Volcano</string>
     <string name="bump_style_wind">Wind</string>
     <string name="bump_style_ninja">Ninja blade</string>
-    <string name="bump_style_dragon">Dragon fire</string>
     <string name="bump_style_bees">Bees</string>
     <string name="bump_style_rocket">Rocket launch</string>
     <string name="bump_style_crack">Cracked screen</string>
     <string name="bump_style_smoke">Smoke</string>
     <string name="bump_style_cat">Cat</string>
     <string name="bump_style_fish">Fish jump</string>
+    <string name="bump_style_frog">Frog jump</string>
+    <string name="bump_style_spider">Spider</string>
+    <string name="bump_style_woodpecker">Woodpecker</string>
     <string name="bump_style_monkey">Monkey</string>
-    <string name="bump_style_alien">Alien</string>
     <string name="bump_style_ufo">UFO</string>
     <string name="bump_style_spray">Aerosol spray</string>
     <string name="bump_place_title">Where your buttons are</string>
@@ -133,7 +134,6 @@
     <string name="step_sound_firework">Firework</string>
     <string name="step_sound_boom">Boom</string>
     <string name="step_sound_rumble">Rumble</string>
-    <string name="step_sound_roar">Roar</string>
     <string name="step_sound_launch">Launch</string>
     <string name="step_sound_swish">Swish</string>
     <string name="step_sound_crack">Crack</string>
@@ -143,10 +143,12 @@
     <string name="step_sound_bubbles">Bubbles</string>
     <string name="step_sound_meow">Meow</string>
     <string name="step_sound_monkey">Monkey</string>
-    <string name="step_sound_alien">Alien</string>
     <string name="step_sound_ufo">UFO</string>
     <string name="step_sound_buzz">Buzz</string>
     <string name="step_sound_splash">Splash</string>
+    <string name="step_sound_ribbit">Ribbit</string>
+    <string name="step_sound_zip">Zip</string>
+    <string name="step_sound_peck">Peck</string>
     <string name="step_sound_cosmic">Cosmic</string>
     <string name="step_sound_boing">Boing</string>
 

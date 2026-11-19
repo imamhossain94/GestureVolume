@@ -43,15 +43,16 @@
     <string name="bump_style_volcano">Вулкан</string>
     <string name="bump_style_wind">Ветер</string>
     <string name="bump_style_ninja">Клинок ниндзя</string>
-    <string name="bump_style_dragon">Огонь дракона</string>
     <string name="bump_style_bees">Пчёлы</string>
     <string name="bump_style_rocket">Запуск ракеты</string>
     <string name="bump_style_crack">Треснувший экран</string>
     <string name="bump_style_smoke">Дым</string>
     <string name="bump_style_cat">Кот</string>
     <string name="bump_style_fish">Прыжок рыбы</string>
+    <string name="bump_style_frog">Прыжок лягушки</string>
+    <string name="bump_style_spider">Паучок</string>
+    <string name="bump_style_woodpecker">Дятел</string>
     <string name="bump_style_monkey">Обезьяна</string>
-    <string name="bump_style_alien">Пришелец</string>
     <string name="bump_style_ufo">НЛО</string>
     <string name="bump_style_spray">Аэрозоль</string>
     <string name="bump_place_title">Где ваши кнопки</string>
@@ -122,7 +123,6 @@
     <string name="step_sound_firework">Салют</string>
     <string name="step_sound_boom">Бум</string>
     <string name="step_sound_rumble">Грохот</string>
-    <string name="step_sound_roar">Рёв</string>
     <string name="step_sound_launch">Старт</string>
     <string name="step_sound_swish">Свист</string>
     <string name="step_sound_crack">Треск</string>
@@ -132,10 +132,12 @@
     <string name="step_sound_bubbles">Пузыри</string>
     <string name="step_sound_meow">Мяу</string>
     <string name="step_sound_monkey">Обезьяна</string>
-    <string name="step_sound_alien">Пришелец</string>
     <string name="step_sound_ufo">НЛО</string>
     <string name="step_sound_buzz">Жужжание</string>
     <string name="step_sound_splash">Всплеск</string>
+    <string name="step_sound_ribbit">Ква</string>
+    <string name="step_sound_zip">Вжик</string>
+    <string name="step_sound_peck">Тук-тук</string>
     <string name="step_sound_cosmic">Космос</string>
     <string name="step_sound_boing">Боинг</string>
 

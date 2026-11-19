@@ -98,6 +98,7 @@ import com.newagedevs.gesturevolume.data.local.SharedPref
 import com.newagedevs.gesturevolume.service.ButtonBumpOverlay
 import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.components.ChoiceChip
+import com.newagedevs.gesturevolume.ui.components.DeviceArt
 import com.newagedevs.gesturevolume.ui.components.InfoNote
 import com.newagedevs.gesturevolume.ui.screens.quick_slider.sliderWithBumpLabel
 import com.newagedevs.gesturevolume.ui.screens.quick_slider.sliderWithBumpHint
@@ -780,7 +781,8 @@ private fun StyleTile(
                 .fillMaxWidth()
                 .height(TILE_STAGE_HEIGHT)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Brush.horizontalGradient(listOf(Color(0xFFE2A55A), Color(0xFFF3961E)))),
+                // The wallpaper the Quick slider's tiles are painted on, so the two galleries match.
+                .background(Brush.linearGradient(listOf(DeviceArt.WallTop, DeviceArt.WallBottom))),
         ) {
             BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                 val density = LocalDensity.current
@@ -1015,7 +1017,6 @@ private fun styleLabel(style: String): Int = when (style) {
     ButtonBump.STYLE_VOLCANO -> R.string.bump_style_volcano
     ButtonBump.STYLE_WIND -> R.string.bump_style_wind
     ButtonBump.STYLE_NINJA -> R.string.bump_style_ninja
-    ButtonBump.STYLE_DRAGON -> R.string.bump_style_dragon
     ButtonBump.STYLE_BEES -> R.string.bump_style_bees
     ButtonBump.STYLE_ROCKET -> R.string.bump_style_rocket
     ButtonBump.STYLE_SPRAY -> R.string.bump_style_spray
@@ -1024,7 +1025,9 @@ private fun styleLabel(style: String): Int = when (style) {
     ButtonBump.STYLE_CAT -> R.string.bump_style_cat
     ButtonBump.STYLE_FISH -> R.string.bump_style_fish
     ButtonBump.STYLE_MONKEY -> R.string.bump_style_monkey
-    ButtonBump.STYLE_ALIEN -> R.string.bump_style_alien
+    ButtonBump.STYLE_FROG -> R.string.bump_style_frog
+    ButtonBump.STYLE_SPIDER -> R.string.bump_style_spider
+    ButtonBump.STYLE_WOODPECKER -> R.string.bump_style_woodpecker
     ButtonBump.STYLE_UFO -> R.string.bump_style_ufo
     else -> R.string.bump_style_liquid
 }

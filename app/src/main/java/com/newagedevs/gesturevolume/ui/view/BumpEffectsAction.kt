@@ -61,8 +61,8 @@ internal class NinjaEffect(random: Random) : BumpEffect(random) {
         s.y = scene.centre + scene.restHalf * rnd(-0.2f, 0.2f)
         s.dir = flip
         flip = -flip
-        s.radius = min(scene.reach * 0.42f, scene.span * 0.3f)
-        repeat(if (atLimit) 1 else 2) {
+        s.radius = min(scene.reach * 0.42f, scene.span * 0.3f) * (0.6f + 0.4f * scene.power)
+        repeat(count(scene, if (atLimit) 1 else 2)) {
             val p = stars.spawn() ?: return@repeat
             p.x = scene.restDepth
             p.y = scene.centre + scene.restHalf * rnd(-0.3f, 0.3f)
@@ -215,8 +215,8 @@ internal class CrackEffect(random: Random) : BumpEffect(random) {
         p.cy = scene.centre + scene.restHalf * rnd(-0.25f, 0.25f)
         p.lines.clear()
         p.shards.clear()
-        val radius = min(scene.reach * 0.95f, scene.span * 0.48f)
-        val count = if (atLimit) 6 else 10
+        val radius = min(scene.reach * 0.95f, scene.span * 0.48f) * (0.5f + 0.5f * scene.power)
+        val count = count(scene, if (atLimit) 6 else 10)
         val radial = ArrayList<FloatArray>()
         for (i in 0 until count) {
             val base = Math.toRadians(-85.0 + 170.0 * (i + 0.5) / count).toFloat() + rnd(-0.12f, 0.12f)
@@ -496,12 +496,12 @@ internal class FishEffect(random: Random) : BumpEffect(random) {
         val f = fish.spawn() ?: return
         f.x = water.depth(scene) * 0.5f
         f.y = scene.centre + side * scene.restHalf * rnd(0.2f, 0.6f)
-        f.vx = rnd(300f, 380f) * d * if (atLimit) 0.8f else 1f
+        f.vx = rnd(300f, 380f) * d * (if (atLimit) 0.8f else 1f) * (0.62f + 0.38f * scene.power)
         f.vy = -side * rnd(60f, 140f) * d
         side = -side
         f.life = 3f
         f.phase = rnd(0f, 6.28f)
-        water.splash(scene, f.y, 0.8f)
+        water.splash(scene, f.y, 0.8f * scene.power)
     }
 
     override fun step(scene: BumpScene, dt: Float): Boolean {

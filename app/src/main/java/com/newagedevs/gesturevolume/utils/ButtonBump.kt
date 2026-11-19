@@ -71,7 +71,10 @@ object ButtonBump {
      */
     const val STYLE_WATER = "water"
 
-    /** A cherry blossom opens on the bump, and each press shakes petals loose to flutter down. */
+    /**
+     * A cherry branch in full bloom reaching in from the edge beside the buttons: each press shakes
+     * it, and petals shake loose to flutter down across the screen.
+     */
     const val STYLE_BLOSSOM = "blossom"
 
 
@@ -87,7 +90,10 @@ object ButtonBump {
 
 
 
-    /** A mushroom cloud: a flash, a shockwave along the ground, and fire rolling up into a cap. */
+    /**
+     * A mushroom cloud rising from the button: a flash over the whole screen, a shockwave that runs
+     * across all of it, and fire rolling up a stem into a wide cap that cools to smoke.
+     */
     const val STYLE_ATOM = "atom"
 
     /** A volcano in place of the bump, erupting lava bombs and ash at each press. */
@@ -98,9 +104,6 @@ object ButtonBump {
 
     /** A blade's slash, the other way each time, and throwing stars spinning out. */
     const val STYLE_NINJA = "ninja"
-
-    /** A dragon's head in place of the bump, breathing a stream of fire at each press. */
-    const val STYLE_DRAGON = "dragon"
 
     /** Bees buzzing out, looping about on dotted trails, and heading home. */
     const val STYLE_BEES = "bees"
@@ -129,8 +132,18 @@ object ButtonBump {
     /** A monkey peeking round the edge, grinning, shrieking at each press. */
     const val STYLE_MONKEY = "monkey"
 
-    /** A little green alien peeking round the edge, its eyes glowing at each press. */
-    const val STYLE_ALIEN = "alien"
+    /** A frog on a lily pad at the edge, hopping out at each press and croaking as it lands. */
+    const val STYLE_FROG = "frog"
+
+    /**
+     * A cute little spider: it shoots a line of silk to the camera hole or the top of the screen,
+     * swings across on it, leaps from edge to edge, and wanders off when it likes. A spider of its
+     * own, in a colour of its own each time — not anyone's superhero.
+     */
+    const val STYLE_SPIDER = "spider"
+
+    /** A woodpecker on a trunk along the edge, drumming a hole into it at each press. */
+    const val STYLE_WOODPECKER = "woodpecker"
 
     /** A flying saucer swooping out, shining its beam down, and zipping away. */
     const val STYLE_UFO = "ufo"
@@ -140,8 +153,8 @@ object ButtonBump {
     /** In the order they are offered. */
     val STYLES: List<String> = listOf(
         STYLE_WATER, STYLE_LIQUID, STYLE_BLOSSOM, STYLE_FIREWORKS, STYLE_ATOM, STYLE_VOLCANO,
-        STYLE_DRAGON, STYLE_ROCKET, STYLE_CAT, STYLE_MONKEY, STYLE_ALIEN, STYLE_FISH, STYLE_BUBBLES,
-        STYLE_SMOKE, STYLE_SPRAY, STYLE_WIND, STYLE_NINJA, STYLE_CRACK, STYLE_UFO, STYLE_BEES, STYLE_SOLAR,
+        STYLE_ROCKET, STYLE_FISH, STYLE_FROG, STYLE_SPIDER, STYLE_WOODPECKER, STYLE_CAT, STYLE_MONKEY,
+        STYLE_BUBBLES, STYLE_SMOKE, STYLE_SPRAY, STYLE_WIND, STYLE_NINJA, STYLE_CRACK, STYLE_UFO, STYLE_BEES, STYLE_SOLAR,
         STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY, STYLE_NEON, STYLE_AURORA, STYLE_RIPPLE, STYLE_SPARKLE,
         STYLE_LAVA, STYLE_GLASS, STYLE_SPECTRUM, STYLE_HEARTBEAT, STYLE_ELASTIC,
     )
@@ -199,7 +212,6 @@ object ButtonBump {
         STYLE_VOLCANO -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
         STYLE_WIND -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6f)
         STYLE_NINJA -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6f)
-        STYLE_DRAGON -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 6f)
         STYLE_BEES -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 7f)
         STYLE_ROCKET -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 7.5f)
         STYLE_SPRAY -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6.5f)
@@ -208,7 +220,9 @@ object ButtonBump {
         STYLE_CAT -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 5.5f, spread = 3.2f)
         STYLE_FISH -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
         STYLE_MONKEY -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 5.5f, spread = 3.2f)
-        STYLE_ALIEN -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 6f, spread = 3.2f)
+        STYLE_FROG -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
+        STYLE_SPIDER -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
+        STYLE_WOODPECKER -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 6f, spread = 4f)
         STYLE_UFO -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6.5f)
         else -> Spec(stiffness = 400f, damping = 0.62f, shoulder = 0.34f, reach = 1.7f)
     }
@@ -343,11 +357,12 @@ object ButtonBump {
         STYLE_FIREWORKS -> "firework"
         STYLE_ATOM -> "boom"
         STYLE_VOLCANO -> "rumble"
-        STYLE_DRAGON -> "roar"
         STYLE_ROCKET -> "launch"
         STYLE_CAT -> "meow"
         STYLE_MONKEY -> "monkey"
-        STYLE_ALIEN -> "alien"
+        STYLE_FROG -> "ribbit"
+        STYLE_SPIDER -> "zip"
+        STYLE_WOODPECKER -> "peck"
         STYLE_FISH -> "splash"
         STYLE_BUBBLES -> "bubbles"
         STYLE_SMOKE -> "exhale"

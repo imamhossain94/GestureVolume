@@ -118,4 +118,23 @@ class WaterSurfaceTest {
     fun `a surface too small to step is refused`() {
         WaterSurface(cols = 2, rows = 10)
     }
+
+    @Test
+    fun `a pool with walls all round sends a wave back off its far side`() {
+        val open = WaterSurface(cols = 40, rows = 41)
+        val walled = WaterSurface(cols = 40, rows = 41, walls = true)
+        for (pool in listOf(open, walled)) {
+            pool.impulse(centreRow = 20f, halfRows = 3f, depthCells = 4f, amount = -1f)
+            // Out to the far side and half way back.
+            repeat(95) { pool.step() }
+        }
+        // The echo, coming back through the near half: the walled pool has one, the open pool
+        // soaked its wave up at the far side.
+        fun nearHalf(pool: WaterSurface): Float {
+            var sum = 0f
+            for (r in 0 until pool.rows) for (c in 0 until pool.cols / 2) sum += abs(pool.heightAt(c, r))
+            return sum
+        }
+        assertTrue("walled ${nearHalf(walled)} vs open ${nearHalf(open)}", nearHalf(walled) > nearHalf(open) * 1.2f)
+    }
 }
