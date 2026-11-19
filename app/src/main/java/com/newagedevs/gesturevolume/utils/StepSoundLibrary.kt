@@ -22,7 +22,7 @@ object StepSoundLibrary {
         TICK, "tap", "dial", "keys", "wood", "pop", "drop", "bubble", "snap", "thud", "blip",
         "marimba", "glass", "chime",
         // The button animations' own sounds, there to choose for the Quick panel too.
-        "twinkle", "firework", "rumble", "launch", "swish", "crack", "exhale",
+        "twinkle", "firework", "rumble", "launch", "swish", "crack",
         "whoosh", "spray", "bubbles", "meow", "monkey", "ufo", "buzz", "splash", "ribbit", "zip", "peck",
         "cosmic", "boing",
     )

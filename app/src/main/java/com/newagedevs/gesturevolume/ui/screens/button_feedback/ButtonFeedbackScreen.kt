@@ -80,6 +80,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -825,10 +826,12 @@ private fun StyleTile(
         }
         Text(
             text = stringResource(styleLabel(style)),
-            fontSize = 13.sp,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
             color = colours.onSurface,
             maxLines = 1,
+            // A long name — Spider Queen, or most names in some languages — set smaller to fit the
+            // tile whole, rather than cut off at its edge.
+            autoSize = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = 13.sp, stepSize = 0.5.sp),
             modifier = Modifier.padding(top = 6.dp, bottom = 2.dp),
         )
     }
@@ -1020,7 +1023,6 @@ private fun styleLabel(style: String): Int = when (style) {
     ButtonBump.STYLE_ROCKET -> R.string.bump_style_rocket
     ButtonBump.STYLE_SPRAY -> R.string.bump_style_spray
     ButtonBump.STYLE_CRACK -> R.string.bump_style_crack
-    ButtonBump.STYLE_SMOKE -> R.string.bump_style_smoke
     ButtonBump.STYLE_CAT -> R.string.bump_style_cat
     ButtonBump.STYLE_FISH -> R.string.bump_style_fish
     ButtonBump.STYLE_MONKEY -> R.string.bump_style_monkey

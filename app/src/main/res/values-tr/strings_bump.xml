@@ -45,15 +45,14 @@
     <string name="bump_style_bees">Arılar</string>
     <string name="bump_style_rocket">Roket fırlatma</string>
     <string name="bump_style_crack">Çatlak ekran</string>
-    <string name="bump_style_smoke">Duman</string>
     <string name="bump_style_cat">Kedi</string>
     <string name="bump_style_fish">Zıplayan balık</string>
     <string name="bump_style_frog">Zıplayan kurbağa</string>
-    <string name="bump_style_spider">Örümcek</string>
+    <string name="bump_style_spider">Örümcek Kraliçe</string>
     <string name="bump_style_woodpecker">Ağaçkakan</string>
     <string name="bump_style_monkey">Maymun</string>
     <string name="bump_style_ufo">UFO</string>
-    <string name="bump_style_spray">Sprey kutusu</string>
+    <string name="bump_style_spray">Renkli sprey</string>
     <string name="bump_place_title">Tuşlarınız nerede</string>
     <string name="bump_place_desc">Bir tuş seçin, ardından ekrandaki basış tam yanına gelene kadar kaydırın. Bu ekran açıkken gerçek tuşa basmak da nereye geldiğini gösterir.</string>
     <string name="bump_side">Taraf</string>
@@ -124,7 +123,6 @@
     <string name="step_sound_launch">Fırlatma</string>
     <string name="step_sound_swish">Vınlama</string>
     <string name="step_sound_crack">Çatırtı</string>
-    <string name="step_sound_exhale">Nefes</string>
     <string name="step_sound_whoosh">Uğultu</string>
     <string name="step_sound_spray">Fıs</string>
     <string name="step_sound_bubbles">Kabarcıklar</string>

@@ -309,18 +309,9 @@ class ButtonBumpView(context: Context) : View(context) {
         presenceTarget = 1f
         this.level.snapTo(level)
         levelTarget = level
-        // The water a moment after a press, the ring half way out, frozen.
-        water?.let { pool ->
-            pool.clear()
-            val (row, half, deep) = waterSource()
-            repeat(WATER_STILL_STEPS) { i ->
-                pool.hold(row, half, deep, WATER_DROP, WATER_HOLD)
-                if (i == 0) pool.impulse(row, half * WATER_KICK_SPREAD, deep * WATER_KICK_DEPTH, -WATER_KICK)
-                pool.step()
-            }
-            waterAlive = true
-            waterDirty = true
-        }
+        // The water is drawn for a still as clean rings: see drawWaterStill.
+        water?.clear()
+        waterAlive = false
         effect?.let { fx ->
             syncScene()
             scene.target = level
@@ -636,7 +627,7 @@ class ButtonBumpView(context: Context) : View(context) {
             ButtonBump.STYLE_HEARTBEAT -> drawHeartbeat(canvas, now, p, centre, half, depth)
             ButtonBump.STYLE_ELASTIC -> drawElastic(canvas, p, press, centre, half, depth)
             ButtonBump.STYLE_WATER -> {
-                drawWater(canvas)
+                if (still) drawWaterStill(canvas, centre, depth) else drawWater(canvas)
                 drawDrop(canvas, p, press, centre, half, depth)
             }
             else -> if (effect != null) {
@@ -752,6 +743,30 @@ class ButtonBumpView(context: Context) : View(context) {
         }
         waterRect.set(0f, waterTop, waterWidth, waterTop + waterHeight)
         canvas.drawBitmap(bitmap, null, waterRect, waterPaint)
+    }
+
+    /**
+     * The water for a gallery tile: the rings a drop sends out, drawn clean rather than simulated —
+     * at a tile's size the simulation's cells show, and its troughs read as a dark smudge. Each ring
+     * a bright crest with a soft glow, a faint shadow just outside it, fainter the further out.
+     */
+    private fun drawWaterStill(canvas: Canvas, centre: Float, depth: Float) {
+        val across = max(waterWidth, 1f)
+        val cx = depth * 0.35f
+        strokePaint.shader = null
+        for ((i, k) in WATER_STILL_RINGS.withIndex()) {
+            val r = across * k
+            val strength = 1f - i * 0.28f
+            strokePaint.strokeWidth = 3.2f * density
+            strokePaint.color = withAlpha(settings.color, 0.1f * strength)
+            canvas.drawCircle(cx, centre, r + 2.6f * density, strokePaint)
+            strokePaint.strokeWidth = 6.5f * density
+            strokePaint.color = withAlpha(settings.accent, 0.16f * strength)
+            canvas.drawCircle(cx, centre, r, strokePaint)
+            strokePaint.strokeWidth = 1.9f * density
+            strokePaint.color = withAlpha(settings.accent, 0.85f * strength)
+            canvas.drawCircle(cx, centre, r, strokePaint)
+        }
     }
 
     /**
@@ -1308,7 +1323,8 @@ class ButtonBumpView(context: Context) : View(context) {
         /** Below this nothing on the water can be seen, and it is left still. */
         const val WATER_REST = 0.004f
         /** The steps run for a gallery tile's frozen frame: the first ring half way out. */
-        const val WATER_STILL_STEPS = 20
+        /** The rings in a still of the water, as parts of the way across the screen. */
+        val WATER_STILL_RINGS = floatArrayOf(0.3f, 0.56f, 0.84f)
 
         /** Width multiples and alphas of a glow's passes, faintest and widest first. */
         val GLOW = listOf(5.5f to 0.08f, 3.4f to 0.14f, 2f to 0.3f, 1f to 1f)

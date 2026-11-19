@@ -45,15 +45,14 @@
     <string name="bump_style_bees">Đàn ong</string>
     <string name="bump_style_rocket">Phóng tên lửa</string>
     <string name="bump_style_crack">Màn hình nứt</string>
-    <string name="bump_style_smoke">Khói</string>
     <string name="bump_style_cat">Mèo</string>
     <string name="bump_style_fish">Cá nhảy</string>
     <string name="bump_style_frog">Ếch nhảy</string>
-    <string name="bump_style_spider">Nhện</string>
+    <string name="bump_style_spider">Nữ hoàng Nhện</string>
     <string name="bump_style_woodpecker">Chim gõ kiến</string>
     <string name="bump_style_monkey">Khỉ</string>
     <string name="bump_style_ufo">UFO</string>
-    <string name="bump_style_spray">Bình xịt</string>
+    <string name="bump_style_spray">Xịt màu</string>
     <string name="bump_place_title">Vị trí các nút của bạn</string>
     <string name="bump_place_desc">Chọn một nút, rồi trượt cho đến khi vết nhấn trên màn hình nằm ngay cạnh nút. Khi màn hình này mở, nhấn nút thật cũng cho thấy nó hiện ở đâu.</string>
     <string name="bump_side">Cạnh</string>
@@ -124,7 +123,6 @@
     <string name="step_sound_launch">Phóng</string>
     <string name="step_sound_swish">Vút</string>
     <string name="step_sound_crack">Nứt</string>
-    <string name="step_sound_exhale">Thở ra</string>
     <string name="step_sound_whoosh">Vù vù</string>
     <string name="step_sound_spray">Xịt</string>
     <string name="step_sound_bubbles">Bong bóng</string>

@@ -45,15 +45,14 @@
     <string name="bump_style_bees">Abeilles</string>
     <string name="bump_style_rocket">Décollage de fusée</string>
     <string name="bump_style_crack">Écran fissuré</string>
-    <string name="bump_style_smoke">Fumée</string>
     <string name="bump_style_cat">Chat</string>
     <string name="bump_style_fish">Poisson sauteur</string>
     <string name="bump_style_frog">Grenouille sauteuse</string>
-    <string name="bump_style_spider">Araignée</string>
+    <string name="bump_style_spider">Reine Araignée</string>
     <string name="bump_style_woodpecker">Pic-vert</string>
     <string name="bump_style_monkey">Singe</string>
     <string name="bump_style_ufo">OVNI</string>
-    <string name="bump_style_spray">Bombe aérosol</string>
+    <string name="bump_style_spray">Spray de couleurs</string>
     <string name="bump_place_title">Où sont vos boutons</string>
     <string name="bump_place_desc">Choisissez un bouton, puis faites glisser jusqu’à ce que l’appui à l’écran soit juste à côté. Avec cet écran ouvert, presser le vrai bouton montre aussi où il tombe.</string>
     <string name="bump_side">Côté</string>
@@ -124,7 +123,6 @@
     <string name="step_sound_launch">Décollage</string>
     <string name="step_sound_swish">Fouet</string>
     <string name="step_sound_crack">Craquement</string>
-    <string name="step_sound_exhale">Expiration</string>
     <string name="step_sound_whoosh">Souffle</string>
     <string name="step_sound_spray">Pschitt</string>
     <string name="step_sound_bubbles">Bulles</string>

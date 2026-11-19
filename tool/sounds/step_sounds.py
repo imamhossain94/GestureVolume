@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""The Quick slider's step sounds, made from nothing but code, so there is nothing to license.
+"""The Quick slider's step sounds, made from code, so there is nothing to license.
 
 Each one is a handful of damped sine waves, a gliding tone or a burst of filtered noise, written as
-16-bit mono WAV to app/src/main/res/raw/step_<id>.wav. The ids are the ones StepSoundLibrary offers
+16-bit mono WAV to app/src/main/res/raw/step_<id>.wav. One is not: the cat's meow is a real cat,
+recorded by BigSoundBank and dedicated to the public domain (CC0), in sources/ — see meow(). The ids are the ones StepSoundLibrary offers
 in the app. The first of those, "tick", is the app's original res/raw/slider_tick.wav: it is not
 made here, but every sound made here is levelled to it, so switching between them changes the
 character of the step and not how loud it is.
@@ -324,15 +325,6 @@ def crack():
     return mix(click * 0.8, burst, pings, small)
 
 
-def exhale():
-    """A long, soft breath out: vapour."""
-    d = 0.7
-    t = t_axis(d)
-    n = sweep_bp(noise(d, 35), 1400 + 400 * np.sin(2 * np.pi * 1.3 * t), 0.6) * 2.0
-    shape = np.clip(t / 0.09, 0, 1) ** 2 * np.exp(-np.maximum(t - 0.09, 0) / 0.28)
-    return n * shape * (1 + 0.12 * np.sin(2 * np.pi * 11 * t))
-
-
 def whoosh():
     """A gust going by: up in pitch and back down."""
     d = 0.6
@@ -361,51 +353,29 @@ def bubbles():
     return mix(*parts)
 
 
-def smooth(k, points, values):
-    """A curve through (points, values) with no corners: smoothstep between each pair."""
-    k = np.clip(k, points[0], points[-1])
-    out = np.zeros_like(k)
-    for i in range(len(points) - 1):
-        lo, hi = points[i], points[i + 1]
-        inside = (k >= lo) & (k <= hi)
-        u = (k[inside] - lo) / (hi - lo)
-        u = u * u * (3 - 2 * u)
-        out[inside] = values[i] + (values[i + 1] - values[i]) * u
-    return out
+SOURCES = os.path.join(HERE, "sources")
 
 
 def meow():
-    """A kitten's meow, sweet and clear: "m-ee-ow".
+    """A real cat's meow, "mee-ow": the pitch climbs from about 420 to 520 Hz and sinks back.
 
-    A voice rather than a buzz: the pitch climbs smoothly to its top a third of the way in and sinks
-    back, a little vibrato arrives once the note has settled, and the mouth goes from a closed "m"
-    through "ee" to an open "a" and rounds to "ow". The harmonics roll off steeply and the formants
-    are narrow, which is what makes it ring clear rather than rasp, and a breath of air under it
-    keeps it from sounding like a whistle.
+    No formula sounds like a cat, so this one is a recording: the second meow of "Small mewing of a
+    cat", sound #0098 of BigSoundBank (bigsoundbank.com), by Joseph Sardin, dedicated to the public
+    domain under CC0. sources/meow.wav is that meow as it was downloaded, from 1.06 s for 0.71 s,
+    resampled to 44.1 kHz; nothing else has been done to it. Here it starts where the recording's
+    own silence ends, faded in so the gate that opened there is not heard as a click; loses the
+    rumble below the voice, which a phone's speaker would only rattle on; and fades out on its own
+    breath.
     """
-    d = 0.56
-    t = t_axis(d)
-    k = t / d
-    vibrato = 1 + 0.012 * np.sin(2 * np.pi * 5.6 * t) * np.clip((t - 0.16) / 0.1, 0, 1)
-    f0 = smooth(k, [0.0, 0.32, 0.78, 1.0], [640, 980, 700, 600]) * vibrato
-    f1 = smooth(k, [0.0, 0.12, 0.3, 0.62, 1.0], [320, 520, 950, 820, 430])
-    f2 = smooth(k, [0.0, 0.12, 0.3, 0.62, 1.0], [1700, 2350, 1750, 1250, 900])
-    n = len(t)
-    out = np.zeros(n)
-    for h in range(1, 14):
-        fk = h * f0
-        if fk.max() > SR / 2 - 3000:
-            break
-        ph = 2 * np.pi * np.cumsum(fk) / SR
-        amp = (np.exp(-((fk - f1) / 170) ** 2) + 0.55 * np.exp(-((fk - f2) / 240) ** 2)
-               + 0.12 * np.exp(-((fk - 3300) / 420) ** 2))
-        out += amp * np.sin(ph) / (h ** 0.9)
-    # The "m": the mouth closed, softer and duller for the first few hundredths of a second.
-    nasal = smooth(k, [0.0, 0.1, 0.16], [0.35, 0.8, 1.0])
-    breath = biquad(noise(d, 71), "bp", 2600, 1.2) * 0.035
-    shape = np.clip(t / 0.045, 0, 1) ** 1.5 * smooth(k, [0.0, 0.72, 1.0], [1.0, 0.85, 0.0])
-    x = (out * nasal + breath) * shape
-    return biquad(x, "lp", 6500)
+    x, sr = read_wav(os.path.join(SOURCES, "meow.wav"))
+    assert sr == SR, sr
+    x = x[int(np.argmax(np.abs(x) > 0)):].copy()
+    n_in = int(0.015 * SR)
+    x[:n_in] *= np.sin(np.linspace(0, np.pi / 2, n_in)) ** 2
+    x = biquad(biquad(x, "hp", 170), "hp", 170)
+    n_out = int(0.06 * SR)
+    x[-n_out:] *= np.cos(np.linspace(0, np.pi / 2, n_out)) ** 2
+    return x
 
 
 def monkey():
@@ -537,7 +507,6 @@ SOUNDS = {
     "launch": (launch, -3.0),
     "swish": (swish, -2.0),
     "crack": (crack, -1.0),
-    "exhale": (exhale, -4.0),
     "whoosh": (whoosh, -3.0),
     "spray": (spray, -5.0),
     "bubbles": (bubbles, 0.0),

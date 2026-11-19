@@ -45,15 +45,14 @@
     <string name="bump_style_bees">꿀벌</string>
     <string name="bump_style_rocket">로켓 발사</string>
     <string name="bump_style_crack">깨진 화면</string>
-    <string name="bump_style_smoke">연기</string>
     <string name="bump_style_cat">고양이</string>
     <string name="bump_style_fish">점프하는 물고기</string>
     <string name="bump_style_frog">점프하는 개구리</string>
-    <string name="bump_style_spider">거미</string>
+    <string name="bump_style_spider">스파이더 퀸</string>
     <string name="bump_style_woodpecker">딱따구리</string>
     <string name="bump_style_monkey">원숭이</string>
     <string name="bump_style_ufo">UFO</string>
-    <string name="bump_style_spray">스프레이</string>
+    <string name="bump_style_spray">컬러 스프레이</string>
     <string name="bump_place_title">버튼 위치</string>
     <string name="bump_place_desc">버튼을 고른 뒤, 화면의 눌림이 버튼 바로 옆에 올 때까지 밀어 주세요. 이 화면이 열려 있는 동안에는 실제 버튼을 눌러도 위치가 보입니다.</string>
     <string name="bump_side">측면</string>
@@ -124,7 +123,6 @@
     <string name="step_sound_launch">발사</string>
     <string name="step_sound_swish">휙</string>
     <string name="step_sound_crack">쩍</string>
-    <string name="step_sound_exhale">날숨</string>
     <string name="step_sound_whoosh">휘잉</string>
     <string name="step_sound_spray">칙</string>
     <string name="step_sound_bubbles">거품</string>

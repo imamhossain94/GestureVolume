@@ -45,15 +45,14 @@
     <string name="bump_style_bees">نحل</string>
     <string name="bump_style_rocket">إطلاق صاروخ</string>
     <string name="bump_style_crack">شاشة متشققة</string>
-    <string name="bump_style_smoke">دخان</string>
     <string name="bump_style_cat">قطة</string>
     <string name="bump_style_fish">سمكة قافزة</string>
     <string name="bump_style_frog">ضفدع قافز</string>
-    <string name="bump_style_spider">عنكبوت</string>
+    <string name="bump_style_spider">ملكة العناكب</string>
     <string name="bump_style_woodpecker">نقار الخشب</string>
     <string name="bump_style_monkey">قرد</string>
     <string name="bump_style_ufo">طبق طائر</string>
-    <string name="bump_style_spray">بخاخ رذاذ</string>
+    <string name="bump_style_spray">بخاخ ألوان</string>
     <string name="bump_place_title">مكان أزرارك</string>
     <string name="bump_place_desc">اختر زرًا، ثم اسحب حتى تستقر الضغطة على شاشتك بجواره تمامًا. وأثناء فتح هذه الشاشة، يُظهر الضغط على الزر الحقيقي موضعها أيضًا.</string>
     <string name="bump_side">الجانب</string>
@@ -124,7 +123,6 @@
     <string name="step_sound_launch">انطلاق</string>
     <string name="step_sound_swish">صفير السيف</string>
     <string name="step_sound_crack">تشقق</string>
-    <string name="step_sound_exhale">زفير</string>
     <string name="step_sound_whoosh">هبوب</string>
     <string name="step_sound_spray">رشّ</string>
     <string name="step_sound_bubbles">فقاعات</string>

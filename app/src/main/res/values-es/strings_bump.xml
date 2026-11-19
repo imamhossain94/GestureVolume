@@ -45,15 +45,14 @@
     <string name="bump_style_bees">Abejas</string>
     <string name="bump_style_rocket">Lanzamiento de cohete</string>
     <string name="bump_style_crack">Pantalla rota</string>
-    <string name="bump_style_smoke">Humo</string>
     <string name="bump_style_cat">Gato</string>
     <string name="bump_style_fish">Pez saltarín</string>
     <string name="bump_style_frog">Rana saltarina</string>
-    <string name="bump_style_spider">Araña</string>
+    <string name="bump_style_spider">Reina Araña</string>
     <string name="bump_style_woodpecker">Pájaro carpintero</string>
     <string name="bump_style_monkey">Mono</string>
     <string name="bump_style_ufo">OVNI</string>
-    <string name="bump_style_spray">Aerosol</string>
+    <string name="bump_style_spray">Spray de colores</string>
     <string name="bump_place_title">Dónde están tus botones</string>
     <string name="bump_place_desc">Elige un botón y desliza hasta que la pulsación en tu pantalla quede justo a su lado. Con esta pantalla abierta, pulsar el botón real también muestra dónde cae.</string>
     <string name="bump_side">Lado</string>
@@ -124,7 +123,6 @@
     <string name="step_sound_launch">Despegue</string>
     <string name="step_sound_swish">Silbido</string>
     <string name="step_sound_crack">Crujido</string>
-    <string name="step_sound_exhale">Exhalación</string>
     <string name="step_sound_whoosh">Ráfaga</string>
     <string name="step_sound_spray">Spray</string>
     <string name="step_sound_bubbles">Burbujas</string>

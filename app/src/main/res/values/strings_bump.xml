@@ -54,15 +54,14 @@
     <string name="bump_style_bees">Bees</string>
     <string name="bump_style_rocket">Rocket launch</string>
     <string name="bump_style_crack">Cracked screen</string>
-    <string name="bump_style_smoke">Smoke</string>
     <string name="bump_style_cat">Cat</string>
     <string name="bump_style_fish">Fish jump</string>
     <string name="bump_style_frog">Frog jump</string>
-    <string name="bump_style_spider">Spider</string>
+    <string name="bump_style_spider">Spider Queen</string>
     <string name="bump_style_woodpecker">Woodpecker</string>
     <string name="bump_style_monkey">Monkey</string>
     <string name="bump_style_ufo">UFO</string>
-    <string name="bump_style_spray">Aerosol spray</string>
+    <string name="bump_style_spray">Colour spray</string>
     <string name="bump_place_title">Where your buttons are</string>
     <string name="bump_place_desc">Pick a button, then slide until the press on your screen sits right beside it. With this screen open, pressing the real button shows where it lands too.</string>
     <string name="bump_side">Side</string>
@@ -135,7 +134,6 @@
     <string name="step_sound_launch">Launch</string>
     <string name="step_sound_swish">Swish</string>
     <string name="step_sound_crack">Crack</string>
-    <string name="step_sound_exhale">Exhale</string>
     <string name="step_sound_whoosh">Whoosh</string>
     <string name="step_sound_spray">Spray</string>
     <string name="step_sound_bubbles">Bubbles</string>

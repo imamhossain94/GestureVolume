@@ -45,15 +45,14 @@
     <string name="bump_style_bees">Пчёлы</string>
     <string name="bump_style_rocket">Запуск ракеты</string>
     <string name="bump_style_crack">Треснувший экран</string>
-    <string name="bump_style_smoke">Дым</string>
     <string name="bump_style_cat">Кот</string>
     <string name="bump_style_fish">Прыжок рыбы</string>
     <string name="bump_style_frog">Прыжок лягушки</string>
-    <string name="bump_style_spider">Паучок</string>
+    <string name="bump_style_spider">Королева пауков</string>
     <string name="bump_style_woodpecker">Дятел</string>
     <string name="bump_style_monkey">Обезьяна</string>
     <string name="bump_style_ufo">НЛО</string>
-    <string name="bump_style_spray">Аэрозоль</string>
+    <string name="bump_style_spray">Цветной спрей</string>
     <string name="bump_place_title">Где ваши кнопки</string>
     <string name="bump_place_desc">Выберите кнопку и двигайте, пока отклик на экране не окажется прямо рядом с ней. Пока открыт этот экран, нажатие настоящей кнопки тоже покажет, где он появляется.</string>
     <string name="bump_side">Сторона</string>
@@ -124,7 +123,6 @@
     <string name="step_sound_launch">Старт</string>
     <string name="step_sound_swish">Свист</string>
     <string name="step_sound_crack">Треск</string>
-    <string name="step_sound_exhale">Выдох</string>
     <string name="step_sound_whoosh">Порыв</string>
     <string name="step_sound_spray">Пшик</string>
     <string name="step_sound_bubbles">Пузыри</string>

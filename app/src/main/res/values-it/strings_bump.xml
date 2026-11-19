@@ -45,15 +45,14 @@
     <string name="bump_style_bees">Api</string>
     <string name="bump_style_rocket">Lancio del razzo</string>
     <string name="bump_style_crack">Schermo crepato</string>
-    <string name="bump_style_smoke">Fumo</string>
     <string name="bump_style_cat">Gatto</string>
     <string name="bump_style_fish">Pesce che salta</string>
     <string name="bump_style_frog">Rana che salta</string>
-    <string name="bump_style_spider">Ragno</string>
+    <string name="bump_style_spider">Regina Ragno</string>
     <string name="bump_style_woodpecker">Picchio</string>
     <string name="bump_style_monkey">Scimmia</string>
     <string name="bump_style_ufo">UFO</string>
-    <string name="bump_style_spray">Bomboletta spray</string>
+    <string name="bump_style_spray">Spray colorato</string>
     <string name="bump_place_title">Dove sono i tuoi tasti</string>
     <string name="bump_place_desc">Scegli un tasto, poi scorri finché la pressione sullo schermo non è proprio accanto. Con questa schermata aperta, anche premere il tasto vero mostra dove cade.</string>
     <string name="bump_side">Lato</string>
@@ -124,7 +123,6 @@
     <string name="step_sound_launch">Lancio</string>
     <string name="step_sound_swish">Sibilo</string>
     <string name="step_sound_crack">Crepa</string>
-    <string name="step_sound_exhale">Espiro</string>
     <string name="step_sound_whoosh">Folata</string>
     <string name="step_sound_spray">Spruzzo</string>
     <string name="step_sound_bubbles">Bolle</string>

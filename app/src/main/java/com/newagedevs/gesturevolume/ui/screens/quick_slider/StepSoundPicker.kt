@@ -227,7 +227,6 @@ fun stepSoundLabel(id: String): Int = when (id) {
     "launch" -> R.string.step_sound_launch
     "swish" -> R.string.step_sound_swish
     "crack" -> R.string.step_sound_crack
-    "exhale" -> R.string.step_sound_exhale
     "whoosh" -> R.string.step_sound_whoosh
     "spray" -> R.string.step_sound_spray
     "bubbles" -> R.string.step_sound_bubbles

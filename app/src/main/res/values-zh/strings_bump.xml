@@ -45,15 +45,14 @@
     <string name="bump_style_bees">蜜蜂</string>
     <string name="bump_style_rocket">火箭发射</string>
     <string name="bump_style_crack">屏幕碎裂</string>
-    <string name="bump_style_smoke">烟雾</string>
     <string name="bump_style_cat">猫咪</string>
     <string name="bump_style_fish">鱼跃</string>
     <string name="bump_style_frog">青蛙跳</string>
-    <string name="bump_style_spider">小蜘蛛</string>
+    <string name="bump_style_spider">蜘蛛女王</string>
     <string name="bump_style_woodpecker">啄木鸟</string>
     <string name="bump_style_monkey">猴子</string>
     <string name="bump_style_ufo">飞碟</string>
-    <string name="bump_style_spray">喷雾</string>
+    <string name="bump_style_spray">彩色喷雾</string>
     <string name="bump_place_title">按键的位置</string>
     <string name="bump_place_desc">选择一个按键，然后滑动，直到屏幕上的按压效果正好在它旁边。打开此界面时，按下真实按键也会显示它出现的位置。</string>
     <string name="bump_side">侧边</string>
@@ -124,7 +123,6 @@
     <string name="step_sound_launch">发射</string>
     <string name="step_sound_swish">嗖</string>
     <string name="step_sound_crack">碎裂</string>
-    <string name="step_sound_exhale">呼气</string>
     <string name="step_sound_whoosh">呼呼</string>
     <string name="step_sound_spray">喷</string>
     <string name="step_sound_bubbles">泡泡</string>

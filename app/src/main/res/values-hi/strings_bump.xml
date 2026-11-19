@@ -45,15 +45,14 @@
     <string name="bump_style_bees">मधुमक्खियाँ</string>
     <string name="bump_style_rocket">रॉकेट लॉन्च</string>
     <string name="bump_style_crack">टूटी स्क्रीन</string>
-    <string name="bump_style_smoke">धुआँ</string>
     <string name="bump_style_cat">बिल्ली</string>
     <string name="bump_style_fish">उछलती मछली</string>
     <string name="bump_style_frog">उछलता मेंढक</string>
-    <string name="bump_style_spider">मकड़ी</string>
+    <string name="bump_style_spider">मकड़ी रानी</string>
     <string name="bump_style_woodpecker">कठफोड़वा</string>
     <string name="bump_style_monkey">बंदर</string>
     <string name="bump_style_ufo">यूएफ़ओ</string>
-    <string name="bump_style_spray">एरोसोल स्प्रे</string>
+    <string name="bump_style_spray">रंगीन स्प्रे</string>
     <string name="bump_place_title">आपके बटन कहाँ हैं</string>
     <string name="bump_place_desc">एक बटन चुनें, फिर तब तक स्लाइड करें जब तक स्क्रीन पर दबाव ठीक उसके बगल में न आ जाए। यह स्क्रीन खुली रहने पर असली बटन दबाने से भी दिखता है कि वह कहाँ आता है।</string>
     <string name="bump_side">किनारा</string>
@@ -124,7 +123,6 @@
     <string name="step_sound_launch">लॉन्च</string>
     <string name="step_sound_swish">सरसराहट</string>
     <string name="step_sound_crack">दरार</string>
-    <string name="step_sound_exhale">साँस</string>
     <string name="step_sound_whoosh">सनसनाहट</string>
     <string name="step_sound_spray">स्प्रे</string>
     <string name="step_sound_bubbles">बुलबुले</string>

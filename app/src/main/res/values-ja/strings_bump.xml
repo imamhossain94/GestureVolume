@@ -45,15 +45,14 @@
     <string name="bump_style_bees">ミツバチ</string>
     <string name="bump_style_rocket">ロケット発射</string>
     <string name="bump_style_crack">割れた画面</string>
-    <string name="bump_style_smoke">煙</string>
     <string name="bump_style_cat">ネコ</string>
     <string name="bump_style_fish">跳ねる魚</string>
     <string name="bump_style_frog">跳ねるカエル</string>
-    <string name="bump_style_spider">クモ</string>
+    <string name="bump_style_spider">スパイダークイーン</string>
     <string name="bump_style_woodpecker">キツツキ</string>
     <string name="bump_style_monkey">サル</string>
     <string name="bump_style_ufo">UFO</string>
-    <string name="bump_style_spray">スプレー</string>
+    <string name="bump_style_spray">カラースプレー</string>
     <string name="bump_place_title">ボタンの位置</string>
     <string name="bump_place_desc">ボタンを選び、画面上の押し込みがそのすぐ横に来るまでスライドしてください。この画面を開いている間は、実際のボタンを押しても位置を確認できます。</string>
     <string name="bump_side">側面</string>
@@ -124,7 +123,6 @@
     <string name="step_sound_launch">発射</string>
     <string name="step_sound_swish">シュッ</string>
     <string name="step_sound_crack">ヒビ</string>
-    <string name="step_sound_exhale">吐息</string>
     <string name="step_sound_whoosh">ビュー</string>
     <string name="step_sound_spray">プシュー</string>
     <string name="step_sound_bubbles">泡</string>

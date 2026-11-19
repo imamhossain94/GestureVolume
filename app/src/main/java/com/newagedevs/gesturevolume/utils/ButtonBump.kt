@@ -105,16 +105,13 @@ object ButtonBump {
     /** A rocket nosing out and climbing away on its flame and a trail of smoke. */
     const val STYLE_ROCKET = "rocket"
 
-    /** An aerosol can's spray at each press: a jet of fine droplets and a drifting, coloured mist. */
+    /** A spray of colour at each press: a jet of fine paint droplets and a drifting, coloured mist. */
     const val STYLE_SPRAY = "spray"
 
 
 
     /** The glass cracking from the button: branching cracks, rings and shards. */
     const val STYLE_CRACK = "crack"
-
-    /** The bump smouldering, and a billow of smoke rolling out at each press. */
-    const val STYLE_SMOKE = "smoke"
 
     /** A cat peeking round the edge, paws on the frame, blinking, ears twitching. */
     const val STYLE_CAT = "cat"
@@ -148,7 +145,7 @@ object ButtonBump {
     val STYLES: List<String> = listOf(
         STYLE_WATER, STYLE_LIQUID, STYLE_BLOSSOM, STYLE_FIREWORKS, STYLE_VOLCANO,
         STYLE_ROCKET, STYLE_FISH, STYLE_FROG, STYLE_SPIDER, STYLE_WOODPECKER, STYLE_CAT, STYLE_MONKEY,
-        STYLE_BUBBLES, STYLE_SMOKE, STYLE_SPRAY, STYLE_WIND, STYLE_NINJA, STYLE_CRACK, STYLE_UFO, STYLE_BEES, STYLE_SOLAR,
+        STYLE_BUBBLES, STYLE_SPRAY, STYLE_WIND, STYLE_NINJA, STYLE_CRACK, STYLE_UFO, STYLE_BEES, STYLE_SOLAR,
         STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY, STYLE_NEON, STYLE_AURORA, STYLE_RIPPLE, STYLE_SPARKLE,
         STYLE_LAVA, STYLE_GLASS, STYLE_SPECTRUM, STYLE_HEARTBEAT, STYLE_ELASTIC,
     )
@@ -209,7 +206,6 @@ object ButtonBump {
         STYLE_ROCKET -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 7.5f)
         STYLE_SPRAY -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6.5f)
         STYLE_CRACK -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 8f)
-        STYLE_SMOKE -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
         STYLE_CAT -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 5.5f, spread = 3.2f)
         STYLE_FISH -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
         STYLE_MONKEY -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 5.5f, spread = 3.2f)
@@ -357,7 +353,6 @@ object ButtonBump {
         STYLE_WOODPECKER -> "peck"
         STYLE_FISH -> "splash"
         STYLE_BUBBLES -> "bubbles"
-        STYLE_SMOKE -> "exhale"
         STYLE_SPRAY -> "spray"
         STYLE_WIND -> "whoosh"
         STYLE_NINJA -> "swish"

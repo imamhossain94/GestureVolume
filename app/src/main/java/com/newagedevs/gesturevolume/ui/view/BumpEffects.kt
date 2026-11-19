@@ -240,11 +240,10 @@ internal object BumpEffects {
         ButtonBump.STYLE_ROCKET -> RocketEffect(random)
         ButtonBump.STYLE_SPRAY -> SprayEffect(random)
         ButtonBump.STYLE_CRACK -> CrackEffect(random)
-        ButtonBump.STYLE_SMOKE -> SmokeEffect(random)
         ButtonBump.STYLE_CAT -> CatEffect(random)
         ButtonBump.STYLE_FISH -> FishEffect(random)
         ButtonBump.STYLE_FROG -> FrogEffect(random)
-        ButtonBump.STYLE_SPIDER -> SpiderEffect(random)
+        ButtonBump.STYLE_SPIDER -> SpiderQueenEffect(random)
         ButtonBump.STYLE_WOODPECKER -> WoodpeckerEffect(random)
         ButtonBump.STYLE_MONKEY -> MonkeyEffect(random)
         ButtonBump.STYLE_UFO -> UfoEffect(random)
@@ -255,11 +254,10 @@ internal object BumpEffects {
 // ---- cherry blossom ---------------------------------------------------------------------------------
 
 /**
- * A cherry branch in full bloom reaches in from the edge beside the buttons, angled up the screen —
- * a limb and its twigs, five-petalled flowers with their stamens, buds and young leaves — swaying a
- * little in the air. Every press shakes it, the tip swinging furthest and the whole of it springing
- * back and settling, and the shake knocks petals loose to flutter down across the screen. The
- * louder the level, the harder the shake and the more petals fall.
+ * A cherry branch reaching out of the edge beside the buttons, in bloom: sakura, buds and a leaf or
+ * two on a dark limb. Every press shakes it — harder the louder — and whole blossoms come loose and
+ * tumble down the screen, turning over as they fall; the branch blooms again where they were. Now and
+ * then one falls on its own while the branch is out.
  */
 internal class BlossomEffect(random: Random) : BumpEffect(random) {
     override val drawsBump: Boolean get() = false
@@ -277,8 +275,12 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
     private var builtUpY = 9f
     private var length = 1f
 
-    /** The branch's size against its size on a phone: everything on it is drawn to this, petals too. */
+    /** The branch's size against its size on a phone: everything on it is drawn to this, the fallen flowers too. */
     private var scale = 1f
+
+    /** Each bloom's size on the branch now, 0 when it has fallen, and how long until it starts to grow back. */
+    private var bloomScale = FloatArray(0)
+    private var bloomWait = FloatArray(0)
 
     /** The shake: how far the branch is bent now, and how fast, a damped spring; and the idle sway's clock. */
     private var bend = 0f
@@ -289,15 +291,13 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
     /** Each node's place this frame, after the bend. */
     private var placed = FloatArray(0)
 
-    private val petals = ParticlePool(160)
+    private val fallen = ParticlePool(48)
     private val petal = Path()
     private val flower = Path()
     private val leaf = Path()
-    private val petalPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
     private val flowerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
     private val bark = roundStroke()
     private val dot = solidFill()
-    private val shaders: Array<Shader>
     private val flowerShaders: Array<Shader>
 
     init {
@@ -321,10 +321,6 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
         leaf.cubicTo(0.3f, -0.32f, 0.75f, -0.3f, 1f, 0f)
         leaf.cubicTo(0.75f, 0.3f, 0.3f, 0.32f, 0f, 0f)
         leaf.close()
-        // Deeper at the base, paler at the tip, in the unit petal's own coordinates.
-        shaders = Array(PETALS.size) { i ->
-            LinearGradient(0f, 0f, 1f, 0f, PETALS[i][0], PETALS[i][1], Shader.TileMode.CLAMP)
-        }
         // A flower pale at its heart and pinker at its rim, as sakura are.
         flowerShaders = Array(FLOWERS.size) { i ->
             RadialGradient(0f, 0f, 1f, intArrayOf(FLOWERS[i][0], FLOWERS[i][1], FLOWERS[i][2]), floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP)
@@ -336,7 +332,8 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
     /**
      * The branch for this scene: grown again whenever the screen's size or its way up changes, so the
      * branch a real press shows is the one the preview shows — the same tree, in proportion to the
-     * screen it is on, whether that is the phone, the preview's phone or a gallery tile.
+     * screen it is on, whether that is the phone, the preview's phone or a gallery tile. Kept short and
+     * close to the edge, by the buttons, rather than reaching across the screen.
      */
     private fun build(scene: BumpScene) {
         val across = (scene.screenRight - maxOf(scene.screenLeft, 0f)).coerceAtLeast(1f)
@@ -351,13 +348,14 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
         blooms.clear()
         val seeded = Random(SEED)
         fun r(a: Float, b: Float) = a + (b - a) * seeded.nextFloat()
-        length = minOf(across * 0.64f, scene.unit * 16f)
+        // A third of the way across a phone; on a gallery tile, most of the tile, to be seen.
+        length = if (across < scene.unit * 8f) across * 0.72f else minOf(across * 0.38f, scene.unit * 9f)
         scale = length / (scene.unit * 13f)
         // Everything drawn to the branch's own size: a dp on a phone, less on a small preview.
         val d = scene.density * scale
-        // Into the screen and up it: a branch reaching in from the side, or up from below.
-        var dx = 1f + 0.6f * scene.upX
-        var dy = 0.6f * scene.upY
+        // Into the screen and up it, steeply, so it keeps close to the side it grows from.
+        var dx = 1f + 0.4f * scene.upX
+        var dy = 0.9f * scene.upY
         val dl = hypot(dx, dy).coerceAtLeast(0.001f)
         dx /= dl
         dy /= dl
@@ -430,6 +428,9 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
         // Drawn back to front: the leaves and buds behind the flowers.
         blooms.sortBy { if (it.kind == KIND_LEAF) 0 else if (it.kind == KIND_BUD) 1 else 2 }
         placed = FloatArray(nodes.size * 2)
+        bloomScale = FloatArray(blooms.size) { 1f }
+        bloomWait = FloatArray(blooms.size)
+        fallen.clear()
     }
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
@@ -438,7 +439,7 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
         val kick = (if (atLimit) 0.6f else 1f) * scene.power * SHAKE
         bendSpeed += if (scene.towards < 0) kick else -kick
         place(scene)
-        repeat(count(scene, if (atLimit) 8 else 16)) { shed(scene, burst = true) }
+        repeat(count(scene, if (atLimit) 2 else 4)) { shed(scene, burst = true) }
     }
 
     /** Where every node is this frame: the branch bent about its base, more the further out. */
@@ -457,30 +458,52 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
         }
     }
 
-    /** A petal knocked loose from one of the flowers, or drifting down on its own. */
+    /**
+     * A whole flower shaken loose from the branch, or falling on its own; it grows back on the branch
+     * a few seconds later. Never so many at once that the branch looks bare.
+     */
     private fun shed(scene: BumpScene, burst: Boolean) {
         if (blooms.isEmpty()) return
-        val b = blooms[random.nextInt(blooms.size)]
-        if (b.kind != KIND_FLOWER && random.nextFloat() < 0.7f) return
-        val p = petals.spawn() ?: return
-        // In proportion to the branch, so a petal is the same size against the tree on any screen.
+        var flowers = 0
+        var gone = 0
+        for (i in blooms.indices) {
+            if (blooms[i].kind >= KIND_BUD) continue
+            flowers++
+            if (bloomScale[i] < 0.99f) gone++
+        }
+        if (gone >= flowers * MAX_GONE) return
+        var pick = -1
+        for (attempt in 0 until 12) {
+            val i = random.nextInt(blooms.size)
+            // The outer ones, which shake the most, come away first.
+            if (blooms[i].kind < KIND_BUD && bloomScale[i] >= 0.99f && nodes[blooms[i].node].along > rnd(0.2f, 0.7f)) {
+                pick = i
+                break
+            }
+        }
+        if (pick < 0) return
+        val b = blooms[pick]
+        val p = fallen.spawn() ?: return
+        bloomScale[pick] = 0f
+        bloomWait[pick] = rnd(2.4f, 4f)
+        // In proportion to the branch, so a flower is the same size against the tree on any screen.
         val d = scene.density * scale
         p.x = placed[b.node * 2] + b.dx
         p.y = placed[b.node * 2 + 1] + b.dy
         // Flung the way the branch is swinging, then the air takes it.
-        val swing = bendSpeed * length * 0.6f * nodes[b.node].along
+        val swing = bendSpeed * length * 0.5f * nodes[b.node].along
         val a = rnd(0f, 6.283f)
-        val speed = if (burst) rnd(30f, 110f) * d else rnd(5f, 25f) * d
+        val speed = if (burst) rnd(20f, 70f) * d else rnd(4f, 16f) * d
         p.vx = cos(a) * speed + (-sin(bend)) * swing
         p.vy = sin(a) * speed + cos(bend) * swing
-        p.life = rnd(3.2f, 5f)
-        p.size = rnd(5.5f, 8.5f) * d
-        p.angle = rnd(0f, 360f)
-        p.spin = rnd(-200f, 200f)
-        p.phase = rnd(0f, 6.28f)
-        p.rate = rnd(1.4f, 3.2f)
+        p.life = rnd(4.5f, 6f)
+        p.size = b.size
+        p.angle = b.angle
+        p.spin = rnd(-120f, 120f)
+        p.phase = 0f
+        p.rate = rnd(0.5f, 1.1f)
         p.mark = rnd(0f, 6.28f)
-        p.kind = random.nextInt(PETALS.size)
+        p.kind = b.kind
     }
 
     override fun step(scene: BumpScene, dt: Float): Boolean {
@@ -492,29 +515,37 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
         bend += bendSpeed * dt
         bend = bend.coerceIn(-0.6f, 0.6f)
         place(scene)
-        // A petal now and then even when nothing has shaken it, while the branch is out.
+        // The branch blooming again where flowers fell.
+        for (i in bloomScale.indices) {
+            if (bloomScale[i] >= 1f) continue
+            if (bloomWait[i] > 0f) {
+                bloomWait[i] -= dt
+            } else {
+                bloomScale[i] = (bloomScale[i] + dt / REGROW_S).coerceAtMost(1f)
+            }
+        }
+        // A flower now and then even when nothing has shaken it, while the branch is out.
         if (scene.presence > 0.6f) {
             drift -= dt
             if (drift <= 0f) {
-                drift = rnd(0.5f, 1.2f)
+                drift = rnd(1.6f, 3.2f)
                 shed(scene, burst = false)
             }
         }
-        // Falling as far for the tree's size, so they drift down a small preview as they do the phone.
         val d = scene.density * scale
-        val drag = exp(-1.8f * dt)
+        val drag = exp(-1.4f * dt)
         val acrossX = -scene.gravityY
         val acrossY = scene.gravityX
         var alive = false
-        for (p in petals.items) {
+        for (p in fallen.items) {
             if (!p.alive) continue
             p.age += dt
-            if (p.age >= p.life || scene.offScreen(p.x, p.y, 20f * d)) {
+            if (p.age >= p.life || scene.offScreen(p.x, p.y, p.size * 2f)) {
                 p.alive = false
                 continue
             }
-            // Falling slowly, and swaying side to side as it does.
-            val sway = sin(p.age * 2.3f + p.mark) * 95f
+            // Falling, a little faster than a petal would, and swaying side to side as it does.
+            val sway = sin(p.age * 1.9f + p.mark) * 70f
             p.vx = p.vx * drag + (scene.gravityX * FALL + acrossX * sway) * d * dt
             p.vy = p.vy * drag + (scene.gravityY * FALL + acrossY * sway) * d * dt
             p.x += p.vx * dt
@@ -527,7 +558,7 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
     }
 
     override fun drawFront(canvas: Canvas, scene: BumpScene) {
-        if (nodes.isEmpty() || scene.presence <= 0.01f && petals.items.none { it.alive }) return
+        if (nodes.isEmpty() || scene.presence <= 0.01f && fallen.items.none { it.alive }) return
         val d = scene.density
         if (scene.presence > 0.01f) {
             // The wood: dark bark, a lighter line along its lit side.
@@ -548,71 +579,86 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
                 }
             }
             val grow = easeOut(scene.presence.coerceIn(0f, 1f))
-            for (b in blooms) {
+            for ((i, b) in blooms.withIndex()) {
                 val x = placed[b.node * 2] + b.dx * grow
                 val y = placed[b.node * 2 + 1] + b.dy * grow
-                val size = b.size * grow
+                val size = b.size * grow * easeOut(bloomScale[i])
                 if (size < 0.5f) continue
                 // A little jiggle of its own when the branch shakes.
                 val jiggle = bendSpeed * 9f * nodes[b.node].along
-                canvas.save()
-                canvas.translate(x, y)
-                canvas.rotate(b.angle + jiggle)
                 when (b.kind) {
                     KIND_LEAF -> {
+                        canvas.save()
+                        canvas.translate(x, y)
+                        canvas.rotate(b.angle + jiggle)
                         canvas.scale(size * 2.1f, size * 2.1f)
                         dot.color = LEAF
                         canvas.drawPath(leaf, dot)
+                        canvas.restore()
                     }
                     KIND_BUD -> {
+                        canvas.save()
+                        canvas.translate(x, y)
+                        canvas.rotate(b.angle + jiggle)
                         dot.color = BUD
                         canvas.drawOval(-size * 0.75f, -size, size * 0.75f, size, dot)
                         dot.color = BUD_TIP
                         canvas.drawCircle(0f, -size * 0.7f, size * 0.35f, dot)
+                        canvas.restore()
                     }
-                    else -> {
-                        canvas.scale(size, size)
-                        flowerPaint.shader = flowerShaders[b.kind]
-                        canvas.drawPath(flower, flowerPaint)
-                        dot.color = HEART
-                        canvas.drawCircle(0f, 0f, 0.22f, dot)
-                        dot.color = STAMEN
-                        for (k in 0 until 6) {
-                            val a = k * 1.047f
-                            canvas.drawCircle(cos(a) * 0.36f, sin(a) * 0.36f, 0.07f, dot)
-                        }
-                    }
+                    else -> drawFlower(canvas, x, y, size, b.angle + jiggle, 1f, b.kind, 1f)
                 }
-                canvas.restore()
             }
         }
-        for (p in petals.items) {
+        // The flowers that came loose, turning over as they fall.
+        for (p in fallen.items) {
             if (!p.alive) continue
             val t = p.age / p.life
-            val a = if (t < 0.75f) min(1f, p.age / 0.12f) else (1f - t) / 0.25f
-            val flip = cos(p.phase)
-            canvas.save()
-            canvas.translate(p.x, p.y)
-            canvas.rotate(p.angle)
-            canvas.scale(p.size, p.size * max(abs(flip), 0.16f))
-            petalPaint.shader = shaders[p.kind]
-            // The far side of a turning petal a little darker, as it is out of the light.
-            petalPaint.alpha = ((if (flip < 0f) 0.82f else 0.97f) * a * 255f).roundToInt()
-            canvas.drawPath(petal, petalPaint)
-            canvas.restore()
+            val a = if (t < 0.8f) 1f else (1f - t) / 0.2f
+            drawFlower(canvas, p.x, p.y, p.size, p.angle, cos(p.phase), p.kind, a)
         }
-        petalPaint.shader = null
+        flowerPaint.alpha = 255
+    }
+
+    /**
+     * One sakura at [x], [y], [size] across its petals, turned [angle] degrees and tipped over by
+     * [turn] (1 face on, −1 its back to us); its heart and stamens only on the side that faces us.
+     */
+    private fun drawFlower(canvas: Canvas, x: Float, y: Float, size: Float, angle: Float, turn: Float, kind: Int, alpha: Float) {
+        canvas.save()
+        canvas.translate(x, y)
+        canvas.rotate(angle)
+        canvas.scale(size, size * max(abs(turn), 0.22f))
+        flowerPaint.shader = flowerShaders[kind]
+        flowerPaint.alpha = ((if (turn < 0f) 0.86f else 1f) * alpha * 255f).roundToInt()
+        canvas.drawPath(flower, flowerPaint)
+        if (turn > 0.15f) {
+            dot.color = fade(HEART, alpha)
+            canvas.drawCircle(0f, 0f, 0.22f, dot)
+            dot.color = fade(STAMEN, alpha)
+            for (k in 0 until 6) {
+                val a = k * 1.047f
+                canvas.drawCircle(cos(a) * 0.36f, sin(a) * 0.36f, 0.07f, dot)
+            }
+        }
+        canvas.restore()
     }
 
     override fun clear() {
-        petals.clear()
+        fallen.clear()
+        bloomScale.fill(1f)
+        bloomWait.fill(0f)
         bend = 0f
         bendSpeed = 0f
     }
 
     private companion object {
-        /** How fast a petal falls, in dp a second each second, before the air slows it. */
-        const val FALL = 70f
+        /** How fast a flower falls, in dp a second each second, before the air slows it. */
+        const val FALL = 85f
+
+        /** How long a fallen flower takes to grow back on the branch, and how many may be gone at once. */
+        const val REGROW_S = 0.7f
+        const val MAX_GONE = 0.45f
 
         /** The branch's spring: how stiff, how damped, and how hard a press at its own size kicks it. */
         const val STIFFNESS = 70f
@@ -631,14 +677,6 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
         val BUD_TIP = 0xFFC2185B.toInt()
         val HEART = 0xFFE5487A.toInt()
         val STAMEN = 0xFFFFD54F.toInt()
-
-        /** Sakura pinks: the base of each petal and its tip. */
-        val PETALS = arrayOf(
-            intArrayOf(0xFFF27EA6.toInt(), 0xFFFFD6E3.toInt()),
-            intArrayOf(0xFFF59ABB.toInt(), 0xFFFFE6EE.toInt()),
-            intArrayOf(0xFFE8668F.toInt(), 0xFFFFC2D4.toInt()),
-            intArrayOf(0xFFF7A8C4.toInt(), 0xFFFFF0F5.toInt()),
-        )
 
         /** A flower's heart, middle and rim: some nearly white, some deeper pink. */
         val FLOWERS = arrayOf(

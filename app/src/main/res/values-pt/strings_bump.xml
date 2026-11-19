@@ -45,15 +45,14 @@
     <string name="bump_style_bees">Abelhas</string>
     <string name="bump_style_rocket">Lançamento de foguete</string>
     <string name="bump_style_crack">Tela rachada</string>
-    <string name="bump_style_smoke">Fumaça</string>
     <string name="bump_style_cat">Gato</string>
     <string name="bump_style_fish">Peixe saltando</string>
     <string name="bump_style_frog">Sapo saltando</string>
-    <string name="bump_style_spider">Aranha</string>
+    <string name="bump_style_spider">Rainha Aranha</string>
     <string name="bump_style_woodpecker">Pica-pau</string>
     <string name="bump_style_monkey">Macaco</string>
     <string name="bump_style_ufo">OVNI</string>
-    <string name="bump_style_spray">Spray aerossol</string>
+    <string name="bump_style_spray">Spray colorido</string>
     <string name="bump_place_title">Onde ficam os seus botões</string>
     <string name="bump_place_desc">Escolha um botão e deslize até o toque na tela ficar bem ao lado dele. Com esta tela aberta, apertar o botão de verdade também mostra onde ele cai.</string>
     <string name="bump_side">Lado</string>
@@ -124,7 +123,6 @@
     <string name="step_sound_launch">Lançamento</string>
     <string name="step_sound_swish">Zunido</string>
     <string name="step_sound_crack">Rachadura</string>
-    <string name="step_sound_exhale">Expiração</string>
     <string name="step_sound_whoosh">Rajada</string>
     <string name="step_sound_spray">Spray</string>
     <string name="step_sound_bubbles">Bolhas</string>

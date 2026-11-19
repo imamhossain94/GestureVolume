@@ -27,7 +27,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /*
- * The big ones: a volcano, smoke, a rocket, a gust of wind and an aerosol spray. For the volcano the
+ * The big ones: a volcano, a rocket, a gust of wind and a colour spray. For the volcano the
  * glass's edge is the ground, so it rises into the screen from the button, whichever edge it is on.
  */
 
@@ -204,192 +204,12 @@ internal class VolcanoEffect(random: Random) : BumpEffect(random) {
     }
 }
 
-// ---- smoke ------------------------------------------------------------------------------------------------
-
-/**
- * Smoke as a cigarette makes it — fine strands curling up from the bump while it is out, twisting and
- * spreading as they rise — and at every press a vape's exhale: a dense white cloud rolling out of the
- * bump, slowing, billowing and drifting up.
- */
-internal class SmokeEffect(random: Random) : BumpEffect(random) {
-    override val loops: Boolean get() = true
-
-    private class Strand {
-        val x = FloatArray(POINTS)
-        val y = FloatArray(POINTS)
-        val vx = FloatArray(POINTS)
-        val vy = FloatArray(POINTS)
-        val age = FloatArray(POINTS)
-        var head = 0
-        var count = 0
-        var clock = 0f
-        var seed = 0f
-        var offset = 0f
-    }
-
-    private val strands = Array(2) { Strand() }
-    private val vapour = ParticlePool(90)
-    private var exhale = 0f
-    private var exhaleClock = 0f
-    private var time = 0f
-    private val puff = solidFill().apply { shader = softPuff(0xFFF1F1F4.toInt()) }
-    private val line = roundStroke()
-
-    init {
-        strands.forEachIndexed { i, s ->
-            s.seed = i * 2.7f + 0.4f
-            s.offset = if (i == 0) -0.18f else 0.22f
-        }
-    }
-
-    override val stillAfterS: Float get() = 0.55f
-
-    override fun press(scene: BumpScene, atLimit: Boolean) {
-        exhale = (if (atLimit) 0.18f else 0.5f) * scene.power
-    }
-
-    /** A slow swirl in the air, in pixels a second each second: what makes smoke curl. */
-    private fun swirlX(x: Float, y: Float, seed: Float, d: Float): Float {
-        val k = 1f / (34f * d)
-        return (sin(y * k * 1.2f + time * 1.6f + seed) + 0.6f * sin(x * k * 2.3f - time * 1.1f + seed * 0.7f)) * 55f * d
-    }
-
-    private fun swirlY(x: Float, y: Float, seed: Float, d: Float): Float {
-        val k = 1f / (34f * d)
-        return (cos(x * k * 1.1f + time * 1.3f + seed) + 0.6f * cos(y * k * 1.9f + time * 0.8f)) * 55f * d
-    }
-
-    override fun step(scene: BumpScene, dt: Float): Boolean {
-        time += dt
-        val d = scene.density
-        val upX = -scene.gravityX
-        val upY = -scene.gravityY
-        var alive = false
-        // The cigarette's strands: a new point at the bump every few hundredths of a second while it
-        // smoulders, each point rising, swirled, and growing fainter.
-        for (s in strands) {
-            if (scene.presence > 0.4f) {
-                s.clock -= dt
-                while (s.clock <= 0f) {
-                    s.clock += 0.028f
-                    val i = s.head
-                    s.x[i] = scene.depth * 0.85f + rnd(-0.5f, 0.5f) * d
-                    s.y[i] = scene.centre + scene.half * s.offset
-                    s.vx[i] = rnd(8f, 22f) * d
-                    s.vy[i] = 0f
-                    s.age[i] = 0f
-                    s.head = (s.head + 1) % POINTS
-                    s.count = min(s.count + 1, POINTS)
-                }
-            }
-            val drag = exp(-0.8f * dt)
-            for (n in 0 until s.count) {
-                val i = (s.head - 1 - n + POINTS) % POINTS
-                s.age[i] += dt
-                s.vx[i] = s.vx[i] * drag + (upX * 70f * d + swirlX(s.x[i], s.y[i], s.seed, d) * s.age[i].coerceAtMost(1f)) * dt
-                s.vy[i] = s.vy[i] * drag + (upY * 70f * d + swirlY(s.x[i], s.y[i], s.seed, d) * s.age[i].coerceAtMost(1f)) * dt
-                s.x[i] += s.vx[i] * dt
-                s.y[i] += s.vy[i] * dt
-            }
-            // The oldest points, faded out, fall off the end.
-            while (s.count > 0 && s.age[(s.head - s.count + POINTS) % POINTS] > STRAND_LIFE) s.count--
-            if (s.count > 0) alive = true
-        }
-        // The vape's exhale.
-        if (exhale > 0f) {
-            exhale -= dt
-            exhaleClock -= dt
-            while (exhaleClock <= 0f) {
-                exhaleClock += 0.018f
-                val p = vapour.spawn() ?: break
-                val a = rnd(-0.38f, 0.38f)
-                val speed = rnd(140f, 380f) * d
-                p.x = scene.restDepth * 0.9f
-                p.y = scene.centre + rnd(-3f, 3f) * d
-                p.vx = cos(a) * speed
-                p.vy = sin(a) * speed
-                p.size = rnd(5f, 9f) * d
-                p.tx = rnd(45f, 70f) * d
-                p.life = rnd(2.6f, 3.4f)
-                p.mark = rnd(0.045f, 0.075f)
-                p.phase = rnd(0f, 6.28f)
-            }
-            alive = true
-        }
-        val drag = exp(-3.2f * dt)
-        for (p in vapour.items) {
-            if (!p.alive) continue
-            p.age += dt
-            if (p.age >= p.life) {
-                p.alive = false
-                continue
-            }
-            val curl = (p.age * 1.5f).coerceAtMost(1f)
-            p.vx = p.vx * drag + (upX * 60f * d + swirlX(p.x, p.y, p.phase, d) * 1.3f * curl) * dt
-            p.vy = p.vy * drag + (upY * 60f * d + swirlY(p.x, p.y, p.phase, d) * 1.3f * curl) * dt
-            p.x += p.vx * dt
-            p.y += p.vy * dt
-            alive = true
-        }
-        return alive
-    }
-
-    override fun drawFront(canvas: Canvas, scene: BumpScene) {
-        val d = scene.density
-        // The exhale: many faint, overlapping puffs, each a few lumps, so its edge billows.
-        for (p in vapour.items) {
-            if (!p.alive) continue
-            val t = p.age / p.life
-            val r = p.size + (p.tx - p.size) * easeOut(t)
-            val a = p.mark * (1f - t).pow(1.3f) * min(1f, p.age / 0.06f)
-            puff.alpha = (a * 255f).roundToInt()
-            for (lobe in 0 until 3) {
-                val ang = p.phase + lobe * 2.094f + p.age * 0.6f
-                canvas.save()
-                canvas.translate(p.x + cos(ang) * r * 0.28f, p.y + sin(ang) * r * 0.28f)
-                canvas.scale(r * 0.75f, r * 0.75f)
-                canvas.drawCircle(0f, 0f, 1f, puff)
-                canvas.restore()
-            }
-        }
-        // The strands: thin and clear near the bump, wider and fainter as they rise.
-        for (s in strands) {
-            if (s.count < 2) continue
-            var px = 0f
-            var py = 0f
-            for (n in 0 until s.count) {
-                val i = (s.head - 1 - n + POINTS) % POINTS
-                if (n > 0) {
-                    val age = s.age[i]
-                    val k = (age / STRAND_LIFE).coerceIn(0f, 1f)
-                    line.strokeWidth = (1.2f + 6f * k) * d
-                    line.color = fade(0xFFE9E9EE.toInt(), 0.62f * (1f - k).pow(1.3f))
-                    canvas.drawLine(px, py, s.x[i], s.y[i], line)
-                }
-                px = s.x[i]
-                py = s.y[i]
-            }
-        }
-    }
-
-    override fun clear() {
-        for (s in strands) s.count = 0
-        vapour.clear()
-        exhale = 0f
-    }
-
-    private companion object {
-        const val POINTS = 110
-        const val STRAND_LIFE = 3f
-    }
-}
-
 // ---- rocket launch ---------------------------------------------------------------------------------------
 
 /**
- * A little rocket at every press: chubby and bright, a face at its porthole, it squashes down, bounces
- * up on a puff of cotton-wool cloud, and zooms away across the screen, curving upward, trailing round
- * puffs and twinkles.
+ * A little rocket at every press: chubby and bright, a face at its porthole, it squashes down, lifts off
+ * on a soft billow of smoke and zooms away into the screen — a different way every time, bending as it
+ * goes — and leaves one long trail of cloud behind it, which spreads and slowly fades away.
  */
 internal class RocketEffect(random: Random) : BumpEffect(random) {
     private class Ship {
@@ -399,22 +219,29 @@ internal class RocketEffect(random: Random) : BumpEffect(random) {
         var y = 0f
         var speed = 0f
         var heading = 0f
+
+        /** The way it swings round to once it is off, and how much it bends after that, a second. */
         var turn = 0f
-        var puffClock = 0f
+        var curve = 0f
         var launched = false
+
+        /** Where its trail was last laid, so the trail is one line however fast it goes. */
+        var trailX = 0f
+        var trailY = 0f
 
         /** How hard it was launched: see [BumpScene.power]. */
         var power = 1f
     }
 
-    private val ships = Array(3) { Ship() }
-    private val clouds = ParticlePool(140)
-    private val twinkles = ParticlePool(40)
+    private val ships = Array(4) { Ship() }
+
+    /** One soft cloud: puffs laid so close along the way that they run together. */
+    private val smoke = Puffs(640, softPuff(SMOKE))
+    private val embers = ParticlePool(60)
     private val body = Path()
     private val nose = Path()
     private val fin = Path()
     private val flame = Path()
-    private val star = Path()
     private val fill = solidFill()
     private val ink = roundStroke()
     private val bodyShade = solidFill().apply {
@@ -423,6 +250,7 @@ internal class RocketEffect(random: Random) : BumpEffect(random) {
     private val flameShade = solidFill().apply {
         shader = LinearGradient(-0.5f, 0f, -1.1f, 0f, intArrayOf(0xFFFFF59D.toInt(), 0xFFFFB74D.toInt(), 0xFFFF7043.toInt()), floatArrayOf(0f, 0.45f, 1f), Shader.TileMode.CLAMP)
     }
+    private val glow = solidFill().apply { shader = softPuff(0xFFFFC46B.toInt()) }
 
     init {
         // A chubby rocket in unit terms, nose towards +x, about one long.
@@ -445,12 +273,6 @@ internal class RocketEffect(random: Random) : BumpEffect(random) {
         flame.cubicTo(-0.75f, -0.14f, -0.95f, -0.06f, -1.1f, 0f)
         flame.cubicTo(-0.95f, 0.06f, -0.75f, 0.14f, -0.5f, 0.12f)
         flame.close()
-        for (k in 0 until 8) {
-            val a = k * PI.toFloat() / 4f
-            val r = if (k % 2 == 0) 1f else 0.35f
-            if (k == 0) star.moveTo(cos(a) * r, sin(a) * r) else star.lineTo(cos(a) * r, sin(a) * r)
-        }
-        star.close()
     }
 
     override val stillAfterS: Float get() = 0.6f
@@ -465,19 +287,11 @@ internal class RocketEffect(random: Random) : BumpEffect(random) {
         s.heading = 0f
         s.speed = 30f * scene.density
         s.power = scene.power
-        val up = atan2(-scene.gravityY, -scene.gravityX)
-        s.turn = if (abs(up) > 3f) 0.6f else up.coerceIn(-0.6f, 0.6f)
-    }
-
-    private fun cloud(x: Float, y: Float, vx: Float, vy: Float, from: Float, to: Float, life: Float) {
-        val p = clouds.spawn() ?: return
-        p.x = x
-        p.y = y
-        p.vx = vx
-        p.vy = vy
-        p.size = from
-        p.tx = to
-        p.life = life
+        // Anywhere into the screen: up it, down it, or straight across, and curving one way or the other.
+        s.turn = rnd(-TURN_MAX, TURN_MAX)
+        s.curve = rnd(-0.5f, 0.5f)
+        s.trailX = s.x
+        s.trailY = s.y
     }
 
     override fun step(scene: BumpScene, dt: Float): Boolean {
@@ -489,81 +303,114 @@ internal class RocketEffect(random: Random) : BumpEffect(random) {
             s.age += dt
             if (s.age > IGNITION && !s.launched) {
                 s.launched = true
-                repeat(10) {
-                    val side = if (it % 2 == 0) 1f else -1f
-                    cloud(4f * d, s.y, rnd(10f, 40f) * d, side * rnd(50f, 150f) * d, 5f * d, rnd(11f, 17f) * d, rnd(1.0f, 1.5f))
-                }
+                billow(scene, s)
             }
             if (s.launched) {
                 s.speed += 1000f * d * dt * (0.55f + 0.45f * s.power)
-                if (s.age > IGNITION + 0.1f) s.heading += (s.turn - s.heading) * min(1f, 1.6f * dt)
+                if (s.age > IGNITION + 0.1f) {
+                    s.heading += (s.turn - s.heading) * min(1f, 2.2f * dt)
+                    s.turn = (s.turn + s.curve * dt).coerceIn(-HEADING_MAX, HEADING_MAX)
+                }
             }
             s.x += cos(s.heading) * s.speed * dt
             s.y += sin(s.heading) * s.speed * dt
-            if (s.launched) {
-                s.puffClock -= dt
-                while (s.puffClock <= 0f) {
-                    s.puffClock += 0.03f
-                    val tx = s.x - cos(s.heading) * length * 0.8f
-                    val ty = s.y - sin(s.heading) * length * 0.8f
-                    cloud(tx, ty, rnd(-20f, 20f) * d, rnd(-20f, 20f) * d, 3f * d, rnd(7f, 11f) * d, rnd(0.8f, 1.2f))
-                    if (random.nextFloat() < 0.35f) {
-                        twinkles.spawn()?.let {
-                            it.x = tx + rnd(-8f, 8f) * d
-                            it.y = ty + rnd(-8f, 8f) * d
-                            it.life = rnd(0.4f, 0.7f)
-                            it.size = rnd(2f, 3.5f) * d
-                            it.color = TWINKLES[random.nextInt(TWINKLES.size)]
-                        }
-                    }
-                }
-            }
+            if (s.launched) trail(scene, s, length)
             if (scene.offScreen(s.x, s.y, length * 2f) || s.age > 3.5f) s.alive = false else alive = true
         }
-        val drag = exp(-2f * dt)
-        for (pool in arrayOf(clouds, twinkles)) {
-            for (p in pool.items) {
-                if (!p.alive) continue
-                p.age += dt
-                if (p.age >= p.life) {
-                    p.alive = false
-                    continue
-                }
-                p.vx *= drag
-                p.vy *= drag
-                p.x += p.vx * dt
-                p.y += p.vy * dt
-                alive = true
+        // The smoke lingers and spreads, rising a little; nothing pushes it on but the air.
+        if (smoke.step(dt, 1.6f, -scene.gravityX * 6f * d, -scene.gravityY * 6f * d)) alive = true
+        val drag = exp(-3f * dt)
+        for (p in embers.items) {
+            if (!p.alive) continue
+            p.age += dt
+            if (p.age >= p.life) {
+                p.alive = false
+                continue
             }
+            p.vx *= drag
+            p.vy *= drag
+            p.x += p.vx * dt
+            p.y += p.vy * dt
+            alive = true
         }
         return alive
+    }
+
+    /** The round cloud it lifts off on, rolling out of the edge where it stood. */
+    private fun billow(scene: BumpScene, s: Ship) {
+        val d = scene.density
+        val big = 0.75f + 0.25f * s.power
+        repeat(12) {
+            val a = rnd(-1.25f, 1.25f)
+            val speed = rnd(25f, 85f) * d
+            smoke.emit(
+                rnd(4f, 12f) * d, s.y + rnd(-6f, 6f) * d,
+                cos(a) * speed, sin(a) * speed,
+                rnd(7f, 10f) * d, rnd(20f, 30f) * d * big, rnd(2.2f, 3.2f), rnd(0.2f, 0.3f),
+            )
+        }
+    }
+
+    /**
+     * Smoke laid all along the way it went since the last frame, a puff every few dp, so the trail is
+     * one soft line rather than a string of beads however fast the rocket is going; and an ember or two.
+     */
+    private fun trail(scene: BumpScene, s: Ship, length: Float) {
+        val d = scene.density
+        val tx = s.x - cos(s.heading) * length * 0.62f
+        val ty = s.y - sin(s.heading) * length * 0.62f
+        val dx = tx - s.trailX
+        val dy = ty - s.trailY
+        val gap = hypot(dx, dy)
+        val spacing = TRAIL_SPACING_DP * d
+        if (gap < spacing) return
+        val steps = (gap / spacing).toInt().coerceAtMost(24)
+        val big = 0.8f + 0.2f * s.power
+        val backX = -cos(s.heading)
+        val backY = -sin(s.heading)
+        for (i in 1..steps) {
+            val k = i / steps.toFloat()
+            val x = s.trailX + dx * k
+            val y = s.trailY + dy * k
+            val back = rnd(10f, 40f) * d
+            val aside = rnd(-14f, 14f) * d
+            smoke.emit(
+                x, y,
+                backX * back - backY * aside, backY * back + backX * aside,
+                rnd(5.5f, 7f) * d, rnd(15f, 24f) * d * big, rnd(2.4f, 3.4f), rnd(0.18f, 0.26f),
+            )
+            if (random.nextFloat() < 0.1f) {
+                embers.spawn()?.let {
+                    it.x = x + rnd(-3f, 3f) * d
+                    it.y = y + rnd(-3f, 3f) * d
+                    it.vx = backX * rnd(40f, 120f) * d + rnd(-25f, 25f) * d
+                    it.vy = backY * rnd(40f, 120f) * d + rnd(-25f, 25f) * d
+                    it.life = rnd(0.25f, 0.5f)
+                    it.size = rnd(1.1f, 2f) * d
+                    it.color = EMBERS[random.nextInt(EMBERS.size)]
+                }
+            }
+        }
+        s.trailX = tx
+        s.trailY = ty
     }
 
     override fun drawFront(canvas: Canvas, scene: BumpScene) {
         val d = scene.density
         val length = ROCKET_DP * d
-        // Cotton-wool clouds: round, shaded underneath, growing and then shrinking away.
-        for (p in clouds.items) {
+        smoke.draw(canvas)
+        for (p in embers.items) {
             if (!p.alive) continue
             val t = p.age / p.life
-            val r = (p.size + (p.tx - p.size) * easeOut(t / 0.4f)) * if (t > 0.6f) (1f - (t - 0.6f) / 0.4f) else 1f
-            if (r < 0.5f) continue
-            fill.color = 0xFFDCDDE6.toInt()
-            canvas.drawCircle(p.x, p.y + r * 0.12f, r, fill)
-            fill.color = 0xFFFFFFFF.toInt()
-            canvas.drawCircle(p.x - r * 0.08f, p.y - r * 0.06f, r * 0.9f, fill)
-        }
-        for (p in twinkles.items) {
-            if (!p.alive) continue
-            val t = p.age / p.life
-            val k = sin(PI.toFloat() * t) * p.size
+            val r = p.size * (1f - 0.5f * t)
+            glow.alpha = ((1f - t) * 140f).roundToInt()
             canvas.save()
             canvas.translate(p.x, p.y)
-            canvas.rotate(t * 90f)
-            canvas.scale(k, k)
-            fill.color = p.color
-            canvas.drawPath(star, fill)
+            canvas.scale(r * 3f, r * 3f)
+            canvas.drawCircle(0f, 0f, 1f, glow)
             canvas.restore()
+            fill.color = fade(p.color, 1f - t)
+            canvas.drawCircle(p.x, p.y, r, fill)
         }
         for (s in ships) {
             if (!s.alive) continue
@@ -614,14 +461,23 @@ internal class RocketEffect(random: Random) : BumpEffect(random) {
 
     override fun clear() {
         for (s in ships) s.alive = false
-        clouds.clear()
-        twinkles.clear()
+        smoke.clear()
+        embers.clear()
     }
 
     private companion object {
         const val ROCKET_DP = 34f
         const val IGNITION = 0.28f
-        val TWINKLES = intArrayOf(0xFFFFD166.toInt(), 0xFFFFFFFF.toInt(), 0xFFFF9EC7.toInt(), 0xFF9BF6FF.toInt())
+
+        /** How far round from straight across it may turn, at most, in radians, and may ever be headed. */
+        const val TURN_MAX = 1.15f
+        const val HEADING_MAX = 1.42f
+
+        /** How far apart the trail's puffs are laid, in dp: close enough to run together. */
+        const val TRAIL_SPACING_DP = 4f
+
+        val SMOKE = 0xFFF2F3F7.toInt()
+        val EMBERS = intArrayOf(0xFFFFE082.toInt(), 0xFFFFB74D.toInt(), 0xFFFFF3C4.toInt())
     }
 }
 
@@ -778,11 +634,12 @@ internal class WindEffect(random: Random) : BumpEffect(random) {
     }
 }
 
-// ---- aerosol spray ---------------------------------------------------------------------------------------------
+// ---- colour spray ----------------------------------------------------------------------------------------------
 
 /**
- * An aerosol can at every press: its cap pressed down and a fine jet hissing out of the nozzle — a cone
- * of tiny droplets and a soft cloud of coloured mist drifting from it — the next colour each time.
+ * A spray of colour at every press: the can's cap pressed down and a fine jet of paint hissing out of
+ * the nozzle — a cone of tiny droplets and a soft cloud of coloured mist drifting from it — in the
+ * next bright colour each time.
  */
 internal class SprayEffect(random: Random) : BumpEffect(random) {
     private val droplets = ParticlePool(420)
@@ -914,9 +771,10 @@ internal class SprayEffect(random: Random) : BumpEffect(random) {
     }
 
     private companion object {
+        /** Paint colours, bright and clean, a different one each press. */
         val PALETTE = intArrayOf(
             0xFF29B6F6.toInt(), 0xFFEC407A.toInt(), 0xFF66BB6A.toInt(), 0xFFFFCA28.toInt(),
-            0xFFAB47BC.toInt(), 0xFFECEFF1.toInt(),
+            0xFFAB47BC.toInt(), 0xFFFF7043.toInt(), 0xFF26C6DA.toInt(),
         )
     }
 }
