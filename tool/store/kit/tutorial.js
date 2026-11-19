@@ -27,6 +27,7 @@ export const SERIES = [
   { id: 'actions', title: 'Choose what each gesture does', sub: 'Taps, holds and swipes, for every app or just one' },
   { id: 'appearance', title: 'Make the bar yours', sub: 'Presets, size, shape, colour and where it sits' },
   { id: 'visibility', title: 'Keep it out of the way', sub: 'Hide the bar in some apps, while you type, or until media plays' },
+  { id: 'button-animation', title: 'Button animation', sub: 'Water, a fish, a frog and more, beside the volume key you press' },
 ];
 
 export const W = 1920, H = 1080;
@@ -420,7 +421,9 @@ export async function buildTutorial(root, id, script, { icons = [], prepare = nu
     if (pending.length) await Promise.all(pending.map((i) => i.decode().catch(() => {})));
   };
   const r3 = (x) => Math.round(x * 1000) / 1000;
-  return { width: W, height: H, duration, cues, music: 'calm', musicGain: 0.42, seek: seekReady, chapters, subtitles, series,
+  // bumpClips: the button animation's frames the script plays (bump.mjs renders them; see
+  // kit/tutorials/button-animation.js).
+  return { width: W, height: H, duration, cues, music: 'calm', musicGain: 0.42, seek: seekReady, chapters, subtitles, series, bumpClips: T.bumpClips || [],
     voiceLines: lines, voice: voiceTrack, narrator: voice ? voice.narrator : null,
     steps: T.steps.map(({ at, end, title, text, chapter, voice: v }) => ({ at, end, title, text, chapter, ...(v ? { voice: { at: r3(v.at), end: r3(v.at + v.dur) } } : {}) })) };
 }

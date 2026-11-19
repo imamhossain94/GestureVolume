@@ -7,6 +7,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { entries, PROMO, clock, STORE } from './youtube.mjs';
+import { SHORTS, COPY, shortDescription, shortTags, tiktokCaption } from './kit/shorts-data.js';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(ROOT, 'build/gallery');
@@ -50,6 +51,20 @@ for (const e of tuts) {
   clip(path.join(STORE, 'tutorials', e.base + '.mp4'), path.join(MEDIA, 'tut', e.base + '.mp4'), '1280:720');
   still(path.join(STORE, 'tutorials/thumbnails', e.base + '.png'), path.join(MEDIA, 'tut', e.base + '.jpg'), 640);
 }
+// The shorts: 720 x 1280 copies, their covers (store/shorts/covers) as posters, and where they are posted.
+fs.mkdirSync(path.join(MEDIA, 'shorts'), { recursive: true });
+const PUBLISHED = JSON.parse(fs.readFileSync(path.join(STORE, 'published.json'), 'utf8'));
+const shorts = SHORTS.map((S, i) => ({ S, base: `${String(i + 1).padStart(2, '0')}-${S.id}`, links: PUBLISHED.shorts?.[S.id] || {} }))
+  .filter((x) => fs.existsSync(path.join(STORE, 'shorts', x.base + '.mp4')));
+const durationOf = (f) => parseFloat(spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f], { encoding: 'utf8' }).stdout);
+for (const x of shorts) {
+  const src = path.join(STORE, 'shorts', x.base + '.mp4');
+  clip(src, path.join(MEDIA, 'shorts', x.base + '.mp4'), '720:1280');
+  const cover = path.join(STORE, 'shorts/covers', x.base + '.jpg');
+  if (fs.existsSync(cover)) still(cover, path.join(MEDIA, 'shorts', x.base + '.jpg'), 540);
+  else frame(src, path.join(MEDIA, 'shorts', x.base + '.jpg'), 5, 540);
+  x.duration = durationOf(src);
+}
 const icon = fs.readFileSync(path.join(ROOT, 'build/drawable/ic_launcher_foreground.svg'), 'utf8');
 const iconUri = 'data:image/svg+xml;base64,' + Buffer.from(icon).toString('base64');
 
@@ -63,7 +78,9 @@ const files = [
   [path.join(V, 'promo-thumbnail.png'), 'Promo thumbnail, 1280 × 720', 'YouTube thumbnail'],
   [path.join(STORE, 'tutorials'), `${tuts.length} tutorials: .mp4, .srt captions, .json timings`, 'YouTube, one playlist'],
   [path.join(STORE, 'tutorials/thumbnails'), 'Tutorial thumbnails, 1280 × 720', 'YouTube thumbnails'],
-  [path.join(STORE, 'tutorials/youtube.md'), 'Titles, descriptions, chapters, tags, voice-over scripts', 'Paste into YouTube Studio'],
+  [path.join(STORE, 'tutorials/youtube.md'), 'Titles, descriptions, chapters and tags; the shorts\' titles and TikTok captions', 'Paste into YouTube Studio and TikTok Studio'],
+  [path.join(STORE, 'shorts'), `${shorts.length} shorts, 1080 × 1920 at 60 fps, and their covers`, 'YouTube Shorts and TikTok'],
+  [path.join(STORE, 'published.json'), 'Where each video is published: YouTube ids and TikTok links', 'The app\'s Tutorials.kt, and this page'],
   [path.join(ROOT), 'The renderer: kit, scenes and scripts', 'To make any of this again'],
 ];
 const dirSize = (p) => (fs.statSync(p).isDirectory() ? fs.readdirSync(p).reduce((n, f) => n + (['node_modules', 'build'].includes(f) ? 0 : dirSize(path.join(p, f))), 0) : fs.statSync(p).size);
@@ -139,11 +156,17 @@ th { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: v
 tr:last-child td { border-bottom: 0 }
 td.t { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--accent) }
 .promo { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); gap: 20px; align-items: start }
-.tuts { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px }
+.tuts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 20px }
 .tut { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px; display: grid; gap: 12px; align-content: start; min-width: 0 }
 .tut video { width: 100%; height: auto; border-radius: 10px; background: #000; display: block }
 .tut .meta { display: flex; justify-content: space-between; gap: 12px; align-items: baseline }
 .tut .meta span { font: 500 13px/1 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums }
+.links { display: flex; flex-wrap: wrap; gap: 14px; font-size: 14px; font-weight: 600 }
+.shortgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 20px }
+.short { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 12px; display: grid; gap: 10px; align-content: start; min-width: 0 }
+.short video { width: 100%; height: auto; aspect-ratio: 9 / 16; border-radius: 10px; background: #000; display: block }
+.short .meta { display: flex; justify-content: space-between; gap: 12px; align-items: baseline }
+.short .meta span { font: 500 13px/1 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums }
 .tut ol { margin: 0; padding-left: 0; list-style: none; font-size: 13px; color: var(--muted); display: grid; gap: 2px }
 .tut ol b { font: 500 12px var(--mono); color: var(--accent); margin-right: 8px }
 details { border-top: 1px solid var(--line); padding-top: 10px }
@@ -163,13 +186,14 @@ pre.cmd { margin: 0; padding: 16px 18px; background: var(--surface); border: 1px
     <div class="text">
       <p class="eyebrow">Store kit · version 1.5.5</p>
       <h1>Gesture Volume Store Art</h1>
-      <p class="lede">Google Play graphics, a 30-second promo in two cuts, and ${tuts.length} YouTube tutorials. Every frame is drawn from the app's own Compose code, shaders and drawables, and rendered in a browser. All of it is in the repository under <code>store/</code>.</p>
-      <p><a href="${REPO}/store" target="_blank" rel="noopener">Open store/ on GitHub</a></p>
+      <p class="lede">Google Play graphics, a 30-second promo in two cuts, ${tuts.length} YouTube tutorials and ${shorts.length} button-animation shorts for YouTube and TikTok. Every frame is drawn from the app's own code: its Compose screens, shaders and drawables rendered in a browser, and its button animation drawn by the app's own view.</p>
+      <p>The files are in the repository under <code>store/</code>, on the branch <code>feat/button-animation-videos</code>, which is not pushed yet.</p>
       <dl class="facts">
         <div><dt>Feature graphic</dt><dd>1024 × 500</dd></div>
         <div><dt>Phone screenshots</dt><dd>8</dd></div>
         <div><dt>Promo</dt><dd>0:30, 16:9 and 9:16</dd></div>
         <div><dt>Tutorials</dt><dd>${tuts.length} videos, ${clock(total)} in all</dd></div>
+        <div><dt>Shorts</dt><dd>${shorts.length} videos, 9:16, 60 fps</dd></div>
       </dl>
     </div>
   </header>
@@ -180,7 +204,10 @@ pre.cmd { margin: 0; padding: 16px 18px; background: var(--surface); border: 1px
       <li>Everything is drawn from the code, not captured on a phone. Compare a few screens with your own device before you publish.</li>
       <li>Once the listing has a video, Play shows the feature graphic as its cover, cropped to 16:9 with a play button over the middle. The words and the sliders sit inside that crop, and the middle is left clear.</li>
       <li>The music is generated by a script and measured at −14 LUFS, but I could not listen to it. Give it a listen.</li>
-      <li>The videos are narrated by a synthetic voice (<code>vo.py</code>: Kokoro-82M, af_bella, the Sonary tutorials' narrator), with the music ducked under it; the tutorials' .srt captions follow it word for word. Its pronunciation was checked from its phonemes, not by ear: give it a listen.</li>
+      <li>The videos are narrated by a synthetic voice (<code>vo.py</code>, Kokoro-82M): af_bella, the Sonary tutorials' narrator, in the tutorials and the promo, and af_heart, brighter and more laid back, in the shorts. The music is ducked under it, and the tutorials' .srt captions follow it word for word. It was checked from its phonemes and word timings, not by ear: give it a listen.</li>
+      <li>Every upload answers YouTube's AI-use question with Yes and carries TikTok's AI-generated label, because of the synthetic narrator.</li>
+      <li>The button animation in tutorial 10 and the shorts is the app's own drawing: <code>ButtonBumpView</code>, the view the overlay puts on the glass, rendered frame by frame on Robolectric (<code>bump.mjs</code>), with the app's own sounds at the presses. The phone, the finger and its side keys are drawn: in the shorts the keys sit where the app first expects them, and in the tutorial a little lower, so step 7 can line the press up with them.</li>
+      <li>The app now calls itself Gesture Volume, two words, everywhere it prints its name. Tutorials 1–9 were rendered before that, so the app's title bar and Android's permission screens in them still read GestureVolume.</li>
       <li>Other companies' names appear only where the app itself prints them: the search providers (Google, YouTube, Maps) and the intro of Gestures for chosen apps. The apps, contacts and icons around the app are made up.</li>
       <li>Android's own screens (Display over other apps, the notification request, the lock screen) are plain AOSP-style drawings, not any phone maker's design.</li>
     </ul>
@@ -219,13 +246,28 @@ pre.cmd { margin: 0; padding: 16px 18px; background: var(--surface); border: 1px
   <section aria-labelledby="tut">
     <p class="eyebrow">YouTube · 1920 × 1080</p>
     <h2 id="tut">Tutorials</h2>
-    <p>One per feature, in order, each ending on the next one's title. Chapters are in each description; the .srt files carry the same words as the captions.</p>
+    <p>One per feature, in order, each ending on the next one's title. Chapters are in each description; the .srt files carry the same words as the captions. All ${tuts.length} are in the playlist “Gesture Volume tutorials: how to use every feature”.</p>
     <div class="tuts">
       ${tuts.map((e) => `<article class="tut">
         <video controls preload="none" playsinline poster="media/tut/${e.base}.jpg" src="media/tut/${e.base}.mp4" width="1280" height="720"></video>
         <div class="meta"><h3>${e.series.n}. ${esc(e.series.title)}</h3><span>${clock(e.duration)}</span></div>
+        ${PUBLISHED.tutorials?.[e.series.id] ? `<p class="links"><a href="https://www.youtube.com/watch?v=${PUBLISHED.tutorials[e.series.id]}" target="_blank" rel="noopener">Watch on YouTube</a></p>` : ''}
         <ol>${e.chapters.map((c) => `<li><b>${clock(c.t)}</b>${esc(c.title)}</li>`).join('')}</ol>
         <details><summary>Upload text</summary>${copyBlock(`t${e.series.n}-title`, 'Title', e.title)}${copyBlock(`t${e.series.n}-desc`, 'Description', e.description)}${copyBlock(`t${e.series.n}-tags`, 'Tags', e.tags.join(', '))}</details>
+      </article>`).join('')}
+    </div>
+  </section>
+
+  <section aria-labelledby="shorts">
+    <p class="eyebrow">YouTube Shorts and TikTok · 1080 × 1920, 60 fps</p>
+    <h2 id="shorts">Button animation shorts</h2>
+    <p>One per animation, about 15 seconds each. A finger presses the phone's real volume key and the app's own animation plays beside it, with its sound; a happy, laid-back narrator, captions that follow the words, a chill music bed, and an end card. The same file is posted to both.</p>
+    <div class="shortgrid">
+      ${shorts.map((x) => `<article class="short">
+        <video controls preload="none" playsinline poster="media/shorts/${x.base}.jpg" src="media/shorts/${x.base}.mp4" width="720" height="1280"></video>
+        <div class="meta"><h3>${esc(x.S.name)}</h3><span>${clock(x.duration)}</span></div>
+        <p class="links">${x.links.youtube ? `<a href="https://youtube.com/shorts/${x.links.youtube}" target="_blank" rel="noopener">YouTube</a>` : ''}${x.links.tiktok ? `<a href="${x.links.tiktok}" target="_blank" rel="noopener">TikTok</a>` : ''}</p>
+        <details><summary>Posting text</summary>${copyBlock(`s-${x.S.id}-title`, 'YouTube title', COPY[x.S.id].title)}${copyBlock(`s-${x.S.id}-desc`, 'YouTube description', shortDescription(x.S))}${copyBlock(`s-${x.S.id}-tags`, 'YouTube tags', shortTags(x.S).join(', '))}${copyBlock(`s-${x.S.id}-tt`, 'TikTok caption', tiktokCaption(x.S))}</details>
       </article>`).join('')}
     </div>
   </section>
@@ -248,8 +290,13 @@ python3 finish.py                             # 24-bit PNG, checked against Play
 # the videos are narrated: vo.py speaks their lines first (its setup is in store/README.md)
 node render.mjs video promo ../../store/video/promo-1080p.mp4
 node render.mjs video promo ../../store/video/promo-vertical.mp4 --query v=1
-# each tutorial by its id in kit/tutorial.js, getting-started to visibility:
+# each tutorial by its id in kit/tutorial.js, getting-started to button-animation:
 node render.mjs video tutorial ../../store/tutorials/03-quick-slider.mp4 --query id=quick-slider --crf 20 --tune animation
+# the button animation's own frames (Robolectric, from a checkout with the feature), then tutorial 10:
+node bump.mjs build/bump/tiles.spec.json      # the gallery's tiles: {"clips":[{"name":"tiles","kind":"tiles"}]}
+node bump.mjs scene tutorial id=button-animation
+node render.mjs video tutorial ../../store/tutorials/10-button-animation.mp4 --query id=button-animation --crf 20 --tune animation
+node shorts.mjs all                           # the six shorts: narrator, frames, video
 node render-thumbs.mjs                        # YouTube thumbnails
 node youtube.mjs                              # titles, descriptions, chapters, tags
 node gallery.mjs                              # this page</pre>

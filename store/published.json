@@ -1,0 +1,25 @@
+{
+ "note": "Where each video is published. YouTube ids as in the app's Tutorials.kt; the tutorials are in the playlist 'Gesture Volume tutorials: how to use every feature'.",
+ "youtubeChannel": "https://www.youtube.com/channel/UC909UUylvCKNPPeq7cCmbBw",
+ "tiktok": "https://www.tiktok.com/@newagedevs",
+ "tutorials": {
+  "getting-started": "hhnmDjMchnw",
+  "swipe-volume": "gXA0KPfFzP4",
+  "quick-slider": "iL-AladQ3B4",
+  "deck": "fImtgUqBtH0",
+  "search": "meHMyUiXOe8",
+  "menu": "oO_s17Gd83k",
+  "actions": "NENTzFCEbi8",
+  "appearance": "kQZFzztZQdg",
+  "visibility": "UOHPfXJXeus",
+  "button-animation": "9H7xsVOCDHc"
+ },
+ "shorts": {
+  "water": { "youtube": "v1-3-rMoIHs", "tiktok": "https://www.tiktok.com/@newagedevs/video/7709947450341084436" },
+  "fish": { "youtube": "2BIB7REuPXk", "tiktok": "https://www.tiktok.com/@newagedevs/video/7709947858379738389" },
+  "frog": { "youtube": "kn4IweEVs98", "tiktok": "https://www.tiktok.com/@newagedevs/video/7709948206892797205" },
+  "cat": { "youtube": "c8MQnu57Zmc", "tiktok": "https://www.tiktok.com/@newagedevs/video/7709948577816005908" },
+  "swing": { "youtube": "jqlZ3pdtWvA", "tiktok": "https://www.tiktok.com/@newagedevs/video/7709948917818936582" },
+  "balloon": { "youtube": "OWeVt2yqqfM", "tiktok": "https://www.tiktok.com/@newagedevs/video/7709949251606220052" }
+ }
+}

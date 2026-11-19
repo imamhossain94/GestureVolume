@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../kit/base.css"></head>
+<body style="margin:0"><div id="root"></div>
+<script type="module">
+import { buildShort } from '../kit/short.js';
+import { loadNarration } from '../kit/narration.js';
+const q = new URLSearchParams(location.search);
+window.sceneReady = (async () => {
+  // ?id=fish: which short (kit/shorts-data.js); ?vo=/build/vo/<name>.json: its narrator's clips.
+  window.scene = await buildShort(document.getElementById('root'), q.get('id'), { narration: await loadNarration(q.get('vo')) });
+})();
+</script></body></html>

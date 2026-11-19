@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """The store videos' sound, made from nothing but code, so there is nothing to license.
 
-Two beds of original music (an upbeat one for the promo, a calm one under the tutorials), the
+Three beds of original music (an upbeat one for the promo, a calm one under the tutorials, a
+happy, laid-back one under the shorts), the
 interface's sound effects, and the mix: a scene's cue sheet (JSON written beside its video)
 places each effect at the frame its touch lands on, and the narrator's clips (vo.py) where their
 lines start, with the music ducked under the voice. The Quick slider's step sound is the app's
@@ -384,6 +385,71 @@ def bed_calm(total):
     return finish(mix, total, fade_in=1.0, fade_out=2.5)
 
 
+# A brighter progression for the shorts' bed: Cmaj7 - Am7 - Fmaj7 - G6.
+CHILL = [
+    ([48, 55, 59, 64], 36, [64, 67, 71, 72]),
+    ([45, 52, 55, 60], 33, [60, 64, 67, 69]),
+    ([41, 48, 52, 57], 29, [57, 60, 64, 65]),
+    ([43, 50, 52, 59], 31, [59, 62, 64, 67]),
+]
+
+
+def vinyl(n, seed=21):
+    """Lo-fi dust: sparse soft crackles over a faint hiss."""
+    rng = np.random.default_rng(seed)
+    hiss = lowpass(rng.normal(0, 1, n), 5000) * 0.006
+    pops = np.zeros(n)
+    idx = rng.integers(0, n, size=max(1, int(n / SR * 9)))
+    pops[idx] = rng.normal(0, 1, len(idx)) * 0.12
+    pops = bandpass(pops, 1200, 7000, 1)
+    return hiss + pops
+
+
+def bed_chill(total):
+    """Happy and laid back, 90 bpm: warm keys pushed a little ahead of the beat, a round bass, soft
+    swung drums, a marimba hook every other bar and a bit of vinyl dust. Starts full: a short opens
+    on the beat, not on an intro."""
+    bpm = 90
+    beat = 60 / bpm
+    bar = beat * 4
+    n = int(total * SR)
+    mus = np.zeros((n, 2))
+    drums = np.zeros((n, 2))
+    bars = int(np.ceil(total / bar)) + 1
+    for b in range(bars):
+        chord, root, arp = CHILL[b % 4]
+        t0 = b * bar
+        if t0 >= total:
+            break
+        # Keys on the one and, pushed, on the "and" of two: the lilt.
+        for hit, at, g in ((0, 0.0, 0.7), (1, beat * 1.5, 0.45)):
+            for k, m in enumerate(chord):
+                place(mus, pan(keys_note(m + 12, beat * (1.4 if hit == 0 else 2.3)), (k - 1.5) * 0.28), t0 + at + k * 0.01, g)
+        place(mus, pad_chord(chord, bar + 0.4, cutoff=1600), t0, 0.16)
+        for q, (at, m) in enumerate(((0.0, root), (beat * 1.5, root + 12), (beat * 2, root + 7), (beat * 3.5, root))):
+            place(mus, bass_note(m, beat * 0.7), t0 + at, 0.26 if q == 0 else 0.18)
+        # The hook: a few marimba notes climbing the chord, every other bar.
+        if b % 2 == 1:
+            for i, (at, idx) in enumerate(((0.0, 0), (0.5, 1), (1.0, 2), (1.75, 3), (2.5, 2))):
+                place(mus, pan(pluck(arp[idx] + 12, 0.35, bright=3000) * 0.55, 0.25 if i % 2 else -0.25), t0 + beat * (1 + at), 0.55)
+        for q in range(4):
+            if q == 0 or (q == 2 and b % 2 == 0):
+                place(drums, kick(0.3) * 0.75, t0 + q * beat, 0.45)
+            if q == 2 and b % 2 == 1:
+                place(drums, kick(0.3) * 0.6, t0 + q * beat + beat * 0.5, 0.4)
+            if q in (1, 3):
+                place(drums, clap(seed=b * 5 + q) * 0.55, t0 + q * beat, 0.55)
+            swing = beat * 0.6
+            place(drums, pan(hat(seed=b * 11 + q) * 0.6, 0.2), t0 + q * beat, 0.7)
+            place(drums, pan(hat(seed=b * 11 + q + 40) * 0.45, -0.2), t0 + q * beat + swing, 0.65)
+    mus = delay(mus, beat * 0.75, 0.22, 0.12)
+    mix = reverb(mus, 0.26, 0.84) + lowpass(drums.T, 8500).T * 0.85
+    dust = vinyl(n)
+    mix[:, 0] += dust
+    mix[:, 1] += dust
+    return finish(mix, total, fade_in=0.08, fade_out=1.6)
+
+
 def finish(mix, total, fade_in, fade_out):
     n = int(total * SR)
     mix = mix[:n]
@@ -410,8 +476,29 @@ def load_wav(path):
     return x
 
 
+# The app's own sounds (res/raw/step_<name>.wav): from the app's source when it has them, else
+# from build/sounds, where they are copied for a branch that does not have the button animation.
+def app_sound(name):
+    for d in (os.path.join(HERE, "..", "..", "app", "src", "main", "res", "raw"), os.path.join(HERE, "build", "sounds")):
+        f = os.path.join(d, f"step_{name}.wav")
+        if os.path.exists(f):
+            return load_wav(f)
+    raise ValueError(f"no step_{name}.wav in the app's res/raw or in build/sounds")
+
+
 def sfx(name, seed=1):
     rng = np.random.default_rng(seed)
+    if name.startswith("app:"):
+        return app_sound(name[4:])
+    if name == "click":  # a phone's side key going down: a firm, dry tick with a little body
+        n = int(0.05 * SR)
+        snap = bandpass(rng.normal(0, 1, n), 2400, 7500, 2) * env_exp(n, 0.0028)
+        body = sine(240, 0.05) * env_exp(n, 0.006) * 0.5 + sine(1650, 0.05) * env_exp(n, 0.0035) * 0.35
+        return (snap * 0.8 + body) * 0.55
+    if name == "clickup":  # and coming back up: the same, lighter and higher
+        n = int(0.04 * SR)
+        snap = bandpass(rng.normal(0, 1, n), 3200, 9000, 2) * env_exp(n, 0.002)
+        return (snap * 0.7 + sine(2100, 0.04) * env_exp(n, 0.0025) * 0.25) * 0.3
     if name == "tap":
         n = int(0.06 * SR)
         x = sine(2100, 0.06) * env_exp(n, 0.008) * 0.5 + highpass(rng.normal(0, 1, n), 3000) * env_exp(n, 0.002) * 0.25
@@ -486,6 +573,18 @@ def read_wav(path):
         return x.reshape(-1, w.getnchannels())
 
 
+def cut(x, dur):
+    """A sample stopped `dur` seconds in, with a 30 ms fade, as the app's stopLast() stops it."""
+    if not dur:
+        return x
+    n, f = int(dur * SR), int(0.03 * SR)
+    if n >= len(x):
+        return x
+    y = x[:n].copy()
+    y[-f:] *= np.linspace(1, 0, f) if y.ndim == 1 else np.linspace(1, 0, f)[:, None]
+    return y
+
+
 def mix_track(bed, cues, total, music_gain=0.55):
     n = int(total * SR)
     out = np.zeros((n, 2))
@@ -509,7 +608,7 @@ def mix_track(bed, cues, total, music_gain=0.55):
 VOICE_LUFS = -20.0
 # The promo ducks deeper than it first did (-9): its music swells into the end card, and there
 # "Gesture Volume" was heard as "just your volume" by speech recognisers at -9.
-BEDS = {"calm": (8.0, -11.0), "promo": (6.0, -12.0)}   # MUSIC_UNDER, DUCK_DB
+BEDS = {"calm": (8.0, -11.0), "promo": (6.0, -12.0), "chill": (7.0, -10.0)}   # MUSIC_UNDER, DUCK_DB
 SFX_DB, SFX_DUCK_DB, SFX_UNDER = 6.0, -3.0, 3.0
 ATTACK, RELEASE, BRIDGE = 0.12, 0.25, 1.0
 
@@ -597,7 +696,8 @@ def mix_narrated(bed, cues, voice, total, music_gain, kind):
     cap = float(np.median(said[said > -45])) - SFX_UNDER
     fx = np.zeros((n, 2))
     for i, c in enumerate(cues):
-        x = pan(sfx(c["sfx"], seed=i + 1), c.get("pan", 0.0)) * (c.get("gain", 1.0) * k * 10 ** (SFX_DB / 20))
+        x = cut(sfx(c["sfx"], seed=i + 1), c.get("dur"))
+        x = pan(x, c.get("pan", 0.0)) * (c.get("gain", 1.0) * k * 10 ** (SFX_DB / 20))
         over = float(short_loudness(x).max()) - cap
         place(fx, x, c["t"], 10 ** (-max(0.0, over) / 20))
     env = talk_curve(n, spans)
@@ -659,6 +759,8 @@ if __name__ == "__main__":
         if parts[0] == "promo":
             args = [int(x) for x in parts[1:]]
             write_wav(out, bed_promo(total, *args))
+        elif parts[0] == "chill":
+            write_wav(out, bed_chill(total))
         else:
             write_wav(out, bed_calm(total))
     elif cmd == "mix":

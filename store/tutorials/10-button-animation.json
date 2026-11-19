@@ -1,0 +1,308 @@
+{
+ "series": {
+  "n": 10,
+  "of": 10,
+  "id": "button-animation",
+  "title": "Button animation",
+  "sub": "Water, a fish, a frog and more, beside the volume key you press",
+  "next": null
+ },
+ "duration": 89.752,
+ "chapters": [
+  {
+   "t": 0,
+   "title": "Turn it on"
+  },
+  {
+   "t": 30.914,
+   "title": "Pick an animation"
+  },
+  {
+   "t": 57.314,
+   "title": "Make it fit"
+  }
+ ],
+ "steps": [
+  {
+   "at": 7.6370000000000005,
+   "end": 14.837,
+   "title": "Open Button animation",
+   "text": "In Gesture Volume, under Advanced features, tap Button animation.",
+   "chapter": "Turn it on",
+   "voice": {
+    "at": 7.887,
+    "end": 14.26
+   }
+  },
+  {
+   "at": 14.837,
+   "end": 22.314,
+   "title": "Turn it on",
+   "text": "Switch on Animate the volume buttons. The preview at the top plays it, with nothing to press.",
+   "chapter": "Turn it on",
+   "voice": {
+    "at": 15.087,
+    "end": 21.814
+   }
+  },
+  {
+   "at": 22.314,
+   "end": 30.914,
+   "title": "Press a volume key",
+   "text": "Go home and press volume up: water ripples out from the very key you pressed.",
+   "chapter": "Turn it on",
+   "voice": {
+    "at": 22.564,
+    "end": 28.593
+   }
+  },
+  {
+   "at": 30.914,
+   "end": 38.714,
+   "title": "Pick one",
+   "text": "Back in Button animation, scroll down to Animation and tap one. Every animation is free.",
+   "chapter": "Pick an animation",
+   "voice": {
+    "at": 31.164,
+    "end": 37.967
+   }
+  },
+  {
+   "at": 38.714,
+   "end": 47.714,
+   "title": "Each with a sound of its own",
+   "text": "Frog jump, Swing women, Cat, Balloons: tap one, and the preview plays it with its sound.",
+   "chapter": "Pick an animation",
+   "voice": {
+    "at": 38.964,
+    "end": 46.685
+   }
+  },
+  {
+   "at": 47.714,
+   "end": 57.314,
+   "title": "Hold for a big one",
+   "text": "On the glass, a press lets a balloon float away. Hold the key, and it fills until it bursts.",
+   "chapter": "Pick an animation",
+   "voice": {
+    "at": 47.964,
+    "end": 54.918
+   }
+  },
+  {
+   "at": 57.314,
+   "end": 66.985,
+   "title": "Line it up with your keys",
+   "text": "Under Where your buttons are, pick a key and slide Position. As you slide, the press shows on the glass, right beside it.",
+   "chapter": "Make it fit",
+   "voice": {
+    "at": 57.564,
+    "end": 66.485
+   }
+  },
+  {
+   "at": 66.985,
+   "end": 76.652,
+   "title": "Sound and feel",
+   "text": "Each animation plays its own sound at every press. Then pick how it buzzes, how long it stays and how fast it moves.",
+   "chapter": "Make it fit",
+   "voice": {
+    "at": 67.235,
+    "end": 76.152
+   }
+  },
+  {
+   "at": 76.652,
+   "end": 84.252,
+   "title": "With the Quick slider, or alone",
+   "text": "Pause plays the animation alone. Show both brings up the Quick slider with it.",
+   "chapter": "Make it fit",
+   "voice": {
+    "at": 76.902,
+    "end": 83.462
+   }
+  }
+ ],
+ "subtitles": [
+  {
+   "a": 0.395,
+   "b": 1.905,
+   "text": "Button animation."
+  },
+  {
+   "a": 1.945,
+   "b": 6.687,
+   "text": "Water, a fish, a frog and more,\nbeside the volume key you press."
+  },
+  {
+   "a": 7.953,
+   "b": 9.838,
+   "text": "Open Button animation."
+  },
+  {
+   "a": 9.878,
+   "b": 14.787,
+   "text": "In Gesture Volume, under Advanced\nfeatures, tap Button animation."
+  },
+  {
+   "a": 15.121,
+   "b": 18.981,
+   "text": "Turn it on. Switch on Animate\nthe volume buttons."
+  },
+  {
+   "a": 19.021,
+   "b": 22.264,
+   "text": "The preview at the top plays\nit, with nothing to press."
+  },
+  {
+   "a": 22.551,
+   "b": 26.086,
+   "text": "Press a volume key.\nGo home and press volume up:"
+  },
+  {
+   "a": 26.126,
+   "b": 29.193,
+   "text": "water ripples out from\nthe very key you pressed."
+  },
+  {
+   "a": 31.173,
+   "b": 36.383,
+   "text": "Pick one. Back in Button animation,\nscroll down to Animation and tap one."
+  },
+  {
+   "a": 36.423,
+   "b": 38.567,
+   "text": "Every animation is free."
+  },
+  {
+   "a": 39.03,
+   "b": 40.89,
+   "text": "Each with a sound of its own."
+  },
+  {
+   "a": 40.93,
+   "b": 44.145,
+   "text": "Frog jump, Swing women, Cat, Balloons:"
+  },
+  {
+   "a": 44.185,
+   "b": 47.285,
+   "text": "tap one, and the preview\nplays it with its sound."
+  },
+  {
+   "a": 48.001,
+   "b": 52.561,
+   "text": "Hold for a big one. On the glass,\na press lets a balloon float away."
+  },
+  {
+   "a": 52.601,
+   "b": 55.518,
+   "text": "Hold the key, and it\nfills until it bursts."
+  },
+  {
+   "a": 57.605,
+   "b": 59.19,
+   "text": "Line it up with your keys."
+  },
+  {
+   "a": 59.23,
+   "b": 62.895,
+   "text": "Under Where your buttons are,\npick a key and slide Position."
+  },
+  {
+   "a": 62.935,
+   "b": 66.935,
+   "text": "As you slide, the press shows\non the glass, right beside it."
+  },
+  {
+   "a": 67.319,
+   "b": 72.154,
+   "text": "Sound and feel. Each animation\nplays its own sound at every press."
+  },
+  {
+   "a": 72.194,
+   "b": 76.602,
+   "text": "Then pick how it buzzes, how long\nit stays and how fast it moves."
+  },
+  {
+   "a": 76.914,
+   "b": 79.094,
+   "text": "With the Quick slider, or alone."
+  },
+  {
+   "a": 79.134,
+   "b": 81.369,
+   "text": "Pause plays the animation alone."
+  },
+  {
+   "a": 81.409,
+   "b": 84.062,
+   "text": "Show both brings up\nthe Quick slider with it."
+  },
+  {
+   "a": 85.168,
+   "b": 88.233,
+   "text": "That is the whole series.\nThanks for watching."
+  }
+ ],
+ "narration": {
+  "narrator": "Kokoro-82M (kokoro-onnx), af_bella, speed 1",
+  "lines": [
+   {
+    "key": "intro",
+    "at": 0.4,
+    "end": 6.087
+   },
+   {
+    "key": "step-1",
+    "at": 7.887,
+    "end": 14.26
+   },
+   {
+    "key": "step-2",
+    "at": 15.087,
+    "end": 21.814
+   },
+   {
+    "key": "step-3",
+    "at": 22.564,
+    "end": 28.593
+   },
+   {
+    "key": "step-4",
+    "at": 31.164,
+    "end": 37.967
+   },
+   {
+    "key": "step-5",
+    "at": 38.964,
+    "end": 46.685
+   },
+   {
+    "key": "step-6",
+    "at": 47.964,
+    "end": 54.918
+   },
+   {
+    "key": "step-7",
+    "at": 57.564,
+    "end": 66.485
+   },
+   {
+    "key": "step-8",
+    "at": 67.235,
+    "end": 76.152
+   },
+   {
+    "key": "step-9",
+    "at": 76.902,
+    "end": 83.462
+   },
+   {
+    "key": "outro",
+    "at": 85.152,
+    "end": 87.633
+   }
+  ]
+ }
+}

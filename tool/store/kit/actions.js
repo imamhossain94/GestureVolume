@@ -444,7 +444,7 @@ function triedResult(slot, a, { onLeft, sliderTarget }) {
 }
 
 // --- Dialogs raised on the Actions screen after a pick (§1.9) -------------------------------------
-const DISCLOSURE = `GestureVolume uses Android’s accessibility service for four things, all optional:
+const DISCLOSURE = `Gesture Volume uses Android’s accessibility service for four things, all optional:
 
 • To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.
 
@@ -457,11 +457,11 @@ const DISCLOSURE = `GestureVolume uses Android’s accessibility service for fou
 It does not read or collect anything else. Nothing leaves your device. You can turn it off at any time in Settings › Accessibility.`;
 export const DIALOGS = {
   brightness: { title: 'Allow brightness control?', dismiss: 'Cancel', confirm: 'Open settings',
-    text: 'To change screen brightness, GestureVolume needs the Modify system settings permission. Adaptive brightness is turned off while you use it, and restored when you stop the service.' },
+    text: 'To change screen brightness, Gesture Volume needs the Modify system settings permission. Adaptive brightness is turned off while you use it, and restored when you stop the service.' },
   accessibility: { title: 'Turn on the accessibility service?', dismiss: 'Not now', confirm: 'Open Accessibility settings', text: DISCLOSURE,
-    after: 'In the list, open GestureVolume and switch it on.' },
+    after: 'In the list, open Gesture Volume and switch it on.' },
   dnd: { title: 'Allow Do Not Disturb access?', dismiss: 'Not now', confirm: 'Open settings',
-    text: 'To toggle Do Not Disturb, GestureVolume needs Do Not Disturb access. You will be taken to the system list where you can allow it.' },
+    text: 'To toggle Do Not Disturb, Gesture Volume needs Do Not Disturb access. You will be taken to the system list where you can allow it.' },
 };
 
 // AlertDialog: 24 dp corners on surface, padded 24; the title, 16, the text (scrolling when long), 24,

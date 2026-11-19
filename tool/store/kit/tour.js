@@ -433,7 +433,7 @@ function dialogLayer(k, inner, { dim = 0.6, status = 32, cls = 'dialog-layer' } 
 }
 
 // --- The accessibility disclosure (AccessibilityDisclosureDialog) ---------------------------------
-const DISCLOSURE = 'GestureVolume uses Android’s accessibility service for four things, all optional:\n\n'
+const DISCLOSURE = 'Gesture Volume uses Android’s accessibility service for four things, all optional:\n\n'
   + '• To perform the system actions you assign to the bar: Lock screen, Screenshot, Back, Home, Recent apps, Notifications, Quick settings and the Power menu.\n\n'
   + '• To look at the two volume keys, only if you set the volume keys to Instant: to open the Quick panel the moment you press one. Every other key passes straight on, and no key is recorded. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.\n\n'
   + '• To see which app is on screen, only if you choose apps to hide the bar in or give apps gestures of their own. It looks at the app’s name and nothing else.\n\n'
@@ -453,7 +453,7 @@ export function accessibilityDisclosure({ k = 1, scroll = 0, status = 32 } = {})
       <div class="dialog-text" style="flex:0 1 auto;min-height:0;overflow:hidden;margin-bottom:24px"><div style="transform:translateY(${-scroll}px)">
         <div style="${T.bodyMedium};color:${C.onSurfaceVariant};white-space:pre-line">${DISCLOSURE}</div>
         <div style="height:12px"></div>
-        <div style="${T.bodyMedium};font-weight:600;color:${C.onSurface}">In the list, open GestureVolume and switch it on.</div></div></div>
+        <div style="${T.bodyMedium};font-weight:600;color:${C.onSurface}">In the list, open Gesture Volume and switch it on.</div></div></div>
       <div style="flex:none;display:flex;flex-wrap:wrap-reverse;justify-content:flex-end;gap:12px 8px">
         ${btn('Not now', 'decline', false)}${btn('Open Accessibility settings', 'accept', true)}</div></div>`;
   return dialogLayer(k, inner, { status, cls: 'dialog-layer disclosure' });
@@ -565,13 +565,13 @@ function footer(textHtml) {
       <div style="padding-top:16px;font:400 14px/20px Roboto;letter-spacing:.25px;color:${A.text2}">${textHtml}</div></div>`;
 }
 
-// Settings › Apps › Special app access › Display over other apps › GestureVolume (DrawOverlayDetails):
+// Settings › Apps › Special app access › Display over other apps › Gesture Volume (DrawOverlayDetails):
 // the app's header, "Allow display over other apps" and the footer. k = 0..1: the switch.
 // data-target: back, app, toggle (the switch), toggle-row (the whole row, which also toggles it).
 export function systemOverlaySettings({ status = 32, k = 0 } = {}) {
   return sysPage('Display over other apps', `
       <div data-target="app" style="display:flex;flex-direction:column;align-items:center;padding:8px 24px 24px">
-        ${gvIcon(64)}<div style="margin-top:16px;font:400 24px/32px Roboto;color:${A.text}">GestureVolume</div>
+        ${gvIcon(64)}<div style="margin-top:16px;font:400 24px/32px Roboto;color:${A.text}">Gesture Volume</div>
         <div style="margin-top:2px;font:400 14px/20px Roboto;letter-spacing:.25px;color:${A.text2}">1.5.2</div></div>
       <div data-target="toggle-row" style="display:flex;align-items:center;min-height:72px;padding:12px 24px">
         <div style="flex:1;font:400 20px/26px Roboto;color:${A.text}">Allow display over other apps</div>
@@ -580,23 +580,23 @@ export function systemOverlaySettings({ status = 32, k = 0 } = {}) {
   { status });
 }
 
-const SERVICE_DESCRIPTION = 'GestureVolume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also opens the Quick panel the moment you press a volume key, looking at the two volume keys only. If you choose, it also draws the bar on the lock screen, where Android hides every app’s floating bar, and while the phone is locked the bar does only what the lock screen already allows: the volume, the Quick panel and quick toggles. If you choose apps to hide the bar in, or give apps gestures of their own, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.';
+const SERVICE_DESCRIPTION = 'Gesture Volume uses the accessibility service to perform the system actions you assign to the floating bar — lock the screen, take a screenshot, go Back or Home, open recent apps, the notification shade, quick settings and the power menu. If you choose, it also opens the Quick panel the moment you press a volume key, looking at the two volume keys only. If you choose, it also draws the bar on the lock screen, where Android hides every app’s floating bar, and while the phone is locked the bar does only what the lock screen already allows: the volume, the Quick panel and quick toggles. If you choose apps to hide the bar in, or give apps gestures of their own, it notes which app is on screen, and nothing else about it. It reads nothing else, collects nothing, and everything stays on this device. While a Volume down press is waiting, it also notes whether the system’s screenshot has come up, so a screenshot taken with the buttons does not open the panel.';
 
-// Settings › Accessibility › GestureVolume (ToggleAccessibilityServicePreferenceFragment): the main
-// switch bar "Use GestureVolume", the shortcut row and the service's description. k = 0..1: the
+// Settings › Accessibility › Gesture Volume (ToggleAccessibilityServicePreferenceFragment): the main
+// switch bar "Use Gesture Volume", the shortcut row and the service's description. k = 0..1: the
 // main switch. dialog = 0..1: the "full control" confirmation over it (faded and scaled in).
 // data-target: back, toggle (the main switch), toggle-row (the bar), shortcut, allow, deny (the
 // dialog's buttons, while it shows).
 export function systemAccessibilitySettings({ status = 32, k = 0, dialog = 0 } = {}) {
   const kk = clamp(k);
-  const el = sysPage('GestureVolume', `
+  const el = sysPage('Gesture Volume', `
       <div data-target="toggle-row" style="margin:0 16px;min-height:72px;border-radius:36px;padding:12px 16px 12px 24px;display:flex;align-items:center;
           background:${kk >= 0.5 ? A.primaryContainer : A.high}">
-        <div style="flex:1;font:400 20px/26px Roboto;color:${A.text}">Use GestureVolume</div><div style="width:16px"></div>
+        <div style="flex:1;font:400 20px/26px Roboto;color:${A.text}">Use Gesture Volume</div><div style="width:16px"></div>
         <div data-target="toggle" style="flex:none">${sysSwitch(kk)}</div></div>
       <div style="height:16px"></div>
       <div data-target="shortcut" style="display:flex;align-items:center;min-height:72px;padding:12px 24px">
-        <div style="flex:1;min-width:0"><div style="font:400 20px/26px Roboto;color:${A.text}">GestureVolume shortcut</div>
+        <div style="flex:1;min-width:0"><div style="font:400 20px/26px Roboto;color:${A.text}">Gesture Volume shortcut</div>
           <div style="font:400 14px/20px Roboto;letter-spacing:.25px;color:${A.text2};margin-top:2px">Off</div></div>
         <div style="width:1px;height:40px;background:${A.outlineVariant};margin:0 16px 0 12px"></div>${sysSwitch(0)}</div>
       ${footer(SERVICE_DESCRIPTION)}`, { status });
@@ -604,7 +604,7 @@ export function systemAccessibilitySettings({ status = 32, k = 0, dialog = 0 } =
   return el;
 }
 
-// AOSP's AccessibilityServiceWarning: "Allow GestureVolume to have full control of your device?"
+// AOSP's AccessibilityServiceWarning: "Allow Gesture Volume to have full control of your device?"
 function fullControlDialog({ k = 1, status = 32 } = {}) {
   const item = (glyph, title, text) => `<div style="display:flex;gap:16px;margin-top:20px">${icon(glyph, 24, A.primary)}
       <div style="flex:1;min-width:0"><div style="font:500 16px/24px Roboto;letter-spacing:.15px;color:${A.text}">${title}</div>
@@ -613,7 +613,7 @@ function fullControlDialog({ k = 1, status = 32 } = {}) {
       font:500 16px/24px Roboto;letter-spacing:.1px;${filled ? `background:${A.primary};color:${A.onPrimary}` : `box-shadow:inset 0 0 0 1px ${A.outline};color:${A.primary}`}">${label}</div>`;
   const inner = `<div class="dialog" data-target="dialog" style="width:${W - 48}px;border-radius:28px;background:${A.dialog};padding:24px">
       <div style="display:flex;justify-content:center">${gvIcon(36)}</div>
-      <div style="margin-top:16px;text-align:center;font:400 24px/32px Roboto;color:${A.text}">Allow GestureVolume to have full control of your device?</div>
+      <div style="margin-top:16px;text-align:center;font:400 24px/32px Roboto;color:${A.text}">Allow Gesture Volume to have full control of your device?</div>
       <div style="margin-top:16px;font:400 14px/20px Roboto;letter-spacing:.25px;color:${A.text2}">Full control is appropriate for apps that help you with accessibility needs, but not for most apps.</div>
       ${item('outlined/visibility', 'View and control screen', 'It can read all content on the screen and display content over other apps.')}
       ${item('outlined/touch_app', 'View and perform actions', 'It can track your interactions with an app or a hardware sensor, and interact with apps on your behalf.')}
@@ -630,7 +630,7 @@ export function notificationPermissionDialog({ k = 1, status = 32 } = {}) {
       padding:8px 16px;font:500 16px/24px Roboto;letter-spacing:.1px;color:${A.onSecondaryContainer}">${label}</div>`;
   const inner = `<div class="dialog" data-target="dialog" style="width:${W - 48}px;border-radius:28px;background:${A.dialog};padding:24px">
       <div style="display:flex;justify-content:center">${icon('filled/notifications', 32, A.primary)}</div>
-      <div style="margin:16px 8px 0;text-align:center;font:400 22px/28px Roboto;color:${A.text}">Allow <b style="font-weight:700">GestureVolume</b> to send you notifications?</div>
+      <div style="margin:16px 8px 0;text-align:center;font:400 22px/28px Roboto;color:${A.text}">Allow <b style="font-weight:700">Gesture Volume</b> to send you notifications?</div>
       <div style="margin-top:24px;display:flex;flex-direction:column;gap:4px">${b('Allow', 'allow', '20px 20px 4px 4px')}${b('Don’t allow', 'deny', '4px 4px 20px 20px')}</div></div>`;
   return dialogLayer(k, inner, { status, cls: 'dialog-layer notification-request' });
 }
