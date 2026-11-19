@@ -1,5 +1,6 @@
 package com.newagedevs.gesturevolume.utils
 
+import com.newagedevs.gesturevolume.data.local.ButtonBumpStore
 import com.newagedevs.gesturevolume.utils.ButtonBump.Edge
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -31,14 +32,15 @@ class ButtonBumpTest {
         val length = 52f * density
         val depth = 18f * density
         val throwers = ButtonBump.STYLES.filter { ButtonBump.spec(it).spread > 0f }
-        // Water, and every one of the showpieces: petals, sparks, fireworks and the rest.
+        // Water, and every one of the showpieces: petals, fireworks, the characters and the rest.
         assertTrue(throwers.containsAll(listOf(
-            ButtonBump.STYLE_WATER, ButtonBump.STYLE_BLOSSOM, ButtonBump.STYLE_SPARKS, ButtonBump.STYLE_FIREWORKS,
-            ButtonBump.STYLE_SONAR, ButtonBump.STYLE_SOLAR, ButtonBump.STYLE_BUBBLES, ButtonBump.STYLE_LIGHTNING,
-            ButtonBump.STYLE_CONFETTI,
+            ButtonBump.STYLE_WATER, ButtonBump.STYLE_BLOSSOM, ButtonBump.STYLE_FIREWORKS, ButtonBump.STYLE_ATOM,
+            ButtonBump.STYLE_VOLCANO, ButtonBump.STYLE_DRAGON, ButtonBump.STYLE_ROCKET, ButtonBump.STYLE_CAT,
+            ButtonBump.STYLE_MONKEY, ButtonBump.STYLE_ALIEN, ButtonBump.STYLE_FISH, ButtonBump.STYLE_BUBBLES,
+            ButtonBump.STYLE_SMOKE, ButtonBump.STYLE_SPRAY, ButtonBump.STYLE_WIND, ButtonBump.STYLE_NINJA,
+            ButtonBump.STYLE_CRACK, ButtonBump.STYLE_UFO, ButtonBump.STYLE_BEES, ButtonBump.STYLE_SOLAR,
         )))
-        // Thirty of them, the twenty newest among them.
-        assertTrue(throwers.size >= 29)
+        assertEquals(20, throwers.size)
         for (style in throwers) {
             val spec = ButtonBump.spec(style)
             val span = ButtonBump.windowSpan(style, length, density, depth)
@@ -49,6 +51,25 @@ class ButtonBumpTest {
             // Even the characters that only peek round the edge have room to show their heads.
             assertTrue("$style reach $reach", reach > depth * 3.5f)
         }
+    }
+
+    @Test
+    fun `every style has a sound of its own from the library`() {
+        for (style in ButtonBump.STYLES) {
+            assertTrue("$style -> ${ButtonBump.sound(style)}", ButtonBump.sound(style) in StepSoundLibrary.IDS)
+        }
+        // The showpieces each sound like themselves, not like the tick.
+        assertEquals("meow", ButtonBump.sound(ButtonBump.STYLE_CAT))
+        assertEquals("boom", ButtonBump.sound(ButtonBump.STYLE_ATOM))
+        assertEquals("drop", ButtonBump.sound(ButtonBump.STYLE_WATER))
+    }
+
+    @Test
+    fun `a shallow bump still throws full-size showpieces`() {
+        val density = 3f
+        val shallow = ButtonBump.windowReach(ButtonBump.STYLE_FIREWORKS, ButtonBumpStore.MIN_DEPTH * density, density, false)
+        val usual = ButtonBump.windowReach(ButtonBump.STYLE_FIREWORKS, ButtonBump.EFFECT_DEPTH_DP * density, density, false)
+        assertEquals(usual, shallow)
     }
 
     @Test

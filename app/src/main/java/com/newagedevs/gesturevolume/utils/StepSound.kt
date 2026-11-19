@@ -101,6 +101,22 @@ class StepSound(private val context: Context) {
         playNow(p, level, adaptive)
     }
 
+    /**
+     * The sample at its own pitch, give or take a hair so a run of presses does not sound mechanical:
+     * for an animation's sound, which would sound wrong pitched up and down with the level.
+     */
+    fun playOnce(volume: Float = 1f) {
+        val p = pool ?: return
+        val rate = 1f + (Math.random().toFloat() - 0.5f) * 0.06f
+        if (!loaded) {
+            pendingAt = SystemClock.uptimeMillis()
+            pendingLevel = (rate - MIN_RATE) / (MAX_RATE - MIN_RATE)
+            pendingAdaptive = true
+            return
+        }
+        p.play(soundId, volume, volume, 1, 0, rate)
+    }
+
     private fun playPending() {
         val p = pool ?: return
         val at = pendingAt
@@ -155,6 +171,26 @@ class StepSound(private val context: Context) {
             "marimba" -> R.raw.step_marimba
             "glass" -> R.raw.step_glass
             "chime" -> R.raw.step_chime
+            "twinkle" -> R.raw.step_twinkle
+            "firework" -> R.raw.step_firework
+            "boom" -> R.raw.step_boom
+            "rumble" -> R.raw.step_rumble
+            "roar" -> R.raw.step_roar
+            "launch" -> R.raw.step_launch
+            "swish" -> R.raw.step_swish
+            "crack" -> R.raw.step_crack
+            "exhale" -> R.raw.step_exhale
+            "whoosh" -> R.raw.step_whoosh
+            "spray" -> R.raw.step_spray
+            "bubbles" -> R.raw.step_bubbles
+            "meow" -> R.raw.step_meow
+            "monkey" -> R.raw.step_monkey
+            "alien" -> R.raw.step_alien
+            "ufo" -> R.raw.step_ufo
+            "buzz" -> R.raw.step_buzz
+            "splash" -> R.raw.step_splash
+            "cosmic" -> R.raw.step_cosmic
+            "boing" -> R.raw.step_boing
             else -> R.raw.slider_tick
         }
 

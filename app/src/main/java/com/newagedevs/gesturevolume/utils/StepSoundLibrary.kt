@@ -21,6 +21,9 @@ object StepSoundLibrary {
     val IDS: List<String> = listOf(
         TICK, "tap", "dial", "keys", "wood", "pop", "drop", "bubble", "snap", "thud", "blip",
         "marimba", "glass", "chime",
+        // The button animations' own sounds, there to choose for the Quick panel too.
+        "twinkle", "firework", "boom", "rumble", "roar", "launch", "swish", "crack", "exhale",
+        "whoosh", "spray", "bubbles", "meow", "monkey", "alien", "ufo", "buzz", "splash", "cosmic", "boing",
     )
 
     const val DEFAULT = TICK

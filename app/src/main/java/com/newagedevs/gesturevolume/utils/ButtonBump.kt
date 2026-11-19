@@ -2,6 +2,7 @@ package com.newagedevs.gesturevolume.utils
 
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.exp
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -73,14 +74,10 @@ object ButtonBump {
     /** A cherry blossom opens on the bump, and each press shakes petals loose to flutter down. */
     const val STYLE_BLOSSOM = "blossom"
 
-    /** A grinder's sparks: the rim glows hot and a shower streaks out, cooling as it falls. */
-    const val STYLE_SPARKS = "sparks"
 
     /** A rocket from the bump at each press, bursting into a shell: ring, willow, peony, heart. */
     const val STYLE_FIREWORKS = "fireworks"
 
-    /** A sonar scope round the button: a sweeping beam, a ping at each press, echoes lighting up. */
-    const val STYLE_SONAR = "sonar"
 
     /** The bump is the sun, the planets orbiting it; a press flares it and spins them faster. */
     const val STYLE_SOLAR = "solar"
@@ -88,11 +85,7 @@ object ButtonBump {
     /** Soap bubbles blown out at each press, rising, shimmering, and popping. */
     const val STYLE_BUBBLES = "bubbles"
 
-    /** A forked bolt thrown into the screen at each press, arcs crawling along the rim. */
-    const val STYLE_LIGHTNING = "lightning"
 
-    /** A party popper at each press: confetti and streamers fluttering down. */
-    const val STYLE_CONFETTI = "confetti"
 
     /** A mushroom cloud: a flash, a shockwave along the ground, and fire rolling up into a cap. */
     const val STYLE_ATOM = "atom"
@@ -115,14 +108,10 @@ object ButtonBump {
     /** A rocket nosing out and climbing away on its flame and a trail of smoke. */
     const val STYLE_ROCKET = "rocket"
 
-    /** A spray of lined paper and scraps, turning over and see-sawing down. */
-    const val STYLE_PAPER = "paper"
+    /** An aerosol can's spray at each press: a jet of fine droplets and a drifting, coloured mist. */
+    const val STYLE_SPRAY = "spray"
 
-    /** A boxing glove on a spring punching out, left and right, with a POW. */
-    const val STYLE_BOXING = "boxing"
 
-    /** A war hammer swinging out and striking, throwing lightning and a shockwave. */
-    const val STYLE_HAMMER = "hammer"
 
     /** The glass cracking from the button: branching cracks, rings and shards. */
     const val STYLE_CRACK = "crack"
@@ -136,8 +125,6 @@ object ButtonBump {
     /** Water along the edge, and a clownfish leaping out of it and diving back. */
     const val STYLE_FISH = "fish"
 
-    /** A snake's hole in place of the bump, the snake striking out at each press. */
-    const val STYLE_SNAKE = "snake"
 
     /** A monkey peeking round the edge, grinning, shrieking at each press. */
     const val STYLE_MONKEY = "monkey"
@@ -148,19 +135,13 @@ object ButtonBump {
     /** A flying saucer swooping out, shining its beam down, and zipping away. */
     const val STYLE_UFO = "ufo"
 
-    /** Lips puckering by the bump and blowing a kiss: hearts floating away. */
-    const val STYLE_KISS = "kiss"
 
-    /** Water along the edge, and a mermaid's tail rising out of it to flick its fin. */
-    const val STYLE_MERMAID = "mermaid"
 
     /** In the order they are offered. */
     val STYLES: List<String> = listOf(
         STYLE_WATER, STYLE_LIQUID, STYLE_BLOSSOM, STYLE_FIREWORKS, STYLE_ATOM, STYLE_VOLCANO,
-        STYLE_DRAGON, STYLE_ROCKET, STYLE_HAMMER, STYLE_NINJA, STYLE_BOXING, STYLE_CRACK,
-        STYLE_LIGHTNING, STYLE_SPARKS, STYLE_SMOKE, STYLE_WIND, STYLE_PAPER, STYLE_CONFETTI,
-        STYLE_BUBBLES, STYLE_KISS, STYLE_CAT, STYLE_MONKEY, STYLE_ALIEN, STYLE_UFO, STYLE_BEES,
-        STYLE_FISH, STYLE_MERMAID, STYLE_SNAKE, STYLE_SONAR, STYLE_SOLAR,
+        STYLE_DRAGON, STYLE_ROCKET, STYLE_CAT, STYLE_MONKEY, STYLE_ALIEN, STYLE_FISH, STYLE_BUBBLES,
+        STYLE_SMOKE, STYLE_SPRAY, STYLE_WIND, STYLE_NINJA, STYLE_CRACK, STYLE_UFO, STYLE_BEES, STYLE_SOLAR,
         STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY, STYLE_NEON, STYLE_AURORA, STYLE_RIPPLE, STYLE_SPARKLE,
         STYLE_LAVA, STYLE_GLASS, STYLE_SPECTRUM, STYLE_HEARTBEAT, STYLE_ELASTIC,
     )
@@ -211,13 +192,9 @@ object ButtonBump {
         // for them to run well into the screen.
         STYLE_WATER -> Spec(stiffness = 300f, damping = 0.42f, shoulder = 0.9f, reach = WATER_REACH, spread = WATER_REACH * 0.9f)
         STYLE_BLOSSOM -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.5f, reach = 8f, spread = 6.5f)
-        STYLE_SPARKS -> Spec(stiffness = 400f, damping = 0.62f, shoulder = 0.38f, reach = 8f, spread = 6.5f)
         STYLE_FIREWORKS -> Spec(stiffness = 380f, damping = 0.65f, shoulder = 0.4f, reach = 10f, spread = 7.5f)
-        STYLE_SONAR -> Spec(stiffness = 320f, damping = 0.8f, shoulder = 0.45f, reach = 8.5f, spread = 7.8f)
         STYLE_SOLAR -> Spec(stiffness = 300f, damping = 0.72f, shoulder = 0.5f, reach = 9f, spread = 8.4f)
         STYLE_BUBBLES -> Spec(stiffness = 320f, damping = 0.55f, shoulder = 0.45f, reach = 7f, spread = 6f)
-        STYLE_LIGHTNING -> Spec(stiffness = 420f, damping = 0.6f, shoulder = 0.38f, reach = 7.5f, spread = 5.5f)
-        STYLE_CONFETTI -> Spec(stiffness = 380f, damping = 0.6f, shoulder = 0.4f, reach = 8f, spread = 6.5f)
         STYLE_ATOM -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 7f)
         STYLE_VOLCANO -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
         STYLE_WIND -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6f)
@@ -225,19 +202,14 @@ object ButtonBump {
         STYLE_DRAGON -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 6f)
         STYLE_BEES -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 7f)
         STYLE_ROCKET -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 7.5f)
-        STYLE_PAPER -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6.5f)
-        STYLE_BOXING -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 3.5f)
-        STYLE_HAMMER -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
+        STYLE_SPRAY -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6.5f)
         STYLE_CRACK -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 10f, spread = 8f)
         STYLE_SMOKE -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
-        STYLE_CAT -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 4f, spread = 2.5f)
+        STYLE_CAT -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 5.5f, spread = 3.2f)
         STYLE_FISH -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
-        STYLE_SNAKE -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 3f)
-        STYLE_MONKEY -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 4f, spread = 2.5f)
-        STYLE_ALIEN -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 4.6f, spread = 2.5f)
+        STYLE_MONKEY -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 5.5f, spread = 3.2f)
+        STYLE_ALIEN -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 6f, spread = 3.2f)
         STYLE_UFO -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6.5f)
-        STYLE_KISS -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
-        STYLE_MERMAID -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 7f, spread = 4f)
         else -> Spec(stiffness = 400f, damping = 0.62f, shoulder = 0.34f, reach = 1.7f)
     }
 
@@ -338,6 +310,7 @@ object ButtonBump {
      */
     fun windowSpan(style: String, lengthPx: Float, density: Float, depthPx: Float = 0f): Int {
         val id = sanitizeStyle(style)
+        @Suppress("NAME_SHADOWING") val depthPx = effectDepth(id, depthPx, density)
         // The styles that throw things across the screen spread along the edge as well as into it,
         // both ways from the button.
         val spread = spec(id).spread
@@ -354,11 +327,54 @@ object ButtonBump {
     const val WATER_REACH = 8f
 
     /**
+     * The depth the showpieces are sized to, in dp: the styles that throw things across the screen
+     * throw them as far from a 2dp bump as from a deep one.
+     */
+    const val EFFECT_DEPTH_DP = 18f
+
+    private fun effectDepth(style: String, depthPx: Float, density: Float): Float =
+        if (spec(style).spread > 0f) max(depthPx, EFFECT_DEPTH_DP * density) else depthPx
+
+    /** The sound a style makes at each press, from StepSoundLibrary: its own, to go with how it looks. */
+    fun sound(style: String): String = when (sanitizeStyle(style)) {
+        STYLE_WATER, STYLE_RIPPLE -> "drop"
+        STYLE_LIQUID -> "bubble"
+        STYLE_BLOSSOM, STYLE_SPARKLE -> "twinkle"
+        STYLE_FIREWORKS -> "firework"
+        STYLE_ATOM -> "boom"
+        STYLE_VOLCANO -> "rumble"
+        STYLE_DRAGON -> "roar"
+        STYLE_ROCKET -> "launch"
+        STYLE_CAT -> "meow"
+        STYLE_MONKEY -> "monkey"
+        STYLE_ALIEN -> "alien"
+        STYLE_FISH -> "splash"
+        STYLE_BUBBLES -> "bubbles"
+        STYLE_SMOKE -> "exhale"
+        STYLE_SPRAY -> "spray"
+        STYLE_WIND -> "whoosh"
+        STYLE_NINJA -> "swish"
+        STYLE_CRACK -> "crack"
+        STYLE_UFO -> "ufo"
+        STYLE_BEES -> "buzz"
+        STYLE_SOLAR -> "cosmic"
+        STYLE_CAPSULE -> "tap"
+        STYLE_LINE -> "tick"
+        STYLE_JELLY, STYLE_ELASTIC -> "boing"
+        STYLE_NEON -> "blip"
+        STYLE_AURORA -> "chime"
+        STYLE_LAVA, STYLE_HEARTBEAT -> "thud"
+        STYLE_GLASS -> "glass"
+        STYLE_SPECTRUM -> "marimba"
+        else -> "tick"
+    }
+
+    /**
      * How far into the screen the window reaches for a bump [depthPx] deep: the style's own reach,
      * and room for the number beside it when that is shown, in pixels.
      */
     fun windowReach(style: String, depthPx: Float, density: Float, showPercent: Boolean): Int {
-        val styleReach = depthPx * spec(style).reach + 8f * density
+        val styleReach = effectDepth(sanitizeStyle(style), depthPx, density) * spec(style).reach + 8f * density
         val numberReach = if (showPercent) depthPx * 1.3f + 64f * density else 0f
         return maxOf(styleReach, numberReach).roundToInt()
     }

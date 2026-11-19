@@ -99,6 +99,10 @@ import com.newagedevs.gesturevolume.service.OverlayRuntime
 import com.newagedevs.gesturevolume.ui.components.ChoiceChip
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
+import com.newagedevs.gesturevolume.ui.components.PreviewStage
+import com.newagedevs.gesturevolume.data.local.QuickSliderStore
+import com.newagedevs.gesturevolume.utils.StepSound
+import android.media.AudioAttributes
 import com.newagedevs.gesturevolume.ui.motion.IconButton
 import com.newagedevs.gesturevolume.ui.motion.OutlinedButton
 import com.newagedevs.gesturevolume.ui.motion.TextButton
@@ -142,7 +146,11 @@ fun ButtonFeedbackScreen(
 
     var enabled by remember { mutableStateOf(store.isEnabled()) }
     var style by remember { mutableStateOf(store.getStyle()) }
-    var showSlider by remember { mutableStateOf(store.getShowSlider()) }
+    var sweep by remember { mutableFloatStateOf(store.getSweep()) }
+    var sound by remember { mutableStateOf(store.getSound()) }
+    // Whether the Quick slider opens on the volume keys: set on its own screen, read here only to show
+    // a press as it will be — with no level of its own when the slider shows it.
+    val sliderOnKeys = remember { viewModel.preference.slider.getVolumeKeyMode() != QuickSliderStore.VOLUME_KEYS_OFF }
     var powerMenu by remember { mutableStateOf(store.getPowerMenu()) }
     var powerWake by remember { mutableStateOf(store.getPowerWake()) }
     var places by remember { mutableStateOf(Button.entries.associateWith { store.getPlace(it) }) }
@@ -173,7 +181,7 @@ fun ButtonFeedbackScreen(
     fun settingsFor(button: Button): ButtonBumpStore.Settings {
         val place = places.getValue(button)
         val power = button == Button.POWER
-        val slider = showSlider && !power
+        val slider = sliderOnKeys && !power
         return ButtonBumpStore.Settings(
             style = style,
             left = place.left,
@@ -187,7 +195,17 @@ fun ButtonFeedbackScreen(
             haptic = haptic,
             holdMs = holdMs,
             speed = speed,
+            sweep = sweep,
         )
+    }
+
+    // Each animation's own sound, played as its tile is picked.
+    val tapSound = remember { StepSound(context) }
+    DisposableEffect(Unit) { onDispose { tapSound.release() } }
+    fun playSound(id: String) {
+        if (!sound) return
+        tapSound.prepare(AudioAttributes.USAGE_MEDIA, ButtonBump.sound(id))
+        tapSound.playOnce()
     }
 
     // The press on the real glass, for lining a button up: through the bar's own controller when it
@@ -260,16 +278,10 @@ fun ButtonFeedbackScreen(
         PreviewSettingsLayout(
             contentPadding = padding,
             preview = { previewModifier, fillHeight ->
-                BumpPreview(
+                BumpStage(
                     settingsFor = ::settingsFor,
                     pressed = pressed,
-                    placing = placing,
-                    pressCount = pressCount,
-                    level = previewLevel,
-                    slider = showSlider && pressWithSlider,
-                    holdMs = holdMs,
-                    preference = viewModel.preference,
-                    onPress = { pressPreview(it) },
+                    replay = pressCount,
                     modifier = previewModifier,
                     fillHeight = fillHeight,
                 )
@@ -323,37 +335,11 @@ fun ButtonFeedbackScreen(
                         onClick = {
                             style = id
                             store.setStyle(id)
+                            playSound(id)
                             pressPreview(if (pressed == Button.POWER) Button.VOLUME_UP else pressed)
                         },
                     )
                 }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // ---- the slider out of the press ----------------------------------------------------
-            Heading(stringResource(R.string.bump_slider_title), stringResource(R.string.bump_slider_desc))
-            Segments {
-                SwitchCard(
-                    title = stringResource(R.string.bump_show_slider),
-                    description = stringResource(R.string.bump_show_slider_desc),
-                    checked = showSlider,
-                    shape = segmentShape(0, 1),
-                    onCheckedChange = {
-                        showSlider = it
-                        store.setShowSlider(it)
-                        pressPreview(Button.VOLUME_UP)
-                    },
-                )
-            }
-            OutlinedButton(
-                onClick = onOpenQuickSlider,
-                modifier = Modifier.padding(top = 10.dp, start = 2.dp),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Icon(Icons.Filled.Tune, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(R.string.bump_open_quick_slider))
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -508,6 +494,20 @@ fun ButtonFeedbackScreen(
                         },
                         onValueChangeFinished = { store.setDepthDp(depth) },
                     )
+                    // How the ends curve into the edge: the style's own until it is moved.
+                    val shownSweep = if (sweep >= 0f) sweep else ButtonBump.spec(style).shoulder
+                    SliderControl(
+                        label = stringResource(R.string.end_sweep),
+                        value = shownSweep * 100f,
+                        valueRange = 5f..100f,
+                        valueDisplay = stringResource(R.string.bump_value_percent, (shownSweep * 100f).roundToInt()),
+                        borderColor = MaterialTheme.colorScheme.primary,
+                        onValueChange = {
+                            sweep = it / 100f
+                            pressPreview(pressed, withSlider = false)
+                        },
+                        onValueChangeFinished = { store.setSweep(sweep) },
+                    )
                     Swatches(
                         label = stringResource(R.string.bump_color),
                         colours = ButtonBumpStore.BODY_COLORS,
@@ -552,7 +552,24 @@ fun ButtonFeedbackScreen(
                     },
                 )
             }
-            if (showSlider) Note(stringResource(R.string.bump_level_with_slider))
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ---- the sound ----------------------------------------------------------------------------
+            Heading(stringResource(R.string.bump_sound_title), stringResource(R.string.bump_sound_desc))
+            Segments {
+                SwitchCard(
+                    title = stringResource(R.string.bump_sound),
+                    description = stringResource(R.string.bump_sound_detail),
+                    checked = sound,
+                    shape = segmentShape(0, 1),
+                    onCheckedChange = {
+                        sound = it
+                        store.setSound(it)
+                        playSound(style)
+                    },
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -617,311 +634,83 @@ fun ButtonFeedbackScreen(
 // ---- the preview ---------------------------------------------------------------------------------
 
 /**
- * A phone, upright, with all three buttons on its sides where the user has put them, and the same
- * three to press under it. A press plays the dent at that button and, for the volume buttons with
- * the slider on, the Quick panel growing out of it: both the real views, scaled to the drawing.
+ * The animation on the phone the Quick slider's screen shows its panel on, playing by itself: a press
+ * now and then — sometimes two or three in a row, as a thumb plays the buttons, which is what the
+ * characters' moods answer to — so what is chosen is seen as it will be, with nothing to press. It
+ * is drawn over the whole glass, nothing cut off at the edge of a box. A change replays it at once.
  */
 @Composable
-private fun BumpPreview(
+private fun BumpStage(
     settingsFor: (Button) -> ButtonBumpStore.Settings,
     pressed: Button,
-    placing: Button,
-    pressCount: Int,
-    level: Float,
-    slider: Boolean,
-    holdMs: Int,
-    preference: SharedPref,
-    onPress: (Button) -> Unit,
+    replay: Int,
     modifier: Modifier,
     fillHeight: Boolean,
 ) {
-    val colours = MaterialTheme.colorScheme
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .then(if (fillHeight) Modifier.fillMaxHeight() else Modifier.height(280.dp)),
-        shape = RoundedCornerShape(28.dp),
-        color = colours.surfaceVariant.copy(alpha = 0.65f),
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(top = 14.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                PhoneWithBump(
-                    settingsFor = settingsFor,
-                    pressed = pressed,
-                    placing = placing,
-                    pressCount = pressCount,
-                    level = level,
-                    slider = slider,
-                    holdMs = holdMs,
-                    preference = preference,
-                    onPress = onPress,
-                )
-            }
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 8.dp),
-            ) {
-                PressButton(Icons.Filled.Remove, stringResource(R.string.bump_preview_down)) { onPress(Button.VOLUME_DOWN) }
-                PressButton(Icons.Filled.Add, stringResource(R.string.bump_preview_up)) { onPress(Button.VOLUME_UP) }
-                PressButton(Icons.Filled.PowerSettingsNew, stringResource(R.string.bump_button_power)) { onPress(Button.POWER) }
-            }
-        }
-    }
-}
+    val latest by rememberUpdatedState(settingsFor)
+    PreviewStage(modifier = modifier, fillHeight = fillHeight) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val density = LocalDensity.current
+            val w = with(density) { maxWidth.toPx() }.roundToInt().coerceAtLeast(1)
+            val h = with(density) { maxHeight.toPx() }.roundToInt().coerceAtLeast(1)
+            val view = remember { mutableStateOf<ButtonBumpView?>(null) }
 
-@Composable
-private fun PressButton(icon: ImageVector, description: String, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .size(44.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .clickable(role = Role.Button, onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(icon, contentDescription = description, tint = MaterialTheme.colorScheme.onPrimaryContainer)
-    }
-}
-
-@Composable
-private fun PhoneWithBump(
-    settingsFor: (Button) -> ButtonBumpStore.Settings,
-    pressed: Button,
-    placing: Button,
-    pressCount: Int,
-    level: Float,
-    slider: Boolean,
-    holdMs: Int,
-    preference: SharedPref,
-    onPress: (Button) -> Unit,
-) {
-    val latestSettingsFor by rememberUpdatedState(settingsFor)
-    Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
-        // The phone: a frame, and the screen inside it with a wallpaper the press can be seen on.
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .aspectRatio(PHONE_ASPECT)
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFF16161A))
-                .padding(4.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(
-                    Brush.verticalGradient(
-                        listOf(Color(0xFFA9A49E), Color(0xFFE2A55A), Color(0xFFF3961E))
-                    )
-                ),
-        ) {
-            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                val density = LocalDensity.current
-                val screenW = with(density) { maxWidth.toPx() }.roundToInt().coerceAtLeast(1)
-                val screenH = with(density) { maxHeight.toPx() }.roundToInt().coerceAtLeast(1)
-                // The real press on a real phone, in proportion: 411dp is a typical phone's width.
-                val scale = (maxWidth.value / REAL_PHONE_WIDTH_DP).coerceIn(0.1f, 1f)
-
-                fun scaled(settings: ButtonBumpStore.Settings) = settings.copy(
-                    lengthDp = settings.lengthDp * scale,
-                    depthDp = (settings.depthDp * scale).coerceAtLeast(4f),
-                    showPercent = false,
-                )
-
-                fun placementOf(settings: ButtonBumpStore.Settings) = ButtonBump.placement(
-                    left = settings.left,
-                    along = settings.position,
+            // In the middle of the glass that shows, on the side the buttons are on.
+            fun place(button: Button): Pair<ButtonBumpStore.Settings, ButtonBump.Placement> {
+                val s = latest(button).copy(position = 0.5f, showPercent = false)
+                val d = density.density
+                val p = ButtonBump.placement(
+                    left = s.left,
+                    along = 0.5f,
                     turns = 0,
-                    screenWidth = screenW,
-                    screenHeight = screenH,
-                    span = ButtonBump.windowSpan(settings.style, settings.lengthDp * density.density, density.density, settings.depthDp * density.density),
-                    reach = ButtonBump.windowReach(settings.style, settings.depthDp * density.density, density.density, false),
+                    screenWidth = w,
+                    screenHeight = h,
+                    span = ButtonBump.windowSpan(s.style, s.lengthDp * d, d, s.depthDp * d),
+                    reach = ButtonBump.windowReach(s.style, s.depthDp * d, d, false),
                 )
+                return s to p
+            }
 
-                val dentSettings = scaled(settingsFor(pressed))
-                val dentPlacement = placementOf(dentSettings)
-                val dent = remember { mutableStateOf<ButtonBumpView?>(null) }
-
-                // The slider's window: against the pressed button's edge, centred on the button and
-                // kept on the glass, as the real one is. Its collapsed shape is the dent itself.
-                val quick = preference.slider
-                val pressedPlace = settingsFor(pressed)
-                val sliderLength = (quick.getLengthDp() * scale * density.density).coerceAtMost(screenH * 0.86f)
-                val sliderThickness = (quick.getThicknessDp() * scale * density.density).coerceAtLeast(6f)
-                val buttonCentre = pressedPlace.position * screenH
-                val sliderTop = (buttonCentre - sliderLength / 2f).coerceIn(0f, (screenH - sliderLength).coerceAtLeast(0f))
-                val sliderLeft = if (pressedPlace.left) 0f else screenW - sliderThickness
-                val dentLength = dentSettings.lengthDp * density.density
-                val dentDepth = dentSettings.depthDp * density.density
-                val sliderView = remember { mutableStateOf<QuickSliderView?>(null) }
-
-                AndroidView(
-                    factory = { ctx ->
-                        QuickSliderView(ctx).also {
-                            it.visibility = View.INVISIBLE
-                            dressPreviewSlider(it, preference, scale)
-                            sliderView.value = it
-                        }
-                    },
-                    update = { view ->
-                        val onLeft = pressedPlace.left
-                        val corner = dentSettings.depthDp / 2f
-                        view.setCollapsedAppearance(dentSettings.color, corner, corner, corner, corner)
-                        val q = preference.slider
-                        if (q.getFollowHandlerShape()) {
-                            val pill = q.getThicknessDp() * scale / 2f
-                            view.setExpandedCorners(pill, pill, pill, pill)
-                            view.setShapes(HandlerShape.ROUNDED, HandlerShape.DEFAULT_FLARE, HandlerShape.ROUNDED, HandlerShape.DEFAULT_FLARE, onLeft)
-                        } else {
-                            view.setExpandedCorners(
-                                q.getCornerTL() * scale, q.getCornerTR() * scale,
-                                q.getCornerBL() * scale, q.getCornerBR() * scale,
-                            )
-                            view.setShapes(q.getShape(), q.getShapeFlare(), HandlerShape.ROUNDED, HandlerShape.DEFAULT_FLARE, onLeft)
-                        }
-                        view.setDrawnThickness(sliderThickness, onLeft)
-                        val cy = buttonCentre - sliderTop
-                        if (onLeft) {
-                            view.setCollapsedRect(0f, cy - dentLength / 2f, dentDepth, cy + dentLength / 2f)
-                        } else {
-                            view.setCollapsedRect(sliderThickness - dentDepth, cy - dentLength / 2f, sliderThickness, cy + dentLength / 2f)
-                        }
-                    },
-                    modifier = Modifier
-                        .offset { IntOffset(sliderLeft.roundToInt(), sliderTop.roundToInt()) }
-                        .size(
-                            width = with(density) { sliderThickness.toDp() },
-                            height = with(density) { sliderLength.toDp() },
-                        ),
-                )
-
-                AndroidView(
-                    factory = { ctx -> ButtonBumpView(ctx).also { dent.value = it } },
-                    update = { it.configure(dentSettings, dentPlacement) },
-                    modifier = Modifier
-                        .offset { IntOffset(dentPlacement.x, dentPlacement.y) }
-                        .size(
-                            width = with(density) { dentPlacement.width.toDp() },
-                            height = with(density) { dentPlacement.height.toDp() },
-                        ),
-                )
-
-                LaunchedEffect(pressCount) {
-                    val bump = dent.value ?: return@LaunchedEffect
-                    val panel = sliderView.value
-                    val now = scaled(latestSettingsFor(pressed))
-                    bump.configure(now, placementOf(now))
-                    if (pressCount == 0) {
-                        // Shown once on arrival, so the screen opens on the animation, not a blank phone.
-                        delay(350)
+            AndroidView(
+                factory = { ctx -> ButtonBumpView(ctx).also { view.value = it } },
+                update = { v ->
+                    val (s, p) = place(Button.VOLUME_UP)
+                    v.configure(s, p)
+                    v.setOrigin(p.x, p.y)
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
+            LaunchedEffect(replay, w, h) {
+                val v = view.value ?: return@LaunchedEffect
+                var level = 0.45f
+                var n = 0
+                delay(180)
+                while (true) {
+                    val run = when (n % 6) {
+                        2 -> 2
+                        4 -> 3
+                        else -> 1
                     }
-                    val direction = if (pressed == Button.VOLUME_DOWN) -1 else 1
-                    bump.press(direction, level, atLimit = pressed != Button.POWER && (level <= 0f || level >= 1f))
-                    if (panel == null) return@LaunchedEffect
-                    if (!slider || pressed == Button.POWER) {
-                        if (panel.visibility == View.VISIBLE) {
-                            animate(panel.expansion(), 0f, animationSpec = tween(PANEL_CLOSE_MS)) { v, _ -> panel.setExpansion(v) }
-                            panel.visibility = View.INVISIBLE
+                    repeat(run) {
+                        val button = when {
+                            n == 0 && pressed != Button.POWER -> pressed
+                            n % 5 == 3 -> Button.VOLUME_DOWN
+                            else -> Button.VOLUME_UP
                         }
-                        return@LaunchedEffect
+                        val (s, p) = place(button)
+                        v.configure(s, p)
+                        v.setOrigin(p.x, p.y)
+                        val down = button == Button.VOLUME_DOWN
+                        level = (level + if (down) -0.07f else 0.07f).coerceIn(0.05f, 0.95f)
+                        v.press(if (down) -1 else 1, level)
+                        delay(PRESS_GAP_MS)
                     }
-                    if (panel.visibility != View.VISIBLE || panel.expansion() <= 0f) {
-                        panel.setValue(level)
-                        panel.setExpansion(0f)
-                        panel.visibility = View.VISIBLE
-                        // A beat for the dent, so the slider is seen coming out of it.
-                        delay(BUTTON_SLIDER_DELAY_MS)
-                        panel.setCommitted()
-                        animate(0f, 1f, animationSpec = tween(PANEL_OPEN_MS, easing = FastOutSlowInEasing)) { v, _ ->
-                            panel.setExpansion(v)
-                        }
-                    } else {
-                        panel.animateValue(level)
-                    }
-                    delay(holdMs.toLong())
-                    animate(panel.expansion(), 0f, animationSpec = tween(PANEL_CLOSE_MS)) { v, _ -> panel.setExpansion(v) }
-                    panel.visibility = View.INVISIBLE
+                    n++
+                    delay(LOOP_GAP_MS)
                 }
             }
         }
-        // The three buttons on the phone's sides, where the user has put them: presses too. The one
-        // being placed is in the accent.
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxHeight()
-                .aspectRatio(PHONE_ASPECT),
-        ) {
-            val scale = (maxWidth.value / REAL_PHONE_WIDTH_DP).coerceIn(0.1f, 1f)
-            Button.entries.forEach { button ->
-                val place = settingsFor(button)
-                val height = (place.lengthDp * scale).dp.coerceAtLeast(10.dp)
-                val centre = maxHeight * place.position.coerceIn(0f, 1f)
-                val x: Dp = if (place.left) (-3).dp else maxWidth - 1.dp
-                val colour = when {
-                    button == placing -> MaterialTheme.colorScheme.primary
-                    button == Button.POWER -> Color(0xFF5A5A62)
-                    else -> Color(0xFF3A3A40)
-                }
-                SideButton(x, centre - height / 2, height, colour) { onPress(button) }
-            }
-        }
     }
-}
-
-/**
- * Dresses the preview's slider the way the live panel is dressed — see
- * `OverlayController.openQuickSliderWindow` — from the Quick panel's own settings: its material,
- * its colours, and its fill with every one of its animations.
- */
-private fun dressPreviewSlider(view: QuickSliderView, preference: SharedPref, scale: Float) {
-    val q = preference.slider
-    val theme = preference.getPanelTheme()
-    val forced = PanelTheme.panelSurface(theme)
-    if (forced != null) {
-        val light = PanelTheme.isLight(theme)
-        val chosen = q.getFillColor()
-        val pale = abs(ColorUtils.calculateLuminance(chosen) - ColorUtils.calculateLuminance(forced.toInt())) < 0.25
-        val fill = when {
-            !pale -> chosen
-            light -> PREVIEW_LIGHT_INK
-            else -> android.graphics.Color.WHITE
-        }
-        view.setColors(forced.toInt(), fill)
-        view.setPanelTheme(1f, PanelTheme.hasLitEdge(theme), light = light)
-    } else {
-        view.setColors(q.getTrackColor(), q.getFillColor())
-        view.setPanelTheme(PanelTheme.surfaceAlpha(theme), PanelTheme.hasLitEdge(theme))
-    }
-    view.setContentMargins(q.getValueMarginDp() * scale, q.getIconMarginDp() * scale)
-    view.setPixelStyle(q.getPixelStyle())
-    view.setShaderStyle(q.getShaderStyle())
-    view.setSurgeStyle(q.getSurgeStyle())
-    view.setEffortStyle(q.getEffortStyle())
-    view.setGlimmerStyle(q.getGlimmerStyle())
-    view.setLevelFeedback(q.getLevelFeedback())
-    view.setFillStyle(q.getFillStyle())
-    view.setFillColors(q.getEffectiveFillColors())
-    // The number is drawn at its own size, which on a phone drawn this small would not fit.
-    view.setShowValue(false)
-    view.setContentColors(q.getEffectiveValueColor(), q.getEffectiveIconColor())
-    view.setIcon(null)
-    view.setExpansion(0f)
-}
-
-@Composable
-private fun SideButton(x: Dp, y: Dp, height: Dp, colour: Color, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .offset(x = x, y = y)
-            .size(width = 4.dp, height = height)
-            .clip(RoundedCornerShape(2.dp))
-            .background(colour)
-            .clickable(onClick = onClick),
-    )
 }
 
 /** One animation in the gallery: a still of it on a sliver of screen, and its name. */
@@ -1179,12 +968,8 @@ private fun styleLabel(style: String): Int = when (style) {
     ButtonBump.STYLE_WATER -> R.string.bump_style_water
     ButtonBump.STYLE_BLOSSOM -> R.string.bump_style_blossom
     ButtonBump.STYLE_FIREWORKS -> R.string.bump_style_fireworks
-    ButtonBump.STYLE_SPARKS -> R.string.bump_style_sparks
-    ButtonBump.STYLE_SONAR -> R.string.bump_style_sonar
     ButtonBump.STYLE_SOLAR -> R.string.bump_style_solar
     ButtonBump.STYLE_BUBBLES -> R.string.bump_style_bubbles
-    ButtonBump.STYLE_LIGHTNING -> R.string.bump_style_lightning
-    ButtonBump.STYLE_CONFETTI -> R.string.bump_style_confetti
     ButtonBump.STYLE_ATOM -> R.string.bump_style_atom
     ButtonBump.STYLE_VOLCANO -> R.string.bump_style_volcano
     ButtonBump.STYLE_WIND -> R.string.bump_style_wind
@@ -1192,19 +977,14 @@ private fun styleLabel(style: String): Int = when (style) {
     ButtonBump.STYLE_DRAGON -> R.string.bump_style_dragon
     ButtonBump.STYLE_BEES -> R.string.bump_style_bees
     ButtonBump.STYLE_ROCKET -> R.string.bump_style_rocket
-    ButtonBump.STYLE_PAPER -> R.string.bump_style_paper
-    ButtonBump.STYLE_BOXING -> R.string.bump_style_boxing
-    ButtonBump.STYLE_HAMMER -> R.string.bump_style_hammer
+    ButtonBump.STYLE_SPRAY -> R.string.bump_style_spray
     ButtonBump.STYLE_CRACK -> R.string.bump_style_crack
     ButtonBump.STYLE_SMOKE -> R.string.bump_style_smoke
     ButtonBump.STYLE_CAT -> R.string.bump_style_cat
     ButtonBump.STYLE_FISH -> R.string.bump_style_fish
-    ButtonBump.STYLE_SNAKE -> R.string.bump_style_snake
     ButtonBump.STYLE_MONKEY -> R.string.bump_style_monkey
     ButtonBump.STYLE_ALIEN -> R.string.bump_style_alien
     ButtonBump.STYLE_UFO -> R.string.bump_style_ufo
-    ButtonBump.STYLE_KISS -> R.string.bump_style_kiss
-    ButtonBump.STYLE_MERMAID -> R.string.bump_style_mermaid
     else -> R.string.bump_style_liquid
 }
 
@@ -1220,25 +1000,19 @@ private fun buttonLabel(button: Button): Int = when (button) {
     Button.POWER -> R.string.bump_button_power
 }
 
-/** Width over height of the drawn phone, a modern one's. */
-private const val PHONE_ASPECT = 0.47f
 
-/** A typical phone's width, which the press's dp are measured against for the preview. */
-private const val REAL_PHONE_WIDTH_DP = 411f
 
 /** How far one press of the preview's volume buttons moves its level. */
 private const val PREVIEW_STEP = 1f / 15f
 
+/** The preview's rhythm: between presses in a run, and between runs. */
+private const val PRESS_GAP_MS = 260L
+private const val LOOP_GAP_MS = 1900L
+
 /** The least time between two presses on the glass while a place is being dragged. */
 private const val GLASS_PREVIEW_GAP_MS = 140L
 
-/** Mirrors the controller's beat between the dent and the slider, and the panel's open and close. */
-private const val BUTTON_SLIDER_DELAY_MS = 90L
-private const val PANEL_OPEN_MS = 220
-private const val PANEL_CLOSE_MS = 260
 
-/** Mirrors `OverlayController.PANEL_LIGHT_INK`. */
-private const val PREVIEW_LIGHT_INK = 0xFF15161A.toInt()
 
 private val TILE_WIDTH = 92.dp
 private val TILE_STAGE_HEIGHT = 92.dp

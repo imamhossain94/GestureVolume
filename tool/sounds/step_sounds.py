@@ -224,6 +224,247 @@ def chime():
     )
 
 
+def sweep_bp(x, f0, q):
+    """A band-pass whose centre follows f0, one frequency a sample: for whooshes and swishes."""
+    y = np.zeros_like(x)
+    f0 = np.broadcast_to(np.asarray(f0, dtype=float), x.shape)
+    x1 = x2 = y1 = y2 = 0.0
+    for n in range(len(x)):
+        w0 = 2 * np.pi * f0[n] / SR
+        alpha = np.sin(w0) / (2 * q)
+        a0 = 1 + alpha
+        b0 = alpha / a0
+        b2 = -alpha / a0
+        a1 = -2 * np.cos(w0) / a0
+        a2 = (1 - alpha) / a0
+        yn = b0 * x[n] + b2 * x2 - a1 * y1 - a2 * y2
+        x2, x1 = x1, x[n]
+        y2, y1 = y1, yn
+        y[n] = yn
+    return y
+
+
+def voice(f0, formants):
+    """Harmonics of a pitch that moves (f0, one a sample), shaped by formants [(centre, width, gain)]."""
+    n = len(f0)
+    out = np.zeros(n)
+    for k in range(1, 30):
+        fk = k * f0
+        if fk.max() > SR / 2 - 2000:
+            break
+        ph = 2 * np.pi * np.cumsum(fk) / SR
+        amp = np.zeros(n)
+        for centre, width, gain in formants:
+            amp += gain * np.exp(-((fk - centre) / width) ** 2)
+        out += amp * np.sin(ph) / (k ** 0.3)
+    return out
+
+
+def twinkle():
+    """Three little bell notes, rising: a sparkle."""
+    parts = []
+    for i, f in enumerate([1318.5, 1661.2, 1975.5]):
+        tone = damped(f, 0.16, 0.36, 1.0, attack=0.002) + damped(f * 2.0, 0.07, 0.36, 0.25, attack=0.002) + damped(f * 3.01, 0.03, 0.36, 0.1)
+        parts.append(later(tone, i * 0.065))
+    return mix(*parts)
+
+
+def firework():
+    """A firework: the pop of the shell, and its stars crackling as they fall."""
+    pop = mix(biquad(noise(0.02, 21), "lp", 3000) * env(0.02, 0.0005, 0.006) * 1.2, damped(110, 0.05, 0.2, 0.9), damped(220, 0.03, 0.2, 0.4))
+    rng = np.random.default_rng(22)
+    crackles = []
+    for i in range(16):
+        at = 0.12 + rng.random() * 0.55
+        amp = 0.6 * (1 - (at - 0.12) / 0.6) + 0.1
+        crackles.append(later(biquad(noise(0.006, 30 + i), "hp", 2500) * env(0.006, 0.0002, 0.0015) * amp, at))
+    return mix(pop, *crackles)
+
+
+def boom():
+    """A deep boom and its rumble, saturated so a phone's speaker can play some of it."""
+    d = 0.85
+    low = np.sin(glide(130, 42, 0.12, d)) * env(d, 0.004, 0.28)
+    rumble = biquad(biquad(noise(d, 23), "lp", 380), "lp", 380) * env(d, 0.01, 0.35) * 3.0
+    crack = biquad(noise(0.03, 24), "hp", 1500) * env(0.03, 0.0005, 0.008) * 0.6
+    return np.tanh(mix(low, rumble, crack) * 2.2) / np.tanh(2.2)
+
+
+def rumble():
+    """A volcano's rumble, with a fizz of steam at its end."""
+    d = 0.75
+    t = t_axis(d)
+    n = biquad(biquad(noise(d, 25), "lp", 260), "lp", 260) * 3.5
+    growl = (np.sin(2 * np.pi * 58 * t) + 0.5 * np.sin(2 * np.pi * 116 * t + 0.3)) * 0.5
+    fizz = biquad(noise(d, 26), "hp", 3500) * env(d, 0.25, 0.3) * 0.15
+    x = (n * (0.6 + 0.4 * np.sin(2 * np.pi * 9 * t)) + growl * 0.6) * env(d, 0.05, 0.3) + fizz
+    return np.tanh(x * 1.8) / np.tanh(1.8)
+
+
+def roar():
+    """A dragon's roar: the whoosh of fire, opening and closing, and a growl under it."""
+    d = 0.65
+    t = t_axis(d)
+    whoosh = sweep_bp(noise(d, 27), 500 + 1500 * np.sin(np.pi * np.clip(t / d, 0, 1)), 0.9) * 2.2 * env(d, 0.06, 0.3)
+    f = 85 + 10 * np.sin(2 * np.pi * 7 * t)
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    saw = sum(np.sin(k * ph) / k for k in range(1, 20))
+    growl = biquad(saw * (0.7 + 0.3 * np.sin(2 * np.pi * 26 * t)), "lp", 900) * env(d, 0.04, 0.3) * 0.5
+    return np.tanh((whoosh + growl) * 1.6) / np.tanh(1.6)
+
+
+def launch():
+    """A rocket's launch: a thump, and a roar rising in pitch as it goes."""
+    d = 0.8
+    t = t_axis(d)
+    thump = mix(damped(70, 0.06, 0.3, 0.8), biquad(noise(0.03, 28), "lp", 900) * env(0.03, 0.001, 0.01) * 0.6)
+    rise = sweep_bp(noise(d, 29), 300 * (2500 / 300) ** (t / d), 1.2) * 2.4 * env(d, 0.15, 0.5) * np.clip((t - 0.04) / 0.1, 0, 1)
+    return mix(thump, rise)
+
+
+def swish():
+    """A blade through the air, and the ring of its steel."""
+    d = 0.3
+    t = t_axis(d)
+    air = sweep_bp(noise(d, 31), 3200 * (900 / 3200) ** np.clip(t / 0.22, 0, 1), 2.0) * 3.0 * env(d, 0.03, 0.07)
+    ring = damped(3300, 0.12, d, 0.08, attack=0.02) + damped(4950, 0.06, d, 0.04, attack=0.02)
+    return mix(air, later(ring, 0.04))
+
+
+def crack():
+    """Glass cracking: a sharp snap, its splinters, and the ping of the pane."""
+    d = 0.32
+    click = np.zeros(int(round(d * SR)))
+    click[0], click[1] = 1.0, -0.6
+    burst = biquad(noise(0.05, 32), "hp", 3000) * env(0.05, 0.0002, 0.012) * 0.9
+    pings = mix(damped(4500, 0.07, d, 0.25), damped(6200, 0.05, d, 0.2, 1.0), damped(7700, 0.03, d, 0.15, 2.0))
+    small = mix(
+        later(biquad(noise(0.01, 33), "hp", 3500) * env(0.01, 0.0001, 0.002) * 0.5, 0.05),
+        later(biquad(noise(0.01, 34), "hp", 3500) * env(0.01, 0.0001, 0.002) * 0.4, 0.09),
+    )
+    return mix(click * 0.8, burst, pings, small)
+
+
+def exhale():
+    """A long, soft breath out: vapour."""
+    d = 0.7
+    t = t_axis(d)
+    n = sweep_bp(noise(d, 35), 1400 + 400 * np.sin(2 * np.pi * 1.3 * t), 0.6) * 2.0
+    shape = np.clip(t / 0.09, 0, 1) ** 2 * np.exp(-np.maximum(t - 0.09, 0) / 0.28)
+    return n * shape * (1 + 0.12 * np.sin(2 * np.pi * 11 * t))
+
+
+def whoosh():
+    """A gust going by: up in pitch and back down."""
+    d = 0.6
+    t = t_axis(d)
+    k = t / d
+    n = sweep_bp(noise(d, 36), 500 + 1100 * np.sin(np.pi * k), 1.4) * 3.0
+    return n * np.sin(np.pi * np.clip(k * 1.15, 0, 1)) ** 2
+
+
+def spray():
+    """An aerosol: the click of the valve and a steady hiss."""
+    d = 0.55
+    t = t_axis(d)
+    valve = biquad(noise(0.012, 37), "bp", 1800, 1.2) * env(0.012, 0.0003, 0.003) * 0.8
+    hiss = biquad(biquad(noise(d, 38), "hp", 3200), "hp", 3200) * 1.2
+    shape = np.clip(t / 0.03, 0, 1) * np.where(t < 0.42, 1.0, np.exp(-(t - 0.42) / 0.04))
+    return mix(valve, hiss * shape * (1 + 0.08 * np.sin(2 * np.pi * 23 * t)))
+
+
+def bubbles():
+    """A few bubbles popping up through water, one after another."""
+    parts = []
+    for i, (at, f0, f1) in enumerate([(0, 420, 1250), (0.075, 520, 1500), (0.14, 360, 1100), (0.22, 600, 1700)]):
+        d = 0.06
+        parts.append(later(np.sin(glide(f0, f1, 0.012, d)) * env(d, 0.001, 0.014) * (1 - i * 0.12), at))
+    return mix(*parts)
+
+
+def meow():
+    """A kitten's meow: its pitch rising and falling, its vowel opening from 'mi' to 'ow'."""
+    d = 0.46
+    t = t_axis(d)
+    k = t / d
+    f0 = np.interp(k, [0, 0.38, 1.0], [520, 780, 470]) * (1 + 0.015 * np.sin(2 * np.pi * 6 * t))
+    f1 = np.interp(k, [0, 0.15, 0.6, 1.0], [400, 850, 900, 480])
+    f2 = np.interp(k, [0, 0.15, 0.6, 1.0], [2200, 1500, 1300, 900])
+    x = voice(f0, [(f1, 180, 1.0), (f2, 260, 0.7), (3000, 400, 0.25)])
+    shape = np.clip(t / 0.03, 0, 1) * np.where(t < d - 0.13, 1.0, np.clip((d - t) / 0.13, 0, 1))
+    return x * shape
+
+
+def monkey():
+    """A monkey's call: two quick hoots and a shriek."""
+    parts = []
+    for at, d, f_from, f_to, c1, c2 in [(0, 0.09, 680, 920, 380, 820), (0.13, 0.09, 720, 980, 380, 820), (0.26, 0.15, 980, 820, 900, 1450)]:
+        t = t_axis(d)
+        k = t / d
+        f0 = f_from + (f_to - f_from) * np.sin(np.pi * 0.5 * k)
+        x = voice(f0, [(c1, 160, 1.0), (c2, 240, 0.7)])
+        parts.append(later(x * np.sin(np.pi * np.clip(k, 0, 1)) ** 0.7, at))
+    return mix(*parts)
+
+
+def alien():
+    """A little alien's chirp: three warbling, ring-modulated notes."""
+    parts = []
+    for i, (f, d) in enumerate([(1250, 0.07), (820, 0.07), (1560, 0.09)]):
+        t = t_axis(d)
+        carrier = np.sin(2 * np.pi * np.cumsum(f * (1 + 0.04 * np.sin(2 * np.pi * 30 * t))) / SR)
+        parts.append(later(carrier * (0.55 + 0.45 * np.sin(2 * np.pi * 37 * t)) * env(d, 0.004, 0.05), i * 0.075))
+    return mix(*parts)
+
+
+def ufo():
+    """A flying saucer: a wavering tone, gliding up."""
+    d = 0.65
+    t = t_axis(d)
+    f = (600 + 300 * t / d) + 120 * np.sin(2 * np.pi * 9 * t)
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    return (np.sin(ph) + 0.25 * np.sin(1.5 * ph)) * np.clip(t / 0.06, 0, 1) * np.clip((d - t) / 0.15, 0, 1)
+
+
+def buzz():
+    """A bee going by."""
+    d = 0.42
+    t = t_axis(d)
+    f = 210 + 8 * np.sin(2 * np.pi * 5 * t)
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    saw = sum(np.sin(k * ph) / k for k in range(1, 40) if k * 230 < SR / 2 - 2000)
+    return biquad(biquad(saw, "hp", 300), "lp", 3000) * (0.75 + 0.25 * np.sin(2 * np.pi * 31 * t)) * env(d, 0.03, 0.2)
+
+
+def splash():
+    """A little splash, and the drops falling back."""
+    body = biquad(noise(0.16, 39), "bp", 2500, 0.7) * env(0.16, 0.002, 0.04) * 1.5
+    drops = [later(np.sin(glide(f0, f1, 0.012, 0.06)) * env(0.06, 0.001, 0.012) * 0.6, at)
+             for at, f0, f1 in [(0.05, 700, 1900), (0.11, 900, 2300), (0.17, 600, 1700)]]
+    return mix(body, *drops)
+
+
+def cosmic():
+    """Space: a soft, shimmering chord and a sprinkle of stars."""
+    d = 0.75
+    t = t_axis(d)
+    pad = 0
+    for f, a in [(1046.5, 1.0), (1568.0, 0.7), (2637.0, 0.35)]:
+        pad = pad + a * (np.sin(2 * np.pi * f * t) + np.sin(2 * np.pi * (f + 2.5) * t + 1.0)) * 0.5
+    shape = np.clip(t / 0.06, 0, 1) * np.exp(-np.maximum(t - 0.06, 0) / 0.3)
+    sparkles = mix(*[later(damped(f, 0.05, 0.1, 0.25), at) for f, at in [(4186, 0.05), (5274, 0.16), (6272, 0.27)]])
+    return mix(pad * shape, sparkles)
+
+
+def boing():
+    """A spring: boing."""
+    d = 0.5
+    t = t_axis(d)
+    f = 260 + 140 * np.exp(-t / 0.25) * np.sin(2 * np.pi * 11 * t) + 60 * np.exp(-t / 0.1)
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    return (np.sin(ph) + 0.3 * np.sin(2 * ph)) * env(d, 0.003, 0.18)
+
+
 # id -> (maker, trim in dB after levelling). Long, ringing sounds read as louder than a click of the
 # same short-term level, so they sit a little lower.
 SOUNDS = {
@@ -240,6 +481,27 @@ SOUNDS = {
     "marimba": (marimba, -3.0),
     "glass": (glass, -4.0),
     "chime": (chime, -4.0),
+    # The button animations' own sounds.
+    "twinkle": (twinkle, -3.0),
+    "firework": (firework, 0.0),
+    "boom": (boom, -2.0),
+    "rumble": (rumble, -3.0),
+    "roar": (roar, -3.0),
+    "launch": (launch, -3.0),
+    "swish": (swish, -2.0),
+    "crack": (crack, -1.0),
+    "exhale": (exhale, -4.0),
+    "whoosh": (whoosh, -3.0),
+    "spray": (spray, -5.0),
+    "bubbles": (bubbles, 0.0),
+    "meow": (meow, -2.0),
+    "monkey": (monkey, -2.0),
+    "alien": (alien, -3.0),
+    "ufo": (ufo, -5.0),
+    "buzz": (buzz, -4.0),
+    "splash": (splash, -1.0),
+    "cosmic": (cosmic, -5.0),
+    "boing": (boing, -3.0),
 }
 
 PEAK_LIMIT = 0.93

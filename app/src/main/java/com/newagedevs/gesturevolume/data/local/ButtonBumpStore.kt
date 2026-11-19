@@ -11,7 +11,15 @@ import com.newagedevs.gesturevolume.utils.ButtonBump
  * Every getter clamps or sanitises on read, for the reason the rest of the file gives: `allowBackup`
  * means a value written by another build can arrive from a cloud restore.
  */
-class ButtonBumpStore(private val prefs: SharedPreferences) {
+class ButtonBumpStore(
+    private val prefs: SharedPreferences,
+    /**
+     * Whether the Quick slider opens on the volume keys: its own setting, on its own screen. When it
+     * does, it grows out of the press, and the press shows no level of its own — the slider shows it.
+     * One setting for one thing, so the two screens can never disagree.
+     */
+    private val sliderOnKeys: () -> Boolean = { false },
+) {
 
     /**
      * A physical button the glass answers. Each has a place of its own on the frame, because they
@@ -50,7 +58,7 @@ class ButtonBumpStore(private val prefs: SharedPreferences) {
         const val MIN_LENGTH = 24f
         const val MAX_LENGTH = 220f
 
-        const val MIN_DEPTH = 8f
+        const val MIN_DEPTH = 2f
         const val MAX_DEPTH = 44f
         const val DEFAULT_DEPTH = 18f
 
@@ -84,7 +92,8 @@ class ButtonBumpStore(private val prefs: SharedPreferences) {
         private const val DEPTH = "bumpDepthDp"
         private const val COLOR = "bumpColor"
         private const val ACCENT = "bumpAccent"
-        private const val SHOW_SLIDER = "bumpShowSlider"
+        private const val SWEEP = "bumpSweep"
+        private const val SOUND = "bumpSound"
         private const val SHOW_LEVEL = "bumpShowLevel"
         private const val SHOW_PERCENT = "bumpShowPercent"
         private const val HAPTIC = "bumpHaptic"
@@ -111,6 +120,8 @@ class ButtonBumpStore(private val prefs: SharedPreferences) {
         val haptic: String = HAPTIC_LIGHT,
         val holdMs: Int = DEFAULT_HOLD_MS,
         val speed: Float = 1f,
+        /** How the bump's ends sweep into the glass, 0..1, or below 0 for the style's own. */
+        val sweep: Float = -1f,
     )
 
     /**
@@ -121,7 +132,7 @@ class ButtonBumpStore(private val prefs: SharedPreferences) {
      */
     fun settings(button: Button): Settings {
         val place = getPlace(button)
-        val slider = getShowSlider() && button != Button.POWER
+        val slider = sliderOnKeys() && button != Button.POWER
         return Settings(
             style = getStyle(),
             left = place.left,
@@ -135,6 +146,7 @@ class ButtonBumpStore(private val prefs: SharedPreferences) {
             haptic = getHaptic(),
             holdMs = getHoldMs(),
             speed = getSpeed(),
+            sweep = getSweep(),
         )
     }
 
@@ -180,13 +192,6 @@ class ButtonBumpStore(private val prefs: SharedPreferences) {
 
     // ---- what plays ------------------------------------------------------------------------------
 
-    /**
-     * Whether the volume slider grows out of a volume press — the Quick panel, with its own look
-     * and fill — as it does on a phone whose glass answers its buttons. On by default.
-     */
-    fun getShowSlider(): Boolean = prefs.getBoolean(SHOW_SLIDER, true)
-    fun setShowSlider(value: Boolean) = prefs.edit().putBoolean(SHOW_SLIDER, value).apply()
-
     /** Whether holding the power button, when it brings up the power menu, plays the press. */
     fun getPowerMenu(): Boolean = prefs.getBoolean(POWER_MENU, true)
     fun setPowerMenu(value: Boolean) = prefs.edit().putBoolean(POWER_MENU, value).apply()
@@ -199,6 +204,20 @@ class ButtonBumpStore(private val prefs: SharedPreferences) {
     fun setPowerWake(value: Boolean) = prefs.edit().putBoolean(POWER_WAKE, value).apply()
 
     // ---- the look ----------------------------------------------------------------------------------
+
+    /**
+     * How the bump's ends sweep into the glass, 0..1 — small is a slab with sharp shoulders, 1 a soft
+     * hill — or below 0 for each style's own sweep, which is where it starts.
+     */
+    fun getSweep(): Float = prefs.getFloat(SWEEP, -1f).let { if (it < 0f) -1f else it.coerceIn(0.05f, 1f) }
+    fun setSweep(value: Float) = prefs.edit().putFloat(SWEEP, value.coerceIn(0.05f, 1f)).apply()
+
+    /**
+     * Whether each press plays its animation's own sound — a splash for the water, a meow for the cat —
+     * at the volume being set. In place of the Quick slider's step sound, so a press never makes two.
+     */
+    fun getSound(): Boolean = prefs.getBoolean(SOUND, true)
+    fun setSound(value: Boolean) = prefs.edit().putBoolean(SOUND, value).apply()
 
     /** How far the press stands into the screen, in dp. */
     fun getDepthDp(): Float = prefs.getFloat(DEPTH, DEFAULT_DEPTH).coerceIn(MIN_DEPTH, MAX_DEPTH)

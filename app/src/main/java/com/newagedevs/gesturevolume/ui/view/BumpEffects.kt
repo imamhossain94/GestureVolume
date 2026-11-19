@@ -25,8 +25,8 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /*
- * The button animation's showpiece styles: petals, sparks, fireworks, a sonar, a solar system,
- * bubbles, lightning and confetti, each thrown out from the button that was pressed.
+ * The button animation's showpiece styles, each thrown out from the button that was pressed. The
+ * shared parts are here; the effects themselves are here and in the BumpEffects* files beside it.
  *
  * Every one of them is drawn by [ButtonBumpView] in the bump's upright terms — x inward from the
  * glass, y along the edge towards the bottom of the phone — so each is written once and works on
@@ -67,6 +67,18 @@ internal class BumpScene {
 
     /** The bump's outline, open at the glass, for the effects that light it. */
     val rim = Path()
+
+    /** The size the showpieces are drawn to, whatever the bump's own depth: so a 2dp bump still throws full-size ones. */
+    var unit = 18f
+
+    /** The whole screen, in upright terms: where things may fly, and past which they are gone. */
+    var screenLeft = 0f
+    var screenTop = 0f
+    var screenRight = 0f
+    var screenBottom = 0f
+
+    fun offScreen(x: Float, y: Float, margin: Float): Boolean =
+        x < screenLeft - margin || x > screenRight + margin || y < screenTop - margin || y > screenBottom + margin
 }
 
 /** One of the showpiece styles. */
@@ -181,13 +193,9 @@ internal object BumpEffects {
     /** The effect a style is drawn with, or null for the styles drawn by the view itself. */
     fun create(style: String, random: Random): BumpEffect? = when (style) {
         ButtonBump.STYLE_BLOSSOM -> BlossomEffect(random)
-        ButtonBump.STYLE_SPARKS -> SparksEffect(random)
         ButtonBump.STYLE_FIREWORKS -> FireworksEffect(random)
-        ButtonBump.STYLE_SONAR -> SonarEffect(random)
         ButtonBump.STYLE_SOLAR -> SolarEffect(random)
         ButtonBump.STYLE_BUBBLES -> BubblesEffect(random)
-        ButtonBump.STYLE_LIGHTNING -> LightningEffect(random)
-        ButtonBump.STYLE_CONFETTI -> ConfettiEffect(random)
         ButtonBump.STYLE_ATOM -> AtomEffect(random)
         ButtonBump.STYLE_VOLCANO -> VolcanoEffect(random)
         ButtonBump.STYLE_WIND -> WindEffect(random)
@@ -195,19 +203,14 @@ internal object BumpEffects {
         ButtonBump.STYLE_DRAGON -> DragonEffect(random)
         ButtonBump.STYLE_BEES -> BeesEffect(random)
         ButtonBump.STYLE_ROCKET -> RocketEffect(random)
-        ButtonBump.STYLE_PAPER -> PaperEffect(random)
-        ButtonBump.STYLE_BOXING -> BoxingEffect(random)
-        ButtonBump.STYLE_HAMMER -> HammerEffect(random)
+        ButtonBump.STYLE_SPRAY -> SprayEffect(random)
         ButtonBump.STYLE_CRACK -> CrackEffect(random)
         ButtonBump.STYLE_SMOKE -> SmokeEffect(random)
         ButtonBump.STYLE_CAT -> CatEffect(random)
         ButtonBump.STYLE_FISH -> FishEffect(random)
-        ButtonBump.STYLE_SNAKE -> SnakeEffect(random)
         ButtonBump.STYLE_MONKEY -> MonkeyEffect(random)
         ButtonBump.STYLE_ALIEN -> AlienEffect(random)
         ButtonBump.STYLE_UFO -> UfoEffect(random)
-        ButtonBump.STYLE_KISS -> KissEffect(random)
-        ButtonBump.STYLE_MERMAID -> MermaidEffect(random)
         else -> null
     }
 }
@@ -215,18 +218,14 @@ internal object BumpEffects {
 // ---- cherry blossom ---------------------------------------------------------------------------------
 
 /**
- * A cherry blossom opens on the bump, and every press shakes petals loose: they flutter out into the
- * screen, turning over as they go, and drift down on the air.
+ * Every press shakes cherry petals loose from the bump: they flutter out into the screen, turning over
+ * as they go, and drift down on the air.
  */
 internal class BlossomEffect(random: Random) : BumpEffect(random) {
     private val petals = ParticlePool(120)
     private val petal = Path()
     private val petalPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
-    private val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
     private val shaders: Array<Shader>
-    private var bloom = 0f
-    private var bloomVelocity = 0f
-    private var turn = 0f
 
     init {
         // A cherry petal: its base at the origin, the notched tip at x = 1.
@@ -245,8 +244,7 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
     override val stillAfterS: Float get() = 0.55f
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
-        bloomVelocity += if (atLimit) 4f else 8f
-        repeat(if (atLimit) 5 else 11) { spawn(scene) }
+        repeat(if (atLimit) 5 else 12) { spawn(scene) }
     }
 
     private fun spawn(scene: BumpScene) {
@@ -258,7 +256,7 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
         val speed = rnd(80f, 210f) * d
         p.vx = cos(angle) * speed
         p.vy = sin(angle) * speed
-        p.life = rnd(2.1f, 3.3f)
+        p.life = rnd(2.4f, 3.6f)
         p.size = rnd(6.5f, 10.5f) * d
         p.angle = rnd(0f, 360f)
         p.spin = rnd(-200f, 200f)
@@ -269,13 +267,6 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
     }
 
     override fun step(scene: BumpScene, dt: Float): Boolean {
-        // The flower on a soft spring: open with the bump, and a little wider at each press.
-        val k = 170f
-        val c = 2f * 0.42f * sqrt(k)
-        bloomVelocity += (-k * (bloom - scene.presence.coerceIn(0f, 1.2f)) - c * bloomVelocity) * dt
-        bloom += bloomVelocity * dt
-        turn += 22f * dt
-
         val d = scene.density
         val drag = exp(-1.8f * dt)
         val acrossX = -scene.gravityY
@@ -284,49 +275,24 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
         for (p in petals.items) {
             if (!p.alive) continue
             p.age += dt
-            if (p.age >= p.life) {
+            if (p.age >= p.life || scene.offScreen(p.x, p.y, 20f * d)) {
                 p.alive = false
                 continue
             }
             // Falling slowly, and swaying side to side as it does.
-            val sway = sin(p.age * 2.3f + p.mark) * 95f * d
-            p.vx = p.vx * drag + (scene.gravityX * FALL + acrossX * sway / d) * d * dt
-            p.vy = p.vy * drag + (scene.gravityY * FALL + acrossY * sway / d) * d * dt
+            val sway = sin(p.age * 2.3f + p.mark) * 95f
+            p.vx = p.vx * drag + (scene.gravityX * FALL + acrossX * sway) * d * dt
+            p.vy = p.vy * drag + (scene.gravityY * FALL + acrossY * sway) * d * dt
             p.x += p.vx * dt
             p.y += p.vy * dt
             p.angle += p.spin * dt
             p.phase += p.rate * 6.283f * dt
             alive = true
         }
-        return alive || abs(bloomVelocity) > 0.02f || abs(bloom - scene.presence) > 0.01f
+        return alive
     }
 
     override fun drawFront(canvas: Canvas, scene: BumpScene) {
-        val d = scene.density
-        // The flower, on the rim of the bump.
-        val r = FLOWER_DP * d * bloom.coerceIn(0f, 1.3f)
-        if (r > 0.6f) {
-            val fx = scene.depth + r * 0.45f
-            val fy = scene.centre
-            petalPaint.shader = shaders[0]
-            petalPaint.alpha = 255
-            for (i in 0 until 5) {
-                canvas.save()
-                canvas.translate(fx, fy)
-                canvas.rotate(turn + i * 72f)
-                canvas.scale(r, r * 0.92f)
-                canvas.drawPath(petal, petalPaint)
-                canvas.restore()
-            }
-            dotPaint.color = 0xFFFFE9A8.toInt()
-            canvas.drawCircle(fx, fy, r * 0.24f, dotPaint)
-            dotPaint.color = 0xFFE0607E.toInt()
-            for (i in 0 until 6) {
-                val a = Math.toRadians((turn * 1.5f + i * 60f).toDouble())
-                canvas.drawCircle(fx + cos(a).toFloat() * r * 0.36f, fy + sin(a).toFloat() * r * 0.36f, r * 0.06f, dotPaint)
-            }
-        }
-        // The petals in the air.
         for (p in petals.items) {
             if (!p.alive) continue
             val t = p.age / p.life
@@ -347,12 +313,9 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
 
     override fun clear() {
         petals.clear()
-        bloom = 0f
-        bloomVelocity = 0f
     }
 
     private companion object {
-        const val FLOWER_DP = 8f
         /** How fast a petal falls, in dp a second each second, before the air slows it. */
         const val FALL = 70f
 
@@ -363,136 +326,6 @@ internal class BlossomEffect(random: Random) : BumpEffect(random) {
             intArrayOf(0xFFE8668F.toInt(), 0xFFFFC2D4.toInt()),
             intArrayOf(0xFFF7A8C4.toInt(), 0xFFFFF0F5.toInt()),
         )
-    }
-}
-
-// ---- sparks -----------------------------------------------------------------------------------------
-
-/**
- * A grinder's sparks: the rim of the bump glows hot at each press and a shower of sparks streaks
- * out of it, arcing down as they cool from white through gold to red, some splitting as they go.
- */
-internal class SparksEffect(random: Random) : BumpEffect(random) {
-    private val sparks = ParticlePool(260)
-    private val glow = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        strokeCap = Paint.Cap.ROUND
-        strokeJoin = Paint.Join.ROUND
-    }
-    private val core = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        strokeCap = Paint.Cap.ROUND
-        strokeJoin = Paint.Join.ROUND
-    }
-    private var heat = 0f
-
-    override val stillAfterS: Float get() = 0.17f
-
-    override fun press(scene: BumpScene, atLimit: Boolean) {
-        heat = 1f
-        repeat(if (atLimit) 14 else 32) { spawn(scene) }
-    }
-
-    private fun spawn(scene: BumpScene) {
-        val p = sparks.spawn() ?: return
-        val d = scene.density
-        p.x = scene.restDepth * 0.92f
-        p.y = scene.centre + scene.restHalf * rnd(-0.35f, 0.35f)
-        val angle = rnd(-0.95f, 0.95f) + scene.towards * 0.35f
-        val speed = rnd(260f, 760f) * d
-        p.vx = cos(angle) * speed
-        p.vy = sin(angle) * speed
-        p.life = rnd(0.35f, 0.95f)
-        p.size = rnd(1.1f, 2.1f) * d
-        p.kind = 0
-        // Some split in two part of the way, which is what makes the shower crackle.
-        p.mark = if (random.nextFloat() < 0.35f) rnd(0.25f, 0.6f) * p.life else -1f
-    }
-
-    private fun split(parent: Particle) {
-        for (side in intArrayOf(-1, 1)) {
-            val p = sparks.spawn() ?: return
-            val a = side * rnd(0.3f, 0.6f)
-            val ca = cos(a)
-            val sa = sin(a)
-            p.x = parent.x
-            p.y = parent.y
-            p.vx = (parent.vx * ca - parent.vy * sa) * 0.55f
-            p.vy = (parent.vx * sa + parent.vy * ca) * 0.55f
-            p.life = (parent.life - parent.age) * 0.8f
-            p.size = parent.size * 0.7f
-            p.kind = 1
-            p.mark = -1f
-        }
-    }
-
-    override fun step(scene: BumpScene, dt: Float): Boolean {
-        heat *= exp(-2.6f * dt)
-        val g = 1100f * scene.density
-        val drag = exp(-0.9f * dt)
-        var alive = false
-        for (p in sparks.items) {
-            if (!p.alive) continue
-            p.age += dt
-            if (p.age >= p.life) {
-                p.alive = false
-                continue
-            }
-            p.vx = p.vx * drag + scene.gravityX * g * dt
-            p.vy = p.vy * drag + scene.gravityY * g * dt
-            p.x += p.vx * dt
-            p.y += p.vy * dt
-            if (p.mark > 0f && p.age >= p.mark) {
-                p.mark = -1f
-                split(p)
-            }
-            alive = true
-        }
-        return alive || heat > 0.02f
-    }
-
-    override fun drawFront(canvas: Canvas, scene: BumpScene) {
-        val d = scene.density
-        // The rim, glowing as it is struck.
-        if (heat > 0.02f && scene.depth > 1f) {
-            glow.strokeWidth = 6f * d
-            glow.color = fade(0xFFFF7A1A.toInt(), 0.4f * heat)
-            canvas.drawPath(scene.rim, glow)
-            core.strokeWidth = 1.6f * d
-            core.color = fade(0xFFFFE7A6.toInt(), heat)
-            canvas.drawPath(scene.rim, core)
-        }
-        for (p in sparks.items) {
-            if (!p.alive) continue
-            val t = p.age / p.life
-            val colour = heatColour(t)
-            val a = 1f - t * t
-            // A streak as long as the spark travels in a fiftieth of a second: what the eye sees.
-            val x0 = p.x - p.vx * STREAK_S
-            val y0 = p.y - p.vy * STREAK_S
-            glow.strokeWidth = p.size * 3.4f
-            glow.color = fade(colour, 0.3f * a)
-            canvas.drawLine(x0, y0, p.x, p.y, glow)
-            core.strokeWidth = p.size
-            core.color = fade(blend(colour, Color.WHITE, 0.5f * (1f - t)), a)
-            canvas.drawLine(x0, y0, p.x, p.y, core)
-        }
-    }
-
-    /** White hot, then gold, orange and a dull red as a spark cools. */
-    private fun heatColour(t: Float): Int = when {
-        t < 0.15f -> blend(0xFFFFFFFF.toInt(), 0xFFFFE27A.toInt(), t / 0.15f)
-        t < 0.5f -> blend(0xFFFFE27A.toInt(), 0xFFFF9330.toInt(), (t - 0.15f) / 0.35f)
-        else -> blend(0xFFFF9330.toInt(), 0xFFD8341C.toInt(), (t - 0.5f) / 0.5f)
-    }
-
-    override fun clear() {
-        sparks.clear()
-        heat = 0f
-    }
-
-    private companion object {
-        const val STREAK_S = 0.02f
     }
 }
 
@@ -740,171 +573,6 @@ internal class FireworksEffect(random: Random) : BumpEffect(random) {
     }
 }
 
-// ---- sonar ------------------------------------------------------------------------------------------------
-
-/**
- * A sonar scope opens out of the edge round the button: range rings, a beam sweeping back and forth,
- * a ping going out at every press, and echoes lighting up as the beam passes over them.
- */
-internal class SonarEffect(random: Random) : BumpEffect(random) {
-    override val loops: Boolean get() = true
-
-    private var sweep = -1.2f
-    private var sweepDirection = 1f
-    private val pings = FloatArray(4) { -1f }
-    private val blips = ParticlePool(16)
-    private val disc = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
-    private val wedge = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
-    private val ink = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        strokeCap = Paint.Cap.ROUND
-    }
-    private val dot = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
-    private val wedgeMatrix = Matrix()
-    private val unitDisc = RadialGradient(
-        0f, 0f, 1f,
-        intArrayOf(0xD0062A1C.toInt(), 0xC4031C12.toInt(), 0xB0021208.toInt()),
-        floatArrayOf(0f, 0.7f, 1f),
-        Shader.TileMode.CLAMP,
-    )
-    private var wedgeShader: SweepGradient? = null
-    private var wedgeCentre = Float.NaN
-
-    override val stillAfterS: Float get() = 0.75f
-
-    override fun press(scene: BumpScene, atLimit: Boolean) {
-        val slot = pings.indices.firstOrNull { pings[it] < 0f } ?: pings.indices.maxByOrNull { pings[it] } ?: 0
-        pings[slot] = 0f
-        repeat(if (atLimit) 1 else 3) {
-            val b = blips.spawn() ?: return@repeat
-            b.angle = rnd(-1.25f, 1.25f)
-            b.mark = rnd(0.32f, 0.9f)
-            b.kind = 0
-            b.life = 2.4f
-        }
-    }
-
-    override fun step(scene: BumpScene, dt: Float): Boolean {
-        val before = sweep
-        sweep += sweepDirection * SWEEP_RATE * dt
-        val limit = (PI / 2).toFloat()
-        if (sweep > limit) {
-            sweep = limit
-            sweepDirection = -1f
-        } else if (sweep < -limit) {
-            sweep = -limit
-            sweepDirection = 1f
-        }
-        var alive = false
-        for (i in pings.indices) {
-            if (pings[i] < 0f) continue
-            pings[i] += dt
-            if (pings[i] > PING_S) pings[i] = -1f else alive = true
-        }
-        for (b in blips.items) {
-            if (!b.alive) continue
-            b.age += dt
-            if (b.kind == 0 && (before - b.angle) * (sweep - b.angle) <= 0f) {
-                // The beam passes over it: it lights, and fades from there.
-                b.kind = 1
-                b.age = 0f
-            }
-            if (b.age > b.life + if (b.kind == 0) 2f else 0f) b.alive = false else alive = true
-        }
-        return alive
-    }
-
-    private fun radius(scene: BumpScene): Float =
-        min(scene.reach * 0.88f, scene.span * 0.46f) * ButtonBump.smootherstep(scene.presence.coerceIn(0f, 1f))
-
-    override fun drawBehind(canvas: Canvas, scene: BumpScene) {
-        val r = radius(scene)
-        if (r < 2f) return
-        val d = scene.density
-        val cy = scene.centre
-        val p = scene.presence.coerceIn(0f, 1f)
-        disc.shader = unitDisc
-        canvas.save()
-        canvas.translate(0f, cy)
-        canvas.scale(r, r)
-        canvas.drawCircle(0f, 0f, 1f, disc)
-        canvas.restore()
-        disc.shader = null
-        ink.strokeWidth = 0.8f * d
-        ink.color = fade(GREEN, 0.24f * p)
-        for (k in 1..4) canvas.drawCircle(0f, cy, r * k / 4f, ink)
-        ink.color = fade(GREEN, 0.14f * p)
-        for (deg in intArrayOf(-60, -30, 0, 30, 60)) {
-            val a = Math.toRadians(deg.toDouble())
-            canvas.drawLine(0f, cy, (cos(a) * r).toFloat(), cy + (sin(a) * r).toFloat(), ink)
-        }
-        // The beam's afterglow, a wedge behind it, fading the further back it is.
-        if (wedgeShader == null || wedgeCentre != cy) {
-            wedgeShader = SweepGradient(
-                0f, cy,
-                intArrayOf(0, 0, fade(GREEN, 0.5f)),
-                floatArrayOf(0f, 1f - TRAIL / 360f, 1f),
-            )
-            wedgeCentre = cy
-        }
-        wedgeMatrix.setScale(1f, sweepDirection, 0f, cy)
-        wedgeMatrix.postRotate(Math.toDegrees(sweep.toDouble()).toFloat(), 0f, cy)
-        wedgeShader!!.setLocalMatrix(wedgeMatrix)
-        wedge.shader = wedgeShader
-        wedge.alpha = (255 * p).roundToInt()
-        canvas.drawCircle(0f, cy, r, wedge)
-        val bx = cos(sweep) * r
-        val by = cy + sin(sweep) * r
-        ink.strokeWidth = 4f * d
-        ink.color = fade(GREEN, 0.25f * p)
-        canvas.drawLine(0f, cy, bx, by, ink)
-        ink.strokeWidth = 1.4f * d
-        ink.color = fade(GREEN, 0.95f * p)
-        canvas.drawLine(0f, cy, bx, by, ink)
-    }
-
-    override fun drawFront(canvas: Canvas, scene: BumpScene) {
-        val r = radius(scene)
-        if (r < 2f) return
-        val d = scene.density
-        val cy = scene.centre
-        for (age in pings) {
-            if (age < 0f) continue
-            val t = age / PING_S
-            val ring = r * (1f - (1f - t).pow(3))
-            ink.strokeWidth = 5f * d
-            ink.color = fade(GREEN, 0.18f * (1f - t))
-            canvas.drawCircle(0f, cy, ring, ink)
-            ink.strokeWidth = 1.8f * d
-            ink.color = fade(GREEN, 0.9f * (1f - t))
-            canvas.drawCircle(0f, cy, ring, ink)
-        }
-        for (b in blips.items) {
-            if (!b.alive || b.kind != 1) continue
-            val a = (1f - b.age / b.life).coerceIn(0f, 1f)
-            val x = cos(b.angle) * r * b.mark
-            val y = cy + sin(b.angle) * r * b.mark
-            dot.color = fade(GREEN, 0.3f * a)
-            canvas.drawCircle(x, y, 5.5f * d, dot)
-            dot.color = fade(blend(GREEN, Color.WHITE, 0.5f), a)
-            canvas.drawCircle(x, y, 2.2f * d, dot)
-        }
-    }
-
-    override fun clear() {
-        pings.fill(-1f)
-        blips.clear()
-    }
-
-    private companion object {
-        val GREEN = 0xFF39FF7A.toInt()
-        /** The beam's pace, in radians a second, and how far behind it its afterglow reaches, in degrees. */
-        const val SWEEP_RATE = 2.4f
-        const val TRAIL = 50f
-        const val PING_S = 1.1f
-    }
-}
-
 // ---- the solar system -------------------------------------------------------------------------------
 
 /**
@@ -1006,7 +674,7 @@ internal class SolarEffect(random: Random) : BumpEffect(random) {
         if (out < 0.01f) return
         val d = scene.density
         val cy = scene.centre
-        val full = max(scene.restDepth * 1.2f, scene.restHalf * 0.6f)
+        val full = max(scene.unit * 1.2f, scene.restHalf * 0.6f)
         val sun = full * out
         val opened = ButtonBump.smootherstep(min(out, 1f))
         val scale = (min(scene.reach, scene.span * 0.5f) / (150f * d)).coerceIn(0.4f, 1.2f)
@@ -1096,67 +764,87 @@ internal class SolarEffect(random: Random) : BumpEffect(random) {
 // ---- bubbles ------------------------------------------------------------------------------------------------
 
 /**
- * Soap bubbles blown out of the bump at every press, rising and wobbling with the colours of a soap
- * film swirling round their rims, and popping, in the end, into a ring and a spray of drops.
+ * Soap bubbles: every press lets a stream of them out of the bump, as a wand does — many small, a few
+ * large — drifting on the air, rising slowly, wobbling as they go with the colours of the film swirling
+ * on them and the light catching them, and popping, one by one.
  */
 internal class BubblesEffect(random: Random) : BumpEffect(random) {
-    private val bubbles = ParticlePool(40)
-    private val pops = ParticlePool(40)
+    private val bubbles = ParticlePool(80)
+    private val pops = ParticlePool(80)
+    private var stream = 0f
+    private var streamClock = 0f
+    private var time = 0f
     private val film = SweepGradient(
         0f, 0f,
-        intArrayOf(
-            0xFFFF6AD5.toInt(), 0xFF8C7BFF.toInt(), 0xFF4DE1FF.toInt(),
-            0xFF7CFFB2.toInt(), 0xFFFFE36E.toInt(), 0xFFFF6AD5.toInt(),
-        ),
+        intArrayOf(0x70FF8AD8, 0x708C9EFF, 0x7080DEEA, 0x70B9F6CA, 0x70FFF59D, 0x70FF8AD8),
         null,
     )
-    private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
-    private val rim = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
+    private val glassy = RadialGradient(
+        0f, 0f, 1f,
+        intArrayOf(0x00FFFFFF, 0x0AFFFFFF, 0x38FFFFFF, 0x00FFFFFF),
+        floatArrayOf(0f, 0.72f, 0.94f, 1f),
+        Shader.TileMode.CLAMP,
+    )
+    private val body = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; shader = glassy }
+    private val rim = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; shader = film }
+    private val edge = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
     private val shine = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
     }
+    private val dot = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
     private val oval = RectF()
 
-    override val stillAfterS: Float get() = 0.7f
+    override val stillAfterS: Float get() = 0.75f
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
-        repeat(if (atLimit) 2 else 5) { spawn(scene) }
+        stream = min(stream + if (atLimit) 0.2f else 0.55f, 1.2f)
     }
 
     private fun spawn(scene: BumpScene) {
         val p = bubbles.spawn() ?: return
         val d = scene.density
-        p.x = scene.restDepth * 0.9f
-        p.y = scene.centre + scene.restHalf * rnd(-0.7f, 0.7f)
-        val angle = rnd(-0.9f, 0.9f) + scene.towards * 0.2f
-        val speed = rnd(60f, 150f) * d
+        p.x = scene.restDepth * 0.95f
+        p.y = scene.centre + scene.restHalf * rnd(-0.45f, 0.45f)
+        val angle = rnd(-0.8f, 0.8f) + scene.towards * 0.15f
+        val speed = rnd(60f, 160f) * d
         p.vx = cos(angle) * speed
         p.vy = sin(angle) * speed
-        p.size = rnd(5f, 13f) * d
-        p.life = rnd(2.2f, 3.6f)
+        // Many small, a few large.
+        val u = random.nextFloat()
+        p.size = (3f + 12f * u * u) * d
+        p.life = rnd(2.4f, 4.6f)
         p.phase = rnd(0f, 6.28f)
-        p.spin = rnd(-60f, 60f)
+        p.spin = rnd(-50f, 50f)
     }
 
     override fun step(scene: BumpScene, dt: Float): Boolean {
+        time += dt
         val d = scene.density
-        val drag = exp(-1.3f * dt)
-        val acrossX = -scene.gravityY
-        val acrossY = scene.gravityX
-        var alive = false
+        if (stream > 0f) {
+            stream -= dt
+            streamClock -= dt
+            while (streamClock <= 0f) {
+                streamClock += rnd(0.035f, 0.075f)
+                spawn(scene)
+            }
+        }
+        val drag = exp(-0.9f * dt)
+        val k = 1f / (40f * d)
+        var alive = stream > 0f
         for (p in bubbles.items) {
             if (!p.alive) continue
             p.age += dt
-            if (p.age >= p.life) {
-                pop(p, d)
+            if (p.age >= p.life || scene.offScreen(p.x, p.y, p.size)) {
+                if (p.age >= p.life) pop(p, d)
                 p.alive = false
                 continue
             }
-            // Rising, the opposite way to down, and drifting side to side.
-            val wobble = sin(p.age * 3f + p.phase) * 40f * d
-            p.vx = p.vx * drag + (-scene.gravityX * RISE * d + acrossX * wobble) * dt
-            p.vy = p.vy * drag + (-scene.gravityY * RISE * d + acrossY * wobble) * dt
+            // The air: a slow, swirling drift, and the bubble rising a little in it.
+            val ax = (sin(p.y * k * 1.3f + time * 0.9f + p.phase) + 0.5f * sin(p.x * k * 2.1f - time * 1.3f)) * 26f * d
+            val ay = (cos(p.x * k * 1.1f + time * 0.7f + p.phase) + 0.5f * cos(p.y * k * 1.7f + time)) * 26f * d
+            p.vx = p.vx * drag + (ax - scene.gravityX * RISE * d) * dt
+            p.vy = p.vy * drag + (ay - scene.gravityY * RISE * d) * dt
             p.x += p.vx * dt
             p.y += p.vy * dt
             p.angle += p.spin * dt
@@ -1183,18 +871,18 @@ internal class BubblesEffect(random: Random) : BumpEffect(random) {
             ring.vx = 0f
             ring.vy = 0f
             ring.size = bubble.size
-            ring.life = 0.22f
+            ring.life = 0.2f
             ring.kind = 0
         }
-        repeat(6) { i ->
+        repeat(5) { i ->
             val drop = pops.spawn() ?: return
-            val a = i * 1.047f + rnd(-0.3f, 0.3f)
+            val a = i * 1.257f + rnd(-0.3f, 0.3f)
             drop.x = bubble.x + cos(a) * bubble.size
             drop.y = bubble.y + sin(a) * bubble.size
             drop.vx = cos(a) * rnd(40f, 90f) * d
             drop.vy = sin(a) * rnd(40f, 90f) * d
-            drop.size = rnd(0.8f, 1.4f) * d
-            drop.life = rnd(0.2f, 0.32f)
+            drop.size = rnd(0.7f, 1.2f) * d
+            drop.life = rnd(0.18f, 0.3f)
             drop.kind = 1
         }
     }
@@ -1203,38 +891,46 @@ internal class BubblesEffect(random: Random) : BumpEffect(random) {
         val d = scene.density
         for (p in bubbles.items) {
             if (!p.alive) continue
-            val a = min(1f, p.age / 0.15f)
-            val r = p.size * (1f + 0.05f * sin(p.age * 9f + p.phase))
+            val a = min(1f, p.age / 0.12f)
+            val r = p.size
+            val wobble = 0.045f * sin(p.age * 7f + p.phase)
             canvas.save()
             canvas.translate(p.x, p.y)
-            canvas.rotate(p.angle + p.age * 40f)
-            fill.color = fade(Color.WHITE, 0.07f * a)
-            canvas.drawCircle(0f, 0f, r, fill)
-            rim.shader = film
-            rim.strokeWidth = 1.3f * d
-            rim.alpha = (200 * a).roundToInt()
-            canvas.drawCircle(0f, 0f, r, rim)
-            rim.shader = null
+            canvas.scale(r * (1f + wobble), r * (1f - wobble))
+            // Clear in the middle, glassy towards the edge, the film's colours swirling on the rim.
+            body.alpha = (255 * a).roundToInt()
+            canvas.drawCircle(0f, 0f, 1f, body)
+            canvas.save()
+            canvas.rotate(p.angle + p.age * 35f)
+            rim.strokeWidth = 1.4f * d / r
+            rim.alpha = (255 * a).roundToInt()
+            canvas.drawCircle(0f, 0f, 0.96f, rim)
             canvas.restore()
-            // The window's reflection, top left, the same on every bubble.
-            oval.set(p.x - r * 0.72f, p.y - r * 0.72f, p.x + r * 0.72f, p.y + r * 0.72f)
-            shine.strokeWidth = max(1.2f * d, r * 0.12f)
+            edge.strokeWidth = 0.6f * d / r
+            edge.color = fade(Color.WHITE, 0.4f * a)
+            canvas.drawCircle(0f, 0f, 1f, edge)
+            canvas.restore()
+            // The light: a window's reflection top left, a glint opposite.
+            oval.set(p.x - r * 0.7f, p.y - r * 0.7f, p.x + r * 0.7f, p.y + r * 0.7f)
+            shine.strokeWidth = max(1.1f * d, r * 0.13f)
             shine.color = fade(Color.WHITE, 0.85f * a)
-            canvas.drawArc(oval, 200f, 55f, false, shine)
-            fill.color = fade(Color.WHITE, 0.9f * a)
-            canvas.drawCircle(p.x + r * 0.42f, p.y + r * 0.46f, r * 0.08f, fill)
+            canvas.drawArc(oval, 205f, 50f, false, shine)
+            shine.strokeWidth = max(0.8f * d, r * 0.06f)
+            shine.color = fade(Color.WHITE, 0.3f * a)
+            canvas.drawArc(oval, 20f, 40f, false, shine)
+            dot.color = fade(Color.WHITE, 0.85f * a)
+            canvas.drawCircle(p.x + r * 0.42f, p.y + r * 0.48f, r * 0.07f, dot)
         }
         for (p in pops.items) {
             if (!p.alive) continue
             val t = p.age / p.life
             if (p.kind == 0) {
-                rim.shader = null
-                rim.strokeWidth = 1f * d
-                rim.color = fade(Color.WHITE, 0.7f * (1f - t))
-                canvas.drawCircle(p.x, p.y, p.size * (1f + 0.6f * t), rim)
+                edge.strokeWidth = 1f * d
+                edge.color = fade(Color.WHITE, 0.7f * (1f - t))
+                canvas.drawCircle(p.x, p.y, p.size * (1f + 0.6f * t), edge)
             } else {
-                fill.color = fade(Color.WHITE, 0.8f * (1f - t))
-                canvas.drawCircle(p.x, p.y, p.size, fill)
+                dot.color = fade(Color.WHITE, 0.8f * (1f - t))
+                canvas.drawCircle(p.x, p.y, p.size, dot)
             }
         }
     }
@@ -1242,306 +938,12 @@ internal class BubblesEffect(random: Random) : BumpEffect(random) {
     override fun clear() {
         bubbles.clear()
         pops.clear()
+        stream = 0f
     }
 
     private companion object {
         /** How hard a bubble rises, in dp a second each second, before the air slows it. */
-        const val RISE = 55f
+        const val RISE = 18f
     }
 }
 
-// ---- lightning ----------------------------------------------------------------------------------------------
-
-/**
- * Electricity: every press throws a forked bolt from the bump out into the screen, flickering as it
- * crackles, and while the bump is out little arcs crawl along its rim.
- */
-internal class LightningEffect(random: Random) : BumpEffect(random) {
-    private class Bolt {
-        val points = FloatArray(2 * (POINTS))
-        var alive = false
-        var sx = 0f
-        var sy = 0f
-        var tx = 0f
-        var ty = 0f
-        var age = 0f
-        var life = 0f
-        var nextJitter = 0f
-        var brightness = 1f
-        var width = 1f
-    }
-
-    private val bolts = Array(10) { Bolt() }
-    private val path = Path()
-    private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        strokeCap = Paint.Cap.ROUND
-        strokeJoin = Paint.Join.ROUND
-    }
-    private val flashPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
-    private var flash = 0f
-    private var flashX = 0f
-    private var flashY = 0f
-    private var crawl = 0f
-
-    override val stillAfterS: Float get() = 0.05f
-
-    private fun freeBolt(): Bolt? = bolts.firstOrNull { !it.alive }
-
-    override fun press(scene: BumpScene, atLimit: Boolean) {
-        val main = freeBolt() ?: return
-        main.alive = true
-        main.age = 0f
-        main.life = if (atLimit) 0.3f else 0.45f
-        main.width = 1f
-        main.sx = scene.restDepth * 0.92f
-        main.sy = scene.centre + scene.restHalf * rnd(-0.25f, 0.25f)
-        main.tx = scene.reach * rnd(0.55f, 0.9f)
-        main.ty = (scene.centre + scene.span * rnd(-0.3f, 0.3f)).coerceIn(scene.span * 0.08f, scene.span * 0.92f)
-        jitter(main)
-        flash = 1f
-        flashX = main.sx
-        flashY = main.sy
-        // Two forks, off points part of the way along it.
-        repeat(if (atLimit) 1 else 2) {
-            val fork = freeBolt() ?: return@repeat
-            val k = (POINTS * rnd(0.3f, 0.65f)).toInt().coerceIn(1, POINTS - 2)
-            fork.alive = true
-            fork.age = 0f
-            fork.life = main.life * 0.75f
-            fork.width = 0.6f
-            fork.sx = main.points[2 * k]
-            fork.sy = main.points[2 * k + 1]
-            val dx = main.tx - main.sx
-            val dy = main.ty - main.sy
-            val len = hypot(dx, dy) * rnd(0.25f, 0.4f)
-            val a = kotlin.math.atan2(dy, dx) + (if (random.nextBoolean()) 1f else -1f) * rnd(0.45f, 0.95f)
-            fork.tx = fork.sx + cos(a) * len
-            fork.ty = fork.sy + sin(a) * len
-            jitter(fork)
-        }
-    }
-
-    /** A new jagged path between the bolt's ends: the flicker. Halved again and again, each middle pushed aside. */
-    private fun jitter(b: Bolt) {
-        val pts = b.points
-        pts[0] = b.sx
-        pts[1] = b.sy
-        pts[2 * (POINTS - 1)] = b.tx
-        pts[2 * (POINTS - 1) + 1] = b.ty
-        var step = POINTS - 1
-        while (step > 1) {
-            val half = step / 2
-            var i = 0
-            while (i + step < POINTS) {
-                val ax = pts[2 * i]
-                val ay = pts[2 * i + 1]
-                val bx = pts[2 * (i + step)]
-                val by = pts[2 * (i + step) + 1]
-                val len = hypot(bx - ax, by - ay)
-                val off = rnd(-1f, 1f) * len * 0.28f
-                // Perpendicular to the segment.
-                val nx = if (len > 0f) -(by - ay) / len else 0f
-                val ny = if (len > 0f) (bx - ax) / len else 0f
-                pts[2 * (i + half)] = (ax + bx) / 2f + nx * off
-                pts[2 * (i + half) + 1] = (ay + by) / 2f + ny * off
-                i += step
-            }
-            step = half
-        }
-        b.brightness = rnd(0.55f, 1f)
-        b.nextJitter = rnd(0.035f, 0.065f)
-    }
-
-    override fun step(scene: BumpScene, dt: Float): Boolean {
-        flash *= exp(-9f * dt)
-        var alive = false
-        for (b in bolts) {
-            if (!b.alive) continue
-            b.age += dt
-            if (b.age >= b.life) {
-                b.alive = false
-                continue
-            }
-            b.nextJitter -= dt
-            if (b.nextJitter <= 0f) jitter(b)
-            alive = true
-        }
-        // Little arcs crawling along the rim while the bump is out.
-        if (scene.presence > 0.5f) {
-            crawl -= dt
-            if (crawl <= 0f) {
-                crawl = rnd(0.07f, 0.15f)
-                freeBolt()?.let { arc ->
-                    val u1 = rnd(-0.8f, 0.6f)
-                    val u2 = u1 + rnd(0.15f, 0.4f)
-                    arc.alive = true
-                    arc.age = 0f
-                    arc.life = rnd(0.08f, 0.14f)
-                    arc.width = 0.45f
-                    arc.sx = scene.depth * ButtonBump.profile(u1, 0.38f) + 1.5f * scene.density
-                    arc.sy = scene.centre + scene.half * u1
-                    arc.tx = scene.depth * ButtonBump.profile(u2, 0.38f) + 1.5f * scene.density
-                    arc.ty = scene.centre + scene.half * u2
-                    jitter(arc)
-                }
-            }
-            alive = true
-        }
-        return alive || flash > 0.02f
-    }
-
-    override fun drawFront(canvas: Canvas, scene: BumpScene) {
-        val d = scene.density
-        if (flash > 0.02f) {
-            val r = min(scene.reach, scene.span * 0.5f) * 0.6f
-            flashPaint.shader = RadialGradient(
-                flashX, flashY, r,
-                intArrayOf(fade(0xFF9C8CFF.toInt(), 0.45f * flash), 0),
-                null,
-                Shader.TileMode.CLAMP,
-            )
-            canvas.drawCircle(flashX, flashY, r, flashPaint)
-            flashPaint.shader = null
-        }
-        for (b in bolts) {
-            if (!b.alive) continue
-            path.reset()
-            path.moveTo(b.points[0], b.points[1])
-            for (i in 1 until POINTS) path.lineTo(b.points[2 * i], b.points[2 * i + 1])
-            val a = b.brightness * sqrt((1f - b.age / b.life).coerceIn(0f, 1f))
-            stroke.strokeWidth = 8f * d * b.width
-            stroke.color = fade(0xFF5A6BFF.toInt(), 0.22f * a)
-            canvas.drawPath(path, stroke)
-            stroke.strokeWidth = 3.2f * d * b.width
-            stroke.color = fade(0xFFA9C6FF.toInt(), 0.6f * a)
-            canvas.drawPath(path, stroke)
-            stroke.strokeWidth = max(1.2f * d * b.width, 0.8f * d)
-            stroke.color = fade(Color.WHITE, a)
-            canvas.drawPath(path, stroke)
-        }
-    }
-
-    override fun clear() {
-        for (b in bolts) b.alive = false
-        flash = 0f
-    }
-
-    private companion object {
-        /** Points along a bolt: one more than a power of two, for the halving. */
-        const val POINTS = 33
-    }
-}
-
-// ---- confetti -------------------------------------------------------------------------------------------------
-
-/** A party popper at every press: confetti, streamers and dots bursting out and fluttering down. */
-internal class ConfettiEffect(random: Random) : BumpEffect(random) {
-    private val bits = ParticlePool(170)
-    private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
-    private val ribbon = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        strokeCap = Paint.Cap.ROUND
-    }
-    private val path = Path()
-
-    override val stillAfterS: Float get() = 0.14f
-
-    override fun press(scene: BumpScene, atLimit: Boolean) {
-        repeat(if (atLimit) 12 else 30) { spawn(scene) }
-    }
-
-    private fun spawn(scene: BumpScene) {
-        val p = bits.spawn() ?: return
-        val d = scene.density
-        p.x = scene.restDepth * 0.9f
-        p.y = scene.centre + scene.restHalf * rnd(-0.5f, 0.5f)
-        val angle = rnd(-1.15f, 1.15f) + scene.towards * 0.3f
-        val speed = rnd(220f, 560f) * d
-        p.vx = cos(angle) * speed
-        p.vy = sin(angle) * speed
-        p.kind = random.nextInt(3)
-        p.size = rnd(3.2f, 5.6f) * d
-        p.color = COLOURS[random.nextInt(COLOURS.size)]
-        p.angle = rnd(0f, 360f)
-        p.spin = rnd(-540f, 540f)
-        p.rate = rnd(2f, 5f)
-        p.phase = rnd(0f, 6.28f)
-        p.mark = rnd(0f, 6.28f)
-        p.life = rnd(1.8f, 2.8f)
-    }
-
-    override fun step(scene: BumpScene, dt: Float): Boolean {
-        val d = scene.density
-        val drag = exp(-2.6f * dt)
-        val acrossX = -scene.gravityY
-        val acrossY = scene.gravityX
-        var alive = false
-        for (p in bits.items) {
-            if (!p.alive) continue
-            p.age += dt
-            if (p.age >= p.life) {
-                p.alive = false
-                continue
-            }
-            val flutter = sin(p.age * 5f + p.mark) * 120f * d
-            p.vx = p.vx * drag + (scene.gravityX * FALL * d + acrossX * flutter) * dt
-            p.vy = p.vy * drag + (scene.gravityY * FALL * d + acrossY * flutter) * dt
-            p.x += p.vx * dt
-            p.y += p.vy * dt
-            p.angle += p.spin * dt
-            p.phase += p.rate * 6.283f * dt
-            alive = true
-        }
-        return alive
-    }
-
-    override fun drawFront(canvas: Canvas, scene: BumpScene) {
-        for (p in bits.items) {
-            if (!p.alive) continue
-            val t = p.age / p.life
-            val a = if (t < 0.75f) 1f else (1f - t) / 0.25f
-            val turn = cos(p.phase)
-            // The back of a piece is a shade darker: it shows which way it is turning.
-            val colour = fade(if (turn < 0f) blend(p.color, Color.BLACK, 0.25f) else p.color, a)
-            val s = p.size
-            canvas.save()
-            canvas.translate(p.x, p.y)
-            canvas.rotate(p.angle)
-            when (p.kind) {
-                0 -> {
-                    canvas.scale(1f, max(abs(turn), 0.12f))
-                    fill.color = colour
-                    canvas.drawRect(-s, -s * 0.55f, s, s * 0.55f, fill)
-                }
-                1 -> {
-                    canvas.scale(max(abs(turn), 0.15f), 1f)
-                    fill.color = colour
-                    canvas.drawCircle(0f, 0f, s * 0.6f, fill)
-                }
-                else -> {
-                    path.reset()
-                    path.moveTo(-s * 1.2f, 0f)
-                    path.quadTo(-s * 0.6f, -s * 0.9f * turn, 0f, 0f)
-                    path.quadTo(s * 0.6f, s * 0.9f * turn, s * 1.2f, 0f)
-                    ribbon.strokeWidth = s * 0.42f
-                    ribbon.color = colour
-                    canvas.drawPath(path, ribbon)
-                }
-            }
-            canvas.restore()
-        }
-    }
-
-    override fun clear() {
-        bits.clear()
-    }
-
-    private companion object {
-        const val FALL = 300f
-        val COLOURS = intArrayOf(
-            0xFFFF4D6D.toInt(), 0xFFFFC300.toInt(), 0xFF00D1B2.toInt(), 0xFF3A86FF.toInt(),
-            0xFF8338EC.toInt(), 0xFFFB5607.toInt(), 0xFF06D6A0.toInt(), 0xFFFF70A6.toInt(),
-        )
-    }
-}

@@ -211,6 +211,26 @@ fun stepSoundLabel(id: String): Int = when (id) {
     "marimba" -> R.string.step_sound_marimba
     "glass" -> R.string.step_sound_glass
     "chime" -> R.string.step_sound_chime
+    "twinkle" -> R.string.step_sound_twinkle
+    "firework" -> R.string.step_sound_firework
+    "boom" -> R.string.step_sound_boom
+    "rumble" -> R.string.step_sound_rumble
+    "roar" -> R.string.step_sound_roar
+    "launch" -> R.string.step_sound_launch
+    "swish" -> R.string.step_sound_swish
+    "crack" -> R.string.step_sound_crack
+    "exhale" -> R.string.step_sound_exhale
+    "whoosh" -> R.string.step_sound_whoosh
+    "spray" -> R.string.step_sound_spray
+    "bubbles" -> R.string.step_sound_bubbles
+    "meow" -> R.string.step_sound_meow
+    "monkey" -> R.string.step_sound_monkey
+    "alien" -> R.string.step_sound_alien
+    "ufo" -> R.string.step_sound_ufo
+    "buzz" -> R.string.step_sound_buzz
+    "splash" -> R.string.step_sound_splash
+    "cosmic" -> R.string.step_sound_cosmic
+    "boing" -> R.string.step_sound_boing
     else -> R.string.step_sound_tick
 }
 

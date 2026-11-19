@@ -90,24 +90,20 @@ class ButtonBumpOverlay(
             span = ButtonBump.windowSpan(settings.style, lengthPx, density, depthPx),
             reach = ButtonBump.windowReach(settings.style, depthPx, density, settings.showPercent),
         )
-        // Laid out in the screen, not in the frame under the status bar (FLAG_LAYOUT_IN_SCREEN), so
-        // on every release the window's x and y are the screen's own pixels.
-        val originX = 0
-        val originY = 0
+        // The whole screen, laid out in the screen's own pixels (FLAG_LAYOUT_IN_SCREEN), rather than a box
+        // round the bump: what an animation throws out flies on across the glass instead of being cut
+        // off at the edge of a rectangle. The bump is drawn where the placement says, inside it.
+        val width = frame.displayWidth
+        val height = frame.displayHeight
 
         val existing = view
         val existingParams = params
         if (existing != null && existingParams != null) {
             existing.configure(settings, placement)
-            val x = placement.x - originX
-            val y = placement.y - originY
-            if (existingParams.x != x || existingParams.y != y ||
-                existingParams.width != placement.width || existingParams.height != placement.height
-            ) {
-                existingParams.x = x
-                existingParams.y = y
-                existingParams.width = placement.width
-                existingParams.height = placement.height
+            existing.setOrigin(placement.x, placement.y)
+            if (existingParams.width != width || existingParams.height != height) {
+                existingParams.width = width
+                existingParams.height = height
                 runCatching { wm.updateViewLayout(existing, existingParams) }
             }
             return existing
@@ -115,11 +111,12 @@ class ButtonBumpOverlay(
 
         val bump = ButtonBumpView(context).apply {
             configure(settings, placement)
+            setOrigin(placement.x, placement.y)
             listener = ButtonBumpView.Listener { removeNow() }
         }
         val lp = WindowManager.LayoutParams(
-            placement.width,
-            placement.height,
+            width,
+            height,
             windowType,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
@@ -129,14 +126,14 @@ class ButtonBumpOverlay(
             PixelFormat.TRANSLUCENT,
         ).apply {
             gravity = Gravity.TOP or Gravity.LEFT
-            x = placement.x - originX
-            y = placement.y - originY
+            x = 0
+            y = 0
             title = "GestureVolume button animation"
             // Not touchable, so a tap on the glass under it goes through to the app — unless the
             // window is too opaque: from Android 12 a tap through another app's opaque overlay is
             // dropped. The accessibility service's windows are trusted and exempt; an ordinary
-            // overlay is kept just within the limit, which on the Water style's larger window is
-            // the difference between the ripples and a strip of the screen that ignores taps.
+            // overlay is kept just within the limit, which on a window the size of the screen is the
+            // difference between an animation and a screen that ignores taps while it plays.
             if (windowType == WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY &&
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
             ) {
@@ -164,9 +161,27 @@ class ButtonBumpOverlay(
         }
     }
 
+    /** Whether the window is on the glass now. */
+    fun hasWindow(): Boolean = view != null
+
+    /**
+     * Puts the window back on top of this app's others: a Quick panel opened after it would otherwise
+     * be drawn over the animation it grows out of. The animation carries on as it was.
+     */
+    fun raise() {
+        val wm = windowManager ?: return
+        val bump = view ?: return
+        val lp = params ?: return
+        runCatching {
+            wm.removeViewImmediate(bump)
+            wm.addView(bump, lp)
+        }
+    }
+
     private fun removeNow() {
         val bump = view ?: return
         bump.listener = null
+        bump.release()
         view = null
         params = null
         runCatching { windowManager?.removeView(bump) }

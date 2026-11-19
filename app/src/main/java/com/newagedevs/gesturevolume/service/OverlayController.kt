@@ -1092,9 +1092,33 @@ class OverlayController(
     private fun showBump(res: VolumeController.Resolution, direction: Int, index: Int, atLimit: Boolean) {
         val button = volumeButton(direction)
         val level = ButtonBump.levelOf(index, res.minIndex, res.maxIndex)
+        // The Quick slider opens out of the press when it is set to open on the volume keys — its own
+        // setting, on its own screen — so the two never disagree about it.
+        val hadAnimation = bumpOverlay?.hasWindow() == true
+        val opened = preference.slider.getVolumeKeyMode() != QuickSliderStore.VOLUME_KEYS_OFF &&
+            panelCanShowNow() && showButtonSlider(res, button)
         pressButton(button, direction, level, atLimit)
-        if (preference.bump.getShowSlider() && panelCanShowNow()) showButtonSlider(res, button)
-        if (!atLimit) playKeyStepSound(res, level)
+        // A panel opened by this press over an animation already playing would hide it: the
+        // animation goes back on top, where it is drawn over the panel it grows out of.
+        if (opened && hadAnimation) bumpOverlay?.raise()
+        if (!atLimit) playKeySound(res, level)
+    }
+
+    /** The animation's own sound for a press, at the volume being set; or, with it off, the Quick panel's tick. */
+    private val fxSound = com.newagedevs.gesturevolume.utils.StepSound(context)
+
+    /** One sound for a key's step, never two. */
+    private fun playKeySound(res: VolumeController.Resolution, level: Float) {
+        val store = preference.bump
+        if (store.getSound()) {
+            fxSound.prepare(
+                com.newagedevs.gesturevolume.utils.StepSound.usageFor(QuickSliderStore.TARGET_ADAPTIVE, res.stream),
+                ButtonBump.sound(store.getStyle()),
+            )
+            fxSound.playOnce()
+        } else {
+            playKeyStepSound(res, level)
+        }
     }
 
     /**
@@ -1121,7 +1145,8 @@ class OverlayController(
      * Opened a beat after the dent, so the press reads first and the panel visibly comes out of it:
      * frame zero of the panel is the dent itself — see [buttonAnchor].
      */
-    private fun showButtonSlider(res: VolumeController.Resolution, button: ButtonBumpStore.Button) {
+    /** @return whether this opened a panel, rather than keeping one up. */
+    private fun showButtonSlider(res: VolumeController.Resolution, button: ButtonBumpStore.Button): Boolean {
         val holdMs = preference.bump.getHoldMs().toLong()
         if (sliderView != null && sliderResolution?.stream == res.stream) {
             followVolumeOnPanel(null)
@@ -1134,16 +1159,17 @@ class OverlayController(
                 mainHandler.removeCallbacks(sliderCloseRunnable)
                 restartQuickSliderIdleTimeout()
             }
-            return
+            return false
         }
         // A panel showing something else, brightness, makes way for the one the key is about.
         if (sliderView != null) hideQuickSlider()
-        val anchor = buttonAnchor(button) ?: return
-        if (!openQuickSliderWindow(QuickSliderStore.TARGET_ADAPTIVE, anchor)) return
+        val anchor = buttonAnchor(button) ?: return false
+        if (!openQuickSliderWindow(QuickSliderStore.TARGET_ADAPTIVE, anchor)) return false
         val view = sliderView
         mainHandler.postDelayed({ if (sliderView === view) animateQuickSliderOpen() }, BUTTON_SLIDER_DELAY_MS)
         mainHandler.removeCallbacks(sliderCloseRunnable)
         mainHandler.postDelayed(sliderCloseRunnable, holdMs + PANEL_OPEN_MS + BUTTON_SLIDER_DELAY_MS)
+        return true
     }
 
     /**
@@ -1188,6 +1214,10 @@ class OverlayController(
         if (!store.isEnabled()) return
         if (if (longPress) !store.getPowerMenu() else !store.getPowerWake()) return
         pressButton(ButtonBumpStore.Button.POWER, 1, 0.5f, atLimit = false)
+        if (store.getSound()) {
+            fxSound.prepare(android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION, ButtonBump.sound(store.getStyle()))
+            fxSound.playOnce()
+        }
     }
 
     /**
@@ -1281,6 +1311,7 @@ class OverlayController(
         bumpOverlay = null
         // Lets a write already queued land, then ends the thread.
         stepSound.release()
+        fxSound.release()
         audioThread?.quitSafely()
         audioThread = null
 

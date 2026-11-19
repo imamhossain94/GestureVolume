@@ -52,6 +52,19 @@ class ButtonBumpView(context: Context) : View(context) {
 
     private var settings = ButtonBumpStore.Settings()
     private var spec = ButtonBump.spec(settings.style)
+
+    /** How the bump's ends sweep into the glass: the user's end sweep when they have set one, the style's otherwise. */
+    private val shoulder: Float
+        get() = if (settings.sweep >= 0f) settings.sweep.coerceIn(0.05f, 1f) else spec.shoulder
+
+    /**
+     * Where the placement's window starts inside this view. The view is the whole screen on the glass —
+     * so what an animation throws out is never cut off at the edge of a box — and the bump is drawn in
+     * its place inside it.
+     */
+    private var originX = 0f
+    private var originY = 0f
+    private val toUpright = Matrix()
     private var placement = ButtonBump.placement(
         left = true, along = 0.5f, turns = 0,
         screenWidth = 100, screenHeight = 100, span = 100, reach = 20,
@@ -250,7 +263,7 @@ class ButtonBumpView(context: Context) : View(context) {
         }
         toWindow.setValues(floatArrayOf(values[0], values[1], values[2], values[3], values[4], values[5], 0f, 0f, 1f))
         // Which way is down on the screen, in upright terms: what the effects fall and rise by.
-        val inverse = Matrix()
+        val inverse = toUpright
         if (toWindow.invert(inverse)) {
             val down = floatArrayOf(0f, 1f)
             inverse.mapVectors(down)
@@ -355,8 +368,27 @@ class ButtonBumpView(context: Context) : View(context) {
         postInvalidateOnAnimation()
     }
 
+    /** Draws the placement's window at [x], [y] in this view. See [originX]. */
+    fun setOrigin(x: Int, y: Int) {
+        originX = x.toFloat()
+        originY = y.toFloat()
+        invalidate()
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        // Taken off the glass and put back — raised above a panel — it carries on where it was.
+        if (!still && (isOut() || waterAlive || effectAlive)) start()
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        running = false
+        removeCallbacks(wake)
+    }
+
+    /** Everything stopped and cleared, for good: the window is going. */
+    fun release() {
         running = false
         removeCallbacks(wake)
         water?.clear()
@@ -376,10 +408,13 @@ class ButtonBumpView(context: Context) : View(context) {
         val p = presence.value
         if (p > 0.001f || rings.isNotEmpty() || sparks.isNotEmpty() || waterAlive || effectAlive) {
             canvas.save()
+            canvas.translate(originX, originY)
+            canvas.save()
             canvas.concat(toWindow)
             drawStyle(canvas, now, p.coerceAtLeast(0f))
             canvas.restore()
             if (settings.showPercent && p > 0.25f) drawPercent(canvas, p)
+            canvas.restore()
         }
 
         if (running) {
@@ -465,7 +500,7 @@ class ButtonBumpView(context: Context) : View(context) {
     private fun waterSource(): Triple<Float, Float, Float> {
         val row = placement.centre / waterCellY
         val half = settings.lengthDp * density / 2f / waterCellY
-        val deep = settings.depthDp * density / waterCellX
+        val deep = max(settings.depthDp, ButtonBump.EFFECT_DEPTH_DP) * density / waterCellX
         return Triple(row, half, deep)
     }
 
@@ -537,7 +572,22 @@ class ButtonBumpView(context: Context) : View(context) {
         scene.accent = settings.accent
         scene.showLevel = settings.showLevel
         scene.towards = -pressDirection
+        scene.unit = ButtonBump.EFFECT_DEPTH_DP * density
+        // The whole of this view — the screen, on the glass — in upright terms: where things may fly.
+        val w = if (width > 0) width.toFloat() else placement.width.toFloat()
+        val h = if (height > 0) height.toFloat() else placement.height.toFloat()
+        corners[0] = -originX; corners[1] = -originY
+        corners[2] = w - originX; corners[3] = -originY
+        corners[4] = -originX; corners[5] = h - originY
+        corners[6] = w - originX; corners[7] = h - originY
+        toUpright.mapPoints(corners)
+        scene.screenLeft = minOf(minOf(corners[0], corners[2]), minOf(corners[4], corners[6]))
+        scene.screenRight = maxOf(maxOf(corners[0], corners[2]), maxOf(corners[4], corners[6]))
+        scene.screenTop = minOf(minOf(corners[1], corners[3]), minOf(corners[5], corners[7]))
+        scene.screenBottom = maxOf(maxOf(corners[1], corners[3]), maxOf(corners[5], corners[7]))
     }
+
+    private val corners = FloatArray(8)
 
     /**
      * One of the showpiece styles: the effect behind, then the bump with its level in it — unless the
@@ -552,7 +602,7 @@ class ButtonBumpView(context: Context) : View(context) {
         scene.depth = d
         scene.half = h
         scene.centre = shifted
-        if (d > 0.5f) buildBump(scene.rim, shifted, h, d, spec.shoulder, closed = false) else scene.rim.reset()
+        if (d > 0.5f) buildBump(scene.rim, shifted, h, d, shoulder, closed = false) else scene.rim.reset()
         fx.drawBehind(canvas, scene)
         if (fx.drawsBump && d > 0.5f) {
             drawSolidBump(canvas, shifted, h, d, settings.color)
@@ -596,7 +646,7 @@ class ButtonBumpView(context: Context) : View(context) {
         drawSolidBump(canvas, centre, h, d, settings.color)
         val shine = min(p, 1f)
         // The wet rim: a thin light line just inside the edge of the drop.
-        buildBump(rimPath, centre, h * 0.92f, d - 1.6f * density, spec.shoulder, closed = false)
+        buildBump(rimPath, centre, h * 0.92f, d - 1.6f * density, shoulder, closed = false)
         strokePaint.shader = null
         strokePaint.strokeWidth = 1.4f * density
         strokePaint.color = withAlpha(settings.accent, 0.32f * shine)
@@ -629,7 +679,7 @@ class ButtonBumpView(context: Context) : View(context) {
 
     private fun drawSolidBump(canvas: Canvas, centre: Float, half: Float, depth: Float, colour: Int) {
         if (depth <= 0.5f) return
-        buildBump(bodyPath, centre, half, depth, spec.shoulder)
+        buildBump(bodyPath, centre, half, depth, shoulder)
         bodyPaint.shader = null
         bodyPaint.color = colour
         canvas.drawPath(bodyPath, bodyPaint)
@@ -689,7 +739,7 @@ class ButtonBumpView(context: Context) : View(context) {
         val alpha = ((p - 0.35f) / 0.5f).coerceIn(0f, 1f)
         if (alpha <= 0f || depth < 6f * density) return
         val width = (depth * 0.24f).coerceIn(3f * density, 7f * density)
-        val trackHalf = half * (1f - spec.shoulder) * 0.86f
+        val trackHalf = half * (1f - shoulder) * 0.86f
         if (trackHalf < width) return
         val x = depth * 0.5f
         rect.set(x - width / 2f, centre - trackHalf, x + width / 2f, centre + trackHalf)
@@ -737,11 +787,11 @@ class ButtonBumpView(context: Context) : View(context) {
     private fun drawLine(canvas: Canvas, p: Float, press: Float, centre: Float, half: Float, depth: Float) {
         val d = depth * 0.55f * p
         if (d <= 0.5f) return
-        buildBump(bodyPath, centre, half, d, spec.shoulder)
+        buildBump(bodyPath, centre, half, d, shoulder)
         bodyPaint.shader = null
         bodyPaint.color = withAlpha(settings.color, 0.55f * min(p, 1f))
         canvas.drawPath(bodyPath, bodyPaint)
-        buildBump(rimPath, centre, half, d, spec.shoulder, closed = false)
+        buildBump(rimPath, centre, half, d, shoulder, closed = false)
         strokePaint.shader = null
         strokePaint.strokeWidth = 2.4f * density
         strokePaint.color = withAlpha(settings.accent, 0.3f * min(p, 1f))
@@ -760,7 +810,7 @@ class ButtonBumpView(context: Context) : View(context) {
         val d = depth * p * (1f + 0.06f * press)
         if (d <= 0.5f) return
         val h = half * (0.9f + 0.1f * min(p, 1f))
-        buildBump(bodyPath, centre, h, d, spec.shoulder)
+        buildBump(bodyPath, centre, h, d, shoulder)
         bodyPaint.shader = null
         bodyPaint.color = withAlpha(settings.color, 0.82f * min(p, 1f))
         canvas.drawPath(bodyPath, bodyPaint)
@@ -772,10 +822,10 @@ class ButtonBumpView(context: Context) : View(context) {
             sincePress < 0.12f -> if (((sincePress * 60f).toInt() % 2) == 0) 0.55f else 1f
             else -> 0.92f + 0.08f * sin(strike * 9f)
         }
-        buildBump(rimPath, centre, h, d, spec.shoulder, closed = false)
+        buildBump(rimPath, centre, h, d, shoulder, closed = false)
         glowStroke(canvas, rimPath, settings.accent, min(p, 1f) * flicker, 2.2f)
         if (settings.showLevel) {
-            val trackHalf = h * (1f - spec.shoulder) * 0.86f
+            val trackHalf = h * (1f - shoulder) * 0.86f
             val x = d * 0.5f
             val top = centre + trackHalf - 2f * trackHalf * level.value.coerceIn(0f, 1f)
             segmentPath.reset()
@@ -790,7 +840,7 @@ class ButtonBumpView(context: Context) : View(context) {
         val d = depth * p * (1f + 0.1f * press)
         if (d <= 0.5f) return
         val h = half * (0.9f + 0.1f * min(p, 1f))
-        buildBump(bodyPath, centre, h, d, spec.shoulder)
+        buildBump(bodyPath, centre, h, d, shoulder)
         val shader = auroraShader ?: LinearGradient(
             0f, 0f, 0f, half * 2.4f,
             intArrayOf(0xFF00E5A8.toInt(), 0xFF1F7BFF.toInt(), 0xFFB04BFF.toInt(), 0xFF00C2FF.toInt(), 0xFF00E5A8.toInt()),
@@ -804,10 +854,10 @@ class ButtonBumpView(context: Context) : View(context) {
         bodyPaint.shader = null
         bodyPaint.alpha = 255
         // Deeper at the glass, so it reads as light coming out of the edge.
-        buildBump(scratchPath, centre, h * 0.98f, d * 0.45f, spec.shoulder)
+        buildBump(scratchPath, centre, h * 0.98f, d * 0.45f, shoulder)
         bodyPaint.color = withAlpha(settings.color, 0.45f * min(p, 1f))
         canvas.drawPath(scratchPath, bodyPaint)
-        buildBump(rimPath, centre, h, d, spec.shoulder, closed = false)
+        buildBump(rimPath, centre, h, d, shoulder, closed = false)
         strokePaint.shader = null
         strokePaint.strokeWidth = 1.4f * density
         strokePaint.color = withAlpha(Color.WHITE, 0.4f * min(p, 1f))
@@ -823,7 +873,7 @@ class ButtonBumpView(context: Context) : View(context) {
             val eased = 1f - (1f - age) * (1f - age)
             val d = depth + (reach - depth) * eased
             val h = half * (1f + 0.5f * eased)
-            buildBump(rimPath, centre, h, d, spec.shoulder, closed = false)
+            buildBump(rimPath, centre, h, d, shoulder, closed = false)
             strokePaint.shader = null
             strokePaint.strokeWidth = (3.2f - 2.2f * age) * density
             strokePaint.color = withAlpha(settings.accent, 0.55f * (1f - age) * (1f - age))
@@ -839,7 +889,7 @@ class ButtonBumpView(context: Context) : View(context) {
             val speed = (120f + random.nextFloat() * 260f) * density
             val angle = (random.nextFloat() - 0.5f) * 1.6f
             sparks += Spark(
-                x = depth * ButtonBump.profile(u, spec.shoulder),
+                x = depth * ButtonBump.profile(u, shoulder),
                 y = placement.centre + half * u,
                 vx = cos(angle) * speed,
                 vy = sin(angle) * speed - pressDirection * 40f * density,
@@ -889,7 +939,7 @@ class ButtonBumpView(context: Context) : View(context) {
         for (i in 0 until 5) {
             val u = -0.7f + i * 0.35f
             val beat = 0.5f + 0.5f * sin(t * (3.1f + i * 0.7f) + i * 1.9f)
-            val x = d * ButtonBump.profile(u, spec.shoulder) + 2f * density
+            val x = d * ButtonBump.profile(u, shoulder) + 2f * density
             star(scratchPath, x, centre + half * u, (1.6f + 2.4f * beat) * density)
             fillPaint.shader = null
             fillPaint.color = withAlpha(settings.accent, 0.85f * beat * min(p, 1f))
@@ -905,7 +955,7 @@ class ButtonBumpView(context: Context) : View(context) {
         val drift = 0.16f * sin(t * 1.3f)
         val d1 = d * (1f + 0.08f * sin(t * 2.1f))
         val d2 = d * (1f + 0.08f * cos(t * 1.7f))
-        buildBump(bodyPath, centre, h, d1, spec.shoulder, second = drift, secondDepth = d2)
+        buildBump(bodyPath, centre, h, d1, shoulder, second = drift, secondDepth = d2)
         val maxDepth = max(d1, d2)
         val shader = lavaShader ?: LinearGradient(
             0f, 0f, depth * 1.2f, 0f,
@@ -932,7 +982,7 @@ class ButtonBumpView(context: Context) : View(context) {
         val d = depth * p * (1f + 0.08f * press)
         if (d <= 0.5f) return
         val h = half * (0.9f + 0.1f * min(p, 1f))
-        buildBump(bodyPath, centre, h, d, spec.shoulder)
+        buildBump(bodyPath, centre, h, d, shoulder)
         val shader = glassShader ?: LinearGradient(
             0f, 0f, depth, 0f,
             intArrayOf(withAlpha(Color.WHITE, 0.08f), withAlpha(Color.WHITE, 0.34f)),
@@ -949,7 +999,7 @@ class ButtonBumpView(context: Context) : View(context) {
         canvas.drawPath(bodyPath, bodyPaint)
         bodyPaint.shader = null
         bodyPaint.alpha = 255
-        buildBump(rimPath, centre, h, d, spec.shoulder, closed = false)
+        buildBump(rimPath, centre, h, d, shoulder, closed = false)
         strokePaint.shader = null
         strokePaint.strokeWidth = 1.3f * density
         strokePaint.color = withAlpha(Color.WHITE, 0.6f * min(p, 1f))
@@ -984,7 +1034,7 @@ class ButtonBumpView(context: Context) : View(context) {
         ).also { spectrumShader = it }
         shaderMatrix.setTranslate(0f, centre - half - t * 90f * density)
         shader.setLocalMatrix(shaderMatrix)
-        buildBump(rimPath, centre, h, d, spec.shoulder, closed = false)
+        buildBump(rimPath, centre, h, d, shoulder, closed = false)
         for ((passWidth, passAlpha) in GLOW) {
             strokePaint.shader = shader
             strokePaint.strokeWidth = passWidth * 2.2f * density
@@ -1003,13 +1053,13 @@ class ButtonBumpView(context: Context) : View(context) {
         val d = depth * p * (1f + 0.2f * beat)
         if (d <= 0.5f) return
         val h = half * (0.9f + 0.1f * min(p, 1f)) * (1f + 0.04f * beat)
-        buildBump(rimPath, centre, h, d, spec.shoulder, closed = false)
+        buildBump(rimPath, centre, h, d, shoulder, closed = false)
         glowStroke(canvas, rimPath, settings.accent, min(p, 1f) * (0.35f + 0.65f * beat), 2.2f)
         drawSolidBump(canvas, centre, h, d, settings.color)
         // The trace: a flat line with a beat in it, drawn across the flat of the bump as it beats.
         if (since in 0f..0.9f && d > 8f * density) {
             val x = d * 0.5f
-            val run = h * (1f - spec.shoulder) * 0.9f
+            val run = h * (1f - shoulder) * 0.9f
             val amp = d * 0.32f
             segmentPath.reset()
             segmentPath.moveTo(x, centre + run)
@@ -1036,7 +1086,7 @@ class ButtonBumpView(context: Context) : View(context) {
         val d = depth * p * (1f + 0.08f * press - 0.1f * abs(leanBy))
         if (d <= 0.5f) return
         val h = half * (0.9f + 0.1f * min(p, 1f)) * (1f + 0.6f * abs(leanBy))
-        buildBump(bodyPath, centre, h, d, spec.shoulder, warp = leanBy * 2.2f)
+        buildBump(bodyPath, centre, h, d, shoulder, warp = leanBy * 2.2f)
         bodyPaint.shader = null
         bodyPaint.color = settings.color
         canvas.drawPath(bodyPath, bodyPaint)

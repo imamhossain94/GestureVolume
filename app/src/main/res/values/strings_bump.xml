@@ -46,12 +46,8 @@
     <string name="bump_style_water">Water</string>
     <string name="bump_style_blossom">Cherry blossom</string>
     <string name="bump_style_fireworks">Fireworks</string>
-    <string name="bump_style_sparks">Sparks</string>
-    <string name="bump_style_sonar">Sonar</string>
     <string name="bump_style_solar">Solar system</string>
     <string name="bump_style_bubbles">Bubbles</string>
-    <string name="bump_style_lightning">Lightning</string>
-    <string name="bump_style_confetti">Confetti</string>
     <string name="bump_style_atom">Atom bomb</string>
     <string name="bump_style_volcano">Volcano</string>
     <string name="bump_style_wind">Wind</string>
@@ -59,19 +55,14 @@
     <string name="bump_style_dragon">Dragon fire</string>
     <string name="bump_style_bees">Bees</string>
     <string name="bump_style_rocket">Rocket launch</string>
-    <string name="bump_style_paper">Paper spray</string>
-    <string name="bump_style_boxing">Boxing</string>
-    <string name="bump_style_hammer">Thunder hammer</string>
     <string name="bump_style_crack">Cracked screen</string>
     <string name="bump_style_smoke">Smoke</string>
     <string name="bump_style_cat">Cat</string>
     <string name="bump_style_fish">Fish jump</string>
-    <string name="bump_style_snake">Snake bite</string>
     <string name="bump_style_monkey">Monkey</string>
     <string name="bump_style_alien">Alien</string>
     <string name="bump_style_ufo">UFO</string>
-    <string name="bump_style_kiss">Flying kiss</string>
-    <string name="bump_style_mermaid">Mermaid</string>
+    <string name="bump_style_spray">Aerosol spray</string>
     <string name="bump_place_title">Where your buttons are</string>
     <string name="bump_place_desc">Pick a button, then slide until the press on your screen sits right beside it. With this screen open, pressing the real button shows where it lands too.</string>
     <string name="bump_side">Side</string>
@@ -103,11 +94,6 @@
     <string name="bump_value_percent">%1$d%%</string>
     <string name="bump_preview_up">Volume up</string>
     <string name="bump_preview_down">Volume down</string>
-    <string name="bump_slider_title">Volume slider</string>
-    <string name="bump_slider_desc">The Quick slider, with its look, its fill animation and its step sound.</string>
-    <string name="bump_show_slider">Grow the volume slider out of the press</string>
-    <string name="bump_show_slider_desc">Press a volume button and the slider opens out of the edge beside it, then follows every press.</string>
-    <string name="bump_open_quick_slider">Quick slider settings</string>
     <string name="bump_button_power">Power</string>
     <string name="bump_reset_places">Reset</string>
     <string name="bump_power_title">Power button</string>
@@ -117,7 +103,10 @@
     <string name="bump_power_wake">When it wakes the screen</string>
     <string name="bump_power_wake_desc">Also plays when something else wakes the screen, such as a notification.</string>
     <string name="bump_power_needs_accessibility">The power button needs the accessibility service: it is how the app sees the power menu and the screen waking.</string>
-    <string name="bump_level_with_slider">While the volume slider is on, the slider shows the volume instead.</string>
+    <string name="bump_sound_title">Sound</string>
+    <string name="bump_sound_desc">Every animation has a sound of its own, to go with it.</string>
+    <string name="bump_sound">Play the animation’s sound</string>
+    <string name="bump_sound_detail">At each press, at the volume you’re setting, in place of the Quick slider’s step sound.</string>
 
     <!-- The Quick slider's step sound -->
     <string name="step_sound_choose">Sound</string>
@@ -140,4 +129,24 @@
     <string name="step_sound_marimba">Marimba</string>
     <string name="step_sound_glass">Glass</string>
     <string name="step_sound_chime">Chime</string>
+    <string name="step_sound_twinkle">Twinkle</string>
+    <string name="step_sound_firework">Firework</string>
+    <string name="step_sound_boom">Boom</string>
+    <string name="step_sound_rumble">Rumble</string>
+    <string name="step_sound_roar">Roar</string>
+    <string name="step_sound_launch">Launch</string>
+    <string name="step_sound_swish">Swish</string>
+    <string name="step_sound_crack">Crack</string>
+    <string name="step_sound_exhale">Exhale</string>
+    <string name="step_sound_whoosh">Whoosh</string>
+    <string name="step_sound_spray">Spray</string>
+    <string name="step_sound_bubbles">Bubbles</string>
+    <string name="step_sound_meow">Meow</string>
+    <string name="step_sound_monkey">Monkey</string>
+    <string name="step_sound_alien">Alien</string>
+    <string name="step_sound_ufo">UFO</string>
+    <string name="step_sound_buzz">Buzz</string>
+    <string name="step_sound_splash">Splash</string>
+    <string name="step_sound_cosmic">Cosmic</string>
+    <string name="step_sound_boing">Boing</string>
 </resources>
