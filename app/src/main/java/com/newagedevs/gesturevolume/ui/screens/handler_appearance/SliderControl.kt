@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -146,11 +147,15 @@ fun SliderControl(
             0f
         }
 
+        // Material3 1.5.0 dropped the Slider(value, …, thumb, track) overload. This is what it did
+        // inside: a state built once per range and kept in step with the value passed in.
+        val sliderState = remember(valueRange) { SliderState(value, trackRange = valueRange) }
+        sliderState.value = value
+
         Slider(
-            value = value,
+            state = sliderState,
             onValueChange = onValueChange,
             onValueChangeFinished = onValueChangeFinished,
-            valueRange = valueRange,
             interactionSource = interactionSource,
             modifier = Modifier
                 .fillMaxWidth()
