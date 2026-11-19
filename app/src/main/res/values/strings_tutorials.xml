@@ -9,7 +9,7 @@
     <string name="tutorial_watch">Watch the video: %1$s</string>
     <string name="tutorial_cannot_open">No app on this phone can open the video</string>
 
-    <!-- The nine videos, titled as they are on YouTube, each with a line about what it covers. -->
+    <!-- The ten videos, titled as they are on YouTube, each with a line about what it covers. -->
     <string name="tutorial_getting_started">Getting started</string>
     <string name="tutorial_getting_started_summary">The tour, the one permission it needs, and switching it on</string>
     <string name="tutorial_swipe_volume">Volume with a swipe</string>
@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">Presets, size, shape, colour and where it sits</string>
     <string name="tutorial_visibility">Keep it out of the way</string>
     <string name="tutorial_visibility_summary">Hide the bar in some apps, while you type, or until media plays</string>
+    <string name="tutorial_button_animation">Button animation</string>
+    <string name="tutorial_button_animation_summary">Water, a fish, a frog and more, beside the volume key you press</string>
 </resources>

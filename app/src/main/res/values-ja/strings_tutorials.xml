@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">プリセット、サイズ、形、色、表示位置</string>
     <string name="tutorial_visibility">邪魔にならないように</string>
     <string name="tutorial_visibility_summary">特定のアプリや入力中、またはメディアが再生されるまでバーを隠す</string>
+    <string name="tutorial_button_animation">ボタンアニメーション</string>
+    <string name="tutorial_button_animation_summary">水、魚、カエルなどが、押した音量ボタンのすぐ横に</string>
 </resources>

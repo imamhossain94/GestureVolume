@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">Predefinições, tamanho, formato, cor e posição</string>
     <string name="tutorial_visibility">Sem atrapalhar</string>
     <string name="tutorial_visibility_summary">Oculte a barra em alguns apps, ao digitar ou até tocar mídia</string>
+    <string name="tutorial_button_animation">Animação dos botões</string>
+    <string name="tutorial_button_animation_summary">Água, um peixe, um sapo e mais, ao lado da tecla de volume que você aperta</string>
 </resources>

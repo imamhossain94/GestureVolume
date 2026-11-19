@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">프리셋, 크기, 모양, 색상, 위치</string>
     <string name="tutorial_visibility">방해되지 않게</string>
     <string name="tutorial_visibility_summary">일부 앱에서, 입력 중에, 또는 미디어가 재생될 때까지 바 숨기기</string>
+    <string name="tutorial_button_animation">버튼 애니메이션</string>
+    <string name="tutorial_button_animation_summary">물, 물고기, 개구리 등이 누른 볼륨 버튼 바로 옆에</string>
 </resources>

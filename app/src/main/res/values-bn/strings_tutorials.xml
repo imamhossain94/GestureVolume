@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">প্রিসেট, সাইজ, আকৃতি, রং আর অবস্থান</string>
     <string name="tutorial_visibility">বারটি যেন বাধা না দেয়</string>
     <string name="tutorial_visibility_summary">কিছু অ্যাপে, টাইপ করার সময়, বা মিডিয়া না চলা পর্যন্ত বার লুকিয়ে রাখুন</string>
+    <string name="tutorial_button_animation">বোতাম অ্যানিমেশন</string>
+    <string name="tutorial_button_animation_summary">পানি, মাছ, ব্যাঙ আর আরও অনেক কিছু, আপনি যে ভলিউম বোতাম চাপেন ঠিক তার পাশে</string>
 </resources>

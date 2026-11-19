@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">الإعدادات المسبقة والحجم والشكل واللون والموضع</string>
     <string name="tutorial_visibility">بعيدًا عن طريقك</string>
     <string name="tutorial_visibility_summary">أخفِ الشريط في بعض التطبيقات، أو أثناء الكتابة، أو حتى تبدأ الوسائط بالتشغيل</string>
+    <string name="tutorial_button_animation">حركة الأزرار</string>
+    <string name="tutorial_button_animation_summary">ماء وسمكة وضفدع والمزيد، بجانب زر الصوت الذي تضغطه</string>
 </resources>

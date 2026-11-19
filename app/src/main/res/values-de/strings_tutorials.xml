@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">Vorlagen, Größe, Form, Farbe und wo sie sitzt</string>
     <string name="tutorial_visibility">Damit sie nicht stört</string>
     <string name="tutorial_visibility_summary">Die Leiste in manchen Apps, beim Tippen oder bis zur Medienwiedergabe ausblenden</string>
+    <string name="tutorial_button_animation">Tastenanimation</string>
+    <string name="tutorial_button_animation_summary">Wasser, ein Fisch, ein Frosch und mehr, neben der Lautstärketaste, die du drückst</string>
 </resources>

@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">Preimpostazioni, dimensione, forma, colore e posizione</string>
     <string name="tutorial_visibility">Che non dia fastidio</string>
     <string name="tutorial_visibility_summary">Nascondi la barra in alcune app, mentre scrivi o finché non parte la riproduzione</string>
+    <string name="tutorial_button_animation">Animazione dei tasti</string>
+    <string name="tutorial_button_animation_summary">Acqua, un pesce, una rana e altro, accanto al tasto del volume che premi</string>
 </resources>

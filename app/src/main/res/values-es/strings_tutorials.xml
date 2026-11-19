@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">Preajustes, tamaño, forma, color y dónde se coloca</string>
     <string name="tutorial_visibility">Que no estorbe</string>
     <string name="tutorial_visibility_summary">Oculta la barra en algunas apps, al escribir o hasta que suene algo</string>
+    <string name="tutorial_button_animation">Animación de los botones</string>
+    <string name="tutorial_button_animation_summary">Agua, un pez, una rana y más, junto a la tecla de volumen que pulsas</string>
 </resources>

@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">Hazır ayarlar, boyut, biçim, renk ve konum</string>
     <string name="tutorial_visibility">Ayak altında olmasın</string>
     <string name="tutorial_visibility_summary">Çubuğu bazı uygulamalarda, yazarken ya da medya çalana kadar gizle</string>
+    <string name="tutorial_button_animation">Tuş animasyonu</string>
+    <string name="tutorial_button_animation_summary">Su, balık, kurbağa ve dahası, bastığın ses tuşunun hemen yanında</string>
 </resources>

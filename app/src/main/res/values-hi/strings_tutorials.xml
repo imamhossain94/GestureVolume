@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">प्रीसेट, साइज़, आकार, रंग और जगह</string>
     <string name="tutorial_visibility">बार बीच में न आए</string>
     <string name="tutorial_visibility_summary">कुछ ऐप्स में, टाइप करते समय, या मीडिया चलने तक बार छिपाएँ</string>
+    <string name="tutorial_button_animation">बटन एनिमेशन</string>
+    <string name="tutorial_button_animation_summary">पानी, मछली, मेंढक और भी बहुत कुछ, ठीक उस वॉल्यूम बटन के पास जिसे आप दबाते हैं</string>
 </resources>

@@ -106,6 +106,8 @@ import com.newagedevs.gesturevolume.ui.screens.quick_slider.sliderWithBumpHint
 import com.newagedevs.gesturevolume.ui.components.PermissionNote
 import com.newagedevs.gesturevolume.ui.components.PreviewSettingsLayout
 import com.newagedevs.gesturevolume.ui.components.PreviewStage
+import com.newagedevs.gesturevolume.ui.components.Tutorial
+import com.newagedevs.gesturevolume.ui.components.TutorialAction
 import com.newagedevs.gesturevolume.utils.StepSound
 import android.media.AudioAttributes
 import com.newagedevs.gesturevolume.ui.motion.IconButton
@@ -274,6 +276,8 @@ fun ButtonFeedbackScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
+                // The screen's video, as the other feature screens have theirs.
+                actions = { TutorialAction(Tutorial.BUTTON_ANIMATION) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,

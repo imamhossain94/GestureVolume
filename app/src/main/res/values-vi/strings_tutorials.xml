@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">Cài đặt sẵn, kích thước, hình dạng, màu sắc và vị trí</string>
     <string name="tutorial_visibility">Để thanh không gây vướng</string>
     <string name="tutorial_visibility_summary">Ẩn thanh trong một số ứng dụng, khi bạn gõ, hoặc đến khi phát phương tiện</string>
+    <string name="tutorial_button_animation">Hiệu ứng nút</string>
+    <string name="tutorial_button_animation_summary">Nước, cá, ếch và nhiều hơn nữa, ngay cạnh phím âm lượng bạn nhấn</string>
 </resources>

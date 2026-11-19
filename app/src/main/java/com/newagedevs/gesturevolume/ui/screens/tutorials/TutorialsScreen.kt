@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.automirrored.filled.ViewSidebar
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.Animation
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.RocketLaunch
@@ -149,4 +150,6 @@ private fun iconFor(tutorial: Tutorial): ImageVector = when (tutorial) {
     Tutorial.ACTIONS -> Icons.Filled.Swipe
     Tutorial.APPEARANCE -> Icons.Filled.Palette
     Tutorial.VISIBILITY -> Icons.Filled.VisibilityOff
+    // The Button animation screen's own tile on the home screen.
+    Tutorial.BUTTON_ANIMATION -> Icons.Filled.Animation
 }

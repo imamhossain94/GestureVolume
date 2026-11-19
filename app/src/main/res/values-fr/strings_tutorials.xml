@@ -28,4 +28,6 @@
     <string name="tutorial_appearance_summary">Préréglages, taille, forme, couleur et emplacement</string>
     <string name="tutorial_visibility">Pour qu\'elle ne gêne pas</string>
     <string name="tutorial_visibility_summary">Masquez la barre dans certaines applis, pendant la saisie ou tant qu\'aucun média n\'est lu</string>
+    <string name="tutorial_button_animation">Animation des boutons</string>
+    <string name="tutorial_button_animation_summary">De l\'eau, un poisson, une grenouille et plus encore, près de la touche de volume que vous pressez</string>
 </resources>
