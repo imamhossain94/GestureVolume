@@ -6,8 +6,6 @@ import android.graphics.LinearGradient
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
 import android.graphics.RadialGradient
 import android.graphics.Shader
 import java.util.Random
@@ -24,9 +22,9 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /*
- * Three more characters for the button animation: a frog that leaps out of the water at the edge, a
- * woodpecker drumming on a piece of trunk beside it, and the Spider Queen, who swings across the
- * screen on a line of silk. All drawn from code, all of them the app's own.
+ * More characters for the button animation: frogs that leap out of the water at the edge, and the
+ * swing women, who swing across the screen on lines of silk. All drawn from code, all of them the
+ * app's own.
  */
 
 /** A soft round gradient in a unit circle, lit from up and to the left, for a creature's body. */
@@ -403,343 +401,63 @@ internal class FrogEffect(random: Random) : BumpEffect(random) {
     }
 }
 
-// ---- woodpecker ------------------------------------------------------------------------------------------
+// ---- the swing women -------------------------------------------------------------------------------------
 
 /**
- * A piece of a tree trunk at the edge, and a woodpecker clinging to it beside the buttons — red cap, a white
- * cheek, its stiff tail braced against the bark. Every press it drums: a rattle of quick pecks, each
- * knocking out wood chips and driving its hole a little deeper, more pecks the louder the level. In
- * between it looks about.
+ * Swing women: cute little heroines of the app's own — big-headed girls in bodysuits and domino masks,
+ * with gold tiaras and the gold bracelets their silk shoots from — each in a suit of her own: violet,
+ * teal, rose, emerald, black or orange.
+ *
+ * Every press sends one out of the edge beside the buttons, and quick presses send out more, several
+ * on the screen at once. Each shoots a line of silk to a place of her own along the top of the screen
+ * and swings across on it — the line curving as it flies out, twanging as it catches and bowing as
+ * she swings — lands on the far edge, waves, and zips away up a line. Every third drops from the top
+ * instead and hangs upside down a moment, bobbing and waving, before she flips over into her swing.
+ *
+ * After the Spider Queen of 1941 comics, a public-domain heroine whose bracelets shot a web: the idea
+ * is hers; the drawing is new, and the suits, masks, tiaras and look are the app's own.
  */
-internal class WoodpeckerEffect(random: Random) : BumpEffect(random) {
+internal class SwingWomenEffect(random: Random) : BumpEffect(random) {
     override val drawsBump: Boolean get() = false
     override val loops: Boolean get() = true
 
-    private var time = 0f
-    private var pecks = 0
-    private var peckClock = 0f
-    private var struck = false
-    private var strike = 0f
-    private var lastImpact = -10f
-    private var hole = 0f
-    private var look = 0f
-    private val chips = ParticlePool(90)
+    private val women = Array(MAX) { SwingWoman(Random(random.nextLong())) }
+    private var launches = 0
 
-    private val bark = solidFill()
-    private val shadow = solidFill()
-    private val ends = solidFill().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN) }
-    private var barkShaderFor = -1f
-    private val grain = Path()
-    private var grainFor = 0L
-    private val fill = solidFill()
-    private val ink = roundStroke()
-    private val point = FloatArray(2)
-    private val local = Matrix()
-
-    override val stillAfterS: Float get() = 0.33f
-
-    private fun unitOf(scene: BumpScene) = scene.unit * 1.05f
-    private fun trunkWidth(scene: BumpScene) = scene.unit * 1.6f * easeOut(scene.presence.coerceIn(0f, 1f))
+    override val stillAfterS: Float get() = 0.95f
 
     override fun press(scene: BumpScene, atLimit: Boolean) {
-        pecks = min(pecks + count(scene, if (atLimit) 3 else 6), 14)
-        if (pecks > 0 && peckClock <= 0f) peckClock = 0.0001f
-    }
-
-    /** Which way along the edge is up the screen: the bird climbs that way, its head up. */
-    private fun headUp(scene: BumpScene): Float = if (scene.gravityY < -0.3f) 1f else -1f
-
-    /** From the bird's own frame — the bark at x = 0, its head up — to upright terms. */
-    private fun frame(scene: BumpScene) {
-        local.reset()
-        local.setScale(1f, -headUp(scene))
-        local.postTranslate(trunkWidth(scene), scene.centre)
+        val free = women.firstOrNull { !it.out } ?: return
+        free.launch(scene, atLimit, drop = launches++ % 3 == 2)
     }
 
     override fun step(scene: BumpScene, dt: Float): Boolean {
-        time += dt
-        val d = scene.density
-        val s = unitOf(scene)
-        if (pecks > 0) {
-            peckClock += dt
-            val phase = peckClock / PECK_S
-            strike = sin(PI.toFloat() * phase.coerceIn(0f, 1f))
-            if (!struck && phase >= 0.5f) {
-                struck = true
-                impact(scene, s)
-            }
-            if (phase >= 1f) {
-                peckClock = 0.0001f
-                struck = false
-                pecks--
-                if (pecks == 0) peckClock = 0f
-            }
-        } else {
-            strike *= kotlin.math.exp(-18f * dt)
-        }
-        // Looking about between drums.
-        look = sin(time * 1.7f) * sin(time * 0.6f + 1f)
-        val drag = kotlin.math.exp(-1.5f * dt)
         var alive = false
-        for (p in chips.items) {
-            if (!p.alive) continue
-            p.age += dt
-            if (p.age >= p.life || scene.offScreen(p.x, p.y, 20f * d)) {
-                p.alive = false
-                continue
-            }
-            p.vx = p.vx * drag + scene.gravityX * 900f * d * dt
-            p.vy = p.vy * drag + scene.gravityY * 900f * d * dt
-            p.x += p.vx * dt
-            p.y += p.vy * dt
-            p.angle += p.spin * dt
-            alive = true
-        }
-        if (scene.presence < 0.02f) hole = 0f
-        return alive || pecks > 0 || scene.presence > 0.01f
-    }
-
-    /** A peck landing: chips knocked out, and the hole a little deeper. */
-    private fun impact(scene: BumpScene, s: Float) {
-        val d = scene.density
-        lastImpact = time
-        hole = min(hole + 0.05f, 0.34f)
-        frame(scene)
-        point[0] = -s * 0.05f
-        point[1] = BEAK_Y * s
-        local.mapPoints(point)
-        repeat(count(scene, 4)) {
-            val p = chips.spawn() ?: return@repeat
-            p.x = point[0]
-            p.y = point[1]
-            val speed = rnd(70f, 190f) * d
-            val a = rnd(-1.1f, 1.1f)
-            p.vx = cos(a) * speed
-            p.vy = sin(a) * speed
-            p.life = rnd(0.6f, 1f)
-            p.size = rnd(1.4f, 2.8f) * d
-            p.angle = rnd(0f, 360f)
-            p.spin = rnd(-720f, 720f)
-            p.color = if (random.nextInt(3) == 0) 0xFF6D4C41.toInt() else 0xFFD9B88F.toInt()
-        }
+        for (w in women) if (w.out && w.step(scene, dt)) alive = true
+        return alive
     }
 
     override fun drawFront(canvas: Canvas, scene: BumpScene) {
-        val d = scene.density
-        val w = trunkWidth(scene)
-        val s = unitOf(scene)
-        if (w > 0.5f) {
-            drawTrunk(canvas, scene, w)
-            frame(scene)
-            canvas.save()
-            canvas.concat(local)
-            // The hole, in the bark at the beak's height.
-            if (hole > 0.01f) {
-                val r = hole * s
-                fill.color = 0xFFC9A27E.toInt()
-                canvas.drawOval(-r * 0.9f - s * 0.08f, BEAK_Y * s - r * 1.15f, r * 0.4f, BEAK_Y * s + r * 1.15f, fill)
-                fill.color = 0xFF2B1A12.toInt()
-                canvas.drawOval(-r * 0.75f - s * 0.06f, BEAK_Y * s - r * 0.9f, r * 0.15f, BEAK_Y * s + r * 0.9f, fill)
-            }
-            drawBird(canvas, s)
-            // A flick of lines where the beak hits.
-            val since = time - lastImpact
-            if (since < 0.09f) {
-                ink.strokeWidth = 1.2f * d
-                ink.color = fade(0xFFFFFFFF.toInt(), 0.8f * (1f - since / 0.09f))
-                for (k in -1..1) {
-                    val a = PI.toFloat() + k * 0.6f
-                    canvas.drawLine(
-                        cos(a) * s * 0.15f, BEAK_Y * s + sin(a) * s * 0.15f,
-                        cos(a) * s * 0.45f, BEAK_Y * s + sin(a) * s * 0.45f, ink,
-                    )
-                }
-            }
-            canvas.restore()
-        }
-        for (p in chips.items) {
-            if (!p.alive) continue
-            val a = (1f - p.age / p.life).coerceIn(0f, 1f)
-            fill.color = fade(p.color, a)
-            canvas.save()
-            canvas.translate(p.x, p.y)
-            canvas.rotate(p.angle)
-            canvas.drawRect(-p.size, -p.size * 0.45f, p.size, p.size * 0.45f, fill)
-            canvas.restore()
-        }
-    }
-
-    /**
-     * A piece of the trunk, not the whole edge: as long as a hand, centred on the bird, its ends fading
-     * into the screen. Bark lit across its round, grooved along its length, a knot above and below, and
-     * a soft shadow where it stands off the glass.
-     */
-    private fun drawTrunk(canvas: Canvas, scene: BumpScene, w: Float) {
-        val d = scene.density
-        val tall = scene.screenBottom - scene.screenTop
-        // A hand's length on a phone; on a gallery tile, most of the tile.
-        val half = if (tall < scene.unit * 12f) tall * 0.42f else min(scene.unit * TRUNK_HALF_UNITS, tall * 0.32f)
-        val top = scene.centre - half
-        val length = half * 2f
-        if (abs(barkShaderFor - w) > 0.5f) {
-            bark.shader = LinearGradient(
-                0f, 0f, w, 0f,
-                intArrayOf(0xFF3E2A22.toInt(), 0xFF6D4C41.toInt(), 0xFF8D6E63.toInt(), 0xFF4E342E.toInt()),
-                floatArrayOf(0f, 0.35f, 0.7f, 1f), Shader.TileMode.CLAMP,
-            )
-            shadow.shader = LinearGradient(w, 0f, w + 7f * d, 0f, 0x55000000, 0x00000000, Shader.TileMode.CLAMP)
-            barkShaderFor = w
-        }
-        canvas.save()
-        canvas.translate(0f, top)
-        val right = w + 7f * d
-        canvas.saveLayer(-4f, 0f, right, length, null)
-        // Nothing past its faded ends: the grooves' round tips would show there as a dotted line.
-        canvas.clipRect(-4f, 0f, right, length)
-        canvas.drawRect(w, 0f, right, length, shadow)
-        canvas.drawRect(-4f, 0f, w, length, bark)
-        // The grooves, made once for the trunk's size.
-        val key = (w.roundToInt().toLong() shl 32) xor length.roundToInt().toLong()
-        if (key != grainFor) {
-            grainFor = key
-            grain.reset()
-            val seeded = Random(91L)
-            val lines = 7
-            for (i in 0 until lines) {
-                val gx = w * (0.12f + 0.78f * i / (lines - 1))
-                var y = 0f
-                grain.moveTo(gx, y)
-                while (y < length) {
-                    y += 18f * d + seeded.nextFloat() * 22f * d
-                    grain.lineTo(gx + (seeded.nextFloat() - 0.5f) * w * 0.12f, y)
-                }
-            }
-            ends.shader = LinearGradient(
-                0f, 0f, 0f, length,
-                intArrayOf(0x00000000, 0xFF000000.toInt(), 0xFF000000.toInt(), 0x00000000),
-                floatArrayOf(0f, 0.2f, 0.8f, 1f), Shader.TileMode.CLAMP,
-            )
-        }
-        ink.strokeWidth = 1.3f * d
-        ink.color = 0x993B2620.toInt()
-        canvas.drawPath(grain, ink)
-        // A knot above the bird and one below it.
-        for (k in floatArrayOf(-0.62f, 0.55f)) {
-            val ky = half + k * half
-            fill.color = 0xFF4E342E.toInt()
-            canvas.drawOval(w * 0.25f, ky - w * 0.32f, w * 0.85f, ky + w * 0.32f, fill)
-            fill.color = 0xFF8D6E63.toInt()
-            canvas.drawOval(w * 0.38f, ky - w * 0.16f, w * 0.72f, ky + w * 0.16f, fill)
-        }
-        // Both ends faded away, so it is a glimpse of a tree rather than a post.
-        canvas.drawRect(-4f, 0f, right, length, ends)
-        canvas.restore()
-        canvas.restore()
-    }
-
-    /** The tail and the beak, in the bird's own units, made once. */
-    private val tail = Path().apply {
-        moveTo(0.55f, 0.75f)
-        lineTo(0.1f, 1.75f)
-        lineTo(0.32f, 1.8f)
-        lineTo(0.8f, 0.85f)
-        close()
-    }
-    private val beak = Path().apply {
-        moveTo(-0.38f, -0.1f)
-        lineTo(-0.95f, 0.04f)
-        lineTo(-0.38f, 0.14f)
-        close()
-    }
-
-    /** The woodpecker on the bark at x = 0, its beak to the bark and its head up (-y), [s] to a unit. */
-    private fun drawBird(canvas: Canvas, s: Float) {
-        canvas.save()
-        canvas.scale(s, s)
-        // Tail, braced against the bark below it.
-        fill.color = 0xFF212121.toInt()
-        canvas.drawPath(tail, fill)
-        // Feet gripping the bark.
-        ink.strokeWidth = 0.08f
-        ink.color = 0xFF5D4037.toInt()
-        canvas.drawLine(0.5f, 0.35f, 0.06f, 0.3f, ink)
-        canvas.drawLine(0.52f, 0.6f, 0.06f, 0.62f, ink)
-        // Body: black back, a white front towards the bark, the wing barred with white.
-        fill.color = 0xFF222222.toInt()
-        canvas.drawOval(0.38f, -0.75f, 1.38f, 1.0f, fill)
-        fill.color = 0xFFF5F5F5.toInt()
-        canvas.drawOval(0.3f, -0.5f, 0.82f, 0.85f, fill)
-        fill.color = 0xFF111111.toInt()
-        canvas.drawOval(0.78f, -0.55f, 1.34f, 0.85f, fill)
-        fill.color = Color.WHITE
-        for (row in 0 until 4) for (col in 0 until 2) {
-            canvas.drawCircle(0.95f + col * 0.18f, -0.3f + row * 0.28f, 0.05f, fill)
-        }
-        // Head: forward with each peck, turning a little as it looks about.
-        canvas.translate(-0.27f * strike, 0f)
-        canvas.rotate(look * 6f - strike * 4f, 1.0f, -0.85f)
-        canvas.translate(1.0f, -0.95f)
-        fill.color = 0xFF222222.toInt()
-        canvas.drawCircle(0f, 0f, 0.5f, fill)
-        // The red cap on top and the white cheek stripe.
-        fill.color = 0xFFE53935.toInt()
-        canvas.drawOval(-0.18f, -0.56f, 0.5f, -0.08f, fill)
-        fill.color = 0xFFF5F5F5.toInt()
-        canvas.drawOval(-0.42f, 0.02f, 0.22f, 0.28f, fill)
-        // The beak: long and grey, its tip at the bark at rest.
-        fill.color = 0xFF616161.toInt()
-        canvas.drawPath(beak, fill)
-        // A bright eye.
-        fill.color = Color.WHITE
-        canvas.drawCircle(-0.12f, -0.12f, 0.15f, fill)
-        fill.color = 0xFF111111.toInt()
-        canvas.drawCircle(-0.15f, -0.11f, 0.09f, fill)
-        fill.color = Color.WHITE
-        canvas.drawCircle(-0.19f, -0.16f, 0.035f, fill)
-        canvas.restore()
+        for (w in women) if (w.out) w.drawFront(canvas, scene)
     }
 
     override fun clear() {
-        chips.clear()
-        pecks = 0
-        hole = 0f
-        strike = 0f
+        for (w in women) w.clear()
     }
 
     private companion object {
-        /** Half the length of the piece of trunk that shows, in units of the bump's depth. */
-        const val TRUNK_HALF_UNITS = 7.5f
-
-        /** One peck, in and out: a woodpecker drums at about fifteen a second. */
-        const val PECK_S = 0.07f
-
-        /** Where along the bird the beak strikes, in units of it: the head's height. */
-        const val BEAK_Y = -0.9f
+        /** At most this many out at once. */
+        const val MAX = 5
     }
 }
 
-// ---- the Spider Queen -------------------------------------------------------------------------------------
-
 /**
- * The Spider Queen, as a cute little hero of the app's own: a big-headed girl in a bodysuit and a
- * domino mask, a gold tiara, and the gold bracelets her silk shoots from — in a different suit each
- * time she comes: violet, teal, rose, emerald, black or orange.
- *
- * She comes out of the edge beside the buttons and crouches there, waving; or, the next time, drops
- * from the camera hole — the top of the screen where there is none — on a line, and hangs upside down,
- * bobbing and waving. Every press she shoots a line of silk to the camera hole or the top of the
- * screen and swings across on it to the other edge: the line curves as it flies out, twangs as it
- * catches, and bows as she swings. A press while she hangs flips her over into a swing. When she has
- * swung enough, or been left alone a while, she zips away up a line.
- *
- * After the Spider Queen of 1941 comics, a public-domain heroine whose bracelets shot a web: the idea
- * is hers, the drawing is new — the suit, mask, tiara and look are the app's own.
- *
- * She lives on the screen as the user sees it, so she is worked out in the window's own pixels — its
- * top at the top, falling down — and drawn through [BumpScene.fromWindow]. Her body is drawn in her
- * own units, from her hips, y down: her head is a big circle above them, her limbs two strokes each.
+ * One swing woman. She lives on the screen as the user sees it, so she is worked out in the window's
+ * own pixels — its top at the top, falling down — and drawn through [BumpScene.fromWindow]. Her body is
+ * drawn in her own units, from her hips, y down: her head a big circle above them, her limbs two
+ * strokes each.
  */
-internal class SpiderQueenEffect(random: Random) : BumpEffect(random) {
+private class SwingWoman(random: Random) : BumpEffect(random) {
     override val drawsBump: Boolean get() = false
     override val loops: Boolean get() = true
 
@@ -784,11 +502,8 @@ internal class SpiderQueenEffect(random: Random) : BumpEffect(random) {
     private var bowVX = 0f
     private var bowVY = 0f
 
-    private var swings = 0
-    private var maxSwings = 3
-    private var pending = 0
-    private var idle = 0f
-    private var visits = 0
+    /** How long she stays on the wall, or hangs, before she moves on. */
+    private var stay = 0f
     private var suit = 0
 
     private val j = FloatArray(24)
@@ -861,16 +576,15 @@ internal class SpiderQueenEffect(random: Random) : BumpEffect(random) {
     /** One of her units: her head is a little under one across. */
     private fun unit(scene: BumpScene) = scene.unit * 0.86f
 
-    override fun press(scene: BumpScene, atLimit: Boolean) {
+    /** Whether she is out on the screen. */
+    val out: Boolean get() = state != State.HIDDEN
+
+    override fun press(scene: BumpScene, atLimit: Boolean) = launch(scene, atLimit, drop = false)
+
+    /** Out she comes: out of the edge beside the buttons, or, with [drop], down from the top. */
+    fun launch(scene: BumpScene, atLimit: Boolean, drop: Boolean) {
         power = scene.power * if (atLimit) 0.8f else 1f
-        idle = 0f
-        when (state) {
-            State.HIDDEN -> if (visits++ % 2 == 0) enter(scene) else drop(scene)
-            State.CLING -> shoot(scene)
-            State.HANG -> flip(scene)
-            State.ZIP -> Unit
-            else -> pending = min(pending + 1, 2)
-        }
+        if (drop) drop(scene) else enter(scene)
     }
 
     /** The edge beside the buttons, in window pixels: −1 the left, +1 the right. */
@@ -892,34 +606,33 @@ internal class SpiderQueenEffect(random: Random) : BumpEffect(random) {
         val edge = if (wall > 0f) w else 0f
         toX = edge - wall * CLING_REACH * u
         fromX = edge + wall * 2.5f * u
-        restY = restY.clampIn(u * 4f, scene.windowHeight - u * 2.5f)
+        // A little higher or lower than the last, so several out at once are not all in one place.
+        restY = (restY + rnd(-1.4f, 1.4f) * u).clampIn(u * 4f, scene.windowHeight - u * 2.5f)
         x = fromX
         y = restY
         pose = Pose.CLING
         mirror = wall
         tilt = 0f
-        swings = 0
-        maxSwings = 2 + random.nextInt(3)
         state = State.ENTER
         age = 0f
     }
 
-    /** Down from the camera hole, or the top of the screen, on a line: to hang upside down. */
+    /** Down from a place along the top of the screen, on a line: to hang upside down a moment. */
     private fun drop(scene: BumpScene) {
         val u = unit(scene)
         buttonSide(scene)
         suit = random.nextInt(SUITS.size)
-        anchor(scene, preferHole = true)
+        pivotX = scene.windowWidth * rnd(0.18f, 0.82f)
+        pivotY = 0f
         val h = scene.windowHeight
-        restY = (pivotY + h * 0.26f).clampIn(pivotY + u * 4f, h - u * 5f)
+        restY = (pivotY + h * rnd(0.2f, 0.32f)).clampIn(pivotY + u * 4f, h - u * 5f)
         x = pivotX
         y = pivotY + u * 0.3f
         vy = 0f
         pose = Pose.HANG
         mirror = 1f
         tilt = PI.toFloat()
-        swings = 0
-        maxSwings = 2 + random.nextInt(2)
+        stay = rnd(1.1f, 1.7f)
         shot = 1f
         lineFade = 1f
         bowX = 0f
@@ -928,29 +641,19 @@ internal class SpiderQueenEffect(random: Random) : BumpEffect(random) {
         age = 0f
     }
 
-    /** Where the next line catches: the camera hole, when it is near the top, or a place along the top. */
-    private fun anchor(scene: BumpScene, preferHole: Boolean) {
+    /** Where her line catches: a place of her own along the top of the screen, across from her. */
+    private fun anchorTop(scene: BumpScene) {
         val w = scene.windowWidth
-        pivotX = Float.NaN
-        if (preferHole && !scene.cutoutX.isNaN() && scene.fromWindow.invert(toWindow)) {
-            point[0] = scene.cutoutX
-            point[1] = scene.cutoutY
-            toWindow.mapPoints(point)
-            if (point[1] < scene.windowHeight * 0.25f) {
-                pivotX = point[0]
-                pivotY = point[1]
-            }
-        }
-        if (pivotX.isNaN()) {
-            pivotX = w * (0.5f + rnd(-0.14f, 0.14f))
-            pivotY = 0f
-        }
+        // From the right edge, somewhere over the left two-thirds or so; from the left, the right.
+        val k = rnd(0.12f, 0.72f)
+        pivotX = if (x > w / 2f) w * k else w * (1f - k)
+        pivotY = 0f
     }
 
-    /** From the wall: her free hand up, and a line of silk flying out to the camera hole or the top. */
+    /** From the wall: her free hand up, and a line of silk flying out to the top of the screen. */
     private fun shoot(scene: BumpScene) {
         val u = unit(scene)
-        anchor(scene, preferHole = true)
+        anchorTop(scene)
         // Never a line too short to swing on.
         if (y - pivotY < u * 7f) pivotY = (y - u * 7f).coerceAtLeast(0f)
         shot = 0f
@@ -959,7 +662,7 @@ internal class SpiderQueenEffect(random: Random) : BumpEffect(random) {
         age = 0f
     }
 
-    /** Hanging upside down, and pressed: over she flips onto her hands and off she swings. */
+    /** Done hanging upside down: over she flips onto her hand on the line, and off she swings. */
     private fun flip(scene: BumpScene) {
         val d = scene.density
         val g = GRAVITY * d
@@ -1024,14 +727,9 @@ internal class SpiderQueenEffect(random: Random) : BumpEffect(random) {
                 }
             }
             State.CLING -> {
-                idle += dt
                 x += (toX - x) * min(1f, 18f * dt)
-                if (pending > 0 && age > 0.2f) {
-                    pending--
-                    shoot(scene)
-                } else if (age > 0.5f && (swings >= maxSwings || idle > IDLE_S)) {
-                    zip(scene, fromHang = false)
-                }
+                // A wave from the far edge, and off up a line.
+                if (age > stay) zip(scene, fromHang = false)
             }
             State.SHOOT -> {
                 x += (toX - x) * min(1f, 18f * dt)
@@ -1095,7 +793,7 @@ internal class SpiderQueenEffect(random: Random) : BumpEffect(random) {
                     mirror = wall
                     state = State.CLING
                     age = 0f
-                    swings++
+                    stay = rnd(0.8f, 1.5f)
                 } else if (y > h + u * 6f) {
                     state = State.HIDDEN
                 }
@@ -1111,15 +809,10 @@ internal class SpiderQueenEffect(random: Random) : BumpEffect(random) {
                 }
             }
             State.HANG -> {
-                idle += dt
                 y = restY + sin(time * 2.2f) * u * 0.12f
                 x = pivotX + sin(time * 1.3f) * u * 0.18f
-                if (pending > 0 && age > 0.25f) {
-                    pending--
-                    flip(scene)
-                } else if (idle > HANG_IDLE_S) {
-                    zip(scene, fromHang = true)
-                }
+                // A moment upside down, waving; then over she flips, and away she swings.
+                if (age > stay) flip(scene)
             }
             State.ZIP -> {
                 if (shot < 1f) {
@@ -1529,7 +1222,6 @@ internal class SpiderQueenEffect(random: Random) : BumpEffect(random) {
 
     override fun clear() {
         state = State.HIDDEN
-        pending = 0
         lineFade = 0f
     }
 
@@ -1537,8 +1229,6 @@ internal class SpiderQueenEffect(random: Random) : BumpEffect(random) {
         /** How hard she falls, in dp a second each second: snappier than real, for a lively swing. */
         const val GRAVITY = 2200f
         const val SHOOT_SPEED = 2600f
-        const val IDLE_S = 2.8f
-        const val HANG_IDLE_S = 3.4f
         const val TILT_RATE = 14f
         const val BLINK_S = 3.1f
 

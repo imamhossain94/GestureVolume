@@ -39,6 +39,7 @@
     <string name="bump_style_fireworks">烟花</string>
     <string name="bump_style_solar">太阳系</string>
     <string name="bump_style_bubbles">泡泡</string>
+    <string name="bump_style_balloon">气球</string>
     <string name="bump_style_volcano">火山</string>
     <string name="bump_style_wind">风</string>
     <string name="bump_style_ninja">忍者之刃</string>
@@ -48,8 +49,7 @@
     <string name="bump_style_cat">猫咪</string>
     <string name="bump_style_fish">鱼跃</string>
     <string name="bump_style_frog">青蛙跳</string>
-    <string name="bump_style_spider">蜘蛛女王</string>
-    <string name="bump_style_woodpecker">啄木鸟</string>
+    <string name="bump_style_swing">摆荡女侠</string>
     <string name="bump_style_monkey">猴子</string>
     <string name="bump_style_ufo">飞碟</string>
     <string name="bump_style_spray">彩色喷雾</string>
@@ -133,7 +133,8 @@
     <string name="step_sound_splash">扑通</string>
     <string name="step_sound_ribbit">呱呱</string>
     <string name="step_sound_zip">嗖</string>
-    <string name="step_sound_peck">笃笃</string>
+    <string name="step_sound_balloon">气球</string>
+    <string name="step_sound_burst">气球爆裂</string>
     <string name="step_sound_cosmic">宇宙</string>
     <string name="step_sound_boing">啵嘤</string>
 

@@ -39,6 +39,7 @@
     <string name="bump_style_fireworks">Pháo hoa</string>
     <string name="bump_style_solar">Hệ Mặt Trời</string>
     <string name="bump_style_bubbles">Bong bóng</string>
+    <string name="bump_style_balloon">Bóng bay</string>
     <string name="bump_style_volcano">Núi lửa</string>
     <string name="bump_style_wind">Gió</string>
     <string name="bump_style_ninja">Lưỡi kiếm ninja</string>
@@ -48,8 +49,7 @@
     <string name="bump_style_cat">Mèo</string>
     <string name="bump_style_fish">Cá nhảy</string>
     <string name="bump_style_frog">Ếch nhảy</string>
-    <string name="bump_style_spider">Nữ hoàng Nhện</string>
-    <string name="bump_style_woodpecker">Chim gõ kiến</string>
+    <string name="bump_style_swing">Cô gái đu dây</string>
     <string name="bump_style_monkey">Khỉ</string>
     <string name="bump_style_ufo">UFO</string>
     <string name="bump_style_spray">Xịt màu</string>
@@ -133,7 +133,8 @@
     <string name="step_sound_splash">Tõm</string>
     <string name="step_sound_ribbit">Ộp ộp</string>
     <string name="step_sound_zip">Vút</string>
-    <string name="step_sound_peck">Cộc cộc</string>
+    <string name="step_sound_balloon">Bóng bay</string>
+    <string name="step_sound_burst">Nổ bóng</string>
     <string name="step_sound_cosmic">Vũ trụ</string>
     <string name="step_sound_boing">Boing</string>
 

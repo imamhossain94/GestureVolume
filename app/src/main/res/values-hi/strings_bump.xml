@@ -39,6 +39,7 @@
     <string name="bump_style_fireworks">आतिशबाज़ी</string>
     <string name="bump_style_solar">सौरमंडल</string>
     <string name="bump_style_bubbles">बुलबुले</string>
+    <string name="bump_style_balloon">गुब्बारे</string>
     <string name="bump_style_volcano">ज्वालामुखी</string>
     <string name="bump_style_wind">हवा</string>
     <string name="bump_style_ninja">निंजा ब्लेड</string>
@@ -48,8 +49,7 @@
     <string name="bump_style_cat">बिल्ली</string>
     <string name="bump_style_fish">उछलती मछली</string>
     <string name="bump_style_frog">उछलता मेंढक</string>
-    <string name="bump_style_spider">मकड़ी रानी</string>
-    <string name="bump_style_woodpecker">कठफोड़वा</string>
+    <string name="bump_style_swing">झूलती महिलाएँ</string>
     <string name="bump_style_monkey">बंदर</string>
     <string name="bump_style_ufo">यूएफ़ओ</string>
     <string name="bump_style_spray">रंगीन स्प्रे</string>
@@ -133,7 +133,8 @@
     <string name="step_sound_splash">छपाक</string>
     <string name="step_sound_ribbit">टर्र-टर्र</string>
     <string name="step_sound_zip">ज़िप</string>
-    <string name="step_sound_peck">ठक-ठक</string>
+    <string name="step_sound_balloon">गुब्बारा</string>
+    <string name="step_sound_burst">गुब्बारा फूटना</string>
     <string name="step_sound_cosmic">ब्रह्मांडीय</string>
     <string name="step_sound_boing">बोइंग</string>
 

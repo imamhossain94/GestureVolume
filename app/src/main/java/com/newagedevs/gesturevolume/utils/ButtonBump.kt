@@ -88,6 +88,12 @@ object ButtonBump {
     /** Soap bubbles blown out at each press, rising, shimmering, and popping. */
     const val STYLE_BUBBLES = "bubbles"
 
+    /**
+     * Balloons: a press blows one up at the edge and lets it float away, quick presses a bunch of
+     * them; holding the key fills one bigger and bigger until it bursts.
+     */
+    const val STYLE_BALLOON = "balloon"
+
 
 
     /** A volcano in place of the bump, erupting lava bombs and ash at each press. */
@@ -127,14 +133,12 @@ object ButtonBump {
     const val STYLE_FROG = "frog"
 
     /**
-     * A cute little spider: it shoots a line of silk to the camera hole or the top of the screen,
-     * swings across on it, leaps from edge to edge, and wanders off when it likes. A spider of its
-     * own, in a colour of its own each time — not anyone's superhero.
+     * Swing women: cute little heroines of the app's own, in suits of their own colours, who shoot a
+     * line of silk to the top of the screen and swing across on it — another one at every press.
+     * Stored as "swing"; the "spider" it was before is read as this.
      */
-    const val STYLE_SPIDER = "spider"
+    const val STYLE_SWING = "swing"
 
-    /** A woodpecker on a trunk along the edge, drumming a hole into it at each press. */
-    const val STYLE_WOODPECKER = "woodpecker"
 
     /** A flying saucer swooping out, shining its beam down, and zipping away. */
     const val STYLE_UFO = "ufo"
@@ -144,16 +148,23 @@ object ButtonBump {
     /** In the order they are offered. */
     val STYLES: List<String> = listOf(
         STYLE_WATER, STYLE_LIQUID, STYLE_BLOSSOM, STYLE_FIREWORKS, STYLE_VOLCANO,
-        STYLE_ROCKET, STYLE_FISH, STYLE_FROG, STYLE_SPIDER, STYLE_WOODPECKER, STYLE_CAT, STYLE_MONKEY,
-        STYLE_BUBBLES, STYLE_SPRAY, STYLE_WIND, STYLE_NINJA, STYLE_CRACK, STYLE_UFO, STYLE_BEES, STYLE_SOLAR,
+        STYLE_ROCKET, STYLE_FISH, STYLE_FROG, STYLE_SWING, STYLE_CAT, STYLE_MONKEY,
+        STYLE_BUBBLES, STYLE_BALLOON, STYLE_SPRAY, STYLE_WIND, STYLE_NINJA, STYLE_CRACK, STYLE_UFO, STYLE_BEES, STYLE_SOLAR,
         STYLE_CAPSULE, STYLE_LINE, STYLE_JELLY, STYLE_NEON, STYLE_AURORA, STYLE_RIPPLE, STYLE_SPARKLE,
         STYLE_LAVA, STYLE_GLASS, STYLE_SPECTRUM, STYLE_HEARTBEAT, STYLE_ELASTIC,
     )
 
     const val DEFAULT_STYLE = STYLE_WATER
 
+    /** Styles that were renamed: the id they had, and the one they have now. */
+    private val RENAMED = mapOf("spider" to STYLE_SWING)
+
     /** Every style is everyone's: Pro takes the ads away and nothing else. */
-    fun sanitizeStyle(id: String?): String = if (id in STYLES) id!! else DEFAULT_STYLE
+    fun sanitizeStyle(id: String?): String = when (id) {
+        in STYLES -> id!!
+        in RENAMED -> RENAMED.getValue(id!!)
+        else -> DEFAULT_STYLE
+    }
 
     // ---- how each style moves -----------------------------------------------------------------------
 
@@ -199,6 +210,7 @@ object ButtonBump {
         STYLE_FIREWORKS -> Spec(stiffness = 380f, damping = 0.65f, shoulder = 0.4f, reach = 10f, spread = 7.5f)
         STYLE_SOLAR -> Spec(stiffness = 300f, damping = 0.72f, shoulder = 0.5f, reach = 9f, spread = 8.4f)
         STYLE_BUBBLES -> Spec(stiffness = 320f, damping = 0.55f, shoulder = 0.45f, reach = 7f, spread = 6f)
+        STYLE_BALLOON -> Spec(stiffness = 320f, damping = 0.55f, shoulder = 0.45f, reach = 8f, spread = 6f)
         STYLE_VOLCANO -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
         STYLE_WIND -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6f)
         STYLE_NINJA -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6f)
@@ -210,8 +222,7 @@ object ButtonBump {
         STYLE_FISH -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
         STYLE_MONKEY -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 5.5f, spread = 3.2f)
         STYLE_FROG -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
-        STYLE_SPIDER -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
-        STYLE_WOODPECKER -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 6f, spread = 4f)
+        STYLE_SWING -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 8f, spread = 6f)
         STYLE_UFO -> Spec(stiffness = 340f, damping = 0.6f, shoulder = 0.45f, reach = 9f, spread = 6.5f)
         else -> Spec(stiffness = 400f, damping = 0.62f, shoulder = 0.34f, reach = 1.7f)
     }
@@ -338,6 +349,12 @@ object ButtonBump {
     private fun effectDepth(style: String, depthPx: Float, density: Float): Float =
         if (spec(style).spread > 0f) max(depthPx, EFFECT_DEPTH_DP * density) else depthPx
 
+    /**
+     * Whether a style's sound plays again on every step of a held key, as a ratchet: all but the
+     * balloon, whose held key fills one balloon, hissing, rather than making a press of each step.
+     */
+    fun soundsWhileHeld(style: String): Boolean = sanitizeStyle(style) != STYLE_BALLOON
+
     /** The sound a style makes at each press, from StepSoundLibrary: its own, to go with how it looks. */
     fun sound(style: String): String = when (sanitizeStyle(style)) {
         STYLE_WATER, STYLE_RIPPLE -> "drop"
@@ -349,10 +366,10 @@ object ButtonBump {
         STYLE_CAT -> "meow"
         STYLE_MONKEY -> "monkey"
         STYLE_FROG -> "ribbit"
-        STYLE_SPIDER -> "zip"
-        STYLE_WOODPECKER -> "peck"
+        STYLE_SWING -> "zip"
         STYLE_FISH -> "splash"
         STYLE_BUBBLES -> "bubbles"
+        STYLE_BALLOON -> "balloon"
         STYLE_SPRAY -> "spray"
         STYLE_WIND -> "whoosh"
         STYLE_NINJA -> "swish"

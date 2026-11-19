@@ -36,7 +36,7 @@ class ButtonBumpTest {
         assertTrue(throwers.containsAll(listOf(
             ButtonBump.STYLE_WATER, ButtonBump.STYLE_BLOSSOM, ButtonBump.STYLE_FIREWORKS,
             ButtonBump.STYLE_VOLCANO, ButtonBump.STYLE_ROCKET, ButtonBump.STYLE_CAT, ButtonBump.STYLE_MONKEY,
-            ButtonBump.STYLE_FISH, ButtonBump.STYLE_FROG, ButtonBump.STYLE_SPIDER, ButtonBump.STYLE_WOODPECKER,
+            ButtonBump.STYLE_FISH, ButtonBump.STYLE_FROG, ButtonBump.STYLE_SWING, ButtonBump.STYLE_BALLOON,
             ButtonBump.STYLE_BUBBLES, ButtonBump.STYLE_SPRAY, ButtonBump.STYLE_WIND,
             ButtonBump.STYLE_NINJA, ButtonBump.STYLE_CRACK, ButtonBump.STYLE_UFO, ButtonBump.STYLE_BEES,
             ButtonBump.STYLE_SOLAR,
@@ -56,14 +56,17 @@ class ButtonBumpTest {
 
     @Test
     fun `retired styles fall back to the default`() {
-        listOf("dragon", "alien", "atom", "smoke").forEach {
+        listOf("dragon", "alien", "atom", "smoke", "woodpecker").forEach {
             assertTrue(it !in ButtonBump.STYLES)
             assertEquals(ButtonBump.DEFAULT_STYLE, ButtonBump.sanitizeStyle(it))
         }
-        // And the three that came after them are there, each with its own sound.
+        // The spider became the swing women: whoever chose it keeps them.
+        assertTrue("spider" !in ButtonBump.STYLES)
+        assertEquals(ButtonBump.STYLE_SWING, ButtonBump.sanitizeStyle("spider"))
+        // And the ones that came after them are there, each with its own sound.
         assertEquals("ribbit", ButtonBump.sound(ButtonBump.STYLE_FROG))
-        assertEquals("zip", ButtonBump.sound(ButtonBump.STYLE_SPIDER))
-        assertEquals("peck", ButtonBump.sound(ButtonBump.STYLE_WOODPECKER))
+        assertEquals("zip", ButtonBump.sound(ButtonBump.STYLE_SWING))
+        assertEquals("balloon", ButtonBump.sound(ButtonBump.STYLE_BALLOON))
     }
 
     @Test
@@ -74,6 +77,12 @@ class ButtonBumpTest {
         // The showpieces each sound like themselves, not like the tick.
         assertEquals("meow", ButtonBump.sound(ButtonBump.STYLE_CAT))
         assertEquals("drop", ButtonBump.sound(ButtonBump.STYLE_WATER))
+    }
+
+    @Test
+    fun `a held key ratchets the sound on, except for the balloon, which fills`() {
+        assertFalse(ButtonBump.soundsWhileHeld(ButtonBump.STYLE_BALLOON))
+        ButtonBump.STYLES.filter { it != ButtonBump.STYLE_BALLOON }.forEach { assertTrue(it, ButtonBump.soundsWhileHeld(it)) }
     }
 
     @Test

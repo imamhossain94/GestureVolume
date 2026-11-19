@@ -857,6 +857,14 @@ class OverlayController(
     /** Volume keys whose press was taken, so their release is taken too, and nothing else's. */
     private val volumeKeysTaken = HashSet<Int>()
 
+    /** Volume keys down now, between their press and release, whoever took them. */
+    private val volumeKeysDown = HashSet<Int>()
+
+    private fun setVolumeKeyDown(keyCode: Int, down: Boolean) {
+        if (down) volumeKeysDown += keyCode else volumeKeysDown -= keyCode
+        bumpOverlay?.setKeyDown(volumeKeysDown.isNotEmpty())
+    }
+
     /**
      * The direction a held volume key is stepping in, or 0 while none is held.
      *
@@ -879,7 +887,7 @@ class OverlayController(
             if (direction == 0 || destroyed) return
             // At either end of the range stepping still counts: the level stops moving but the
             // key is still held and still the panel's, and the panel stays up to show it.
-            if (now() > volumeKeyRepeatUntil || !takesVolumeKeys() || !stepVolumeFromKey(direction)) {
+            if (now() > volumeKeyRepeatUntil || !takesVolumeKeys() || !stepVolumeFromKey(direction, repeat = true)) {
                 stopVolumeKeyRepeat()
                 return
             }
@@ -926,6 +934,9 @@ class OverlayController(
             KeyEvent.KEYCODE_VOLUME_DOWN -> -1
             else -> return false
         }
+        // Held or let go, for the animation, whoever takes the key: the balloon fills while one is down.
+        if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) setVolumeKeyDown(event.keyCode, true)
+        if (event.action == KeyEvent.ACTION_UP) setVolumeKeyDown(event.keyCode, false)
         // A release belongs to whoever took its press. Taking one whose press went to the system
         // would leave the system holding a key that never comes up.
         if (event.action == KeyEvent.ACTION_UP) {
@@ -947,7 +958,7 @@ class OverlayController(
             if (event.keyCode !in volumeKeysTaken) return false
             stopVolumeKeyRepeat()
             if (direction < 0) finishVolumeDownWait()
-            return takesVolumeKeys() && stepVolumeFromKey(direction)
+            return takesVolumeKeys() && stepVolumeFromKey(direction, repeat = true)
         }
         if (!takesVolumeKeys()) {
             volumeKeysTaken -= event.keyCode
@@ -1076,7 +1087,10 @@ class OverlayController(
         }
         bumpOverlay?.let { if (it.isFor(host, type)) return it }
         bumpOverlay?.destroy()
-        return ButtonBumpOverlay(host, type).also { bumpOverlay = it }
+        return ButtonBumpOverlay(host, type).also {
+            it.onCue = { cue -> playBumpCue(cue) }
+            bumpOverlay = it
+        }
     }
 
     /**
@@ -1125,6 +1139,7 @@ class OverlayController(
         index: Int,
         atLimit: Boolean,
         withSlider: Boolean = true,
+        repeat: Boolean = false,
     ) {
         val level = ButtonBump.levelOf(index, res.minIndex, res.maxIndex)
         val hadAnimation = bumpOverlay?.hasWindow() == true
@@ -1139,7 +1154,10 @@ class OverlayController(
         // A panel opened by this press over an animation already playing would be drawn over it:
         // the animation goes back on top, as it is everywhere else on the glass.
         if (opened && hadAnimation) bumpOverlay?.raise()
-        if (!atLimit) playBumpSound(res.stream)
+        // Every press makes its sound, at either end of the range too. A held key's own steps
+        // ratchet on with it while the level moves — except the balloon's, which only fills.
+        val sounds = !repeat || (!atLimit && ButtonBump.soundsWhileHeld(preference.bump.getStyle()))
+        if (sounds) playBumpSound(res.stream)
     }
 
     /**
@@ -1160,6 +1178,31 @@ class OverlayController(
     /** The animation's own sound. */
     private val fxSound = com.newagedevs.gesturevolume.utils.StepSound(context)
 
+    /** The sounds an animation asks for itself — the balloon's hiss and its bang — one sample each. */
+    private val cueSounds = HashMap<String, com.newagedevs.gesturevolume.utils.StepSound>()
+
+    /** How the last press's sound was played, so the animation's own sounds play the same way. */
+    private var lastBumpUsage = android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION
+
+    /**
+     * A sound the animation asked for: "inflate" starts the balloon's hiss and "inflate_stop" ends
+     * it; any other is a sample of that name, played once.
+     */
+    private fun playBumpCue(cue: String) {
+        if (destroyed || !preference.bump.getSound()) {
+            cueSounds["inflate"]?.stopLast()
+            return
+        }
+        if (cue == "inflate_stop") {
+            cueSounds["inflate"]?.stopLast()
+            return
+        }
+        val sound = cueSounds.getOrPut(cue) { com.newagedevs.gesturevolume.utils.StepSound(context) }
+        sound.prepare(lastBumpUsage, cue)
+        sound.stopLast()
+        sound.playOnce()
+    }
+
     /**
      * The animation's own sound for a press, when it is on: at the volume being set, for a volume
      * key ([stream]), or as a system sound for the power button, which sets none. Never the Quick
@@ -1168,20 +1211,19 @@ class OverlayController(
     private fun playBumpSound(stream: Int?) {
         val store = preference.bump
         if (!store.getSound()) return
-        fxSound.prepare(
-            if (stream != null) {
-                com.newagedevs.gesturevolume.utils.StepSound.usageFor(QuickSliderStore.TARGET_ADAPTIVE, stream)
-            } else {
-                android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION
-            },
-            ButtonBump.sound(store.getStyle()),
-        )
+        lastBumpUsage = if (stream != null) {
+            com.newagedevs.gesturevolume.utils.StepSound.usageFor(QuickSliderStore.TARGET_ADAPTIVE, stream)
+        } else {
+            android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION
+        }
+        fxSound.prepare(lastBumpUsage, ButtonBump.sound(store.getStyle()))
         fxSound.playOnce()
     }
 
     /** The dent alone, at [button]. */
     private fun pressButton(button: ButtonBumpStore.Button, direction: Int, level: Float, atLimit: Boolean) {
         val overlay = bumpOverlay() ?: return
+        overlay.setKeyDown(volumeKeysDown.isNotEmpty())
         overlay.press(preference.bump.settings(button), direction, level, atLimit)
     }
 
@@ -1219,7 +1261,7 @@ class OverlayController(
      *   The usual refusal is the headphone safe-volume limit, and the warning the user has to
      *   accept before going louder is the system's to show, not the panel's to hide.
      */
-    private fun stepVolumeFromKey(direction: Int): Boolean {
+    private fun stepVolumeFromKey(direction: Int, repeat: Boolean = false): Boolean {
         val res = adaptiveVolume()
         val current = volume.level(res) ?: return false
         val target = (current + direction).coerceIn(res.minIndex, res.maxIndex)
@@ -1230,7 +1272,7 @@ class OverlayController(
             if (volume.level(res) == current) {
                 // Refused: the key goes on to the system, whose warning is what lets the user go
                 // louder. The bump still answers the press, held at the level that stayed.
-                if (bump) showBump(res, direction, current, atLimit = true, withSlider = false)
+                if (bump) showBump(res, direction, current, atLimit = true, withSlider = false, repeat = repeat)
                 return false
             }
         }
@@ -1241,7 +1283,7 @@ class OverlayController(
         if (bump) {
             // Pressed at an end of the range: still taken, so the system's slider stays away, and
             // answered with a nudge rather than a step.
-            showBump(res, direction, landed, atLimit = landed == current)
+            showBump(res, direction, landed, atLimit = landed == current, repeat = repeat)
         } else {
             showPanelForVolumeKey(res)
         }
@@ -1309,6 +1351,8 @@ class OverlayController(
         // Lets a write already queued land, then ends the thread.
         stepSound.release()
         fxSound.release()
+        cueSounds.values.forEach { it.release() }
+        cueSounds.clear()
         audioThread?.quitSafely()
         audioThread = null
 

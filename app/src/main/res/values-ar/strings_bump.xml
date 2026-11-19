@@ -39,6 +39,7 @@
     <string name="bump_style_fireworks">ألعاب نارية</string>
     <string name="bump_style_solar">المجموعة الشمسية</string>
     <string name="bump_style_bubbles">فقاعات</string>
+    <string name="bump_style_balloon">بالونات</string>
     <string name="bump_style_volcano">بركان</string>
     <string name="bump_style_wind">رياح</string>
     <string name="bump_style_ninja">نصل النينجا</string>
@@ -48,8 +49,7 @@
     <string name="bump_style_cat">قطة</string>
     <string name="bump_style_fish">سمكة قافزة</string>
     <string name="bump_style_frog">ضفدع قافز</string>
-    <string name="bump_style_spider">ملكة العناكب</string>
-    <string name="bump_style_woodpecker">نقار الخشب</string>
+    <string name="bump_style_swing">نساء الأرجحة</string>
     <string name="bump_style_monkey">قرد</string>
     <string name="bump_style_ufo">طبق طائر</string>
     <string name="bump_style_spray">بخاخ ألوان</string>
@@ -133,7 +133,8 @@
     <string name="step_sound_splash">رشّة ماء</string>
     <string name="step_sound_ribbit">نقيق</string>
     <string name="step_sound_zip">زيب</string>
-    <string name="step_sound_peck">نقر</string>
+    <string name="step_sound_balloon">بالون</string>
+    <string name="step_sound_burst">انفجار بالون</string>
     <string name="step_sound_cosmic">كوني</string>
     <string name="step_sound_boing">بوينغ</string>
 

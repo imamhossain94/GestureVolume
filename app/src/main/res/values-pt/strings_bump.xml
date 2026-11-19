@@ -39,6 +39,7 @@
     <string name="bump_style_fireworks">Fogos de artifício</string>
     <string name="bump_style_solar">Sistema solar</string>
     <string name="bump_style_bubbles">Bolhas</string>
+    <string name="bump_style_balloon">Balões</string>
     <string name="bump_style_volcano">Vulcão</string>
     <string name="bump_style_wind">Vento</string>
     <string name="bump_style_ninja">Lâmina ninja</string>
@@ -48,8 +49,7 @@
     <string name="bump_style_cat">Gato</string>
     <string name="bump_style_fish">Peixe saltando</string>
     <string name="bump_style_frog">Sapo saltando</string>
-    <string name="bump_style_spider">Rainha Aranha</string>
-    <string name="bump_style_woodpecker">Pica-pau</string>
+    <string name="bump_style_swing">Trapezistas</string>
     <string name="bump_style_monkey">Macaco</string>
     <string name="bump_style_ufo">OVNI</string>
     <string name="bump_style_spray">Spray colorido</string>
@@ -133,7 +133,8 @@
     <string name="step_sound_splash">Respingo</string>
     <string name="step_sound_ribbit">Croac</string>
     <string name="step_sound_zip">Zip</string>
-    <string name="step_sound_peck">Toc-toc</string>
+    <string name="step_sound_balloon">Balão</string>
+    <string name="step_sound_burst">Estouro</string>
     <string name="step_sound_cosmic">Cósmico</string>
     <string name="step_sound_boing">Boing</string>
 

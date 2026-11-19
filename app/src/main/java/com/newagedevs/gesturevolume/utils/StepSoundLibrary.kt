@@ -9,8 +9,9 @@ package com.newagedevs.gesturevolume.utils
  * the rules for reading a stored value back are tested on their own; [StepSound] turns the ids into
  * the files in res/raw.
  *
- * The app's sounds are made from code by tool/sounds/step_sounds.py — synthesised, not recorded or
- * sampled — so there is nothing in them to license, in the store or anywhere else.
+ * The app's sounds are made by tool/sounds/step_sounds.py: synthesised from code, all but the cat's
+ * meow, a recording dedicated to the public domain (CC0; see tool/sounds/sources) — so there is
+ * nothing in them to license, in the store or anywhere else.
  */
 object StepSoundLibrary {
 
@@ -23,11 +24,17 @@ object StepSoundLibrary {
         "marimba", "glass", "chime",
         // The button animations' own sounds, there to choose for the Quick panel too.
         "twinkle", "firework", "rumble", "launch", "swish", "crack",
-        "whoosh", "spray", "bubbles", "meow", "monkey", "ufo", "buzz", "splash", "ribbit", "zip", "peck",
+        "whoosh", "spray", "bubbles", "meow", "monkey", "ufo", "buzz", "splash", "ribbit", "zip", "balloon", "burst",
         "cosmic", "boing",
     )
 
     const val DEFAULT = TICK
+
+    /**
+     * Sounds an animation plays of its own accord rather than at a press — the balloon's hiss as it
+     * fills — not offered to choose: too long for a step.
+     */
+    val CUES: List<String> = listOf("inflate")
 
     /** The start of a stored value that names a sound on the phone rather than one of the app's. */
     const val DEVICE_PREFIX = "device:"
@@ -48,7 +55,7 @@ object StepSoundLibrary {
     fun sanitize(source: String?): String = when {
         source == null -> DEFAULT
         isDevice(source) -> if (deviceUri(source) != null) source else DEFAULT
-        source in IDS -> source
+        source in IDS || source in CUES -> source
         else -> DEFAULT
     }
 }

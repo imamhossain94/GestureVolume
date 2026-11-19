@@ -729,6 +729,30 @@ private fun BumpStage(
                 var n = 0
                 delay(180)
                 while (true) {
+                    // The balloon is also held now and then, as a thumb would: once until it is
+                    // big, and once until it bursts.
+                    val hold = when {
+                        latest(Button.VOLUME_UP).style != ButtonBump.STYLE_BALLOON -> 0L
+                        n % 6 == 3 -> BALLOON_HOLD_MS
+                        n % 6 == 5 -> BALLOON_BURST_MS
+                        else -> 0L
+                    }
+                    if (hold > 0L) {
+                        val (s, p) = place(Button.VOLUME_UP)
+                        v.configure(s, p)
+                        v.setOrigin(p.x, p.y)
+                        v.setKeyDown(true)
+                        level = (level + 0.07f).coerceIn(0.05f, 0.95f)
+                        v.press(1, level)
+                        try {
+                            delay(hold)
+                        } finally {
+                            v.setKeyDown(false)
+                        }
+                        n++
+                        delay(LOOP_GAP_MS)
+                        continue
+                    }
                     val run = when (n % 6) {
                         2 -> 2
                         4 -> 3
@@ -1027,8 +1051,8 @@ private fun styleLabel(style: String): Int = when (style) {
     ButtonBump.STYLE_FISH -> R.string.bump_style_fish
     ButtonBump.STYLE_MONKEY -> R.string.bump_style_monkey
     ButtonBump.STYLE_FROG -> R.string.bump_style_frog
-    ButtonBump.STYLE_SPIDER -> R.string.bump_style_spider
-    ButtonBump.STYLE_WOODPECKER -> R.string.bump_style_woodpecker
+    ButtonBump.STYLE_SWING -> R.string.bump_style_swing
+    ButtonBump.STYLE_BALLOON -> R.string.bump_style_balloon
     ButtonBump.STYLE_UFO -> R.string.bump_style_ufo
     else -> R.string.bump_style_liquid
 }
@@ -1053,6 +1077,10 @@ private const val PREVIEW_STEP = 1f / 15f
 /** The preview's rhythm: between presses in a run, and between runs. */
 private const val PRESS_GAP_MS = 260L
 private const val LOOP_GAP_MS = 1900L
+
+/** How long the preview holds the key for the balloon: until it is big, and until it bursts. */
+private const val BALLOON_HOLD_MS = 1600L
+private const val BALLOON_BURST_MS = 3600L
 
 /** The least time between two presses on the glass while a place is being dragged. */
 private const val GLASS_PREVIEW_GAP_MS = 140L

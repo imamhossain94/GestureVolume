@@ -114,7 +114,18 @@ class StepSound(private val context: Context) {
             pendingAdaptive = true
             return
         }
-        p.play(soundId, volume, volume, 1, 0, rate)
+        lastStream = p.play(soundId, volume, volume, 1, 0, rate)
+    }
+
+    /** The stream last played, so a long sound — the balloon's hiss — can be cut off. */
+    private var lastStream = 0
+
+    /** Stops the sound last played, if it is still playing, and one waiting to play. */
+    fun stopLast() {
+        pendingAt = 0L
+        val p = pool ?: return
+        if (lastStream != 0) p.stop(lastStream)
+        lastStream = 0
     }
 
     private fun playPending() {
@@ -131,7 +142,7 @@ class StepSound(private val context: Context) {
             1f
         }
         val volume = if (adaptive) 1f else CLICK_VOLUME
-        p.play(soundId, volume, volume, 1, 0, rate)
+        lastStream = p.play(soundId, volume, volume, 1, 0, rate)
     }
 
     fun release() {
@@ -187,7 +198,9 @@ class StepSound(private val context: Context) {
             "splash" -> R.raw.step_splash
             "ribbit" -> R.raw.step_ribbit
             "zip" -> R.raw.step_zip
-            "peck" -> R.raw.step_peck
+            "balloon" -> R.raw.step_balloon
+            "burst" -> R.raw.step_burst
+            "inflate" -> R.raw.step_inflate
             "cosmic" -> R.raw.step_cosmic
             "boing" -> R.raw.step_boing
             else -> R.raw.slider_tick

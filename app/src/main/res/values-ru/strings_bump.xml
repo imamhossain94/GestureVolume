@@ -39,6 +39,7 @@
     <string name="bump_style_fireworks">Фейерверк</string>
     <string name="bump_style_solar">Солнечная система</string>
     <string name="bump_style_bubbles">Пузыри</string>
+    <string name="bump_style_balloon">Воздушные шары</string>
     <string name="bump_style_volcano">Вулкан</string>
     <string name="bump_style_wind">Ветер</string>
     <string name="bump_style_ninja">Клинок ниндзя</string>
@@ -48,8 +49,7 @@
     <string name="bump_style_cat">Кот</string>
     <string name="bump_style_fish">Прыжок рыбы</string>
     <string name="bump_style_frog">Прыжок лягушки</string>
-    <string name="bump_style_spider">Королева пауков</string>
-    <string name="bump_style_woodpecker">Дятел</string>
+    <string name="bump_style_swing">Летающие героини</string>
     <string name="bump_style_monkey">Обезьяна</string>
     <string name="bump_style_ufo">НЛО</string>
     <string name="bump_style_spray">Цветной спрей</string>
@@ -133,7 +133,8 @@
     <string name="step_sound_splash">Всплеск</string>
     <string name="step_sound_ribbit">Ква</string>
     <string name="step_sound_zip">Вжик</string>
-    <string name="step_sound_peck">Тук-тук</string>
+    <string name="step_sound_balloon">Шарик</string>
+    <string name="step_sound_burst">Хлопок</string>
     <string name="step_sound_cosmic">Космос</string>
     <string name="step_sound_boing">Боинг</string>
 

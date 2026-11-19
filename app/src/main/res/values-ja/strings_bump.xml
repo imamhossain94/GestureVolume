@@ -39,6 +39,7 @@
     <string name="bump_style_fireworks">花火</string>
     <string name="bump_style_solar">太陽系</string>
     <string name="bump_style_bubbles">シャボン玉</string>
+    <string name="bump_style_balloon">風船</string>
     <string name="bump_style_volcano">火山</string>
     <string name="bump_style_wind">風</string>
     <string name="bump_style_ninja">忍者の刃</string>
@@ -48,8 +49,7 @@
     <string name="bump_style_cat">ネコ</string>
     <string name="bump_style_fish">跳ねる魚</string>
     <string name="bump_style_frog">跳ねるカエル</string>
-    <string name="bump_style_spider">スパイダークイーン</string>
-    <string name="bump_style_woodpecker">キツツキ</string>
+    <string name="bump_style_swing">スイングウーマン</string>
     <string name="bump_style_monkey">サル</string>
     <string name="bump_style_ufo">UFO</string>
     <string name="bump_style_spray">カラースプレー</string>
@@ -133,7 +133,8 @@
     <string name="step_sound_splash">パシャ</string>
     <string name="step_sound_ribbit">ケロケロ</string>
     <string name="step_sound_zip">シュッ</string>
-    <string name="step_sound_peck">コツコツ</string>
+    <string name="step_sound_balloon">風船</string>
+    <string name="step_sound_burst">破裂</string>
     <string name="step_sound_cosmic">コズミック</string>
     <string name="step_sound_boing">ボヨン</string>
 

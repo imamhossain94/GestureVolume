@@ -458,21 +458,43 @@ def zip_():
     return mix(hiss, twang)
 
 
-def peck():
-    """A woodpecker's drumming: a rattle of knocks on a hollow trunk, quickest in the middle."""
-    gaps = [0.0, 0.065, 0.118, 0.164, 0.207, 0.25, 0.296]
-    parts = []
-    for i, at in enumerate(gaps):
-        d = 0.06
-        knock = biquad(noise(0.003, 90 + i), "bp", 2300, 0.9) * env(0.003, 0.0001, 0.0008) * 0.5
-        body = mix(
-            knock,
-            damped(760, 0.018, d, 1.0),
-            damped(1530, 0.009, d, 0.45, 0.4),
-            damped(2900, 0.004, d, 0.2, 1.3),
-        )
-        parts.append(later(body * (1.0 - 0.07 * i), at))
-    return mix(*parts)
+def balloon():
+    """A balloon, blown up and let go: a rubbery squeak sliding up and easing back, and a breath of air."""
+    d = 0.34
+    t = t_axis(d)
+    rise = np.clip(t / 0.15, 0, 1)
+    fall = np.clip((t - 0.15) / 0.12, 0, 1)
+    f0 = 620 + 560 * (rise * rise * (3 - 2 * rise)) - 160 * (fall * fall * (3 - 2 * fall))
+    # Rubber squeaks by sticking and slipping: a quick flutter in its loudness.
+    flutter = 0.78 + 0.22 * np.sin(2 * np.pi * 31 * t)
+    shape = np.clip(t / 0.015, 0, 1) * np.clip((0.3 - t) / 0.09, 0, 1)
+    squeak = voice(f0, [(1500, 520, 1.0), (2900, 700, 0.4)]) * flutter * shape
+    air = biquad(sweep_bp(noise(d, 83), 900 + 900 * np.clip(t / d, 0, 1), 1.6), "lp", 2400)
+    air = air * env(d, 0.08, 0.08) * 0.18
+    return mix(squeak * 0.5, air)
+
+
+def burst():
+    """A balloon bursting: a sharp crack, a low thump under it, and the room ringing for a moment."""
+    d = 0.4
+    crack = noise(d, 97) * env(d, 0.0002, 0.012)
+    crack = biquad(crack, "hp", 700) * 0.9 + biquad(crack, "bp", 2600, 0.9) * 0.6
+    thump = damped(115, 0.03, d, 0.8, attack=0.0004)
+    room = biquad(noise(d, 98), "lp", 3200) * env(d, 0.004, 0.07) * 0.12
+    return mix(crack, thump, room)
+
+
+def inflate():
+    """Gas going into a balloon: a steady hiss, rising a little as it fills and pulsing with the pump."""
+    d = 3.2
+    t = t_axis(d)
+    centre = 2600 + 1700 * (t / d)
+    hiss = sweep_bp(noise(d, 101), centre, 0.9)
+    pulse = 0.85 + 0.15 * np.sin(2 * np.pi * 5.5 * t)
+    swell = 0.8 + 0.2 * (t / d)
+    fade_in = np.clip(t / 0.15, 0, 1)
+    fade_out = np.clip((d - t) / 0.12, 0, 1)
+    return hiss * pulse * swell * fade_in * fade_out
 
 
 def boing():
@@ -517,9 +539,12 @@ SOUNDS = {
     "splash": (splash, -1.0),
     "ribbit": (ribbit, -2.0),
     "zip": (zip_, -3.0),
-    "peck": (peck, -1.0),
     "cosmic": (cosmic, -5.0),
     "boing": (boing, -3.0),
+    "balloon": (balloon, -2.0),
+    "burst": (burst, -1.0),
+    # Not a step sound: the balloon's hiss as it fills, long and quiet, played while a key is held.
+    "inflate": (inflate, -12.0),
 }
 
 PEAK_LIMIT = 0.93

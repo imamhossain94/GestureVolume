@@ -27,6 +27,18 @@ class StepSoundLibraryTest {
     }
 
     @Test
+    fun `an animation's own cue plays as it is, but is not offered as a step sound`() {
+        StepSoundLibrary.CUES.forEach {
+            assertEquals(it, StepSoundLibrary.sanitize(it))
+            assertFalse(it in StepSoundLibrary.IDS)
+        }
+        // The balloon's own press and bang are offered; its long hiss is not.
+        assertTrue("balloon" in StepSoundLibrary.IDS)
+        assertTrue("burst" in StepSoundLibrary.IDS)
+        assertTrue("inflate" in StepSoundLibrary.CUES)
+    }
+
+    @Test
     fun `an unknown or missing sound is the tick`() {
         assertEquals(StepSoundLibrary.DEFAULT, StepSoundLibrary.sanitize(null))
         assertEquals(StepSoundLibrary.DEFAULT, StepSoundLibrary.sanitize(""))

@@ -59,6 +59,20 @@ internal class BumpScene {
     var target = 0.5f
 
     /**
+     * Whether a volume key is being held down now, between its press and its release: for an effect
+     * that does something of its own while a key is held, as the balloon fills.
+     */
+    var keyDown = false
+
+    /** Sounds the effect has asked for since they were last taken: see [cue]. */
+    val cues = ArrayList<String>()
+
+    /** Asks for a sound of the effect's own, beyond the one each press makes: the balloon's bang. */
+    fun cue(name: String) {
+        cues += name
+    }
+
+    /**
      * How big a press's effect is, from the level it landed on: a little under half size near
      * silence, a third again at full volume, and its own size at about two thirds. Louder is bigger,
      * so a press up grows what it throws and a press down shrinks it.
@@ -140,7 +154,7 @@ internal abstract class BumpEffect(protected val random: Random) {
     protected open val stillAfterS: Float get() = 0.3f
 
     /** A frozen frame for a gallery tile: the same press every time, a moment after. */
-    fun prime(scene: BumpScene) {
+    open fun prime(scene: BumpScene) {
         random.setSeed(STILL_SEED)
         clear()
         press(scene, false)
@@ -243,8 +257,8 @@ internal object BumpEffects {
         ButtonBump.STYLE_CAT -> CatEffect(random)
         ButtonBump.STYLE_FISH -> FishEffect(random)
         ButtonBump.STYLE_FROG -> FrogEffect(random)
-        ButtonBump.STYLE_SPIDER -> SpiderQueenEffect(random)
-        ButtonBump.STYLE_WOODPECKER -> WoodpeckerEffect(random)
+        ButtonBump.STYLE_SWING -> SwingWomenEffect(random)
+        ButtonBump.STYLE_BALLOON -> BalloonEffect(random)
         ButtonBump.STYLE_MONKEY -> MonkeyEffect(random)
         ButtonBump.STYLE_UFO -> UfoEffect(random)
         else -> null

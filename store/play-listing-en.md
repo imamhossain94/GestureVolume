@@ -66,14 +66,14 @@ It began as a way to save a worn-out volume rocker, and it still is one.
 • Presets to start from, then size, shape, colour, opacity, icon and edge distance are yours
 
 ▸ BUTTON ANIMATION
-Press a volume button and the screen's edge answers beside it, with the level. 32 animations with their own sounds — water, fireworks, a frog, a cute cat and more. The power button can play them too.
+Press a volume button and the screen's edge answers beside it, with the level. 32 animations with their own sounds — water, fireworks, balloons, a cute cat and more. The power button can play them too.
 
 ▸ QUICK SLIDER
 A full-height track that grows out of the bar. Set the level in one move, then it tucks itself away.
 • Adaptive volume — the call's volume in a call, otherwise whatever is playing — or media, ring or alarm volume, or brightness
 • Animated fills — waves, aurora, plasma, galaxy, button looks and more — in your own colours
 • Your own icon, colours, entrance animation and haptics
-• Optional step sounds — 33 to choose from, or one from your phone
+• Optional step sounds — 34 to choose from, or one from your phone
 • Opens straight from the volume keys if you want
 
 ▸ GESTURES
@@ -112,7 +112,7 @@ No account, no analytics and no location. Settings, notes and checklist stay on 
 
 15 languages, including English, Bangla, Arabic, Hindi and Chinese.
 ```
-3991 characters.
+3993 characters.
 
 Keep the ACCESSIBILITY SERVICE block whole whatever else you trim — it is what the reviewer reads,
 and it must match the in-app disclosure and the declaration below.
@@ -125,14 +125,14 @@ For 1.5.5 (build 43):
 
 ```
 🫧 New: Button animation — press a volume button and the screen's edge answers beside it. 32 animations with their own sounds, bigger the louder it is
-🐸 Frogs, a woodpecker, the Spider Queen, a cherry branch, water across the screen
+🎈 Balloons to blow up and burst, swing women, frogs, a cherry branch, water
 🎯 Line them up with your phone's buttons; the power button too
 🤝 Show the Quick slider with it, or pause it
 💎 Button looks: 10 new Quick slider fills
-🎵 33 step sounds, or one from your phone
+🎵 34 step sounds, or one from your phone
 🔈 Volume no longer stops short or snaps back
 ```
-474 characters.
+468 characters.
 
 ---
 

@@ -39,6 +39,7 @@
     <string name="bump_style_fireworks">불꽃놀이</string>
     <string name="bump_style_solar">태양계</string>
     <string name="bump_style_bubbles">비눗방울</string>
+    <string name="bump_style_balloon">풍선</string>
     <string name="bump_style_volcano">화산</string>
     <string name="bump_style_wind">바람</string>
     <string name="bump_style_ninja">닌자의 칼날</string>
@@ -48,8 +49,7 @@
     <string name="bump_style_cat">고양이</string>
     <string name="bump_style_fish">점프하는 물고기</string>
     <string name="bump_style_frog">점프하는 개구리</string>
-    <string name="bump_style_spider">스파이더 퀸</string>
-    <string name="bump_style_woodpecker">딱따구리</string>
+    <string name="bump_style_swing">스윙 우먼</string>
     <string name="bump_style_monkey">원숭이</string>
     <string name="bump_style_ufo">UFO</string>
     <string name="bump_style_spray">컬러 스프레이</string>
@@ -133,7 +133,8 @@
     <string name="step_sound_splash">첨벙</string>
     <string name="step_sound_ribbit">개굴</string>
     <string name="step_sound_zip">슉</string>
-    <string name="step_sound_peck">딱딱</string>
+    <string name="step_sound_balloon">풍선</string>
+    <string name="step_sound_burst">펑</string>
     <string name="step_sound_cosmic">우주</string>
     <string name="step_sound_boing">보잉</string>
 

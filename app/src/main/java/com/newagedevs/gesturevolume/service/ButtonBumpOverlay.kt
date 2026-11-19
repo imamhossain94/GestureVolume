@@ -36,6 +36,21 @@ class ButtonBumpOverlay(
     private var params: WindowManager.LayoutParams? = null
     private var lastLimitBuzzMs = 0L
 
+    /** Whether a volume key is held down now, for the animation: see [setKeyDown]. */
+    private var keyDown = false
+
+    /** Told when the animation asks for a sound of its own, such as the balloon's bang. */
+    var onCue: ((String) -> Unit)? = null
+
+    /**
+     * A volume key went down, or every one came up: the balloon fills while one is held, and floats
+     * off when it is let go.
+     */
+    fun setKeyDown(down: Boolean) {
+        keyDown = down
+        view?.setKeyDown(down)
+    }
+
     /** Whether this overlay draws through [context] as [windowType]: for its owner to tell when to make another. */
     fun isFor(context: Context, windowType: Int): Boolean =
         this.context === context && this.windowType == windowType
@@ -114,7 +129,9 @@ class ButtonBumpOverlay(
             setScreenSize(width, height)
             configure(settings, placement)
             setOrigin(placement.x, placement.y)
+            setKeyDown(keyDown)
             listener = ButtonBumpView.Listener { removeNow() }
+            cueListener = { onCue?.invoke(it) }
         }
         val lp = WindowManager.LayoutParams(
             width,
@@ -183,6 +200,7 @@ class ButtonBumpOverlay(
     private fun removeNow() {
         val bump = view ?: return
         bump.listener = null
+        bump.cueListener = null
         bump.release()
         view = null
         params = null

@@ -48,6 +48,26 @@ class ButtonBumpView(context: Context) : View(context) {
 
     var listener: Listener? = null
 
+    /** Told when the effect asks for a sound of its own: see [BumpScene.cue]. */
+    var cueListener: ((String) -> Unit)? = null
+
+    /** Whether a volume key is held down now: see [BumpScene.keyDown]. */
+    private var keyDown = false
+
+    /** A volume key went down, or came up. */
+    fun setKeyDown(down: Boolean) {
+        keyDown = down
+        scene.keyDown = down
+    }
+
+    /** Hands on the sounds the effect asked for. */
+    private fun takeCues() {
+        if (scene.cues.isEmpty()) return
+        val listener = cueListener
+        for (c in scene.cues) listener?.invoke(c)
+        scene.cues.clear()
+    }
+
     private val density = context.resources.displayMetrics.density
 
     private var settings = ButtonBumpStore.Settings()
@@ -360,6 +380,7 @@ class ButtonBumpView(context: Context) : View(context) {
             // The level this press landed on, which the bump's own level is only now setting off for.
             scene.target = levelTarget
             fx.press(scene, atLimit)
+            takeCues()
         }
         // A push to the spring at every press, so a held key keeps the bump alive and lively.
         presence.velocity += if (atLimit) 1.2f else 2.4f
@@ -523,7 +544,7 @@ class ButtonBumpView(context: Context) : View(context) {
         stepWater(dt)
         effectAlive = effect?.let { fx ->
             syncScene()
-            fx.step(scene, dt)
+            fx.step(scene, dt).also { takeCues() }
         } ?: false
 
         val settled = presence.isSettled(presenceTarget) && level.isSettled(levelTarget) &&

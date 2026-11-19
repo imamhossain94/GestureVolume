@@ -39,6 +39,7 @@
     <string name="bump_style_fireworks">Havai fişek</string>
     <string name="bump_style_solar">Güneş sistemi</string>
     <string name="bump_style_bubbles">Baloncuklar</string>
+    <string name="bump_style_balloon">Balonlar</string>
     <string name="bump_style_volcano">Yanardağ</string>
     <string name="bump_style_wind">Rüzgâr</string>
     <string name="bump_style_ninja">Ninja kılıcı</string>
@@ -48,8 +49,7 @@
     <string name="bump_style_cat">Kedi</string>
     <string name="bump_style_fish">Zıplayan balık</string>
     <string name="bump_style_frog">Zıplayan kurbağa</string>
-    <string name="bump_style_spider">Örümcek Kraliçe</string>
-    <string name="bump_style_woodpecker">Ağaçkakan</string>
+    <string name="bump_style_swing">Salınan Kadınlar</string>
     <string name="bump_style_monkey">Maymun</string>
     <string name="bump_style_ufo">UFO</string>
     <string name="bump_style_spray">Renkli sprey</string>
@@ -133,7 +133,8 @@
     <string name="step_sound_splash">Şıpırtı</string>
     <string name="step_sound_ribbit">Vrak</string>
     <string name="step_sound_zip">Fırt</string>
-    <string name="step_sound_peck">Tak tak</string>
+    <string name="step_sound_balloon">Balon</string>
+    <string name="step_sound_burst">Patlama</string>
     <string name="step_sound_cosmic">Kozmik</string>
     <string name="step_sound_boing">Boing</string>
 
