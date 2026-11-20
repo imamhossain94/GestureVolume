@@ -122,7 +122,7 @@ and it must match the in-app disclosure and the declaration below.
 
 ## What's new (500 max)
 
-For 1.5.6 (build 44):
+For 1.5.6 (build 45):
 
 ```
 🫧 New: Button animation — press a volume button and the screen's edge answers beside it. 32 animations with their own sounds, bigger the louder it is

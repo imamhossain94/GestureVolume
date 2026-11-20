@@ -33,6 +33,17 @@
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
 
     <!--
+      Optional too, or Play infers them as required and keeps the app off Wi-Fi-only tablets,
+      Chromebooks and XR headsets: CALL_PHONE implies telephony, an ad SDK's ACCESS_WIFI_STATE
+      implies Wi-Fi, and ML Kit's code-scanner activity, locked to portrait, implies a portrait
+      screen. Calls and the Wi-Fi panel open through OverlayController.launchActivity, which says
+      the action is not available on this device when nothing can handle it.
+    -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+    <uses-feature android:name="android.hardware.wifi" android:required="false" />
+    <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />
+
+    <!--
       Package visibility for the Deck: the app-shortcut picker lists launcher apps, the search bar
       launches them, and the calculator tile prefers the device's own calculator.
     -->
